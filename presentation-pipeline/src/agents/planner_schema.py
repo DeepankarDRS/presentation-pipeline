@@ -6,7 +6,7 @@ guaranteed-valid JSON from the LLM via OpenAI's json_schema response format.
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -82,12 +82,13 @@ class PlannerSlide(BaseModel):
                     "should be arranged. E.g. 'KPIs in a row across top, "
                     "chart and table side by side below, footnote at bottom'."
     )
-    content_data: dict[str, Any] = Field(
-        default_factory=dict,
-        description="Compact content for the generator. Use supplied_content "
-                    "values verbatim when available; derive plausible values "
-                    "for anything not supplied. Keys should match component needs "
-                    "(e.g. kpi_values, chart_data, table_rows)."
+    content_data_json: str = Field(
+        default="{}",
+        description="JSON string of compact content for the generator. Use "
+                    "supplied_content values verbatim when available; derive "
+                    "plausible values for anything not supplied. Keys should "
+                    "match component needs (e.g. kpi_values, chart_data, "
+                    "table_rows). Must be valid JSON object string."
     )
 
 

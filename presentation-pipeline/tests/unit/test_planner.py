@@ -187,10 +187,7 @@ def test_planner_kpi_row(mock_get_llm):
             density="normal",
             font_tier="standard",
             layout_hint="Title at top, 4 KPI tiles in horizontal row below",
-            content_data={
-                "title": "Key Metrics - Q3 FY26",
-                "kpi_labels": ["ARR", "NRR", "Gross Margin", "Customer Count"],
-            },
+            content_data_json='{"title": "Key Metrics - Q3 FY26", "kpi_labels": ["ARR", "NRR", "Gross Margin", "Customer Count"]}',
         )
     )
     mock_get_llm.return_value = MagicMock()
@@ -226,10 +223,7 @@ def test_planner_maximal_density(mock_get_llm):
             density="tight_fit",
             font_tier="micro",
             layout_hint="Title+kicker at top, 4 KPI tiles below, then 3 columns (bar chart | line chart | bullet list), table spanning full width below, footnote at bottom",
-            content_data={
-                "kicker": "Q3 FY26 OPERATING REVIEW",
-                "title": "The Whole Quarter, One View",
-            },
+            content_data_json='{"kicker": "Q3 FY26 OPERATING REVIEW", "title": "The Whole Quarter, One View"}',
         )
     )
     mock_get_llm.return_value = MagicMock()

@@ -68,13 +68,19 @@ def _slide_to_state(idx: int, slide: PlannerSlide) -> SlidePlan:
             comp["items"] = c.items
         components.append(comp)
 
+    try:
+        content_data = json.loads(slide.content_data_json) if slide.content_data_json else {}
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("planner: invalid content_data_json, using empty dict")
+        content_data = {}
+
     return SlidePlan(
         slide_index=idx,
         components=components,
         density=slide.density,
         font_tier=slide.font_tier,
         layout_hint=slide.layout_hint,
-        content_data=slide.content_data,
+        content_data=content_data,
     )
 
 
