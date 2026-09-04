@@ -45,9 +45,84 @@ Choose based on density and component count:
 5. Never invent data that contradicts what was supplied.
 6. When data is insufficient for a component, simplify (fewer items) rather than error.
 
-## Layout Hint
+## content_data Structure (MUST populate for every slide)
+
+content_data is a flat dict that the generator reads as its data source. Populate ALL relevant keys for every component on the slide:
+
+For title:
+  title: "The actual title text"
+  subtitle: "Optional subtitle" (if relevant)
+
+For kpi_row:
+  kpi_labels: ["ARR", "NRR", "Gross Margin"]
+  kpi_values: ["$42.8M", "114%", "72.1%"]
+  kpi_deltas: ["+18% QoQ", "+2 pts", "-1.4 pts"]
+  kpi_directions: ["up", "up", "down"]
+
+For chart:
+  chart_type: "bar"                       // REQUIRED: bar, line, pie, area, doughnut
+  chart_title: "Revenue by Quarter"
+  chart_labels: ["Q1", "Q2", "Q3", "Q4"]
+  chart_values: [28.4, 31.2, 36.1, 42.8] // for single series
+  chart_series: [                         // for multi-series
+    { "name": "Plan", "values": [100, 120, 140] },
+    { "name": "Actual", "values": [98, 126, 145] }
+  ]
+
+For table:
+  table_columns: ["Segment", "Revenue", "QoQ Growth"]
+  table_rows: [
+    ["Enterprise", "$28.1M", "+22%"],
+    ["Mid-Market", "$10.4M", "+14%"],
+    ["SMB", "$4.3M", "+8%"]
+  ]
+
+For bullet_list:
+  bullets: ["First key insight", "Second key insight", "Third key insight"]
+
+For timeline:
+  timeline_items: [
+    { "date": "Jan 2025", "label": "Phase 1 Launch" },
+    { "date": "Mar 2025", "label": "Beta Release" }
+  ]
+
+For flow:
+  flow_steps: ["Discovery", "Design", "Build", "Test", "Deploy"]
+
+For process_arrow:
+  process_steps: ["Intake", "Review", "Approve", "Execute"]
+
+For pyramid:
+  pyramid_levels: ["Strategy", "Tactics", "Operations"]
+
+Rules:
+- EVERY value must be realistic and specific — no "XX%", "TBD", or placeholders
+- KPI values use real-looking numbers with units ($42.8M, 114%, 3.2x)
+- Chart data: at least 4 data points with realistic progression
+- Table data: 3-5 rows with named entities, not "Row 1"
+- Deltas show direction: positive values for up, negative for down
+- When chart AND table exist on the same slide, their data must be CONSISTENT
+
+## Layout Patterns
+
+Choose layout_hint based on the components present:
+- title + kpi_row → "Title + accent bar, KPI tiles in a horizontal row below"
+- title + chart + table → "Title at top, chart left and table right in two balanced columns"
+- title + kpi_row + chart → "Title, KPI row across top, full-width chart below"
+- title + kpi_row + chart + table → "Title, KPI row, then chart left + table right"
+- title + bullet_list → "Title + accent bar, bullets in a VStack below"
+- title + timeline → "Title at top, horizontal timeline spanning full width"
+- title + narrative → "Title + accent bar, narrative paragraphs below"
 
 Write a freeform natural language description of how components should be arranged on the 1280x720 slide. Be specific about spatial relationships: "side by side", "stacked vertically", "2x2 grid", "across the top", etc.
+
+## Theme Selection
+
+If no theme is specified in the request, choose based on content:
+- Business/finance → "corporate-slate" or "graphite-dark"
+- Marketing/growth → "sky-minimal" or "warm-editorial"
+- Technical/engineering → "midnight-indigo" or "teal-slate"
+- General → "corporate-slate"
 
 ## Output
 

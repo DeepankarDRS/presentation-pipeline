@@ -8,7 +8,7 @@ Topology:
       → evaluator → END
 
 Conditional edges:
-    - Planner: skipped when deck_min_threshold=0 AND single slide
+    - Planner: skipped when test_case provides components
     - Critic: skipped when critic_mode="off"
     - Repairer → Validator: repairer calls the LLM and produces fixed XML,
       then routes directly to validator (not back through generator)
@@ -41,11 +41,12 @@ logger = logging.getLogger(__name__)
 # ── Routing functions ───────────────────────────────────────────────────────
 
 def route_after_start(state: PresentationState) -> str:
-    """Skip planner when deck_min_threshold=0 and single slide."""
-    threshold = state.get("deck_min_threshold", 3)
-    if threshold == 0:
-        logger.info("route: skipping planner (deck_min_threshold=0)")
+    """Skip planner only when test_case provides components."""
+    test_case = state.get("test_case") or {}
+    if test_case.get("components"):
+        logger.info("route: skipping planner (test_case has components)")
         return "context_builder"
+    logger.info("route: → planner")
     return "planner"
 
 
@@ -129,7 +130,7 @@ def run(
     *,
     theme: str = "",
     critic_mode: Literal["auto", "manual", "off"] = "auto",
-    deck_min_threshold: int = 0,
+    deck_min_threshold: int = 3,
     run_id: str | None = None,
     supplied_content: dict[str, Any] | None = None,
     test_case: dict[str, Any] | None = None,

@@ -8,17 +8,16 @@ COMPONENTS:
 DENSITY: {{ density }} | FONT TIER: {{ font_tier }}
 
 LAYOUT: {{ layout_hint }}
-{% if content_data %}
-
-DATA:
-{% for key, value in content_data.items() %}
-{{ key }}: {{ value }}
-{% endfor %}
-{% endif %}
 {% if supplied_content %}
 
 SUPPLIED CONTENT (use these values EXACTLY):
 {% for key, value in supplied_content.items() %}
+{{ key }}: {{ value }}
+{% endfor %}
+{% elif content_data %}
+
+DATA (use these values directly in your POM XML — do NOT invent alternatives):
+{% for key, value in content_data.items() %}
 {{ key }}: {{ value }}
 {% endfor %}
 {% else %}

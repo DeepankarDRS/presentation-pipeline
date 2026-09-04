@@ -28,12 +28,18 @@ def test_graph_compiles():
 
 
 def test_route_after_start_skips_planner():
-    state = initial_state(run_id="r1", raw_request="test", deck_min_threshold=0)
+    state = initial_state(run_id="r1", raw_request="test",
+                          test_case={"components": ["title", "chart"]})
     assert route_after_start(state) == "context_builder"
 
 
 def test_route_after_start_uses_planner():
-    state = initial_state(run_id="r2", raw_request="test", deck_min_threshold=3)
+    state = initial_state(run_id="r2", raw_request="test")
+    assert route_after_start(state) == "planner"
+
+
+def test_route_after_start_uses_planner_no_test_case():
+    state = initial_state(run_id="r2b", raw_request="test", test_case={})
     assert route_after_start(state) == "planner"
 
 
@@ -102,7 +108,7 @@ def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_valida
     state = initial_state(
         run_id="e2e-001",
         raw_request="Create a simple title slide",
-        deck_min_threshold=0,
+        test_case={"components": ["title"]},
         critic_mode="auto",
     )
 

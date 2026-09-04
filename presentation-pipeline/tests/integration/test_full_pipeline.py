@@ -14,6 +14,7 @@ import pytest
 from src.agents.critic_schema import CriticOutput
 from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSlide
 from src.graph import compile_graph
+from src.state import initial_state
 from src.utils.case_loader import load_all_cases, case_to_state
 
 
@@ -130,7 +131,7 @@ def test_pipeline_with_planner_enabled(
     mock_validate,
     mock_critic_llm,
 ):
-    """Pipeline runs with planner enabled (deck_min_threshold=3) for a multi-component case."""
+    """Pipeline runs through planner for free-form prompts (no test_case components)."""
     case = next((c for c in _CASES if c.get("name") == "maximal-density"), _CASES[0])
 
     mock_planner_llm.return_value = _make_planner_llm(case)
@@ -144,7 +145,10 @@ def test_pipeline_with_planner_enabled(
     }
     mock_critic_llm.return_value = _make_critic_llm()
 
-    state = case_to_state(case, deck_min_threshold=3)
+    state = initial_state(
+        run_id="planner-e2e",
+        raw_request="Create a dense KPI dashboard with charts and tables",
+    )
     app = compile_graph()
     result = app.invoke(state)
 
