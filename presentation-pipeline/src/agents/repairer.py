@@ -4,11 +4,10 @@ Tier 1 (Patch):    feed back failing XML + errors + guidance → fix in place
 Tier 2 (Simplify): regenerate with simpler constraints
 Tier 3 (Template): verified example as skeleton, fill content only
 
-Stall detection: >=80% error signature overlap between attempts → escalate.
+Stall detection: >=65% error signature overlap between attempts → escalate.
 
-The repairer does NOT call the LLM itself — it builds the repair prompt and
-updates state so the generator's next invocation uses the repair prompt
-instead of the original. The graph topology routes repairer → generator.
+The repairer calls the LLM with a targeted repair prompt and produces fixed
+XML. The graph routes repairer → validator (skipping the generator).
 
 Reads:  current_xml, normalize_result, validate_result, compile_result,
         critic_result, contract, slide_plans, retry_tier, retry_count,

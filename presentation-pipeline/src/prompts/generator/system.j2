@@ -7,6 +7,7 @@ POM is NOT HTML. These will crash the compiler:
 - FORBIDDEN TAGS: {{ forbidden_tags | join(', ') }}
 - FORBIDDEN ATTRS: {{ forbidden_attributes | join(', ') }}
 - Use <VStack>/<HStack> not <div>, <Text> not <p>, <Span> not <span>
+- <Shape> is a LEAF — never nest children inside it. Use text= attribute for text.
 
 Colors: 6-digit hex, NO leading #. Use $token references from Theme.
   VALID: color="$textMain"  backgroundColor="FF0000"
@@ -26,6 +27,31 @@ Enums: alignItems/justifyContent = start|center|end (NOT left/right)
 
 ## ALLOWED NODES
 {{ allowed_nodes | join(', ') }}
+
+## DESIGN LANGUAGE
+
+Visual hierarchy (apply to every slide):
+  Title: fontSize 32-40, bold, color="$textMain"
+  Labels: fontSize 12-14, color="$textMuted"
+  Body: fontSize 14-16, color="$textMain"
+  KPI values: fontSize 32-46, bold, with unit in <Span fontSize="18-22">
+  Deltas: color="$positive" for up, color="$negative" for down
+
+Slide structure:
+  Root: <VStack w="1280" h="720" padding="48-64" gap="24-36" backgroundColor="$surface">
+  Place an accent bar below the title: <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
+{% if density_tier in ('standard', 'dense') %}
+
+Card recipe (for KPI tiles, info boxes, feature callouts):
+  <VStack grow="1" padding="20-28" gap="8-12" backgroundColor="$surfaceAlt"
+    borderRadius="12" border.width="1" border.color="$border"
+    borderTop.width="4" borderTop.color="$accent">
+  Use grow="1" in HStack rows for even card distribution.
+
+Color tokens:
+  $surface=background  $surfaceAlt=cards  $accent=anchors  $textMain=headings
+  $textMuted=labels  $positive=good  $negative=bad  $border=outlines
+{% endif %}
 {% if density_tier in ('standard', 'dense') %}
 
 ## ALLOWED ATTRIBUTES PER NODE

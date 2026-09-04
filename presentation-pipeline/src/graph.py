@@ -2,15 +2,16 @@
 
 Topology:
     START → planner → context_builder → generator → validator
-      → (if compile fails & retryable) repairer → generator  (loop)
+      → (if compile fails & retryable) repairer → validator  (loop)
       → (if compile ok) critic
-      → (if critic fails) repairer → generator  (loop)
+      → (if critic fails) repairer → validator  (loop)
       → evaluator → END
 
 Conditional edges:
     - Planner: skipped when deck_min_threshold=0 AND single slide
     - Critic: skipped when critic_mode="off"
-    - Repairer → Generator: loops up to retry_budget times
+    - Repairer → Validator: repairer calls the LLM and produces fixed XML,
+      then routes directly to validator (not back through generator)
 """
 
 from __future__ import annotations
@@ -82,8 +83,8 @@ def route_after_critic(state: PresentationState) -> str:
 
 
 def route_after_repairer(state: PresentationState) -> str:
-    """Always loop back to generator for another attempt."""
-    return "generator"
+    """Loop back to validator — repairer already called the LLM and produced XML."""
+    return "validator"
 
 
 # ── Graph construction ──────────────────────────────────────────────────────
@@ -110,7 +111,7 @@ def build_graph() -> StateGraph:
     graph.add_conditional_edges("critic", route_after_critic,
                                 ["repairer", "evaluator"])
     graph.add_conditional_edges("repairer", route_after_repairer,
-                                ["generator"])
+                                ["validator"])
     graph.add_edge("evaluator", END)
 
     return graph
@@ -130,6 +131,8 @@ def run(
     critic_mode: Literal["auto", "manual", "off"] = "auto",
     deck_min_threshold: int = 0,
     run_id: str | None = None,
+    supplied_content: dict[str, Any] | None = None,
+    test_case: dict[str, Any] | None = None,
 ) -> PresentationState:
     """Run the pipeline end-to-end and return the final state."""
     from src.utils.logging_config import setup_logging, set_context
@@ -145,6 +148,8 @@ def run(
         theme_name=theme,
         deck_min_threshold=deck_min_threshold,
         critic_mode=critic_mode,
+        supplied_content=supplied_content,
+        test_case=test_case,
     )
 
     app = compile_graph()

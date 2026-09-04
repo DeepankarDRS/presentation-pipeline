@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from src.agents.critic_schema import CriticOutput
 from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSlide
-from src.graph import build_graph, compile_graph, route_after_start, route_after_validator, route_after_critic
+from src.graph import build_graph, compile_graph, route_after_start, route_after_validator, route_after_critic, route_after_repairer
 from src.state import initial_state
 
 
@@ -168,3 +168,8 @@ def test_full_graph_with_planner(mock_planner_llm, mock_gen_llm, mock_compile, m
     assert result["passed"] is True
     assert len(result["slide_plans"]) > 0
     assert result["slide_plans"][0]["density"] == "dense"
+
+
+def test_route_after_repairer_goes_to_validator():
+    state = initial_state(run_id="r9", raw_request="test")
+    assert route_after_repairer(state) == "validator"

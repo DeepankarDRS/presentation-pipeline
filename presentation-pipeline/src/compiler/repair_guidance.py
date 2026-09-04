@@ -189,6 +189,25 @@ def build_error_guidance(
         dtype = diag.get("type", "")
         dmsg = diag.get("message", "")
 
+        if "child elements" in dmsg.lower() or "unexpected child" in dmsg.lower():
+            tag = _extract_tag_from_error(dmsg)
+            key = f"no_children_{(tag or 'unknown').lower()}"
+            if key not in seen:
+                seen.add(key)
+                if tag and tag.lower() == "shape":
+                    sections.append(
+                        f"STRUCTURE FIX: <{tag}> is a LEAF node — it does NOT accept child elements. "
+                        "For text inside a shape, use the text attribute: "
+                        '<Shape shapeType="rect" text="Hello" />. '
+                        "For complex content (multiple Text nodes), replace <Shape> with "
+                        "<VStack> containing <Text> children."
+                    )
+                else:
+                    sections.append(
+                        f"STRUCTURE FIX: <{tag or '?'}> does not accept child elements. "
+                        "Remove nested elements or use a container like VStack/HStack instead."
+                    )
+
         if dtype == "UNKNOWN_TAG":
             tag = _extract_tag_from_error(dmsg)
             if tag:
@@ -275,7 +294,7 @@ def error_signatures(
     return sigs
 
 
-def is_stalled(prev_sigs: set[str], curr_sigs: set[str], threshold: float = 0.8) -> bool:
+def is_stalled(prev_sigs: set[str], curr_sigs: set[str], threshold: float = 0.65) -> bool:
     """True if >=threshold of current errors were also in the previous attempt."""
     if not curr_sigs or not prev_sigs:
         return False

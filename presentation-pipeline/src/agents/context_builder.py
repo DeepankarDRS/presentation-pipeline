@@ -21,6 +21,36 @@ from src.state import ComponentPlan, PresentationState, SlidePlan
 
 logger = logging.getLogger(__name__)
 
+# ── Keyword-based intent detection (no LLM needed) ──────────────────────────
+
+_INTENT_KEYWORDS: dict[str, list[str]] = {
+    "chart":         ["chart", "graph", "bar chart", "pie chart", "line chart",
+                      "area chart", "donut", "histogram", "visualization"],
+    "table":         ["table", "data table", "spreadsheet", "grid", "rows and columns"],
+    "kpi_row":       ["kpi", "metric", "dashboard", "scorecard", "kpi card",
+                      "key performance", "indicator"],
+    "timeline":      ["timeline", "roadmap", "milestone", "gantt", "chronolog"],
+    "bullet_list":   ["bullet", "list", "points", "takeaway", "key point"],
+    "flow":          ["flow", "flowchart", "process flow", "workflow", "decision tree"],
+    "matrix":        ["matrix", "quadrant", "2x2"],
+    "pyramid":       ["pyramid", "hierarchy", "funnel"],
+    "layer":         ["diagram", "architecture diagram", "layer", "annotated"],
+    "process_arrow": ["process arrow", "step by step", "pipeline"],
+    "tree":          ["tree", "org chart", "organization"],
+}
+
+
+def _detect_components_from_text(text: str) -> list[str]:
+    """Extract component kinds by scanning text for keywords."""
+    lower = text.lower()
+    found: list[str] = []
+    for kind, keywords in _INTENT_KEYWORDS.items():
+        for kw in keywords:
+            if kw in lower:
+                found.append(kind)
+                break
+    return found
+
 _MVP_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "presentation-mvp"
 _KNOWLEDGE_DIR = _MVP_ROOT / "pom-knowledge"
 _EXAMPLES_DIR = _KNOWLEDGE_DIR / "examples"
@@ -112,7 +142,7 @@ def _load_example(name: str) -> str:
     return path.read_text(encoding="utf-8").strip() if path.exists() else ""
 
 
-def _compress_example(xml: str, max_lines: int = 25) -> str:
+def _compress_example(xml: str, max_lines: int = 45) -> str:
     """Compress a full XML example to a skeleton with <!-- ... --> comments."""
     lines = xml.split("\n")
     if len(lines) <= max_lines:
@@ -264,8 +294,18 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     if "table" in kinds:
         notes.append(
             "EVERY <Td> needs explicit backgroundColor AND color. Unstyled "
-            "cells render with PowerPoint's default white table style."
+            "cells render with PowerPoint's default white table style. "
+            "Header: backgroundColor=$surfaceAlt color=$textMain bold=true. "
+            "Body: backgroundColor=$surface, labels color=$textMuted, values color=$textMain. "
+            "Right-align numeric columns with textAlign=right."
         )
+
+    design = _load_yaml("core/design-language.yaml")
+    if design:
+        for rule in design.get("content_invention", []):
+            notes.append(rule)
+        for principle in design.get("design_principles", []):
+            notes.append(principle)
 
     return notes
 
@@ -444,24 +484,54 @@ def build_contract(slide_plan: SlidePlan, theme_name: str) -> dict[str, Any]:
     }
 
 
+def _build_default_plan(state: PresentationState) -> SlidePlan:
+    """Build a SlidePlan from test_case components, intent detection, or fallback."""
+    test_case = state.get("test_case") or {}
+    raw_request = state.get("raw_request", "")
+
+    case_components = test_case.get("components", [])
+    if case_components:
+        kinds = list(case_components)
+        source = "test_case"
+    else:
+        detected = _detect_components_from_text(raw_request)
+        if detected:
+            kinds = detected
+            source = "intent"
+        else:
+            kinds = ["title", "narrative", "bullet_list"]
+            source = "fallback"
+
+    if "title" not in kinds:
+        kinds.insert(0, "title")
+
+    components = [ComponentPlan(kind=k, count=1) for k in kinds]
+
+    n = len(kinds)
+    if n >= 5:
+        density, font_tier = "tight_fit", "compact"
+    elif n >= 3:
+        density, font_tier = "normal", "standard"
+    else:
+        density, font_tier = "sparse", "standard"
+
+    logger.info(f"context_builder: built plan from {source}: {kinds}")
+    return SlidePlan(
+        slide_index=0,
+        components=components,
+        density=density,
+        font_tier=font_tier,
+        layout_hint=test_case.get("layout_hint", ""),
+    )
+
+
 def context_builder_node(state: PresentationState) -> dict[str, Any]:
     """LangGraph node: build contract from slide_plans[0]."""
     slide_plans = state.get("slide_plans", [])
     theme_name = state.get("theme_name", "")
 
     if not slide_plans:
-        logger.info("context_builder: no slide plans, building default contract (title + narrative)")
-        slide_plans = [SlidePlan(
-            slide_index=0,
-            components=[
-                ComponentPlan(kind="title", count=1),
-                ComponentPlan(kind="narrative", count=1),
-                ComponentPlan(kind="bullet_list", count=1),
-            ],
-            density="normal",
-            font_tier="standard",
-            layout_hint="Title at top, narrative and bullets below",
-        )]
+        slide_plans = [_build_default_plan(state)]
 
     plan = slide_plans[0]
     contract = build_contract(plan, theme_name)

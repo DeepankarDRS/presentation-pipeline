@@ -75,6 +75,10 @@ def run_cases(
         request = case.get("request", case.get("objective", ""))
         rid = f"{name}-{uuid.uuid4().hex[:6]}"
 
+        supplied = case.get("supplied_content")
+        if isinstance(supplied, str):
+            supplied = None
+
         print(f"\n>> Running: {name} ...", flush=True)
         t0 = time.time()
 
@@ -85,6 +89,8 @@ def run_cases(
                 critic_mode=critic_mode,
                 deck_min_threshold=deck_min_threshold,
                 run_id=rid,
+                supplied_content=supplied,
+                test_case=case,
             )
             elapsed = time.time() - t0
 

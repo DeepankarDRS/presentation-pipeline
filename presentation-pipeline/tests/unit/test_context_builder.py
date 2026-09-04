@@ -11,6 +11,7 @@ from src.agents.context_builder import (
     _select_example,
     _select_layout,
     _compress_example,
+    _detect_components_from_text,
     build_contract,
     context_builder_node,
     _load_yaml,
@@ -328,3 +329,55 @@ def test_context_builder_node_empty_plans():
     assert "allowed_nodes" in result["contract"]
     assert "Text" in result["contract"]["allowed_nodes"]
     assert "<Theme" in result["theme_element"]
+
+
+# ── Intent detection tests ──────────────────────────────────────────────────
+
+def test_detect_components_chart():
+    kinds = _detect_components_from_text("Create a bar chart of revenue")
+    assert "chart" in kinds
+
+
+def test_detect_components_table_and_kpi():
+    kinds = _detect_components_from_text("Show a table with KPI metrics")
+    assert "table" in kinds
+    assert "kpi_row" in kinds
+
+
+def test_detect_components_timeline():
+    kinds = _detect_components_from_text("Create a product roadmap with milestones")
+    assert "timeline" in kinds
+
+
+def test_detect_components_no_match():
+    kinds = _detect_components_from_text("Create a simple title slide")
+    assert kinds == []
+
+
+def test_detect_components_multiple():
+    kinds = _detect_components_from_text(
+        "Create a presentation with chart table and kpi cards"
+    )
+    assert "chart" in kinds
+    assert "table" in kinds
+    assert "kpi_row" in kinds
+
+
+def test_context_builder_uses_test_case_components():
+    state = initial_state(run_id="cb3", raw_request="test")
+    state["slide_plans"] = []
+    state["test_case"] = {"components": ["title", "chart", "table"]}
+    result = context_builder_node(state)
+    assert "Chart" in result["contract"]["allowed_nodes"]
+    assert "Table" in result["contract"]["allowed_nodes"]
+
+
+def test_context_builder_uses_intent_detection():
+    state = initial_state(
+        run_id="cb4",
+        raw_request="Create a dashboard with kpi cards and a chart",
+    )
+    state["slide_plans"] = []
+    result = context_builder_node(state)
+    assert "Chart" in result["contract"]["allowed_nodes"]
+    assert "HStack" in result["contract"]["allowed_nodes"]

@@ -21,6 +21,13 @@ SUPPLIED CONTENT (use these values EXACTLY):
 {% for key, value in supplied_content.items() %}
 {{ key }}: {{ value }}
 {% endfor %}
+{% else %}
+
+CONTENT: No data supplied — invent realistic, specific figures and text.
+Use real-sounding numbers ($42.8M, 114%, +18% QoQ), named entities, and
+concise prose. Never use placeholders like "XX%", "TBD", "Lorem ipsum",
+"Company A", or "Metric 1". Every value should look like it came from a
+real business report.
 {% endif %}
 
 Generate the POM XML for this slide. Start with the Theme element, then Slide.

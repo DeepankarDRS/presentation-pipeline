@@ -85,6 +85,15 @@ def test_build_error_guidance_compile_diags():
     assert "COMPILER ATTR FIX" in guidance
 
 
+def test_build_error_guidance_shape_children():
+    pre = []
+    diags = [{"type": "PARSE_ERROR", "message": "<Shape>: Unexpected child elements. <Shape> does not accept child elements"}]
+    guidance = build_error_guidance(pre, diags)
+    assert "STRUCTURE FIX" in guidance
+    assert "LEAF" in guidance or "leaf" in guidance
+    assert "text" in guidance.lower()
+
+
 def test_build_error_guidance_empty():
     assert build_error_guidance([], []) == ""
 

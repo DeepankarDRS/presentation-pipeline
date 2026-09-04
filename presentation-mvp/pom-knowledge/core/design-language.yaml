@@ -1,0 +1,86 @@
+# pom-knowledge/core/design-language.yaml
+# Visual design patterns for production-grade presentation output.
+# Loaded by context_builder and injected into the generator system prompt.
+
+visual_hierarchy:
+  title: "fontSize 32-40, bold, color=$textMain"
+  subtitle: "fontSize 20-24, color=$textMuted"
+  body: "fontSize 14-16, color=$textMain"
+  label: "fontSize 12-14, color=$textMuted"
+  caption: "fontSize 11-13, italic, color=$textMuted"
+  kpi_value: "fontSize 32-46, bold, color=$textMain"
+  kpi_unit: "Span fontSize 18-22 inside the value Text"
+  delta_up: "fontSize 13-16, color=$positive"
+  delta_down: "fontSize 13-16, color=$negative"
+
+card_recipe:
+  description: "Cards are the building block for KPI tiles, info boxes, and feature callouts."
+  pattern: |
+    <VStack padding="20-28" gap="8-12"
+      backgroundColor="$surfaceAlt" borderRadius="12"
+      border.width="1" border.color="$border"
+      borderTop.width="4" borderTop.color="$accent">
+  rules:
+    - Always use backgroundColor="$surfaceAlt" (never leave it transparent)
+    - Add borderRadius="12" for rounded corners
+    - Add a thin border (border.width="1" border.color="$border")
+    - Add a colored top-border (borderTop.width="4" borderTop.color="$accent") as visual anchor
+    - Use grow="1" when cards sit in an HStack row so they fill evenly
+
+accent_elements:
+  accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />'
+  status_dot: '<Shape shapeType="ellipse" w="12" h="12" backgroundColor="$positive" />'
+  divider: '<Shape shapeType="rect" w="100%" h="1" backgroundColor="$border" />'
+  rules:
+    - Place an accent bar below the title to separate header from body
+    - Use status dots in KPI tiles next to labels (green=$positive, red=$negative, grey=$textMuted)
+    - Shape is a LEAF node — never nest children inside it
+
+spacing:
+  standard:
+    root_padding: "48-64"
+    section_gap: "24-36"
+    component_gap: "12-16"
+    card_padding: "20-28"
+    card_internal_gap: "8-12"
+  compact:
+    root_padding: "24-32"
+    section_gap: "16-20"
+    component_gap: "8-12"
+    card_padding: "16-20"
+    card_internal_gap: "4-8"
+
+color_usage:
+  - "$surface — slide background (root VStack backgroundColor)"
+  - "$surfaceAlt — card/tile/plate backgrounds"
+  - "$accent — primary visual anchors: accent bars, card top-borders, links, first chart color"
+  - "$accentAlt — secondary accent: second chart series, sparklines"
+  - "$textMain — headings, bold values, primary text"
+  - "$textMuted — labels, captions, secondary text"
+  - "$positive — good deltas, up arrows, success indicators"
+  - "$negative — bad deltas, down arrows, error indicators"
+  - "$warning — caution figures, attention items"
+  - "$border — hairline borders, table cellBorder.color, card outlines"
+
+table_styling:
+  - "EVERY <Td> needs explicit backgroundColor AND color — unstyled cells fall back to PowerPoint's ugly default white banding"
+  - "Header row: backgroundColor=$surfaceAlt color=$textMain bold=true"
+  - "Body rows: backgroundColor=$surface, labels in color=$textMuted, values in color=$textMain"
+  - "Use cellBorder.color=$border cellBorder.width=1 on the Table element"
+  - "Right-align numeric columns with textAlign=right"
+
+content_invention:
+  - "When no data is supplied, invent realistic, specific figures — never use 'XX%' or 'TBD'"
+  - "KPI values: use real-looking numbers with units ($42.8M, 114%, 3.2x)"
+  - "Charts: at least 4-6 data points with realistic progression"
+  - "Tables: 3-5 rows with named entities (not Row 1, Row 2)"
+  - "Bullet points: 4-6 concise takeaways, each one sentence"
+  - "Deltas: show direction (+18% QoQ, -2.3 pts) with appropriate $positive/$negative color"
+
+design_principles:
+  - "Every slide needs a clear visual hierarchy: title → content → footnote"
+  - "Use $surfaceAlt cards to group related content — never float raw text on the background"
+  - "Balance whitespace: padding and gaps should feel generous, not cramped"
+  - "Align elements: use HStack with grow=1 children for even distribution"
+  - "One idea per slide — if content overflows, simplify rather than shrink fonts below 11"
+  - "Charts and tables should have explicit w and h sized to their container"
