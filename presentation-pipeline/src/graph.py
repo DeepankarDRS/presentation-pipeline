@@ -19,6 +19,10 @@ import logging
 import uuid
 from typing import Any, Literal
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from langgraph.graph import END, START, StateGraph
 
 from src.agents.context_builder import context_builder_node

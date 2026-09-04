@@ -221,11 +221,11 @@ def test_repairer_escalates_on_stall(mock_get_llm):
     state["generation_history"] = [{
         "attempt": 1,
         "tier": 1,
-        "errors_in": [],
-        "errors_out": [
+        "errors_in": [
             "HTML_TAG: Found HTML tag <div>.",
             "HTML_TAG: Found HTML tag <p>.",
         ],
+        "errors_out": [],
         "stalled": False,
         "tokens_in": 500,
         "tokens_out": 200,

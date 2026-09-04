@@ -324,5 +324,7 @@ def test_context_builder_node_empty_plans():
     state = initial_state(run_id="cb2", raw_request="test")
     state["slide_plans"] = []
     result = context_builder_node(state)
-    assert result["contract"] == {}
+    assert result["contract"] != {}
+    assert "allowed_nodes" in result["contract"]
+    assert "Text" in result["contract"]["allowed_nodes"]
     assert "<Theme" in result["theme_element"]

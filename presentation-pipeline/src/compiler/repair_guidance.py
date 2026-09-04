@@ -59,6 +59,8 @@ ATTR_TRANSLATIONS: dict[str, str] = {
     "align": "alignItems",
     "display": "Delete — POM layout is implicit from VStack/HStack",
     "float": "Delete — use HStack for side-by-side layout",
+    "spacing": "gap (POM uses 'gap' for spacing between children in VStack/HStack)",
+    "fontWeight": "bold='true' (POM uses bold attribute, not fontWeight)",
     "src": "Delete — not available on this node type",
     "id": "Delete — only needed for Arrow connectors",
     "onclick": "Delete — no event handlers in POM",

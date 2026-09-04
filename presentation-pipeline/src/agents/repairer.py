@@ -166,8 +166,10 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
 
     prev_history = state.get("generation_history", [])
     prev_errors: list[str] = []
-    if prev_history:
-        prev_errors = prev_history[-1].get("errors_out", [])
+    for record in reversed(prev_history):
+        if record.get("errors_in"):
+            prev_errors = record["errors_in"]
+            break
     prev_sigs = error_signatures(
         [{"code": e.split(":")[0], "message": e} for e in prev_errors],
         [],

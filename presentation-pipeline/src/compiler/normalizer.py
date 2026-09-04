@@ -49,6 +49,8 @@ _ZERO_DIM_RE = re.compile(
 _ZERO_SPACING_RE = re.compile(r"\s+(?P<attr>gap|padding|margin)\s*=\s*\"0+\"")
 _BR_RE = re.compile(r"<\s*/?\s*br\s*/?\s*>", re.IGNORECASE)
 _HR_RE = re.compile(r"<\s*/?\s*hr\s*/?\s*>", re.IGNORECASE)
+_SPACING_RE = re.compile(r'\bspacing\s*=\s*"([^"]*)"')
+_FONTWEIGHT_RE = re.compile(r'\bfontWeight\s*=\s*"([^"]*)"')
 _GRADIENT_RE = re.compile(r"[A-Za-z]*[Gg]radient\s*=\s*\"[^\"]*\"")
 _COL_RE = re.compile(r"<Col\b[^>]*/?>", re.IGNORECASE)
 
@@ -101,6 +103,24 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
         issues.append({
             "code": "HASH_COLOR",
             "message": f"Stripped leading '#' from {len(hash_hits)} color value(s).",
+            "auto_fixed": True,
+        })
+
+    spacing_hits = list(_SPACING_RE.finditer(xml))
+    if spacing_hits:
+        xml = _SPACING_RE.sub(r'gap="\1"', xml)
+        issues.append({
+            "code": "SPACING_TO_GAP",
+            "message": f"Replaced {len(spacing_hits)} 'spacing' attribute(s) with 'gap'.",
+            "auto_fixed": True,
+        })
+
+    fontweight_hits = list(_FONTWEIGHT_RE.finditer(xml))
+    if fontweight_hits:
+        xml = _FONTWEIGHT_RE.sub(r'bold="true"', xml)
+        issues.append({
+            "code": "FONTWEIGHT_TO_BOLD",
+            "message": f"Replaced {len(fontweight_hits)} 'fontWeight' attribute(s) with 'bold=\"true\"'.",
             "auto_fixed": True,
         })
 

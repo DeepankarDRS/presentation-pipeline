@@ -17,7 +17,7 @@ from typing import Any
 
 import yaml
 
-from src.state import PresentationState, SlidePlan
+from src.state import ComponentPlan, PresentationState, SlidePlan
 
 logger = logging.getLogger(__name__)
 
@@ -450,12 +450,18 @@ def context_builder_node(state: PresentationState) -> dict[str, Any]:
     theme_name = state.get("theme_name", "")
 
     if not slide_plans:
-        logger.warning("context_builder: no slide plans, using empty contract")
-        return {
-            "contract": {},
-            "theme_element": _DEFAULT_THEME["element"],
-            "resolved_theme": None,
-        }
+        logger.info("context_builder: no slide plans, building default contract (title + narrative)")
+        slide_plans = [SlidePlan(
+            slide_index=0,
+            components=[
+                ComponentPlan(kind="title", count=1),
+                ComponentPlan(kind="narrative", count=1),
+                ComponentPlan(kind="bullet_list", count=1),
+            ],
+            density="normal",
+            font_tier="standard",
+            layout_hint="Title at top, narrative and bullets below",
+        )]
 
     plan = slide_plans[0]
     contract = build_contract(plan, theme_name)
