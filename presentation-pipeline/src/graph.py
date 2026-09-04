@@ -134,6 +134,7 @@ def run(
     run_id: str | None = None,
     supplied_content: dict[str, Any] | None = None,
     test_case: dict[str, Any] | None = None,
+    interactive: bool = False,
 ) -> PresentationState:
     """Run the pipeline end-to-end and return the final state."""
     from src.utils.logging_config import setup_logging, set_context
@@ -151,6 +152,7 @@ def run(
         critic_mode=critic_mode,
         supplied_content=supplied_content,
         test_case=test_case,
+        interactive=interactive,
     )
 
     app = compile_graph()
@@ -168,7 +170,7 @@ if __name__ == "__main__":
     import sys
 
     request = sys.argv[1] if len(sys.argv) > 1 else "Create a simple title slide"
-    result = run(request)
+    result = run(request, interactive=True)
 
     print("\n== Final State ==")
     print(f"  run_id:      {result.get('run_id')}")

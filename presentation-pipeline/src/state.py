@@ -81,6 +81,7 @@ class PresentationState(TypedDict, total=False):
     deck_min_threshold: int
 
     # ── Input (written once at start) ──
+    interactive: bool
     raw_request: str
     test_case: dict[str, Any] | None
     supplied_content: dict[str, Any] | None
@@ -130,12 +131,14 @@ def initial_state(
     deck_min_threshold: int = 3,
     critic_mode: Literal["auto", "manual", "off"] = "auto",
     retry_budget: int = 3,
+    interactive: bool = False,
 ) -> PresentationState:
     """Create a fully-initialized starting state for the graph."""
     return PresentationState(
         run_id=run_id,
         mode="single",
         deck_min_threshold=deck_min_threshold,
+        interactive=interactive,
         raw_request=raw_request,
         test_case=test_case,
         supplied_content=supplied_content,

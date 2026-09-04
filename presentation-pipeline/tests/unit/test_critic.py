@@ -2,9 +2,9 @@
 
 from unittest.mock import MagicMock, patch
 
-from src.agents.critic import critic_node, _render_prompts
+from src.agents.critic import critic_node, _render_prompts, _format_issues_for_display, _manual_checkpoint
 from src.agents.critic_schema import CriticIssue, CriticOutput
-from src.state import initial_state
+from src.state import CriticResult, initial_state
 
 
 GOOD_XML = """\
@@ -136,13 +136,102 @@ def test_render_prompts_empty_plan():
     assert "Component Completeness" in system
 
 
-# ── Manual mode ──────────────────────────────────────────────────────────
+# ── Manual mode — non-interactive (tests, no CLI) ────────────────────────
 
-def test_critic_manual_mode_passes():
-    state = _make_state(critic_mode="manual")
+@patch("src.agents.critic.get_llm")
+def test_critic_manual_non_interactive_passes_clean(mock_get_llm):
+    mock_get_llm.return_value = _mock_critic_output(issues=[])
+    state = _make_state(critic_mode="manual", interactive=False)
     result = critic_node(state)
     assert result["critic_result"]["passed"] is True
     assert result["critic_result"]["issues"] == []
+
+
+@patch("src.agents.critic.get_llm")
+def test_critic_manual_non_interactive_fails_on_high(mock_get_llm):
+    mock_get_llm.return_value = _mock_critic_output(issues=[
+        CriticIssue(severity="high", type="completeness",
+                    description="Missing chart.", fix="Add Chart."),
+    ])
+    state = _make_state(critic_mode="manual", interactive=False)
+    result = critic_node(state)
+    assert result["critic_result"]["passed"] is False
+
+
+# ── Manual mode — interactive Accept ─────────────────────────────────────
+
+@patch("builtins.input", side_effect=["a"])
+@patch("src.agents.critic.get_llm")
+def test_critic_manual_accept(mock_get_llm, mock_input):
+    mock_get_llm.return_value = _mock_critic_output(issues=[
+        CriticIssue(severity="medium", type="theme",
+                    description="Hardcoded color.", fix="Use $token."),
+    ])
+    state = _make_state(critic_mode="manual", interactive=True)
+    result = critic_node(state)
+    assert result["critic_result"]["passed"] is True
+    assert len(result["critic_result"]["issues"]) == 1
+
+
+# ── Manual mode — interactive Reject ─────────────────────────────────────
+
+@patch("builtins.input", side_effect=["r"])
+@patch("src.agents.critic.get_llm")
+def test_critic_manual_reject(mock_get_llm, mock_input):
+    mock_get_llm.return_value = _mock_critic_output(issues=[
+        CriticIssue(severity="medium", type="theme",
+                    description="Hardcoded color.", fix="Use $token."),
+    ])
+    state = _make_state(critic_mode="manual", interactive=True)
+    result = critic_node(state)
+    assert result["critic_result"]["passed"] is False
+    assert any("[User rejected]" in i["description"] for i in result["critic_result"]["issues"])
+
+
+# ── Manual mode — interactive Edit ───────────────────────────────────────
+
+@patch("builtins.input", side_effect=["e", "Make the title bigger"])
+@patch("src.agents.critic.get_llm")
+def test_critic_manual_edit(mock_get_llm, mock_input):
+    mock_get_llm.return_value = _mock_critic_output(issues=[
+        CriticIssue(severity="low", type="structure",
+                    description="Minor nesting.", fix="Flatten."),
+    ])
+    state = _make_state(critic_mode="manual", interactive=True)
+    result = critic_node(state)
+    assert result["critic_result"]["passed"] is False
+    assert any("Make the title bigger" in i["description"] for i in result["critic_result"]["issues"])
+    assert any(i["severity"] == "high" for i in result["critic_result"]["issues"])
+
+
+# ── Format issues helper ─────────────────────────────────────────────────
+
+def test_format_issues_empty():
+    text = _format_issues_for_display([])
+    assert "No issues" in text
+
+
+def test_format_issues_shows_severity():
+    issues = [
+        {"severity": "high", "type": "completeness", "description": "Missing chart.", "fix": "Add Chart."},
+        {"severity": "low", "type": "theme", "description": "Minor.", "fix": "Fix."},
+    ]
+    text = _format_issues_for_display(issues)
+    assert "[HIGH]" in text
+    assert "[LOW]" in text
+    assert "Missing chart" in text
+
+
+# ── Manual checkpoint unit tests ─────────────────────────────────────────
+
+def test_manual_checkpoint_non_interactive_auto_decides():
+    issues = [{"severity": "medium", "type": "theme", "description": "x", "fix": "y"}]
+    result = _manual_checkpoint(issues, interactive=False)
+    assert result["passed"] is True
+
+    issues_high = [{"severity": "high", "type": "completeness", "description": "x", "fix": "y"}]
+    result = _manual_checkpoint(issues_high, interactive=False)
+    assert result["passed"] is False
 
 
 # ── Auto mode — clean pass ───────────────────────────────────────────────
