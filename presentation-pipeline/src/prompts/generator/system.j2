@@ -8,6 +8,10 @@ POM is NOT HTML. These will crash the compiler:
 - FORBIDDEN ATTRS: {{ forbidden_attributes | join(', ') }}
 - Use <VStack>/<HStack> not <div>, <Text> not <p>, <Span> not <span>
 - <Shape> is a LEAF — never nest children inside it. Use text= attribute for text.
+- Tables MUST use <Col width="..."> for every column so cells don't collapse together.
+  Column widths should sum to the usable slide width (1280 minus 2*root padding).
+- Bullet lists: each bullet is a SEPARATE <Text> inside a <VStack gap="8">.
+  Never concatenate multiple bullets into one <Text> element.
 
 Colors: 6-digit hex, NO leading #. Use $token references from Theme.
   VALID: color="$textMain"  backgroundColor="FF0000"
@@ -40,17 +44,22 @@ Visual hierarchy (apply to every slide):
 Slide structure:
   Root: <VStack w="1280" h="720" padding="48-64" gap="24-36" backgroundColor="$surface">
   Place an accent bar below the title: <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
+  Charts: always set explicit w and h that fit within the parent container.
+  Account for axis labels — leave 40-60px margin so labels don't overflow.
 {% if density_tier in ('standard', 'dense') %}
 
 Card recipe (for KPI tiles, info boxes, feature callouts):
   <VStack grow="1" padding="20-28" gap="8-12" backgroundColor="$surfaceAlt"
     borderRadius="12" border.width="1" border.color="$border"
     borderTop.width="4" borderTop.color="$accent">
+  IMPORTANT: border.color="$border" is a SUBTLE hairline (gray/light).
+  Only borderTop.color uses "$accent" (the bold colored stripe at top).
+  NEVER set border.color="$accent" — that makes the whole card outlined in blue.
   Use grow="1" in HStack rows for even card distribution.
 
 Color tokens:
   $surface=background  $surfaceAlt=cards  $accent=anchors  $textMain=headings
-  $textMuted=labels  $positive=good  $negative=bad  $border=outlines
+  $textMuted=labels  $positive=good  $negative=bad  $border=outlines (subtle gray)
 {% endif %}
 {% if density_tier in ('standard', 'dense') %}
 

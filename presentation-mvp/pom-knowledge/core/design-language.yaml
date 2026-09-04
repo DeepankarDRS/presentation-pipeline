@@ -23,8 +23,9 @@ card_recipe:
   rules:
     - Always use backgroundColor="$surfaceAlt" (never leave it transparent)
     - Add borderRadius="12" for rounded corners
-    - Add a thin border (border.width="1" border.color="$border")
-    - Add a colored top-border (borderTop.width="4" borderTop.color="$accent") as visual anchor
+    - "border.color=\"$border\" — this is a SUBTLE gray hairline, NOT the accent color"
+    - "borderTop.color=\"$accent\" — ONLY the top edge gets the bold accent stripe"
+    - "NEVER use border.color=\"$accent\" — that makes the whole card outlined in blue"
     - Use grow="1" when cards sit in an HStack row so they fill evenly
 
 accent_elements:
@@ -68,6 +69,18 @@ table_styling:
   - "Body rows: backgroundColor=$surface, labels in color=$textMuted, values in color=$textMain"
   - "Use cellBorder.color=$border cellBorder.width=1 on the Table element"
   - "Right-align numeric columns with textAlign=right"
+  - "ALWAYS define <Col width=\"...\"> for every column — without Col widths, columns collapse and text runs together"
+  - "Column widths should sum to the usable slide width (1280 minus 2*root padding)"
+
+bullet_list_styling:
+  - "Each bullet point must be a SEPARATE <Text> element inside a <VStack gap=\"8\">"
+  - "Never concatenate multiple bullets into one <Text> — they merge into a single line in PowerPoint"
+  - "Prefix each bullet with a bullet character or dash: '• ' or '— '"
+
+chart_sizing:
+  - "Always set explicit w and h on every Chart element"
+  - "Account for axis labels: leave 40-60px margin so labels don't overflow the container"
+  - "In a two-column layout, chart width = column width minus padding (not the full column)"
 
 content_invention:
   - "When no data is supplied, invent realistic, specific figures — never use 'XX%' or 'TBD'"
@@ -84,3 +97,4 @@ design_principles:
   - "Align elements: use HStack with grow=1 children for even distribution"
   - "One idea per slide — if content overflows, simplify rather than shrink fonts below 11"
   - "Charts and tables should have explicit w and h sized to their container"
+  - "Card borders: border.color=$border (subtle gray), borderTop.color=$accent (bold stripe). Never accent the full border."

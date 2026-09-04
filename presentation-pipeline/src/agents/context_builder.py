@@ -306,6 +306,17 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
             notes.append(rule)
         for principle in design.get("design_principles", []):
             notes.append(principle)
+        for rule in design.get("card_recipe", {}).get("rules", []):
+            notes.append(rule)
+        for rule in design.get("bullet_list_styling", []):
+            notes.append(rule)
+        if any(k in kinds for k in ("chart", "kpi_row")):
+            for rule in design.get("chart_sizing", []):
+                notes.append(rule)
+        if "table" in kinds:
+            for rule in design.get("table_styling", []):
+                if "Col" in rule or "column" in rule.lower():
+                    notes.append(rule)
 
     return notes
 
