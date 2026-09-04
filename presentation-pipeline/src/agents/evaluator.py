@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import json
 import logging
-import shutil
 from pathlib import Path
 from typing import Any
 
@@ -60,28 +59,20 @@ def _build_step_summary(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return steps
 
 
-def _write_manifest(manifest: dict[str, Any], run_id: str, pptx_src: str | None = None) -> tuple[str | None, str | None]:
-    """Write run-manifest.json and copy .pptx to output/runs/{run_id}/."""
+def _write_manifest(manifest: dict[str, Any], run_id: str) -> str | None:
+    """Write run-manifest.json to output/runs/{run_id}/."""
     output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id
-    copied_pptx: str | None = None
     try:
         output_dir.mkdir(parents=True, exist_ok=True)
-
-        if pptx_src and Path(pptx_src).is_file():
-            dest = output_dir / "output.pptx"
-            shutil.copy2(pptx_src, dest)
-            copied_pptx = str(dest)
-            manifest["pptx_path"] = copied_pptx
-
         manifest_path = output_dir / "run-manifest.json"
         manifest_path.write_text(
             json.dumps(manifest, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        return str(manifest_path), copied_pptx
+        return str(manifest_path)
     except OSError as e:
         logger.warning(f"evaluator: failed to write manifest: {e}")
-        return None, None
+        return None
 
 
 def evaluator_node(state: PresentationState) -> dict[str, Any]:
@@ -140,12 +131,9 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
         "warnings": compile_result.get("warnings", []),
     }
 
-    pptx_src = compile_result.get("pptx_path")
-    manifest_path, copied_pptx = _write_manifest(manifest, run_id, pptx_src)
+    manifest_path = _write_manifest(manifest, run_id)
     if manifest_path:
         logger.info(f"evaluator: manifest written to {manifest_path}")
-    if copied_pptx:
-        logger.info(f"evaluator: pptx copied to {copied_pptx}")
 
     logger.info(
         f"evaluator: passed={passed}, retries={state.get('retry_count', 0)}, "
@@ -154,6 +142,6 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
 
     return {
         "evaluation": manifest,
-        "pptx_path": copied_pptx or pptx_src,
+        "pptx_path": compile_result.get("pptx_path"),
         "passed": passed,
     }

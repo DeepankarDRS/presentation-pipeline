@@ -17,7 +17,6 @@ Writes: normalize_result, validate_result, compile_result
 from __future__ import annotations
 
 import logging
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -44,7 +43,8 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         }
 
     run_id = state.get("run_id", "unknown")
-    output_dir = Path(tempfile.gettempdir()) / "pom-pipeline" / run_id
+    _pipeline_root = Path(__file__).resolve().parent.parent.parent
+    output_dir = _pipeline_root / "output" / "runs" / run_id
     attempt = state.get("retry_count", 0)
     if attempt > 0:
         output_dir = output_dir / f"retry-{attempt}"

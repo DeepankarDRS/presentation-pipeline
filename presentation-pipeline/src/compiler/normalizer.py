@@ -53,6 +53,9 @@ _SPACING_RE = re.compile(r'\bspacing\s*=\s*"([^"]*)"')
 _FONTWEIGHT_RE = re.compile(r'\bfontWeight\s*=\s*"([^"]*)"')
 _GRADIENT_RE = re.compile(r"[A-Za-z]*[Gg]radient\s*=\s*\"[^\"]*\"")
 _COL_RE = re.compile(r"<Col\b[^>]*/?>", re.IGNORECASE)
+_BORDER_ACCENT_RE = re.compile(
+    r'(?<!\w)(border\.color)\s*=\s*"\$accent(?:Alt)?"'
+)
 
 _OBJECT_ATTR_BASES: set[str] = {
     "border", "borderTop", "borderRight", "borderBottom", "borderLeft",
@@ -121,6 +124,15 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
         issues.append({
             "code": "FONTWEIGHT_TO_BOLD",
             "message": f"Replaced {len(fontweight_hits)} 'fontWeight' attribute(s) with 'bold=\"true\"'.",
+            "auto_fixed": True,
+        })
+
+    border_accent_hits = list(_BORDER_ACCENT_RE.finditer(xml))
+    if border_accent_hits:
+        xml = _BORDER_ACCENT_RE.sub(r'border.color="$border"', xml)
+        issues.append({
+            "code": "BORDER_ACCENT_FIX",
+            "message": f"Fixed {len(border_accent_hits)} border.color using accent token — replaced with $border.",
             "auto_fixed": True,
         })
 

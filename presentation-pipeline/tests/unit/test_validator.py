@@ -101,6 +101,15 @@ def test_normalize_removes_zero_spacing():
     assert 'padding="0"' not in result["cleaned_xml"]
 
 
+def test_normalize_fixes_border_accent():
+    xml = '<VStack border.width="1" border.color="$accent" borderTop.width="4" borderTop.color="$accent">'
+    result = normalize_xml(xml)
+    assert 'border.color="$border"' in result["cleaned_xml"]
+    assert 'borderTop.color="$accent"' in result["cleaned_xml"]
+    codes = [i["code"] for i in result["issues"]]
+    assert "BORDER_ACCENT_FIX" in codes
+
+
 # ── Pre-validate fallback tests ───────────────────────────────────────────
 
 def test_pre_validate_detects_html_tags():
