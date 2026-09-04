@@ -1,0 +1,35 @@
+# Enterprise test case: Comparison matrix + table side by side
+# Tests matrix component alongside a detail table on the same slide.
+name: comparison-matrix
+phase: AC
+objective: Compare four strategic initiatives on impact vs effort, with a detail table alongside.
+request: >
+  A prioritization slide with bold title "Initiative Prioritization — Q4 FY26".
+  Two balanced columns: left a 2x2 matrix with axes "Business Impact" (y-axis)
+  and "Implementation Effort" (x-axis), placing four initiatives in the
+  quadrants. Right a table listing the same four initiatives with columns for
+  Initiative, Owner, Timeline, and Status. Keep the layout clean on 1280x720.
+theme: violet-modern
+components:
+  - title
+  - matrix
+  - table
+supplied_content:
+  title: "Initiative Prioritization — Q4 FY26"
+  matrix_x_axis: "Implementation Effort"
+  matrix_y_axis: "Business Impact"
+  matrix_items:
+    - { label: "AI Copilot", quadrant: "high-impact-low-effort" }
+    - { label: "Platform Rewrite", quadrant: "high-impact-high-effort" }
+    - { label: "Dark Mode", quadrant: "low-impact-low-effort" }
+    - { label: "SOC2 Type II", quadrant: "low-impact-high-effort" }
+  table_columns: [Initiative, Owner, Timeline, Status]
+  table_rows:
+    - ["AI Copilot", "Sarah C.", "Q4 FY26", "In Progress"]
+    - ["Platform Rewrite", "Marcus W.", "Q1-Q2 FY27", "Planning"]
+    - ["Dark Mode", "Design Team", "Q4 FY26", "Scoped"]
+    - ["SOC2 Type II", "Security", "Q1 FY27", "Not Started"]
+content_source: All initiative names, owners, timelines, and quadrant placements supplied
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Shape, Matrix, MatrixAxes, MatrixQuadrants, MatrixItem, Table, Col, Tr, Td]
