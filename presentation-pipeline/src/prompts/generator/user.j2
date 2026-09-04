@@ -1,0 +1,26 @@
+OBJECTIVE: {{ objective }}
+
+COMPONENTS:
+{% for comp in components %}
+- {{ comp.kind }}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
+
+{% endfor %}
+DENSITY: {{ density }} | FONT TIER: {{ font_tier }}
+
+LAYOUT: {{ layout_hint }}
+{% if content_data %}
+
+DATA:
+{% for key, value in content_data.items() %}
+{{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if supplied_content %}
+
+SUPPLIED CONTENT (use these values EXACTLY):
+{% for key, value in supplied_content.items() %}
+{{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+
+Generate the POM XML for this slide. Start with the Theme element, then Slide.

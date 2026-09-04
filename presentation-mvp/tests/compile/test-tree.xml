@@ -1,0 +1,29 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface">
+    <Text fontSize="28" bold="true" color="$textMain">Organization Chart</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <Tree layout="vertical" w="1100" h="500"
+            nodeShape="roundRect" textColor="FFFFFF"
+            nodeWidth="140" nodeHeight="45"
+            levelGap="60" siblingGap="24"
+            connectorStyle.color="94A3B8" connectorStyle.width="2">
+        <TreeItem label="CEO" color="1E3A8A">
+          <TreeItem label="CTO" color="2563EB">
+            <TreeItem label="Engineering" color="3B82F6" />
+            <TreeItem label="Product" color="3B82F6" />
+          </TreeItem>
+          <TreeItem label="CFO" color="2563EB">
+            <TreeItem label="Finance" color="3B82F6" />
+            <TreeItem label="Legal" color="3B82F6" />
+          </TreeItem>
+          <TreeItem label="COO" color="2563EB">
+            <TreeItem label="Operations" color="3B82F6" />
+          </TreeItem>
+        </TreeItem>
+      </Tree>
+    </VStack>
+  </VStack>
+</Slide>

@@ -1,0 +1,13 @@
+<Theme surface="0F172A" surfaceAlt="1E293B" accent="3B82F6" accentAlt="38BDF8" positive="22C55E" negative="EF4444" warning="F59E0B" textMain="F8FAFC" textMuted="94A3B8" border="334155" />
+<Slide>
+  <VStack w="1280" h="720" padding="72" gap="20" backgroundColor="$surface" justifyContent="center" alignItems="start">
+    <Text fontSize="18" bold="true" color="$accent" letterSpacing="2">Q3 FY26 BUSINESS REVIEW</Text>
+    <Text fontSize="52" bold="true" color="$textMain">Growth held, efficiency improved</Text>
+    <Shape shapeType="rect" w="140" h="6" backgroundColor="$accent" />
+    <Text fontSize="20" color="$textMuted" lineHeight="1.5" w="980">A dense read of the quarter: headline metrics, revenue and margin trajectory, segment and regional detail, and the pipeline picture heading into Q4.</Text>
+    <HStack gap="10" alignItems="center">
+      <Shape shapeType="ellipse" w="10" h="10" backgroundColor="$textMuted" />
+      <Text fontSize="15" italic="true" color="$textMuted">Prepared for the executive team &#183; figures illustrative</Text>
+    </HStack>
+  </VStack>
+</Slide>

@@ -1,0 +1,32 @@
+# Post-MVP test case: ProcessArrow with 6 steps and descriptive text below.
+name: process-arrow-onboarding
+phase: post-mvp
+objective: Show a 6-step customer onboarding process as horizontal chevron arrows with descriptions.
+request: >
+  A process flow slide. Title "Customer Onboarding Journey" with subtitle
+  "Average completion: 14 days". A horizontal chevron arrow process spanning
+  the full slide width with 6 steps. Each step has a short label on the arrow
+  and a 1-line description below. Use a gradient of blues from left (darkest)
+  to right (lightest) to show progression. Bold white text on each chevron.
+  Below the arrows, add a text line noting "SLA: each step ≤ 3 business days".
+  Corporate-slate theme.
+theme: corporate-slate
+components:
+  - title
+  - process_arrow
+  - narrative
+supplied_content:
+  title: "Customer Onboarding Journey"
+  subtitle: "Average completion: 14 days"
+  steps:
+    - { label: "Sign-Up",     description: "Account creation & email verification" }
+    - { label: "KYC Review",  description: "Identity verification & compliance" }
+    - { label: "Setup",       description: "Workspace config & integrations" }
+    - { label: "Training",    description: "Live demo & self-serve guides" }
+    - { label: "Pilot",       description: "30-day trial with success manager" }
+    - { label: "Go Live",     description: "Production cutover & monitoring" }
+  footer: "SLA: each step ≤ 3 business days"
+content_source: Steps and descriptions supplied; colors invented.
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, Text, Shape, ProcessArrow, ProcessArrowStep]

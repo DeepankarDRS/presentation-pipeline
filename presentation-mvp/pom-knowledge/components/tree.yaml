@@ -1,0 +1,65 @@
+# pom-knowledge/components/tree.yaml
+# <Tree> + <TreeItem>. Post-MVP.
+# Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+
+meta:
+  phase: post_mvp
+  nodes: [Tree, TreeItem]
+
+description: >
+  A hierarchical tree / org chart. One <Tree> wraps a single root <TreeItem>,
+  which nests child <TreeItem> nodes recursively. Use for org charts, decision
+  trees, category hierarchies, or any parent-child structure.
+
+structure: |
+  <Tree layout="vertical" w="1000" h="500"
+        nodeShape="roundRect" textColor="FFFFFF"
+        nodeWidth="140" nodeHeight="50"
+        levelGap="60" siblingGap="24"
+        connectorStyle.color="94A3B8" connectorStyle.width="2">
+    <TreeItem label="CEO" color="1E3A8A">
+      <TreeItem label="CTO" color="2563EB">
+        <TreeItem label="Engineering" color="3B82F6" />
+        <TreeItem label="Product" color="3B82F6" />
+        <TreeItem label="Design" color="3B82F6" />
+      </TreeItem>
+      <TreeItem label="CFO" color="2563EB">
+        <TreeItem label="Finance" color="3B82F6" />
+        <TreeItem label="Legal" color="3B82F6" />
+      </TreeItem>
+      <TreeItem label="COO" color="2563EB">
+        <TreeItem label="Operations" color="3B82F6" />
+        <TreeItem label="HR" color="3B82F6" />
+      </TreeItem>
+    </TreeItem>
+  </Tree>
+
+Tree_attributes:
+  layout:         { type: enum, values: [vertical, horizontal], default: vertical }
+  nodeShape:      { type: enum, values: [rect, roundRect, ellipse], default: roundRect }
+  textColor:      { type: hex, default: "FFFFFF", note: "Default text color for all nodes" }
+  nodeWidth:      { type: number, default: 120 }
+  nodeHeight:     { type: number, default: 40 }
+  levelGap:       { type: number, default: 60, note: "Vertical gap between tree levels" }
+  siblingGap:     { type: number, default: 20, note: "Horizontal gap between sibling nodes" }
+  connectorStyle: { type: object, note: "connectorStyle.color, connectorStyle.width" }
+  w:              { type: number, note: "Explicit width — required" }
+  h:              { type: number, note: "Explicit height — required" }
+
+TreeItem_attributes:
+  label:     { type: string, required: true, note: "Node display label" }
+  color:     { type: hex, note: "Node fill color (overrides parent level)" }
+  textColor: { type: hex, note: "Override tree-level textColor for this node" }
+
+notes:
+  - "TreeItem is the one self-referencing node type — TreeItem nests inside TreeItem."
+  - "Tree must have exactly one root TreeItem."
+  - "Tree needs explicit w and h."
+  - "Use different color values per level for visual hierarchy (darker = higher level)."
+  - "3-4 levels deep works well. Deeper trees need larger w/h to avoid cramping."
+
+pitfalls:
+  - "Tree must have exactly one root TreeItem — multiple roots will fail."
+  - "label is required on every TreeItem."
+  - "Missing w/h on Tree — will not render correctly."
+  - "Deep trees (5+ levels) with many siblings can overflow the given w/h."

@@ -1,0 +1,28 @@
+# Phase D test case. Consumed by slide_ir.from_test_case().
+name: architecture-diagram
+phase: D
+objective: Show a system architecture with connected boxes using Layer, Arrow, and Line.
+request: >
+  An architecture diagram slide. Title "System Architecture" at top-left with a
+  blue accent line below it. Three tiers of rounded-rect boxes positioned with
+  Layer: a Client App on the left, an API Gateway in the center, and two services
+  (Auth, Data) on the right stacked vertically, plus a database below the Data
+  service. Connect them with arrows flowing left to right, and data service to
+  database going down. Use blue for client, cyan for gateway, teal for services,
+  dark slate for infrastructure.
+theme: corporate-slate
+components:
+  - title
+  - layer
+supplied_content:
+  title: "System Architecture"
+  boxes:
+    - { id: client, label: "Client App" }
+    - { id: gateway, label: "API Gateway" }
+    - { id: auth, label: "Auth Service" }
+    - { id: data, label: "Data Service" }
+    - { id: db, label: "PostgreSQL" }
+content_source: Architecture components supplied; positions and colors invented.
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, Layer, Text, Shape, Arrow, Line]

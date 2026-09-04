@@ -1,0 +1,22 @@
+# Phase 5 test case #6. Consumed by slide_ir.from_test_case().
+# NOTE: Chart is a Phase B node (see single-chart.yaml).
+name: chart-and-narrative
+phase: B
+objective: Pair a trend chart with a short written read of what it shows.
+request: >
+  A two-column slide. Bold title across the top. Left column: a line chart of
+  monthly active users over the last twelve months, growing then flattening.
+  Right column: two or three sentences of narrative interpreting the trend -
+  early growth, recent plateau, and the planned response.
+theme: violet-modern
+components:
+  - title
+  - chart
+  - narrative
+supplied_content:
+  chart_type: line
+  topic: "Monthly active users, trailing 12 months"
+content_source: Topic and chart type supplied; data points and narrative invented (growth then plateau)
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Chart, ChartSeries, ChartDataPoint]

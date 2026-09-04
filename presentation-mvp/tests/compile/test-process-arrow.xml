@@ -1,0 +1,18 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="32" backgroundColor="$surface">
+    <Text fontSize="28" bold="true" color="$textMain">Design Thinking Process</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <ProcessArrow direction="horizontal" w="1100" h="100" itemWidth="200" itemHeight="80" fontSize="16" bold="true">
+        <ProcessArrowStep label="Empathize" color="6D28D9" textColor="FFFFFF" />
+        <ProcessArrowStep label="Define" color="7C3AED" textColor="FFFFFF" />
+        <ProcessArrowStep label="Ideate" color="8B5CF6" textColor="FFFFFF" />
+        <ProcessArrowStep label="Prototype" color="A78BFA" textColor="FFFFFF" />
+        <ProcessArrowStep label="Test" color="C4B5FD" textColor="1E293B" />
+      </ProcessArrow>
+    </VStack>
+    <Text fontSize="13" color="$textMuted" textAlign="center">Stanford d.school framework — iterative, non-linear</Text>
+  </VStack>
+</Slide>

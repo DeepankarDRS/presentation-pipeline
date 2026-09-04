@@ -1,0 +1,263 @@
+# POM XML Generation MVP — New Chat Handoff Context
+
+> Paste this message at the start of the new chat, then attach `plan.md` and `llm.txt`.
+> This document tells Claude everything it needs to start writing code immediately.
+
+---
+
+## What We Are Building
+
+An MVP that proves one hypothesis:
+
+> **Selective, component-specific POM context fed to an LLM produces more accurate POM XML than sending the full 12,000-token `llm.txt` reference document.**
+
+The output is a CLI tool that takes a natural-language slide request and produces a compiled `.pptx` file using `@hirokisakabe/pom`.
+
+---
+
+## Confirmed Technology Stack
+
+| Layer | Technology | Detail |
+|-------|-----------|--------|
+| LLM | OpenAI GPT-4o / GPT-4.1 | Chat Completions API, temperature=0.2 |
+| POM Compiler | `@hirokisakabe/pom` v10.3.0 | `buildPptx(xml, { w: 1280, h: 720 })` |
+| Python | 3.11.9 | pip + venv, pydantic (new install) |
+| Node.js | Current (ESM) | `compile-pom.js` as compiler subprocess |
+| OpenAI SDK (Node) | `openai` ^7.5.0 | In package.json |
+| Interface | CLI only | `python generate.py --request "..." --output ./output` |
+| Slide size | 1280 × 720 | POM default |
+| Theme | Included | `<Theme>` tokens in every generated slide |
+| Preview | PPTX-only | No pptx-glimpse — open manually in PowerPoint |
+| Retry | 1 attempt | Error diagnostics passed back to LLM |
+| Evaluation | JSON | `evaluation.json` per run |
+| Deck mode | Deferred | Plan for it, build after single-slide works |
+
+---
+
+## Critical Implementation Constraints
+
+### 1. Clean-Slate Implementation
+- No existing codebase to reference or extend
+- Write every file from scratch
+- No hardcoded paths anywhere — everything relative or from env vars
+
+### 2. Portable / Importable
+- Code will be written in this session and transferred to a different computer for testing
+- Must work on Windows (target machine) — use `path.join()` not forward-slash strings
+- All config in `.env` file — never hardcode API keys or model names
+
+### 3. No Live API Testing
+- OpenAI API key is on a different computer — do NOT call the API during development
+- Write complete, correct code that can be tested immediately on import
+- Include `.env.example` with placeholder values
+- Include a `--dry-run` flag on `generate.py` that skips the LLM call and uses a hardcoded sample XML instead — this lets the compiler and evaluator be tested without an API key
+
+### 4. No Existing PoC
+- Previous PoC was a simple 2-file script (user.txt + llm.txt → LLM → XML) on a different machine
+- We are NOT migrating or adapting it — full new implementation
+
+---
+
+## Confirmed POM Error Shapes
+
+These were confirmed by running tests against `@hirokisakabe/pom` v10.3.0.
+The compiler wrapper must handle exactly these three shapes:
+
+### Type 1 — Unknown Tag (ParseXmlError)
+```
+ParseXmlError: XML validation failed (1 error):
+  - Unknown tag: <br>
+error.name === "ParseXmlError"
+error.errors === [ 'Unknown tag: <br>' ]
+```
+
+### Type 2 — Unknown Attribute (ParseXmlError)
+```
+ParseXmlError: XML validation failed (1 error):
+  - <Text>: Unknown attribute "className"
+error.name === "ParseXmlError"
+error.errors === [ '<Text>: Unknown attribute "className"' ]
+```
+
+### Type 3 — Invalid Value (Render Error)
+```
+Error: addTextBox: width must be a finite positive EMU value
+error.name === "Error" (regular Error, no .errors array)
+error.message contains "must be a finite positive"
+```
+
+---
+
+## The Core Failure Pattern (Why We're Building This)
+
+The previous PoC consistently failed because the LLM **leaks HTML/CSS mental models into POM XML**:
+
+| LLM generates (wrong) | POM expects (correct) |
+|----------------------|----------------------|
+| `<br/>`, `<div>`, `<p>` | `<Text>`, `<VStack>`, `<HStack>` |
+| `style="..."`, `class="..."` | Individual POM attributes |
+| `className`, `onClick` | (don't exist in POM) |
+| `width`, `height` | `w`, `h` |
+| `#FF0000` | `FF0000` (no `#` prefix) |
+| `w="0"`, `h="0"` | Must be > 0 |
+
+The selective prompt strategy fixes this with an explicit **FORBIDDEN** blocklist before any reference material.
+
+---
+
+## Project File Structure (Build This Exactly)
+
+```
+presentation-mvp/
+├── .env.example
+├── .env                          ← gitignored, user creates from example
+├── requirements.txt
+├── package.json
+│
+├── python/
+│   ├── generate.py               ← CLI entry point
+│   ├── config.py                 ← all env vars and settings
+│   ├── models.py                 ← Pydantic models
+│   ├── llm_client.py             ← OpenAI Chat Completions wrapper
+│   ├── context_selector.py       ← loads YAML knowledge base files
+│   ├── prompt_builder.py         ← builds baseline + selective prompts
+│   ├── pre_validator.py          ← XML sanitizer before compilation
+│   ├── compiler_client.py        ← subprocess: node compile-pom.js
+│   └── evaluator.py              ← scores results → evaluation.json
+│
+├── node/
+│   ├── compile-pom.js            ← thin buildPptx() wrapper
+│   └── package.json              ← { "@hirokisakabe/pom": "^10.3.0" }
+│
+├── pom-knowledge/
+│   ├── core/
+│   │   ├── document.yaml
+│   │   ├── nodes.yaml
+│   │   ├── attributes.yaml
+│   │   └── validation.yaml
+│   ├── components/
+│   │   ├── text.yaml
+│   │   ├── shape.yaml
+│   │   ├── chart.yaml
+│   │   ├── table.yaml
+│   │   ├── list.yaml
+│   │   ├── image.yaml
+│   │   └── kpi.yaml
+│   ├── layouts/
+│   │   ├── title-content.yaml
+│   │   ├── kpi-row.yaml
+│   │   ├── two-column.yaml
+│   │   ├── chart-table.yaml
+│   │   └── full-width-chart.yaml
+│   ├── theme/
+│   │   └── default.yaml
+│   └── examples/
+│       ├── minimal-slide.xml
+│       ├── text-slide.xml
+│       ├── kpi-slide.xml
+│       ├── chart-slide.xml
+│       ├── table-slide.xml
+│       └── mixed-slide.xml
+│
+├── tests/
+│   └── cases/
+│       ├── text-only.yaml
+│       ├── title-and-narrative.yaml
+│       ├── kpi-row.yaml
+│       ├── single-chart.yaml
+│       ├── single-table.yaml
+│       ├── chart-and-narrative.yaml
+│       ├── table-and-narrative.yaml
+│       ├── chart-and-table.yaml
+│       └── mixed-executive-slide.yaml
+│
+└── output/                       ← gitignored, created at runtime
+```
+
+---
+
+## Build Order (Follow This Exactly)
+
+### Phase 1 — Day 1: Node.js Compiler (build first, everything depends on it)
+1. `node/package.json` — just the POM dependency
+2. `node/compile-pom.js` — reads XML path from argv, calls buildPptx(), writes compile-result.json
+3. `pom-knowledge/examples/minimal-slide.xml` — simplest valid slide that compiles
+4. `pom-knowledge/examples/text-slide.xml` — title + body text slide
+5. `pom-knowledge/examples/kpi-slide.xml` — KPI tiles with Shape dots
+6. Verify each example compiles: `node node/compile-pom.js pom-knowledge/examples/minimal-slide.xml output/test/`
+
+### Phase 2 — Day 2: Knowledge Base YAML files
+Build all YAML files in `pom-knowledge/`. Curated from the attached `llm.txt`.
+
+### Phase 3 — Day 3: Python core modules
+Build in this order: config.py → models.py → pre_validator.py → compiler_client.py → evaluator.py → llm_client.py
+
+### Phase 4 — Day 4: Context selection + prompt building
+Build: context_selector.py → prompt_builder.py → generate.py (wire everything)
+
+### Phase 5 — Day 5: Test cases + experiment
+Build all 9 test case YAML files, run baseline vs selective comparison.
+
+---
+
+## Key Design Decisions to Respect
+
+- `compile-pom.js` writes `compile-result.json` to the output dir and exits with code 0 (success) or 1 (failure)
+- `compiler_client.py` calls it via subprocess, reads the JSON, never parses Node errors from stderr
+- `generate.py --dry-run` skips LLM, uses `pom-knowledge/examples/text-slide.xml` as the "generated" XML — lets you test the full pipeline without an API key
+- `generate.py --strategy baseline|selective` switches between full llm.txt and selective context
+- Both strategies are implemented and compared — that's the whole point of the MVP
+- `evaluation.json` is machine-readable for later aggregation across test runs
+- All YAML example snippets in the knowledge base must be **compile-verified** (actually tested against buildPptx)
+- Use `pathlib.Path` throughout Python — never os.path string concatenation
+
+---
+
+## POM XML Rules (Enforce in Prompt and Pre-Validator)
+
+### Required structure
+```xml
+<Slide>
+  <Theme surface="0F172A" accent="3B82F6" textMain="F8FAFC" textMuted="94A3B8" />
+  <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="0F172A">
+    <!-- content nodes here -->
+  </VStack>
+</Slide>
+```
+
+### Hard rules
+- `<Slide>` is mandatory wrapper (breaking change in v10+)
+- `<Theme>` goes inside `<Slide>`, before layout nodes
+- Colors: 6-digit hex, NO `#` prefix
+- All dimensions: must be positive numbers (never 0)
+- `w="max"` fills available width, `w="50%"` is valid
+- Dot-notation for nested: `border.width="1"`, `border.color="334155"`, `border.radius="8"`
+- No HTML elements ever: `<br>`, `<div>`, `<p>`, `<span>`, `<hr>`
+- No HTML/CSS attributes ever: `style`, `class`, `className`, `width`, `height`, `font-size`
+
+### Phase A nodes only (for initial generation)
+```
+Slide, Theme, VStack, HStack, Text, B, I, Span, Mark, Shape
+```
+
+---
+
+## Attached Files
+
+When starting the new chat, attach both:
+1. `plan.md` — full architecture plan with all decisions
+2. `llm.txt` — complete POM XML reference documentation (12K tokens, 726 lines)
+
+Then say: **"Start with Phase 1, Day 1. Build compile-pom.js and the three verified example XML files."**
+
+---
+
+## What NOT to Do
+
+- Do NOT reference any old file paths (`C:\Users\deesharma\...`)
+- Do NOT attempt live API calls
+- Do NOT install pptx-glimpse — it's not needed
+- Do NOT use the Responses API — only `client.chat.completions.create()`
+- Do NOT use `os.path` — use `pathlib.Path` in Python
+- Do NOT hardcode any API keys, model names, or temperatures — all in `.env` / `config.py`
+- Do NOT write all files at once — follow the phase order, verify each phase works before moving on

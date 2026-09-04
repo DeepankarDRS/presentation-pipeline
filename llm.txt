@@ -1,0 +1,725 @@
+# pom XML Reference
+
+A compact reference for the pom XML format, designed to be pasted into LLM prompts.
+
+## Basics
+
+- Slide size: `{ w: 1280, h: 720 }` (px)
+- Colors: 6-digit hex (no `#` prefix) e.g. `FF0000`
+- Attribute values are written as strings. Numbers and booleans are auto-converted
+- Nested object attributes use dot notation (e.g. `fill.color="1D4ED8"`)
+- For shorthand + dot-notation attributes (e.g. `padding` + `padding.top`), both can be mixed on the same node. Shorthand sets defaults; dot-notation keys override per side/property.
+
+## Top-Level Structure
+
+The top level of every pom XML document is one or more `<Slide>` elements, optionally preceded by a single `<Theme>` element (see "Theme (Design Tokens)"). Each `<Slide>` wraps the content of a single slide.
+
+```xml
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24">
+    <Text fontSize="32" bold="true">Slide 1</Text>
+  </VStack>
+</Slide>
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24">
+    <Text fontSize="32" bold="true">Slide 2</Text>
+  </VStack>
+</Slide>
+```
+
+- Top-level elements other than `<Slide>` and `<Theme>` are an error.
+- A `<Slide>` must contain at least one child element.
+- `<Slide>` does not currently take attributes; per-slide properties (background, notes, etc.) are tracked separately.
+
+## Theme (Design Tokens)
+
+Declare a color palette once at the top level and reference each token from any color attribute as `$tokenName`. This keeps the palette in one place instead of repeating hex values on every node.
+
+```xml
+<Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" textMuted="94A3B8" />
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="16" backgroundColor="$surface">
+    <Text fontSize="28" color="$textMain" bold="true">Title</Text>
+    <Timeline dateColor="$textMuted" titleColor="$textMain" w="1000" h="120">
+      <TimelineItem date="Q1" title="Phase 1" color="$accent" />
+    </Timeline>
+  </VStack>
+</Slide>
+```
+
+- Each `<Theme>` attribute declares a token: the attribute name is the token name (letters, digits, `_`, `-`; must start with a letter), the value is a 6-digit hex color (`#` prefix optional).
+- At most one `<Theme>` per document; it applies to all slides regardless of position. Child elements are not allowed.
+- `$tokenName` references are resolved in color attributes (attributes ending in `Color`/`Colors`, `color` keys in object/JSON attributes, `highlight`) and inside `backgroundGradient` / `textGradient` strings. Other attributes and text content are never substituted.
+- Referencing an unknown token (or using `$token` without a `<Theme>`) is a validation error with a "did you mean" suggestion.
+
+## Common Attributes (All Nodes)
+
+| Attribute         | Type                                                       | Description                                |
+| ----------------- | ---------------------------------------------------------- | ------------------------------------------ |
+| `id`              | string                                                     | Unique identifier within the slide (used by `Arrow` connectors) |
+| `w`               | number / `"max"` / `"50%"`                                 | Width                                      |
+| `h`               | number / `"max"` / `"50%"`                                 | Height                                     |
+| `grow`            | positive number                                            | Flex grow ratio among siblings (CSS `flex-grow`). `grow="2"` and `grow="1"` produce a 2:1 split. Along the parent's main axis `w="max"` / `h="max"` behave as `grow="1"`; when both are specified, `grow` takes precedence |
+| `minW` `maxW`     | number                                                     | Min / max width                            |
+| `minH` `maxH`     | number                                                     | Min / max height                           |
+| `padding`         | number / `padding.top="8" padding.bottom="8"`              | Padding (shorthand + dot notation can be mixed) |
+| `backgroundColor` | hex                                                        | Background color                           |
+| `backgroundGradient` | `linear-gradient(135deg, #667EEA 0%, #764BA2 100%)` or `radial-gradient(circle at center, #1D4ED8 0%, #38BDF8 100%)` | Gradient background. **linear**: angle (`<n>deg` or `to right` etc., default `180deg`) + 2 or more stops. **radial**: optional `<shape>` (`circle` / `ellipse`, default `ellipse`) + optional `<size>` (`closest-side` / `closest-corner` / `farthest-side` / `farthest-corner`, default `farthest-corner`) + optional `at <position>` (`at center` / `at top right` / `at 25% 75%`, default `center`) + 2 or more stops. PowerPoint's radial fill does not visually distinguish `circle` / `ellipse` or the size keyword (only the center position affects output). Takes precedence over `backgroundColor`. On the slide root node it becomes the slide background |
+| `backgroundImage` | `backgroundImage.src="url" backgroundImage.sizing="cover"` | Background image                           |
+| `border`          | `border.color="333" border.width="1"`                      | Border (shorthand + dot notation can be mixed) |
+| `borderTop` `borderRight` `borderBottom` `borderLeft` | `borderLeft.color="1D4ED8" borderLeft.width="6"` | Per-side border with the same fields as `border`. Overrides `border` for that side (field-by-field). Useful for accent bars / underlined headings. Combinable with `borderRadius`: `borderTop` paints both upper corners in its color, `borderBottom` paints both lower corners. `borderLeft` / `borderRight` only draw the straight segment between the corners — they do not wrap into the arcs, so `borderLeft` + `borderRadius` reads as a clean left accent bar with neutral rounded corners |
+| `borderRadius`    | number                                                     | Border radius (px)                         |
+| `opacity`         | 0-1                                                        | Background opacity                         |
+| `margin`          | number / `margin.top="8" margin.bottom="8"`                | Margin (shorthand + dot notation can be mixed) |
+| `zIndex`          | number                                                     | Stacking order (higher = on top)           |
+| `position`        | `relative` / `absolute`                                    | Positioning mode                           |
+| `top`             | number                                                     | Top offset (when using position)           |
+| `right`           | number                                                     | Right offset (when using position)         |
+| `bottom`          | number                                                     | Bottom offset (when using position)        |
+| `left`            | number                                                     | Left offset (when using position)          |
+| `alignSelf`       | `auto` / `start` / `center` / `end` / `stretch`            | Override parent's alignItems for this node |
+| `shadow`          | `shadow.type="outer" shadow.blur="4" shadow.offset="2" shadow.color="000"` | Drop shadow (shorthand + dot notation can be mixed; not supported on Line) |
+
+## Leaf Rotation
+
+`Text`, `Shape`, `Image`, and `Icon` support `rotate="<number>"` in degrees clockwise. Rotation is applied only during PowerPoint rendering; yoga layout still uses the unrotated bounding box, so sibling placement and parent size are unchanged.
+
+## Layout Nodes
+
+### VStack / HStack
+
+Arranges children vertically (VStack) / horizontally (HStack).
+
+```xml
+<VStack gap="16" alignItems="stretch" justifyContent="start">
+  <Text>A</Text>
+  <Text>B</Text>
+</VStack>
+```
+
+| Attribute        | Values                                                                      |
+| ---------------- | --------------------------------------------------------------------------- |
+| `gap`            | number (spacing between children)                                           |
+| `alignItems`     | `start` / `center` / `end` / `stretch`                                      |
+| `justifyContent` | `start` / `center` / `end` / `spaceBetween` / `spaceAround` / `spaceEvenly` |
+| `flexWrap`       | `nowrap` / `wrap` / `wrapReverse`                                           |
+
+> **Note:** Children of VStack / HStack default to `flexShrink=1` (same behavior as CSS Flexbox). Even when combining `%` widths with `gap`, children automatically shrink to fit within the parent.
+
+> **Tip — empty container as transparent spacer:** An empty `<VStack />` / `<HStack />` renders nothing. Combined with `grow="1"`, it works like CSS `<div style="flex:1"></div>` to push siblings apart without a visible rectangle.
+>
+> ```xml
+> <VStack h="300">
+>   <Text>Top</Text>
+>   <VStack grow="1" />
+>   <Text>Bottom</Text>
+> </VStack>
+> ```
+
+### Layer
+
+Positions children using absolute coordinates. Children require `x` and `y`. Source order determines stacking.
+
+```xml
+<Layer w="600" h="400">
+  <Shape shapeType="roundRect" x="50" y="50" w="120" h="80" fill.color="1D4ED8" text="A" color="FFFFFF" />
+  <Line x1="170" y1="90" x2="300" y2="90" endArrow="true" />
+</Layer>
+```
+
+## Content Nodes
+
+### Text
+
+```xml
+<Text fontSize="24" bold="true" color="333333" textAlign="center">Title</Text>
+```
+
+| Attribute                                  | Type / Values                                              |
+| ------------------------------------------ | ---------------------------------------------------------- |
+| `fontSize`                                 | number (default: 24)                                       |
+| `color`                                    | hex (text color)                                           |
+| `textGradient`                             | `linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)` (native PPTX gradient text fill; overrides `color`; applies to all runs) |
+| `textAlign`                                | `left` / `center` / `right`                                |
+| `bold` `italic` `strike`                   | `true` / `false`                                           |
+| `subscript` `superscript`                  | `true` / `false`                                           |
+| `underline`                                | `true` / `underline.style="wavy" underline.color="FF0000"` |
+| `highlight`                                | hex (highlight color)                                      |
+| `fontFamily`                               | string (default: `Noto Sans JP`)                           |
+| `lineHeight`                               | number (default: 1.3)                                      |
+| `letterSpacing`                            | number in px (letter spacing, converted to pt on output)   |
+| `glow`                                     | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"`     |
+| `outline`                                  | `outline.size="2" outline.color="0088CC"`                  |
+| `rotate`                                   | number (degrees clockwise, render-only)                    |
+
+Font size guide: Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12
+
+`textGradient` accepts the same syntax as `backgroundGradient` (angle in `<n>deg` or `to <direction>`, 2+ hex stops with optional `%` positions). Useful for cover-page titles, KPI numerals, and pull quotes. Exported as a native PowerPoint gradient text fill (editable, not rasterized).
+
+```xml
+<Text fontSize="64" bold="true" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Gradient title</Text>
+```
+
+**Text effects (glow / outline):** `glow` adds a glow around the characters (`size` in px, `opacity` 0-1, `color` hex; defaults: 8 / 0.75 / FFFFFF). `outline` draws a border along the character edges (`size` in px, `color` hex; defaults: 1 / FFFFFF). Both export as native PowerPoint text effects (editable, not rasterized) and are useful for keeping titles legible on top of background images. They apply per text node; with inline formatting the node-level effect applies to all runs.
+
+Beyond titles, the same effects work well as **decorative accents**:
+
+- **Oversized quotation marks** — make a large `"` or `「` glow in the accent color and place it behind a quote block (use `Layer` + absolute coordinates).
+- **Headline numerals** — give big KPI digits a subtle accent glow so they pop above the rest of the slide without changing color.
+- **Outlined display titles on photos** — pair `outline` with a low-opacity `glow` of the same dark color to keep light-on-photo titles legible.
+
+```xml
+<!-- Generic title effects -->
+<Text fontSize="40" bold="true" color="FFFFFF" glow.size="8" glow.opacity="0.5" glow.color="1D4ED8">Glowing title</Text>
+<Text fontSize="40" bold="true" color="FFFFFF" outline.size="2" outline.color="0F172A">Outlined title</Text>
+
+<!-- Decorative oversized quotation mark behind a pull-quote -->
+<Layer w="600" h="240">
+  <Text x="0" y="-30" fontSize="180" bold="true" color="38BDF8" glow.size="16" glow.opacity="0.4" glow.color="38BDF8">"</Text>
+  <Text x="80" y="80" w="500" fontSize="22" color="0F172A">真の差別化は機能ではなく、誰がどう使うかだ。</Text>
+</Layer>
+
+<!-- Highlighted KPI numeral -->
+<Text fontSize="56" bold="true" color="1D4ED8" glow.size="6" glow.opacity="0.35" glow.color="1D4ED8">84.2</Text>
+```
+
+**Inline formatting:** Use `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` child elements for partial bold/italic/underline/strikethrough/subscript/superscript/highlight/color and hyperlinks:
+
+```xml
+<Text fontSize="16">Normal <B>bold</B> and <I>italic</I> text</Text>
+<Text fontSize="16">Visit <A href="https://example.com">our site</A></Text>
+<Text fontSize="16">Normal <U>underline</U> and <S>strikethrough</S> text</Text>
+<Text fontSize="16">H<Sub>2</Sub>O and x<Sup>2</Sup> + y<Sup>2</Sup></Text>
+<Text fontSize="16"><Mark color="FFFF00">highlighted</Mark> text</Text>
+<Text fontSize="16">Normal <Span color="FF0000">red text</Span> normal</Text>
+<Text fontSize="16" fontFamily="Noto Sans JP">Default <Span fontFamily="Arial">Arial part</Span> default</Text>
+<Text fontSize="16">Normal <Span letterSpacing="6">spaced out</Span> normal</Text>
+<Text fontSize="52" bold="true" color="1D4ED8">¥84.2<Span fontSize="20">M</Span></Text>
+```
+
+`<Span>` supports `color`, `fontFamily` (overrides the parent's `fontFamily` for that run), `fontSize` (overrides the font size for that run, e.g. KPI "big number + small unit" composition), and `letterSpacing` (adjusts letter spacing for that run; effective inside `<Text>` only).
+
+`<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, and `<Span>` also work inside `<Li>` and `<Td>`.
+
+**Number + small unit (KPI numerals):** Use `<Span fontSize>` inside a single `<Text>` so the digit and unit share one baseline automatically. The parent's `bold` / `color` are inherited unless overridden on the Span.
+
+```xml
+<Text fontSize="56" bold="true" color="1D4ED8">¥84.2<Span fontSize="24">M</Span></Text>
+<Text fontSize="56" bold="true" color="16A34A">118<Span fontSize="24">%</Span></Text>
+<Text fontSize="56" bold="true" color="0F172A"><Span fontSize="24">$</Span>2,480</Text>
+```
+
+- Layout measurement uses the largest run `fontSize`, so the Text container is sized for the biggest glyph (no clipping).
+- For leading symbols (`¥`, `$`), put the `<Span>` at the start.
+- The previous HStack-based workaround (`alignItems="end"` + per-leaf `margin.bottom`) is no longer needed for this case.
+
+### Ul (Bullet List)
+
+```xml
+<Ul fontSize="14" color="333333">
+  <Li>Item A</Li>
+  <Li>Item B</Li>
+  <Li bold="true">Item C (individual style)</Li>
+</Ul>
+```
+
+| Attribute                  | Type / Values                    |
+| -------------------------- | -------------------------------- |
+| `fontSize`                 | number (default: 24)             |
+| `color`                    | hex (text color)                 |
+| `textAlign`                | `left` / `center` / `right`      |
+| `bold` `italic` `strike`   | `true` / `false`                 |
+| `subscript` `superscript`  | `true` / `false`                 |
+| `fontFamily`               | string (default: `Noto Sans JP`) |
+| `lineHeight`               | number (default: 1.3)            |
+
+Li attributes (override parent styles): `bold`, `italic`, `strike`, `subscript`, `superscript`, `underline`, `highlight`, `color`, `fontSize`, `fontFamily`
+
+### Ol (Numbered List)
+
+All Ul attributes plus:
+
+```xml
+<Ol fontSize="14" numberType="alphaLcPeriod" numberStartAt="3">
+  <Li>Item A</Li>
+  <Li>Item B</Li>
+</Ol>
+```
+
+| Attribute       | Type / Values                                           |
+| --------------- | ------------------------------------------------------- |
+| `numberType`    | `alphaLcPeriod` / `alphaUcPeriod` / `arabicParenR` etc. |
+| `numberStartAt` | number (start number, default: 1)                       |
+
+### Image
+
+```xml
+<Image src="https://example.com/img.png" w="200" h="150" />
+```
+
+| Attribute | Type / Values                                                                                                            |
+| --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `src`     | string (URL / path / base64)                                                                                             |
+| `sizing`  | `'{"type":"contain"}' ` / `'{"type":"cover"}'` / `'{"type":"crop","x":0,"y":0,"w":100,"h":100}'`                         |
+| `rotate`  | number (degrees clockwise, render-only)                                                                                  |
+
+### Icon
+
+Displays an icon from the Lucide icon library (1,900+ icons available).
+
+```xml
+<Icon name="cpu" size="32" color="1D4ED8" />
+<Icon name="cpu" variant="circle-filled" bgColor="E8F0FE" color="1D4ED8" />
+```
+
+| Attribute | Type / Values                                                            |
+| --------- | ------------------------------------------------------------------------ |
+| `name`    | Lucide icon name (required). See examples below                          |
+| `size`    | number (default: 24, in px)                                              |
+| `color`   | hex color (`#` prefix optional, default: `#000000`)                      |
+| `rotate`  | number (degrees clockwise, render-only)                                |
+| `variant` | `circle-filled`, `circle-outlined`, `square-filled`, `square-outlined`   |
+| `bgColor` | hex color for background shape (`#` prefix optional, default: `#E0E0E0`) |
+| `glow`    | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"` — applied to the variant background shape (no-op without `variant`) |
+| `outline` | `outline.size="2" outline.color="0088CC"` — applied to the variant background shape; overrides the variant default line |
+
+**Icon effects (glow / outline):** Both apply only to the background shape produced by `variant`; they cannot adorn the PNG icon glyph itself (it is rasterized). Use the same defaults as Text glow / outline. Typical use is glowing badge dots and outlined chips paired with an icon glyph (`Icon name="star" size="16" variant="circle-filled" bgColor="3B82F6" glow.size="10" glow.color="3B82F6"`).
+
+### Svg
+
+Renders an inline SVG as a rasterized PNG image. Use this node for custom SVG graphics.
+
+```xml
+<Svg w="32" h="32" color="1D4ED8">
+  <svg viewBox="0 0 24 24">
+    <path d="M12 2L2 22h20z" fill="none" stroke-width="2"/>
+  </svg>
+</Svg>
+```
+
+| Attribute | Type / Values                                          |
+| --------- | ------------------------------------------------------ |
+| `w`       | number (default: 24, width in px)                      |
+| `h`       | number (default: 24, height in px)                     |
+| `color`   | hex color (`#` prefix optional)                        |
+
+A `<svg>` child element is required. When `color` is specified, it sets `stroke` and `fill="none"` on the root `<svg>` element; explicit `stroke`/`fill` on child elements take precedence.
+
+All Lucide v0.577.0 icons are available. Icon names use kebab-case. Common examples by category:
+
+- **Technology**: `cpu`, `database`, `cloud`, `server`, `code`, `terminal`, `wifi`, `globe`, `monitor`, `smartphone`, `laptop`, `hard-drive`, `circuit-board`, `microchip`, `binary`, `braces`, `git-branch`, `github`, `container`
+- **Business**: `briefcase`, `building`, `building-2`, `factory`, `landmark`, `wallet`, `credit-card`, `receipt`, `banknote`, `coins`, `piggy-bank`, `hand-coins`, `calculator`, `stamp`
+- **Charts & Data**: `bar-chart`, `bar-chart-2`, `bar-chart-3`, `line-chart`, `pie-chart`, `trending-up`, `trending-down`, `activity`, `gauge`, `presentation`
+- **Communication**: `mail`, `message-square`, `message-circle`, `phone`, `video`, `at-sign`, `send`, `inbox`, `megaphone`, `bell`, `rss`
+- **People**: `user`, `users`, `contact`, `user-plus`, `user-check`, `user-x`, `person-standing`, `baby`, `accessibility`
+- **Arrows & Navigation**: `arrow-right`, `arrow-left`, `arrow-up`, `arrow-down`, `chevron-right`, `chevron-left`, `chevron-up`, `chevron-down`, `move`, `corner-down-right`, `external-link`, `redo`, `undo`
+- **Actions**: `search`, `settings`, `filter`, `download`, `upload`, `share`, `copy`, `scissors`, `trash`, `edit`, `plus`, `minus`, `refresh-cw`, `rotate-cw`, `save`, `log-in`, `log-out`, `power`
+- **Status & Alerts**: `check`, `check-circle`, `x`, `x-circle`, `alert-triangle`, `alert-circle`, `info`, `help-circle`, `ban`, `thumbs-up`, `thumbs-down`
+- **Security**: `shield`, `shield-check`, `lock`, `unlock`, `key`, `fingerprint`, `scan`, `eye`, `eye-off`
+- **Files & Folders**: `file`, `file-text`, `file-code`, `file-spreadsheet`, `folder`, `folder-open`, `archive`, `paperclip`, `clipboard`
+- **Media**: `image`, `camera`, `film`, `music`, `volume-2`, `mic`, `play`, `pause`, `skip-forward`, `skip-back`
+- **Time**: `calendar`, `clock`, `timer`, `hourglass`, `alarm-clock`, `calendar-check`, `calendar-plus`
+- **Shapes & Symbols**: `star`, `heart`, `zap`, `target`, `lightbulb`, `flag`, `bookmark`, `award`, `crown`, `gem`, `flame`, `snowflake`, `sun`, `moon`, `cloud-rain`
+- **Layout & UI**: `layout`, `grid`, `list`, `table`, `columns`, `rows`, `sidebar`, `panel-left`, `panel-right`, `maximize`, `minimize`, `menu`
+- **Maps & Travel**: `map`, `map-pin`, `compass`, `navigation`, `plane`, `car`, `truck`, `train`, `ship`, `bike`, `bus`
+- **Health & Science**: `heart-pulse`, `thermometer`, `pill`, `syringe`, `microscope`, `dna`, `atom`, `flask-conical`, `beaker`
+- **Food & Nature**: `apple`, `cherry`, `grape`, `leaf`, `trees`, `flower`, `sprout`, `mountain`, `waves`
+
+For the full icon list, see https://lucide.dev/icons/ (use the icon name in kebab-case as the `name` attribute).
+
+### Shape
+
+```xml
+<Shape shapeType="roundRect" w="200" h="60" text="Button" fontSize="16" fill.color="1D4ED8" color="FFFFFF" />
+```
+
+| Attribute       | Type / Values                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------- |
+| `shapeType`     | Shape type (178 types total — see below)                                                                  |
+| `text`          | string (text inside shape)                                                                                |
+| `fill`          | `fill.color="hex" fill.transparency="0.5"`                                                                |
+| `line`          | `line.color="hex" line.width="2" line.dashType="dash"`                                                    |
+| `outline`       | `outline.size="2" outline.color="0088CC"` — Text-style alias for `line`; overrides `line.color`/`line.width` when both are set, `line.dashType` is preserved |
+| `glow`          | `glow.size="8" glow.opacity="0.5" glow.color="FF3399"` — native shape glow (editable in PowerPoint, not rasterized) |
+| `rotate`        | number (degrees clockwise, render-only)                                                                   |
+| Text attributes | `fontSize` `color` `textAlign` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `lineHeight` |
+
+`fill`, `line`, and other style objects also allow mixing shorthand + dot notation on the same node (dot notation overrides specific keys).
+
+**Shape effects (glow / outline):** `glow` adds a glow around the shape edge (`size` in px → converted to EMU, `opacity` 0-1, `color` hex; defaults: 8 / 0.75 / FFFFFF). `outline` is a Text-style alias for `line`; both produce native PowerPoint effects that stay editable. Typical use is glowing badge dots (`Shape shapeType="ellipse" w="20" h="20" fill.color="3B82F6" glow.size="12" glow.color="3B82F6"`), accent-glow KPI plates, and timeline markers. Do **not** wrap the shape with `Layer` purely to overlay a soft glow — `glow` on the shape itself is more compact and editable.
+
+**Full shapeType list:**
+
+Basic shapes:
+`arc`, `bevel`, `blockArc`, `can`, `chord`, `corner`, `cube`, `decagon`, `diagStripe`, `diamond`, `dodecagon`, `donut`, `ellipse`, `folderCorner`, `frame`, `funnel`, `halfFrame`, `heptagon`, `hexagon`, `homePlate`, `nonIsoscelesTrapezoid`, `octagon`, `parallelogram`, `pentagon`, `pie`, `pieWedge`, `plaque`, `plus`, `rect`, `roundRect`, `rtTriangle`, `trapezoid`, `triangle`
+
+Rounded / snipped rectangles:
+`round1Rect`, `round2DiagRect`, `round2SameRect`, `snip1Rect`, `snip2DiagRect`, `snip2SameRect`, `snipRoundRect`
+
+Arrows:
+`bentArrow`, `bentUpArrow`, `chevron`, `circularArrow`, `curvedDownArrow`, `curvedLeftArrow`, `curvedRightArrow`, `curvedUpArrow`, `downArrow`, `leftArrow`, `leftCircularArrow`, `leftRightArrow`, `leftRightCircularArrow`, `leftRightUpArrow`, `leftUpArrow`, `notchedRightArrow`, `quadArrow`, `rightArrow`, `stripedRightArrow`, `swooshArrow`, `upArrow`, `upDownArrow`, `uturnArrow`
+
+Arrow callouts:
+`downArrowCallout`, `leftArrowCallout`, `leftRightArrowCallout`, `quadArrowCallout`, `rightArrowCallout`, `upArrowCallout`, `upDownArrowCallout`
+
+Callouts:
+`accentBorderCallout1`, `accentBorderCallout2`, `accentBorderCallout3`, `accentCallout1`, `accentCallout2`, `accentCallout3`, `borderCallout1`, `borderCallout2`, `borderCallout3`, `callout1`, `callout2`, `callout3`, `cloudCallout`, `wedgeEllipseCallout`, `wedgeRectCallout`, `wedgeRoundRectCallout`
+
+Stars & banners:
+`doubleWave`, `ellipseRibbon`, `ellipseRibbon2`, `horizontalScroll`, `irregularSeal1`, `irregularSeal2`, `leftRightRibbon`, `ribbon`, `ribbon2`, `star4`, `star5`, `star6`, `star7`, `star8`, `star10`, `star12`, `star16`, `star24`, `star32`, `verticalScroll`, `wave`
+
+Flowchart:
+`flowChartAlternateProcess`, `flowChartCollate`, `flowChartConnector`, `flowChartDecision`, `flowChartDelay`, `flowChartDisplay`, `flowChartDocument`, `flowChartExtract`, `flowChartInputOutput`, `flowChartInternalStorage`, `flowChartMagneticDisk`, `flowChartMagneticDrum`, `flowChartMagneticTape`, `flowChartManualInput`, `flowChartManualOperation`, `flowChartMerge`, `flowChartMultidocument`, `flowChartOfflineStorage`, `flowChartOffpageConnector`, `flowChartOnlineStorage`, `flowChartOr`, `flowChartPredefinedProcess`, `flowChartPreparation`, `flowChartProcess`, `flowChartPunchedCard`, `flowChartPunchedTape`, `flowChartSort`, `flowChartSummingJunction`, `flowChartTerminator`
+
+Action buttons:
+`actionButtonBackPrevious`, `actionButtonBeginning`, `actionButtonBlank`, `actionButtonDocument`, `actionButtonEnd`, `actionButtonForwardNext`, `actionButtonHelp`, `actionButtonHome`, `actionButtonInformation`, `actionButtonMovie`, `actionButtonReturn`, `actionButtonSound`
+
+Brackets & braces:
+`bracePair`, `bracketPair`, `leftBrace`, `leftBracket`, `rightBrace`, `rightBracket`
+
+Math symbols:
+`mathDivide`, `mathEqual`, `mathMinus`, `mathMultiply`, `mathNotEqual`, `mathPlus`
+
+Others:
+`chartPlus`, `chartStar`, `chartX`, `cloud`, `cornerTabs`, `gear6`, `gear9`, `heart`, `lightningBolt`, `line`, `lineInv`, `moon`, `noSmoking`, `plaqueTabs`, `smileyFace`, `squareTabs`, `sun`, `teardrop`
+
+### Line
+
+```xml
+<Line x1="100" y1="100" x2="300" y2="100" color="333333" lineWidth="2" endArrow="true" />
+```
+
+| Attribute                 | Type / Values                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `x1` `y1` `x2` `y2`       | number (absolute coordinates, required)                                               |
+| `color`                   | hex (default: `000000`)                                                               |
+| `lineWidth`               | number (default: 1)                                                                   |
+| `dashType`                | `solid` / `dash` / `dashDot` / `lgDash` / `sysDash` etc.                              |
+| `beginArrow` / `endArrow` | `true` / `endArrow.type="triangle"` (types: none/arrow/triangle/diamond/oval/stealth) |
+
+### Arrow
+
+Native PowerPoint straight connector between two nodes referenced by `id`. `Text` and `Shape` nodes with `shapeType="rect"`, `roundRect`, or `ellipse` are supported targets; the connector attaches to the nearest cardinal connection sites (including shape rotation) and follows the targets when they move. If an ID is not found, `ARROW_REF_NOT_FOUND` is emitted. If it identifies another node type or unsupported shape geometry, `ARROW_REF_NOT_CONNECTABLE` is emitted.
+
+```xml
+<Layer w="1280" h="720">
+  <Shape id="a" x="100" y="100" w="120" h="40" shapeType="rect">A</Shape>
+  <Shape id="b" x="100" y="200" w="120" h="40" shapeType="rect">B</Shape>
+  <Arrow x="0" y="0" from="a" to="b" endArrow="true" />
+</Layer>
+```
+
+| Attribute                 | Type / Values                                                                         |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `from`                    | string (id of source node, required)                                                  |
+| `to`                      | string (id of destination node, required)                                             |
+| `color`                   | hex (default: `000000`)                                                               |
+| `lineWidth`               | number (default: 1)                                                                   |
+| `dashType`                | `solid` / `dash` / `dashDot` / `lgDash` / `sysDash` etc.                              |
+| `beginArrow` / `endArrow` | `true` / `endArrow.type="triangle"` (types: none/arrow/triangle/diamond/oval/stealth) |
+
+## Data Visualization Nodes
+
+### Table
+
+```xml
+<Table>
+  <Col width="200" />
+  <Col width="100" />
+  <Tr>
+    <Td bold="true" backgroundColor="DBEAFE">Name</Td>
+    <Td bold="true" backgroundColor="DBEAFE">Score</Td>
+  </Tr>
+  <Tr>
+    <Td>Alice</Td>
+    <Td>95</Td>
+  </Tr>
+</Table>
+```
+
+- `<Table>`: `defaultRowHeight` (default 32), `cellBorder` (`{color, width, dashType}` — cell border style)
+- `<Col>`: `width` (omit for equal distribution)
+- `<Tr>`: `height` (omit to use `defaultRowHeight`, default 32)
+- `<Td>`: text content + `fontSize` `color` `bold` `italic` `underline` `strike` `subscript` `superscript` `highlight` `fontFamily` `textAlign` `backgroundColor` `colspan` `rowspan`
+
+### Chart
+
+```xml
+<Chart chartType="bar" w="500" h="300" showLegend="true" chartColors='["0088CC","00AA00"]'>
+  <ChartSeries name="Sales">
+    <ChartDataPoint label="Jan" value="100" />
+    <ChartDataPoint label="Feb" value="150" />
+  </ChartSeries>
+</Chart>
+```
+
+| Attribute     | Type / Values                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| `chartType`   | `bar` / `line` / `pie` / `area` / `doughnut` / `radar`                                                       |
+| `showLegend`  | boolean                                                                                                      |
+| `showTitle`   | boolean                                                                                                      |
+| `title`       | string                                                                                                       |
+| `chartColors` | JSON array `'["hex1","hex2"]'`                                                                               |
+| `radarStyle`  | `standard` / `marker` / `filled` (radar only)                                                                |
+| `sparkline`   | boolean — hides legend / axes / gridlines / margins for compact display (`bar` / `line` / `area`, e.g. h=40) |
+
+**Sparkline example** (KPI tile に inline 表示する用途):
+
+```xml
+<Chart chartType="bar" w="200" h="40" sparkline="true" chartColors='["0088CC"]'>
+  <ChartSeries name="Sales">
+    <ChartDataPoint label="Q1" value="100" />
+    <ChartDataPoint label="Q2" value="200" />
+    <ChartDataPoint label="Q3" value="150" />
+    <ChartDataPoint label="Q4" value="300" />
+  </ChartSeries>
+</Chart>
+```
+
+### Timeline
+
+```xml
+<Timeline direction="horizontal" w="1000" h="120">
+  <TimelineItem date="Q1" title="Phase 1" description="Foundation" color="4CAF50" />
+  <TimelineItem date="Q2" title="Phase 2" description="Development" color="2196F3" />
+</Timeline>
+```
+
+| Attribute           | Values                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| `direction`         | `horizontal` / `vertical`                                                                             |
+| `dateColor`         | hex (date text color, default: `64748B`)                                                              |
+| `titleColor`        | hex (title text color, default: `1E293B`)                                                             |
+| `descriptionColor`  | hex (description text color, default: `64748B`)                                                       |
+| `connectorColor`    | hex (axis line color, default: `E2E8F0`)                                                              |
+| `connectorGradient` | `linear-gradient(<angle>deg, <color> <pos>%, ...)` — applies a linear gradient to the connector line  |
+| `useColorForDate`   | `true` / `false` — when `true`, each item's `date` text uses that item's `color` (default: `false`)   |
+| `fontFamily`        | font family name applied to all text (date / title / description). default: `Noto Sans JP`            |
+
+`<TimelineItem>`: `date` (required) `title` (required) `description` `color` `dateColor`
+
+- `dateColor` (per-item) overrides both `Timeline.dateColor` and `useColorForDate`.
+- `fontFamily` changes the rendered font face only. Internal layout measurement still assumes the default label sizes (the bundled Noto Sans JP metrics), so very wide / very tall fonts may overflow within the same `w` / `h`. Pick a larger `w` / `h` if labels clip.
+
+### Matrix
+
+```xml
+<Matrix w="600" h="500">
+  <MatrixAxes x="Cost" y="Impact" />
+  <MatrixQuadrants topLeft="Quick Wins" topRight="Strategic" bottomLeft="Low Priority" bottomRight="Avoid" />
+  <MatrixItem label="Initiative A" x="0.2" y="0.8" color="4CAF50" />
+  <MatrixItem label="Initiative B" x="0.7" y="0.6" />
+</Matrix>
+```
+
+- Coordinates: (0,0) = bottom-left, (1,1) = top-right (mathematical coordinate system)
+- `<Matrix>`: `axisLabelColor` (default `64748B`) `quadrantLabelColor` (default `94A3B8`) `itemLabelColor` (default `1E293B`) — text colors
+- `<MatrixAxes>`: `x` `y` (axis labels, required)
+- `<MatrixQuadrants>`: `topLeft` `topRight` `bottomLeft` `bottomRight`
+- `<MatrixItem>`: `label` `x` `y` (required) `color` `textColor` (overrides `itemLabelColor`)
+
+### Tree
+
+```xml
+<Tree layout="vertical" nodeShape="roundRect" w="600" h="400">
+  <TreeItem label="CEO" color="1D4ED8">
+    <TreeItem label="CTO" color="0EA5E9">
+      <TreeItem label="Engineer A" />
+    </TreeItem>
+    <TreeItem label="CFO" color="16A34A" />
+  </TreeItem>
+</Tree>
+```
+
+| Attribute        | Type / Values                                         |
+| ---------------- | ----------------------------------------------------- |
+| `layout`         | `vertical` / `horizontal`                             |
+| `nodeShape`      | `rect` / `roundRect` / `ellipse`                      |
+| `textColor`      | hex (node label text color, default: `FFFFFF`)       |
+| `nodeWidth`      | number (default: 120)                                 |
+| `nodeHeight`     | number (default: 40)                                  |
+| `levelGap`       | number (default: 60)                                  |
+| `siblingGap`     | number (default: 20)                                  |
+| `connectorStyle` | `connectorStyle.color="333" connectorStyle.width="2"` |
+
+`<TreeItem>` can be recursively nested. Only one root allowed. Attributes: `label` (required) `color` `textColor` (overrides the Tree-level `textColor`)
+
+### Flow
+
+```xml
+<Flow direction="horizontal" w="500" h="300">
+  <FlowNode id="start" shape="flowChartTerminator" text="Start" color="4CAF50" />
+  <FlowNode id="process" shape="flowChartProcess" text="Process" />
+  <FlowNode id="decision" shape="flowChartDecision" text="OK?" color="FF9800" />
+  <FlowNode id="end" shape="flowChartTerminator" text="End" color="E91E63" />
+  <FlowConnection from="start" to="process" />
+  <FlowConnection from="process" to="decision" />
+  <FlowConnection from="decision" to="end" label="Yes" />
+</Flow>
+```
+
+| Attribute        | Type / Values                                                                          |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| `direction`      | `horizontal` / `vertical`                                                              |
+| `nodeWidth`      | number (default: 120)                                                                  |
+| `nodeHeight`     | number (default: 60)                                                                   |
+| `nodeGap`        | number (default: 80)                                                                   |
+| `connectorStyle` | `connectorStyle.color="hex" connectorStyle.width="2" connectorStyle.arrowType="arrow" connectorStyle.labelColor="hex"` |
+
+`<FlowNode>` attributes:
+
+| Attribute   | Type / Values                                                                                                                                                                                                                                                                                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`        | string (required) — Unique node identifier                                                                                                                                                                                                                                                        |
+| `shape`     | `flowChartTerminator` / `flowChartProcess` / `flowChartDecision` / `flowChartInputOutput` / `flowChartDocument` / `flowChartPredefinedProcess` / `flowChartConnector` / `flowChartPreparation` / `flowChartManualInput` / `flowChartManualOperation` / `flowChartDelay` / `flowChartMagneticDisk` |
+| `text`      | string (required) — Display text                                                                                                                                                                                                                                                                  |
+| `color`     | hex color (e.g. `"4CAF50"`) — Node fill color                                                                                                                                                                                                                                                     |
+| `textColor` | hex color (e.g. `"FFFFFF"`) — Text color                                                                                                                                                                                                                                                          |
+| `width`     | number — Individual node width (overrides `nodeWidth`)                                                                                                                                                                                                                                            |
+| `height`    | number — Individual node height (overrides `nodeHeight`)                                                                                                                                                                                                                                          |
+
+`<FlowConnection>`: `from` `to` (required) `label` `color` `labelColor` (label text color; overrides `connectorStyle.labelColor`, default: `64748B`)
+
+### ProcessArrow
+
+```xml
+<ProcessArrow direction="horizontal" w="1000" h="80">
+  <ProcessArrowStep label="Plan" color="4472C4" />
+  <ProcessArrowStep label="Design" color="5B9BD5" />
+  <ProcessArrowStep label="Develop" color="70AD47" />
+  <ProcessArrowStep label="Release" color="ED7D31" />
+</ProcessArrow>
+```
+
+| Attribute                | Type / Values                                              |
+| ------------------------ | ---------------------------------------------------------- |
+| `direction`              | `horizontal` / `vertical`                                  |
+| `itemWidth`              | number (default: 150)                                      |
+| `itemHeight`             | number (default: 80)                                       |
+| `gap`                    | number (default: -(itemHeight×0.35), negative for overlap) |
+| `fontSize`               | number (default: 14)                                       |
+| `bold` `italic` `strike` | boolean                                                    |
+| `underline`              | `true` / `underline.style="wavy" underline.color="FF0000"` |
+| `highlight`              | hex (highlight color)                                      |
+| `fontFamily`             | string (default: `Noto Sans JP`)                           |
+
+`<ProcessArrowStep>`: `label` (required) `color` (default: `4472C4`) `textColor` (default: `FFFFFF`)
+
+### Pyramid
+
+```xml
+<Pyramid direction="up" w="600" h="300">
+  <PyramidLevel label="Strategy" color="E91E63" />
+  <PyramidLevel label="Tactics" color="9C27B0" />
+  <PyramidLevel label="Execution" color="673AB7" />
+</Pyramid>
+```
+
+| Attribute    | Type / Values                    |
+| ------------ | -------------------------------- |
+| `direction`  | `up` (default) / `down`          |
+| `fontSize`   | number (default: 14)             |
+| `bold`       | boolean                          |
+| `fontFamily` | string (default: `Noto Sans JP`) |
+
+`<PyramidLevel>`: `label` (required) `color` (default: `4472C4`) `textColor` (default: `FFFFFF`)
+
+- `direction="up"`: First PyramidLevel is the apex (narrowest), last is the base (widest)
+- `direction="down"`: First PyramidLevel is the top (widest), last is the bottom (narrowest)
+
+## Child Element Tag Reference
+
+| Parent Node      | Child Tags                                          | Mapped Property              |
+| ---------------- | --------------------------------------------------- | ---------------------------- |
+| `<Chart>`        | `<ChartSeries>` > `<ChartDataPoint>`                | `data`                       |
+| `<Table>`        | `<Col>`, `<Tr>` > `<Td>`       | `columns`, `rows`            |
+| `<Text>`         | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Li>`           | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Td>`    | `<B>`, `<I>`, `<A>`, `<U>`, `<S>`, `<Sub>`, `<Sup>`, `<Mark>`, `<Span>` | `runs` (inline formatting)   |
+| `<Timeline>`     | `<TimelineItem>`                                    | `items`                      |
+| `<Matrix>`       | `<MatrixAxes>`, `<MatrixQuadrants>`, `<MatrixItem>` | `axes`, `quadrants`, `items` |
+| `<Tree>`         | `<TreeItem>` (recursive)                            | `data`                       |
+| `<Flow>`         | `<FlowNode>`, `<FlowConnection>`                    | `nodes`, `connections`       |
+| `<ProcessArrow>` | `<ProcessArrowStep>`                                | `steps`                      |
+| `<Pyramid>`      | `<PyramidLevel>`                                    | `levels`                     |
+
+When the same property is specified via both attributes (JSON string) and child elements, child elements take precedence.
+
+## Slide Patterns
+
+### Basic Structure
+
+```xml
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="stretch">
+    <Text fontSize="32" bold="true">Title</Text>
+    <Text fontSize="14">Body text</Text>
+  </VStack>
+</Slide>
+```
+
+### Two-Column Layout
+
+```xml
+<Slide>
+  <VStack w="100%" h="max" padding="48" gap="24" alignItems="stretch">
+    <Text fontSize="28" bold="true">Title</Text>
+    <HStack gap="24" alignItems="start">
+      <Text w="50%" padding="20" backgroundColor="FFFFFF" borderRadius="8" fontSize="14">Left column</Text>
+      <Text w="50%" padding="20" backgroundColor="FFFFFF" borderRadius="8" fontSize="14">Right column</Text>
+    </HStack>
+  </VStack>
+</Slide>
+```
+
+### KPI Tile with Dot Indicator (color-coded category)
+
+`borderTop` + `borderRadius` is now supported directly — `<VStack borderRadius="16" borderTop.color="1D4ED8" borderTop.width="6">` produces a rounded tile whose top edge and both upper corners are painted in `borderTop.color`. The dot + uppercase label pattern below remains a useful alternative when you want the indicator inside the tile (e.g. to leave the corner radius uniform across mixed-color KPI rows).
+
+```xml
+<HStack gap="20" alignItems="stretch">
+  <VStack grow="1" padding="20" backgroundColor="FFFFFF" borderRadius="16" border.color="E2E8F0" border.width="1" gap="12">
+    <HStack gap="8" alignItems="center">
+      <Shape shapeType="ellipse" w="8" h="8" fill.color="1D4ED8" line.width="0" />
+      <Text fontSize="11" bold="true" color="1D4ED8" letterSpacing="1">MRR</Text>
+    </HStack>
+    <HStack alignItems="end" gap="4">
+      <Text fontSize="44" bold="true" color="0F172A" lineHeight="1">84.2</Text>
+      <Text fontSize="18" bold="true" color="0F172A" lineHeight="1" margin.bottom="4">M</Text>
+    </HStack>
+    <Text fontSize="11" color="64748B">QoQ +4.1%</Text>
+  </VStack>
+  <VStack grow="1" padding="20" backgroundColor="FFFFFF" borderRadius="16" border.color="E2E8F0" border.width="1" gap="12">
+    <HStack gap="8" alignItems="center">
+      <Shape shapeType="ellipse" w="8" h="8" fill.color="16A34A" line.width="0" />
+      <Text fontSize="11" bold="true" color="16A34A" letterSpacing="1">NRR</Text>
+    </HStack>
+    <HStack alignItems="end" gap="4">
+      <Text fontSize="44" bold="true" color="0F172A" lineHeight="1">118</Text>
+      <Text fontSize="18" bold="true" color="0F172A" lineHeight="1" margin.bottom="4">%</Text>
+    </HStack>
+    <Text fontSize="11" color="64748B">QoQ +2.0pt</Text>
+  </VStack>
+</HStack>
+```
+
+- The colored dot + matching uppercase label carries the category color without needing a top-edge stripe.
+- Keep the dot small (6–10 px) so it reads as a category indicator, not a bullet.
+- For a more prominent variant, thicken the dot to a short horizontal bar (`Shape shapeType="roundRect" w="24" h="3"` filled with the category color). To make the dot pop on dark backgrounds, attach a small `glow` to the `Shape` itself (`glow.size="10" glow.opacity="0.7" glow.color="<category color>"`) — it stays editable in PowerPoint as a native shape effect.
+
+## Notes
+
+- Colors do not need `#` prefix (`FF0000`)
+- `alignItems` / `justifyContent` use `start` / `end` (not `left` / `right`)
+- Property names are `w` / `h` (not `width` / `height`)
+- Children of `Layer` require `x` and `y`
+- `Tree` must have exactly one root `<TreeItem>`
+- For decorative agenda / section numbering, prefer `01.` or `#01` instead of pure numeric `01`.
+  LibreOffice-based fallback PNG conversion can drop leading zeros from pure numeric text, while the PPTX itself remains correct in PowerPoint.
+
+## Build Diagnostics
+
+Building emits warnings (`diagnostics`) for layout problems that can be detected from the computed coordinates — fix the XML when these appear:
+
+- `NODE_OUT_OF_BOUNDS` — a node's rectangle extends beyond the slide bounds. The message identifies the slide, the node (tag / `id` / path), and the overflowing edges. Shrink or move the node, reduce content, or split the slide. Nodes with `rotate` and `Line` / `Arrow` are not checked (their final bounds cannot be derived statically), so verify those visually.
+- `NODE_OVERLAP` — siblings inside `VStack` / `HStack` overlap unintentionally (e.g. via `top` / `left` offsets). Intentional overlaps are NOT reported: children of `Layer`, `position="absolute"` nodes, negative `margin` / `gap` (e.g. `ProcessArrow`'s default negative gap), and nodes with an explicit `zIndex`. To keep a deliberate overlap, express it with one of those mechanisms.

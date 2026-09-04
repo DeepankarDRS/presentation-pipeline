@@ -1,0 +1,47 @@
+# pom-knowledge/layouts/title-content.yaml
+# The basic single-column layout: title (+ optional accent rule) then body content
+# stacked in a padded VStack that fills the slide.
+# Source: llm.txt "Slide Patterns > Basic Structure", adapted to the MVP dark theme.
+
+meta:
+  phase: A
+  name: title-content
+  use_when:
+    - "text-only slides"
+    - "a title plus one or more paragraphs / a short narrative"
+    - "a title plus a single block of content (list, later a chart/table)"
+  nodes_used: [Slide, Theme, VStack, Text, Shape]
+
+structure: >
+  <Slide> > root <VStack> (w=1280 h=720, padding 56-72, gap 20-28,
+  backgroundColor=$surface, alignItems="start") containing, in order:
+  1. a title <Text> (fontSize 36-44, bold, color=$textMain)
+  2. optional accent rule: <Shape shapeType="rect" w="100-140" h="5-6" backgroundColor="$accent" />
+  3. one or more body <Text> nodes (fontSize 16-22, color=$textMuted, lineHeight 1.35-1.5,
+     with an explicit w ~880-1040 so lines wrap)
+  4. optional caption <Text> (fontSize 14-16, italic, color=$textMuted)
+
+rules:
+  - "Exactly one root layout node per Slide."
+  - "Root VStack carries the padding — never let content touch the slide edge."
+  - "alignItems=\"start\" so left edges line up; use justifyContent=\"center\" for a vertically-centered hero/section slide."
+  - "Give body Text an explicit w; without it a single long line will not wrap and can trip NODE_OUT_OF_BOUNDS."
+  - "gap on the VStack handles vertical rhythm — don't add margins to the children."
+
+verified_example: |
+  <Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+  <Slide>
+    <VStack w="1280" h="720" padding="72" gap="24" backgroundColor="$surface" alignItems="start" justifyContent="center">
+      <Text fontSize="44" bold="true" color="$textMain">Quarterly Business Review</Text>
+      <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
+      <Text fontSize="22" color="$textMuted" lineHeight="1.45" w="960">Revenue grew 18% quarter over quarter, driven by enterprise expansion and improved net retention. Operating margin held steady while investment continued in product and go-to-market.</Text>
+      <Text fontSize="16" italic="true" color="$textMuted">Prepared for the executive team — Q3 FY26</Text>
+    </VStack>
+  </Slide>
+
+compile_status: "verified — compiles to PPTX on @hirokisakabe/pom v10.3.0 (see pom-knowledge/examples/text-slide.xml)"
+
+variants:
+  hero_centered: "justifyContent=\"center\" + larger title (56-64) + textGradient on the title"
+  title_plus_bullets: "replace body Text with a <Ul> (Phase B)"
+  title_plus_two_column: "body is an <HStack> of two w=\"50%\" columns (see layouts/two-column.yaml, Phase B)"

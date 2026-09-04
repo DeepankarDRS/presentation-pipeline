@@ -1,0 +1,58 @@
+# pom-knowledge/layouts/diagram-annotated.yaml
+# Layer-based annotated diagram layout. Phase D.
+# Use when: architecture diagram, system overview, annotated process, connector diagram.
+
+meta:
+  phase: D
+  use_when: [architecture diagram, system overview, network diagram, annotated process, connector diagram, free-form layout]
+
+description: >
+  A free-form diagram using <Layer> for absolute positioning with <Shape> nodes
+  connected by <Arrow> and <Line> elements. Best for architecture diagrams,
+  system overviews, and any layout that requires precise positioning.
+
+skeleton: |
+  <Slide>
+    <Layer w="1280" h="720" backgroundColor="$surface">
+      <!-- Title + accent bar -->
+      <Text x="48" y="40" fontSize="28" bold="true" color="$textMain">{title}</Text>
+      <Line x1="48" y1="80" x2="200" y2="80" color="$accent" lineWidth="3" />
+
+      <!-- Positioned boxes (give each an id for arrows) -->
+      <Shape id="node1" x="{x}" y="{y}" shapeType="roundRect" w="200" h="80"
+             text="{label}" fill.color="{color}" color="FFFFFF" fontSize="14" bold="true" />
+      <Shape id="node2" x="{x}" y="{y}" shapeType="roundRect" w="200" h="80"
+             text="{label}" fill.color="{color}" color="FFFFFF" fontSize="14" bold="true" />
+
+      <!-- Connectors -->
+      <Arrow from="node1" to="node2" color="334155" lineWidth="2" endArrow="triangle" />
+
+      <!-- Decorative elements -->
+      <Line x1="48" y1="660" x2="1232" y2="660" color="$border" lineWidth="1" dashType="dash" />
+      <Text x="48" y="670" fontSize="11" color="$textMuted">{caption}</Text>
+    </Layer>
+  </Slide>
+
+positioning_guide:
+  slide_dimensions: { w: 1280, h: 720 }
+  safe_area: { x: 48, y: 40, w: 1184, h: 640 }
+  title_y: 40
+  content_start_y: 120
+  caption_y: 670
+  node_spacing: "100-150px gap between connected nodes"
+  typical_node_size: { w: "180-220", h: "70-100" }
+
+notes:
+  - "Every Shape or Text that an Arrow references must have a unique id."
+  - "Arrow only connects to rect, roundRect, ellipse Shapes and Text nodes."
+  - "Use Lines for decorative separators, rulers, or guides."
+  - "Drawing order = document order. Put background elements first, foreground last."
+  - "For labels near arrows, position Text nodes manually between the connected shapes."
+  - "Layer can be nested — use an inner Layer for a grouped cluster of related nodes."
+
+color_coding:
+  primary_nodes: "$accent or a strong palette color for main services/components"
+  secondary_nodes: "Lighter variation or $accentAlt for supporting components"
+  infrastructure: "Neutral tones like 334155 or 475569 for databases, queues, infrastructure"
+  connectors: "334155 (dark neutral) or $border for standard connections"
+  error_paths: "$negative for error/failure connections"

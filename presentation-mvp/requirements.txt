@@ -1,0 +1,6 @@
+# POM XML generation MVP — Python dependencies (Python 3.11.9)
+pydantic>=2.6,<3
+openai>=1.40
+pyyaml>=6.0,<7
+python-dotenv>=1.0,<2
+langsmith>=0.1,<1

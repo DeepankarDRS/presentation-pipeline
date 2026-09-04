@@ -1,0 +1,38 @@
+# Phase 9 deck spec. Consumed by deck.from_spec().
+# 3 slides sharing one theme: opener, KPI row, chart + narrative.
+title: Q3 FY26 Quarterly Business Review
+objective: >
+  Walk the executive team through the quarter: where we landed, the headline
+  metrics, and the revenue trajectory with commentary.
+theme: corporate-slate
+
+slides:
+  - objective: Open the review with a titled summary of the quarter.
+    request: >
+      A title slide: bold title, a thin accent rule, then two or three sentences
+      on revenue growth and margin, and a small italic caption naming the audience.
+    components: [title, narrative, caption]
+    supplied_content:
+      title: "Q3 FY26 Quarterly Business Review"
+      caption: "Prepared for the executive team"
+
+  - objective: Show the quarter's headline metrics.
+    request: >
+      A KPI row: bold title, then four KPI tiles - each with a muted label, a
+      large bold value with a smaller unit, and a short delta line.
+    components: [title, kpi_row]
+    supplied_content:
+      title: "Where We Landed"
+      kpi_labels: [ARR, Net Revenue Retention, Gross Margin, Customers]
+
+  - objective: Show the revenue trajectory with a written read.
+    request: >
+      A two-column slide: bold title across the top. Left: a bar chart of revenue
+      for the last six quarters, trending up. Right: two or three sentences
+      interpreting the trend and the plan for next quarter.
+    components: [title, chart, narrative]
+    supplied_content:
+      chart_type: bar
+      periods: [Q2 FY25, Q3 FY25, Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]
+
+content_source: titles / labels / periods supplied; prose and figures invented

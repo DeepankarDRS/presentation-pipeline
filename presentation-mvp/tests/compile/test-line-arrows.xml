@@ -1,0 +1,33 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+
+<Slide>
+  <Layer w="1280" h="720" backgroundColor="$surface">
+    <Text x="48" y="40" fontSize="28" bold="true" color="$textMain">Line &amp; Arrow Styles</Text>
+
+    <!-- Solid line with no arrows -->
+    <Text x="60" y="120" fontSize="12" color="$textMuted">Solid, no arrow</Text>
+    <Line x1="250" y1="128" x2="600" y2="128" color="2563EB" lineWidth="2" />
+
+    <!-- Dashed line with end arrow -->
+    <Text x="60" y="170" fontSize="12" color="$textMuted">Dash, end arrow</Text>
+    <Line x1="250" y1="178" x2="600" y2="178" color="0EA5E9" lineWidth="2" dashType="dash" endArrow="true" />
+
+    <!-- DashDot line with both arrows -->
+    <Text x="60" y="220" fontSize="12" color="$textMuted">DashDot, both arrows</Text>
+    <Line x1="250" y1="228" x2="600" y2="228" color="14B8A6" lineWidth="2" dashType="dashDot" beginArrow="true" endArrow="true" />
+
+    <!-- Thick solid with stealth arrow -->
+    <Text x="60" y="270" fontSize="12" color="$textMuted">Thick, stealth</Text>
+    <Line x1="250" y1="278" x2="600" y2="278" color="DC2626" lineWidth="4" endArrow.type="stealth" />
+
+    <!-- Connector arrows between shapes -->
+    <Text x="60" y="380" fontSize="14" bold="true" color="$textMain">Connectors</Text>
+    <Shape id="a" x="100" y="420" shapeType="roundRect" w="160" h="60" text="Source" fill.color="2563EB" color="FFFFFF" fontSize="14" bold="true" />
+    <Shape id="b" x="450" y="420" shapeType="roundRect" w="160" h="60" text="Target" fill.color="15803D" color="FFFFFF" fontSize="14" bold="true" />
+    <Arrow from="a" to="b" color="334155" lineWidth="2" endArrow="true" />
+
+    <Shape id="c" x="100" y="540" shapeType="ellipse" w="80" h="80" text="C" fill.color="F59E0B" color="FFFFFF" fontSize="14" bold="true" />
+    <Shape id="d" x="450" y="540" shapeType="ellipse" w="80" h="80" text="D" fill.color="DC2626" color="FFFFFF" fontSize="14" bold="true" />
+    <Arrow from="c" to="d" color="334155" lineWidth="2" dashType="dash" endArrow="true" beginArrow="true" />
+  </Layer>
+</Slide>

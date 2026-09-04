@@ -1,0 +1,610 @@
+# POM XML Generation MVP — Final Plan
+
+> All open questions resolved. Ready for implementation.
+
+---
+
+## 1. Objective & Hypothesis
+
+**Hypothesis**: A smaller, structured, component-specific POM context produces more accurate POM XML than supplying the complete 12,000-token `llm.txt` documentation.
+
+**Current state**: A Python script concatenates `user.txt` + `llm.txt`, sends to GPT-4o/4.1, and gets back POM XML that consistently fails validation due to HTML contamination, invented attributes, and zero-value errors.
+
+**Target state**: A pipeline that selects only the POM constructs relevant to the requested slide, constrains the LLM with an explicit allowlist, and produces compilable POM XML at a measurably higher rate.
+
+---
+
+## 2. Confirmed Technology Stack
+
+| Layer | Technology | Detail |
+|-------|-----------|--------|
+| LLM | OpenAI GPT-4o / GPT-4.1 | Chat Completions API (`client.chat.completions.create`), temperature=0.2 |
+| POM Compiler | `@hirokisakabe/pom` v10.3.0 | `buildPptx(xml, { w: 1280, h: 720 })` — throws `ParseXmlError` on invalid XML |
+| Python | 3.11.9 | pip + venv, pydantic (new install) |
+| Node.js | Current (supports ESM) | `build_pptx.mjs` pattern already working |
+| OpenAI SDK | `openai` ^7.5.0 | Already in package.json |
+| Preview | None (PPTX-only) | Manual inspection in PowerPoint/LibreOffice, no pptx-glimpse |
+| Slide size | 1280 × 720 px | Default POM size |
+| Theme | Included | `<Theme>` tokens for consistent color palettes |
+| Interface | CLI only | `python generate.py --request "..." --output ./output` |
+| Evaluation | JSON | `evaluation.json` per run |
+| Retry budget | 1 retry | Pass error diagnostics back to LLM, regenerate once |
+| Deck mode | Planned, deferred | Implement after single-slide accuracy is validated |
+
+---
+
+## 3. POM Error Classification (Confirmed from Testing)
+
+Three distinct error types, each requiring different handling:
+
+### Type 1: ParseXmlError — Unknown Tag
+```
+ParseXmlError: XML validation failed (1 error):
+  - Unknown tag: <br>
+errors: [ 'Unknown tag: <br>' ]
+```
+- **Thrown by**: `parseXml()` (before layout/render)
+- **`errors` property**: `string[]` — machine-parseable
+- **Pattern**: `"Unknown tag: <X>"` — extract tag name with regex
+- **Cause**: LLM invented HTML/non-POM elements
+- **Retry strategy**: Tell LLM which tags are invalid, list allowed tags
+
+### Type 2: ParseXmlError — Unknown Attribute
+```
+ParseXmlError: XML validation failed (1 error):
+  - <Text>: Unknown attribute "className"
+errors: [ '<Text>: Unknown attribute "className"' ]
+```
+- **Thrown by**: `parseXml()` (before layout/render)
+- **`errors` property**: `string[]` — machine-parseable
+- **Pattern**: `"<Node>: Unknown attribute \"X\""` — extract node and attribute
+- **Cause**: LLM used HTML/CSS/React attributes
+- **Retry strategy**: Tell LLM which attributes are invalid on which node, list allowed attributes
+
+### Type 3: Render Error — Invalid Values
+```
+Error: addTextBox: width must be a finite positive EMU value
+```
+- **Thrown by**: `@pptx-glimpse/document` during PPTX rendering (after parse succeeds)
+- **No `errors` array** — just `error.message` string
+- **Cause**: Zero or negative dimension values that pass XML parsing but fail at render
+- **Retry strategy**: Tell LLM the specific constraint violated, show the node that caused it
+
+### Diagnostic Classifier Design
+```javascript
+function classifyError(error) {
+  if (error.name === 'ParseXmlError' && error.errors) {
+    return {
+      stage: 'parse',
+      type: error.errors.some(e => e.startsWith('Unknown tag')) ? 'UNKNOWN_TAG' : 'UNKNOWN_ATTRIBUTE',
+      details: error.errors,
+      retryable: true
+    };
+  }
+  if (error.message?.includes('must be a finite positive')) {
+    return {
+      stage: 'render',
+      type: 'INVALID_VALUE',
+      details: [error.message],
+      retryable: true
+    };
+  }
+  return {
+    stage: 'unknown',
+    type: 'UNCLASSIFIED',
+    details: [error.message || String(error)],
+    retryable: false
+  };
+}
+```
+
+---
+
+## 4. Known Failure Patterns & Mitigations
+
+### 4.1 HTML Contamination (Critical — most common failure)
+
+The LLM's HTML/CSS training priors overwhelm POM-specific instructions when given 12K tokens of reference documentation.
+
+| What LLM generates | What POM expects | Fix in prompt |
+|-------------------|-----------------|---------------|
+| `<br/>`, `<div>`, `<p>`, `<hr/>` | `<Text>`, `<VStack>`, `<HStack>` | Explicit blocklist + allowlist |
+| `style="..."`, `class="..."` | Individual attributes: `fontSize="24"` | "Do NOT use style= or class=" |
+| `width: 100%`, `font-size: 24px` | `w="100%"`, `fontSize="24"` | Show exact POM syntax in examples |
+| `#FF0000` | `FF0000` | "Colors: 6-digit hex WITHOUT # prefix" |
+
+### 4.2 Invented Attributes
+
+| What LLM generates | What POM expects | Fix in prompt |
+|-------------------|-----------------|---------------|
+| `className`, `onClick` | (doesn't exist) | "Use ONLY these attributes" allowlist |
+| `flex`, `justify`, `align` | `grow`, `justifyContent`, `alignItems` | Side-by-side "NOT this → use this" table |
+| `width`, `height` | `w`, `h` | Prominent note: "w/h NOT width/height" |
+
+### 4.3 Zero/Invalid Values
+
+| What LLM generates | What POM expects | Fix in prompt |
+|-------------------|-----------------|---------------|
+| `w="0"`, `h="0"` | Positive numbers | "All dimensions must be > 0" |
+| `gap="0"` | Positive number or omit | "Omit gap instead of setting to 0" |
+| `opacity="2"` | 0–1 range | Include value ranges in attribute definitions |
+
+### 4.4 Post-Generation XML Sanitizer
+
+Before sending to `buildPptx()`, run a pre-validator that:
+1. Strips markdown fences (` ```xml ... ``` `)
+2. Checks for known HTML tags (`<br>`, `<div>`, `<p>`, `<hr>`, `<span>`)
+3. Checks for `style=` and `class=` attributes
+4. Checks for `#` prefix on color values
+5. Checks for zero-value dimensions
+6. Logs all violations in `evaluation.json`
+7. Optionally auto-fixes simple issues (strip `#` from colors, remove `<br/>` tags)
+
+---
+
+## 5. Architecture
+
+### 5.1 Pipeline Flow
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Python Layer                          │
+│                                                         │
+│  User Request                                           │
+│       ↓                                                 │
+│  SlideIR (semantic, no POM XML)                         │
+│       ↓                                                 │
+│  Context Selector (deterministic, rule-based)           │
+│       ↓                                                 │
+│  GenerationContract (allowed nodes + attrs + examples)  │
+│       ↓                                                 │
+│  Prompt Builder (system + contract + user content)      │
+│       ↓                                                 │
+│  OpenAI Chat Completions (GPT-4o/4.1, temp=0.2)        │
+│       ↓                                                 │
+│  Raw XML → Pre-validator / Sanitizer                    │
+│       ↓                                                 │
+│  Save artifacts (prompt, raw response, cleaned XML)     │
+│       ↓                                                 │
+│  subprocess: node compile-pom.js input.xml output/      │
+│       ↓                                                 │
+│  Read compile-result.json                               │
+│       ↓                                                 │
+│  Evaluator → evaluation.json                            │
+│       ↓                                                 │
+│  [If failed + retries remaining] → Retry with errors    │
+└─────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────┐
+│                    Node.js Layer                         │
+│                                                         │
+│  compile-pom.js                                         │
+│       ↓                                                 │
+│  Read XML file                                          │
+│       ↓                                                 │
+│  buildPptx(xml, { w: 1280, h: 720 })                   │
+│       ↓ success                    ↓ error              │
+│  Write presentation.pptx    Classify error              │
+│       ↓                           ↓                     │
+│  Write compile-result.json  Write compile-result.json   │
+│  { status: "success" }      { status: "failure",        │
+│                               diagnostics: [...] }      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Project Structure
+```
+presentation-mvp/
+├── README.md
+├── .env.example                  # OPENAI_API_KEY
+├── requirements.txt              # pydantic, openai, pyyaml
+├── package.json                  # @hirokisakabe/pom ^10.3.0
+│
+├── python/
+│   ├── generate.py               # Main CLI entry point
+│   ├── models.py                 # SlideIR, GenerationContract, CompileResult, EvaluationResult
+│   ├── llm_client.py             # OpenAI Chat Completions wrapper
+│   ├── context_selector.py       # Deterministic context selection from knowledge base
+│   ├── prompt_builder.py         # Baseline + selective prompt construction
+│   ├── pre_validator.py          # XML sanitizer (strip HTML, check values)
+│   ├── compiler_client.py        # subprocess call to compile-pom.js
+│   ├── evaluator.py              # Score generation results
+│   └── config.py                 # Env vars, paths, model settings
+│
+├── node/
+│   ├── compile-pom.js            # Thin buildPptx() wrapper with error classification
+│   └── package.json
+│
+├── pom-knowledge/
+│   ├── core/
+│   │   ├── document.yaml         # Slide structure, top-level rules
+│   │   ├── nodes.yaml            # Complete node allowlist with descriptions
+│   │   ├── attributes.yaml       # Common attributes with types and constraints
+│   │   └── validation.yaml       # Value constraints, blocklist of HTML patterns
+│   │
+│   ├── components/
+│   │   ├── text.yaml             # Text node + inline formatting (B, I, Span, etc.)
+│   │   ├── shape.yaml            # Shape + safe shapeType subset
+│   │   ├── chart.yaml            # Chart + ChartSeries + ChartDataPoint
+│   │   ├── table.yaml            # Table + Col + Tr + Td
+│   │   ├── list.yaml             # Ul + Ol + Li
+│   │   ├── image.yaml            # Image node
+│   │   └── kpi.yaml              # KPI composition pattern (not a single node)
+│   │
+│   ├── layouts/
+│   │   ├── title-content.yaml    # VStack with title + body
+│   │   ├── kpi-row.yaml          # HStack with KPI tiles
+│   │   ├── chart-table.yaml      # Two-column chart + table
+│   │   ├── two-column.yaml       # Generic two-column HStack
+│   │   └── full-width-chart.yaml # Single chart with title
+│   │
+│   ├── theme/
+│   │   └── default.yaml          # Default <Theme> tokens for MVP
+│   │
+│   └── examples/
+│       ├── minimal-slide.xml     # Simplest valid slide (compile-verified)
+│       ├── text-slide.xml        # Title + body text
+│       ├── kpi-slide.xml         # KPI row with dot indicators
+│       ├── chart-slide.xml       # Single bar chart
+│       ├── table-slide.xml       # Basic table
+│       └── mixed-slide.xml       # Chart + table + KPIs
+│
+├── tests/
+│   └── cases/
+│       ├── text-only.yaml
+│       ├── title-and-narrative.yaml
+│       ├── kpi-row.yaml
+│       ├── single-chart.yaml
+│       ├── single-table.yaml
+│       ├── chart-and-narrative.yaml
+│       ├── table-and-narrative.yaml
+│       ├── chart-and-table.yaml
+│       └── mixed-executive-slide.yaml
+│
+├── prompts/
+│   ├── system-baseline.txt       # Full llm.txt approach
+│   └── system-selective.txt      # Selective context template
+│
+└── output/                       # Generated per-run output directories
+```
+
+### 5.3 compile-pom.js (Node.js Compiler)
+```javascript
+// compile-pom.js — thin wrapper, no business logic
+import { readFile, writeFile, mkdir } from 'fs/promises';
+import { buildPptx } from '@hirokisakabe/pom';
+import path from 'path';
+
+const inputPath = process.argv[2];
+const outputDir = process.argv[3] || './output';
+
+async function compile() {
+  await mkdir(outputDir, { recursive: true });
+  const xml = await readFile(inputPath, 'utf8');
+  const result = {
+    status: null,
+    pptxPath: null,
+    diagnostics: [],
+    pomVersion: '10.3.0'
+  };
+
+  try {
+    const { pptx } = await buildPptx(xml, { w: 1280, h: 720 });
+    const pptxPath = path.join(outputDir, 'presentation.pptx');
+    await pptx.writeFile({ fileName: pptxPath });
+    result.status = 'success';
+    result.pptxPath = pptxPath;
+  } catch (error) {
+    result.status = 'failure';
+    if (error.name === 'ParseXmlError' && error.errors) {
+      result.diagnostics = error.errors.map(e => {
+        if (e.startsWith('Unknown tag:'))
+          return { type: 'UNKNOWN_TAG', message: e };
+        if (e.includes('Unknown attribute'))
+          return { type: 'UNKNOWN_ATTRIBUTE', message: e };
+        return { type: 'PARSE_ERROR', message: e };
+      });
+    } else {
+      result.diagnostics = [{
+        type: 'RENDER_ERROR',
+        message: error.message
+      }];
+    }
+  }
+
+  const resultPath = path.join(outputDir, 'compile-result.json');
+  await writeFile(resultPath, JSON.stringify(result, null, 2));
+  process.exit(result.status === 'success' ? 0 : 1);
+}
+
+compile();
+```
+
+---
+
+## 6. Prompt Strategy Design
+
+### 6.1 Baseline Prompt (for comparison)
+```
+SYSTEM:
+You are a POM XML generator. Generate valid POM XML for presentations.
+
+{full contents of llm.txt — ~12,000 tokens}
+
+USER:
+{user request from test case}
+```
+
+### 6.2 Selective Context Prompt (the improvement)
+```
+SYSTEM:
+You generate POM XML for @hirokisakabe/pom v10.3.0.
+Return ONLY valid POM XML. No explanation, no markdown fences, no code blocks.
+
+═══ CRITICAL RULES ═══
+
+POM XML is NOT HTML. Do NOT use any HTML elements or attributes.
+
+FORBIDDEN — never use these:
+  Tags:  <br>, <br/>, <div>, <p>, <span>, <hr>, <hr/>, <section>, <header>, <footer>
+  Attrs: style, class, className, onClick, id (except for Arrow connectors)
+  Props: width (use w), height (use h), font-size (use fontSize),
+         text-align (use textAlign), flex-direction (use VStack or HStack)
+  Colors: Do NOT prefix with # — use FF0000 not #FF0000
+  Values: All dimensions (w, h, gap, padding) must be > 0. Never use 0.
+
+═══ ALLOWED NODES ═══
+{dynamically selected from pom-knowledge/core/nodes.yaml based on SlideIR}
+
+═══ ALLOWED ATTRIBUTES ═══
+{dynamically selected from component YAML files}
+
+═══ THEME ═══
+{default theme tokens from pom-knowledge/theme/default.yaml}
+
+═══ LAYOUT PATTERN ═══
+{selected layout from pom-knowledge/layouts/}
+
+═══ REFERENCE EXAMPLE ═══
+{1-2 compile-verified examples from pom-knowledge/examples/}
+
+═══ SLIDE OBJECTIVE ═══
+{from SlideIR.objective}
+
+═══ REQUIRED COMPONENTS ═══
+{from SlideIR.components}
+
+USER:
+{user request + any supplied business content}
+```
+
+### 6.3 Key Differences
+| Aspect | Baseline | Selective |
+|--------|----------|-----------|
+| Context size | ~12,000 tokens | ~2,000–4,000 tokens |
+| Constraint style | Implicit (reference doc) | Explicit (allowlist + blocklist) |
+| HTML prevention | None | Explicit FORBIDDEN section at top |
+| Examples | None | 1-2 verified, compilable examples |
+| Layout guidance | None | Specific layout pattern for this slide |
+| Value constraints | Buried in doc | Prominent rules section |
+
+---
+
+## 7. Phased Implementation Plan
+
+### Phase 1: Compiler Verification (Day 1)
+- [ ] Build `compile-pom.js` with error classification
+- [ ] Verify with all 3 `llm.txt` example patterns (basic, two-column, KPI)
+- [ ] Confirm error classification catches all 3 error types
+- [ ] Create 6 verified example XML files that compile to PPTX
+- [ ] Store verified examples in `pom-knowledge/examples/`
+
+### Phase 2: Knowledge Base — Phase A Components (Day 2)
+- [ ] Create `core/document.yaml` — Slide structure, top-level rules
+- [ ] Create `core/nodes.yaml` — Slide, VStack, HStack, Text, Span, B, I (Phase A allowlist)
+- [ ] Create `core/attributes.yaml` — Common attributes with types/constraints
+- [ ] Create `core/validation.yaml` — HTML blocklist, value constraints
+- [ ] Create `components/text.yaml` — Text + inline formatting
+- [ ] Create `theme/default.yaml` — Default corporate-style Theme tokens
+- [ ] Create `layouts/title-content.yaml` — Basic VStack layout
+
+### Phase 3: Python Skeleton (Day 3)
+- [ ] `config.py` — env vars, paths, model settings
+- [ ] `models.py` — Pydantic models for SlideIR, GenerationContract, CompileResult, EvaluationResult
+- [ ] `llm_client.py` — OpenAI Chat Completions wrapper (GPT-4o/4.1, temp=0.2)
+- [ ] `pre_validator.py` — XML sanitizer
+- [ ] `compiler_client.py` — subprocess call to `node compile-pom.js`
+- [ ] `evaluator.py` — Basic evaluation (XML valid, compiled, PPTX exists, no unknown tags)
+- [ ] `generate.py` — End-to-end CLI with `--request` and `--output`
+
+### Phase 4: Context Selection & Prompt Builder (Day 4)
+- [ ] `context_selector.py` — Read SlideIR → load relevant YAML files → build context
+- [ ] `prompt_builder.py` — Baseline prompt (full llm.txt) + selective prompt (contract-based)
+- [ ] Wire up full pipeline: request → SlideIR → context → prompt → LLM → sanitize → compile → evaluate
+
+### Phase 5: Accuracy Experiment (Day 5)
+- [ ] Create 3 initial test cases: text-only, title-and-narrative, kpi-row
+- [ ] Run each against baseline strategy (full llm.txt)
+- [ ] Run each against selective strategy
+- [ ] Record: token usage, compilation success, error types, PPTX output
+- [ ] Generate comparison report
+
+### Phase 6: Component Expansion — Phase B (Day 6-7)
+- [ ] Add `components/shape.yaml`, `components/chart.yaml`, `components/table.yaml`
+- [ ] Add `layouts/kpi-row.yaml`, `layouts/chart-table.yaml`, `layouts/two-column.yaml`
+- [ ] Add verified examples: chart-slide.xml, table-slide.xml, mixed-slide.xml
+- [ ] Add remaining test cases (single-chart through mixed-executive-slide)
+- [ ] Re-run experiment with expanded component set
+
+### Phase 7: Retry Logic (Day 8)
+- [ ] Implement 1-retry mechanism: on failure, add error diagnostics to prompt, regenerate
+- [ ] Measure repair success rate
+- [ ] Record retry outcomes in evaluation.json
+
+### Phase 8: Final Evaluation & Report (Day 9)
+- [ ] Run all 9 test cases × 2 strategies × with/without retry
+- [ ] Generate final comparison report
+- [ ] Document findings: does selective context improve accuracy?
+
+### Phase 9: Deck Mode Planning (Future)
+- [ ] Design DeckIR model
+- [ ] Implement slide-by-slide generation
+- [ ] Add cross-slide Theme consistency
+- [ ] Test with 2-3 slide decks
+
+---
+
+## 8. Test Cases
+
+Each test case defines the request, required components, and content source:
+
+| # | Case | Components | Content Source |
+|---|------|-----------|---------------|
+| 1 | text-only | Text | LLM invents |
+| 2 | title-and-narrative | Text (title + body) | LLM invents |
+| 3 | kpi-row | VStack, HStack, Text, Shape | Mix: KPI labels supplied, values invented |
+| 4 | single-chart | Chart, ChartSeries, ChartDataPoint | Mix: chart type supplied, data invented |
+| 5 | single-table | Table, Col, Tr, Td | Mix: headers supplied, rows invented |
+| 6 | chart-and-narrative | Chart + Text | Mix: topic supplied, data invented |
+| 7 | table-and-narrative | Table + Text | Mix: topic supplied, data invented |
+| 8 | chart-and-table | Chart + Table (two-column) | Mix: headers supplied, data invented |
+| 9 | mixed-executive-slide | KPI row + Table + Chart | Mix: KPI labels + headers supplied, data invented |
+
+---
+
+## 9. Evaluation Metrics
+
+```json
+{
+  "run_id": "...",
+  "strategy": "baseline | selective",
+  "test_case": "...",
+  "generation": {
+    "xml_returned": true,
+    "markdown_fences_found": false,
+    "html_tags_found": [],
+    "html_attributes_found": [],
+    "zero_values_found": []
+  },
+  "pre_validation": {
+    "issues_found": 0,
+    "auto_fixed": 0
+  },
+  "compilation": {
+    "status": "success | failure",
+    "diagnostics": [],
+    "error_type": null
+  },
+  "artifacts": {
+    "pptx_created": true
+  },
+  "components": {
+    "required": ["title", "kpi_row", "chart"],
+    "present": ["title", "kpi_row"],
+    "missing": ["chart"],
+    "completion_rate": 0.67
+  },
+  "tokens": {
+    "input": 3200,
+    "output": 850,
+    "total": 4050
+  },
+  "retry": {
+    "attempted": false,
+    "succeeded": null
+  }
+}
+```
+
+---
+
+## 10. Success Criteria
+
+### Minimum Viable Result
+- [ ] Pipeline runs end-to-end (request → PPTX)
+- [ ] At least 3/9 test cases produce valid PPTX with selective context
+- [ ] Selective context produces fewer `ParseXmlError` than baseline
+- [ ] Token usage is measurably lower with selective context
+- [ ] All intermediate artifacts are saved and inspectable
+
+### Strong Result
+- [ ] Selective context achieves >70% PPTX success rate
+- [ ] Zero HTML contamination errors with selective context
+- [ ] Component completion rate >80%
+- [ ] Token usage reduced by >60% vs baseline
+- [ ] At least one retry converts a failure to success
+
+### The MVP is complete when
+It produces measurable evidence showing whether selective POM context improves generation accuracy compared to the full `llm.txt` prompt. A negative result (selective context doesn't help) is still a valid completion — the experiment answers the question either way.
+
+---
+
+## 11. Confirmed Decisions Summary
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| LLM | GPT-4o / GPT-4.1, Chat Completions, temp=0.2 | Already working in PoC |
+| POM version | ^10.3.0 | Already installed and tested |
+| Preview | PPTX-only, manual inspection | Simplicity; no pptx-glimpse dependency |
+| Theme | Included in generated XML | Required for good color design |
+| Slide size | 1280×720 | POM default |
+| Deck mode | Planned, deferred to Phase 9 | Single-slide accuracy first |
+| Retry | 1 attempt with error diagnostics | Diminishing returns beyond 1 |
+| Eval format | JSON | Machine-readable for comparison scripts |
+| Interface | CLI only | No web UI overhead |
+| Python | 3.11.9, pip+venv, pydantic (new) | Clean environment |
+| Content | Mix of supplied and LLM-invented | Realistic test conditions |
+
+---
+
+## 12. `llm.txt` Complete Node & Attribute Reference
+
+For knowledge base curation, here is the full inventory from the 726-line `llm.txt`:
+
+### All Valid POM Nodes (36 total)
+```
+Top-level:     Slide, Theme
+Layout:        VStack, HStack, Layer
+Content:       Text, Image, Icon, Svg, Shape, Line, Arrow
+Inline:        B, I, A, U, S, Sub, Sup, Mark, Span
+Lists:         Ul, Ol, Li
+Table:         Table, Col, Tr, Td
+Chart:         Chart, ChartSeries, ChartDataPoint
+Visualization: Timeline, TimelineItem, Matrix, MatrixAxes, MatrixQuadrants, MatrixItem
+               Tree, TreeItem, Flow, FlowNode, FlowConnection
+               ProcessArrow, ProcessArrowStep, Pyramid, PyramidLevel
+```
+
+### Phase A Nodes (MVP start — 10 nodes)
+```
+Slide, Theme, VStack, HStack, Text, B, I, Span, Mark, Shape
+```
+
+### Phase B Nodes (add 8)
+```
++ Chart, ChartSeries, ChartDataPoint, Ul, Ol, Li, Image, Icon
+```
+
+### Phase C Nodes (add 4)
+```
++ Table, Col, Tr, Td
+```
+
+### Phase D Nodes (add remaining 14)
+```
++ Layer, Line, Arrow, Svg, A, U, S, Sub, Sup
++ Timeline, TimelineItem, Flow, FlowNode, FlowConnection
+(Matrix, Tree, ProcessArrow, Pyramid deferred to post-MVP)
+```
+
+### Chart Types (6 supported)
+```
+bar, line, pie, area, doughnut, radar
+```
+
+### Shape Types (178 total — use subset for MVP)
+Safe MVP subset:
+```
+rect, roundRect, ellipse, triangle, diamond, plus, hexagon, octagon, star5, heart, cloud
+chevron, rightArrow, leftArrow, downArrow, upArrow
+flowChartProcess, flowChartDecision, flowChartTerminator
+```

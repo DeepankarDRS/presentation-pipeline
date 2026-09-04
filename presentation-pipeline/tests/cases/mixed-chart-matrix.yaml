@@ -1,0 +1,44 @@
+# Mixed test case: bar chart + matrix on one slide.
+name: mixed-chart-matrix
+phase: post-mvp
+objective: Show quarterly revenue by product as a bar chart alongside an effort-impact matrix of upcoming features.
+request: >
+  A two-column analysis slide. Title "Q3 Review & Q4 Planning".
+  Left column: a vertical bar chart showing Q3 revenue by product line (4 products,
+  3 months each). Include axis labels and a legend. Chart surface should have a
+  light background for readability.
+  Right column: a compact effort-impact matrix with 5 feature items plotted.
+  Quadrant labels: "Invest", "Do Now", "Reconsider", "Backlog". Items colored
+  by product line to match the chart.
+  Bottom: a caption "Finance & Product — Sep 2026 Quarterly Business Review".
+theme: corporate-slate
+components:
+  - title
+  - chart
+  - matrix
+  - caption
+supplied_content:
+  title: "Q3 Review & Q4 Planning"
+  chart_data:
+    series:
+      - name: "Platform"
+        values: [4.2, 4.5, 4.8]
+      - name: "Analytics"
+        values: [2.1, 2.4, 2.3]
+      - name: "Mobile"
+        values: [1.8, 2.0, 2.2]
+      - name: "Enterprise"
+        values: [3.5, 3.7, 4.1]
+    categories: ["Jul", "Aug", "Sep"]
+    unit: "$M"
+  matrix_items:
+    - { label: "Platform v3",   x: 0.7, y: 0.9, product: "Platform" }
+    - { label: "Dashboards 2.0",x: 0.4, y: 0.8, product: "Analytics" }
+    - { label: "iOS Widget",    x: 0.2, y: 0.5, product: "Mobile" }
+    - { label: "SSO/SCIM",      x: 0.8, y: 0.7, product: "Enterprise" }
+    - { label: "Webhook API",   x: 0.3, y: 0.3, product: "Platform" }
+  caption: "Finance & Product — Sep 2026 Quarterly Business Review"
+content_source: Revenue data and feature items supplied; chart colors and matrix positions supplied.
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Shape, Chart, ChartSeries, ChartDataPoint, Matrix, MatrixAxes, MatrixQuadrants, MatrixItem]

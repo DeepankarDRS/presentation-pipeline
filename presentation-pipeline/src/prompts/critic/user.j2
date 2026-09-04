@@ -1,0 +1,25 @@
+## GENERATED XML
+{{ current_xml }}
+
+## SLIDE PLAN
+Components:
+{% for comp in components %}
+- {{ comp.kind }}{% if comp.count is defined and comp.count > 1 %} (count: {{ comp.count }}){% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
+
+{% endfor %}
+Density: {{ density }}
+{% if layout_hint %}
+Layout: {{ layout_hint }}
+{% endif %}
+{% if supplied_content %}
+
+## SUPPLIED CONTENT (these values must appear in the XML)
+{% for key, value in supplied_content.items() %}
+- {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+
+## THEME ELEMENT
+{{ theme_element }}
+
+Review the XML against all 4 checklist items and report any issues found.

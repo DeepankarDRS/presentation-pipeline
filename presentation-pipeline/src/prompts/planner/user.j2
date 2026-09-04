@@ -1,0 +1,16 @@
+REQUEST:
+{{ raw_request }}
+{% if theme_name %}
+THEME: {{ theme_name }}
+{% endif %}
+{% if supplied_content %}
+SUPPLIED CONTENT (use these values exactly; derive the rest):
+{% for key, value in supplied_content.items() %}
+- {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if components_hint %}
+REQUESTED COMPONENTS: {{ components_hint }}
+{% endif %}
+
+Plan the slide(s) for this request.

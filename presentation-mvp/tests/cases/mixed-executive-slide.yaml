@@ -1,0 +1,30 @@
+# Phase 5 test case #9. Consumed by slide_ir.from_test_case().
+# NOTE: the hardest case - KPI row (Phase A) + Table (Phase C) + Chart (Phase B)
+# on one slide. Full support arrives in Phase 6; useful now as a stress test of
+# layout density and the FORBIDDEN blocklist under load.
+name: mixed-executive-slide
+phase: ABC
+objective: Give the executive team the whole quarter on one dense slide.
+request: >
+  A dense executive summary slide for Q3 FY26. Bold title with a thin accent
+  rule. Below it, a row of three KPI tiles (ARR, NRR, Gross Margin). Below that,
+  two balanced columns: left a bar chart of revenue over the last four quarters,
+  right a small table of the top three product segments with revenue and QoQ
+  growth. Everything must fit within 1280x720 without overflow.
+theme: amber-mono
+components:
+  - title
+  - kpi_row
+  - chart
+  - table
+supplied_content:
+  title: "Q3 FY26 - Executive Summary"
+  kpi_labels: [ARR, NRR, Gross Margin]
+  quarters: [Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]
+  table_columns: [Segment, Revenue, QoQ Growth]
+  segments: [Enterprise, Mid-Market, SMB]
+content_source: Labels, quarters, headers, and segment names supplied; every figure invented and internally consistent
+expect:
+  compiles: true
+  no_overflow: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Span, Shape, Chart, ChartSeries, ChartDataPoint, Table, Col, Tr, Td]

@@ -1,0 +1,73 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+
+<!-- Slide 1: Matrix -->
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface">
+    <Text fontSize="28" bold="true" color="$textMain">Post-MVP Test: Matrix</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <Matrix w="650" h="480" axisLabelColor="55627A" quadrantLabelColor="94A3B8" itemLabelColor="16202E">
+        <MatrixAxes x="Effort" y="Impact" />
+        <MatrixQuadrants topLeft="Rethink" topRight="Do First" bottomLeft="Skip" bottomRight="Quick Wins" />
+        <MatrixItem label="Feature A" x="0.8" y="0.85" color="2563EB" />
+        <MatrixItem label="Feature B" x="0.2" y="0.7" color="15803D" />
+        <MatrixItem label="Feature C" x="0.6" y="0.3" color="F59E0B" />
+      </Matrix>
+    </VStack>
+  </VStack>
+</Slide>
+
+<!-- Slide 2: Tree -->
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface">
+    <Text fontSize="28" bold="true" color="$textMain">Post-MVP Test: Org Chart</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <Tree layout="vertical" w="1000" h="450" nodeShape="roundRect" textColor="FFFFFF" nodeWidth="130" nodeHeight="42" levelGap="55" siblingGap="20">
+        <TreeItem label="CEO" color="1E3A8A">
+          <TreeItem label="VP Eng" color="2563EB">
+            <TreeItem label="Frontend" color="3B82F6" />
+            <TreeItem label="Backend" color="3B82F6" />
+          </TreeItem>
+          <TreeItem label="VP Sales" color="2563EB">
+            <TreeItem label="Enterprise" color="3B82F6" />
+            <TreeItem label="SMB" color="3B82F6" />
+          </TreeItem>
+        </TreeItem>
+      </Tree>
+    </VStack>
+  </VStack>
+</Slide>
+
+<!-- Slide 3: ProcessArrow -->
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="32" backgroundColor="$surface">
+    <Text fontSize="28" bold="true" color="$textMain">Post-MVP Test: Process</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <ProcessArrow direction="horizontal" w="1100" h="90" itemWidth="210" itemHeight="75" fontSize="15" bold="true">
+        <ProcessArrowStep label="Plan" color="2563EB" textColor="FFFFFF" />
+        <ProcessArrowStep label="Build" color="1D4ED8" textColor="FFFFFF" />
+        <ProcessArrowStep label="Test" color="1E40AF" textColor="FFFFFF" />
+        <ProcessArrowStep label="Ship" color="1E3A8A" textColor="FFFFFF" />
+      </ProcessArrow>
+    </VStack>
+  </VStack>
+</Slide>
+
+<!-- Slide 4: Pyramid -->
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface">
+    <Text fontSize="28" bold="true" color="$textMain">Post-MVP Test: Pyramid</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <Pyramid direction="up" w="650" h="420" fontSize="15" bold="true">
+        <PyramidLevel label="Vision" color="1E3A8A" textColor="FFFFFF" />
+        <PyramidLevel label="Strategy" color="2563EB" textColor="FFFFFF" />
+        <PyramidLevel label="Goals" color="3B82F6" textColor="FFFFFF" />
+        <PyramidLevel label="Tactics" color="60A5FA" textColor="FFFFFF" />
+        <PyramidLevel label="Execution" color="93C5FD" textColor="1E293B" />
+      </Pyramid>
+    </VStack>
+  </VStack>
+</Slide>

@@ -1,0 +1,45 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="32" backgroundColor="$surface">
+    <!-- Title -->
+    <Text fontSize="32" bold="true" color="$textMain">Inline Formatting Demo</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+
+    <HStack gap="32" grow="1">
+      <!-- Left: Text examples -->
+      <VStack grow="1" gap="16" padding="24" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <Text fontSize="18" bold="true" color="$textMain">Text Formatting</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.6" w="500">Revenue grew <B>18% QoQ</B><Sup>1</Sup>, driven by <U>enterprise expansion</U> and reduced CO<Sub>2</Sub> costs.</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.6" w="500">The legacy plan was <S>$99/month</S> — now <Mark color="DCFCE7">$79/month</Mark> after restructuring.</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.6" w="500">See <A href="https://example.com/q3-report">the full Q3 report</A> for detailed breakdowns.</Text>
+      </VStack>
+
+      <!-- Right: List + Table examples -->
+      <VStack grow="1" gap="16" padding="24" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <Text fontSize="18" bold="true" color="$textMain">In Lists &amp; Tables</Text>
+        <Ul fontSize="14" color="$textMuted" lineHeight="1.6">
+          <Li>Water is H<Sub>2</Sub>O — a <B>fundamental</B> molecule</Li>
+          <Li>Einstein's E=mc<Sup>2</Sup> changed physics</Li>
+          <Li>Visit <A href="https://example.com">our website</A> for more</Li>
+        </Ul>
+
+        <Table w="480">
+          <Col width="240" /><Col width="240" />
+          <Tr>
+            <Td bold="true" backgroundColor="2563EB" color="FFFFFF" fontSize="13">Feature</Td>
+            <Td bold="true" backgroundColor="2563EB" color="FFFFFF" fontSize="13">Status</Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="13"><A href="https://example.com/docs">Hyperlinks</A></Td>
+            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="13"><Mark color="DCFCE7">Shipped</Mark></Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="F8FAFC" color="$textMain" fontSize="13">H<Sub>2</Sub>O notation</Td>
+            <Td backgroundColor="F8FAFC" color="$textMain" fontSize="13"><S>Planned</S> Done</Td>
+          </Tr>
+        </Table>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

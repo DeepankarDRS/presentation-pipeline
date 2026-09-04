@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Node
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Pipeline output
+presentation-pipeline/output/
+presentation-pipeline/.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db

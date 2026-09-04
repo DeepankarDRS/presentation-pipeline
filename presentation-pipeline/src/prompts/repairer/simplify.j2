@@ -1,0 +1,19 @@
+{{ previous_user }}
+
+======================  REPAIR — TIER 2 (SIMPLIFY)  ======================
+Previous attempts failed with persistent errors. Regenerate with a SIMPLER layout.
+
+WHAT WENT WRONG:
+{% for problem in problems %}
+- {{ problem }}
+{% endfor %}
+
+SIMPLIFICATION RULES:
+{{ simplify_instructions }}
+
+INSTRUCTIONS:
+1. Generate the slide from scratch with the simplified layout above.
+2. Use ONLY valid POM nodes: {{ allowed_nodes | join(', ') }}
+3. Use the Theme element exactly as specified in the system prompt.
+4. Keep all content meaningful but reduce complexity to fit 1280x720.
+5. Return POM XML only — no explanation, no markdown fences.

@@ -1,0 +1,17 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface">
+    <Text fontSize="28" bold="true" color="$textMain">Maslow's Hierarchy of Needs</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <Pyramid direction="up" w="700" h="450" fontSize="16" bold="true">
+        <PyramidLevel label="Self-Actualization" color="6D28D9" textColor="FFFFFF" />
+        <PyramidLevel label="Esteem" color="7C3AED" textColor="FFFFFF" />
+        <PyramidLevel label="Love / Belonging" color="8B5CF6" textColor="FFFFFF" />
+        <PyramidLevel label="Safety" color="A78BFA" textColor="FFFFFF" />
+        <PyramidLevel label="Physiological" color="C4B5FD" textColor="1E293B" />
+      </Pyramid>
+    </VStack>
+  </VStack>
+</Slide>

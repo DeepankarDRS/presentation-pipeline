@@ -1,0 +1,65 @@
+<Theme surface="0F172A" surfaceAlt="1E293B" accent="3B82F6" accentAlt="38BDF8" positive="22C55E" negative="EF4444" warning="F59E0B" textMain="F8FAFC" textMuted="94A3B8" border="334155" />
+<Slide>
+  <VStack w="1280" h="720" padding="40" gap="16" backgroundColor="$surface" alignItems="start">
+    <Text fontSize="26" bold="true" color="$textMain">Operating dashboard &#8212; 2 charts, 2 tables</Text>
+    <VStack w="1200" h="580" gap="16">
+      <HStack w="1200" h="282" gap="16" alignItems="stretch">
+        <VStack grow="1" h="282" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1">
+          <Text fontSize="13" bold="true" color="$textMuted" letterSpacing="1">NEW ARR BY QUARTER ($M)</Text>
+          <Chart chartType="bar" w="560" h="230" showLegend="false" chartColors='["3B82F6"]'>
+            <ChartSeries name="New ARR">
+              <ChartDataPoint label="Q4 FY25" value="4.1" />
+              <ChartDataPoint label="Q1 FY26" value="4.8" />
+              <ChartDataPoint label="Q2 FY26" value="5.6" />
+              <ChartDataPoint label="Q3 FY26" value="7.2" />
+            </ChartSeries>
+          </Chart>
+        </VStack>
+        <VStack grow="1" h="282" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1">
+          <Text fontSize="13" bold="true" color="$textMuted" letterSpacing="1">TOP ACCOUNTS</Text>
+          <Table w="568" defaultRowHeight="34" cellBorder.color="334155" cellBorder.width="1">
+            <Col width="300" />
+            <Col width="140" />
+            <Col width="128" />
+            <Tr>
+              <Td bold="true" backgroundColor="0F172A" color="F8FAFC">Account</Td>
+              <Td bold="true" backgroundColor="0F172A" color="F8FAFC">ARR</Td>
+              <Td bold="true" backgroundColor="0F172A" color="F8FAFC">QoQ</Td>
+            </Tr>
+            <Tr><Td color="F8FAFC">Northwind Traders</Td><Td color="F8FAFC">$3.2M</Td><Td color="22C55E">+41%</Td></Tr>
+            <Tr><Td color="F8FAFC">Contoso Ltd</Td><Td color="F8FAFC">$2.7M</Td><Td color="22C55E">+18%</Td></Tr>
+            <Tr><Td color="F8FAFC">Fabrikam Inc</Td><Td color="F8FAFC">$2.1M</Td><Td color="EF4444">-6%</Td></Tr>
+          </Table>
+        </VStack>
+      </HStack>
+      <HStack w="1200" h="282" gap="16" alignItems="stretch">
+        <VStack grow="1" h="282" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1">
+          <Text fontSize="13" bold="true" color="$textMuted" letterSpacing="1">PIPELINE BY STAGE</Text>
+          <Table w="568" defaultRowHeight="34" cellBorder.color="334155" cellBorder.width="1">
+            <Col width="300" />
+            <Col width="140" />
+            <Col width="128" />
+            <Tr>
+              <Td bold="true" backgroundColor="0F172A" color="F8FAFC">Stage</Td>
+              <Td bold="true" backgroundColor="0F172A" color="F8FAFC">Value</Td>
+              <Td bold="true" backgroundColor="0F172A" color="F8FAFC">Count</Td>
+            </Tr>
+            <Tr><Td color="F8FAFC">Discovery</Td><Td color="F8FAFC">$18.4M</Td><Td color="F8FAFC">62</Td></Tr>
+            <Tr><Td color="F8FAFC">Evaluation</Td><Td color="F8FAFC">$11.2M</Td><Td color="F8FAFC">28</Td></Tr>
+            <Tr><Td color="F8FAFC">Commit</Td><Td color="F8FAFC">$6.9M</Td><Td color="F8FAFC">11</Td></Tr>
+          </Table>
+        </VStack>
+        <VStack grow="1" h="282" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1">
+          <Text fontSize="13" bold="true" color="$textMuted" letterSpacing="1">ARR MIX BY SEGMENT</Text>
+          <Chart chartType="doughnut" w="560" h="230" showLegend="true" chartColors='["3B82F6","38BDF8","94A3B8"]'>
+            <ChartSeries name="ARR mix">
+              <ChartDataPoint label="Enterprise" value="66" />
+              <ChartDataPoint label="Mid-Market" value="26" />
+              <ChartDataPoint label="SMB" value="8" />
+            </ChartSeries>
+          </Chart>
+        </VStack>
+      </HStack>
+    </VStack>
+  </VStack>
+</Slide>
