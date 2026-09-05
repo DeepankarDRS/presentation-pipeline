@@ -16,6 +16,7 @@ from src.agents.context_builder import (
     context_builder_node,
     _load_yaml,
 )
+from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
 from src.state import ComponentPlan, SlidePlan, initial_state
 
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "prompts" / "generator"
@@ -222,7 +223,7 @@ def test_layout_timeline():
 
 def test_build_contract_text():
     plan = _make_plan(["title", "narrative"])
-    contract = build_contract(plan, "")
+    contract = build_contract(plan, DEFAULT_THEME)
     assert "VStack" in contract["allowed_nodes"]
     assert "Text" in contract["allowed_nodes"]
     assert contract["density_tier"] == "standard"
@@ -234,7 +235,7 @@ def test_build_contract_maximal():
         ["title", "kpi_row", "chart", "bullet_list", "table", "caption"],
         density="tight_fit",
     )
-    contract = build_contract(plan, "corporate-slate")
+    contract = build_contract(plan, DEFAULT_THEME)
     assert "Chart" in contract["allowed_nodes"]
     assert "Table" in contract["allowed_nodes"]
     assert "Ul" in contract["allowed_nodes"]
@@ -244,7 +245,7 @@ def test_build_contract_maximal():
 
 def test_build_contract_sparse():
     plan = _make_plan(["title"], density="sparse")
-    contract = build_contract(plan, "")
+    contract = build_contract(plan, DEFAULT_THEME)
     assert contract["density_tier"] == "minimal"
 
 
@@ -266,7 +267,7 @@ def _estimate_tokens(text: str) -> int:
 
 def test_prompt_minimal_tier():
     plan = _make_plan(["title", "narrative"], density="sparse")
-    contract = build_contract(plan, "")
+    contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
     assert tokens < 3000, f"Minimal tier too large: {tokens} tokens"
@@ -276,7 +277,7 @@ def test_prompt_minimal_tier():
 
 def test_prompt_standard_tier():
     plan = _make_plan(["title", "chart", "table"], density="normal")
-    contract = build_contract(plan, "corporate-slate")
+    contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
     assert tokens < 5000, f"Standard tier too large: {tokens} tokens"
@@ -290,7 +291,7 @@ def test_prompt_dense_tier_under_6k():
         ["title", "kpi_row", "chart", "bullet_list", "table", "caption"],
         density="tight_fit",
     )
-    contract = build_contract(plan, "corporate-slate")
+    contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
     assert tokens < 6000, f"Dense tier too large: {tokens} tokens (target: <6000)"
@@ -302,7 +303,7 @@ def test_prompt_dense_tier_under_6k():
 def test_prompt_always_has_critical_rules():
     for density in ("sparse", "normal", "tight_fit"):
         plan = _make_plan(["title"], density=density)
-        contract = build_contract(plan, "")
+        contract = build_contract(plan, DEFAULT_THEME)
         prompt = _render_system_prompt(contract)
         assert "CRITICAL RULES" in prompt
         assert "margin" in prompt.lower()
@@ -318,7 +319,7 @@ def test_context_builder_node_runs():
     assert "contract" in result
     assert result["contract"]["allowed_nodes"]
     assert "Chart" in result["contract"]["allowed_nodes"]
-    assert "<Theme" in result["theme_element"]
+    assert "<Theme" in result["contract"]["theme_element"]
 
 
 def test_context_builder_node_empty_plans():
@@ -328,7 +329,7 @@ def test_context_builder_node_empty_plans():
     assert result["contract"] != {}
     assert "allowed_nodes" in result["contract"]
     assert "Text" in result["contract"]["allowed_nodes"]
-    assert "<Theme" in result["theme_element"]
+    assert "<Theme" in result["contract"]["theme_element"]
 
 
 # ── Intent detection tests ──────────────────────────────────────────────────

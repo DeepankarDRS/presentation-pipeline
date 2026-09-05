@@ -34,7 +34,7 @@ def test_graph_compiles():
 def test_route_after_start_skips_planner():
     state = initial_state(run_id="r1", raw_request="test",
                           test_case={"components": ["title", "chart"]})
-    assert route_after_start(state) == "context_builder"
+    assert route_after_start(state) == "style_resolver"
 
 
 def test_route_after_start_uses_planner():

@@ -1,18 +1,21 @@
 """LangGraph pipeline definition.
 
 Single-slide topology:
-    START → [questionnaire] → planner → context_builder → generator → validator
+    START → [questionnaire] → planner → style_resolver → context_builder
+      → generator → validator
       → (compile fail & retryable) repairer → validator  (loop)
       → (compile ok) critic → evaluator → END
 
 Multi-slide topology (len(slide_plans) > 1):
-    START → [questionnaire] → planner → context_builder → generator → validator
-      → critic → slide_router → (more slides) → context_builder  (loop per slide)
+    START → [questionnaire] → planner → style_resolver → context_builder
+      → generator → validator → critic → slide_router
+      → (more slides) → context_builder  (loop per slide, theme already resolved)
       → slide_router → (all done) → deck_assembler → evaluator → END
 
 Conditional edges:
     - Questionnaire: only when interactive=True and no audience_context
-    - Planner: skipped when test_case provides components
+    - Planner: skipped when test_case provides components (→ style_resolver)
+    - style_resolver: runs once; multi-slide loop re-enters context_builder directly
     - Critic: skipped when critic_mode="off"
     - slide_router: only reachable when slide_plans has >1 entry
     - deck_assembler: combines all slides into one PPTX, runs final compile
@@ -38,6 +41,7 @@ from src.agents.generator import generator_node
 from src.agents.planner import planner_node
 from src.agents.questionnaire import questionnaire_node
 from src.agents.repairer import repairer_node
+from src.agents.style_resolver import style_resolver_node
 from src.agents.validator import validator_node
 from src.state import PresentationState, initial_state
 
@@ -47,11 +51,11 @@ logger = logging.getLogger(__name__)
 # ── Routing functions ───────────────────────────────────────────────────────
 
 def route_after_start(state: PresentationState) -> str:
-    """Route to questionnaire (interactive), planner, or context_builder."""
+    """Route to questionnaire (interactive), planner, or style_resolver."""
     test_case = state.get("test_case") or {}
     if test_case.get("components"):
         logger.info("route: skipping planner (test_case has components)")
-        return "context_builder"
+        return "style_resolver"
     if state.get("interactive") and not state.get("audience_context"):
         logger.info("route: → questionnaire")
         return "questionnaire"
@@ -130,6 +134,7 @@ def build_graph() -> StateGraph:
 
     graph.add_node("questionnaire", questionnaire_node)
     graph.add_node("planner", planner_node)
+    graph.add_node("style_resolver", style_resolver_node)
     graph.add_node("context_builder", context_builder_node)
     graph.add_node("generator", generator_node)
     graph.add_node("validator", validator_node)
@@ -140,9 +145,10 @@ def build_graph() -> StateGraph:
     graph.add_node("evaluator", evaluator_node)
 
     graph.add_conditional_edges(START, route_after_start,
-                                ["questionnaire", "planner", "context_builder"])
+                                ["questionnaire", "planner", "style_resolver"])
     graph.add_edge("questionnaire", "planner")
-    graph.add_edge("planner", "context_builder")
+    graph.add_edge("planner", "style_resolver")
+    graph.add_edge("style_resolver", "context_builder")
     graph.add_edge("context_builder", "generator")
     graph.add_edge("generator", "validator")
     graph.add_conditional_edges("validator", route_after_validator,

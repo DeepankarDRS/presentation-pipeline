@@ -17,6 +17,7 @@ from typing import Any
 
 import yaml
 
+from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
 logger = logging.getLogger(__name__)
@@ -394,53 +395,14 @@ def _clean_list(values: Any) -> list[str]:
     return out
 
 
-# ── Default theme (when theme.py is not yet ported) ──────────────────────────
-
-_DEFAULT_THEME = {
-    "name": "corporate-slate",
-    "mode": "light",
-    "is_dark": False,
-    "chart_colors": ["2563EB", "0EA5E9", "10B981", "F59E0B", "EF4444", "8B5CF6"],
-    "chart_colors_json": '["2563EB","0EA5E9","10B981","F59E0B","EF4444","8B5CF6"]',
-    "element": '<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" '
-               'accentAlt="0EA5E9" positive="15803D" negative="DC2626" '
-               'warning="B45309" textMain="16202E" textMuted="55627A" '
-               'border="E2E8F0" chartSurface="FFFFFF" chartInk="334155" />',
-}
-
-
-def _resolve_theme(theme_name: str) -> dict[str, Any]:
-    """Resolve theme — uses default for now, will port theme.py later."""
-    if not theme_name or theme_name == "corporate-slate":
-        return _DEFAULT_THEME
-
-    palettes = _load_yaml("theme/palettes.yaml")
-    palette_data = (palettes.get("palettes") or {}).get(theme_name)
-    if not palette_data:
-        logger.warning(f"theme '{theme_name}' not found, using default")
-        return _DEFAULT_THEME
-
-    tokens = palette_data.get("tokens", {})
-    mode = palette_data.get("mode", "light")
-    chart_colors = palette_data.get("chartColors", _DEFAULT_THEME["chart_colors"])
-
-    token_attrs = " ".join(f'{k}="{v}"' for k, v in tokens.items())
-    element = f"<Theme {token_attrs} />"
-
-    return {
-        "name": theme_name,
-        "mode": mode,
-        "is_dark": mode == "dark",
-        "chart_colors": chart_colors,
-        "chart_colors_json": str(chart_colors).replace("'", '"'),
-        "element": element,
-    }
-
-
 # ── Public entry point ───────────────────────────────────────────────────────
 
-def build_contract(slide_plan: SlidePlan, theme_name: str) -> dict[str, Any]:
+def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[str, Any]:
     """Build a generation contract for one slide from its plan.
+
+    Args:
+        slide_plan: The slide's component plan.
+        theme_info: Resolved theme dict from style_resolver.resolve_theme().
 
     Returns a dict with: allowed_nodes, allowed_attributes, forbidden_tags,
     forbidden_attributes, theme_element, theme_name, theme_mode, notes,
@@ -464,7 +426,7 @@ def build_contract(slide_plan: SlidePlan, theme_name: str) -> dict[str, Any]:
     forbidden_tags = _clean_list(validation.get("forbidden_tags"))
     forbidden_attributes = _clean_list(validation.get("forbidden_attributes"))
 
-    theme = _resolve_theme(theme_name)
+    theme = theme_info
     notes = _select_notes(kinds, validation, text_yaml, component_yamls, theme)
 
     compress = density != "tight_fit"
@@ -539,25 +501,21 @@ def _build_default_plan(state: PresentationState) -> SlidePlan:
 def context_builder_node(state: PresentationState) -> dict[str, Any]:
     """LangGraph node: build contract from slide_plans[current_slide_index]."""
     slide_plans = state.get("slide_plans", [])
-    theme_name = state.get("theme_name", "")
     idx = state.get("current_slide_index", 0)
 
     if not slide_plans:
         slide_plans = [_build_default_plan(state)]
 
     plan = slide_plans[idx] if idx < len(slide_plans) else slide_plans[0]
-    contract = build_contract(plan, theme_name)
+
+    theme_info = state.get("resolved_theme") or resolve_theme(
+        state.get("theme_name", "")
+    )
+    contract = build_contract(plan, theme_info)
 
     logger.info(
         f"context_builder: {len(contract['allowed_nodes'])} nodes, "
         f"{len(contract['notes'])} notes, tier={contract['density_tier']}"
     )
 
-    return {
-        "contract": contract,
-        "theme_element": contract["theme_element"],
-        "resolved_theme": {
-            "name": contract["theme_name"],
-            "mode": contract["theme_mode"],
-        },
-    }
+    return {"contract": contract}
