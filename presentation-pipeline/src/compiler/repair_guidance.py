@@ -1,7 +1,7 @@
 """Error-specific repair guidance for the retry loop.
 
-Ported from presentation-mvp/python/repair_guidance.py. Produces targeted
-fix instructions from pre-validation issues and compile diagnostics.
+Produces targeted fix instructions from pre-validation issues and
+compile diagnostics.
 """
 
 from __future__ import annotations

@@ -1,0 +1,53 @@
+# pom-knowledge/components/process-arrow.yaml
+# <ProcessArrow> + <ProcessArrowStep>. Post-MVP.
+# Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+
+meta:
+  phase: post_mvp
+  nodes: [ProcessArrow, ProcessArrowStep]
+
+description: >
+  A chevron-style sequential process visualization. Steps render as connected
+  arrow/chevron shapes in sequence. Use for showing a linear workflow,
+  methodology, or phase progression. For branching processes, use <Flow> instead.
+
+structure: |
+  <ProcessArrow direction="horizontal" w="1100" h="100"
+                itemWidth="200" itemHeight="80" gap="8" fontSize="14">
+    <ProcessArrowStep label="Discover" color="2563EB" textColor="FFFFFF" />
+    <ProcessArrowStep label="Define" color="1D4ED8" textColor="FFFFFF" />
+    <ProcessArrowStep label="Develop" color="1E40AF" textColor="FFFFFF" />
+    <ProcessArrowStep label="Deliver" color="1E3A8A" textColor="FFFFFF" />
+  </ProcessArrow>
+
+ProcessArrow_attributes:
+  direction:  { type: enum, values: [horizontal, vertical], default: horizontal }
+  itemWidth:  { type: number, default: 150 }
+  itemHeight: { type: number, default: 80 }
+  gap:        { type: number, note: "Gap between chevrons (can be negative for overlap)" }
+  fontSize:   { type: number, default: 14 }
+  bold:       { type: bool }
+  italic:     { type: bool }
+  strike:     { type: bool }
+  underline:  { type: bool }
+  highlight:  { type: hex }
+  fontFamily: { type: string, default: "Noto Sans JP" }
+  w:          { type: number, note: "Explicit width — required" }
+  h:          { type: number, note: "Explicit height — required" }
+
+ProcessArrowStep_attributes:
+  label:     { type: string, required: true, note: "Step display label" }
+  color:     { type: hex, default: "4472C4", note: "Chevron fill color" }
+  textColor: { type: hex, default: "FFFFFF", note: "Label text color" }
+
+notes:
+  - "ProcessArrow needs explicit w and h."
+  - "3-6 steps work best. More steps need wider w or smaller itemWidth."
+  - "Use a gradient of related hues (light→dark or dark→light) across steps for visual flow."
+  - "For branching or non-linear processes, use <Flow> instead."
+  - "gap can be negative for overlapping chevron effect."
+
+pitfalls:
+  - "label is required on every ProcessArrowStep."
+  - "Missing w/h on ProcessArrow — will not render correctly."
+  - "Too many steps (>6) in horizontal mode at 1280 wide will cause overflow."

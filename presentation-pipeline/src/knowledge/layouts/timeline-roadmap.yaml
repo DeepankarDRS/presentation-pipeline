@@ -1,0 +1,44 @@
+# pom-knowledge/layouts/timeline-roadmap.yaml
+# Timeline/roadmap slide layout. Phase D.
+# Use when: product roadmap, project milestones, historical timeline, quarterly plan.
+
+meta:
+  phase: D
+  use_when: [roadmap, milestones, timeline, phases, quarterly plan, project schedule]
+
+description: >
+  A single timeline visualization with a title and optional caption. Best for
+  showing 3-6 milestones in chronological order.
+
+skeleton: |
+  <Slide>
+    <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface">
+      <Text fontSize="32" bold="true" color="$textMain">{title}</Text>
+      <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+      <VStack grow="1" justifyContent="center">
+        <Timeline direction="horizontal" w="1160" h="280"
+                  dateColor="$textMuted" titleColor="$textMain"
+                  descriptionColor="$textMuted" connectorColor="$accent">
+          {3-6 TimelineItem entries}
+        </Timeline>
+      </VStack>
+      <Text fontSize="11" color="$textMuted" textAlign="right">{optional footer}</Text>
+    </VStack>
+  </Slide>
+
+sizing_guide:
+  horizontal:
+    items_3: { w: 1160, h: 200 }
+    items_4_5: { w: 1160, h: 280 }
+    items_6: { w: 1160, h: 300, note: "Getting tight — consider vertical" }
+  vertical:
+    items_3_6: { w: 500, h: 450 }
+    items_7_plus: { w: 500, h: 550, note: "May need to shrink font or split slides" }
+  padding: 48
+  gap: 24
+
+notes:
+  - "For horizontal timelines, 3-5 items fit best at 1280 wide."
+  - "For vertical timelines, place them in one column of a two-column layout with a description on the other side."
+  - "Use connectorColor matching the palette accent for visual coherence."
+  - "Use each item's color for semantic meaning (accent = in progress, positive = complete, negative = blocked)."

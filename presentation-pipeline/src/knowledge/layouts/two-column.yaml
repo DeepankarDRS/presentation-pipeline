@@ -1,0 +1,51 @@
+# pom-knowledge/layouts/two-column.yaml
+# Title across the top, then two side-by-side columns.
+# Source: llm.txt "Two-Column Layout", adapted to the MVP dark theme.
+
+meta:
+  phase: B
+  name: two-column
+  use_when:
+    - "narrative on one side, a chart / table / list on the other"
+    - "two parallel points of comparable weight"
+  nodes_used: [Slide, Theme, VStack, HStack, Text]
+
+structure: >
+  <Slide> > root <VStack> (w=1280 h=720, padding 56-72, gap 20-28,
+  backgroundColor=$surface, alignItems="start") containing:
+  1. a title <Text> (fontSize 34-40, bold, color=$textMain)
+  2. optional accent rule <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
+  3. an <HStack> (w = slide width minus padding, gap 24-32, alignItems="start")
+     with two child columns. Size the columns explicitly: either w="50%" each,
+     or two fixed widths that sum to the HStack width, or grow="1" on both.
+  Each column is a <VStack> (gap 8-16). A text column uses body <Text> nodes
+  (fontSize 16-20, color=$textMuted, lineHeight 1.4-1.5). A visual column holds
+  a <Chart> or <Table> sized to the column width.
+
+rules:
+  - "Give the HStack an explicit w and both columns an explicit width (or grow=\"1\" on both) — a Chart/Table child needs a known width."
+  - "alignItems=\"start\" so the columns top-align."
+  - "Keep the two columns close in height; a lopsided split reads as unfinished."
+  - "Body text column: explicit w on the column so lines wrap."
+
+verified_example: |
+  <Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+  <Slide>
+    <VStack w="1280" h="720" padding="64" gap="24" backgroundColor="$surface" alignItems="start">
+      <Text fontSize="38" bold="true" color="$textMain">Growth, then Plateau</Text>
+      <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
+      <HStack w="1152" h="480" gap="32" alignItems="start">
+        <VStack w="560" gap="12">
+          <Text fontSize="20" color="$textMain" bold="true">What happened</Text>
+          <Text fontSize="17" color="$textMuted" lineHeight="1.5" w="560">Active users climbed steadily through the first three quarters as onboarding improved, then flattened in Q3 as the early-adopter segment saturated.</Text>
+          <Text fontSize="17" color="$textMuted" lineHeight="1.5" w="560">The Q4 plan shifts spend from acquisition to activation and expansion.</Text>
+        </VStack>
+        <VStack w="560" gap="12">
+          <Text fontSize="20" color="$textMain" bold="true">The numbers</Text>
+          <Text fontSize="17" color="$textMuted" lineHeight="1.5" w="560">Replace this column with a Chart or Table sized w="560".</Text>
+        </VStack>
+      </HStack>
+    </VStack>
+  </Slide>
+
+compile_status: "verified — compiles on v10.3.0 (structure shared with mixed-slide.xml)"

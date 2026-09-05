@@ -1,7 +1,7 @@
 """XML normalizer — strip fences, fix colors, remove br/hr, zero spacing.
 
-Ported from presentation-mvp/python/pre_validator.py. Returns plain dicts
-instead of Pydantic models so the pipeline stays JSON-serializable.
+Returns plain dicts instead of Pydantic models so the pipeline stays
+JSON-serializable.
 """
 
 from __future__ import annotations

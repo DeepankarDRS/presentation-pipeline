@@ -1,8 +1,7 @@
-"""Subprocess bridge to compile-pom.js.
+"""Subprocess bridge to compile-pom.js (src/node/).
 
-Ported from presentation-mvp/python/compiler_client.py. The Node script
-writes compile-result.json into the output dir; Python reads that JSON
-and NEVER parses Node stderr.
+The Node script writes compile-result.json into the output dir;
+Python reads that JSON and NEVER parses Node stderr.
 """
 
 from __future__ import annotations
@@ -16,9 +15,8 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
-_MVP_ROOT = _PIPELINE_ROOT.parent / "presentation-mvp"
-_NODE_DIR = _MVP_ROOT / "node"
+_SRC_DIR = Path(__file__).resolve().parent.parent
+_NODE_DIR = _SRC_DIR / "node"
 _COMPILE_SCRIPT = _NODE_DIR / "compile-pom.js"
 
 _NODE_BIN = os.environ.get("NODE_BIN", "node")

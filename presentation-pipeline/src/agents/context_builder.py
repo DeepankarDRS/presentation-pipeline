@@ -51,8 +51,8 @@ def _detect_components_from_text(text: str) -> list[str]:
                 break
     return found
 
-_MVP_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "presentation-mvp"
-_KNOWLEDGE_DIR = _MVP_ROOT / "pom-knowledge"
+_SRC_DIR = Path(__file__).resolve().parent.parent
+_KNOWLEDGE_DIR = _SRC_DIR / "knowledge"
 _EXAMPLES_DIR = _KNOWLEDGE_DIR / "examples"
 
 # ── Component kind → POM node mapping ────────────────────────────────────────
@@ -537,14 +537,15 @@ def _build_default_plan(state: PresentationState) -> SlidePlan:
 
 
 def context_builder_node(state: PresentationState) -> dict[str, Any]:
-    """LangGraph node: build contract from slide_plans[0]."""
+    """LangGraph node: build contract from slide_plans[current_slide_index]."""
     slide_plans = state.get("slide_plans", [])
     theme_name = state.get("theme_name", "")
+    idx = state.get("current_slide_index", 0)
 
     if not slide_plans:
         slide_plans = [_build_default_plan(state)]
 
-    plan = slide_plans[0]
+    plan = slide_plans[idx] if idx < len(slide_plans) else slide_plans[0]
     contract = build_contract(plan, theme_name)
 
     logger.info(

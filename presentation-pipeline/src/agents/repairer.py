@@ -46,8 +46,8 @@ _gen_env = Environment(
     keep_trailing_newline=True,
 )
 
-_MVP_ROOT = Path(__file__).resolve().parent.parent.parent.parent / "presentation-mvp"
-_EXAMPLES_DIR = _MVP_ROOT / "pom-knowledge" / "examples"
+_SRC_DIR = Path(__file__).resolve().parent.parent
+_EXAMPLES_DIR = _SRC_DIR / "knowledge" / "examples"
 
 _SIMPLIFY_INSTRUCTIONS = """The previous XML was too complex or structurally broken.
 Simplify the layout:
@@ -95,7 +95,8 @@ def _get_compile_diags(state: PresentationState) -> list[dict[str, Any]]:
 def _select_template(state: PresentationState) -> str:
     """Pick the best verified example XML for tier 3 fallback."""
     slide_plans = state.get("slide_plans", [])
-    plan = slide_plans[0] if slide_plans else {}
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
     kinds = [c.get("kind", "") for c in plan.get("components", [])]
 
     has_chart = "chart" in kinds
@@ -122,7 +123,8 @@ def _select_template(state: PresentationState) -> str:
 def _render_original_user(state: PresentationState) -> str:
     """Re-render the original user prompt for inclusion in repair prompts."""
     slide_plans = state.get("slide_plans", [])
-    plan = slide_plans[0] if slide_plans else {}
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
 
     user_tmpl = _gen_env.get_template("user.j2")
     return user_tmpl.render(

@@ -23,31 +23,24 @@ User prompt ──▶ [LangGraph Pipeline] ──▶ .pptx file
 │                                                          │
 │   src/graph.py          ← pipeline orchestrator          │
 │   src/state.py          ← shared state (TypedDict)       │
-│   src/agents/*.py       ← 7 graph nodes                 │
+│   src/agents/*.py       ← 9 graph nodes                 │
 │   src/compiler/*.py     ← Node.js bridge + normalizer    │
 │   src/prompts/**/*.j2   ← Jinja2 prompt templates        │
 │   src/utils/*.py        ← LLM client, logging, loaders  │
-│   models.yaml           ← per-step model config          │
-│                                                          │
-└─────────────────────────┬────────────────────────────────┘
-                          │ subprocess (stdin/stdout)
-                          ▼
-┌──────────────────────────────────────────────────────────┐
-│                   presentation-mvp/                       │
-│                                                          │
-│   node/compile-pom.js   ← POM v10.3.0 compiler          │
-│   pom-knowledge/        ← YAML knowledge base            │
+│   src/node/             ← POM v10.3.0 compiler (Node.js) │
+│   src/knowledge/        ← YAML knowledge base            │
 │     core/nodes.yaml     ← allowed tags + attributes      │
 │     core/validation.yaml← forbidden tags, translations   │
 │     components/*.yaml   ← chart, table, timeline specs   │
 │     layouts/*.yaml      ← layout patterns                │
 │     theme/palettes.yaml ← color palettes                 │
 │     examples/*.xml      ← verified POM XML examples      │
+│   models.yaml           ← per-step model config          │
 │                                                          │
 └──────────────────────────────────────────────────────────┘
 ```
 
-Both directories must be **siblings** — the pipeline locates `presentation-mvp/` via relative path (`../presentation-mvp`).
+Everything is self-contained — no sibling directory dependencies.
 
 ---
 
@@ -322,7 +315,7 @@ Supports both OpenAI and Azure OpenAI (set `provider: azure_openai` in models.ya
 
 ## Compiler Bridge
 
-The Node.js compiler (`presentation-mvp/node/compile-pom.js`) is invoked via subprocess. Python writes XML to a temp file, runs Node, and reads the structured JSON result. Python **never parses Node stderr**.
+The Node.js compiler (`src/node/compile-pom.js`) is invoked via subprocess. Python writes XML to a temp file, runs Node, and reads the structured JSON result. Python **never parses Node stderr**.
 
 ```
 Python                              Node.js
@@ -485,7 +478,7 @@ TOTAL (21 cases)  21/21   4        -     28,500     14,200      $0.034   45s
 | python-dotenv | `.env` file support |
 | pytest | Testing |
 
-### Node.js (`presentation-mvp/node/`)
+### Node.js (`src/node/`)
 | Package | Purpose |
 |---------|---------|
 | @hirokisakabe/pom | POM v10.3.0 XML → PPTX compiler |

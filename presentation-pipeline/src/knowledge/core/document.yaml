@@ -1,0 +1,56 @@
+# pom-knowledge/core/document.yaml
+# Top-level document structure and hard rules for a pom XML slide.
+# Source: llm.txt "Basics" + "Top-Level Structure" + "Theme (Design Tokens)",
+# cross-checked against @hirokisakabe/pom v10.3.0 (parseXml).
+
+meta:
+  pom_version: "10.3.0"
+  slide_size: { w: 1280, h: 720 }   # pixels; POM default, passed to buildPptx
+  phase: A
+
+# ── Document shape ────────────────────────────────────────────────────────────
+structure:
+  description: >
+    Every pom XML document is one or more <Slide> elements, optionally preceded
+    by exactly one <Theme> element. Nothing else is allowed at the top level.
+  top_level_order:
+    - "<Theme>"        # optional, at most one, must come before the slides
+    - "<Slide>"        # one or more; each is a single slide
+  rules:
+    - "<Theme> is optional but, if present, there must be exactly one and it must be a top-level element (a sibling of <Slide>, NOT a child of it)."
+    - "Each <Slide> must contain at least one child element."
+    - "<Slide> takes no attributes. Per-slide background/notes are not set on <Slide>."
+    - "If a <Slide> has multiple direct children they are implicitly wrapped in a VStack. For predictable layout, give each <Slide> a single root layout node (usually a VStack sized to the slide)."
+    - "Any top-level element other than <Slide> or <Theme> is a validation error."
+
+# ── Canonical single-slide skeleton (MVP) ────────────────────────────────────
+skeleton: |
+  <Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+  <Slide>
+    <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface" alignItems="start">
+      <!-- content nodes -->
+    </VStack>
+  </Slide>
+
+skeleton_notes:
+  - "The root VStack is explicitly sized w=\"1280\" h=\"720\" to match the slide. You may instead use w=\"100%\" h=\"max\"."
+  - "Put padding on the root VStack (32-72 px) so content is not flush to the slide edge."
+  - "Set backgroundColor on the root layout node; on the slide root it becomes the slide background."
+  - "Every dimension must be a positive number. Never 0. (See core/validation.yaml.)"
+
+# ── Value conventions ────────────────────────────────────────────────────────
+conventions:
+  colors:
+    format: "6-digit hex, NO leading '#'"
+    good: "FF0000"
+    bad: "#FF0000"
+    theme_ref: "$tokenName  (resolved only in color attributes / gradient strings)"
+  numbers: "Written as attribute strings; auto-converted. e.g. fontSize=\"24\", w=\"640\"."
+  booleans: "Written as \"true\" / \"false\". e.g. bold=\"true\"."
+  dimensions:
+    accepts: [ 'positive number (px)', '"max"', '"<n>%"' ]
+    note: "'max' along the parent main axis behaves like grow=\"1\"."
+  dot_notation: >
+    Nested object attributes use dot notation: border.width="1" border.color="334155"
+    borderTop.width="4" fill.color="1D4ED8" shadow.blur="4". Shorthand and dot
+    notation can be mixed on the same node; dot keys override.

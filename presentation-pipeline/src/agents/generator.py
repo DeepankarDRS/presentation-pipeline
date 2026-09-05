@@ -33,7 +33,8 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
     """Render system + user prompts from the contract and slide plan."""
     contract = state.get("contract") or {}
     slide_plans = state.get("slide_plans", [])
-    plan = slide_plans[0] if slide_plans else {}
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
 
     system_tmpl = _jinja_env.get_template("system.j2")
     user_tmpl = _jinja_env.get_template("user.j2")

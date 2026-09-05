@@ -1,17 +1,20 @@
 """LangGraph pipeline definition.
 
-Topology:
+Single-slide topology:
     START → planner → context_builder → generator → validator
-      → (if compile fails & retryable) repairer → validator  (loop)
-      → (if compile ok) critic
-      → (if critic fails) repairer → validator  (loop)
-      → evaluator → END
+      → (compile fail & retryable) repairer → validator  (loop)
+      → (compile ok) critic → evaluator → END
+
+Multi-slide topology (len(slide_plans) > 1):
+    START → planner → context_builder → generator → validator → critic
+      → slide_router → (more slides) → context_builder  (loop per slide)
+      → slide_router → (all done) → deck_assembler → evaluator → END
 
 Conditional edges:
     - Planner: skipped when test_case provides components
     - Critic: skipped when critic_mode="off"
-    - Repairer → Validator: repairer calls the LLM and produces fixed XML,
-      then routes directly to validator (not back through generator)
+    - slide_router: only reachable when slide_plans has >1 entry
+    - deck_assembler: combines all slides into one PPTX, runs final compile
 """
 
 from __future__ import annotations
@@ -28,6 +31,7 @@ from langgraph.graph import END, START, StateGraph
 
 from src.agents.context_builder import context_builder_node
 from src.agents.critic import critic_node
+from src.agents.deck_nodes import deck_assembler_node, slide_router_node
 from src.agents.evaluator import evaluator_node
 from src.agents.generator import generator_node
 from src.agents.planner import planner_node
@@ -50,8 +54,16 @@ def route_after_start(state: PresentationState) -> str:
     return "planner"
 
 
+def _slide_done_target(state: PresentationState) -> str:
+    """Return 'slide_router' for multi-slide decks, 'evaluator' for single."""
+    slide_plans = state.get("slide_plans", [])
+    if len(slide_plans) > 1:
+        return "slide_router"
+    return "evaluator"
+
+
 def route_after_validator(state: PresentationState) -> str:
-    """If compile failed and retryable → repairer; else → critic or evaluator."""
+    """If compile failed and retryable → repairer; else → critic or done."""
     cr = state.get("compile_result") or {}
     if not cr.get("ok", False) and cr.get("retryable", False):
         budget = state.get("retry_budget", 3)
@@ -59,19 +71,21 @@ def route_after_validator(state: PresentationState) -> str:
         if count < budget:
             logger.info(f"route: compile failed, retry {count+1}/{budget} → repairer")
             return "repairer"
-        logger.info("route: compile failed but retry budget exhausted → evaluator")
-        return "evaluator"
+        target = _slide_done_target(state)
+        logger.info(f"route: compile failed but retry budget exhausted → {target}")
+        return target
 
     mode = state.get("critic_mode", "auto")
     if mode == "off":
-        logger.info("route: compile ok, critic off → evaluator")
-        return "evaluator"
+        target = _slide_done_target(state)
+        logger.info(f"route: compile ok, critic off → {target}")
+        return target
     logger.info("route: compile ok → critic")
     return "critic"
 
 
 def route_after_critic(state: PresentationState) -> str:
-    """If critic failed → repairer (within budget); else → evaluator."""
+    """If critic failed → repairer (within budget); else → done."""
     cr = state.get("critic_result") or {}
     if not cr.get("passed", True):
         budget = state.get("retry_budget", 3)
@@ -79,8 +93,23 @@ def route_after_critic(state: PresentationState) -> str:
         if count < budget:
             logger.info(f"route: critic failed, retry {count+1}/{budget} → repairer")
             return "repairer"
-        logger.info("route: critic failed but retry budget exhausted → evaluator")
-    return "evaluator"
+        target = _slide_done_target(state)
+        logger.info(f"route: critic failed but retry budget exhausted → {target}")
+        return target
+    target = _slide_done_target(state)
+    logger.info(f"route: critic passed → {target}")
+    return target
+
+
+def route_after_slide_router(state: PresentationState) -> str:
+    """If more slides remain → context_builder; else → deck_assembler."""
+    idx = state.get("current_slide_index", 0)
+    total = len(state.get("slide_plans", []))
+    if idx < total:
+        logger.info(f"route: slide {idx}/{total} → context_builder")
+        return "context_builder"
+    logger.info(f"route: all {total} slides done → deck_assembler")
+    return "deck_assembler"
 
 
 def route_after_repairer(state: PresentationState) -> str:
@@ -100,6 +129,8 @@ def build_graph() -> StateGraph:
     graph.add_node("validator", validator_node)
     graph.add_node("critic", critic_node)
     graph.add_node("repairer", repairer_node)
+    graph.add_node("slide_router", slide_router_node)
+    graph.add_node("deck_assembler", deck_assembler_node)
     graph.add_node("evaluator", evaluator_node)
 
     graph.add_conditional_edges(START, route_after_start,
@@ -108,11 +139,14 @@ def build_graph() -> StateGraph:
     graph.add_edge("context_builder", "generator")
     graph.add_edge("generator", "validator")
     graph.add_conditional_edges("validator", route_after_validator,
-                                ["repairer", "critic", "evaluator"])
+                                ["repairer", "critic", "evaluator", "slide_router"])
     graph.add_conditional_edges("critic", route_after_critic,
-                                ["repairer", "evaluator"])
+                                ["repairer", "evaluator", "slide_router"])
     graph.add_conditional_edges("repairer", route_after_repairer,
                                 ["validator"])
+    graph.add_conditional_edges("slide_router", route_after_slide_router,
+                                ["context_builder", "deck_assembler"])
+    graph.add_edge("deck_assembler", "evaluator")
     graph.add_edge("evaluator", END)
 
     return graph

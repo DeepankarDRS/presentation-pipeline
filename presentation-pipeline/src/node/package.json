@@ -1,0 +1,14 @@
+{
+  "name": "presentation-mvp-compiler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Thin @hirokisakabe/pom compiler wrapper for the POM XML generation MVP",
+  "main": "compile-pom.js",
+  "scripts": {
+    "compile": "node compile-pom.js"
+  },
+  "dependencies": {
+    "@hirokisakabe/pom": "^10.3.0"
+  }
+}

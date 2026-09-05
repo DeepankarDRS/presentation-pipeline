@@ -96,6 +96,10 @@ class PresentationState(TypedDict, total=False):
     theme_element: str
     resolved_theme: dict[str, Any] | None
 
+    # ── Multi-slide iteration ──
+    current_slide_index: int
+    completed_slides: Annotated[list[dict[str, Any]], operator.add]
+
     # ── Generation (generator writes, validator/critic/repairer read) ──
     current_xml: str
     generation_history: Annotated[list[AttemptRecord], operator.add]
@@ -145,6 +149,8 @@ def initial_state(
         theme_name=theme_name,
         deck_plan=None,
         slide_plans=[],
+        current_slide_index=0,
+        completed_slides=[],
         contract=None,
         theme_element="",
         resolved_theme=None,

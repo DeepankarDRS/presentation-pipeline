@@ -1,0 +1,82 @@
+# pom-knowledge/core/attributes.yaml
+# Attributes common to (nearly) every node — the layout / box model.
+# Source: llm.txt "Common Attributes (All Nodes)" + "Leaf Rotation".
+# Verified against v10.3.0 NODE_COERCION_MAP for vstack/hstack/text/shape
+# (identical common-attr set on all four).
+
+meta:
+  phase: A
+  pom_version: "10.3.0"
+
+common_attributes:
+  id:
+    type: string
+    note: "Unique within a slide. Only needed for Arrow connectors (Phase D). Omit otherwise."
+  w:
+    type: 'number(px) | "max" | "<n>%"'
+    constraint: "> 0 when numeric"
+    desc: "Width. 'max' on the parent main axis == grow=\"1\"."
+  h:
+    type: 'number(px) | "max" | "<n>%"'
+    constraint: "> 0 when numeric"
+    desc: "Height."
+  grow:
+    type: positive number
+    desc: 'Flex-grow ratio among siblings (CSS flex-grow). grow="2" + grow="1" => 2:1 split. Takes precedence over w/h "max".'
+  minW: { type: number, desc: "Minimum width" }
+  maxW: { type: number, desc: "Maximum width" }
+  minH: { type: number, desc: "Minimum height" }
+  maxH: { type: number, desc: "Maximum height" }
+  padding:
+    type: 'number | dot: padding.top padding.right padding.bottom padding.left'
+    constraint: ">= 0; omit rather than set 0"
+    desc: "Inner spacing. Shorthand + dot notation can be mixed."
+  margin:
+    type: 'number | dot: margin.top ...'
+    desc: "Outer spacing. Shorthand + dot notation can be mixed. Negative allowed for deliberate overlap."
+  backgroundColor:
+    type: hex
+    desc: "Fill color. On the slide root node this is the slide background."
+  backgroundGradient:
+    type: "linear-gradient(...) | radial-gradient(...) string"
+    desc: "Native PPTX gradient fill. Takes precedence over backgroundColor. Colors here MAY use # (CSS gradient syntax)."
+    example: 'backgroundGradient="linear-gradient(135deg, #1D4ED8 0%, #38BDF8 100%)"'
+  border:
+    type: 'dot: border.color border.width'
+    desc: "Uniform border."
+  borderTop: { type: 'dot: borderTop.color borderTop.width', desc: "Per-side border. Overrides border for that side. borderTop + borderRadius paints both upper corners — the KPI-tile top-accent look." }
+  borderRight: { type: 'dot: borderRight.color borderRight.width', desc: "Per-side border." }
+  borderBottom: { type: 'dot: borderBottom.color borderBottom.width', desc: "Per-side border. Good for underlined headings." }
+  borderLeft: { type: 'dot: borderLeft.color borderLeft.width', desc: "Per-side border. borderLeft + borderRadius reads as a clean left accent bar." }
+  borderRadius:
+    type: number (px)
+    constraint: ">= 0"
+    desc: "Corner radius."
+  opacity:
+    type: number
+    constraint: "0..1"
+    desc: "Background opacity."
+  zIndex: { type: number, desc: "Stacking order; higher on top." }
+  position: { type: "relative | absolute", desc: "Positioning mode. Absolute needs top/right/bottom/left." }
+  top: { type: number, desc: "Offset (with position)." }
+  right: { type: number, desc: "Offset (with position)." }
+  bottom: { type: number, desc: "Offset (with position)." }
+  left: { type: number, desc: "Offset (with position)." }
+  alignSelf:
+    type: "auto | start | center | end | stretch"
+    desc: "Override the parent's alignItems for this one child."
+  shadow:
+    type: 'dot: shadow.type shadow.blur shadow.offset shadow.color'
+    desc: "Drop shadow. shadow.type=\"outer\". Not supported on Line."
+
+# Attributes used ONLY inside <Layer> children (Phase D) — flagged so the
+# pre-validator does not accept them on Phase A nodes.
+layer_only:
+  x: "absolute x (required on Layer children)"
+  y: "absolute y (required on Layer children)"
+
+rotation:
+  applies_to: [Text, Shape, Image, Icon]
+  attribute: rotate
+  type: "number (degrees clockwise)"
+  note: "Render-only. Yoga layout still uses the unrotated bounding box."

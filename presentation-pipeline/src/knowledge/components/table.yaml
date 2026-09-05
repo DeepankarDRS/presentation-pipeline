@@ -1,0 +1,69 @@
+# pom-knowledge/components/table.yaml
+# <Table> + <Col> + <Tr> + <Td>. Phase C.
+# Source: llm.txt "Table" section. Verified against @hirokisakabe/pom v10.3.0
+# (see pom-knowledge/examples/table-slide.xml and mixed-slide.xml).
+
+meta:
+  phase: C
+  nodes: [Table, Col, Tr, Td]
+
+description: >
+  A native PowerPoint table. <Table> contains an optional run of <Col> (column
+  widths), then one <Tr> per row, each with <Td> cells. The first <Tr> is the
+  header by convention — style it, POM has no separate <Th>.
+
+structure: |
+  <Table defaultRowHeight="56" cellBorder.color="$border" cellBorder.width="1">
+    <Col width="520" />
+    <Col width="220" />
+    <Tr>
+      <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Name</Td>
+      <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Score</Td>
+    </Tr>
+    <Tr>
+      <Td backgroundColor="$surface" color="$textMuted">Alice</Td>
+      <Td backgroundColor="$surface" color="$textMain" textAlign="right">95</Td>
+    </Tr>
+  </Table>
+
+Table_attributes:
+  defaultRowHeight: { type: number, default: 32, note: "row height when <Tr> has no height" }
+  cellBorder:       { type: object, note: 'cellBorder.color="$border" cellBorder.width="1" cellBorder.dashType="solid"' }
+
+Col_attributes:
+  width: { type: number, note: "COLUMN WIDTH USES 'width', NOT 'w'. This is the one place 'width' is correct. Omit all <Col> for equal distribution. Widths should sum to the usable slide width (1280 - 2*padding)." }
+
+Tr_attributes:
+  height: { type: number, note: "omit to use the table's defaultRowHeight" }
+
+Td_attributes:
+  # text content is the element body
+  fontSize:       { type: number }
+  color:          { type: hex }
+  textAlign:      { type: enum, values: [left, center, right] }
+  bold:           { type: bool }
+  italic:         { type: bool }
+  underline:      { type: bool }
+  strike:         { type: bool }
+  subscript:      { type: bool }
+  superscript:    { type: bool }
+  highlight:      { type: hex }
+  fontFamily:     { type: string }
+  backgroundColor:{ type: hex }
+  colspan:        { type: number }
+  rowspan:        { type: number }
+
+notes:
+  - "EVERY <Td> needs an explicit backgroundColor AND color. A <Td> with no backgroundColor is NOT transparent — POM emits it with no fill and PowerPoint's default table style takes over (white fill, black text, alternating row bands), producing a bright island on any themed deck. Header <Td>: backgroundColor=\"$surfaceAlt\" color=\"$textMain\" bold=\"true\". Body <Td>: backgroundColor=\"$surface\", color=\"$textMuted\" for label columns / \"$textMain\" for value columns / \"$positive\"|\"$negative\" for signed deltas."
+  - "<Col width=\"...\"> is the deliberate exception to the w-not-width rule. Everywhere else it is still w."
+  - "No <Th>. Bold + backgroundColor=\"$surfaceAlt\" the first <Tr> to make a header."
+  - "Right-align numeric columns with textAlign=\"right\" on every <Td> in that column (header included)."
+  - "$tokens work in Td color / backgroundColor and in cellBorder.color — use cellBorder.color=\"$border\"."
+  - "Table auto-sizes its height from rows; it does not take w/h. Control width via <Col>."
+  - "<Td> may contain inline tags (B, I, Span, Mark)."
+
+pitfalls:
+  - "Unstyled body <Td> -> PowerPoint default table style (white fill + black text). Always set backgroundColor + color on every cell, not just the header."
+  - "Using w instead of width on <Col> -> Unknown attribute."
+  - "Ragged rows (different <Td> count per <Tr>) render but look broken — keep every row the same width."
+  - "Lowercase <table>/<tr>/<td> are HTML and are silently dropped or rejected. Use the capitalized POM tags."

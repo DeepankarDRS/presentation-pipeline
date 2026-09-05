@@ -1,0 +1,75 @@
+# pom-knowledge/components/drawing.yaml
+# <Layer>, <Line>, <Arrow>, <Svg>. Phase D.
+# Drawing and absolute-positioning primitives.
+# Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+
+meta:
+  phase: D
+  nodes: [Layer, Line, Arrow, Svg]
+
+description: >
+  Drawing and positioning primitives. <Layer> provides absolute positioning
+  via x/y on children. <Line> draws a straight line between two absolute
+  coordinates. <Arrow> connects two elements by their id. <Svg> embeds an
+  inline SVG graphic (rasterised to PNG at render).
+
+structure: |
+  <Layer w="1280" h="720">
+    <Text x="100" y="50" fontSize="24" color="$textMain">Positioned label</Text>
+    <Line x1="100" y1="90" x2="400" y2="90" color="2563EB" lineWidth="2" />
+    <Shape id="box1" x="100" y="120" shapeType="roundRect" w="200" h="80" text="Start" fill.color="2563EB" color="FFFFFF" fontSize="16" bold="true" />
+    <Shape id="box2" x="500" y="120" shapeType="roundRect" w="200" h="80" text="End" fill.color="0EA5E9" color="FFFFFF" fontSize="16" bold="true" />
+    <Arrow from="box1" to="box2" color="334155" lineWidth="2" endArrow="true" />
+    <Svg x="800" y="50" w="48" h="48" color="2563EB">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
+    </Svg>
+  </Layer>
+
+Layer_attributes:
+  note: >
+    Container for absolute positioning. Children must specify x and y
+    for placement relative to the Layer's top-left corner. Drawing order
+    follows document order (later children render on top). Layer itself
+    accepts all common box attributes (w, h, padding, margin,
+    backgroundColor, border, borderRadius, opacity, shadow). It is NOT
+    a flex container — it is a canvas.
+
+Line_attributes:
+  x1:         { type: number, required: true, note: "Start X coordinate (absolute on the slide)" }
+  y1:         { type: number, required: true, note: "Start Y coordinate" }
+  x2:         { type: number, required: true, note: "End X coordinate" }
+  y2:         { type: number, required: true, note: "End Y coordinate" }
+  color:      { type: hex, default: "000000" }
+  lineWidth:  { type: number, default: 1 }
+  dashType:   { type: enum, values: [solid, dash, dashDot, lgDash, lgDashDot, lgDashDotDot, sysDash, sysDashDot, sysDashDotDot, sysDot] }
+  beginArrow: { type: "bool or object", note: 'beginArrow="true" (default triangle) or beginArrow.type="triangle|arrow|diamond|oval|stealth|none"' }
+  endArrow:   { type: "bool or object", note: 'endArrow="true" (default triangle) or endArrow.type="triangle|arrow|diamond|oval|stealth|none"' }
+
+Arrow_attributes:
+  from:       { type: string, required: true, note: "id of the source node" }
+  to:         { type: string, required: true, note: "id of the target node" }
+  color:      { type: hex, default: "000000" }
+  lineWidth:  { type: number, default: 1 }
+  dashType:   { type: enum, values: [solid, dash, dashDot, lgDash, lgDashDot, lgDashDotDot, sysDash, sysDashDot, sysDashDotDot, sysDot] }
+  beginArrow: { type: "bool or object", note: 'beginArrow="true" (default triangle) or beginArrow.type="triangle|arrow|diamond|oval|stealth|none"' }
+  endArrow:   { type: "bool or object", note: 'endArrow="true" (default triangle) or endArrow.type="triangle|arrow|diamond|oval|stealth|none"' }
+
+Svg_attributes:
+  w:     { type: number, default: 24 }
+  h:     { type: number, default: 24 }
+  color: { type: hex, note: "Sets stroke color on the inner <svg> element. Child elements with explicit stroke/fill override this." }
+
+notes:
+  - "Line and Arrow are NOT affected by Yoga layout — they render as absolute PPTX shapes."
+  - "Arrow can only connect to nodes that have an id attribute and whose shapeType is rect, roundRect, or ellipse (or Text nodes)."
+  - "Layer children draw in document order (first child is bottommost)."
+  - "Svg rasterises to PNG at render — it will not be a vector shape in the final PPTX."
+  - "Give every Arrow-connectable node a unique id within the slide."
+  - "Layer can be nested and participates in Flexbox layout when placed inside VStack/HStack."
+
+pitfalls:
+  - "Forgetting x/y on Layer children — they will stack at (0,0)."
+  - "Arrow from/to must reference existing id values on the same slide. Missing ids emit a diagnostic."
+  - "Line with x1=x2 and y1=y2 renders as a zero-length line (a dot). Give it real coordinates."
+  - "Svg without a child <svg> element will fail at render."
+  - "Arrow only connects to rect, roundRect, ellipse Shapes and Text — other shapeTypes are unsupported."

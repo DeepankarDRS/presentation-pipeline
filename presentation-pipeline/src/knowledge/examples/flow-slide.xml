@@ -1,0 +1,30 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" negative="DC2626" positive="15803D" />
+
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="24" backgroundColor="$surface">
+    <!-- Title -->
+    <Text fontSize="32" bold="true" color="$textMain">Data Processing Pipeline</Text>
+    <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
+
+    <!-- Flowchart -->
+    <VStack grow="1" justifyContent="center" alignItems="center">
+      <Flow direction="horizontal" w="1100" h="400" nodeWidth="140" nodeHeight="60" nodeGap="80">
+        <FlowNode id="start" shape="flowChartTerminator" text="Start" color="2563EB" textColor="FFFFFF" />
+        <FlowNode id="ingest" shape="flowChartInputOutput" text="Ingest Data" color="0EA5E9" textColor="FFFFFF" />
+        <FlowNode id="validate" shape="flowChartProcess" text="Validate" color="14B8A6" textColor="FFFFFF" />
+        <FlowNode id="check" shape="flowChartDecision" text="Valid?" color="F59E0B" textColor="FFFFFF" />
+        <FlowNode id="transform" shape="flowChartProcess" text="Transform" color="15803D" textColor="FFFFFF" />
+        <FlowNode id="store" shape="flowChartProcess" text="Store" color="15803D" textColor="FFFFFF" />
+        <FlowNode id="end" shape="flowChartTerminator" text="Done" color="2563EB" textColor="FFFFFF" />
+
+        <FlowConnection from="start" to="ingest" />
+        <FlowConnection from="ingest" to="validate" />
+        <FlowConnection from="validate" to="check" />
+        <FlowConnection from="check" to="transform" label="Yes" />
+        <FlowConnection from="check" to="ingest" label="No" color="DC2626" />
+        <FlowConnection from="transform" to="store" />
+        <FlowConnection from="store" to="end" />
+      </Flow>
+    </VStack>
+  </VStack>
+</Slide>
