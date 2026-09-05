@@ -26,6 +26,35 @@ Dimensions: always > 0. w="0" or h="0" crashes the renderer.
 Enums: alignItems/justifyContent = start|center|end (NOT left/right)
        textAlign = left|center|right (NOT start/end)
 
+{% if core_hook %}
+## NARRATIVE ANCHOR
+{{ core_hook }}
+Frame this slide's content to support the narrative above.
+{% endif %}
+{% if slide_type %}
+
+## SLIDE TYPE: {{ slide_type | upper }}
+{% if slide_type == "cover" %}
+Cover slide — centered layout, large display fonts, minimal elements.
+Use a prominent title (fontSize 40-48), optional subtitle/tagline below.
+No charts, tables, or dense content. Think "hero" — one big statement.
+{% elif slide_type == "content" %}
+Content slide — narrative focus with title + body text or bullets.
+Standard density, readable fonts. Tell the story, don't overwhelm with data.
+{% elif slide_type == "data" %}
+Data slide — charts, tables, KPIs are the star. Title frames the data.
+Can be dense. Ensure charts have explicit dimensions and axis labels are readable.
+{% elif slide_type == "section_break" %}
+Section break — minimal divider page. One short phrase, large centered text.
+Use accent color prominently. Very sparse — almost empty slide.
+fontSize 36-48 for the text, centered vertically and horizontally.
+{% elif slide_type == "closing" %}
+Closing slide — wrap up with key takeaways or call-to-action.
+Bullet list of 3-5 summary points, or a strong closing statement.
+Sparse to normal density, display or standard fonts.
+{% endif %}
+{% endif %}
+
 ## THEME
 {{ theme_element }}
 

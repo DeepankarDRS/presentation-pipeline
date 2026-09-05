@@ -1,4 +1,7 @@
 OBJECTIVE: {{ objective }}
+{% if slide_type %}
+SLIDE TYPE: {{ slide_type }}
+{% endif %}
 
 COMPONENTS:
 {% for comp in components %}

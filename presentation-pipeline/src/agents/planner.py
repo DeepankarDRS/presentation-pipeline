@@ -76,6 +76,7 @@ def _slide_to_state(idx: int, slide: PlannerSlide) -> SlidePlan:
 
     return SlidePlan(
         slide_index=idx,
+        slide_type=slide.slide_type,
         components=components,
         density=slide.density,
         font_tier=slide.font_tier,
@@ -99,6 +100,7 @@ def planner_node(state: PresentationState) -> dict[str, Any]:
         HumanMessage(content=user_msg),
     ])
 
+    core_hook = result.core_hook
     slide_plans = [_slide_to_state(i, s) for i, s in enumerate(result.slides)]
     slide_count = len(slide_plans)
     threshold = state.get("deck_min_threshold", 3)
@@ -106,6 +108,7 @@ def planner_node(state: PresentationState) -> dict[str, Any]:
     if slide_count >= threshold and threshold > 0:
         mode = "deck"
         deck_plan = DeckPlan(
+            core_hook=core_hook,
             slide_count=slide_count,
             theme=state.get("theme_name", ""),
             slides=slide_plans,
@@ -116,11 +119,13 @@ def planner_node(state: PresentationState) -> dict[str, Any]:
 
     logger.info(
         f"planner: {slide_count} slide(s), mode={mode}, "
+        f"core_hook='{core_hook[:60]}...', "
         f"density={slide_plans[0].get('density', '?') if slide_plans else '?'}"
     )
 
     return {
         "mode": mode,
+        "core_hook": core_hook,
         "deck_plan": deck_plan,
         "slide_plans": slide_plans,
     }

@@ -57,14 +57,18 @@ def _make_planner_llm(case: dict):
             comp_name = "title"
         components.append(PlannerComponent(kind=comp_name, count=1))
 
-    output = PlannerOutput(slides=[
-        PlannerSlide(
-            components=components,
-            density="normal",
-            font_tier="standard",
-            layout_hint="Standard layout",
-        ),
-    ])
+    output = PlannerOutput(
+        core_hook="Test narrative anchor for integration test.",
+        slides=[
+            PlannerSlide(
+                slide_type="content",
+                components=components,
+                density="normal",
+                font_tier="standard",
+                layout_hint="Standard layout",
+            ),
+        ],
+    )
     llm = MagicMock()
     llm.with_structured_output.return_value.invoke.return_value = output
     return llm

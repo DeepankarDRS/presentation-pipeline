@@ -4,7 +4,8 @@ Checks what the compiler can't:
   1. Component completeness (plan vs XML)
   2. Content fidelity (supplied values in XML)
   3. Structural sanity (nesting, stack usage)
-  4. Theme adherence (all colors from Theme)
+  4. Slide type coherence (cover/content/data/section_break/closing)
+  5. Theme adherence (all colors from Theme)
 
 Dual-mode: auto (AI) or manual (human checkpoint).
 
@@ -52,6 +53,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         layout_hint=plan.get("layout_hint", ""),
         supplied_content=state.get("supplied_content"),
         theme_element=state.get("theme_element", ""),
+        slide_type=plan.get("slide_type", ""),
     )
 
     return system_prompt, user_prompt

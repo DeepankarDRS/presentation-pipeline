@@ -29,6 +29,7 @@ class ComponentPlan(TypedDict, total=False):
 
 class SlidePlan(TypedDict, total=False):
     slide_index: int
+    slide_type: str    # cover | content | data | section_break | closing
     components: list[ComponentPlan]
     density: str       # sparse | normal | dense | tight_fit
     font_tier: str     # display | standard | compact | micro
@@ -37,6 +38,7 @@ class SlidePlan(TypedDict, total=False):
 
 
 class DeckPlan(TypedDict, total=False):
+    core_hook: str     # narrative anchor tying the deck together
     slide_count: int
     theme: str
     slides: list[SlidePlan]
@@ -88,6 +90,7 @@ class PresentationState(TypedDict, total=False):
     theme_name: str
 
     # ── Planning (planner writes, generator reads) ──
+    core_hook: str
     deck_plan: DeckPlan | None
     slide_plans: list[SlidePlan]
 
@@ -147,6 +150,7 @@ def initial_state(
         test_case=test_case,
         supplied_content=supplied_content,
         theme_name=theme_name,
+        core_hook="",
         deck_plan=None,
         slide_plans=[],
         current_slide_index=0,

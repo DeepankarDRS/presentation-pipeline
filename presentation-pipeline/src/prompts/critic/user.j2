@@ -2,7 +2,8 @@
 {{ current_xml }}
 
 ## SLIDE PLAN
-Components:
+{% if slide_type %}Slide Type: {{ slide_type }}
+{% endif %}Components:
 {% for comp in components %}
 - {{ comp.kind }}{% if comp.count is defined and comp.count > 1 %} (count: {{ comp.count }}){% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
 

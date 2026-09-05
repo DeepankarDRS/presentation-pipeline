@@ -7,8 +7,8 @@ from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSl
 from src.state import initial_state
 
 
-def _mock_planner_output(*slides: PlannerSlide) -> PlannerOutput:
-    return PlannerOutput(slides=list(slides))
+def _mock_planner_output(*slides: PlannerSlide, core_hook: str = "Test narrative anchor.") -> PlannerOutput:
+    return PlannerOutput(core_hook=core_hook, slides=list(slides))
 
 
 def _make_structured_llm(output: PlannerOutput):
@@ -70,6 +70,7 @@ def test_render_user_with_components_hint():
 
 def test_slide_to_state_basic():
     slide = PlannerSlide(
+        slide_type="content",
         components=[
             PlannerComponent(kind="title", count=1, content_summary="Main title"),
             PlannerComponent(kind="narrative", count=1, content_summary="Body"),
@@ -80,6 +81,7 @@ def test_slide_to_state_basic():
     )
     result = _slide_to_state(0, slide)
     assert result["slide_index"] == 0
+    assert result["slide_type"] == "content"
     assert result["density"] == "normal"
     assert result["font_tier"] == "standard"
     assert len(result["components"]) == 2
@@ -89,6 +91,7 @@ def test_slide_to_state_basic():
 
 def test_slide_to_state_chart_fields():
     slide = PlannerSlide(
+        slide_type="data",
         components=[
             PlannerComponent(
                 kind="chart", count=6, chart_type="bar",
@@ -109,6 +112,7 @@ def test_slide_to_state_chart_fields():
 
 def test_slide_to_state_table_fields():
     slide = PlannerSlide(
+        slide_type="data",
         components=[
             PlannerComponent(
                 kind="table", count=1, columns=4, rows=3,
@@ -127,6 +131,7 @@ def test_slide_to_state_table_fields():
 
 def test_slide_to_state_omits_zero_fields():
     slide = PlannerSlide(
+        slide_type="cover",
         components=[
             PlannerComponent(kind="title", count=1),
         ],
@@ -147,6 +152,7 @@ def test_slide_to_state_omits_zero_fields():
 def test_planner_text_only(mock_get_llm):
     output = _mock_planner_output(
         PlannerSlide(
+            slide_type="content",
             components=[
                 PlannerComponent(kind="title", count=1, content_summary="Title"),
                 PlannerComponent(kind="narrative", count=1, content_summary="Body text"),
@@ -165,6 +171,7 @@ def test_planner_text_only(mock_get_llm):
 
     assert result["mode"] == "single"
     assert result["deck_plan"] is None
+    assert result["core_hook"] == "Test narrative anchor."
     assert len(result["slide_plans"]) == 1
     plan = result["slide_plans"][0]
     assert plan["density"] == "sparse"
@@ -177,6 +184,7 @@ def test_planner_text_only(mock_get_llm):
 def test_planner_kpi_row(mock_get_llm):
     output = _mock_planner_output(
         PlannerSlide(
+            slide_type="data",
             components=[
                 PlannerComponent(kind="title", count=1, content_summary="Key Metrics"),
                 PlannerComponent(
@@ -211,6 +219,7 @@ def test_planner_kpi_row(mock_get_llm):
 def test_planner_maximal_density(mock_get_llm):
     output = _mock_planner_output(
         PlannerSlide(
+            slide_type="data",
             components=[
                 PlannerComponent(kind="title", count=1, content_summary="Q3 FY26 Operating Review"),
                 PlannerComponent(kind="kpi_row", count=4, content_summary="ARR, NRR, Margin, CAC"),
@@ -253,6 +262,7 @@ def test_planner_maximal_density(mock_get_llm):
 def test_planner_chart_and_table(mock_get_llm):
     output = _mock_planner_output(
         PlannerSlide(
+            slide_type="data",
             components=[
                 PlannerComponent(kind="title", count=1, content_summary="Bookings Performance"),
                 PlannerComponent(kind="chart", count=4, chart_type="bar", series_count=1, content_summary="Bookings by quarter"),
@@ -285,16 +295,19 @@ def test_planner_chart_and_table(mock_get_llm):
 def test_planner_multi_slide_deck_mode(mock_get_llm):
     output = _mock_planner_output(
         PlannerSlide(
+            slide_type="cover",
             components=[PlannerComponent(kind="title", count=1)],
             density="sparse", font_tier="display",
             layout_hint="Cover slide",
         ),
         PlannerSlide(
+            slide_type="data",
             components=[PlannerComponent(kind="kpi_row", count=4)],
             density="normal", font_tier="standard",
             layout_hint="KPI dashboard",
         ),
         PlannerSlide(
+            slide_type="data",
             components=[PlannerComponent(kind="chart", chart_type="bar", count=4)],
             density="normal", font_tier="standard",
             layout_hint="Revenue chart",
@@ -322,6 +335,7 @@ def test_planner_multi_slide_deck_mode(mock_get_llm):
 def test_planner_single_slide_below_threshold(mock_get_llm):
     output = _mock_planner_output(
         PlannerSlide(
+            slide_type="cover",
             components=[PlannerComponent(kind="title", count=1)],
             density="sparse", font_tier="display",
             layout_hint="Simple title",

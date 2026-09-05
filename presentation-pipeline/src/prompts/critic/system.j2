@@ -22,7 +22,15 @@ Check proper POM structure:
 - Excessive nesting (>5 stack levels deep) is LOW severity
 - Missing root dimensions or missing root stack is HIGH severity
 
-### 4. Theme Adherence
+### 4. Slide Type Coherence
+If a slide_type is specified, check that the XML matches the type's intent:
+- **cover**: Should NOT be dense or have charts/tables/KPIs. Should have large centered text. Dense content on a cover is HIGH severity.
+- **content**: Should have narrative text or bullets. OK to be normal density.
+- **data**: MUST have at least one data component (chart, table, kpi_row). A "data" slide with no data visualization is MEDIUM severity.
+- **section_break**: Should have minimal content — just a short phrase. More than 2-3 text elements is MEDIUM severity.
+- **closing**: Should have summary points or a CTA. Missing a clear conclusion is LOW severity.
+
+### 5. Theme Adherence
 Check that colors use theme $tokens instead of hardcoded hex:
 - color, backgroundColor, fill.color attributes should use $tokenName (e.g., $textMain, $surface)
 - Hardcoded 6-digit hex in color attributes is MEDIUM severity

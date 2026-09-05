@@ -136,17 +136,21 @@ def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_valida
 def test_full_graph_with_planner(mock_planner_llm, mock_gen_llm, mock_compile, mock_validate, mock_critic_llm):
     """End-to-end: graph runs through planner (mocked LLM) when threshold > 0."""
     mock_critic_llm.return_value = _mock_critic_llm()
-    output = PlannerOutput(slides=[
-        PlannerSlide(
-            components=[
-                PlannerComponent(kind="title", count=1, content_summary="Dashboard"),
-                PlannerComponent(kind="kpi_row", count=4, content_summary="Key metrics"),
-            ],
-            density="dense",
-            font_tier="compact",
-            layout_hint="Title at top, KPI tiles in row below",
-        ),
-    ])
+    output = PlannerOutput(
+        core_hook="KPI metrics reveal strong growth but rising costs.",
+        slides=[
+            PlannerSlide(
+                slide_type="data",
+                components=[
+                    PlannerComponent(kind="title", count=1, content_summary="Dashboard"),
+                    PlannerComponent(kind="kpi_row", count=4, content_summary="Key metrics"),
+                ],
+                density="dense",
+                font_tier="compact",
+                layout_hint="Title at top, KPI tiles in row below",
+            ),
+        ],
+    )
     mock_planner_llm.return_value = MagicMock()
     mock_planner_llm.return_value.with_structured_output.return_value.invoke.return_value = output
 
@@ -261,18 +265,23 @@ def test_multi_slide_e2e(
     """Multi-slide: planner produces 2 slides, both compile, deck assembles."""
     mock_critic_llm.return_value = _mock_critic_llm()
 
-    output = PlannerOutput(slides=[
-        PlannerSlide(
-            components=[PlannerComponent(kind="title", count=1, content_summary="Cover")],
-            density="sparse", font_tier="display",
-            layout_hint="centered title",
-        ),
-        PlannerSlide(
-            components=[PlannerComponent(kind="chart", count=1, content_summary="Revenue")],
-            density="normal", font_tier="standard",
-            layout_hint="chart full width",
-        ),
-    ])
+    output = PlannerOutput(
+        core_hook="Revenue grew 40% but margins are shrinking.",
+        slides=[
+            PlannerSlide(
+                slide_type="cover",
+                components=[PlannerComponent(kind="title", count=1, content_summary="Cover")],
+                density="sparse", font_tier="display",
+                layout_hint="centered title",
+            ),
+            PlannerSlide(
+                slide_type="data",
+                components=[PlannerComponent(kind="chart", count=1, content_summary="Revenue")],
+                density="normal", font_tier="standard",
+                layout_hint="chart full width",
+            ),
+        ],
+    )
     mock_planner_llm.return_value = MagicMock()
     mock_planner_llm.return_value.with_structured_output.return_value.invoke.return_value = output
 

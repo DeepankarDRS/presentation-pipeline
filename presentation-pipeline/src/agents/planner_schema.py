@@ -17,6 +17,7 @@ ComponentKindLiteral = Literal[
     "tree", "matrix", "process_arrow", "pyramid",
 ]
 
+SlideTypeLiteral = Literal["cover", "content", "data", "section_break", "closing"]
 DensityLiteral = Literal["sparse", "normal", "dense", "tight_fit"]
 FontTierLiteral = Literal["display", "standard", "compact", "micro"]
 
@@ -59,6 +60,12 @@ class PlannerComponent(BaseModel):
 
 class PlannerSlide(BaseModel):
     """Plan for a single slide."""
+    slide_type: SlideTypeLiteral = Field(
+        description="Page type. cover=title/intro page with centered large text. "
+                    "content=narrative/bullets/explanation. data=charts/tables/KPIs. "
+                    "section_break=divider between deck sections (minimal text). "
+                    "closing=takeaways/CTA/contact info."
+    )
     components: list[PlannerComponent] = Field(
         min_length=1,
         description="Components this slide contains, in visual order top-to-bottom."
@@ -94,6 +101,12 @@ class PlannerSlide(BaseModel):
 
 class PlannerOutput(BaseModel):
     """Complete plan output from the planner agent."""
+    core_hook: str = Field(
+        description="One sentence narrative anchor with tension or contrast that "
+                    "ties the whole deck together. For single-slide requests, "
+                    "capture the slide's central message. Example: 'Revenue grew "
+                    "40% but margins are shrinking due to rising CAC.'"
+    )
     slides: list[PlannerSlide] = Field(
         min_length=1,
         description="One plan per slide. Single-slide requests have exactly one entry."
