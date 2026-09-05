@@ -48,6 +48,7 @@ def _render_user(state: PresentationState) -> str:
         theme_name=state.get("theme_name", ""),
         supplied_content=supplied,
         components_hint=components_hint,
+        audience_context=state.get("audience_context") or {},
     )
 
 

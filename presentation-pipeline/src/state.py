@@ -90,6 +90,9 @@ class PresentationState(TypedDict, total=False):
     supplied_content: dict[str, Any] | None
     theme_name: str
 
+    # ── Questionnaire (questionnaire writes, planner reads) ──
+    audience_context: dict[str, str] | None
+
     # ── Planning (planner writes, generator reads) ──
     core_hook: str
     deck_plan: DeckPlan | None
@@ -138,6 +141,7 @@ def initial_state(
     supplied_content: dict[str, Any] | None = None,
     test_case: dict[str, Any] | None = None,
     deck_min_threshold: int = 3,
+    audience_context: dict[str, str] | None = None,
     critic_mode: Literal["auto", "manual", "off"] = "auto",
     retry_budget: int = 3,
     interactive: bool = False,
@@ -152,6 +156,7 @@ def initial_state(
         test_case=test_case,
         supplied_content=supplied_content,
         theme_name=theme_name,
+        audience_context=audience_context,
         core_hook="",
         deck_plan=None,
         slide_plans=[],

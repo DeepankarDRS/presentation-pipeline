@@ -47,6 +47,19 @@ def test_route_after_start_uses_planner_no_test_case():
     assert route_after_start(state) == "planner"
 
 
+def test_route_after_start_interactive_questionnaire():
+    state = initial_state(run_id="r2c", raw_request="test", interactive=True)
+    assert route_after_start(state) == "questionnaire"
+
+
+def test_route_after_start_preloaded_skips_questionnaire():
+    state = initial_state(
+        run_id="r2d", raw_request="test", interactive=True,
+        audience_context={"audience": "Board"},
+    )
+    assert route_after_start(state) == "planner"
+
+
 def test_route_after_validator_ok_to_critic():
     state = initial_state(run_id="r3", raw_request="test")
     state["compile_result"] = {"ok": True, "retryable": False, "diagnostics": [], "warnings": []}

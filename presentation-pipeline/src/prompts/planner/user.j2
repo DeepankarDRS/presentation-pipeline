@@ -12,5 +12,11 @@ SUPPLIED CONTENT (use these values exactly; derive the rest):
 {% if components_hint %}
 REQUESTED COMPONENTS: {{ components_hint }}
 {% endif %}
+{% if audience_context %}
+AUDIENCE CONTEXT:
+{% for key, value in audience_context.items() %}
+- {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
 
 Plan the slide(s). You MUST populate content_data with concrete, realistic values for every component.

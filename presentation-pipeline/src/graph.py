@@ -1,16 +1,17 @@
 """LangGraph pipeline definition.
 
 Single-slide topology:
-    START → planner → context_builder → generator → validator
+    START → [questionnaire] → planner → context_builder → generator → validator
       → (compile fail & retryable) repairer → validator  (loop)
       → (compile ok) critic → evaluator → END
 
 Multi-slide topology (len(slide_plans) > 1):
-    START → planner → context_builder → generator → validator → critic
-      → slide_router → (more slides) → context_builder  (loop per slide)
+    START → [questionnaire] → planner → context_builder → generator → validator
+      → critic → slide_router → (more slides) → context_builder  (loop per slide)
       → slide_router → (all done) → deck_assembler → evaluator → END
 
 Conditional edges:
+    - Questionnaire: only when interactive=True and no audience_context
     - Planner: skipped when test_case provides components
     - Critic: skipped when critic_mode="off"
     - slide_router: only reachable when slide_plans has >1 entry
@@ -35,6 +36,7 @@ from src.agents.deck_nodes import deck_assembler_node, slide_router_node
 from src.agents.evaluator import evaluator_node
 from src.agents.generator import generator_node
 from src.agents.planner import planner_node
+from src.agents.questionnaire import questionnaire_node
 from src.agents.repairer import repairer_node
 from src.agents.validator import validator_node
 from src.state import PresentationState, initial_state
@@ -45,11 +47,14 @@ logger = logging.getLogger(__name__)
 # ── Routing functions ───────────────────────────────────────────────────────
 
 def route_after_start(state: PresentationState) -> str:
-    """Skip planner only when test_case provides components."""
+    """Route to questionnaire (interactive), planner, or context_builder."""
     test_case = state.get("test_case") or {}
     if test_case.get("components"):
         logger.info("route: skipping planner (test_case has components)")
         return "context_builder"
+    if state.get("interactive") and not state.get("audience_context"):
+        logger.info("route: → questionnaire")
+        return "questionnaire"
     logger.info("route: → planner")
     return "planner"
 
@@ -123,6 +128,7 @@ def build_graph() -> StateGraph:
     """Construct the presentation pipeline graph (uncompiled)."""
     graph = StateGraph(PresentationState)
 
+    graph.add_node("questionnaire", questionnaire_node)
     graph.add_node("planner", planner_node)
     graph.add_node("context_builder", context_builder_node)
     graph.add_node("generator", generator_node)
@@ -134,7 +140,8 @@ def build_graph() -> StateGraph:
     graph.add_node("evaluator", evaluator_node)
 
     graph.add_conditional_edges(START, route_after_start,
-                                ["planner", "context_builder"])
+                                ["questionnaire", "planner", "context_builder"])
+    graph.add_edge("questionnaire", "planner")
     graph.add_edge("planner", "context_builder")
     graph.add_edge("context_builder", "generator")
     graph.add_edge("generator", "validator")
@@ -168,6 +175,7 @@ def run(
     run_id: str | None = None,
     supplied_content: dict[str, Any] | None = None,
     test_case: dict[str, Any] | None = None,
+    audience_context: dict[str, str] | None = None,
     interactive: bool = False,
 ) -> PresentationState:
     """Run the pipeline end-to-end and return the final state."""
@@ -186,6 +194,7 @@ def run(
         critic_mode=critic_mode,
         supplied_content=supplied_content,
         test_case=test_case,
+        audience_context=audience_context,
         interactive=interactive,
     )
 
