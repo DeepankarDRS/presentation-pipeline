@@ -223,6 +223,33 @@ def test_validator_compile_error_not_retryable(mock_compile, mock_validate):
 
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
+def test_validator_returns_layout_issues(mock_compile, mock_validate):
+    mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
+    mock_compile.return_value = {
+        "ok": True, "pptx_path": "/tmp/test.pptx",
+        "diagnostics": [], "warnings": [], "retryable": False,
+    }
+
+    state = initial_state(run_id="v-layout", raw_request="test")
+    state["current_xml"] = VALID_XML
+    result = validator_node(state)
+
+    assert "layout_issues" in result
+    assert isinstance(result["layout_issues"], list)
+
+
+@patch("src.agents.validator.validate_xml")
+@patch("src.agents.validator.compile_xml")
+def test_validator_empty_xml_has_layout_issues_key(mock_compile, mock_validate):
+    state = initial_state(run_id="v-empty-layout", raw_request="test")
+    state["current_xml"] = ""
+    result = validator_node(state)
+    assert "layout_issues" in result
+    assert result["layout_issues"] == []
+
+
+@patch("src.agents.validator.validate_xml")
+@patch("src.agents.validator.compile_xml")
 def test_validator_normalizes_before_compile(mock_compile, mock_validate):
     mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
     mock_compile.return_value = {

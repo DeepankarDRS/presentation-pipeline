@@ -117,6 +117,7 @@ class PresentationState(TypedDict, total=False):
     normalize_result: dict[str, Any] | None
     validate_result: ValidateResult | None
     compile_result: CompileResult | None
+    layout_issues: list[dict[str, str]]
 
     # ── Critique (critic writes) ──
     critic_result: CriticResult | None
@@ -172,6 +173,7 @@ def initial_state(
         normalize_result=None,
         validate_result=None,
         compile_result=None,
+        layout_issues=[],
         critic_result=None,
         critic_mode=critic_mode,
         retry_tier=0,

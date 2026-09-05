@@ -54,6 +54,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         supplied_content=state.get("supplied_content"),
         theme_element=state.get("theme_element", ""),
         slide_type=plan.get("slide_type", ""),
+        layout_issues=state.get("layout_issues", []),
     )
 
     return system_prompt, user_prompt

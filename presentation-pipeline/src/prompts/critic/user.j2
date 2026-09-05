@@ -22,5 +22,14 @@ Layout: {{ layout_hint }}
 
 ## THEME ELEMENT
 {{ theme_element }}
+{% if layout_issues %}
+
+## LAYOUT AUDIT WARNINGS
+The following mechanical checks flagged potential issues:
+{% for issue in layout_issues %}
+- [{{ issue.severity | upper }}] {{ issue.code }}: {{ issue.message }}
+{% endfor %}
+Consider these in your review — they may indicate real problems or false positives.
+{% endif %}
 
 Review the XML against all 4 checklist items and report any issues found.

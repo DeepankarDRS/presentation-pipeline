@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from src.compiler.compiler_client import CompilerError, compile_xml, validate_xml
+from src.compiler.layout_audit import audit_layout
 from src.compiler.normalizer import normalize_xml, pre_validate
 from src.state import PresentationState
 
@@ -40,6 +41,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
                 "diagnostics": [{"type": "EMPTY", "message": "Empty XML"}],
                 "warnings": [], "retryable": True,
             },
+            "layout_issues": [],
         }
 
     run_id = state.get("run_id", "unknown")
@@ -83,6 +85,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
                     "diagnostics": [{"type": i["code"], "message": i["message"]} for i in blocking_issues],
                     "warnings": [], "retryable": True,
                 },
+                "layout_issues": [],
             }
 
     elif not val_result["ok"]:
@@ -97,6 +100,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
                 "diagnostics": val_result["diagnostics"],
                 "warnings": [], "retryable": val_result.get("retryable", True),
             },
+            "layout_issues": [],
         }
 
     try:
@@ -111,7 +115,12 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
                 "diagnostics": [{"type": "HARNESS_ERROR", "message": str(exc)}],
                 "warnings": [], "retryable": False,
             },
+            "layout_issues": [],
         }
+
+    layout_issues = audit_layout(cleaned)
+    if layout_issues:
+        logger.info(f"validator: layout audit — {len(layout_issues)} issue(s)")
 
     status = "OK" if compile_result["ok"] else "FAILED"
     logger.info(f"validator: compile {status}"
@@ -124,4 +133,5 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         "validate_result": val_result or {"ok": True, "diagnostics": [], "warnings": []},
         "compile_result": compile_result,
         "speaker_notes": speaker_notes,
+        "layout_issues": layout_issues,
     }

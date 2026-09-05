@@ -129,6 +129,23 @@ def test_render_prompts_no_supplied_content():
     assert "SUPPLIED CONTENT" not in user
 
 
+def test_render_prompts_includes_layout_issues():
+    state = _make_state(layout_issues=[
+        {"severity": "medium", "code": "FONT_TOO_SMALL", "message": '<Text> has fontSize="9" (min 11)'},
+        {"severity": "high", "code": "ROOT_SIZE", "message": 'Root VStack has w="None"'},
+    ])
+    _, user = _render_prompts(state)
+    assert "LAYOUT AUDIT WARNINGS" in user
+    assert "FONT_TOO_SMALL" in user
+    assert "ROOT_SIZE" in user
+
+
+def test_render_prompts_no_layout_issues_no_section():
+    state = _make_state()
+    _, user = _render_prompts(state)
+    assert "LAYOUT AUDIT WARNINGS" not in user
+
+
 def test_render_prompts_empty_plan():
     state = _make_state()
     state["slide_plans"] = []
