@@ -65,6 +65,7 @@ def _make_planner_llm(case: dict):
                 components=components,
                 density="normal",
                 font_tier="standard",
+                layout_pattern="stacked_sections",
                 layout_hint="Standard layout",
             ),
         ],

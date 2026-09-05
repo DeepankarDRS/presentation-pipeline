@@ -20,6 +20,16 @@ ComponentKindLiteral = Literal[
 SlideTypeLiteral = Literal["cover", "content", "data", "section_break", "closing"]
 DensityLiteral = Literal["sparse", "normal", "dense", "tight_fit"]
 FontTierLiteral = Literal["display", "standard", "compact", "micro"]
+LayoutPatternLiteral = Literal[
+    "hero_statement",        # Large centered text, minimal elements (covers, breaks)
+    "hero_big_number",       # Large KPI value + supporting text
+    "two_column",            # Left/right split (text+visual, chart+table)
+    "three_column_cards",    # Three equal cards in a row
+    "full_width_chart",      # Chart spanning full width below title
+    "chart_table_split",     # Chart left, table right
+    "stacked_sections",      # Vertical stack of 2-3 content blocks
+    "dashboard_grid",        # KPI row + multi-chart/table grid
+]
 
 
 class PlannerComponent(BaseModel):
@@ -83,6 +93,13 @@ class PlannerSlide(BaseModel):
                     "standard=title 28-32, body 18-20. "
                     "compact=title 22-26, body 14-16. "
                     "micro=title 18-20, body 11-13."
+    )
+    layout_pattern: LayoutPatternLiteral = Field(
+        description="Canonical layout category. hero_statement=centered text. "
+                    "hero_big_number=large KPI+text. two_column=left/right split. "
+                    "three_column_cards=3 equal cards. full_width_chart=chart spans width. "
+                    "chart_table_split=chart left+table right. stacked_sections=vertical blocks. "
+                    "dashboard_grid=KPI row+multi-chart grid."
     )
     layout_hint: str = Field(
         description="Freeform natural language description of how components "

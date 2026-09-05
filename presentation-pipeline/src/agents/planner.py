@@ -18,7 +18,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.planner_schema import PlannerOutput, PlannerSlide
+from src.agents.planner_schema import LayoutPatternLiteral, PlannerOutput, PlannerSlide
 from src.state import ComponentPlan, DeckPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm
 
@@ -80,9 +80,36 @@ def _slide_to_state(idx: int, slide: PlannerSlide) -> SlidePlan:
         components=components,
         density=slide.density,
         font_tier=slide.font_tier,
+        layout_pattern=slide.layout_pattern,
         layout_hint=slide.layout_hint,
         content_data=content_data,
     )
+
+
+_LAYOUT_PATTERNS: list[str] = list(LayoutPatternLiteral.__args__)
+_VARIETY_SKIP_TYPES = {"cover", "section_break", "closing"}
+
+
+def _enforce_layout_variety(plans: list[SlidePlan]) -> int:
+    """Swap layout_pattern on adjacent content/data slides that repeat. Returns swap count."""
+    swaps = 0
+    for i in range(1, len(plans)):
+        prev, curr = plans[i - 1], plans[i]
+        if prev.get("slide_type") in _VARIETY_SKIP_TYPES:
+            continue
+        if curr.get("slide_type") in _VARIETY_SKIP_TYPES:
+            continue
+        if prev.get("layout_pattern") != curr.get("layout_pattern"):
+            continue
+        used = {prev.get("layout_pattern")}
+        if i + 1 < len(plans):
+            used.add(plans[i + 1].get("layout_pattern"))
+        for alt in _LAYOUT_PATTERNS:
+            if alt not in used and alt != "hero_statement":
+                curr["layout_pattern"] = alt
+                swaps += 1
+                break
+    return swaps
 
 
 def planner_node(state: PresentationState) -> dict[str, Any]:
@@ -102,6 +129,11 @@ def planner_node(state: PresentationState) -> dict[str, Any]:
 
     core_hook = result.core_hook
     slide_plans = [_slide_to_state(i, s) for i, s in enumerate(result.slides)]
+
+    swaps = _enforce_layout_variety(slide_plans)
+    if swaps:
+        logger.info(f"planner: layout variety — swapped {swaps} adjacent duplicate(s)")
+
     slide_count = len(slide_plans)
     threshold = state.get("deck_min_threshold", 3)
 

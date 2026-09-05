@@ -77,6 +77,7 @@ def test_slide_to_state_basic():
         ],
         density="normal",
         font_tier="standard",
+        layout_pattern="stacked_sections",
         layout_hint="Title at top, text below",
     )
     result = _slide_to_state(0, slide)
@@ -100,6 +101,7 @@ def test_slide_to_state_chart_fields():
         ],
         density="normal",
         font_tier="standard",
+        layout_pattern="full_width_chart",
         layout_hint="Chart centered",
     )
     result = _slide_to_state(0, slide)
@@ -121,6 +123,7 @@ def test_slide_to_state_table_fields():
         ],
         density="dense",
         font_tier="compact",
+        layout_pattern="full_width_chart",
         layout_hint="Table fills width",
     )
     result = _slide_to_state(0, slide)
@@ -137,6 +140,7 @@ def test_slide_to_state_omits_zero_fields():
         ],
         density="sparse",
         font_tier="display",
+        layout_pattern="hero_statement",
         layout_hint="Centered title",
     )
     result = _slide_to_state(0, slide)
@@ -159,6 +163,7 @@ def test_planner_text_only(mock_get_llm):
             ],
             density="sparse",
             font_tier="display",
+            layout_pattern="stacked_sections",
             layout_hint="Title centered, text below",
         )
     )
@@ -194,6 +199,7 @@ def test_planner_kpi_row(mock_get_llm):
             ],
             density="normal",
             font_tier="standard",
+            layout_pattern="hero_big_number",
             layout_hint="Title at top, 4 KPI tiles in horizontal row below",
             content_data_json='{"title": "Key Metrics - Q3 FY26", "kpi_labels": ["ARR", "NRR", "Gross Margin", "Customer Count"]}',
         )
@@ -231,6 +237,7 @@ def test_planner_maximal_density(mock_get_llm):
             ],
             density="tight_fit",
             font_tier="micro",
+            layout_pattern="dashboard_grid",
             layout_hint="Title+kicker at top, 4 KPI tiles below, then 3 columns (bar chart | line chart | bullet list), table spanning full width below, footnote at bottom",
             content_data_json='{"kicker": "Q3 FY26 OPERATING REVIEW", "title": "The Whole Quarter, One View"}',
         )
@@ -270,6 +277,7 @@ def test_planner_chart_and_table(mock_get_llm):
             ],
             density="normal",
             font_tier="standard",
+            layout_pattern="chart_table_split",
             layout_hint="Title at top, chart on left and table on right side by side",
         )
     )
@@ -298,18 +306,21 @@ def test_planner_multi_slide_deck_mode(mock_get_llm):
             slide_type="cover",
             components=[PlannerComponent(kind="title", count=1)],
             density="sparse", font_tier="display",
+            layout_pattern="hero_statement",
             layout_hint="Cover slide",
         ),
         PlannerSlide(
             slide_type="data",
             components=[PlannerComponent(kind="kpi_row", count=4)],
             density="normal", font_tier="standard",
+            layout_pattern="three_column_cards",
             layout_hint="KPI dashboard",
         ),
         PlannerSlide(
             slide_type="data",
             components=[PlannerComponent(kind="chart", chart_type="bar", count=4)],
             density="normal", font_tier="standard",
+            layout_pattern="full_width_chart",
             layout_hint="Revenue chart",
         ),
     )
@@ -338,6 +349,7 @@ def test_planner_single_slide_below_threshold(mock_get_llm):
             slide_type="cover",
             components=[PlannerComponent(kind="title", count=1)],
             density="sparse", font_tier="display",
+            layout_pattern="hero_statement",
             layout_hint="Simple title",
         ),
     )

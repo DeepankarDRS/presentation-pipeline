@@ -136,16 +136,22 @@ Rules:
 
 ## Layout Patterns
 
-Choose layout_hint based on the components present:
-- title + kpi_row → "Title + accent bar, KPI tiles in a horizontal row below"
-- title + chart + table → "Title at top, chart left and table right in two balanced columns"
-- title + kpi_row + chart → "Title, KPI row across top, full-width chart below"
-- title + kpi_row + chart + table → "Title, KPI row, then chart left + table right"
-- title + bullet_list → "Title + accent bar, bullets in a VStack below"
-- title + timeline → "Title at top, horizontal timeline spanning full width"
-- title + narrative → "Title + accent bar, narrative paragraphs below"
+Pick a **layout_pattern** (categorical) AND write a **layout_hint** (freeform detail).
 
-Write a freeform natural language description of how components should be arranged on the 1280x720 slide. Be specific about spatial relationships: "side by side", "stacked vertically", "2x2 grid", "across the top", etc.
+| Pattern | Use when | Example components |
+|---------|----------|-------------------|
+| hero_statement | Centered text, minimal elements | cover, section_break |
+| hero_big_number | One large KPI + supporting context | kpi_row (1-2 tiles) + narrative |
+| two_column | Left/right split | chart + narrative, text + bullet_list |
+| three_column_cards | Three equal cards in a row | kpi_row (3 tiles), 3 feature blocks |
+| full_width_chart | Chart spanning full width | chart + optional caption |
+| chart_table_split | Chart left, table right | chart + table side by side |
+| stacked_sections | Vertical stack of 2-3 blocks | title + bullets + caption |
+| dashboard_grid | KPI row + multi-chart/table grid | kpi_row + chart + table + more |
+
+**Adjacency rule**: In multi-slide decks, no two adjacent content or data slides should use the same layout_pattern. Vary the visual rhythm — alternate between column-based and full-width layouts.
+
+Write layout_hint as a freeform natural language description of how components should be arranged on the 1280x720 slide. Be specific about spatial relationships: "side by side", "stacked vertically", "2x2 grid", "across the top", etc.
 
 ## Theme Selection
 

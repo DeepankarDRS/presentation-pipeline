@@ -33,6 +33,7 @@ class SlidePlan(TypedDict, total=False):
     components: list[ComponentPlan]
     density: str       # sparse | normal | dense | tight_fit
     font_tier: str     # display | standard | compact | micro
+    layout_pattern: str  # canonical layout category for variety enforcement
     layout_hint: str   # freeform NL: "KPIs across top, chart+table side by side"
     content_data: dict[str, Any]
 
