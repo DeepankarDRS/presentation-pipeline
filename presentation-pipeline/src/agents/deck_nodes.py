@@ -32,12 +32,14 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
     completed = {
         "slide_index": idx,
         "xml": xml,
+        "speaker_notes": state.get("speaker_notes", ""),
     }
 
     return {
         "completed_slides": [completed],
         "current_slide_index": idx + 1,
         "current_xml": "",
+        "speaker_notes": "",
         "normalize_result": None,
         "validate_result": None,
         "compile_result": None,

@@ -51,6 +51,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
 
     norm = normalize_xml(xml)
     cleaned = norm["cleaned_xml"]
+    speaker_notes = norm.get("speaker_notes", "")
 
     if norm["issues"]:
         auto = norm["auto_fixed"]
@@ -122,4 +123,5 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         "normalize_result": norm,
         "validate_result": val_result or {"ok": True, "diagnostics": [], "warnings": []},
         "compile_result": compile_result,
+        "speaker_notes": speaker_notes,
     }

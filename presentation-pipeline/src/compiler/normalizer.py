@@ -26,7 +26,7 @@ FORBIDDEN_ATTRS: set[str] = {
 }
 
 POM_TAGS: set[str] = {
-    "Slide", "Theme", "VStack", "HStack", "Layer", "Text", "Shape",
+    "Slide", "Theme", "Notes", "VStack", "HStack", "Layer", "Text", "Shape",
     "B", "I", "A", "U", "S", "Sub", "Sup", "Mark", "Span",
     "Ul", "Ol", "Li", "Table", "Col", "Tr", "Td",
     "Chart", "ChartSeries", "ChartDataPoint",
@@ -56,6 +56,7 @@ _COL_RE = re.compile(r"<Col\b[^>]*/?>", re.IGNORECASE)
 _BORDER_ACCENT_RE = re.compile(
     r'(?<!\w)(border\.color)\s*=\s*"\$accent(?:Alt)?"'
 )
+_NOTES_RE = re.compile(r"<Notes\b[^>]*>(.*?)</Notes>", re.DOTALL)
 
 _OBJECT_ATTR_BASES: set[str] = {
     "border", "borderTop", "borderRight", "borderBottom", "borderLeft",
@@ -158,12 +159,18 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
             "auto_fixed": False,
         })
 
+    notes_match = _NOTES_RE.search(xml)
+    speaker_notes = notes_match.group(1).strip() if notes_match else ""
+    if notes_match:
+        xml = _NOTES_RE.sub("", xml)
+
     cleaned = xml.strip() + "\n"
     auto_fixed = sum(1 for i in issues if i["auto_fixed"])
     blocking = any(not i["auto_fixed"] for i in issues)
 
     return {
         "cleaned_xml": cleaned,
+        "speaker_notes": speaker_notes,
         "issues": issues,
         "auto_fixed": auto_fixed,
         "blocking": blocking,

@@ -118,6 +118,19 @@ Color tokens:
 - Check total height: all component heights + gaps + padding ≤ 720
 {% endif %}
 
+## SPEAKER NOTES
+After all visual content inside <Slide>, add a <Notes> element with 2-3 bullet
+talking points for the presenter. Notes should expand on the slide's content
+(the "why" behind the numbers, context the audience needs, transition to next
+slide), NOT repeat what's already visible on the slide.
+
+Example:
+<Notes>
+- Revenue grew 40% driven by enterprise segment expansion
+- CAC increase is offset by improving LTV/CAC ratio (now 4.2x)
+- Next slide breaks down regional performance
+</Notes>
+
 ## NOTES
 {% for note in notes %}
 - {{ note }}

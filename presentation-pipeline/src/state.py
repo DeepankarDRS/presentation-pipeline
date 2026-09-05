@@ -105,6 +105,7 @@ class PresentationState(TypedDict, total=False):
 
     # ── Generation (generator writes, validator/critic/repairer read) ──
     current_xml: str
+    speaker_notes: str
     generation_history: Annotated[list[AttemptRecord], operator.add]
 
     # ── Validation (validator writes) ──
@@ -159,6 +160,7 @@ def initial_state(
         theme_element="",
         resolved_theme=None,
         current_xml="",
+        speaker_notes="",
         generation_history=[],
         normalize_result=None,
         validate_result=None,
