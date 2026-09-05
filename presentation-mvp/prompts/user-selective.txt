@@ -1,9 +1,0 @@
-SLIDE OBJECTIVE:
-{{objective}}
-
-REQUIRED COMPONENTS:
-{{components}}
-
-REQUEST:
-{{request}}
-{{supplied_content}}

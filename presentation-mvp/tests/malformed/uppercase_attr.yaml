@@ -1,8 +1,0 @@
-<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
-<Slide>
-  <VStack w="1280" h="720" padding="72" gap="24" backgroundColor="$surface" alignItems="start" justifyContent="center" direction="vertical">
-    <Text fontSize="44" bold="true" color="$textMain" uppercase="true">Quarterly Business Review</Text>
-    <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" elevation="2" />
-    <Text fontSize="22" color="$textMuted" lineHeight="1.45" w="960" letterCase="upper">Revenue grew 18% quarter over quarter, driven by enterprise expansion and improved net retention.</Text>
-  </VStack>
-</Slide>

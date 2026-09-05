@@ -1,9 +1,0 @@
-{{previous_user}}
-
-======================  FIX REQUIRED  ======================
-Your previous POM XML was rejected. Problems found:
-
-{{problems}}
-
-Return corrected POM XML only - same slide, same content, same structure.
-Fix only what is listed above. No explanation, no markdown fences.
