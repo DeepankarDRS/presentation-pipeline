@@ -1,0 +1,5 @@
+{
+  "/generate": { "target": "http://localhost:8000", "secure": false },
+  "/runs": { "target": "http://localhost:8000", "secure": false },
+  "/health": { "target": "http://localhost:8000", "secure": false }
+}

@@ -21,7 +21,9 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from src.graph import compile_graph
@@ -31,6 +33,15 @@ from src.utils.logging_config import setup_logging
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Presentation Pipeline API", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200", "http://localhost:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["X-Run-Id"],
+)
 
 
 # ── Pydantic models ────────────────────────────────────────────────────────
@@ -308,6 +319,13 @@ async def health() -> dict[str, Any]:
         "status": "ok",
         "active_runs": sum(1 for r in _runs.values() if r.status == "running"),
     }
+
+
+# ── Static frontend (production) ──────────────────────────────────────────
+
+_FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist" / "frontend" / "browser"
+if _FRONTEND_DIST.exists():
+    app.mount("/", StaticFiles(directory=str(_FRONTEND_DIST), html=True), name="frontend")
 
 
 # ── Server entry point ────────────────────────────────────────────────────
