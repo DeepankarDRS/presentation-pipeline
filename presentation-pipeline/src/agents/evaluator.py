@@ -103,6 +103,16 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
     critic_medium = sum(1 for i in critic_issues if i.get("severity") == "medium")
     critic_low = sum(1 for i in critic_issues if i.get("severity") == "low")
 
+    slide_plans = state.get("slide_plans", [])
+    user_count = 0
+    sample_count = 0
+    for plan in slide_plans:
+        for source in (plan.get("data_provenance") or {}).values():
+            if source == "user":
+                user_count += 1
+            else:
+                sample_count += 1
+
     manifest: dict[str, Any] = {
         "run_id": run_id,
         "passed": passed,
@@ -128,6 +138,10 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
         },
         "steps": step_summary,
         "pptx_path": compile_result.get("pptx_path"),
+        "data_provenance": {
+            "user": user_count,
+            "sample": sample_count,
+        },
         "warnings": compile_result.get("warnings", []),
     }
 

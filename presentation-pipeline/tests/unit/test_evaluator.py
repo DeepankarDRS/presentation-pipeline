@@ -162,3 +162,30 @@ def test_evaluator_empty_history():
     assert result["evaluation"]["tokens"]["total"] == 0
     assert result["evaluation"]["cost"]["total_usd"] == 0
     assert result["evaluation"]["steps"] == []
+
+
+def test_evaluator_provenance_stats():
+    state = _make_state()
+    state["slide_plans"] = [
+        {
+            "slide_index": 0,
+            "data_provenance": {"title": "user", "chart_data": "sample", "subtitle": "sample"},
+        },
+        {
+            "slide_index": 1,
+            "data_provenance": {"title": "user", "kpi_labels": "user"},
+        },
+    ]
+    result = evaluator_node(state)
+    prov = result["evaluation"]["data_provenance"]
+    assert prov["user"] == 3
+    assert prov["sample"] == 2
+
+
+def test_evaluator_provenance_no_plans():
+    state = _make_state()
+    state["slide_plans"] = []
+    result = evaluator_node(state)
+    prov = result["evaluation"]["data_provenance"]
+    assert prov["user"] == 0
+    assert prov["sample"] == 0

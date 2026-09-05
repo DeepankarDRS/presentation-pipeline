@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
-from src.agents.planner import planner_node, _render_system, _render_user, _slide_to_state
+from src.agents.planner import planner_node, _render_system, _render_user, _slide_to_state, _compute_provenance
 from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSlide
 from src.state import initial_state
 
@@ -361,3 +361,85 @@ def test_planner_single_slide_below_threshold(mock_get_llm):
 
     assert result["mode"] == "single"
     assert result["deck_plan"] is None
+
+
+# ── Data provenance tests ──────────────────────────────────────────────────
+
+def test_compute_provenance_all_sample():
+    content = {"title": "Q3", "subtitle": "Revenue", "chart_data": [1, 2]}
+    prov = _compute_provenance(content, {})
+    assert prov == {"title": "sample", "subtitle": "sample", "chart_data": "sample"}
+
+
+def test_compute_provenance_all_user():
+    content = {"title": "Q3", "kpi_labels": ["ARR"]}
+    supplied = {"title": "Q3", "kpi_labels": ["ARR"]}
+    prov = _compute_provenance(content, supplied)
+    assert prov == {"title": "user", "kpi_labels": "user"}
+
+
+def test_compute_provenance_mixed():
+    content = {"title": "Q3", "subtitle": "Revenue", "kpi_labels": ["ARR"]}
+    supplied = {"title": "Q3", "kpi_labels": ["ARR"]}
+    prov = _compute_provenance(content, supplied)
+    assert prov["title"] == "user"
+    assert prov["kpi_labels"] == "user"
+    assert prov["subtitle"] == "sample"
+
+
+def test_compute_provenance_empty_content():
+    prov = _compute_provenance({}, {"title": "Q3"})
+    assert prov == {}
+
+
+def test_slide_to_state_provenance_with_supplied():
+    slide = PlannerSlide(
+        slide_type="data",
+        components=[PlannerComponent(kind="title", count=1)],
+        density="normal", font_tier="standard",
+        layout_pattern="stacked_sections",
+        layout_hint="Title at top",
+        content_data_json='{"title": "Q3 Metrics", "chart_data": [1, 2, 3]}',
+    )
+    result = _slide_to_state(0, slide, supplied_content={"title": "Q3 Metrics"})
+    assert result["data_provenance"]["title"] == "user"
+    assert result["data_provenance"]["chart_data"] == "sample"
+
+
+def test_slide_to_state_provenance_no_supplied():
+    slide = PlannerSlide(
+        slide_type="content",
+        components=[PlannerComponent(kind="title", count=1)],
+        density="normal", font_tier="standard",
+        layout_pattern="stacked_sections",
+        layout_hint="Title at top",
+        content_data_json='{"title": "Generated Title"}',
+    )
+    result = _slide_to_state(0, slide)
+    assert result["data_provenance"]["title"] == "sample"
+
+
+@patch("src.agents.planner.get_llm")
+def test_planner_node_populates_provenance(mock_get_llm):
+    output = _mock_planner_output(
+        PlannerSlide(
+            slide_type="data",
+            components=[PlannerComponent(kind="title", count=1, content_summary="Title")],
+            density="normal", font_tier="standard",
+            layout_pattern="stacked_sections",
+            layout_hint="Title at top",
+            content_data_json='{"title": "Q3 Metrics", "subtitle": "Revenue Growth"}',
+        )
+    )
+    mock_get_llm.return_value = MagicMock()
+    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
+
+    state = initial_state(
+        run_id="prov1",
+        raw_request="Q3 metrics slide",
+        supplied_content={"title": "Q3 Metrics"},
+    )
+    result = planner_node(state)
+    prov = result["slide_plans"][0]["data_provenance"]
+    assert prov["title"] == "user"
+    assert prov["subtitle"] == "sample"

@@ -36,6 +36,7 @@ class SlidePlan(TypedDict, total=False):
     layout_pattern: str  # canonical layout category for variety enforcement
     layout_hint: str   # freeform NL: "KPIs across top, chart+table side by side"
     content_data: dict[str, Any]
+    data_provenance: dict[str, str]  # key → "user" | "sample"
 
 
 class DeckPlan(TypedDict, total=False):

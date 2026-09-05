@@ -52,7 +52,23 @@ def _render_user(state: PresentationState) -> str:
     )
 
 
-def _slide_to_state(idx: int, slide: PlannerSlide) -> SlidePlan:
+def _compute_provenance(
+    content_data: dict[str, Any],
+    supplied: dict[str, Any],
+) -> dict[str, str]:
+    """Tag each content_data key as 'user' (from supplied_content) or 'sample'."""
+    provenance: dict[str, str] = {}
+    supplied_keys = set(supplied) if supplied else set()
+    for key in content_data:
+        provenance[key] = "user" if key in supplied_keys else "sample"
+    return provenance
+
+
+def _slide_to_state(
+    idx: int,
+    slide: PlannerSlide,
+    supplied_content: dict[str, Any] | None = None,
+) -> SlidePlan:
     """Convert Pydantic PlannerSlide to state SlidePlan TypedDict."""
     components: list[ComponentPlan] = []
     for c in slide.components:
@@ -84,6 +100,7 @@ def _slide_to_state(idx: int, slide: PlannerSlide) -> SlidePlan:
         layout_pattern=slide.layout_pattern,
         layout_hint=slide.layout_hint,
         content_data=content_data,
+        data_provenance=_compute_provenance(content_data, supplied_content or {}),
     )
 
 
@@ -129,7 +146,11 @@ def planner_node(state: PresentationState) -> dict[str, Any]:
     ])
 
     core_hook = result.core_hook
-    slide_plans = [_slide_to_state(i, s) for i, s in enumerate(result.slides)]
+    supplied = state.get("supplied_content") or {}
+    slide_plans = [
+        _slide_to_state(i, s, supplied_content=supplied)
+        for i, s in enumerate(result.slides)
+    ]
 
     swaps = _enforce_layout_variety(slide_plans)
     if swaps:
