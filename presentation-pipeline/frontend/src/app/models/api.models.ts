@@ -4,7 +4,7 @@ export interface GenerateRequest {
   prompt: string;
   theme: string;
   critic_mode: CriticMode;
-  deck_min_threshold: number;
+  deck_min_threshold: number; // target slide count (1 = single slide)
   supplied_content?: Record<string, unknown> | null;
   audience_context?: Record<string, string> | null;
 }

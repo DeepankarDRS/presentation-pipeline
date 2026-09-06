@@ -168,6 +168,12 @@ planner returns 4 slides, `mode="single"` yet the run goes through the full
 `slide_router`/`deck_assembler` loop anyway. `mode` is misleading — either wire it
 into `_slide_done_target`/`route_after_slide_router` or delete it.
 
+> **Partly addressed (2026-09-06):** `planner_node` now sets
+> `mode = "deck" if len(slide_plans) > 1 else "single"`, so `mode` tracks the same
+> predicate the routing uses. `deck_min_threshold` was repurposed as the planner's
+> *target slide count* (fed into the prompt) and no longer gates `mode`. `mode`/
+> `deck_plan` are still not *read* anywhere — deleting them is the remaining cleanup.
+
 ### 9. `data_provenance` only exists on the planner path
 `_compute_provenance` runs only in `planner._slide_to_state`
 ([`planner.py:103`](src/agents/planner.py)). The `test_case.components` path

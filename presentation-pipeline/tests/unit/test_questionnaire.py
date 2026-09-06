@@ -33,7 +33,7 @@ def test_questionnaire_collects_answers(mock_input):
     assert ctx["slide_count"] == "Single slide"
     assert ctx["focus"] == "Overview"
     assert result["theme_name"] == "corporate-slate"
-    assert result["deck_min_threshold"] == 0
+    assert result["deck_min_threshold"] == 1
 
 
 @patch("builtins.input", side_effect=["", "", "", "", ""])
@@ -59,4 +59,4 @@ def test_questionnaire_non_default_choices(mock_input):
     assert ctx["data_density"] == "Deep-dive"
     assert ctx["slide_count"] == "3-5 slides"
     assert ctx["focus"] == "Comparison"
-    assert result["deck_min_threshold"] == 3
+    assert result["deck_min_threshold"] == 4

@@ -56,7 +56,10 @@ class GenerateRequest(BaseModel):
     prompt: str
     theme: str = ""
     critic_mode: CriticMode = CriticMode.off
-    deck_min_threshold: int = Field(default=3, ge=1, le=20)
+    deck_min_threshold: int = Field(
+        default=1, ge=1, le=20,
+        description="Target slide count (1 = single slide; higher = multi-slide deck)",
+    )
     supplied_content: dict[str, Any] | None = None
     audience_context: dict[str, str] | None = None
 

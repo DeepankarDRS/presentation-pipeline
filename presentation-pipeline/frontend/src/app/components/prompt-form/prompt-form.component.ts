@@ -87,13 +87,13 @@ import { THEME_PALETTES } from '../../constants/theme.constants';
               </div>
 
               <div>
-                <label for="minSlides" class="block text-sm font-medium text-gray-700 mb-1.5">
-                  Minimum Slides: {{ form.value.minSlides }}
+                <label for="targetSlides" class="block text-sm font-medium text-gray-700 mb-1.5">
+                  Target slides: {{ form.value.targetSlides }}
                 </label>
                 <input
-                  id="minSlides"
+                  id="targetSlides"
                   type="range"
-                  formControlName="minSlides"
+                  formControlName="targetSlides"
                   min="1"
                   max="20"
                   class="w-full accent-blue-600"
@@ -102,6 +102,7 @@ import { THEME_PALETTES } from '../../constants/theme.constants';
                   <span>1</span>
                   <span>20</span>
                 </div>
+                <p class="text-xs text-gray-400 mt-1">1 = single slide · higher = multi-slide deck</p>
               </div>
             </div>
           }
@@ -131,7 +132,7 @@ export class PromptFormComponent {
     prompt: ['', Validators.required],
     theme: ['corporate-slate'],
     criticMode: ['off' as CriticMode],
-    minSlides: [3],
+    targetSlides: [1],
   });
 
   readonly selectedAccent = signal(THEME_PALETTES[0].accent);
@@ -152,7 +153,7 @@ export class PromptFormComponent {
       prompt: v.prompt.trim(),
       theme: v.theme,
       critic_mode: v.criticMode,
-      deck_min_threshold: v.minSlides,
+      deck_min_threshold: v.targetSlides,
     });
   }
 }

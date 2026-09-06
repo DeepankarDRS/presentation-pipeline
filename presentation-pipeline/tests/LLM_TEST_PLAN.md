@@ -23,6 +23,12 @@ This plan adds two families of cases that force the LLM to do real work:
 | **A. Base-prompt (single slide)** | ❌ omitted | planner decomposes 1 request → 1 slide plan → generator |
 | **B. Deck (explicit per-slide brief)** | ❌ omitted | planner decomposes "Slide 1… Slide 2…" → N slide plans → slide_router loop → deck_assembler |
 
+**Since 2026-09-06**, `deck_min_threshold` is a real *target slide count*: when
+`> 1` it is injected into the planner prompt as `TARGET DECK SIZE: exactly N
+slides`. So `--deck-min-threshold N` now actively drives how many slides the
+planner produces (an explicit per-slide breakdown in the prompt still wins).
+Default is `1` (single slide).
+
 ---
 
 ## 1. How to run
@@ -36,9 +42,11 @@ python -m src.runner base-strategy-statement
 # All base-prompt cases
 python -m src.runner base-strategy-statement base-quarterly-metrics base-revenue-trend base-competitor-comparison base-roadmap base-process-overview base-org-structure base-risks base-vague base-overstuffed
 
-# A deck case — MUST lower the threshold so N slides trip deck mode
+# A deck case — set --deck-min-threshold to the target slide count for that deck
 python -m src.runner deck-minimal-2slide --deck-min-threshold 2
-python -m src.runner deck-qbr deck-board-update deck-product-launch --deck-min-threshold 3
+python -m src.runner deck-qbr --deck-min-threshold 5
+python -m src.runner deck-board-update --deck-min-threshold 6
+python -m src.runner deck-product-launch --deck-min-threshold 4
 
 # Everything, JSON out for diffing
 python -m src.runner --json > ../output/llm-test-$(date +%Y%m%d).json
@@ -103,7 +111,7 @@ data plausible, fits 1280×720, all-tokens colour.
 ## 4. Family B — deck cases with explicit per-slide briefs
 
 The request enumerates slides ("Slide 1: … Slide 2: …"). The planner must emit one
-`PlannerSlide` per enumerated slide. Run with `--deck-min-threshold` ≤ slide count.
+`PlannerSlide` per enumerated slide. Run with `--deck-min-threshold` set to the deck's slide count.
 
 | Case | Slides | Per-slide brief | Exercises |
 |---|---|---|---|

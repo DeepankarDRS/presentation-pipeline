@@ -66,6 +66,19 @@ def test_render_user_with_components_hint():
     assert "title, chart, table" in text
 
 
+def test_render_user_includes_target_when_gt_one():
+    state = initial_state(run_id="t5", raw_request="A deck", deck_min_threshold=5)
+    text = _render_user(state)
+    assert "TARGET DECK SIZE" in text
+    assert "5" in text
+
+
+def test_render_user_omits_target_when_one():
+    state = initial_state(run_id="t6", raw_request="A slide", deck_min_threshold=1)
+    text = _render_user(state)
+    assert "TARGET DECK SIZE" not in text
+
+
 # ── Conversion tests ────────────────────────────────────────────────────────
 
 def test_slide_to_state_basic():
@@ -343,7 +356,7 @@ def test_planner_multi_slide_deck_mode(mock_get_llm):
 
 
 @patch("src.agents.planner.get_llm")
-def test_planner_single_slide_below_threshold(mock_get_llm):
+def test_planner_single_slide_mode(mock_get_llm):
     output = _mock_planner_output(
         PlannerSlide(
             slide_type="cover",

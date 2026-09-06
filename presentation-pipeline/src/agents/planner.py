@@ -6,6 +6,11 @@ to arrange components into POM XML.
 
 Reads:  raw_request, theme_name, supplied_content, deck_min_threshold
 Writes: deck_plan, slide_plans, mode
+
+deck_min_threshold is the caller's target slide count. When > 1 it is passed to
+the planner prompt as TARGET DECK SIZE so the LLM produces that many slides
+(an explicit per-slide breakdown in the request still wins). mode/deck_plan are
+derived from the actual slide count, not from the threshold.
 """
 
 from __future__ import annotations
@@ -49,6 +54,7 @@ def _render_user(state: PresentationState) -> str:
         supplied_content=supplied,
         components_hint=components_hint,
         audience_context=state.get("audience_context") or {},
+        target_slides=state.get("deck_min_threshold", 0),
     )
 
 
@@ -157,9 +163,8 @@ def planner_node(state: PresentationState) -> dict[str, Any]:
         logger.info(f"planner: layout variety — swapped {swaps} adjacent duplicate(s)")
 
     slide_count = len(slide_plans)
-    threshold = state.get("deck_min_threshold", 3)
 
-    if slide_count >= threshold and threshold > 0:
+    if slide_count > 1:
         mode = "deck"
         deck_plan = DeckPlan(
             core_hook=core_hook,

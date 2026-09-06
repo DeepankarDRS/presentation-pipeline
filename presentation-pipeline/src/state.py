@@ -82,7 +82,7 @@ class PresentationState(TypedDict, total=False):
     # ── Identity ──
     run_id: str
     mode: Literal["single", "deck"]
-    deck_min_threshold: int
+    deck_min_threshold: int  # planner target slide count (1 = single slide)
 
     # ── Input (written once at start) ──
     interactive: bool
@@ -142,7 +142,7 @@ def initial_state(
     theme_name: str = "",
     supplied_content: dict[str, Any] | None = None,
     test_case: dict[str, Any] | None = None,
-    deck_min_threshold: int = 3,
+    deck_min_threshold: int = 1,
     audience_context: dict[str, str] | None = None,
     critic_mode: Literal["auto", "manual", "off"] = "off",
     retry_budget: int = 3,

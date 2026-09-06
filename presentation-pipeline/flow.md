@@ -85,7 +85,7 @@ Defined in `src/state.py`. Every agent reads and writes only its slice. The full
 
 | Slice | Keys | Writer | Reader(s) |
 |-------|------|--------|-----------|
-| Identity | `run_id`, `mode`, `deck_min_threshold` | initial_state | All nodes |
+| Identity | `run_id`, `mode`, `deck_min_threshold` (target slide count) | initial_state | All nodes |
 | Input | `raw_request`, `test_case`, `supplied_content`, `theme_name` | initial_state | planner, context_builder |
 | Planning | `deck_plan`, `slide_plans` | planner | context_builder, generator, critic, repairer |
 | Context | `contract`, `theme_element`, `resolved_theme` | context_builder | generator, repairer, validator (fallback) |
@@ -150,7 +150,7 @@ result: PlannerOutput = structured.invoke([SystemMessage, HumanMessage])
 | pyramid | Pyramid levels | items |
 
 ### Mode determination
-If planner returns `≥ deck_min_threshold` slides (default 3) → `mode="deck"` with a `DeckPlan`. Otherwise → `mode="single"`. When `deck_min_threshold=0`, the planner is skipped entirely.
+`deck_min_threshold` is the caller's **target slide count** (default 1). When `> 1` it is passed to the planner prompt as `TARGET DECK SIZE` so the LLM produces that many slides (an explicit per-slide breakdown in the request still wins). `mode` is then derived from the actual output: `mode="deck"` + `DeckPlan` when `len(slide_plans) > 1`, else `mode="single"`. A `test_case` with `components` skips the planner entirely (always single-slide).
 
 ---
 

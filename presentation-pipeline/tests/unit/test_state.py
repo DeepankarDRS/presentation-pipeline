@@ -18,7 +18,7 @@ def test_initial_state_has_all_keys():
     assert state["run_id"] == "test-001"
     assert state["raw_request"] == "Make a slide"
     assert state["mode"] == "single"
-    assert state["deck_min_threshold"] == 3
+    assert state["deck_min_threshold"] == 1
     assert state["slide_plans"] == []
     assert state["current_xml"] == ""
     assert state["generation_history"] == []

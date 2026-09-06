@@ -177,7 +177,7 @@ def run(
     *,
     theme: str = "",
     critic_mode: Literal["auto", "manual", "off"] = "off",
-    deck_min_threshold: int = 3,
+    deck_min_threshold: int = 1,
     run_id: str | None = None,
     supplied_content: dict[str, Any] | None = None,
     test_case: dict[str, Any] | None = None,

@@ -108,7 +108,7 @@ Reads `current_slide_index`, `slide_plans`.
 |---|---|
 | `audience_context` | `{audience, data_density, theme, slide_count, focus}` |
 | `theme_name` | selected palette name |
-| `deck_min_threshold` | `0` or `3` |
+| `deck_min_threshold` | target slide count: `1` / `4` / `8` / `12` |
 
 ---
 
@@ -122,7 +122,8 @@ Reads `current_slide_index`, `slide_plans`.
 - `L150-153` `slide_plans = [_slide_to_state(i, s, supplied) for i,s in enumerate(result.slides)]`.
   - `_slide_to_state` (`L67-104`): maps each pydantic slide → `SlidePlan` TypedDict; parses `content_data_json` (`L88-92`, falls back to `{}` on bad JSON); `_compute_provenance` (`L55-64`) tags each `content_data` key `"user"` (in `supplied_content`) or `"sample"`.
 - `L155-157` `_enforce_layout_variety(slide_plans)` (`L111-130`) — mutates `layout_pattern` on adjacent content/data slides that repeat a pattern.
-- `L159-172` decide `mode`: if `slide_count >= threshold and threshold > 0` → `mode="deck"` + build `DeckPlan`; else `mode="single"`, `deck_plan=None`.
+- `_render_user` passes `deck_min_threshold` into the planner prompt as `target_slides`; when `> 1` the prompt says "TARGET DECK SIZE: exactly N slides" so the LLM produces that many (an explicit per-slide breakdown in the request still wins).
+- decide `mode`: `mode = "deck" if len(slide_plans) > 1 else "single"`, build `DeckPlan` only when `> 1`. (Previously gated on `deck_min_threshold`; now `mode` just tracks the real slide count.)
 
 **State writes** (`L180-185`):
 | key | value |
@@ -352,7 +353,7 @@ evaluator_node                 → passed = compile_ok and critic_ok
 ```
 Budget exhaustion: once `retry_count == retry_budget (3)`, `route_after_validator`/`route_after_critic` fall through to `evaluator` (single) or `slide_router` (deck) with the last (failing) `compile_result`, so `evaluator` sets `passed=False`.
 
-### 5.3 Deck (≥ `deck_min_threshold` slides)
+### 5.3 Deck (planner returns > 1 slide — driven by `deck_min_threshold` target or an explicit multi-slide request)
 ```
 planner_node                   → mode=deck, slide_plans=[N], deck_plan=DeckPlan
 style_resolver_node            → resolved_theme            (once)

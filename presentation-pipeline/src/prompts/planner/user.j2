@@ -18,5 +18,10 @@ AUDIENCE CONTEXT:
 - {{ key }}: {{ value }}
 {% endfor %}
 {% endif %}
+{% if target_slides and target_slides > 1 %}
+TARGET DECK SIZE: exactly {{ target_slides }} slides. Produce a plan with
+{{ target_slides }} slide entries. If the request itself enumerates slides or
+names a different count, follow the request — its structure wins.
+{% endif %}
 
 Plan the slide(s). You MUST populate content_data with concrete, realistic values for every component.

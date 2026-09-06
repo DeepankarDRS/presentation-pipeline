@@ -135,7 +135,8 @@ def main() -> None:
     parser.add_argument("cases", nargs="*", help="Case names to run (default: all)")
     parser.add_argument("--theme", default="", help="Override theme for all cases")
     parser.add_argument("--critic-mode", default="off", choices=["auto", "manual", "off"])
-    parser.add_argument("--deck-min-threshold", type=int, default=0)
+    parser.add_argument("--deck-min-threshold", type=int, default=0,
+                        help="target slide count fed to the planner (0 = let the planner decide)")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     args = parser.parse_args()
 

@@ -87,10 +87,13 @@ def _ask(prompt: str, options: list[str], default: str) -> str:
 
 
 def _slide_count_to_threshold(choice: str) -> int:
-    """Map slide count answer to deck_min_threshold."""
-    if choice == "Single slide":
-        return 0
-    return 3
+    """Map the slide-count answer to a planner target slide count."""
+    return {
+        "Single slide": 1,
+        "3-5 slides": 4,
+        "6-10 slides": 8,
+        "10+ slides": 12,
+    }.get(choice, 1)
 
 
 def questionnaire_node(state: PresentationState) -> dict[str, Any]:
