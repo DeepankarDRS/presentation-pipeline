@@ -57,6 +57,7 @@ _BORDER_ACCENT_RE = re.compile(
     r'(?<!\w)(border\.color)\s*=\s*"\$accent(?:Alt)?"'
 )
 _NOTES_RE = re.compile(r"<Notes\b[^>]*>(.*?)</Notes>", re.DOTALL)
+_THEME_RE = re.compile(r"<Theme\b[^>]*?/>|<Theme\b[^>]*?>.*?</Theme>", re.DOTALL)
 
 _OBJECT_ATTR_BASES: set[str] = {
     "border", "borderTop", "borderRight", "borderBottom", "borderLeft",
@@ -79,6 +80,26 @@ def _strip_fences(xml: str) -> tuple[str, bool]:
     out = _FENCE_RE.sub("", stripped)
     out = out.replace("```xml", "").replace("```XML", "").replace("```", "")
     return out.strip(), True
+
+
+def strip_theme(xml: str) -> str:
+    """Remove every <Theme> element (self-closing, multiline, or paired) from xml."""
+    return _THEME_RE.sub("", xml).strip()
+
+
+def ensure_single_theme(xml: str, theme_element: str) -> str:
+    """Guarantee exactly one top-level <Theme>.
+
+    Strips any <Theme> the LLM emitted (anywhere in the doc) and prepends the
+    canonical ``theme_element``. If ``theme_element`` is empty, a single
+    previously-present <Theme> is restored at the top as a fallback.
+    """
+    existing = _THEME_RE.search(xml)
+    body = strip_theme(xml)
+    theme = (theme_element or (existing.group(0) if existing else "")).strip()
+    if not theme:
+        return body if body.endswith("\n") else body + "\n"
+    return f"{theme}\n{body}".strip() + "\n"
 
 
 def normalize_xml(raw_xml: str) -> dict[str, Any]:
@@ -164,6 +185,10 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     if notes_match:
         xml = _NOTES_RE.sub("", xml)
 
+    had_theme = bool(_THEME_RE.search(xml))
+    if had_theme:
+        xml = strip_theme(xml)
+
     cleaned = xml.strip() + "\n"
     auto_fixed = sum(1 for i in issues if i["auto_fixed"])
     blocking = any(not i["auto_fixed"] for i in issues)
@@ -171,6 +196,7 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     return {
         "cleaned_xml": cleaned,
         "speaker_notes": speaker_notes,
+        "had_theme": had_theme,
         "issues": issues,
         "auto_fixed": auto_fixed,
         "blocking": blocking,

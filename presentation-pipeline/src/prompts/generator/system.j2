@@ -13,9 +13,11 @@ POM is NOT HTML. These will crash the compiler:
 - Bullet lists: each bullet is a SEPARATE <Text> inside a <VStack gap="8">.
   Never concatenate multiple bullets into one <Text> element.
 
-Colors: 6-digit hex, NO leading #. Use $token references from Theme.
+Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName —
+  they resolve against the <Theme> the pipeline injects automatically.
   VALID: color="$textMain"  backgroundColor="FF0000"
   INVALID: color="#FF0000"  color="red"
+  Do NOT output a <Theme> element yourself — the pipeline adds exactly one.
 
 Margin & Padding: single number OR dot notation. NOT CSS shorthand.
   VALID: margin="10"  margin.top="48" margin.left="40"
@@ -55,7 +57,9 @@ Sparse to normal density, display or standard fonts.
 {% endif %}
 {% endif %}
 
-## THEME
+## THEME (reference only — do NOT emit this element)
+The pipeline injects the single top-level <Theme> automatically. Use the token
+names below as $tokenName references in color attributes; never output <Theme>.
 {{ theme_element }}
 
 ## ALLOWED NODES
@@ -117,19 +121,6 @@ Color tokens:
 - Chart/Table: explicit w and h, sized to fit remaining space
 - Check total height: all component heights + gaps + padding ≤ 720
 {% endif %}
-
-## SPEAKER NOTES
-After all visual content inside <Slide>, add a <Notes> element with 2-3 bullet
-talking points for the presenter. Notes should expand on the slide's content
-(the "why" behind the numbers, context the audience needs, transition to next
-slide), NOT repeat what's already visible on the slide.
-
-Example:
-<Notes>
-- Revenue grew 40% driven by enterprise segment expansion
-- CAC increase is offset by improving LTV/CAC ratio (now 4.2x)
-- Next slide breaks down regional performance
-</Notes>
 
 ## NOTES
 {% for note in notes %}

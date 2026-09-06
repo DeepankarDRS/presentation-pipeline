@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from src.compiler.compiler_client import CompilerError, compile_xml
+from src.compiler.normalizer import strip_theme
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
@@ -77,7 +78,9 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
             },
         }
 
-    theme = _extract_theme(sorted_slides[0]["xml"])
+    # The pipeline owns the single top-level <Theme>. Prefer the resolved theme
+    # from state; fall back to scraping a slide only if state has none.
+    theme = (state.get("resolved_theme") or {}).get("element") or state.get("theme_element", "")
     if not theme:
         for slide in sorted_slides:
             theme = _extract_theme(slide["xml"])
@@ -88,7 +91,7 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
     for slide in sorted_slides:
         block = _extract_slide_block(slide["xml"])
         if block:
-            slide_blocks.append(block)
+            slide_blocks.append(strip_theme(block))
         else:
             logger.warning(f"deck_assembler: no <Slide> block in slide {slide.get('slide_index')}")
 
@@ -102,7 +105,7 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
             },
         }
 
-    combined_xml = theme + "\n" + "\n".join(slide_blocks)
+    combined_xml = theme.strip() + "\n" + "\n".join(slide_blocks)
     logger.info(f"deck_assembler: combined {len(slide_blocks)} slides, {len(combined_xml)} chars")
 
     run_id = state.get("run_id", "unknown")

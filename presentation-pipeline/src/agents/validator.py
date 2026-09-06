@@ -22,7 +22,7 @@ from typing import Any
 
 from src.compiler.compiler_client import CompilerError, compile_xml, validate_xml
 from src.compiler.layout_audit import audit_layout
-from src.compiler.normalizer import normalize_xml, pre_validate
+from src.compiler.normalizer import ensure_single_theme, normalize_xml, pre_validate
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,8 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         output_dir = output_dir / f"retry-{attempt}"
 
     norm = normalize_xml(xml)
-    cleaned = norm["cleaned_xml"]
+    theme_el = (state.get("contract") or {}).get("theme_element") or state.get("theme_element", "")
+    cleaned = ensure_single_theme(norm["cleaned_xml"], theme_el)
     speaker_notes = norm.get("speaker_notes", "")
 
     if norm["issues"]:
@@ -67,7 +68,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         logger.info("validator: parseXml unavailable, using pre_validate fallback")
         contract = state.get("contract")
         fallback = pre_validate(xml, contract)
-        cleaned = fallback["cleaned_xml"]
+        cleaned = ensure_single_theme(fallback["cleaned_xml"], theme_el)
         norm = fallback
 
         if fallback["blocking"]:

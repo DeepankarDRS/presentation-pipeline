@@ -10,7 +10,12 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from src.agents.validator import validator_node
-from src.compiler.normalizer import normalize_xml, pre_validate
+from src.compiler.normalizer import (
+    ensure_single_theme,
+    normalize_xml,
+    pre_validate,
+    strip_theme,
+)
 from src.state import initial_state
 
 
@@ -108,6 +113,42 @@ def test_normalize_fixes_border_accent():
     assert 'borderTop.color="$accent"' in result["cleaned_xml"]
     codes = [i["code"] for i in result["issues"]]
     assert "BORDER_ACCENT_FIX" in codes
+
+
+_CANON_THEME = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />'
+
+
+def test_strip_theme_removes_all_forms():
+    assert strip_theme('<Theme a="1" />\n<Slide>x</Slide>') == "<Slide>x</Slide>"
+    assert strip_theme('<Theme\n  a="1"\n  b="2"\n>\n</Theme>\n<Slide>x</Slide>') == "<Slide>x</Slide>"
+    assert strip_theme('<Slide><Theme a="1" /><Text>x</Text></Slide>') == "<Slide><Text>x</Text></Slide>"
+
+
+def test_ensure_single_theme_injects_when_absent():
+    out = ensure_single_theme("<Slide><Text>x</Text></Slide>", _CANON_THEME)
+    assert out.count("<Theme") == 1
+    assert out.startswith(_CANON_THEME)
+
+
+def test_ensure_single_theme_replaces_llm_theme():
+    xml = '<Theme surface="000000" />\n<Slide><Theme accent="FFF" /><Text>x</Text></Slide>'
+    out = ensure_single_theme(xml, _CANON_THEME)
+    assert out.count("<Theme") == 1
+    assert out.startswith(_CANON_THEME)
+    assert "000000" not in out
+
+
+def test_ensure_single_theme_keeps_existing_when_no_canonical():
+    xml = f'{_CANON_THEME}\n<Slide><Text>x</Text></Slide>'
+    out = ensure_single_theme(xml, "")
+    assert out.count("<Theme") == 1
+    assert out.startswith("<Theme")
+
+
+def test_normalize_strips_theme():
+    result = normalize_xml(VALID_XML)
+    assert "<Theme" not in result["cleaned_xml"]
+    assert result["had_theme"] is True
 
 
 # ── Pre-validate fallback tests ───────────────────────────────────────────

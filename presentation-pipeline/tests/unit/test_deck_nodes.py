@@ -83,6 +83,38 @@ def test_deck_assembler_combines_slides(mock_compile):
     assert compiled_xml.count("<Theme") == 1
 
 
+@patch("src.agents.deck_nodes.compile_xml")
+def test_deck_assembler_dedupes_theme_inside_slide(mock_compile):
+    """LLM sometimes emits <Theme> as the first child of <Slide>; assembler must strip it."""
+    mock_compile.return_value = {
+        "ok": True, "pptx_path": "/tmp/deck.pptx",
+        "diagnostics": [], "warnings": [], "retryable": False,
+    }
+
+    theme = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />'
+    slide_with_nested = (
+        f'<Slide>{theme}<VStack w="1280" h="720"><Text>Slide 1</Text></VStack></Slide>'
+    )
+    slide_paired_theme = (
+        '<Theme surface="F7F9FC" accent="2563EB"></Theme>\n'
+        '<Slide><VStack w="1280" h="720"><Text>Slide 2</Text></VStack></Slide>'
+    )
+
+    state = initial_state(run_id="da4", raw_request="test")
+    state["resolved_theme"] = {"element": theme}
+    state["completed_slides"] = [
+        {"slide_index": 0, "xml": slide_with_nested},
+        {"slide_index": 1, "xml": slide_paired_theme},
+    ]
+
+    result = deck_assembler_node(state)
+    compiled_xml = mock_compile.call_args[0][0]
+    assert compiled_xml.count("<Theme") == 1
+    assert compiled_xml.startswith("<Theme")
+    assert compiled_xml.count("<Slide>") == 2
+    assert "Slide 1" in compiled_xml and "Slide 2" in compiled_xml
+
+
 def test_deck_assembler_no_slides():
     state = initial_state(run_id="da2", raw_request="test")
     state["completed_slides"] = []

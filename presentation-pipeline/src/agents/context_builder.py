@@ -275,8 +275,8 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     theme_mode = theme_info.get("mode", "light")
     if theme_name:
         notes.append(
-            f"Theme palette: {theme_name} ({theme_mode}). Emit the <Theme> "
-            "element above verbatim; use $tokens for every color."
+            f"Theme palette: {theme_name} ({theme_mode}). Do NOT emit a <Theme> "
+            "element — the pipeline injects it. Use $tokens for every color."
         )
 
     if "chart" in kinds:
