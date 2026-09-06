@@ -58,7 +58,7 @@ def run_cases(
     case_names: list[str] | None = None,
     *,
     theme: str = "",
-    critic_mode: str = "auto",
+    critic_mode: str = "off",
     deck_min_threshold: int = 0,
 ) -> list[dict[str, Any]]:
     """Run test cases and return summary rows."""
@@ -134,7 +134,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run presentation pipeline test cases")
     parser.add_argument("cases", nargs="*", help="Case names to run (default: all)")
     parser.add_argument("--theme", default="", help="Override theme for all cases")
-    parser.add_argument("--critic-mode", default="auto", choices=["auto", "manual", "off"])
+    parser.add_argument("--critic-mode", default="off", choices=["auto", "manual", "off"])
     parser.add_argument("--deck-min-threshold", type=int, default=0)
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
     args = parser.parse_args()

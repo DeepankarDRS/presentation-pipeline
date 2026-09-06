@@ -61,7 +61,7 @@ def test_route_after_start_preloaded_skips_questionnaire():
 
 
 def test_route_after_validator_ok_to_critic():
-    state = initial_state(run_id="r3", raw_request="test")
+    state = initial_state(run_id="r3", raw_request="test", critic_mode="auto")
     state["compile_result"] = {"ok": True, "retryable": False, "diagnostics": [], "warnings": []}
     assert route_after_validator(state) == "critic"
 

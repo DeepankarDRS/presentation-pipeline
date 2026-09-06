@@ -144,7 +144,7 @@ def initial_state(
     test_case: dict[str, Any] | None = None,
     deck_min_threshold: int = 3,
     audience_context: dict[str, str] | None = None,
-    critic_mode: Literal["auto", "manual", "off"] = "auto",
+    critic_mode: Literal["auto", "manual", "off"] = "off",
     retry_budget: int = 3,
     interactive: bool = False,
 ) -> PresentationState:

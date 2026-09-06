@@ -152,7 +152,7 @@ def _manual_checkpoint(
 
 def critic_node(state: PresentationState) -> dict[str, Any]:
     """AI quality gate: check completeness, fidelity, structure, theme."""
-    mode = state.get("critic_mode", "auto")
+    mode = state.get("critic_mode", "off")
     interactive = state.get("interactive", False)
 
     logger.info(f"critic: {mode} mode — running LLM quality check")

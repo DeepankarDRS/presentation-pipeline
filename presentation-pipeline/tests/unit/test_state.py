@@ -26,7 +26,7 @@ def test_initial_state_has_all_keys():
     assert state["retry_count"] == 0
     assert state["retry_budget"] == 3
     assert state["passed"] is False
-    assert state["critic_mode"] == "auto"
+    assert state["critic_mode"] == "off"
 
 
 def test_initial_state_custom_values():

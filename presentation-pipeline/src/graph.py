@@ -84,7 +84,7 @@ def route_after_validator(state: PresentationState) -> str:
         logger.info(f"route: compile failed but retry budget exhausted → {target}")
         return target
 
-    mode = state.get("critic_mode", "auto")
+    mode = state.get("critic_mode", "off")
     if mode == "off":
         target = _slide_done_target(state)
         logger.info(f"route: compile ok, critic off → {target}")
@@ -176,7 +176,7 @@ def run(
     request: str = "Create a simple title slide",
     *,
     theme: str = "",
-    critic_mode: Literal["auto", "manual", "off"] = "auto",
+    critic_mode: Literal["auto", "manual", "off"] = "off",
     deck_min_threshold: int = 3,
     run_id: str | None = None,
     supplied_content: dict[str, Any] | None = None,

@@ -49,7 +49,7 @@ def case_to_state(
     case: dict[str, Any],
     *,
     run_id: str | None = None,
-    critic_mode: str = "auto",
+    critic_mode: str = "off",
     deck_min_threshold: int = 0,
 ) -> PresentationState:
     """Convert a YAML test case dict into a PresentationState."""

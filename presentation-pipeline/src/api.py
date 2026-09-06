@@ -55,7 +55,7 @@ class CriticMode(str, Enum):
 class GenerateRequest(BaseModel):
     prompt: str
     theme: str = ""
-    critic_mode: CriticMode = CriticMode.auto
+    critic_mode: CriticMode = CriticMode.off
     deck_min_threshold: int = Field(default=3, ge=1, le=20)
     supplied_content: dict[str, Any] | None = None
     audience_context: dict[str, str] | None = None

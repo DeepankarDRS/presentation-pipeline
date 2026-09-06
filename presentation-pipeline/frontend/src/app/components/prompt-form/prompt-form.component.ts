@@ -130,7 +130,7 @@ export class PromptFormComponent {
   form = this.fb.nonNullable.group({
     prompt: ['', Validators.required],
     theme: ['corporate-slate'],
-    criticMode: ['auto' as CriticMode],
+    criticMode: ['off' as CriticMode],
     minSlides: [3],
   });
 
