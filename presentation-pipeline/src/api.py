@@ -26,8 +26,21 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from src.agents.planner import planner_node
+from src.agents.planner_schema import (
+    ComponentKindLiteral,
+    DensityLiteral,
+    FontTierLiteral,
+    LayoutPatternLiteral,
+    SlideTypeLiteral,
+)
 from src.graph import compile_graph
-from src.state import initial_state
+from src.state import (
+    ComponentPlan,
+    DeckPlan,
+    SlidePlan,
+    initial_state,
+)
 from src.utils.logging_config import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -62,6 +75,40 @@ class GenerateRequest(BaseModel):
     )
     supplied_content: dict[str, Any] | None = None
     audience_context: dict[str, str] | None = None
+
+
+class ComponentPlanPayload(BaseModel):
+    kind: str
+    count: int = 1
+    chart_type: str = ""
+    series_count: int = 0
+    columns: int = 0
+    rows: int = 0
+    items: int = 0
+    content_summary: str = ""
+
+
+class SlidePlanPayload(BaseModel):
+    slide_index: int = 0
+    slide_type: str
+    components: list[ComponentPlanPayload]
+    density: str = "normal"
+    font_tier: str = "standard"
+    layout_pattern: str = "two_column"
+    layout_hint: str = ""
+    content_data: dict[str, Any] = Field(default_factory=dict)
+
+
+class GenerateFromPlanRequest(BaseModel):
+    prompt: str
+    theme: str = ""
+    critic_mode: CriticMode = CriticMode.off
+    deck_min_threshold: int = Field(default=1, ge=1, le=20)
+    supplied_content: dict[str, Any] | None = None
+    audience_context: dict[str, str] | None = None
+    run_id: str = ""
+    core_hook: str = ""
+    slides: list[SlidePlanPayload]
 
 
 class ProgressEvent(BaseModel):
@@ -313,6 +360,207 @@ async def download_pptx(run_id: str) -> FileResponse:
         path=str(path),
         media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
         filename=f"{run_id}.pptx",
+    )
+
+
+_VALID_COMPONENT_KINDS = set(ComponentKindLiteral.__args__)
+_VALID_SLIDE_TYPES = set(SlideTypeLiteral.__args__)
+_VALID_DENSITIES = set(DensityLiteral.__args__)
+_VALID_FONT_TIERS = set(FontTierLiteral.__args__)
+_VALID_LAYOUT_PATTERNS = set(LayoutPatternLiteral.__args__)
+
+
+def _validate_plan(slides: list[SlidePlanPayload]) -> list[str]:
+    errors: list[str] = []
+    if not slides or len(slides) > 20:
+        errors.append(f"Slide count must be 1-20, got {len(slides)}")
+        return errors
+    for i, s in enumerate(slides):
+        if s.slide_type not in _VALID_SLIDE_TYPES:
+            errors.append(f"Slide {i}: invalid slide_type '{s.slide_type}'")
+        if s.density not in _VALID_DENSITIES:
+            errors.append(f"Slide {i}: invalid density '{s.density}'")
+        if s.font_tier not in _VALID_FONT_TIERS:
+            errors.append(f"Slide {i}: invalid font_tier '{s.font_tier}'")
+        if s.layout_pattern not in _VALID_LAYOUT_PATTERNS:
+            errors.append(f"Slide {i}: invalid layout_pattern '{s.layout_pattern}'")
+        if not s.components:
+            errors.append(f"Slide {i}: must have at least one component")
+        for j, c in enumerate(s.components):
+            if c.kind not in _VALID_COMPONENT_KINDS:
+                errors.append(f"Slide {i}, component {j}: invalid kind '{c.kind}'")
+            if c.kind == "chart" and not c.chart_type:
+                errors.append(f"Slide {i}, component {j}: chart requires chart_type")
+            if c.kind == "table" and (c.columns < 1 or c.rows < 1):
+                errors.append(f"Slide {i}, component {j}: table requires columns/rows >= 1")
+    return errors
+
+
+def _payload_to_slide_plans(
+    slides: list[SlidePlanPayload],
+    supplied_content: dict[str, Any] | None,
+) -> list[SlidePlan]:
+    from src.agents.planner import _compute_provenance
+
+    result: list[SlidePlan] = []
+    for i, s in enumerate(slides):
+        components: list[ComponentPlan] = []
+        for c in s.components:
+            comp = ComponentPlan(kind=c.kind, count=c.count, content_summary=c.content_summary)
+            if c.chart_type:
+                comp["chart_type"] = c.chart_type
+            if c.series_count:
+                comp["series_count"] = c.series_count
+            if c.columns:
+                comp["columns"] = c.columns
+            if c.rows:
+                comp["rows"] = c.rows
+            if c.items:
+                comp["items"] = c.items
+            components.append(comp)
+
+        result.append(SlidePlan(
+            slide_index=i,
+            slide_type=s.slide_type,
+            components=components,
+            density=s.density,
+            font_tier=s.font_tier,
+            layout_pattern=s.layout_pattern,
+            layout_hint=s.layout_hint,
+            content_data=s.content_data,
+            data_provenance=_compute_provenance(s.content_data, supplied_content or {}),
+        ))
+    return result
+
+
+@app.post("/plan")
+async def create_plan(request: GenerateRequest) -> dict[str, Any]:
+    run_id = uuid.uuid4().hex[:12]
+    state = initial_state(
+        run_id=run_id,
+        raw_request=request.prompt,
+        theme_name=request.theme,
+        deck_min_threshold=request.deck_min_threshold,
+        supplied_content=request.supplied_content,
+        audience_context=request.audience_context,
+    )
+    result = await asyncio.to_thread(planner_node, state)
+    return {
+        "run_id": run_id,
+        "core_hook": result["core_hook"],
+        "slides": result["slide_plans"],
+    }
+
+
+def _run_pipeline_from_plan_sync(
+    run_id: str, request: GenerateFromPlanRequest,
+) -> Generator[tuple[str, dict[str, Any]], None, None]:
+    slide_plans = _payload_to_slide_plans(request.slides, request.supplied_content)
+    state = initial_state(
+        run_id=run_id,
+        raw_request=request.prompt,
+        theme_name=request.theme,
+        critic_mode=request.critic_mode.value,
+        deck_min_threshold=request.deck_min_threshold,
+        supplied_content=request.supplied_content,
+        audience_context=request.audience_context,
+    )
+    state["core_hook"] = request.core_hook
+    state["slide_plans"] = slide_plans
+    state["mode"] = "deck" if len(slide_plans) > 1 else "single"
+    if len(slide_plans) > 1:
+        state["deck_plan"] = DeckPlan(
+            core_hook=request.core_hook,
+            slide_count=len(slide_plans),
+            theme=request.theme,
+            slides=slide_plans,
+        )
+
+    graph = compile_graph()
+    config = {
+        "run_name": f"api-from-plan-{run_id}",
+        "tags": ["presentation-pipeline", "api", "from-plan"],
+        "metadata": {"run_id": run_id},
+    }
+    for chunk in graph.stream(state, config=config):
+        for node_name, state_update in chunk.items():
+            yield node_name, state_update
+
+
+@app.post("/generate-from-plan")
+async def generate_from_plan(request: GenerateFromPlanRequest) -> StreamingResponse:
+    errors = _validate_plan(request.slides)
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+
+    _cleanup_old_runs()
+    run_id = request.run_id or uuid.uuid4().hex[:12]
+    _runs[run_id] = RunRecord(run_id=run_id, status="running")
+
+    async def event_stream() -> AsyncGenerator[str, None]:
+        record = _runs[run_id]
+        accumulated: dict[str, Any] = {}
+        completed_nodes: list[str] = []
+        q: stdlib_queue.Queue[tuple[str, dict[str, Any]] | None] = stdlib_queue.Queue()
+
+        def _producer() -> None:
+            try:
+                for node_name, state_update in _run_pipeline_from_plan_sync(run_id, request):
+                    q.put((node_name, state_update))
+            except Exception as exc:
+                q.put(("__error__", {"__message__": str(exc)}))
+            finally:
+                q.put(None)
+
+        loop = asyncio.get_running_loop()
+        loop.run_in_executor(None, _producer)
+
+        try:
+            while True:
+                item = await asyncio.to_thread(q.get)
+                if item is None:
+                    break
+
+                node_name, state_update = item
+                if node_name == "__error__":
+                    record.status = "error"
+                    record.error = state_update["__message__"]
+                    yield _format_sse(ProgressEvent(
+                        event="error",
+                        data={"message": record.error},
+                        timestamp=time.time(), run_id=run_id,
+                    ))
+                    break
+
+                _merge_state(accumulated, state_update)
+                completed_nodes.append(node_name)
+
+                total_slides = len(accumulated.get("slide_plans", []))
+                record.current_step = node_name
+                record.progress_pct = _estimate_progress(completed_nodes, total_slides)
+
+                event = _build_event(node_name, run_id, accumulated)
+                yield _format_sse(event)
+
+            if record.status != "error":
+                record.status = "complete"
+                record.progress_pct = 100
+                record.passed = accumulated.get("passed", False)
+                record.pptx_path = accumulated.get("pptx_path")
+
+        except Exception as exc:
+            record.status = "error"
+            record.error = str(exc)
+            yield _format_sse(ProgressEvent(
+                event="error",
+                data={"message": str(exc)},
+                timestamp=time.time(), run_id=run_id,
+            ))
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Run-Id": run_id},
     )
 
 

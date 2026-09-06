@@ -52,6 +52,9 @@ logger = logging.getLogger(__name__)
 
 def route_after_start(state: PresentationState) -> str:
     """Route to questionnaire (interactive), planner, or style_resolver."""
+    if state.get("slide_plans"):
+        logger.info("route: skipping planner (slide_plans already provided)")
+        return "style_resolver"
     test_case = state.get("test_case") or {}
     if test_case.get("components"):
         logger.info("route: skipping planner (test_case has components)")

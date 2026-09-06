@@ -6,7 +6,10 @@ import {
   EventType,
   EvaluationSummary,
   GenerateRequest,
+  GenerateFromPlanRequest,
+  PlanResponse,
   ProgressEvent,
+  SlidePlan,
 } from '../models/api.models';
 import { STEP_LABELS, PROGRESS_RANGES } from '../constants/theme.constants';
 
@@ -25,10 +28,71 @@ export class GenerationService {
   readonly pptxPath = signal<string | null>(null);
   readonly evaluationSummary = signal<EvaluationSummary | null>(null);
   readonly error = signal<string | null>(null);
+  readonly deckPlan = signal<PlanResponse | null>(null);
+  readonly originalRequest = signal<GenerateRequest | null>(null);
 
   readonly isGenerating = computed(() => this.view() === 'progress');
 
   private subscription: Subscription | null = null;
+
+  requestPlan(request: GenerateRequest): void {
+    this.originalRequest.set(request);
+    this.view.set('planning');
+    this.error.set(null);
+
+    this.api.createPlan(request).then(
+      (plan) => {
+        this.deckPlan.set(plan);
+        this.view.set('plan-editor');
+      },
+      (err: Error) => {
+        this.error.set(err.message || 'Plan creation failed');
+        this.view.set('form');
+      },
+    );
+  }
+
+  generateFromPlan(core_hook: string, slides: SlidePlan[]): void {
+    const orig = this.originalRequest();
+    if (!orig) return;
+
+    const plan = this.deckPlan();
+    const request: GenerateFromPlanRequest = {
+      prompt: orig.prompt,
+      theme: orig.theme,
+      critic_mode: orig.critic_mode,
+      deck_min_threshold: orig.deck_min_threshold,
+      supplied_content: orig.supplied_content,
+      audience_context: orig.audience_context,
+      run_id: plan?.run_id ?? '',
+      core_hook,
+      slides,
+    };
+
+    this.view.set('progress');
+    this.progressPct.set(0);
+    this.currentStep.set(null);
+    this.stepLabel.set('Starting...');
+    this.error.set(null);
+    this.passed.set(null);
+    this.evaluationSummary.set(null);
+
+    this.subscription = this.api.startGenerationFromPlan(request).subscribe({
+      next: (sseEvent) => {
+        this.runId.set(sseEvent.runId);
+        this.handleEvent(sseEvent.event);
+      },
+      error: (err: Error) => {
+        this.view.set('result');
+        this.error.set(err.message || 'Connection lost');
+      },
+      complete: () => {
+        if (this.view() === 'progress') {
+          this.view.set('result');
+        }
+      },
+    });
+  }
 
   generate(request: GenerateRequest): void {
     this.view.set('progress');
@@ -76,6 +140,8 @@ export class GenerationService {
     this.pptxPath.set(null);
     this.evaluationSummary.set(null);
     this.error.set(null);
+    this.deckPlan.set(null);
+    this.originalRequest.set(null);
   }
 
   private handleEvent(event: ProgressEvent): void {
