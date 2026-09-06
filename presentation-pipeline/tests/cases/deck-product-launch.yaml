@@ -1,0 +1,19 @@
+# LLM_TEST_PLAN Family B — deck. NO components (planner must produce 4 slide plans).
+# Run: python -m src.runner deck-product-launch --deck-min-threshold 3
+name: deck-product-launch
+objective: 4-slide internal product launch briefing.
+request: >
+  A four-slide internal briefing for the launch of "Atlas", our new analytics
+  module.
+  Slide 1: hero cover — product name, one-line value proposition.
+  Slide 2: the problem — three pain points customers have today, as bullets.
+  Slide 3: the solution — a process flow of how Atlas works, four or five steps.
+  Slide 4: the plan — a timeline from now to general availability with the key
+  milestones.
+theme: emerald-clean
+content_source: LLM invents pain points, workflow steps and milestone dates
+expect:
+  compiles: true
+  slide_count: 4
+  slide_types: [cover, content, content, content]
+  watch: flow on slide 3 and timeline on slide 4 both render; steps 4-6, not 12

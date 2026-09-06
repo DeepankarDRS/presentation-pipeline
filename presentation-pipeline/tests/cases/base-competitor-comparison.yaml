@@ -1,0 +1,13 @@
+# LLM_TEST_PLAN Family A — base prompt, no components. Planner must decompose.
+name: base-competitor-comparison
+objective: Us vs competitors — planner picks table or matrix.
+request: >
+  A slide comparing us against our three main competitors on price, feature
+  breadth, and support quality. The reader should be able to see at a glance
+  where we win.
+theme: corporate-slate
+content_source: LLM invents competitor names and comparison values
+expect:
+  compiles: true
+  planner_should_pick_one_of: [[title, table], [title, matrix]]
+  watch: which form the planner chooses; every Td styled; our column highlighted

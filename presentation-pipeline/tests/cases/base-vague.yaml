@@ -1,0 +1,13 @@
+# LLM_TEST_PLAN Family A — ADVERSARIAL. Deliberately under-specified.
+name: base-vague
+objective: No real brief — does the planner invent something coherent?
+request: >
+  Make me a good slide about the business.
+theme: corporate-slate
+content_source: LLM invents topic, angle and all content
+expect:
+  compiles: true
+  planner_should_pick: any coherent set
+  watch: >
+    does it commit to one clear message or produce mush? falls back to
+    title/narrative/bullet_list? core_hook still a real sentence?

@@ -1,0 +1,12 @@
+# LLM_TEST_PLAN Family A — base prompt, no components. Planner must decompose.
+name: base-process-overview
+objective: Onboarding process — planner picks flow or process_arrow.
+request: >
+  Explain our customer onboarding process on one slide, from first contact to
+  the customer being fully live. Keep it to the main steps.
+theme: sky-minimal
+content_source: LLM invents the step names
+expect:
+  compiles: true
+  planner_should_pick_one_of: [[title, flow], [title, process_arrow]]
+  watch: 4-6 steps not 12; horizontal fit; arrows/connectors render

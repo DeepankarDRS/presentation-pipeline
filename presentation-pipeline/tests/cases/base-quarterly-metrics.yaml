@@ -1,0 +1,13 @@
+# LLM_TEST_PLAN Family A — base prompt, no components. Planner must decompose.
+name: base-quarterly-metrics
+objective: Headline numbers for the quarter, planner chooses the form.
+request: >
+  Make a slide that shows our Q3 FY26 headline numbers at a glance for an
+  executive audience. Nothing fancy — just the metrics that matter and how each
+  moved versus last quarter.
+theme: sky-minimal
+content_source: LLM invents metric names, values and deltas (plausible SaaS)
+expect:
+  compiles: true
+  planner_should_pick: [title, kpi_row]
+  watch: tile count between 3 and 5; delta colour matches direction

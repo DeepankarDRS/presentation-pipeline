@@ -1,0 +1,12 @@
+# LLM_TEST_PLAN Family A — base prompt, no components. Planner must decompose.
+name: base-risks
+objective: Risks and mitigations — planner picks table or bullet_list.
+request: >
+  Summarise the top four or five risks to our 2026 plan, and for each one the
+  mitigation we have in place. The pairing of risk to mitigation should be obvious.
+theme: amber-mono
+content_source: LLM invents the risks and mitigations
+expect:
+  compiles: true
+  planner_should_pick_one_of: [[title, table], [title, bullet_list]]
+  watch: risk<->mitigation pairing stays aligned; readable at this density

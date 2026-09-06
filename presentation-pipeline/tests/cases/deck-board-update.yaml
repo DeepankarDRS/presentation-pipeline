@@ -1,0 +1,23 @@
+# LLM_TEST_PLAN Family B — deck. NO components (planner must produce 6 slide plans).
+# Run: python -m src.runner deck-board-update --deck-min-threshold 3
+name: deck-board-update
+objective: 6-slide board update with section breaks — tests slide_type variety.
+request: >
+  A six-slide board update for Q3 FY26.
+  Slide 1: cover — "Board Update, Q3 FY26".
+  Slide 2: a section divider that just says "Financials".
+  Slide 3: a P&L table — Revenue, COGS, Gross Profit, OpEx, Net Income across
+  Q2 FY26 and Q3 FY26 with a QoQ change column.
+  Slide 4: a section divider that just says "Product & GTM".
+  Slide 5: the product roadmap for the next four quarters as a timeline.
+  Slide 6: closing — what we need from the board, three short asks.
+theme: graphite-dark
+content_source: LLM invents all financial figures and roadmap items
+expect:
+  compiles: true
+  slide_count: 6
+  slide_types: [cover, section_break, data, section_break, content, closing]
+  watch: >
+    section_break slides are genuinely minimal; adjacent content/data slides
+    differ in layout (variety — CODE_REVIEW #7 means this comes only from
+    layout_hint); dark theme table + any chart styled for dark
