@@ -161,6 +161,25 @@ If no theme is specified in the request, choose based on content:
 - Technical/engineering → "midnight-indigo" or "teal-slate"
 - General → "corporate-slate"
 
+## Multi-Slide Content Distribution
+
+When planning a deck with supplied_content, you must distribute the data across slides — NOT dump everything onto one slide.
+
+Strategy:
+1. Read all supplied_content keys and classify them by component type (KPI, chart, table, bullets, timeline, flow, etc.).
+2. Assign each data group to the slide where it fits best based on the request.
+3. In each slide's content_data_json, include ONLY the keys relevant to that slide's components.
+4. Use the EXACT same key names from supplied_content (e.g. "kpi_labels", "chart_values", "table_rows") so the system can track data provenance.
+5. One data group per slide is ideal — avoid cramming chart + table + KPIs onto a single slide unless the request specifically asks for a dashboard.
+6. Cover slides get "title" and "subtitle" keys. Closing slides get "bullets" for action items.
+
+Example: if supplied_content has kpi_*, chart_*, table_*, and bullets, a 5-slide deck should distribute as:
+- Slide 0 (cover): content_data = {"title": ..., "subtitle": ...}
+- Slide 1 (data): content_data = {"kpi_labels": ..., "kpi_values": ..., "kpi_deltas": ..., "kpi_directions": ...}
+- Slide 2 (data): content_data = {"chart_type": ..., "chart_title": ..., "chart_labels": ..., "chart_values": ...}
+- Slide 3 (data): content_data = {"table_columns": ..., "table_rows": ...}
+- Slide 4 (closing): content_data = {"title": "Q4 Priorities", "bullets": ...}
+
 ## Output
 
 Return one slide plan per slide. If the request enumerates slides or gives a TARGET DECK SIZE, produce that many. For a genuine single-slide request with no count given, return exactly one slide.

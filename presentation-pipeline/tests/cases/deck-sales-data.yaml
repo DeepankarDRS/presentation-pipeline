@@ -1,0 +1,74 @@
+# Deck test: Sales enablement with heavy tabular + chart data.
+# Tests planner with multi-series chart and large table across slides.
+# Run: python -m src.runner deck-sales-data --deck-min-threshold 5
+name: deck-sales-data
+objective: 5-slide sales deck with fully supplied pipeline, win-rate, and deal data.
+request: >
+  Build a 5-slide sales enablement deck for our Q4 pipeline review.
+
+  Headline: "Q4 Pipeline Review — $18.2M at Risk"
+
+  Pipeline summary (4 KPIs):
+  - Total Pipeline: $42.6M
+  - Weighted Pipeline: $18.2M
+  - Avg Deal Size: $284K
+  - Win Rate: 34%
+
+  Pipeline by stage (for a funnel or chart):
+  Prospecting: $12.4M (38 deals)
+  Discovery: $9.8M (24 deals)
+  Proposal: $11.2M (18 deals)
+  Negotiation: $6.1M (9 deals)
+  Closed Won: $3.1M (6 deals)
+
+  Win rate trend (quarterly):
+  Q1 FY26: 28%, Q2 FY26: 31%, Q3 FY26: 34%, Q4 FY26 target: 40%
+
+  Top 5 deals at risk:
+  - Globex Corp: $1.2M, Negotiation, risk: champion left
+  - Initech: $890K, Proposal, risk: budget freeze
+  - Umbrella Inc: $740K, Discovery, risk: competitor POC
+  - Wayne Enterprises: $680K, Negotiation, risk: legal review stalled
+  - Stark Industries: $520K, Proposal, risk: timeline slip to Q1
+
+  Actions for Q4:
+  1. Schedule exec sponsors for top 3 at-risk deals by Oct 15
+  2. Run competitive displacement plays for Umbrella and 2 others
+  3. Accelerate Initech — offer Q4-only pricing to unblock budget
+
+theme: teal-slate
+supplied_content:
+  title: "Q4 Pipeline Review"
+  subtitle: "$18.2M Weighted Pipeline at Risk"
+  kpi_labels: ["Total Pipeline", "Weighted Pipeline", "Avg Deal Size", "Win Rate"]
+  kpi_values: ["$42.6M", "$18.2M", "$284K", "34%"]
+  kpi_deltas: ["+12% QoQ", "-4% QoQ", "+$31K", "+3 pts"]
+  kpi_directions: ["up", "down", "up", "up"]
+  chart_type: bar
+  chart_title: "Pipeline by Stage ($M)"
+  chart_labels: ["Prospecting", "Discovery", "Proposal", "Negotiation", "Closed Won"]
+  chart_values: [12.4, 9.8, 11.2, 6.1, 3.1]
+  chart_series:
+    - { "name": "Win Rate Trend", "values": [28, 31, 34, 40] }
+  table_columns: ["Deal", "Value", "Stage", "Risk"]
+  table_rows:
+    - ["Globex Corp", "$1.2M", "Negotiation", "Champion left"]
+    - ["Initech", "$890K", "Proposal", "Budget freeze"]
+    - ["Umbrella Inc", "$740K", "Discovery", "Competitor POC"]
+    - ["Wayne Enterprises", "$680K", "Negotiation", "Legal review stalled"]
+    - ["Stark Industries", "$520K", "Proposal", "Timeline slip to Q1"]
+  bullets:
+    - "Schedule exec sponsors for top 3 at-risk deals by Oct 15"
+    - "Run competitive displacement plays for Umbrella and 2 others"
+    - "Accelerate Initech — offer Q4-only pricing to unblock budget"
+content_source: All data supplied — planner must use verbatim
+expect:
+  compiles: true
+  slide_count: 5
+  slide_types: [cover, data, data, data, closing]
+  watch: >
+    KPI slide uses exact pipeline figures;
+    chart slide uses pipeline-by-stage data;
+    table slide shows 5 at-risk deals with exact names and risk descriptions;
+    closing uses supplied Q4 actions as bullets;
+    planner distributes supplied_content across slides — no single slide gets all data

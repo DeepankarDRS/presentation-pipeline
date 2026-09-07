@@ -1,0 +1,64 @@
+# Deck test: Product launch with mixed data types across slides.
+# Tests planner with timeline, flow, KPIs, and bullet data all supplied.
+# Run: python -m src.runner deck-product-launch-data --deck-min-threshold 6
+name: deck-product-launch-data
+objective: 6-slide product launch deck with real supplied data for every slide.
+request: >
+  Create a product launch deck for "Nexus", our new API gateway platform.
+
+  Product: Nexus API Gateway
+  Tagline: "One gateway. Every API. Zero downtime."
+
+  The problem (3 pain points):
+  - Teams manage 4+ separate gateways averaging 2.3 hours/week each on config
+  - 68% of outages last quarter traced to gateway misconfiguration
+  - No unified view of API traffic across services — teams fly blind
+
+  How Nexus works (the pipeline):
+  Step 1: Connect — point Nexus at your existing APIs via auto-discovery
+  Step 2: Route — drag-and-drop routing rules with automatic conflict detection
+  Step 3: Secure — one-click mTLS, rate limiting, and OAuth2 per-route
+  Step 4: Monitor — unified dashboard with per-route latency, error rates, throughput
+  Step 5: Scale — auto-scaling based on traffic patterns with zero-downtime deploys
+
+  Early results from beta:
+  - Gateway config time: 2.3 hrs/wk → 15 min/wk (-89%)
+  - Config-related outages: 12/quarter → 1/quarter (-92%)
+  - Mean API latency: 142ms → 38ms (-73%)
+  - Developer NPS: 22 → 71 (+49 pts)
+
+  Launch timeline:
+  - Oct 2026: Private beta (current — 12 customers)
+  - Dec 2026: Public beta, self-serve signup
+  - Feb 2027: GA launch + enterprise tier
+  - Apr 2027: SOC2 + HIPAA certification
+
+theme: midnight-indigo
+supplied_content:
+  title: "Nexus API Gateway"
+  subtitle: "One gateway. Every API. Zero downtime."
+  bullets:
+    - "Teams manage 4+ separate gateways averaging 2.3 hours/week each on config"
+    - "68% of outages last quarter traced to gateway misconfiguration"
+    - "No unified view of API traffic across services — teams fly blind"
+  flow_steps: ["Connect", "Route", "Secure", "Monitor", "Scale"]
+  kpi_labels: ["Config Time", "Outages", "API Latency", "Dev NPS"]
+  kpi_values: ["15 min/wk", "1/quarter", "38ms", "71"]
+  kpi_deltas: ["-89%", "-92%", "-73%", "+49 pts"]
+  kpi_directions: ["up", "up", "up", "up"]
+  timeline_items:
+    - { "date": "Oct 2026", "label": "Private beta (12 customers)" }
+    - { "date": "Dec 2026", "label": "Public beta, self-serve signup" }
+    - { "date": "Feb 2027", "label": "GA launch + enterprise tier" }
+    - { "date": "Apr 2027", "label": "SOC2 + HIPAA certification" }
+content_source: All data supplied — planner must use verbatim
+expect:
+  compiles: true
+  slide_count: 6
+  slide_types: [cover, content, content, data, data, closing]
+  watch: >
+    pain points appear as bullet_list with exact text;
+    flow component has 5 steps matching supplied flow_steps;
+    KPIs use supplied beta results;
+    timeline uses supplied 4 milestones with exact dates;
+    data_provenance marks supplied keys as "user"
