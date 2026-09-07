@@ -46,7 +46,7 @@ export interface EvaluationSummary {
   cost?: { total_usd: number; models_used: string[] };
 }
 
-export type AppView = 'form' | 'planning' | 'plan-editor' | 'progress' | 'result';
+export type AppView = 'form' | 'planning' | 'plan-editor' | 'progress' | 'result' | 'review';
 
 // Planner enum types — mirror backend Literals
 export type ComponentKind =
@@ -109,4 +109,39 @@ export interface ThemePalette {
   tone: string;
   mode: 'light' | 'dark';
   accent: string;
+}
+
+// ── Edit session types ───────────────────────────────────────────────────
+
+export interface SlideInfoReview {
+  slide_index: number;
+  version: number;
+  screenshot_url: string | null;
+  has_edits: boolean;
+  edit_count: number;
+}
+
+export interface EditSessionStatus {
+  run_id: string;
+  slide_count: number;
+  slides: SlideInfoReview[];
+}
+
+export interface SlideEditResponse {
+  ok: boolean;
+  slide_index: number;
+  version: number;
+  screenshot_url: string | null;
+  xml: string | null;
+  compile_ok: boolean;
+  repair_attempts: number;
+  issues: Record<string, unknown>[];
+  error: string | null;
+}
+
+export interface FinalizeResponse {
+  ok: boolean;
+  pptx_path: string | null;
+  download_url: string | null;
+  error: string | null;
 }

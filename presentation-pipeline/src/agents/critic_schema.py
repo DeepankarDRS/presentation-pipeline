@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 
 CriticSeverityLiteral = Literal["high", "medium", "low"]
-CriticTypeLiteral = Literal["completeness", "fidelity", "structure", "theme"]
+CriticTypeLiteral = Literal["completeness", "fidelity", "structure", "theme", "visual"]
 
 
 class CriticIssue(BaseModel):

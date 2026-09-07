@@ -23,7 +23,9 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.agents.critic_schema import CriticOutput
-from src.state import CriticResult, PresentationState
+from src.agents.visual_critic import run_visual_critic
+from src.compiler.screenshot import render_screenshots
+from src.state import CriticResult, PresentationState, VisualCriticResult
 from src.utils.llm_client import get_llm
 
 logger = logging.getLogger(__name__)
@@ -150,13 +152,65 @@ def _manual_checkpoint(
     return CriticResult(passed=False, issues=issues)
 
 
+def _run_visual_review(
+    state: PresentationState,
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Take screenshot and run visual critic. Returns (issues, screenshot_path)."""
+    cr = state.get("compile_result") or {}
+    pptx_path = cr.get("pptx_path")
+    if not pptx_path or not cr.get("ok", False):
+        return [], None
+
+    run_id = state.get("run_id", "unknown")
+    idx = state.get("current_slide_index", 0)
+    output_dir = Path(__file__).resolve().parent.parent.parent / "output" / "runs" / run_id / "screenshots"
+
+    batch = render_screenshots(pptx_path, str(output_dir))
+    if not batch.ok or not batch.slides:
+        logger.warning(f"critic: screenshot failed: {batch.error}")
+        return [], None
+
+    screenshot_path = batch.slides[0].png_path
+    if not screenshot_path:
+        return [], None
+
+    slide_plans = state.get("slide_plans", [])
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
+
+    visual_issues = run_visual_critic(
+        screenshot_path=screenshot_path,
+        current_xml=state.get("current_xml", ""),
+        slide_plan=plan,
+        theme_element=state.get("theme_element", ""),
+    )
+
+    return visual_issues, screenshot_path
+
+
 def critic_node(state: PresentationState) -> dict[str, Any]:
-    """AI quality gate: check completeness, fidelity, structure, theme."""
+    """AI quality gate: text check + visual review + optional manual checkpoint."""
     mode = state.get("critic_mode", "off")
     interactive = state.get("interactive", False)
+    idx = state.get("current_slide_index", 0)
 
     logger.info(f"critic: {mode} mode — running LLM quality check")
     issues = _run_ai_check(state)
+
+    visual_issues, screenshot_path = _run_visual_review(state)
+    issues.extend(visual_issues)
+
+    visual_result = VisualCriticResult(
+        passed=not any(i.get("source") == "visual" and i["severity"] == "high" for i in issues),
+        issues=visual_issues,
+        screenshot_path=screenshot_path,
+    )
+
+    updates: dict[str, Any] = {"visual_critic_result": visual_result}
+
+    if screenshot_path:
+        current_screenshots = dict(state.get("slide_screenshots", {}))
+        current_screenshots[idx] = screenshot_path
+        updates["slide_screenshots"] = current_screenshots
 
     high_count = sum(1 for i in issues if i["severity"] == "high")
     med_count = sum(1 for i in issues if i["severity"] == "medium")
@@ -168,7 +222,8 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
             f"critic: manual passed={result['passed']}, issues={len(result['issues'])} "
             f"(high={high_count}, medium={med_count}, low={low_count})"
         )
-        return {"critic_result": result}
+        updates["critic_result"] = result
+        return updates
 
     has_high = any(i["severity"] == "high" for i in issues)
     passed = not has_high
@@ -178,4 +233,5 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
         f"(high={high_count}, medium={med_count}, low={low_count})"
     )
 
-    return {"critic_result": CriticResult(passed=passed, issues=issues)}
+    updates["critic_result"] = CriticResult(passed=passed, issues=issues)
+    return updates

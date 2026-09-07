@@ -5,11 +5,12 @@ import { PromptFormComponent } from './components/prompt-form/prompt-form.compon
 import { PlanEditorComponent } from './components/plan-editor/plan-editor.component';
 import { ProgressViewComponent } from './components/progress-view/progress-view.component';
 import { ResultViewComponent } from './components/result-view/result-view.component';
+import { SlideReviewComponent } from './components/slide-review/slide-review.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [LayoutComponent, PromptFormComponent, PlanEditorComponent, ProgressViewComponent, ResultViewComponent],
+  imports: [LayoutComponent, PromptFormComponent, PlanEditorComponent, ProgressViewComponent, ResultViewComponent, SlideReviewComponent],
   template: `
     <app-layout>
       @switch (generation.view()) {
@@ -33,6 +34,9 @@ import { ResultViewComponent } from './components/result-view/result-view.compon
         }
         @case ('result') {
           <app-result-view (resetEmit)="generation.reset()" />
+        }
+        @case ('review') {
+          <app-slide-review />
         }
       }
     </app-layout>

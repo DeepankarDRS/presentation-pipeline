@@ -20,6 +20,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from src.compiler.screenshot import render_screenshots
 from src.state import PresentationState
 from src.utils.llm_client import get_pricing
 
@@ -57,6 +58,80 @@ def _build_step_summary(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "errors_out_count": len(record.get("errors_out", [])),
         })
     return steps
+
+
+def _write_slides_data(state: PresentationState, run_id: str) -> str | None:
+    """Write per-slide XML and metadata to slides.json for the edit session."""
+    output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    slide_plans = state.get("slide_plans", [])
+    completed = state.get("completed_slides", [])
+    screenshots = state.get("slide_screenshots", {})
+
+    slides_data: list[dict[str, Any]] = []
+
+    if completed:
+        sorted_slides = sorted(completed, key=lambda s: s.get("slide_index", 0))
+        for slide in sorted_slides:
+            idx = slide.get("slide_index", 0)
+            plan = slide_plans[idx] if idx < len(slide_plans) else {}
+            slides_data.append({
+                "slide_index": idx,
+                "xml": slide.get("xml", ""),
+                "speaker_notes": slide.get("speaker_notes", ""),
+                "screenshot_path": screenshots.get(idx),
+                "slide_plan": plan,
+            })
+    else:
+        xml = state.get("current_xml", "")
+        if xml:
+            plan = slide_plans[0] if slide_plans else {}
+            slides_data.append({
+                "slide_index": 0,
+                "xml": xml,
+                "speaker_notes": state.get("speaker_notes", ""),
+                "screenshot_path": screenshots.get(0),
+                "slide_plan": plan,
+            })
+
+    slides_path = output_dir / "slides.json"
+    try:
+        slides_path.write_text(
+            json.dumps(slides_data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        return str(slides_path)
+    except OSError as e:
+        logger.warning(f"evaluator: failed to write slides.json: {e}")
+        return None
+
+
+def _generate_final_screenshots(
+    state: PresentationState, run_id: str,
+) -> dict[int, str]:
+    """Generate screenshots for the final PPTX if not already done."""
+    existing = dict(state.get("slide_screenshots", {}))
+    if existing:
+        return existing
+
+    cr = state.get("compile_result") or {}
+    pptx_path = cr.get("pptx_path")
+    if not pptx_path:
+        return {}
+
+    output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "screenshots"
+    batch = render_screenshots(pptx_path, str(output_dir))
+    if not batch.ok:
+        logger.warning(f"evaluator: final screenshots failed: {batch.error}")
+        return {}
+
+    result: dict[int, str] = {}
+    for s in batch.slides:
+        if s.ok and s.png_path:
+            result[s.slide_index] = s.png_path
+    logger.info(f"evaluator: generated {len(result)} final screenshot(s)")
+    return result
 
 
 def _write_manifest(manifest: dict[str, Any], run_id: str) -> str | None:
@@ -145,17 +220,34 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
         "warnings": compile_result.get("warnings", []),
     }
 
+    # Generate final screenshots if not already captured by the critic
+    screenshots = _generate_final_screenshots(state, run_id)
+
+    manifest["theme_element"] = state.get("theme_element", "")
+    manifest["screenshots"] = {str(k): v for k, v in screenshots.items()}
+
     manifest_path = _write_manifest(manifest, run_id)
     if manifest_path:
         logger.info(f"evaluator: manifest written to {manifest_path}")
+
+    # Persist per-slide data for the edit session
+    updated_state = dict(state)
+    if screenshots:
+        updated_state["slide_screenshots"] = screenshots
+    slides_path = _write_slides_data(updated_state, run_id)
+    if slides_path:
+        logger.info(f"evaluator: slides data written to {slides_path}")
 
     logger.info(
         f"evaluator: passed={passed}, retries={state.get('retry_count', 0)}, "
         f"tokens={total_tokens_in}+{total_tokens_out}, cost=${total_cost:.4f}"
     )
 
-    return {
+    result: dict[str, Any] = {
         "evaluation": manifest,
         "pptx_path": compile_result.get("pptx_path"),
         "passed": passed,
     }
+    if screenshots:
+        result["slide_screenshots"] = screenshots
+    return result

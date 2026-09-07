@@ -86,6 +86,12 @@ import { ApiService } from '../../services/api.service';
             >
               Download PPTX
             </a>
+            <button
+              (click)="gen.startReview()"
+              class="flex-1 bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Review & Edit Slides
+            </button>
           }
           <button
             (click)="resetEmit.emit()"

@@ -10,8 +10,10 @@ Endpoints:
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import queue as stdlib_queue
+import re
 import time
 import uuid
 from collections.abc import AsyncGenerator, Generator
@@ -562,6 +564,355 @@ async def generate_from_plan(request: GenerateFromPlanRequest) -> StreamingRespo
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Run-Id": run_id},
     )
+
+
+# ── Edit session state ────────────────────────────────────────────────────
+
+_PIPELINE_ROOT = Path(__file__).resolve().parent.parent
+
+
+@dataclass
+class EditRecord:
+    version: int
+    feedback: str
+    xml_before: str
+    xml_after: str
+    screenshot_path: str | None
+    compile_ok: bool
+    repair_attempts: int
+    timestamp: float = field(default_factory=time.time)
+
+
+@dataclass
+class EditSlideState:
+    slide_index: int
+    current_xml: str
+    original_xml: str
+    screenshot_path: str | None = None
+    edit_history: list[EditRecord] = field(default_factory=list)
+    version: int = 0
+    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
+    slide_plan: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class EditSession:
+    run_id: str
+    slides: list[EditSlideState] = field(default_factory=list)
+    theme_element: str = ""
+    contract: dict[str, Any] = field(default_factory=dict)
+    original_pptx_path: str | None = None
+    final_pptx_path: str | None = None
+
+
+_edit_sessions: dict[str, EditSession] = {}
+
+
+class SlideEditRequest(BaseModel):
+    feedback: str = Field(..., min_length=1, max_length=2000)
+
+
+class SlideInfoResponse(BaseModel):
+    slide_index: int
+    version: int
+    screenshot_url: str | None
+    has_edits: bool
+    edit_count: int
+
+
+class EditSessionResponse(BaseModel):
+    run_id: str
+    slide_count: int
+    slides: list[SlideInfoResponse]
+
+
+class SlideEditResponse(BaseModel):
+    ok: bool
+    slide_index: int
+    version: int
+    screenshot_url: str | None
+    xml: str | None = None
+    compile_ok: bool = False
+    repair_attempts: int = 0
+    issues: list[dict[str, Any]] = Field(default_factory=list)
+    error: str | None = None
+
+
+class FinalizeResponse(BaseModel):
+    ok: bool
+    pptx_path: str | None = None
+    download_url: str | None = None
+    error: str | None = None
+
+
+def _screenshot_url(run_id: str, slide_index: int, version: int = 0) -> str | None:
+    return f"/runs/{run_id}/slides/{slide_index}/screenshot?v={version}"
+
+
+def _load_edit_session(run_id: str) -> EditSession | None:
+    """Load edit session from slides.json on disk."""
+    slides_path = _PIPELINE_ROOT / "output" / "runs" / run_id / "slides.json"
+    if not slides_path.exists():
+        return None
+
+    manifest_path = _PIPELINE_ROOT / "output" / "runs" / run_id / "run-manifest.json"
+    theme_element = ""
+    contract: dict[str, Any] = {}
+    pptx_path: str | None = None
+
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        theme_element = manifest.get("theme_element", "")
+        pptx_path = manifest.get("pptx_path")
+
+    slides_data = json.loads(slides_path.read_text(encoding="utf-8"))
+    slides: list[EditSlideState] = []
+    for s in slides_data:
+        slides.append(EditSlideState(
+            slide_index=s["slide_index"],
+            current_xml=s["xml"],
+            original_xml=s["xml"],
+            screenshot_path=s.get("screenshot_path"),
+            slide_plan=s.get("slide_plan", {}),
+        ))
+
+    return EditSession(
+        run_id=run_id,
+        slides=slides,
+        theme_element=theme_element,
+        contract=contract,
+        original_pptx_path=pptx_path,
+    )
+
+
+def _persist_slides_json(session: EditSession) -> None:
+    """Update slides.json on disk after an edit."""
+    slides_path = _PIPELINE_ROOT / "output" / "runs" / session.run_id / "slides.json"
+    data = []
+    for s in session.slides:
+        data.append({
+            "slide_index": s.slide_index,
+            "xml": s.current_xml,
+            "speaker_notes": "",
+            "screenshot_path": s.screenshot_path,
+            "slide_plan": s.slide_plan,
+        })
+    slides_path.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+
+@app.post("/runs/{run_id}/edit-session")
+async def create_edit_session(run_id: str) -> EditSessionResponse:
+    """Create an edit session from a completed pipeline run."""
+    if run_id in _edit_sessions:
+        session = _edit_sessions[run_id]
+    else:
+        session = _load_edit_session(run_id)
+        if session is None:
+            raise HTTPException(status_code=404, detail=f"No slides data for run {run_id}")
+        _edit_sessions[run_id] = session
+
+    slide_infos = []
+    for s in session.slides:
+        slide_infos.append(SlideInfoResponse(
+            slide_index=s.slide_index,
+            version=s.version,
+            screenshot_url=_screenshot_url(run_id, s.slide_index, s.version)
+                if s.screenshot_path else None,
+            has_edits=len(s.edit_history) > 0,
+            edit_count=len(s.edit_history),
+        ))
+
+    return EditSessionResponse(
+        run_id=run_id,
+        slide_count=len(session.slides),
+        slides=slide_infos,
+    )
+
+
+@app.post("/runs/{run_id}/slides/{slide_index}/edit")
+async def edit_slide(
+    run_id: str, slide_index: int, request: SlideEditRequest,
+) -> SlideEditResponse:
+    """Apply an NL edit to a slide."""
+    session = _edit_sessions.get(run_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Edit session not found. Create one first.")
+
+    if slide_index < 0 or slide_index >= len(session.slides):
+        raise HTTPException(status_code=404, detail=f"Slide {slide_index} not found")
+
+    slide = session.slides[slide_index]
+
+    try:
+        async with asyncio.timeout(120):
+            await slide.lock.acquire()
+    except TimeoutError:
+        raise HTTPException(status_code=409, detail="Edit already in progress for this slide")
+
+    try:
+        from src.agents.slide_edit_service import edit_slide_xml
+
+        result = await asyncio.to_thread(
+            edit_slide_xml,
+            current_xml=slide.current_xml,
+            feedback=request.feedback,
+            theme_element=session.theme_element,
+            contract=session.contract,
+            run_id=run_id,
+            slide_index=slide_index,
+            version=slide.version + 1,
+        )
+
+        if result.ok:
+            xml_before = slide.current_xml
+            slide.current_xml = result.xml
+            slide.version += 1
+            if result.screenshot_path:
+                slide.screenshot_path = result.screenshot_path
+            slide.edit_history.append(EditRecord(
+                version=slide.version,
+                feedback=request.feedback,
+                xml_before=xml_before,
+                xml_after=result.xml,
+                screenshot_path=result.screenshot_path,
+                compile_ok=result.compile_ok,
+                repair_attempts=result.repair_attempts,
+            ))
+            _persist_slides_json(session)
+
+        return SlideEditResponse(
+            ok=result.ok,
+            slide_index=slide_index,
+            version=slide.version,
+            screenshot_url=_screenshot_url(run_id, slide_index, slide.version)
+                if slide.screenshot_path else None,
+            xml=result.xml if result.ok else None,
+            compile_ok=result.compile_ok,
+            repair_attempts=result.repair_attempts,
+            issues=result.issues,
+            error=result.error,
+        )
+    finally:
+        slide.lock.release()
+
+
+@app.get("/runs/{run_id}/slides/{slide_index}/screenshot")
+async def get_slide_screenshot(run_id: str, slide_index: int) -> FileResponse:
+    """Serve a slide's screenshot PNG."""
+    session = _edit_sessions.get(run_id)
+    if session is None:
+        session = _load_edit_session(run_id)
+        if session:
+            _edit_sessions[run_id] = session
+
+    if session and 0 <= slide_index < len(session.slides):
+        png_path = session.slides[slide_index].screenshot_path
+        if png_path and Path(png_path).exists():
+            return FileResponse(
+                path=png_path,
+                media_type="image/png",
+                filename=f"slide-{slide_index}.png",
+            )
+
+    # Fallback: check screenshots directory directly
+    screenshots_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "screenshots"
+    fallback = screenshots_dir / f"slide-{slide_index}.png"
+    if fallback.exists():
+        return FileResponse(
+            path=str(fallback),
+            media_type="image/png",
+            filename=f"slide-{slide_index}.png",
+        )
+
+    raise HTTPException(status_code=404, detail="Screenshot not found")
+
+
+@app.get("/runs/{run_id}/slides/{slide_index}/xml")
+async def get_slide_xml(run_id: str, slide_index: int) -> dict[str, Any]:
+    """Return current XML for a slide (debugging)."""
+    session = _edit_sessions.get(run_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Edit session not found")
+    if slide_index < 0 or slide_index >= len(session.slides):
+        raise HTTPException(status_code=404, detail=f"Slide {slide_index} not found")
+
+    slide = session.slides[slide_index]
+    return {
+        "slide_index": slide_index,
+        "version": slide.version,
+        "xml": slide.current_xml,
+    }
+
+
+@app.post("/runs/{run_id}/finalize")
+async def finalize_deck(run_id: str) -> FinalizeResponse:
+    """Reassemble all edited slides into a final PPTX."""
+    session = _edit_sessions.get(run_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Edit session not found")
+
+    from src.compiler.compiler_client import CompilerError, compile_xml
+    from src.compiler.normalizer import strip_theme
+
+    def _extract_slide_block(xml: str) -> str:
+        m = re.search(r'(<Slide\b[^>]*>.*?</Slide>)', xml, re.DOTALL)
+        return m.group(1) if m else ""
+
+    def _extract_theme(xml: str) -> str:
+        m = re.search(r'<Theme\s[^>]*/>', xml)
+        return m.group(0) if m else ""
+
+    def _do_finalize() -> FinalizeResponse:
+        theme = session.theme_element
+        if not theme:
+            for s in session.slides:
+                theme = _extract_theme(s.current_xml)
+                if theme:
+                    break
+
+        slide_blocks: list[str] = []
+        for s in sorted(session.slides, key=lambda x: x.slide_index):
+            block = _extract_slide_block(s.current_xml)
+            if block:
+                slide_blocks.append(strip_theme(block))
+
+        if not slide_blocks:
+            return FinalizeResponse(ok=False, error="No valid slide blocks found")
+
+        if len(slide_blocks) == 1 and not theme:
+            combined_xml = session.slides[0].current_xml
+        else:
+            combined_xml = theme.strip() + "\n" + "\n".join(slide_blocks)
+
+        output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "finalized"
+
+        try:
+            cr = compile_xml(combined_xml, output_dir)
+        except CompilerError as e:
+            return FinalizeResponse(ok=False, error=f"Compile failed: {e}")
+
+        if not cr.get("ok", False):
+            diags = cr.get("diagnostics", [])
+            msg = diags[0]["message"] if diags else "Unknown compile error"
+            return FinalizeResponse(ok=False, error=f"Compile failed: {msg}")
+
+        pptx_path = cr.get("pptx_path")
+        session.final_pptx_path = pptx_path
+
+        record = _runs.get(run_id)
+        if record:
+            record.pptx_path = pptx_path
+
+        return FinalizeResponse(
+            ok=True,
+            pptx_path=pptx_path,
+            download_url=f"/runs/{run_id}/download" if pptx_path else None,
+        )
+
+    return await asyncio.to_thread(_do_finalize)
 
 
 @app.get("/health")

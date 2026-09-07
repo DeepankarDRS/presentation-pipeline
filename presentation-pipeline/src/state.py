@@ -76,6 +76,12 @@ class CriticResult(TypedDict, total=False):
     issues: list[dict[str, Any]]
 
 
+class VisualCriticResult(TypedDict, total=False):
+    passed: bool
+    issues: list[dict[str, Any]]
+    screenshot_path: str | None
+
+
 # ── Main state ──────────────────────────────────────────────────────────────
 
 class PresentationState(TypedDict, total=False):
@@ -122,6 +128,8 @@ class PresentationState(TypedDict, total=False):
     # ── Critique (critic writes) ──
     critic_result: CriticResult | None
     critic_mode: Literal["auto", "manual", "off"]
+    visual_critic_result: VisualCriticResult | None
+    slide_screenshots: dict[int, str]
 
     # ── Retry (repairer writes) ──
     retry_tier: int
@@ -176,6 +184,8 @@ def initial_state(
         layout_issues=[],
         critic_result=None,
         critic_mode=critic_mode,
+        visual_critic_result=None,
+        slide_screenshots={},
         retry_tier=0,
         retry_count=0,
         retry_budget=retry_budget,

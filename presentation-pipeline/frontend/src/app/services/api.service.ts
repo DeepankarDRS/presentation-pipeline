@@ -7,6 +7,9 @@ import {
   ProgressEvent,
   EventType,
   RunStatus,
+  EditSessionStatus,
+  SlideEditResponse,
+  FinalizeResponse,
 } from '../models/api.models';
 
 const API_BASE = 'http://localhost:8000';
@@ -158,5 +161,35 @@ export class ApiService {
   async checkHealth(): Promise<{ status: string; active_runs: number }> {
     const res = await fetch(`${API_BASE}/health`);
     return res.json();
+  }
+
+  async createEditSession(runId: string): Promise<EditSessionStatus> {
+    const res = await fetch(`${API_BASE}/runs/${runId}/edit-session`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error(`Failed to create edit session: ${res.status}`);
+    return res.json();
+  }
+
+  async editSlide(runId: string, slideIndex: number, feedback: string): Promise<SlideEditResponse> {
+    const res = await fetch(`${API_BASE}/runs/${runId}/slides/${slideIndex}/edit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback }),
+    });
+    if (!res.ok) throw new Error(`Edit failed: ${res.status}`);
+    return res.json();
+  }
+
+  async finalizeDeck(runId: string): Promise<FinalizeResponse> {
+    const res = await fetch(`${API_BASE}/runs/${runId}/finalize`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error(`Finalize failed: ${res.status}`);
+    return res.json();
+  }
+
+  getScreenshotUrl(runId: string, slideIndex: number, version: number = 0): string {
+    return `${API_BASE}/runs/${runId}/slides/${slideIndex}/screenshot?v=${version}`;
   }
 }

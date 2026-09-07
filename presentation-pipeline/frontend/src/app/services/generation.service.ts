@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { ApiService, SSEEvent } from './api.service';
 import {
   AppView,
+  EditSessionStatus,
   EventType,
   EvaluationSummary,
   GenerateRequest,
@@ -30,6 +31,7 @@ export class GenerationService {
   readonly error = signal<string | null>(null);
   readonly deckPlan = signal<PlanResponse | null>(null);
   readonly originalRequest = signal<GenerateRequest | null>(null);
+  readonly editSession = signal<EditSessionStatus | null>(null);
 
   readonly isGenerating = computed(() => this.view() === 'progress');
 
@@ -142,6 +144,28 @@ export class GenerationService {
     this.error.set(null);
     this.deckPlan.set(null);
     this.originalRequest.set(null);
+    this.editSession.set(null);
+  }
+
+  startReview(): void {
+    const id = this.runId();
+    if (!id) return;
+    this.error.set(null);
+
+    this.api.createEditSession(id).then(
+      (session) => {
+        this.editSession.set(session);
+        this.view.set('review');
+      },
+      (err: Error) => {
+        this.error.set(err.message || 'Failed to start review');
+      },
+    );
+  }
+
+  backToResult(): void {
+    this.editSession.set(null);
+    this.view.set('result');
   }
 
   private handleEvent(event: ProgressEvent): void {
