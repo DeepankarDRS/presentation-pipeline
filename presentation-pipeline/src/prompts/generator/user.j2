@@ -21,10 +21,15 @@ SUPPLIED CONTENT (use these values EXACTLY):
 {% endfor %}
 {% elif content_data %}
 
-DATA (use these values directly in your POM XML — do NOT invent alternatives):
+DATA (use these values directly in your POM XML):
 {% for key, value in content_data.items() %}
 {{ key }}: {{ value }}
 {% endfor %}
+
+For any COMPONENT listed above that has no corresponding key in DATA, invent
+realistic specific content — real-sounding numbers ($42.8M, 114%, +18% QoQ),
+named entities, concise prose. Never use placeholders like "XX%", "TBD",
+"Lorem ipsum", "Company A", or "Metric 1".
 {% else %}
 
 CONTENT: No data supplied — invent realistic, specific figures and text.
