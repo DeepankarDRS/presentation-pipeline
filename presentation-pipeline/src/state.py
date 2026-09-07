@@ -105,6 +105,10 @@ class PresentationState(TypedDict, total=False):
     deck_plan: DeckPlan | None
     slide_plans: list[SlidePlan]
 
+    # ── Plan refinement (set by the /plan/refine endpoint, planner reads) ──
+    prior_plan: dict[str, Any] | None
+    refine_feedback: str
+
     # ── Context (context_builder writes, generator reads) ──
     contract: dict[str, Any] | None
     theme_element: str
@@ -130,6 +134,8 @@ class PresentationState(TypedDict, total=False):
     critic_mode: Literal["auto", "manual", "off"]
     visual_critic_result: VisualCriticResult | None
     slide_screenshots: dict[int, str]
+    # Per-slide critic verdicts captured by slide_router for the deck path
+    slide_critic_results: Annotated[list[dict[str, Any]], operator.add]
 
     # ── Retry (repairer writes) ──
     retry_tier: int
@@ -170,6 +176,8 @@ def initial_state(
         core_hook="",
         deck_plan=None,
         slide_plans=[],
+        prior_plan=None,
+        refine_feedback="",
         current_slide_index=0,
         completed_slides=[],
         contract=None,
@@ -186,6 +194,7 @@ def initial_state(
         critic_mode=critic_mode,
         visual_critic_result=None,
         slide_screenshots={},
+        slide_critic_results=[],
         retry_tier=0,
         retry_count=0,
         retry_budget=retry_budget,

@@ -33,10 +33,23 @@ AUDIENCE CONTEXT:
 - {{ key }}: {{ value }}
 {% endfor %}
 {% endif %}
-{% if target_slides and target_slides > 1 %}
+{% if target_slides and target_slides > 1 and not prior_plan %}
 TARGET DECK SIZE: exactly {{ target_slides }} slides. Produce a plan with
 {{ target_slides }} slide entries. If the request itself enumerates slides or
 names a different count, follow the request — its structure wins.
+{% endif %}
+{% if prior_plan %}
+
+CURRENT PLAN (revise this — keep everything the feedback does not mention):
+```json
+{{ prior_plan | tojson(indent=2) }}
+```
+
+USER FEEDBACK ON THE CURRENT PLAN:
+{{ refine_feedback }}
+
+Apply the feedback. Preserve slide order, components, and content_data that the
+feedback does not touch. Change the slide count only if the feedback asks for it.
 {% endif %}
 
 Plan the slide(s). You MUST populate content_data with concrete, realistic values for every component. When supplied_content is provided, copy the exact values into the correct slide's content_data using the same key names.

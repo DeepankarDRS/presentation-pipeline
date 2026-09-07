@@ -1,8 +1,9 @@
 """Deck multi-slide nodes — slide_router and deck_assembler.
 
-slide_router: saves completed slide XML, increments index, resets per-slide state.
+slide_router: saves completed slide XML + critic verdict, increments index,
+resets per-slide state.
 deck_assembler: extracts <Slide> blocks from all completed slides, combines with
-one <Theme>, runs final compile.
+one <Theme>, runs final compile with a bounded compile-repair loop.
 
 These nodes are only active when len(slide_plans) > 1.
 """
@@ -15,12 +16,32 @@ from pathlib import Path
 from typing import Any
 
 from src.compiler.compiler_client import CompilerError, compile_xml
-from src.compiler.normalizer import strip_theme
+from src.compiler.normalizer import normalize_xml, strip_theme
+from src.compiler.repair_guidance import build_error_guidance
 from src.state import PresentationState
+from src.utils.llm_client import get_llm
 
 logger = logging.getLogger(__name__)
 
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
+
+MAX_DECK_REPAIR_ATTEMPTS = 2
+
+
+def _call_deck_repair_llm(failing_xml: str, problems: list[str], guidance: str) -> str:
+    """Fix compile errors in the assembled multi-slide document, preserving all slides."""
+    user_prompt = (
+        f"## FAILING MULTI-SLIDE POM DOCUMENT\n{failing_xml}\n\n"
+        f"## COMPILE ERRORS\n" + "\n".join(f"- {p}" for p in problems) + "\n\n"
+        f"## ERROR GUIDANCE\n{guidance}\n\n"
+        "Fix the compile errors. Preserve every <Slide> block and the single "
+        "top-level <Theme>. Return the complete corrected document only."
+    )
+    response = get_llm("repairer").invoke([
+        {"role": "system", "content": "You repair POM presentation XML. Output only valid POM XML."},
+        {"role": "user", "content": user_prompt},
+    ])
+    return response.content
 
 
 def slide_router_node(state: PresentationState) -> dict[str, Any]:
@@ -38,6 +59,7 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
 
     return {
         "completed_slides": [completed],
+        "slide_critic_results": [state.get("critic_result") or {"passed": True}],
         "current_slide_index": idx + 1,
         "current_xml": "",
         "speaker_notes": "",
@@ -124,13 +146,39 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
             },
         }
 
-    status = "OK" if compile_result["ok"] else "FAILED"
+    working_xml = combined_xml
+    attempt = 0
+    while (
+        not compile_result.get("ok", False)
+        and compile_result.get("retryable", False)
+        and attempt < MAX_DECK_REPAIR_ATTEMPTS
+    ):
+        attempt += 1
+        diags = compile_result.get("diagnostics", [])
+        problems = [f"{d.get('type', 'ERROR')}: {d.get('message', '')}" for d in diags]
+        guidance = build_error_guidance([], diags)
+        logger.info(f"deck_assembler: compile failed, repair attempt {attempt}/{MAX_DECK_REPAIR_ATTEMPTS}")
+
+        try:
+            repaired = _call_deck_repair_llm(working_xml, problems, guidance)
+        except Exception as exc:
+            logger.error(f"deck_assembler: repair LLM call failed: {exc}")
+            break
+
+        working_xml = normalize_xml(repaired).get("cleaned_xml", repaired)
+        try:
+            compile_result = compile_xml(working_xml, output_dir / f"repair-{attempt}")
+        except CompilerError as exc:
+            logger.error(f"deck_assembler: repair compile error: {exc}")
+            break
+
+    status = "OK" if compile_result.get("ok", False) else "FAILED"
     logger.info(f"deck_assembler: final compile {status}")
     if compile_result.get("pptx_path"):
         logger.info(f"deck_assembler: pptx → {compile_result['pptx_path']}")
 
     return {
-        "current_xml": combined_xml,
+        "current_xml": working_xml,
         "compile_result": compile_result,
         "pptx_path": compile_result.get("pptx_path"),
     }

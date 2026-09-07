@@ -55,6 +55,8 @@ def _render_user(state: PresentationState) -> str:
         components_hint=components_hint,
         audience_context=state.get("audience_context") or {},
         target_slides=state.get("deck_min_threshold", 0),
+        prior_plan=state.get("prior_plan"),
+        refine_feedback=state.get("refine_feedback", ""),
     )
 
 

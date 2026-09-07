@@ -103,6 +103,10 @@ export interface GenerateFromPlanRequest {
   slides: SlidePlan[];
 }
 
+export interface RefinePlanRequest extends GenerateFromPlanRequest {
+  feedback: string;
+}
+
 export interface ThemePalette {
   id: string;
   label: string;

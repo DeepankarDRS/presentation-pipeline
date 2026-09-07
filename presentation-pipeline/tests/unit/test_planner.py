@@ -79,6 +79,28 @@ def test_render_user_omits_target_when_one():
     assert "TARGET DECK SIZE" not in text
 
 
+def test_render_user_includes_refine_block():
+    state = initial_state(run_id="t7", raw_request="A deck", deck_min_threshold=4)
+    state["prior_plan"] = {
+        "core_hook": "Old hook.",
+        "slides": [{"slide_index": 0, "slide_type": "cover", "components": []}],
+    }
+    state["refine_feedback"] = "Add a pricing comparison slide."
+    text = _render_user(state)
+    assert "CURRENT PLAN" in text
+    assert "Add a pricing comparison slide." in text
+    assert "Old hook." in text
+    # In refine mode the rigid target-size directive is suppressed
+    assert "TARGET DECK SIZE" not in text
+
+
+def test_render_user_no_refine_block_without_prior_plan():
+    state = initial_state(run_id="t8", raw_request="A deck")
+    text = _render_user(state)
+    assert "CURRENT PLAN" not in text
+    assert "USER FEEDBACK ON THE CURRENT PLAN" not in text
+
+
 # ── Conversion tests ────────────────────────────────────────────────────────
 
 def test_slide_to_state_basic():

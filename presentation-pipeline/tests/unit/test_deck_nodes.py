@@ -54,6 +54,24 @@ def test_slide_router_saves_and_advances():
     assert result["retry_tier"] == 0
     assert result["compile_result"] is None
     assert result["critic_result"] is None
+    assert result["slide_critic_results"] == [{"passed": True, "issues": []}]
+
+
+def test_slide_router_captures_failing_critic_verdict():
+    state = initial_state(run_id="sr2", raw_request="test")
+    state["current_xml"] = _SLIDE_XML_1
+    state["critic_result"] = {"passed": False, "issues": [{"severity": "high"}]}
+
+    result = slide_router_node(state)
+    assert result["slide_critic_results"][0]["passed"] is False
+
+
+def test_slide_router_defaults_verdict_when_critic_off():
+    state = initial_state(run_id="sr3", raw_request="test")
+    state["current_xml"] = _SLIDE_XML_1
+    # critic never ran → critic_result stays None
+    result = slide_router_node(state)
+    assert result["slide_critic_results"] == [{"passed": True}]
 
 
 @patch("src.agents.deck_nodes.compile_xml")
@@ -113,6 +131,67 @@ def test_deck_assembler_dedupes_theme_inside_slide(mock_compile):
     assert compiled_xml.startswith("<Theme")
     assert compiled_xml.count("<Slide>") == 2
     assert "Slide 1" in compiled_xml and "Slide 2" in compiled_xml
+
+
+@patch("src.agents.deck_nodes._call_deck_repair_llm")
+@patch("src.agents.deck_nodes.compile_xml")
+def test_deck_assembler_repairs_retryable_compile_failure(mock_compile, mock_repair):
+    good_slide = '<Slide><VStack w="1280" h="720"><Text>Fixed</Text></VStack></Slide>'
+    mock_repair.return_value = (
+        '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n' + good_slide
+    )
+    mock_compile.side_effect = [
+        {"ok": False, "pptx_path": None,
+         "diagnostics": [{"type": "UNKNOWN_TAG", "message": "div"}],
+         "warnings": [], "retryable": True},
+        {"ok": True, "pptx_path": "/tmp/deck.pptx",
+         "diagnostics": [], "warnings": [], "retryable": False},
+    ]
+
+    state = initial_state(run_id="da-repair", raw_request="test")
+    state["completed_slides"] = [
+        {"slide_index": 0, "xml": _SLIDE_XML_1},
+        {"slide_index": 1, "xml": _SLIDE_XML_2},
+    ]
+
+    result = deck_assembler_node(state)
+
+    assert mock_repair.call_count == 1
+    assert result["compile_result"]["ok"] is True
+    assert result["pptx_path"] == "/tmp/deck.pptx"
+    assert "Fixed" in result["current_xml"]
+
+
+@patch("src.agents.deck_nodes._call_deck_repair_llm")
+@patch("src.agents.deck_nodes.compile_xml")
+def test_deck_assembler_gives_up_after_two_repairs(mock_compile, mock_repair):
+    mock_repair.return_value = "<Theme />\n<Slide><VStack w='1280' h='720'/></Slide>"
+    mock_compile.return_value = {
+        "ok": False, "pptx_path": None,
+        "diagnostics": [{"type": "X", "message": "y"}],
+        "warnings": [], "retryable": True,
+    }
+
+    state = initial_state(run_id="da-giveup", raw_request="test")
+    state["completed_slides"] = [{"slide_index": 0, "xml": _SLIDE_XML_1}]
+
+    result = deck_assembler_node(state)
+    assert mock_repair.call_count == 2
+    assert result["compile_result"]["ok"] is False
+
+
+@patch("src.agents.deck_nodes._call_deck_repair_llm")
+@patch("src.agents.deck_nodes.compile_xml")
+def test_deck_assembler_skips_repair_when_not_retryable(mock_compile, mock_repair):
+    mock_compile.return_value = {
+        "ok": False, "pptx_path": None, "diagnostics": [],
+        "warnings": [], "retryable": False,
+    }
+    state = initial_state(run_id="da-noretry", raw_request="test")
+    state["completed_slides"] = [{"slide_index": 0, "xml": _SLIDE_XML_1}]
+
+    deck_assembler_node(state)
+    assert mock_repair.call_count == 0
 
 
 def test_deck_assembler_no_slides():

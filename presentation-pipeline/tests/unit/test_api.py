@@ -275,6 +275,59 @@ def test_download_not_found():
     assert response.status_code == 404
 
 
+# ── Plan refinement ─────────────────────────────────────────────────────────
+
+_REFINE_BODY = {
+    "prompt": "A 3-slide deck",
+    "core_hook": "Original hook.",
+    "run_id": "refine-run-01",
+    "slides": [
+        {
+            "slide_index": 0,
+            "slide_type": "cover",
+            "components": [{"kind": "title"}],
+        }
+    ],
+    "feedback": "Add a closing slide with next steps.",
+}
+
+
+@patch("src.agents.planner.get_llm")
+def test_refine_plan_returns_revised_plan(mock_planner_llm):
+    mock_planner_llm.return_value = _make_planner_llm()
+
+    response = client.post("/plan/refine", json=_REFINE_BODY)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["run_id"] == "refine-run-01"
+    assert data["core_hook"] == "Test presentation hook."
+    assert isinstance(data["slides"], list) and data["slides"]
+
+
+@patch("src.agents.planner.get_llm")
+def test_refine_plan_passes_feedback_to_planner(mock_planner_llm):
+    mock_planner_llm.return_value = _make_planner_llm()
+
+    client.post("/plan/refine", json=_REFINE_BODY)
+
+    system_prompt, user_prompt = _planner_prompts(mock_planner_llm)
+    assert "Add a closing slide with next steps." in user_prompt
+    assert "CURRENT PLAN" in user_prompt
+
+
+def test_refine_plan_rejects_empty_feedback():
+    body = {**_REFINE_BODY, "feedback": "   "}
+    response = client.post("/plan/refine", json=body)
+    assert response.status_code == 422
+
+
+def _planner_prompts(mock_planner_llm):
+    """Extract (system, user) prompt strings from the mocked planner LLM call."""
+    invoke = mock_planner_llm.return_value.with_structured_output.return_value.invoke
+    messages = invoke.call_args[0][0]
+    return messages[0].content, messages[1].content
+
+
 # ── Error handling ──────────────────────────────────────────────────────────
 
 @patch("src.api._run_pipeline_sync")

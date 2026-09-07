@@ -113,6 +113,10 @@ class GenerateFromPlanRequest(BaseModel):
     slides: list[SlidePlanPayload]
 
 
+class RefinePlanRequest(GenerateFromPlanRequest):
+    feedback: str
+
+
 class ProgressEvent(BaseModel):
     event: str
     data: dict[str, Any] = Field(default_factory=dict)
@@ -482,6 +486,40 @@ async def create_plan(request: GenerateRequest) -> dict[str, Any]:
         audience_context=request.audience_context,
     )
     result = await asyncio.to_thread(planner_node, state)
+    return {
+        "run_id": run_id,
+        "core_hook": result["core_hook"],
+        "slides": result["slide_plans"],
+    }
+
+
+@app.post("/plan/refine")
+async def refine_plan(request: RefinePlanRequest) -> dict[str, Any]:
+    if not request.feedback.strip():
+        raise HTTPException(status_code=422, detail="feedback must not be empty")
+    if not request.slides:
+        raise HTTPException(status_code=422, detail="slides must not be empty")
+
+    run_id = request.run_id or uuid.uuid4().hex[:12]
+    state = initial_state(
+        run_id=run_id,
+        raw_request=request.prompt,
+        theme_name=request.theme,
+        deck_min_threshold=request.deck_min_threshold,
+        supplied_content=request.supplied_content,
+        audience_context=request.audience_context,
+    )
+    state["prior_plan"] = {
+        "core_hook": request.core_hook,
+        "slides": _payload_to_slide_plans(request.slides, request.supplied_content),
+    }
+    state["refine_feedback"] = request.feedback
+
+    try:
+        result = await asyncio.to_thread(planner_node, state)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Plan refinement failed: {exc}")
+
     return {
         "run_id": run_id,
         "core_hook": result["core_hook"],

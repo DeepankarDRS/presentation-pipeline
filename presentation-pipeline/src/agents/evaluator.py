@@ -160,11 +160,20 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
     """Score the run and produce a manifest."""
     run_id = state.get("run_id", "")
     compile_result = state.get("compile_result") or {}
-    critic_result = state.get("critic_result") or {}
     history = state.get("generation_history", [])
 
+    # Deck path: the critic runs per-slide and slide_router captures each verdict.
+    # Single-slide path: the critic's verdict is on state directly.
+    slide_critic_results = state.get("slide_critic_results") or []
+    if state.get("completed_slides"):
+        critic_ok = all(r.get("passed", True) for r in slide_critic_results)
+        critic_issues = [i for r in slide_critic_results for i in r.get("issues", [])]
+    else:
+        critic_result = state.get("critic_result") or {}
+        critic_ok = critic_result.get("passed", True)
+        critic_issues = critic_result.get("issues", [])
+
     compile_ok = compile_result.get("ok", False)
-    critic_ok = critic_result.get("passed", True)
     passed = compile_ok and critic_ok
 
     total_tokens_in = sum(r.get("tokens_in", 0) for r in history)
@@ -179,7 +188,6 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
 
     step_summary = _build_step_summary(history)
 
-    critic_issues = critic_result.get("issues", [])
     critic_high = sum(1 for i in critic_issues if i.get("severity") == "high")
     critic_medium = sum(1 for i in critic_issues if i.get("severity") == "medium")
     critic_low = sum(1 for i in critic_issues if i.get("severity") == "low")

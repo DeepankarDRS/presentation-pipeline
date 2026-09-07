@@ -95,6 +95,33 @@ def test_evaluator_fail_critic():
     assert result["evaluation"]["critic"]["high"] == 1
 
 
+def test_evaluator_deck_passes_when_all_slides_pass():
+    state = _make_state()
+    state["critic_result"] = None
+    state["completed_slides"] = [{"slide_index": 0, "xml": "<Slide/>"}]
+    state["slide_critic_results"] = [
+        {"passed": True, "issues": []},
+        {"passed": True, "issues": []},
+    ]
+    result = evaluator_node(state)
+    assert result["passed"] is True
+    assert result["evaluation"]["critic_ok"] is True
+
+
+def test_evaluator_deck_fails_when_one_slide_fails():
+    state = _make_state()
+    state["critic_result"] = None
+    state["completed_slides"] = [{"slide_index": 0, "xml": "<Slide/>"}]
+    state["slide_critic_results"] = [
+        {"passed": True, "issues": []},
+        {"passed": False, "issues": [{"severity": "high", "type": "structure"}]},
+    ]
+    result = evaluator_node(state)
+    assert result["passed"] is False
+    assert result["evaluation"]["critic_ok"] is False
+    assert result["evaluation"]["critic"]["high"] == 1
+
+
 def test_evaluator_token_totals():
     state = _make_state()
     state["generation_history"] = [

@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import {
   GenerateRequest,
   GenerateFromPlanRequest,
+  RefinePlanRequest,
   PlanResponse,
   ProgressEvent,
   EventType,
@@ -87,6 +88,16 @@ export class ApiService {
       body: JSON.stringify(request),
     });
     if (!res.ok) throw new Error(`Plan creation failed: ${res.status} ${res.statusText}`);
+    return res.json();
+  }
+
+  async refinePlan(request: RefinePlanRequest): Promise<PlanResponse> {
+    const res = await fetch(`${API_BASE}/plan/refine`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+    });
+    if (!res.ok) throw new Error(`Plan refinement failed: ${res.status} ${res.statusText}`);
     return res.json();
   }
 

@@ -179,6 +179,11 @@ Examples of correct layout_hints:
 - "VStack centered alignItems=center: eyebrow text; headline fontSize=64 bold; accent bar w=72 h=5; subtitle"
 - "VStack: title + accent bar; HStack body — left VStack w=560 with bullets, right VStack w=560 with chart h=380"
 
+Multi-element dashboard_grid example (title + kpi_row ×4 + chart + table on one slide):
+- density "tight_fit", font_tier "micro", layout_pattern "dashboard_grid"
+- layout_hint: "VStack w=1280 h=720 padding=40 gap=16: HStack header title-left; HStack KPI strip 4 tiles grow=1 h=100; HStack body h=440 gap=16 — Chart w=620 h=440 left, Table w=584 h=440 right"
+- Height budget: 720 − 80 padding − 44 header − 100 KPI strip − 56 gaps ≈ 440px for the chart/table row. Keep every component within that budget.
+
 ## Theme Selection
 
 If no theme is specified in the request, choose based on content:
@@ -196,7 +201,7 @@ Strategy:
 2. Assign each data group to the slide where it fits best based on the request.
 3. In each slide's content_data_json, include ONLY the keys relevant to that slide's components.
 4. Use the EXACT same key names from supplied_content (e.g. "kpi_labels", "chart_values", "table_rows") so the system can track data provenance.
-5. One data group per slide is ideal — avoid cramming chart + table + KPIs onto a single slide unless the request specifically asks for a dashboard.
+5. One data group per slide is ideal for a narrative deck. BUT when the request asks for a combined view — "dashboard", "overview", "one view", "at a glance", "executive summary on one slide", "everything on a single slide" — deliberately put multiple data components together on that slide: layout_pattern "dashboard_grid", density "dense" or "tight_fit", font_tier "compact" or "micro", and a layout_hint that assigns explicit sizes so it fits 1280x720 (see the dashboard_grid example below).
 6. Cover slides get "title" and "subtitle" keys. Closing slides get "bullets" for action items.
 
 Example: if supplied_content has kpi_*, chart_*, table_*, and bullets, a 5-slide deck should distribute as:

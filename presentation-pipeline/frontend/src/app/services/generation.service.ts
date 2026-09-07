@@ -8,6 +8,7 @@ import {
   EvaluationSummary,
   GenerateRequest,
   GenerateFromPlanRequest,
+  RefinePlanRequest,
   PlanResponse,
   ProgressEvent,
   SlidePlan,
@@ -32,6 +33,8 @@ export class GenerationService {
   readonly deckPlan = signal<PlanResponse | null>(null);
   readonly originalRequest = signal<GenerateRequest | null>(null);
   readonly editSession = signal<EditSessionStatus | null>(null);
+  readonly refining = signal<boolean>(false);
+  readonly refineError = signal<string | null>(null);
 
   readonly isGenerating = computed(() => this.view() === 'progress');
 
@@ -50,6 +53,39 @@ export class GenerationService {
       (err: Error) => {
         this.error.set(err.message || 'Plan creation failed');
         this.view.set('form');
+      },
+    );
+  }
+
+  refinePlan(core_hook: string, slides: SlidePlan[], feedback: string): void {
+    const orig = this.originalRequest();
+    const plan = this.deckPlan();
+    if (!orig || !plan || !feedback.trim()) return;
+
+    this.refining.set(true);
+    this.refineError.set(null);
+
+    const request: RefinePlanRequest = {
+      prompt: orig.prompt,
+      theme: orig.theme,
+      critic_mode: orig.critic_mode,
+      deck_min_threshold: orig.deck_min_threshold,
+      supplied_content: orig.supplied_content,
+      audience_context: orig.audience_context,
+      run_id: plan.run_id,
+      core_hook,
+      slides,
+      feedback,
+    };
+
+    this.api.refinePlan(request).then(
+      (revised) => {
+        this.deckPlan.set(revised);
+        this.refining.set(false);
+      },
+      (err: Error) => {
+        this.refineError.set(err.message || 'Plan refinement failed');
+        this.refining.set(false);
       },
     );
   }
@@ -145,6 +181,8 @@ export class GenerationService {
     this.deckPlan.set(null);
     this.originalRequest.set(null);
     this.editSession.set(null);
+    this.refining.set(false);
+    this.refineError.set(null);
   }
 
   startReview(): void {

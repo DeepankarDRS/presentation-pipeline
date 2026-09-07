@@ -1,4 +1,4 @@
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, effect, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GenerationService } from '../../services/generation.service';
 import { SlideEditorComponent } from '../slide-editor/slide-editor.component';
@@ -109,6 +109,38 @@ function componentLabel(c: ComponentPlan): string {
         [disabled]="slides().length >= 20"
       >+ Add Slide</button>
 
+      <!-- Natural-language refinement -->
+      <div class="mb-5 border-t border-gray-100 pt-5">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Refine with feedback</label>
+        <p class="text-xs text-gray-500 mb-2">
+          Describe changes in plain language — the planner revises the plan above, keeping what you don't mention.
+        </p>
+        <textarea
+          rows="2"
+          placeholder="e.g. add a section-break before the closing, and make slide 2 a KPI + chart dashboard"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm resize-y"
+          [ngModel]="feedbackText()"
+          (ngModelChange)="feedbackText.set($event)"
+          [disabled]="generation.refining()"
+        ></textarea>
+        @if (generation.refineError()) {
+          <p class="text-xs text-red-600 mt-1">{{ generation.refineError() }}</p>
+        }
+        <button
+          type="button"
+          (click)="onRefine()"
+          class="mt-2 inline-flex items-center gap-2 border border-blue-300 text-blue-700 text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-50 disabled:opacity-50"
+          [disabled]="generation.refining() || !feedbackText().trim()"
+        >
+          @if (generation.refining()) {
+            <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-blue-600 border-t-transparent"></span>
+            Refining...
+          } @else {
+            Refine plan
+          }
+        </button>
+      </div>
+
       <!-- Actions -->
       <div class="flex gap-3">
         <button
@@ -120,14 +152,14 @@ function componentLabel(c: ComponentPlan): string {
           type="button"
           (click)="onConfirm()"
           class="flex-1 bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
-          [disabled]="!isValid()"
+          [disabled]="!isValid() || generation.refining()"
         >Generate Presentation</button>
       </div>
     </div>
   `,
 })
 export class PlanEditorComponent {
-  private readonly generation = inject(GenerationService);
+  protected readonly generation = inject(GenerationService);
 
   readonly confirm = output<{ core_hook: string; slides: SlidePlan[] }>();
   readonly back = output<void>();
@@ -135,13 +167,24 @@ export class PlanEditorComponent {
   readonly coreHook = signal('');
   readonly slides = signal<SlidePlan[]>([]);
   readonly expandedIndex = signal<number | null>(null);
+  readonly feedbackText = signal('');
 
   constructor() {
-    const plan = this.generation.deckPlan();
-    if (plan) {
-      this.coreHook.set(plan.core_hook);
-      this.slides.set(structuredClone(plan.slides));
-    }
+    // Load the plan into the editor, and reload it whenever a refinement
+    // returns a new plan object.
+    effect(() => {
+      const plan = this.generation.deckPlan();
+      if (plan) {
+        this.coreHook.set(plan.core_hook);
+        this.slides.set(structuredClone(plan.slides));
+        this.expandedIndex.set(null);
+      }
+    });
+  }
+
+  onRefine(): void {
+    this.generation.refinePlan(this.coreHook(), this.slides(), this.feedbackText());
+    this.feedbackText.set('');
   }
 
   slideTypeColor(type: string): string {
