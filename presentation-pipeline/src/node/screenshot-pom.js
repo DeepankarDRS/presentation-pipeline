@@ -48,9 +48,28 @@ function findSoffice() {
   return null;
 }
 
+function isRealImageMagick(name) {
+  // On Windows, "convert" also resolves to C:\Windows\System32\convert.exe
+  // (the FAT->NTFS volume converter) — must not be mistaken for ImageMagick.
+  try {
+    const out = execSync(`${name} -version`, { stdio: ["ignore", "pipe", "ignore"] }).toString();
+    return out.includes("ImageMagick");
+  } catch {
+    return false;
+  }
+}
+
 function findImageMagick() {
   // ImageMagick 7 uses "magick", IM6 uses "convert"
-  return findExecutable(["magick", "convert"]);
+  for (const name of ["magick", "convert"]) {
+    try {
+      execSync(`where ${name}`, { stdio: "ignore" });
+      if (isRealImageMagick(name)) return name;
+    } catch {
+      // not found or not a real ImageMagick binary
+    }
+  }
+  return null;
 }
 
 async function main() {

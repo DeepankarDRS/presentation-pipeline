@@ -47,16 +47,22 @@ Backend = Literal["node", "com", None]
 
 @lru_cache(maxsize=1)
 def _check_screenshot_backend() -> Backend:
-    """Detect which screenshot backend is available."""
+    """Detect which screenshot backend to try first.
+
+    This only checks that the Node runtime is reachable, not that
+    LibreOffice/ImageMagick are actually installed — that is validated
+    for real inside _render_via_node(), which falls back to COM on
+    failure. Doing the LibreOffice/ImageMagick check here would require
+    running screenshot-pom.js with a real PPTX, which is wasteful.
+    """
     if _SCREENSHOT_SCRIPT.exists():
         try:
             proc = subprocess.run(
-                [_NODE_BIN, str(_SCREENSHOT_SCRIPT)],
+                [_NODE_BIN, "--version"],
                 capture_output=True, text=True, timeout=10,
             )
-            stderr = proc.stderr or ""
-            if "LibreOffice" not in stderr and "ImageMagick" not in stderr:
-                logger.info("screenshot: node backend available")
+            if proc.returncode == 0:
+                logger.info("screenshot: node runtime available, will try node backend")
                 return "node"
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
