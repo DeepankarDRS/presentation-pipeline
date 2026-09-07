@@ -1,0 +1,85 @@
+meta:
+  phase: A
+  name: stacked-sections
+  use_when:
+    - "2-3 distinct content blocks stacked vertically with clear visual separation"
+    - "problem / solution / result or context / evidence / takeaway structure"
+    - "title + bullets + callout or title + narrative + key takeaway"
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Shape, Ul, Li]
+
+structure: >
+  Building blocks — combine and order per layout_hint:
+
+  TITLE BLOCK:
+    <VStack gap=6-10 padding.bottom=20-28>
+      <Text fontSize=34-40 bold="true" color="$textMain">Slide title</Text>
+      optional: <Text fontSize=15-18 color="$textMuted">Framing / timeframe / source</Text>
+    </VStack>
+
+  DIVIDER — two variants (pick one style and use it consistently):
+    Thin rule: <Shape shapeType="rect" w=full-width h=1 backgroundColor="$border" />
+    Accent bar: <Shape shapeType="rect" w=48-80 h=4 backgroundColor="$accent" />
+
+  BODY BLOCK — three variants:
+    Narrative: <Text fontSize=16-20 color="$textMain">Multi-sentence prose.</Text>
+    Bullets: <Ul gap=8-12>
+               <Li><Text fontSize=16-18 color="$textMain">Point text</Text></Li>
+             </Ul>
+    Mixed (narrative + bullets): both above inside a VStack gap=12
+
+  CALLOUT BAND — two variants:
+    Variant A — left-accent bar (strong visual signal):
+      <HStack gap=16-24 alignItems="center"
+              padding=18-24 backgroundColor="$surfaceAlt" borderRadius=10-14>
+        <Shape shapeType="rect" w=4 h=40-64 backgroundColor="$accent" borderRadius=2 />
+        <VStack gap=4>
+          <Text fontSize=12-13 bold="true" color="$accentAlt">KEY TAKEAWAY</Text>
+          <Text fontSize=15-17 color="$textMain">The one sentence to remember.</Text>
+        </VStack>
+      </HStack>
+    Variant B — inline label (quieter):
+      <HStack gap=12 alignItems="start">
+        <Text fontSize=13 bold="true" color="$accentAlt">→</Text>
+        <Text fontSize=16 color="$textMain">Takeaway text inline with arrow.</Text>
+      </HStack>
+
+rules:
+  - "Use a divider between sections — pick one style (thin rule or accent bar) and repeat it."
+  - "The callout band sits at the bottom — it is the conclusion, not an intro."
+  - "Keep bullets to 3-5 items. More than 5 = the slide is doing too much."
+  - "Body block fontSize 16-20; callout label 12-13 (small, bold, $accentAlt); callout text 15-17."
+  - "On a light theme the callout's $surfaceAlt padding-block needs borderRadius 10-14 to read as a card."
+
+verified_example: |
+  <Theme surface="F7F9FC" surfaceAlt="EEF2FF" accent="2563EB" accentAlt="0EA5E9"
+         textMain="16202E" textMuted="55627A" border="E2E8F0" />
+  <Slide>
+    <VStack w="1280" h="720" padding="56" gap="0" backgroundColor="$surface" alignItems="start">
+      <VStack gap="6" padding.bottom="24">
+        <Text fontSize="38" bold="true" color="$textMain">Why Retention Is Our #1 Priority</Text>
+        <Text fontSize="17" color="$textMuted">Q3 FY26 analysis · Internal review</Text>
+      </VStack>
+      <Shape shapeType="rect" w="1168" h="1" backgroundColor="$border" />
+      <VStack gap="14" padding.top="24" padding.bottom="24">
+        <Text fontSize="18" color="$textMain">
+          Customer acquisition cost rose 28% while lifetime value held flat.
+        </Text>
+        <Ul gap="10">
+          <Li><Text fontSize="17" color="$textMain">SMB churn: 4.2% in Q3 vs. 2.1% enterprise</Text></Li>
+          <Li><Text fontSize="17" color="$textMain">CAC payback extended from 14 to 18 months</Text></Li>
+          <Li><Text fontSize="17" color="$textMain">Top cohort (FY23 enterprise) shows 128% NRR</Text></Li>
+        </Ul>
+      </VStack>
+      <Shape shapeType="rect" w="1168" h="1" backgroundColor="$border" />
+      <HStack gap="20" alignItems="center" padding.top="24" backgroundColor="$surfaceAlt"
+              padding="20" borderRadius="12">
+        <Shape shapeType="rect" w="4" h="52" backgroundColor="$accent" borderRadius="2" />
+        <VStack gap="4">
+          <Text fontSize="13" bold="true" color="$accentAlt">KEY TAKEAWAY</Text>
+          <Text fontSize="16" color="$textMain">
+            Fix SMB churn first — it is the single largest lever on NRR improvement.
+          </Text>
+        </VStack>
+      </HStack>
+    </VStack>
+  </Slide>

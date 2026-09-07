@@ -1,0 +1,92 @@
+meta:
+  phase: B
+  name: full-width-chart
+  use_when:
+    - "the chart IS the slide — data visualization dominates"
+    - "trend over time, distribution, or comparison with many categories"
+    - "chart + optional caption/legend below, no competing column"
+  nodes_used: [Slide, Theme, VStack, HStack, Chart, ChartSeries, ChartDataPoint, Text, Shape]
+
+structure: >
+  Building blocks — position and size per layout_hint:
+
+  TITLE ROW — two variants:
+    Simple: <Text fontSize=28-34 bold="true" color="$textMain">Chart title</Text>
+    With badge (shows period/status inline):
+      <HStack w=full-width justifyContent="spaceBetween" alignItems="center">
+        <Text fontSize=28-34 bold="true" color="$textMain">Chart title</Text>
+        <HStack gap=8 alignItems="center" padding="8 14"
+                backgroundColor="$surfaceAlt" borderRadius=20
+                border.width=1 border.color="$border">
+          <Shape shapeType="ellipse" w=8 h=8 backgroundColor="$positive" OR "$negative" />
+          <Text fontSize=13 color="$textMuted">Q3 FY26</Text>
+        </HStack>
+      </HStack>
+
+  SUBTITLE (optional):
+    <Text fontSize=14-16 color="$textMuted">Metric name + unit + date range</Text>
+
+  CHART AREA — two variants based on theme:
+    Light theme (no wrapper needed):
+      <Chart w=1168-1184 h=360-440 type="bar|line|area|donut" title="">
+        ...series and data points...
+      </Chart>
+    Dark theme (wrap to fix hardcoded black axes):
+      <VStack backgroundColor="$chartSurface" padding=16 borderRadius=12>
+        <Chart w=OUTER_W-(2*16) h=360-440 type="..." title="">
+          ...
+        </Chart>
+      </VStack>
+
+  LEGEND ROW (optional) — manual construction, NOT a text string:
+    <HStack gap=20-28 alignItems="center" padding.top=8>
+      (per series:)
+      <HStack gap=6 alignItems="center">
+        <Shape shapeType="rect" w=20 h=4 backgroundColor=SERIES_COLOR borderRadius=2 />
+        <Text fontSize=13 color="$textMuted">Series name</Text>
+      </HStack>
+    </HStack>
+
+  FOOTNOTE (optional):
+    <Text fontSize=12 color="$textMuted">Source or methodology note</Text>
+
+rules:
+  - "Chart w = slide w minus 2× horizontal padding (1280 - 2×48 = 1184). Respect this math."
+  - "Chart h 360-440 — leave room for title + optional caption. Never h=720."
+  - "On a dark palette wrap Chart in <VStack backgroundColor=$chartSurface padding=16 borderRadius=12> or axes render black-on-dark (invisible)."
+  - "Legend is a manual HStack of colored rect shapes + Text — never a single <Text> with comma-separated names."
+  - "Use at least 4 data points. Two bars is a KPI comparison, not a chart."
+
+verified_example: |
+  <Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9"
+         positive="15803D" textMain="16202E" textMuted="55627A" border="E2E8F0"
+         chartColors="2563EB,0EA5E9,15803D,B45309" />
+  <Slide>
+    <VStack w="1280" h="720" padding="48" gap="12" backgroundColor="$surface" alignItems="start">
+      <HStack w="1184" justifyContent="spaceBetween" alignItems="center">
+        <Text fontSize="32" bold="true" color="$textMain">ARR Growth — FY24 to FY26</Text>
+        <HStack gap="8" alignItems="center" padding="8" backgroundColor="$surfaceAlt"
+                borderRadius="20" border.width="1" border.color="$border">
+          <Shape shapeType="ellipse" w="8" h="8" backgroundColor="$positive" />
+          <Text fontSize="13" color="$textMuted">+18% QoQ</Text>
+        </HStack>
+      </HStack>
+      <Text fontSize="15" color="$textMuted">Quarterly ARR ($M) · Q1 FY24 – Q3 FY26</Text>
+      <Chart w="1184" h="400" type="bar" title="">
+        <ChartSeries name="ARR ($M)" color="$accent">
+          <ChartDataPoint label="Q1 FY24" value="22.1" />
+          <ChartDataPoint label="Q2 FY24" value="24.8" />
+          <ChartDataPoint label="Q3 FY24" value="27.3" />
+          <ChartDataPoint label="Q4 FY24" value="30.6" />
+          <ChartDataPoint label="Q1 FY25" value="33.2" />
+          <ChartDataPoint label="Q2 FY25" value="36.3" />
+        </ChartSeries>
+      </Chart>
+      <HStack gap="24" alignItems="center" padding.top="4">
+        <HStack gap="6" alignItems="center">
+          <Shape shapeType="rect" w="20" h="4" backgroundColor="$accent" borderRadius="2" />
+          <Text fontSize="13" color="$textMuted">ARR ($M)</Text>
+        </HStack>
+      </HStack>
+    </VStack>
+  </Slide>

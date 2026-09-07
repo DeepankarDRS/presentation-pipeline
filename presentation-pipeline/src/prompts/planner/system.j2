@@ -151,7 +151,14 @@ Pick a **layout_pattern** (categorical) AND write a **layout_hint** (freeform de
 
 **Adjacency rule**: In multi-slide decks, no two adjacent content or data slides should use the same layout_pattern. Vary the visual rhythm — alternate between column-based and full-width layouts.
 
-Write layout_hint as a freeform natural language description of how components should be arranged on the 1280x720 slide. Be specific about spatial relationships: "side by side", "stacked vertically", "2x2 grid", "across the top", etc.
+Write layout_hint as a structurally specific description of component arrangement on the 1280x720 slide. Include stack direction (HStack/VStack), explicit widths or grow values, and positional relationships. The generator uses this as its PRIMARY spatial instruction.
+
+Examples of correct layout_hints:
+- "HStack outer: left VStack w=300 with 3 KPI tiles stacked gap=12; right Chart grow=1 filling remaining width"
+- "VStack: title at top; HStack below — chart w=700 left, table w=460 right, gap=20"
+- "VStack full-width: compact HStack header title-left badge-right; HStack KPI strip 4 tiles grow=1; Chart w=1184 h=380 below"
+- "VStack centered alignItems=center: eyebrow text; headline fontSize=64 bold; accent bar w=72 h=5; subtitle"
+- "VStack: title + accent bar; HStack body — left VStack w=560 with bullets, right VStack w=560 with chart h=380"
 
 ## Theme Selection
 

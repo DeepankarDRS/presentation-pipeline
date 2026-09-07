@@ -103,7 +103,10 @@ Color tokens:
 {% endif %}
 {% if density_tier in ('standard', 'dense') and layout_pattern %}
 
-## LAYOUT PATTERN
+## LAYOUT VOCABULARY
+Spatial building blocks and correctness guards for this pattern type — a reference,
+not a blueprint. The PRIMARY directive is the layout_hint in the user prompt; follow
+it exactly for positioning, sizing, and arrangement.
 {{ layout_pattern }}
 {% endif %}
 {% if example %}

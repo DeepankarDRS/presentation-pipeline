@@ -1,0 +1,96 @@
+meta:
+  phase: B
+  name: dashboard-grid
+  use_when:
+    - "dense executive dashboard: KPI summary + chart or table on same slide"
+    - "kpi_row + chart or kpi_row + table where neither dominates"
+    - "maximum data density — 4+ components, tight fit"
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Span, Shape, Chart, ChartSeries, ChartDataPoint, Table, Col, Tr, Td]
+
+structure: >
+  Building blocks — layout_hint controls which rows are present and their order:
+
+  HEADER ROW (compact — every pixel counts here):
+    <HStack w=full-width justifyContent="spaceBetween" alignItems="center">
+      <Text fontSize=24-28 bold="true" color="$textMain">Dashboard title</Text>
+      <Text fontSize=13 color="$textMuted">Period · Last updated</Text>
+    </HStack>
+
+  KPI STRIP — compact tiles (NOT tall cards; chart below needs vertical space):
+    <HStack w=full-width gap=14-18 alignItems="stretch">
+      (3-4 KPI tiles — each:)
+      <VStack grow=1 padding=12-16 gap=5-8
+              backgroundColor="$surfaceAlt" borderRadius=8-12
+              border.width=1 border.color="$border"
+              borderTop.width=3 borderTop.color=ACCENT_VARIANT>
+        <Text fontSize=11-12 color="$textMuted">LABEL</Text>
+        <Text fontSize=26-32 bold="true" color="$textMain">
+          VALUE<Span fontSize=13-14 color="$textMuted">unit</Span>
+        </Text>
+        <Text fontSize=12-13 color="$positive" OR "$negative" OR "$textMuted">delta</Text>
+      </VStack>
+    </HStack>
+    — accent cycle across tiles: $accent → $accentAlt → $positive → $warning
+
+  DATA AREA — three options driven by layout_hint:
+    Option A — single full-width chart:
+      <Chart w=full-width h=360-400 type="..." title="">...</Chart>
+    Option B — chart + table side by side:
+      <HStack w=full-width gap=20 alignItems="stretch">
+        <Chart w=~57% h=360-400 type="...">
+        <Table w=grow=1 h=360-400>...</Table>
+      </HStack>
+    Option C — two charts:
+      <HStack w=full-width gap=20 alignItems="stretch">
+        <Chart w=~50% h=360-400>  <Chart w=grow=1 h=360-400>
+      </HStack>
+
+rules:
+  - "KPI strip tiles: padding 12-16, fontSize 26-32. Larger padding/font = chart is starved for height."
+  - "Budget: 720 - 80(padding) - 44(header) - 100(strip) - 56(gaps) ≈ 440px for data area. Target chart h 360-400."
+  - "Each KPI tile gets a different borderTop accent color — cycle $accent, $accentAlt, $positive, $warning."
+  - "On a dark palette wrap each Chart in <VStack backgroundColor=$chartSurface padding=12 borderRadius=8>."
+  - "Table in the data area uses compact cells: Td fontSize 13-14, padding 8-10."
+
+verified_example: |
+  <Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9"
+         positive="15803D" negative="DC2626" warning="B45309" textMain="16202E"
+         textMuted="55627A" border="E2E8F0" chartColors="2563EB,0EA5E9,15803D,B45309" />
+  <Slide>
+    <VStack w="1280" h="720" padding="40" gap="14" backgroundColor="$surface" alignItems="start">
+      <HStack w="1200" justifyContent="spaceBetween" alignItems="center">
+        <Text fontSize="26" bold="true" color="$textMain">Q3 FY26 Executive Dashboard</Text>
+        <Text fontSize="13" color="$textMuted">Sep 30, 2026 · Preliminary</Text>
+      </HStack>
+      <HStack w="1200" gap="16" alignItems="stretch">
+        <VStack grow="1" padding="14" gap="5" backgroundColor="$surfaceAlt" borderRadius="10"
+                border.width="1" border.color="$border" borderTop.width="3" borderTop.color="$accent">
+          <Text fontSize="11" color="$textMuted">ARR</Text>
+          <Text fontSize="30" bold="true" color="$textMain">$42.8<Span fontSize="14" color="$textMuted">M</Span></Text>
+          <Text fontSize="12" color="$positive">+18% QoQ</Text>
+        </VStack>
+        <VStack grow="1" padding="14" gap="5" backgroundColor="$surfaceAlt" borderRadius="10"
+                border.width="1" border.color="$border" borderTop.width="3" borderTop.color="$accentAlt">
+          <Text fontSize="11" color="$textMuted">NRR</Text>
+          <Text fontSize="30" bold="true" color="$textMain">114<Span fontSize="14" color="$textMuted">%</Span></Text>
+          <Text fontSize="12" color="$positive">+3 pts</Text>
+        </VStack>
+        <VStack grow="1" padding="14" gap="5" backgroundColor="$surfaceAlt" borderRadius="10"
+                border.width="1" border.color="$border" borderTop.width="3" borderTop.color="$positive">
+          <Text fontSize="11" color="$textMuted">Gross Margin</Text>
+          <Text fontSize="30" bold="true" color="$textMain">78<Span fontSize="14" color="$textMuted">%</Span></Text>
+          <Text fontSize="12" color="$textMuted">Flat QoQ</Text>
+        </VStack>
+      </HStack>
+      <Chart w="1200" h="380" type="line" title="">
+        <ChartSeries name="ARR ($M)" color="$accent">
+          <ChartDataPoint label="Q1 FY25" value="33.2" />
+          <ChartDataPoint label="Q2 FY25" value="36.3" />
+          <ChartDataPoint label="Q3 FY25" value="39.8" />
+          <ChartDataPoint label="Q1 FY26" value="46.5" />
+          <ChartDataPoint label="Q2 FY26" value="50.2" />
+          <ChartDataPoint label="Q3 FY26" value="54.8" />
+        </ChartSeries>
+      </Chart>
+    </VStack>
+  </Slide>

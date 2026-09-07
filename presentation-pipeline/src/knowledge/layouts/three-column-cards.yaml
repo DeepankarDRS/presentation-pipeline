@@ -1,0 +1,89 @@
+meta:
+  phase: B
+  name: three-column-cards
+  use_when:
+    - "2-4 metrics, features, or pillars of equal visual weight"
+    - "kpi_row components — layout_hint specifies exact tile count and arrangement"
+    - "three parallel arguments, products, or differentiators"
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Span, Shape]
+
+structure: >
+  Building blocks — layout_hint controls count, arrangement, and proportions:
+
+  TITLE BAND:
+    <VStack gap=8 padding.bottom=20-28>
+      <Text fontSize=32-38 bold="true" color="$textMain">Slide title</Text>
+      optional: <Text fontSize=16-18 color="$textMuted">Framing line or timeframe</Text>
+    </VStack>
+
+  CARD ROW — use HStack for side-by-side, VStack for stacked:
+    Side-by-side (default for 2-4 equal cards):
+      <HStack w=full-width gap=20-28 alignItems="stretch">
+        (2-4 CARD UNIT blocks)
+      </HStack>
+    Left-strip (1 tall card on left, content on right):
+      <HStack gap=24>
+        <VStack w=300-360> (tall CARD UNIT) </VStack>
+        <VStack grow=1> (chart, table, or narrative) </VStack>
+      </HStack>
+
+  CARD UNIT — one card:
+    <VStack grow=1 padding=24-32 gap=12-16
+            backgroundColor="$surfaceAlt" borderRadius=12-20
+            border.width=1 border.color="$border"
+            borderTop.width=3-4 borderTop.color=ACCENT_VARIANT
+            justifyContent="start">
+      ICON (optional): <Shape shapeType="rect" OR "ellipse" w=36-48 h=36-48
+                               backgroundColor=ACCENT_VARIANT borderRadius=8-12 />
+      LABEL: <Text fontSize=14-20 bold="true" color="$textMain">Card title or metric name</Text>
+      VALUE (if numeric): <Text fontSize=36-48 bold="true" color="$textMain">
+                            NUM<Span fontSize=18-22>unit</Span>
+                          </Text>
+      DETAIL: <Text fontSize=13-16 color="$textMuted">Delta, timeframe, or description</Text>
+    </VStack>
+
+  ACCENT VARIANTS (cycle across cards for visual variety):
+    card 1 → $accent, card 2 → $accentAlt, card 3 → $positive, card 4 → $warning
+
+rules:
+  - "grow=1 inside HStack produces equal-width division — never set explicit w on a card in a side-by-side row."
+  - "Different accent color per card top-border and icon (cycle $accent → $accentAlt → $positive) — this is what creates visual variety."
+  - "On a light theme add border.width=1 border.color=$border so the card reads against $surface."
+  - "Card height is driven by content with justifyContent=start — do not force justifyContent=center on multi-element cards."
+  - "Unit in <Span fontSize> INSIDE the value Text — both on one baseline."
+
+verified_example: |
+  <Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9"
+         positive="15803D" textMain="16202E" textMuted="55627A" border="E2E8F0" warning="B45309" />
+  <Slide>
+    <VStack w="1280" h="720" padding="56" gap="24" backgroundColor="$surface" alignItems="start">
+      <Text fontSize="36" bold="true" color="$textMain">Three Growth Pillars</Text>
+      <Text fontSize="17" color="$textMuted">How we plan to reach $100M ARR by FY28</Text>
+      <HStack w="1168" gap="24" alignItems="stretch">
+        <VStack grow="1" padding="28" gap="14" backgroundColor="$surfaceAlt" borderRadius="16"
+                border.width="1" border.color="$border"
+                borderTop.width="4" borderTop.color="$accent" justifyContent="start">
+          <Shape shapeType="rect" w="40" h="40" backgroundColor="$accent" borderRadius="10" />
+          <Text fontSize="20" bold="true" color="$textMain">Enterprise Expansion</Text>
+          <Text fontSize="40" bold="true" color="$textMain">$28<Span fontSize="20">M</Span></Text>
+          <Text fontSize="14" color="$textMuted">+34% YoY · 12 new logos</Text>
+        </VStack>
+        <VStack grow="1" padding="28" gap="14" backgroundColor="$surfaceAlt" borderRadius="16"
+                border.width="1" border.color="$border"
+                borderTop.width="4" borderTop.color="$accentAlt" justifyContent="start">
+          <Shape shapeType="rect" w="40" h="40" backgroundColor="$accentAlt" borderRadius="10" />
+          <Text fontSize="20" bold="true" color="$textMain">Product-Led Growth</Text>
+          <Text fontSize="40" bold="true" color="$textMain">8.4<Span fontSize="20">K</Span></Text>
+          <Text fontSize="14" color="$textMuted">active trials · 22% → paid conversion</Text>
+        </VStack>
+        <VStack grow="1" padding="28" gap="14" backgroundColor="$surfaceAlt" borderRadius="16"
+                border.width="1" border.color="$border"
+                borderTop.width="4" borderTop.color="$positive" justifyContent="start">
+          <Shape shapeType="rect" w="40" h="40" backgroundColor="$positive" borderRadius="10" />
+          <Text fontSize="20" bold="true" color="$textMain">International</Text>
+          <Text fontSize="40" bold="true" color="$textMain">6.2<Span fontSize="20">M</Span></Text>
+          <Text fontSize="14" color="$textMuted">EMEA ARR · 3 new markets in H2</Text>
+        </VStack>
+      </HStack>
+    </VStack>
+  </Slide>

@@ -94,6 +94,18 @@ _KIND_TO_LAYOUT: dict[str, str] = {
     "layer":    "layouts/diagram-annotated.yaml",
 }
 
+# Maps planner layout_pattern → layout YAML. Takes priority over component-kind inference.
+_PATTERN_TO_LAYOUT: dict[str, str] = {
+    "hero_statement":     "layouts/hero-statement.yaml",
+    "hero_big_number":    "layouts/hero-big-number.yaml",
+    "two_column":         "layouts/two-column.yaml",
+    "three_column_cards": "layouts/three-column-cards.yaml",
+    "full_width_chart":   "layouts/full-width-chart.yaml",
+    "chart_table_split":  "layouts/chart-table.yaml",
+    "stacked_sections":   "layouts/stacked-sections.yaml",
+    "dashboard_grid":     "layouts/dashboard-grid.yaml",
+}
+
 _KIND_TO_EXAMPLE: dict[str, str] = {
     "timeline":    "timeline-slide.xml",
     "flow":        "flow-slide.xml",
@@ -324,17 +336,26 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
 
 # ── Layout selection ─────────────────────────────────────────────────────────
 
-def _select_layout(kinds: list[str]) -> str:
-    """Pick a layout pattern YAML and render it as text."""
-    has_chart = "chart" in kinds
-    has_table = "table" in kinds
-    has_narr = "narrative" in kinds
+def _select_layout(kinds: list[str], layout_pattern: str = "") -> str:
+    """Pick a layout pattern YAML and render it as text.
 
-    for kind in kinds:
-        if kind in _KIND_TO_LAYOUT:
-            pick = _KIND_TO_LAYOUT[kind]
-            break
+    Preference order:
+    1. Special component kinds that always override (timeline, layer).
+    2. Planner's layout_pattern when it maps to a known YAML.
+    3. Component-kind heuristic fallback.
+    """
+    # Priority 1: special component kinds that always override (timeline, layer).
+    special_kind = next((k for k in kinds if k in _KIND_TO_LAYOUT), None)
+    if special_kind:
+        pick = _KIND_TO_LAYOUT[special_kind]
+    elif layout_pattern and layout_pattern in _PATTERN_TO_LAYOUT:
+        # Priority 2: planner's explicit layout_pattern.
+        pick = _PATTERN_TO_LAYOUT[layout_pattern]
     else:
+        # Priority 3: component-kind heuristic fallback.
+        has_chart = "chart" in kinds
+        has_table = "table" in kinds
+        has_narr = "narrative" in kinds
         if has_chart and has_table:
             pick = "layouts/chart-table.yaml"
         elif (has_chart or has_table) and has_narr:
@@ -350,6 +371,9 @@ def _select_layout(kinds: list[str]) -> str:
     return _render_layout(layout)
 
 
+_LAYOUT_EXAMPLE_MAX_LINES = 15
+
+
 def _render_layout(layout_yaml: dict) -> str:
     if not layout_yaml:
         return ""
@@ -361,6 +385,12 @@ def _render_layout(layout_yaml: dict) -> str:
     rules = layout_yaml.get("rules") or []
     if rules:
         parts.append("Rules:\n" + "\n".join(f"  - {r}" for r in rules))
+    verified = layout_yaml.get("verified_example")
+    if verified:
+        snippet = _compress_example(str(verified).strip(), max_lines=_LAYOUT_EXAMPLE_MAX_LINES)
+        parts.append(
+            "Verified POM snippet (compiler-tested reference, not a blueprint):\n" + snippet
+        )
     return "\n\n".join(parts)
 
 
@@ -432,7 +462,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     compress = density != "tight_fit"
     example = _select_example(kinds, compress=compress)
 
-    layout_pattern = _select_layout(kinds)
+    planner_pattern = slide_plan.get("layout_pattern", "")
+    layout_pattern = _select_layout(kinds, layout_pattern=planner_pattern)
 
     if density in ("sparse",):
         tier = "minimal"
