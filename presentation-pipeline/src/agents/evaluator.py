@@ -110,28 +110,34 @@ def _write_slides_data(state: PresentationState, run_id: str) -> str | None:
 def _generate_final_screenshots(
     state: PresentationState, run_id: str,
 ) -> dict[int, str]:
-    """Generate screenshots for the final PPTX if not already done."""
-    existing = dict(state.get("slide_screenshots", {}))
-    if existing:
-        return existing
+    """Generate screenshots from the final assembled PPTX.
 
+    Always (re)renders from compile_result.pptx_path — the single fully
+    assembled deck — rather than reusing the critic's per-slide screenshots
+    from generation time. Those are each rendered from a standalone
+    single-page PPTX into a shared output directory, so for a multi-slide
+    deck every one of them collides on the same "slide-0.png" filename and
+    ends up pointing at whichever slide was critiqued last. Rendering once
+    against the final N-page deck gives correctly numbered 0..N-1 screenshots
+    in a single pass.
+    """
     cr = state.get("compile_result") or {}
     pptx_path = cr.get("pptx_path")
-    if not pptx_path:
-        return {}
 
-    output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "screenshots"
-    batch = render_screenshots(pptx_path, str(output_dir))
-    if not batch.ok:
+    if pptx_path:
+        output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "screenshots"
+        batch = render_screenshots(pptx_path, str(output_dir))
+        if batch.ok:
+            result: dict[int, str] = {}
+            for s in batch.slides:
+                if s.ok and s.png_path:
+                    result[s.slide_index] = s.png_path
+            logger.info(f"evaluator: generated {len(result)} final screenshot(s)")
+            return result
         logger.warning(f"evaluator: final screenshots failed: {batch.error}")
-        return {}
 
-    result: dict[int, str] = {}
-    for s in batch.slides:
-        if s.ok and s.png_path:
-            result[s.slide_index] = s.png_path
-    logger.info(f"evaluator: generated {len(result)} final screenshot(s)")
-    return result
+    # Fall back to whatever the critic captured during generation, if any.
+    return dict(state.get("slide_screenshots", {}))
 
 
 def _write_manifest(manifest: dict[str, Any], run_id: str) -> str | None:

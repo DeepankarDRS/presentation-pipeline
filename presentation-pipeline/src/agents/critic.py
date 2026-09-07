@@ -163,7 +163,14 @@ def _run_visual_review(
 
     run_id = state.get("run_id", "unknown")
     idx = state.get("current_slide_index", 0)
-    output_dir = Path(__file__).resolve().parent.parent.parent / "output" / "runs" / run_id / "screenshots"
+    # Per-slide subdirectory: each critic pass screenshots a standalone
+    # single-page compile, so a shared directory would collide on the same
+    # "slide-0.png" filename across slides (renderer numbers pages within
+    # that one call, not by deck index).
+    output_dir = (
+        Path(__file__).resolve().parent.parent.parent
+        / "output" / "runs" / run_id / "screenshots" / f"slide-{idx}"
+    )
 
     batch = render_screenshots(pptx_path, str(output_dir))
     if not batch.ok or not batch.slides:
