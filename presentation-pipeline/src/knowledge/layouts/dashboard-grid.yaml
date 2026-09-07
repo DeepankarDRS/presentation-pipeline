@@ -34,15 +34,16 @@ structure: >
 
   DATA AREA — three options driven by layout_hint:
     Option A — single full-width chart:
-      <Chart w=full-width h=360-400 type="..." title="">...</Chart>
+      <Chart chartType="bar|line|area" w=full-width h=360-400 chartColors='["hex1","hex2"]'>...</Chart>
     Option B — chart + table side by side:
       <HStack w=full-width gap=20 alignItems="stretch">
-        <Chart w=~57% h=360-400 type="...">
+        <Chart chartType="..." w=~57% h=360-400 chartColors='["hex1"]'>
         <Table w=grow=1 h=360-400>...</Table>
       </HStack>
     Option C — two charts:
       <HStack w=full-width gap=20 alignItems="stretch">
-        <Chart w=~50% h=360-400>  <Chart w=grow=1 h=360-400>
+        <Chart chartType="..." w=~50% h=360-400 chartColors='["hex1"]'>
+        <Chart chartType="..." w=grow=1 h=360-400 chartColors='["hex2"]'>
       </HStack>
 
 rules:
@@ -55,7 +56,7 @@ rules:
 verified_example: |
   <Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9"
          positive="15803D" negative="DC2626" warning="B45309" textMain="16202E"
-         textMuted="55627A" border="E2E8F0" chartColors="2563EB,0EA5E9,15803D,B45309" />
+         textMuted="55627A" border="E2E8F0" />
   <Slide>
     <VStack w="1280" h="720" padding="40" gap="14" backgroundColor="$surface" alignItems="start">
       <HStack w="1200" justifyContent="spaceBetween" alignItems="center">
@@ -82,8 +83,8 @@ verified_example: |
           <Text fontSize="12" color="$textMuted">Flat QoQ</Text>
         </VStack>
       </HStack>
-      <Chart w="1200" h="380" type="line" title="">
-        <ChartSeries name="ARR ($M)" color="$accent">
+      <Chart chartType="line" w="1200" h="380" chartColors='["2563EB"]'>
+        <ChartSeries name="ARR ($M)">
           <ChartDataPoint label="Q1 FY25" value="33.2" />
           <ChartDataPoint label="Q2 FY25" value="36.3" />
           <ChartDataPoint label="Q3 FY25" value="39.8" />

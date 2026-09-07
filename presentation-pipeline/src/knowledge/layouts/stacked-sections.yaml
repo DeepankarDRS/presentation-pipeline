@@ -22,8 +22,8 @@ structure: >
 
   BODY BLOCK — three variants:
     Narrative: <Text fontSize=16-20 color="$textMain">Multi-sentence prose.</Text>
-    Bullets: <Ul gap=8-12>
-               <Li><Text fontSize=16-18 color="$textMain">Point text</Text></Li>
+    Bullets: <Ul fontSize=16-18 color="$textMain" lineHeight=1.4-1.6>
+               <Li>Point text</Li>
              </Ul>
     Mixed (narrative + bullets): both above inside a VStack gap=12
 
@@ -64,10 +64,10 @@ verified_example: |
         <Text fontSize="18" color="$textMain">
           Customer acquisition cost rose 28% while lifetime value held flat.
         </Text>
-        <Ul gap="10">
-          <Li><Text fontSize="17" color="$textMain">SMB churn: 4.2% in Q3 vs. 2.1% enterprise</Text></Li>
-          <Li><Text fontSize="17" color="$textMain">CAC payback extended from 14 to 18 months</Text></Li>
-          <Li><Text fontSize="17" color="$textMain">Top cohort (FY23 enterprise) shows 128% NRR</Text></Li>
+        <Ul fontSize="17" color="$textMain" lineHeight="1.5">
+          <Li>SMB churn: 4.2% in Q3 vs. 2.1% enterprise</Li>
+          <Li>CAC payback extended from 14 to 18 months</Li>
+          <Li>Top cohort (FY23 enterprise) shows 128% NRR</Li>
         </Ul>
       </VStack>
       <Shape shapeType="rect" w="1168" h="1" backgroundColor="$border" />
