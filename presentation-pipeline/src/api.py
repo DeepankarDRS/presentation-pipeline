@@ -147,12 +147,47 @@ class RunRecord:
 _runs: dict[str, RunRecord] = {}
 _MAX_AGE = 3600
 
+_PIPELINE_ROOT = Path(__file__).resolve().parent.parent
+
 
 def _cleanup_old_runs() -> None:
     cutoff = time.time() - _MAX_AGE
     stale = [rid for rid, r in _runs.items() if r.created_at < cutoff]
     for rid in stale:
         del _runs[rid]
+
+
+def _get_run_record(run_id: str) -> RunRecord | None:
+    """Look up a run, falling back to run-manifest.json on disk.
+
+    _runs is in-memory only and is empty after a server restart (or once
+    an entry ages out via _cleanup_old_runs). The manifest written by the
+    evaluator survives restarts, so reconstruct a RunRecord from it when
+    the in-memory entry is missing.
+    """
+    record = _runs.get(run_id)
+    if record is not None:
+        return record
+
+    manifest_path = _PIPELINE_ROOT / "output" / "runs" / run_id / "run-manifest.json"
+    if not manifest_path.exists():
+        return None
+
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    record = RunRecord(
+        run_id=run_id,
+        status="complete",
+        progress_pct=100,
+        current_step="complete",
+        passed=manifest.get("passed"),
+        pptx_path=manifest.get("pptx_path"),
+    )
+    _runs[run_id] = record
+    return record
 
 
 # ── Node-to-event mapping ─────────────────────────────────────────────────
@@ -338,7 +373,7 @@ async def generate(request: GenerateRequest) -> StreamingResponse:
 
 @app.get("/runs/{run_id}/status")
 async def get_run_status(run_id: str) -> RunStatus:
-    record = _runs.get(run_id)
+    record = _get_run_record(run_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
     return RunStatus(
@@ -350,7 +385,7 @@ async def get_run_status(run_id: str) -> RunStatus:
 
 @app.get("/runs/{run_id}/download")
 async def download_pptx(run_id: str) -> FileResponse:
-    record = _runs.get(run_id)
+    record = _get_run_record(run_id)
     if not record:
         raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
     if record.status != "complete" or not record.pptx_path:
@@ -567,9 +602,6 @@ async def generate_from_plan(request: GenerateFromPlanRequest) -> StreamingRespo
 
 
 # ── Edit session state ────────────────────────────────────────────────────
-
-_PIPELINE_ROOT = Path(__file__).resolve().parent.parent
-
 
 @dataclass
 class EditRecord:
@@ -902,9 +934,23 @@ async def finalize_deck(run_id: str) -> FinalizeResponse:
         pptx_path = cr.get("pptx_path")
         session.final_pptx_path = pptx_path
 
-        record = _runs.get(run_id)
-        if record:
-            record.pptx_path = pptx_path
+        record = _get_run_record(run_id)
+        if record is None:
+            record = RunRecord(run_id=run_id, status="complete", progress_pct=100, current_step="complete")
+            _runs[run_id] = record
+        record.pptx_path = pptx_path
+        record.status = "complete"
+
+        manifest_path = _PIPELINE_ROOT / "output" / "runs" / run_id / "run-manifest.json"
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                manifest["pptx_path"] = pptx_path
+                manifest_path.write_text(
+                    json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8",
+                )
+            except (OSError, json.JSONDecodeError):
+                pass
 
         return FinalizeResponse(
             ok=True,
