@@ -141,8 +141,8 @@ phase_b:
     node_attributes: [label, value]
     required: [label, value]
     children: none
-  Ul: { description: "Bullet list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, fontFamily, lineHeight], children: [Li] }
-  Ol: { description: "Numbered list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, fontFamily, lineHeight, numberType, numberStartAt], children: [Li] }
+  Ul: { description: "Bullet list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight], children: [Li] }
+  Ol: { description: "Numbered list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight, numberType, numberStartAt], children: [Li] }
   Li: { description: "List item. May contain inline tags.", node_attributes: [bold, italic, strike, subscript, superscript, underline, highlight, color, fontSize, fontFamily], children: [B, I, A, U, S, Sub, Sup, Span, Mark] }
 
 # ── Phase C nodes (table) ───────────────────────────────────────────────────

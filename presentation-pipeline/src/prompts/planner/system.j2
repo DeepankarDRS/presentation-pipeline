@@ -42,7 +42,7 @@ Each component maps to a POM XML structure. Pick only what the request needs.
 | caption | Small footnote/source text | 1 per slide, bottom |
 | kpi_row | Row of metric tiles (label + value + delta) | count = number of tiles (typically 3-5) |
 | bullet_list | Unordered/ordered list | items = number of bullets |
-| chart | Data visualization | chart_type (bar/line/pie/donut/area), series_count, count = data points per series |
+| chart | Data visualization | chart_type (bar/line/pie/doughnut/area/radar), series_count, count = data points per series |
 | table | Data grid with header + rows | columns, rows (excluding header) |
 | timeline | Sequential events/milestones | items = number of events |
 | flow | Step-by-step process | items = number of steps |
@@ -91,7 +91,13 @@ For kpi_row:
   kpi_directions: ["up", "up", "down"]
 
 For chart:
-  chart_type: "bar"                       // REQUIRED: bar, line, pie, area, doughnut
+  chart_type: "bar"                       // REQUIRED — choose to match the data story:
+                                          //   "bar":      ranked comparison across discrete categories (most common)
+                                          //   "line":     trend over time with one or more series
+                                          //   "area":     volume or cumulative trend over time
+                                          //   "pie":      part-of-whole with ≤5 slices, no comparison needed
+                                          //   "doughnut": part-of-whole with a center label (e.g. "72% complete")
+                                          //   "radar":    multi-dimensional score comparison across entities
   chart_title: "Revenue by Quarter"
   chart_labels: ["Q1", "Q2", "Q3", "Q4"]
   chart_values: [28.4, 31.2, 36.1, 42.8] // for single series
@@ -112,19 +118,32 @@ For bullet_list:
   bullets: ["First key insight", "Second key insight", "Third key insight"]
 
 For timeline:
+  direction: "horizontal"                 // "horizontal": roadmap/milestone view (4-6 items, date labels below dots)
+                                          // "vertical":   project plan or sequential steps (3-8 items with description text)
   timeline_items: [
     { "date": "Jan 2025", "label": "Phase 1 Launch" },
     { "date": "Mar 2025", "label": "Beta Release" }
   ]
 
 For flow:
+  direction: "horizontal"                 // "horizontal": left-to-right process with 3-5 sequential steps
+                                          // "vertical":   top-down decision tree with branching paths (decision nodes)
   flow_steps: ["Discovery", "Design", "Build", "Test", "Deploy"]
 
 For process_arrow:
+  direction: "horizontal"                 // "horizontal": steps read left-to-right (most business process diagrams)
+                                          // "vertical":   steps stack top-to-bottom (narrow slides or long step labels)
   process_steps: ["Intake", "Review", "Approve", "Execute"]
 
 For pyramid:
+  direction: "up"                         // "up":   classic pyramid — first level = apex (most important/rare), last = base
+                                          // "down": inverted — first level = widest (e.g. total market), narrowing to niche
   pyramid_levels: ["Strategy", "Tactics", "Operations"]
+
+For tree:
+  layout: "vertical"                      // "vertical":   top-down org chart or hierarchy (few wide levels, e.g. CEO → VPs)
+                                          // "horizontal": left-to-right decision tree or branching logic (many narrow levels)
+  tree_nodes: [{ "label": "Root", "children": [{ "label": "Branch A" }, { "label": "Branch B" }] }]
 
 Rules:
 - EVERY value must be realistic and specific — no "XX%", "TBD", or placeholders

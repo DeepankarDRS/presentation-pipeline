@@ -49,7 +49,7 @@ Td_attributes:
   superscript:    { type: bool }
   highlight:      { type: hex }
   fontFamily:     { type: string }
-  backgroundColor:{ type: hex }
+  backgroundColor: { type: hex }
   colspan:        { type: number }
   rowspan:        { type: number }
 

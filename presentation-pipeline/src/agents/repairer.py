@@ -27,6 +27,7 @@ from src.compiler.repair_guidance import (
     build_error_guidance,
     error_signatures,
     is_stalled,
+    select_repair_knowledge,
 )
 from src.state import AttemptRecord, PresentationState
 from src.utils.llm_client import get_llm
@@ -138,20 +139,21 @@ def _render_original_user(state: PresentationState) -> str:
     )
 
 
-def _render_system_prompt(state: PresentationState) -> str:
-    """Re-render the system prompt for the repair LLM call."""
+def _render_repair_system(state: PresentationState, knowledge: dict) -> str:
+    """Build a focused repair system prompt with only error-relevant knowledge.
+
+    Instead of re-rendering the full generator system.j2 (all design rules,
+    all node attributes, layout vocabulary), this loads the repairer's own
+    system.j2 and injects only the knowledge slices for the nodes that had
+    errors — attribute docs, pitfalls, and a verified syntax example.
+    """
     contract = state.get("contract") or {}
-    system_tmpl = _gen_env.get_template("system.j2")
+    system_tmpl = _repair_env.get_template("system.j2")
     return system_tmpl.render(
         forbidden_tags=contract.get("forbidden_tags", []),
-        forbidden_attributes=contract.get("forbidden_attributes", []),
         theme_element=contract.get("theme_element", state.get("theme_element", "")),
-        allowed_nodes=contract.get("allowed_nodes", []),
-        allowed_attributes=contract.get("allowed_attributes", {}),
-        density_tier=contract.get("density_tier", "standard"),
-        layout_pattern=contract.get("layout_pattern", ""),
-        example=contract.get("example", ""),
-        notes=contract.get("notes", []),
+        knowledge_text=knowledge.get("knowledge_text", ""),
+        reference_example=knowledge.get("example", ""),
     )
 
 
@@ -187,7 +189,11 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     logger.info(f"repairer: attempt {current_count + 1}, tier {current_tier} ({tier_name}), "
                 f"{len(problems)} problem(s)")
 
-    previous_user = _render_original_user(state)
+    # Select targeted knowledge based on the actual errors
+    knowledge = select_repair_knowledge(pre_issues, compile_diags)
+    if knowledge["nodes_involved"]:
+        logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
+
     contract = state.get("contract") or {}
 
     if current_tier <= 1:
@@ -196,12 +202,13 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
         patch_tmpl = _repair_env.get_template("patch.j2")
         user_prompt = patch_tmpl.render(
-            previous_user=previous_user,
+            objective=state.get("raw_request", ""),
             failing_xml=failing_xml,
             problems=problems,
             guidance=guidance,
         )
     elif current_tier == 2:
+        previous_user = _render_original_user(state)
         simplify_tmpl = _repair_env.get_template("simplify.j2")
         user_prompt = simplify_tmpl.render(
             previous_user=previous_user,
@@ -210,6 +217,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
             allowed_nodes=contract.get("allowed_nodes", []),
         )
     else:
+        previous_user = _render_original_user(state)
         template_xml = _select_template(state)
         template_tmpl = _repair_env.get_template("template.j2")
         user_prompt = template_tmpl.render(
@@ -217,7 +225,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
             template_xml=template_xml,
         )
 
-    system_prompt = _render_system_prompt(state)
+    system_prompt = _render_repair_system(state, knowledge)
 
     llm = get_llm("repairer")
     messages = [

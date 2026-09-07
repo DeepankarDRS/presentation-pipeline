@@ -18,27 +18,50 @@ structure: |
   </Ul>
 
 Ul_attributes:
-  fontSize:   { type: number, default: 24 }
-  color:      { type: hex }
-  textAlign:  { type: enum, values: [left, center, right] }
-  bold:       { type: bool }
-  italic:     { type: bool }
-  strike:     { type: bool }
-  fontFamily: { type: string }
-  lineHeight: { type: number, default: 1.3 }
+  fontSize:    { type: number, default: 24 }
+  color:       { type: hex, note: "text color" }
+  textAlign:   { type: enum, values: [left, center, right] }
+  bold:        { type: bool }
+  italic:      { type: bool }
+  strike:      { type: bool }
+  subscript:   { type: bool }
+  superscript: { type: bool }
+  underline:   { type: "bool or underline options" }
+  highlight:   { type: hex, note: "highlight color behind text" }
+  fontFamily:  { type: string, default: "Noto Sans JP" }
+  lineHeight:  { type: number, default: 1.3 }
 
 Ol_extra_attributes:
   numberType:    { type: enum, values: [alphaLcPeriod, alphaUcPeriod, arabicParenR, arabicPeriod], note: "and more" }
   numberStartAt: { type: number, default: 1 }
 
-Li_attributes: [bold, italic, strike, subscript, superscript, underline, highlight, color, fontSize, fontFamily]
+Li_attributes:
+  fontSize:    { type: number }
+  color:       { type: hex, note: "text color — overrides parent Ul/Ol" }
+  bold:        { type: bool }
+  italic:      { type: bool }
+  strike:      { type: bool }
+  subscript:   { type: bool }
+  superscript: { type: bool }
+  underline:   { type: "bool or underline options" }
+  highlight:   { type: hex, note: "highlight color" }
+  fontFamily:  { type: string }
+
+Li_inline_children: >
+  <Li> supports inline formatting tags: <B>, <I>, <A>, <U>, <S>, <Sub>, <Sup>,
+  <Mark>, and <Span>. Examples: <Li>Normal <B>bold</B> item</Li>,
+  <Li>See <A href="https://example.com">link</A></Li>,
+  <Li>x<Sup>2</Sup> + y<Sup>2</Sup></Li>, <Li>H<Sub>2</Sub>O</Li>,
+  <Li><Span color="FF0000">red</Span> item</Li>
 
 notes:
   - "Lowercase <ul>/<ol>/<li> are HTML. Use <Ul>/<Ol>/<Li>."
-  - "<Li> may contain inline tags (B, I, Span, Mark)."
+  - "<Li> may contain inline tags (B, I, A, U, S, Sub, Sup, Span, Mark)."
   - "Give the list an explicit w on its parent (or the list) so long items wrap."
   - "For a title + bullets slide, put the <Ul> where the body <Text> would go in layouts/title-content.yaml."
+  - "Line spacing: Ul/Ol use a different line-spacing rule than Text. Row height = measureFontLineHeightRatio * lineHeight * fontSize (bundled-font ratio). Text uses lineHeight * fontSize directly (PowerPoint spcPts). Use the same lineHeight value for visual consistency; absolute pixel values may differ slightly."
 
 pitfalls:
   - "No nested <Ul> inside <Li> in the MVP — keep lists flat."
   - "Don't mix a <Ul> and manual bullet characters in <Text>; pick one."
+  - "Lowercase <ul>/<li> are HTML tags — POM silently rejects them. Use <Ul>/<Li>."
