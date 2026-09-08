@@ -1,6 +1,7 @@
 """Tests for the FastAPI + SSE API layer."""
 
 import json
+import shutil
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -342,3 +343,52 @@ def test_generate_error_event(mock_pipeline):
     error_events = [e for e in events if e["event"] == "error"]
     assert len(error_events) >= 1
     assert "timeout" in error_events[0]["data"]["data"]["message"].lower()
+
+
+# ── Edit session: theme_info reconstruction ──────────────────────────────
+
+def _write_run_files(run_id: str, manifest: dict, slides: list[dict]) -> Path:
+    run_dir = Path(__file__).resolve().parent.parent.parent / "output" / "runs" / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "run-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (run_dir / "slides.json").write_text(json.dumps(slides), encoding="utf-8")
+    return run_dir
+
+
+def test_load_edit_session_populates_theme_info():
+    from src.api import _load_edit_session
+
+    run_dir = _write_run_files(
+        "edit-theme-test",
+        manifest={
+            "theme_element": '<Theme accent="2563EB" />',
+            "resolved_theme": {"name": "corporate-slate", "mode": "light", "element": '<Theme accent="2563EB" />'},
+            "pptx_path": None,
+        },
+        slides=[{"slide_index": 0, "xml": "<Slide></Slide>", "slide_plan": {"components": []}}],
+    )
+    try:
+        session = _load_edit_session("edit-theme-test")
+        assert session is not None
+        assert session.theme_info["name"] == "corporate-slate"
+        assert not hasattr(session, "contract")
+    finally:
+        shutil.rmtree(run_dir)
+
+
+def test_load_edit_session_legacy_manifest_no_resolved_theme():
+    """Backward-compat: a manifest written before this change has no resolved_theme key."""
+    from src.api import _load_edit_session
+
+    run_dir = _write_run_files(
+        "edit-legacy-test",
+        manifest={"theme_element": '<Theme accent="2563EB" />', "pptx_path": None},
+        slides=[{"slide_index": 0, "xml": "<Slide></Slide>", "slide_plan": {}}],
+    )
+    try:
+        session = _load_edit_session("edit-legacy-test")
+        assert session is not None
+        assert session.theme_info == {}
+        assert session.theme_element == '<Theme accent="2563EB" />'
+    finally:
+        shutil.rmtree(run_dir)

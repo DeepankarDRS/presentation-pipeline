@@ -238,6 +238,7 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
     screenshots = _generate_final_screenshots(state, run_id)
 
     manifest["theme_element"] = state.get("theme_element", "")
+    manifest["resolved_theme"] = state.get("resolved_theme") or {}
     manifest["screenshots"] = {str(k): v for k, v in screenshots.items()}
 
     manifest_path = _write_manifest(manifest, run_id)

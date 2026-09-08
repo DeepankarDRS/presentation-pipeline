@@ -46,23 +46,36 @@ class SlideEditResult:
     error: str | None = None
 
 
+def _render_system_prompt(contract: dict[str, Any]) -> str:
+    system_tmpl = _jinja_env.get_template("system.j2")
+    return system_tmpl.render(
+        forbidden_tags=contract.get("forbidden_tags", []),
+        forbidden_attributes=contract.get("forbidden_attributes", []),
+        allowed_nodes=contract.get("allowed_nodes", []),
+        notes=contract.get("notes", []),
+        layout_pattern=contract.get("layout_pattern", ""),
+    )
+
+
 def _call_edit_llm(
     current_xml: str,
     feedback: str,
     theme_element: str,
     contract: dict[str, Any],
+    slide_plan: dict[str, Any],
 ) -> str:
     """Call the LLM to apply the user's edit instruction to the XML."""
-    system_tmpl = _jinja_env.get_template("system.j2")
     user_tmpl = _jinja_env.get_template("user.j2")
 
-    system_prompt = system_tmpl.render(
-        forbidden_tags=contract.get("forbidden_tags", []),
-    )
+    system_prompt = _render_system_prompt(contract)
     user_prompt = user_tmpl.render(
         current_xml=current_xml,
         theme_element=theme_element,
         feedback=feedback,
+        slide_type=slide_plan.get("slide_type", ""),
+        components=slide_plan.get("components", []),
+        density=slide_plan.get("density", ""),
+        layout_hint=slide_plan.get("layout_hint", ""),
     )
 
     llm = get_llm("slide_editor")
@@ -82,18 +95,21 @@ def _call_repair_llm(
     feedback: str,
     theme_element: str,
     contract: dict[str, Any],
+    slide_plan: dict[str, Any],
 ) -> str:
     """Call the LLM to fix compile errors while preserving the user's edit intent."""
-    system_tmpl = _jinja_env.get_template("system.j2")
-    system_prompt = system_tmpl.render(
-        forbidden_tags=contract.get("forbidden_tags", []),
-    )
+    system_prompt = _render_system_prompt(contract)
+
+    components = slide_plan.get("components", [])
+    component_summary = ", ".join(c.get("kind", "") for c in components) if components else ""
 
     user_prompt = (
         f"## FAILING XML\n{failing_xml}\n\n"
         f"## COMPILE ERRORS\n" + "\n".join(f"- {p}" for p in problems) + "\n\n"
         f"## ERROR GUIDANCE\n{guidance}\n\n"
         f"## ORIGINAL USER INSTRUCTION\n{feedback}\n\n"
+        f"## SLIDE INTENT\nType: {slide_plan.get('slide_type', '')} | "
+        f"Components: {component_summary} | Density: {slide_plan.get('density', '')}\n\n"
         f"## THEME\n{theme_element}\n\n"
         "Fix the compile errors while keeping the user's edit intent. "
         "Return the complete corrected XML."
@@ -114,6 +130,7 @@ def edit_slide_xml(
     feedback: str,
     theme_element: str,
     contract: dict[str, Any],
+    slide_plan: dict[str, Any],
     run_id: str,
     slide_index: int,
     version: int,
@@ -125,7 +142,7 @@ def edit_slide_xml(
     output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "edits" / f"slide-{slide_index}-v{version}"
 
     try:
-        edited_xml = _call_edit_llm(current_xml, feedback, theme_element, contract)
+        edited_xml = _call_edit_llm(current_xml, feedback, theme_element, contract, slide_plan)
     except Exception as e:
         logger.error(f"slide_editor: LLM edit call failed: {e}")
         return SlideEditResult(ok=False, xml=current_xml, error=f"LLM edit failed: {e}")
@@ -168,7 +185,7 @@ def edit_slide_xml(
 
         try:
             repaired_xml = _call_repair_llm(
-                working_xml, problems, guidance, feedback, theme_element, contract,
+                working_xml, problems, guidance, feedback, theme_element, contract, slide_plan,
             )
         except Exception as e:
             logger.error(f"slide_editor: repair LLM call failed: {e}")

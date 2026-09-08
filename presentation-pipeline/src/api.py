@@ -670,7 +670,7 @@ class EditSession:
     run_id: str
     slides: list[EditSlideState] = field(default_factory=list)
     theme_element: str = ""
-    contract: dict[str, Any] = field(default_factory=dict)
+    theme_info: dict[str, Any] = field(default_factory=dict)
     original_pptx_path: str | None = None
     final_pptx_path: str | None = None
 
@@ -727,12 +727,13 @@ def _load_edit_session(run_id: str) -> EditSession | None:
 
     manifest_path = _PIPELINE_ROOT / "output" / "runs" / run_id / "run-manifest.json"
     theme_element = ""
-    contract: dict[str, Any] = {}
+    theme_info: dict[str, Any] = {}
     pptx_path: str | None = None
 
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         theme_element = manifest.get("theme_element", "")
+        theme_info = manifest.get("resolved_theme") or {}
         pptx_path = manifest.get("pptx_path")
 
     slides_data = json.loads(slides_path.read_text(encoding="utf-8"))
@@ -750,7 +751,7 @@ def _load_edit_session(run_id: str) -> EditSession | None:
         run_id=run_id,
         slides=slides,
         theme_element=theme_element,
-        contract=contract,
+        theme_info=theme_info,
         original_pptx_path=pptx_path,
     )
 
@@ -824,13 +825,23 @@ async def edit_slide(
 
     try:
         from src.agents.slide_edit_service import edit_slide_xml
+        from src.agents.slide_replanner import resolve_slide_plan
+
+        try:
+            updated_plan, contract = resolve_slide_plan(
+                slide.slide_plan, request.feedback, session.theme_info, run_id,
+            )
+        except Exception as e:
+            logger.warning(f"edit_slide: resolve_slide_plan failed, falling back to {{}}: {e}")
+            updated_plan, contract = slide.slide_plan, {}
 
         result = await asyncio.to_thread(
             edit_slide_xml,
             current_xml=slide.current_xml,
             feedback=request.feedback,
             theme_element=session.theme_element,
-            contract=session.contract,
+            contract=contract,
+            slide_plan=updated_plan,
             run_id=run_id,
             slide_index=slide_index,
             version=slide.version + 1,
@@ -840,6 +851,7 @@ async def edit_slide(
             xml_before = slide.current_xml
             slide.current_xml = result.xml
             slide.version += 1
+            slide.slide_plan = updated_plan
             if result.screenshot_path:
                 slide.screenshot_path = result.screenshot_path
             slide.edit_history.append(EditRecord(

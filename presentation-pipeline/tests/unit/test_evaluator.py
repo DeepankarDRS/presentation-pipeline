@@ -1,6 +1,7 @@
 """Tests for the evaluator agent — scoring, cost tracking, manifest."""
 
 import json
+import shutil
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -180,6 +181,40 @@ def test_evaluator_writes_manifest():
     # Cleanup
     manifest_path.unlink()
     manifest_path.parent.rmdir()
+
+
+def test_evaluator_writes_resolved_theme_to_manifest():
+    state = _make_state(run_id="manifest-theme-test-001")
+    state["resolved_theme"] = {
+        "name": "corporate-slate", "mode": "light", "is_dark": False,
+        "chart_colors": ["2563EB"], "chart_colors_json": '["2563EB"]',
+        "element": '<Theme accent="2563EB" />',
+    }
+    state["theme_element"] = state["resolved_theme"]["element"]
+
+    evaluator_node(state)
+
+    run_dir = Path(__file__).resolve().parent.parent.parent / "output" / "runs" / "manifest-theme-test-001"
+    manifest_path = run_dir / "run-manifest.json"
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert data["resolved_theme"]["name"] == "corporate-slate"
+    assert data["theme_element"] == state["theme_element"]
+
+    shutil.rmtree(run_dir)
+
+
+def test_evaluator_resolved_theme_defaults_empty():
+    """No resolved_theme in state (legacy/edge case) degrades to {} in the manifest."""
+    state = _make_state(run_id="manifest-theme-test-002")
+
+    evaluator_node(state)
+
+    run_dir = Path(__file__).resolve().parent.parent.parent / "output" / "runs" / "manifest-theme-test-002"
+    manifest_path = run_dir / "run-manifest.json"
+    data = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert data["resolved_theme"] == {}
+
+    shutil.rmtree(run_dir)
 
 
 def test_evaluator_empty_history():
