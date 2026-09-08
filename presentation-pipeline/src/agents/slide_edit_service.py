@@ -14,7 +14,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.compiler.compiler_client import CompilerError, compile_xml
-from src.compiler.normalizer import normalize_xml
+from src.compiler.normalizer import ensure_single_theme, normalize_xml
 from src.compiler.repair_guidance import (
     build_error_guidance,
     select_repair_knowledge,
@@ -147,9 +147,12 @@ def edit_slide_xml(
         logger.error(f"slide_editor: LLM edit call failed: {e}")
         return SlideEditResult(ok=False, xml=current_xml, error=f"LLM edit failed: {e}")
 
-    # Normalize
+    # Normalize + ensure the theme is present for compilation. current_xml is
+    # theme-less (the generator never emits <Theme>, and the main pipeline
+    # only injects it locally for compilation, same as here) — without it
+    # $tokens won't resolve. finalize_deck strips it back out per-slide later.
     norm = normalize_xml(edited_xml)
-    working_xml = norm.get("cleaned_xml", edited_xml)
+    working_xml = ensure_single_theme(norm.get("cleaned_xml", edited_xml), theme_element)
 
     # Compile
     try:
@@ -192,7 +195,7 @@ def edit_slide_xml(
             break
 
         norm = normalize_xml(repaired_xml)
-        working_xml = norm.get("cleaned_xml", repaired_xml)
+        working_xml = ensure_single_theme(norm.get("cleaned_xml", repaired_xml), theme_element)
 
         repair_dir = output_dir / f"repair-{attempt}"
         try:

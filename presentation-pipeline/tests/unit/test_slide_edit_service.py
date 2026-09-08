@@ -104,3 +104,35 @@ def test_call_repair_llm_accepts_slide_plan(mock_get_llm):
         slide_plan={"slide_type": "data", "components": [{"kind": "chart"}]},
     )
     assert result == "<Slide></Slide>"
+
+
+# ── Theme injection ────────────────────────────────────────────────────────
+#
+# current_xml is theme-less (the generator never emits <Theme>, matching the
+# main pipeline's convention — see edit_slide_xml's comment). Without
+# ensure_single_theme() injecting the deck's theme_element before compiling,
+# $tokens in the edited XML never resolve.
+
+@patch("src.agents.slide_edit_service.compile_xml")
+@patch("src.agents.slide_edit_service.get_llm")
+def test_edit_slide_xml_injects_theme_before_compiling(mock_get_llm, mock_compile_xml):
+    from src.agents.slide_edit_service import edit_slide_xml
+
+    edited_xml = '<Slide><VStack backgroundColor="$surface"><Text color="$textMain">T</Text></VStack></Slide>'
+    mock_llm = MagicMock()
+    mock_llm.invoke.return_value = MagicMock(content=edited_xml)
+    mock_get_llm.return_value = mock_llm
+    mock_compile_xml.return_value = {"ok": True, "pptx_path": "/tmp/out.pptx", "diagnostics": [], "warnings": []}
+
+    result = edit_slide_xml(
+        current_xml="<Slide><VStack><Text>T</Text></VStack></Slide>",
+        feedback="make title bigger",
+        theme_element='<Theme surface="F7F9FC" textMain="16202E" />',
+        contract={}, slide_plan={}, run_id="theme-inject-test", slide_index=0, version=1,
+    )
+
+    assert result.ok is True
+    compiled_xml = mock_compile_xml.call_args[0][0]
+    assert compiled_xml.count("<Theme") == 1
+    assert 'surface="F7F9FC"' in compiled_xml
+    assert result.xml.count("<Theme") == 1
