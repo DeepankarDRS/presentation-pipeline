@@ -4,14 +4,14 @@ import { ApiService, SSEEvent } from './api.service';
 import {
   AppView,
   EditSessionStatus,
+  ElicitationQuestion,
   EventType,
   EvaluationSummary,
   GenerateRequest,
-  GenerateFromPlanRequest,
-  RefinePlanRequest,
-  PlanResponse,
+  OutlinePlan,
+  OutlineResponse,
+  PlanReview,
   ProgressEvent,
-  SlidePlan,
 } from '../models/api.models';
 import { STEP_LABELS, PROGRESS_RANGES } from '../constants/theme.constants';
 
@@ -29,107 +29,94 @@ export class GenerationService {
   readonly passed = signal<boolean | null>(null);
   readonly pptxPath = signal<string | null>(null);
   readonly evaluationSummary = signal<EvaluationSummary | null>(null);
+  readonly planReview = signal<PlanReview | null>(null);
   readonly error = signal<string | null>(null);
-  readonly deckPlan = signal<PlanResponse | null>(null);
   readonly originalRequest = signal<GenerateRequest | null>(null);
   readonly editSession = signal<EditSessionStatus | null>(null);
-  readonly refining = signal<boolean>(false);
-  readonly refineError = signal<string | null>(null);
+
+  // Elicitation (Phase B follow-up questions)
+  readonly elicitationQuestions = signal<ElicitationQuestion[]>([]);
+  readonly elicitationError = signal<string | null>(null);
+
+  // Outline (editable deck skeleton)
+  readonly outlinePlan = signal<OutlinePlan | null>(null);
+  readonly outlineRunId = signal<string | null>(null);
+  readonly outlineError = signal<string | null>(null);
 
   readonly isGenerating = computed(() => this.view() === 'progress');
 
   private subscription: Subscription | null = null;
 
-  requestPlan(request: GenerateRequest): void {
+  requestOutline(request: GenerateRequest): void {
     this.originalRequest.set(request);
     this.view.set('planning');
     this.error.set(null);
+    this.outlineError.set(null);
+    this.elicitationError.set(null);
 
-    this.api.createPlan(request).then(
-      (plan) => {
-        this.deckPlan.set(plan);
-        this.view.set('plan-editor');
-      },
+    this.api.createOutline({
+      prompt: request.prompt,
+      theme: request.theme,
+      deck_min_threshold: request.deck_min_threshold,
+      supplied_content: request.supplied_content,
+      deck_settings: request.deck_settings,
+    }).then(
+      (res) => this.handleOutlineResponse(res),
       (err: Error) => {
-        this.error.set(err.message || 'Plan creation failed');
+        this.error.set(err.message || 'Outline planning failed');
         this.view.set('form');
       },
     );
   }
 
-  refinePlan(core_hook: string, slides: SlidePlan[], feedback: string): void {
+  submitElicitationAnswers(answers: Record<string, string>): void {
     const orig = this.originalRequest();
-    const plan = this.deckPlan();
-    if (!orig || !plan || !feedback.trim()) return;
+    if (!orig) return;
 
-    this.refining.set(true);
-    this.refineError.set(null);
+    this.view.set('planning');
+    this.elicitationError.set(null);
 
-    const request: RefinePlanRequest = {
+    this.api.createOutline({
       prompt: orig.prompt,
       theme: orig.theme,
-      critic_mode: orig.critic_mode,
       deck_min_threshold: orig.deck_min_threshold,
       supplied_content: orig.supplied_content,
-      audience_context: orig.audience_context,
-      run_id: plan.run_id,
-      core_hook,
-      slides,
-      feedback,
-    };
-
-    this.api.refinePlan(request).then(
-      (revised) => {
-        this.deckPlan.set(revised);
-        this.refining.set(false);
-      },
+      deck_settings: orig.deck_settings,
+      elicitation_answers: answers,
+    }).then(
+      (res) => this.handleOutlineResponse(res),
       (err: Error) => {
-        this.refineError.set(err.message || 'Plan refinement failed');
-        this.refining.set(false);
+        this.elicitationError.set(err.message || 'Outline planning failed');
+        this.view.set('elicitation');
       },
     );
   }
 
-  generateFromPlan(core_hook: string, slides: SlidePlan[]): void {
+  private handleOutlineResponse(res: OutlineResponse): void {
+    this.outlineRunId.set(res.run_id);
+    if (res.elicitation_needed) {
+      this.elicitationQuestions.set(res.questions);
+      this.view.set('elicitation');
+      return;
+    }
+    this.outlinePlan.set(res.outline);
+    this.view.set('plan-editor');
+  }
+
+  confirmOutline(outline: OutlinePlan): void {
+    const runId = this.outlineRunId();
     const orig = this.originalRequest();
-    if (!orig) return;
+    if (!runId || !orig) return;
 
-    const plan = this.deckPlan();
-    const request: GenerateFromPlanRequest = {
-      prompt: orig.prompt,
-      theme: orig.theme,
-      critic_mode: orig.critic_mode,
-      deck_min_threshold: orig.deck_min_threshold,
-      supplied_content: orig.supplied_content,
-      audience_context: orig.audience_context,
-      run_id: plan?.run_id ?? '',
-      core_hook,
-      slides,
-    };
-
-    this.view.set('progress');
-    this.progressPct.set(0);
-    this.currentStep.set(null);
-    this.stepLabel.set('Starting...');
-    this.error.set(null);
-    this.passed.set(null);
-    this.evaluationSummary.set(null);
-
-    this.subscription = this.api.startGenerationFromPlan(request).subscribe({
-      next: (sseEvent) => {
-        this.runId.set(sseEvent.runId);
-        this.handleEvent(sseEvent.event);
+    this.outlineError.set(null);
+    this.api.updateOutline(runId, outline).then(
+      () => {
+        this.generate({ ...orig, outline_run_id: runId });
       },
-      error: (err: Error) => {
-        this.view.set('result');
-        this.error.set(err.message || 'Connection lost');
+      (err: Error) => {
+        this.outlineError.set(err.message || 'Failed to save outline');
       },
-      complete: () => {
-        if (this.view() === 'progress') {
-          this.view.set('result');
-        }
-      },
-    });
+    );
   }
 
   generate(request: GenerateRequest): void {
@@ -140,6 +127,7 @@ export class GenerationService {
     this.error.set(null);
     this.passed.set(null);
     this.evaluationSummary.set(null);
+    this.planReview.set(null);
 
     this.subscription = this.api.startGeneration(request).subscribe({
       next: (sseEvent: SSEEvent) => {
@@ -177,12 +165,15 @@ export class GenerationService {
     this.passed.set(null);
     this.pptxPath.set(null);
     this.evaluationSummary.set(null);
+    this.planReview.set(null);
     this.error.set(null);
-    this.deckPlan.set(null);
     this.originalRequest.set(null);
     this.editSession.set(null);
-    this.refining.set(false);
-    this.refineError.set(null);
+    this.elicitationQuestions.set([]);
+    this.elicitationError.set(null);
+    this.outlinePlan.set(null);
+    this.outlineRunId.set(null);
+    this.outlineError.set(null);
   }
 
   startReview(): void {
@@ -217,8 +208,11 @@ export class GenerationService {
       const data = (event.data?.['data'] as Record<string, unknown>) ?? event.data;
       this.passed.set((data['passed'] as boolean) ?? null);
       this.pptxPath.set((data['pptx_path'] as string) ?? null);
-      if (data['evaluation']) {
-        this.evaluationSummary.set(data['evaluation'] as EvaluationSummary);
+      if (data['evaluation_summary']) {
+        this.evaluationSummary.set(data['evaluation_summary'] as EvaluationSummary);
+      }
+      if (data['plan_review']) {
+        this.planReview.set(data['plan_review'] as PlanReview);
       }
       return;
     }

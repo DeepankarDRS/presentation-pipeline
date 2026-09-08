@@ -23,6 +23,12 @@ Multi-slide generation topology (unchanged from prior):
 
 Skip-planner path (test_case.components or slide_plans already set):
     START → style_resolver  (planning skipped entirely)
+
+Preloaded-outline path (outline_plan already set, e.g. user-edited via
+PUT /plan/{run_id}/outline): elicitor + outline_planner are skipped so the
+edited outline isn't overwritten; per-slide planning + review still run.
+    START → fan_out_slide_plans → slide_component_planner → slide_plan_sorter
+        → plan_reviewer → style_resolver → ...
 """
 
 from __future__ import annotations
@@ -63,7 +69,7 @@ logger = logging.getLogger(__name__)
 
 # ── Routing functions ───────────────────────────────────────────────────────
 
-def route_after_start(state: PresentationState) -> str:
+def route_after_start(state: PresentationState) -> str | list[Send]:
     """Route to planning pipeline, questionnaire, or skip directly to generation."""
     # Skip all planning when slide_plans already provided externally
     if state.get("slide_plans"):
@@ -74,6 +80,14 @@ def route_after_start(state: PresentationState) -> str:
     if test_case.get("components"):
         logger.info("route: skipping planning (test_case has components)")
         return "style_resolver"
+
+    # A user-edited outline was supplied (e.g. from PUT /plan/{run_id}/outline) —
+    # skip elicitor + outline_planner, go straight to per-slide fan-out so the
+    # edited outline isn't overwritten by a fresh LLM-generated one.
+    outline = state.get("outline_plan") or {}
+    if outline.get("slides"):
+        logger.info("route: outline_plan already provided — fanning out to slide_component_planner")
+        return fan_out_slide_plans(state)
 
     # Interactive CLI mode — legacy questionnaire path
     if state.get("interactive") and not state.get("audience_context"):
@@ -250,7 +264,7 @@ def build_graph() -> StateGraph:
     # ── Planning edges ──
     graph.add_conditional_edges(
         START, route_after_start,
-        ["questionnaire", "elicitor", "style_resolver"],
+        ["questionnaire", "elicitor", "style_resolver", "slide_component_planner", "slide_plan_serial"],
     )
     graph.add_edge("questionnaire", "elicitor")
     graph.add_conditional_edges(

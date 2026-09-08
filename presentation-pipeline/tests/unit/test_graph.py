@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+from langgraph.types import Send
+
 from src.agents.critic_schema import CriticOutput
 from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.graph import (
@@ -58,6 +60,28 @@ def test_route_after_start_preloaded_skips_questionnaire():
         audience_context={"audience": "Board"},
     )
     assert route_after_start(state) == "elicitor"
+
+
+def test_route_after_start_preloaded_outline_fans_out():
+    """A user-edited outline (e.g. via PUT /plan/{run_id}/outline) skips
+    elicitor + outline_planner entirely and fans straight out to per-slide
+    planning, so the edited outline is never overwritten by a fresh LLM call.
+    """
+    state = initial_state(
+        run_id="r2e", raw_request="test",
+        outline_plan={
+            "deck_title": "Test Deck", "core_hook": "hook",
+            "slides": [
+                {"slide_index": 0, "slide_title": "Cover", "slide_type": "cover",
+                 "section": "", "narrative_role": "", "key_messages": [],
+                 "data_anchors": [], "layout_intent": "", "suggested_components": ["title"]},
+            ],
+        },
+    )
+    result = route_after_start(state)
+    assert isinstance(result, list)
+    assert all(isinstance(s, Send) for s in result)
+    assert result[0].node == "slide_component_planner"
 
 
 def test_route_after_validator_ok_to_critic():

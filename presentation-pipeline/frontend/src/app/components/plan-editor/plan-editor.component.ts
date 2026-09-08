@@ -1,8 +1,7 @@
-import { Component, effect, inject, output, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GenerationService } from '../../services/generation.service';
-import { SlideEditorComponent } from '../slide-editor/slide-editor.component';
-import { SlidePlan, ComponentPlan } from '../../models/api.models';
+import { ComponentKind, OutlineSlide, SlideType } from '../../models/api.models';
 
 const SLIDE_TYPE_COLORS: Record<string, string> = {
   cover: 'bg-purple-100 text-purple-700',
@@ -12,28 +11,55 @@ const SLIDE_TYPE_COLORS: Record<string, string> = {
   closing: 'bg-gray-100 text-gray-700',
 };
 
-function componentLabel(c: ComponentPlan): string {
-  if (c.kind === 'chart') return `chart: ${c.chart_type || '?'}`;
-  if (c.kind === 'table') return `table ${c.columns}×${c.rows}`;
-  if (c.kind === 'kpi_row') return `kpi_row ×${c.count}`;
-  if (['timeline', 'flow', 'process_arrow', 'pyramid', 'bullet_list'].includes(c.kind) && c.items > 0) {
-    return `${c.kind} ×${c.items}`;
-  }
-  return c.kind;
+const SLIDE_TYPES: SlideType[] = ['cover', 'content', 'data', 'section_break', 'closing'];
+
+const COMPONENT_KINDS: ComponentKind[] = [
+  'title', 'narrative', 'caption', 'kpi_row', 'bullet_list',
+  'chart', 'table', 'timeline', 'flow', 'layer',
+  'tree', 'matrix', 'process_arrow', 'pyramid',
+];
+
+function emptyOutlineSlide(index: number): OutlineSlide {
+  return {
+    slide_index: index,
+    slide_title: '',
+    slide_type: 'content',
+    section: '',
+    narrative_role: '',
+    key_messages: [],
+    data_anchors: [],
+    layout_intent: '',
+    suggested_components: ['title'],
+  };
 }
 
 @Component({
   selector: 'app-plan-editor',
   standalone: true,
-  imports: [FormsModule, SlideEditorComponent],
+  imports: [FormsModule],
   template: `
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="text-xl font-semibold text-gray-900">Review Slide Plan</h2>
-          <p class="text-sm text-gray-500">Edit structure, reorder slides, then generate.</p>
+          <h2 class="text-xl font-semibold text-gray-900">Review Deck Outline</h2>
+          <p class="text-sm text-gray-500">Edit the narrative and slide structure, then generate.</p>
         </div>
         <span class="text-sm text-gray-400">{{ slides().length }} slide{{ slides().length === 1 ? '' : 's' }}</span>
+      </div>
+
+      @if (generation.outlineError()) {
+        <p class="text-sm text-red-600 bg-red-50 rounded-lg p-3 mb-4">{{ generation.outlineError() }}</p>
+      }
+
+      <!-- Deck title -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Deck Title</label>
+        <input
+          type="text"
+          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          [ngModel]="deckTitle()"
+          (ngModelChange)="deckTitle.set($event)"
+        />
       </div>
 
       <!-- Core hook -->
@@ -49,7 +75,7 @@ function componentLabel(c: ComponentPlan): string {
 
       <!-- Slide cards -->
       <div class="space-y-3 mb-5">
-        @for (slide of slides(); track slide.slide_index; let i = $index) {
+        @for (slide of slides(); track $index; let i = $index) {
           <div class="border border-gray-200 rounded-lg overflow-hidden">
             <!-- Card header -->
             <div class="flex items-center gap-3 px-4 py-3 bg-white">
@@ -57,19 +83,8 @@ function componentLabel(c: ComponentPlan): string {
               <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ slideTypeColor(slide.slide_type) }}">
                 {{ slide.slide_type }}
               </span>
-              <span class="text-xs text-gray-400">{{ formatLabel(slide.layout_pattern) }}</span>
-              <span class="text-xs text-gray-400">{{ slide.density }}</span>
+              <span class="flex-1 text-sm text-gray-700 truncate">{{ slide.slide_title || '(untitled slide)' }}</span>
 
-              <!-- Component pills -->
-              <div class="flex-1 flex flex-wrap gap-1">
-                @for (comp of slide.components; track $index) {
-                  <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
-                    {{ compLabel(comp) }}
-                  </span>
-                }
-              </div>
-
-              <!-- Actions -->
               <div class="flex items-center gap-1 shrink-0">
                 @if (i > 0) {
                   <button type="button" (click)="moveSlide(i, -1)"
@@ -92,10 +107,99 @@ function componentLabel(c: ComponentPlan): string {
 
             <!-- Expanded editor -->
             @if (expandedIndex() === i) {
-              <app-slide-editor
-                [slide]="slide"
-                (changed)="updateSlide(i, $event)"
-              />
+              <div class="border-t border-gray-100 p-4 space-y-4 bg-gray-50">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Slide title</label>
+                    <input type="text" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
+                      [ngModel]="slide.slide_title" (ngModelChange)="patchSlide(i, { slide_title: $event })" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Slide type</label>
+                    <select class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
+                      [ngModel]="slide.slide_type" (ngModelChange)="patchSlide(i, { slide_type: $event })">
+                      @for (t of slideTypes; track t) {
+                        <option [value]="t">{{ t }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Section</label>
+                  <input type="text" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
+                    [ngModel]="slide.section" (ngModelChange)="patchSlide(i, { section: $event })"
+                    placeholder="e.g. Problem, Deep Dive, Recommendation" />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Narrative role</label>
+                  <textarea rows="2" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm resize-y"
+                    [ngModel]="slide.narrative_role" (ngModelChange)="patchSlide(i, { narrative_role: $event })"
+                    placeholder="How does this slide advance the core hook?"></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Key messages</label>
+                  <div class="flex flex-wrap gap-1.5 mb-1.5">
+                    @for (msg of slide.key_messages; track $index; let mi = $index) {
+                      <span class="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                        {{ msg }}
+                        <button type="button" (click)="removeListItem(i, 'key_messages', mi)" class="text-gray-400 hover:text-red-500">&times;</button>
+                      </span>
+                    }
+                  </div>
+                  <div class="flex gap-1.5">
+                    <input type="text" class="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
+                      [(ngModel)]="newKeyMessage[i]" (keydown.enter)="$event.preventDefault(); commitKeyMessage(i)"
+                      placeholder="e.g. Revenue grew 34% YoY to $2.1B" />
+                    <button type="button" (click)="commitKeyMessage(i)"
+                      class="px-3 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100">+</button>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Data anchors</label>
+                  <div class="flex flex-wrap gap-1.5 mb-1.5">
+                    @for (anchor of slide.data_anchors; track $index; let ai = $index) {
+                      <span class="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                        {{ anchor }}
+                        <button type="button" (click)="removeListItem(i, 'data_anchors', ai)" class="text-gray-400 hover:text-red-500">&times;</button>
+                      </span>
+                    }
+                  </div>
+                  <div class="flex gap-1.5">
+                    <input type="text" class="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
+                      [(ngModel)]="newDataAnchor[i]" (keydown.enter)="$event.preventDefault(); commitDataAnchor(i)"
+                      placeholder="e.g. ARR: $12M" />
+                    <button type="button" (click)="commitDataAnchor(i)"
+                      class="px-3 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100">+</button>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1">Layout intent</label>
+                  <textarea rows="2" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm resize-y"
+                    [ngModel]="slide.layout_intent" (ngModelChange)="patchSlide(i, { layout_intent: $event })"
+                    placeholder="e.g. Three-column comparison grid with a verdict column"></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1.5">Suggested components</label>
+                  <div class="flex flex-wrap gap-1.5">
+                    @for (kind of componentKinds; track kind) {
+                      <button type="button" (click)="toggleComponent(i, kind)"
+                        [class.bg-blue-600]="slide.suggested_components.includes(kind)"
+                        [class.text-white]="slide.suggested_components.includes(kind)"
+                        [class.border-blue-600]="slide.suggested_components.includes(kind)"
+                        [class.text-gray-600]="!slide.suggested_components.includes(kind)"
+                        [class.border-gray-200]="!slide.suggested_components.includes(kind)"
+                        class="text-xs font-medium px-2.5 py-1 rounded-full border hover:border-blue-300 transition-colors"
+                      >{{ kind }}</button>
+                    }
+                  </div>
+                </div>
+              </div>
             }
           </div>
         }
@@ -109,50 +213,18 @@ function componentLabel(c: ComponentPlan): string {
         [disabled]="slides().length >= 20"
       >+ Add Slide</button>
 
-      <!-- Natural-language refinement -->
-      <div class="mb-5 border-t border-gray-100 pt-5">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Refine with feedback</label>
-        <p class="text-xs text-gray-500 mb-2">
-          Describe changes in plain language — the planner revises the plan above, keeping what you don't mention.
-        </p>
-        <textarea
-          rows="2"
-          placeholder="e.g. add a section-break before the closing, and make slide 2 a KPI + chart dashboard"
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm resize-y"
-          [ngModel]="feedbackText()"
-          (ngModelChange)="feedbackText.set($event)"
-          [disabled]="generation.refining()"
-        ></textarea>
-        @if (generation.refineError()) {
-          <p class="text-xs text-red-600 mt-1">{{ generation.refineError() }}</p>
-        }
-        <button
-          type="button"
-          (click)="onRefine()"
-          class="mt-2 inline-flex items-center gap-2 border border-blue-300 text-blue-700 text-sm font-medium py-2 px-4 rounded-lg hover:bg-blue-50 disabled:opacity-50"
-          [disabled]="generation.refining() || !feedbackText().trim()"
-        >
-          @if (generation.refining()) {
-            <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-blue-600 border-t-transparent"></span>
-            Refining...
-          } @else {
-            Refine plan
-          }
-        </button>
-      </div>
-
       <!-- Actions -->
       <div class="flex gap-3">
         <button
           type="button"
-          (click)="back.emit()"
+          (click)="generation.reset()"
           class="flex-1 border border-gray-300 text-gray-700 font-medium py-2.5 px-4 rounded-lg hover:bg-gray-50"
         >Back</button>
         <button
           type="button"
           (click)="onConfirm()"
           class="flex-1 bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
-          [disabled]="!isValid() || generation.refining()"
+          [disabled]="!isValid()"
         >Generate Presentation</button>
       </div>
     </div>
@@ -161,56 +233,85 @@ function componentLabel(c: ComponentPlan): string {
 export class PlanEditorComponent {
   protected readonly generation = inject(GenerationService);
 
-  readonly confirm = output<{ core_hook: string; slides: SlidePlan[] }>();
-  readonly back = output<void>();
-
+  readonly deckTitle = signal('');
   readonly coreHook = signal('');
-  readonly slides = signal<SlidePlan[]>([]);
+  readonly slides = signal<OutlineSlide[]>([]);
   readonly expandedIndex = signal<number | null>(null);
-  readonly feedbackText = signal('');
+
+  readonly slideTypes = SLIDE_TYPES;
+  readonly componentKinds = COMPONENT_KINDS;
+
+  // Scratch input state for the tag-list editors, keyed by slide index.
+  newKeyMessage: Record<number, string> = {};
+  newDataAnchor: Record<number, string> = {};
 
   constructor() {
-    // Load the plan into the editor, and reload it whenever a refinement
-    // returns a new plan object.
     effect(() => {
-      const plan = this.generation.deckPlan();
-      if (plan) {
-        this.coreHook.set(plan.core_hook);
-        this.slides.set(structuredClone(plan.slides));
+      const outline = this.generation.outlinePlan();
+      if (outline) {
+        this.deckTitle.set(outline.deck_title);
+        this.coreHook.set(outline.core_hook);
+        this.slides.set(structuredClone(outline.slides));
         this.expandedIndex.set(null);
       }
     });
-  }
-
-  onRefine(): void {
-    this.generation.refinePlan(this.coreHook(), this.slides(), this.feedbackText());
-    this.feedbackText.set('');
   }
 
   slideTypeColor(type: string): string {
     return SLIDE_TYPE_COLORS[type] ?? 'bg-gray-100 text-gray-700';
   }
 
-  formatLabel(s: string): string {
-    return s.replace(/_/g, ' ');
-  }
-
-  compLabel(c: ComponentPlan): string {
-    return componentLabel(c);
-  }
-
   isValid(): boolean {
     const s = this.slides();
-    return s.length >= 1 && s.length <= 20 && s.every(sl => sl.components.length > 0);
+    return s.length >= 1 && s.length <= 20;
   }
 
   toggleExpand(index: number): void {
     this.expandedIndex.set(this.expandedIndex() === index ? null : index);
   }
 
-  updateSlide(index: number, updated: SlidePlan): void {
+  patchSlide(index: number, patch: Partial<OutlineSlide>): void {
     this.slides.update(slides =>
-      slides.map((s, i) => i === index ? { ...updated, slide_index: i } : s)
+      slides.map((s, i) => i === index ? { ...s, ...patch } : s)
+    );
+  }
+
+  addListItem(index: number, field: 'key_messages' | 'data_anchors', value: string): void {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    this.slides.update(slides =>
+      slides.map((s, i) => i === index ? { ...s, [field]: [...s[field], trimmed] } : s)
+    );
+  }
+
+  commitKeyMessage(index: number): void {
+    this.addListItem(index, 'key_messages', this.newKeyMessage[index] ?? '');
+    this.newKeyMessage[index] = '';
+  }
+
+  commitDataAnchor(index: number): void {
+    this.addListItem(index, 'data_anchors', this.newDataAnchor[index] ?? '');
+    this.newDataAnchor[index] = '';
+  }
+
+  removeListItem(index: number, field: 'key_messages' | 'data_anchors', itemIndex: number): void {
+    this.slides.update(slides =>
+      slides.map((s, i) => i === index ? { ...s, [field]: s[field].filter((_, j) => j !== itemIndex) } : s)
+    );
+  }
+
+  toggleComponent(index: number, kind: ComponentKind): void {
+    this.slides.update(slides =>
+      slides.map((s, i) => {
+        if (i !== index) return s;
+        const has = s.suggested_components.includes(kind);
+        return {
+          ...s,
+          suggested_components: has
+            ? s.suggested_components.filter(k => k !== kind)
+            : [...s.suggested_components, kind],
+        };
+      })
     );
   }
 
@@ -231,20 +332,14 @@ export class PlanEditorComponent {
   }
 
   addSlide(): void {
-    const defaultSlide: SlidePlan = {
-      slide_index: this.slides().length,
-      slide_type: 'content',
-      components: [{ kind: 'title', count: 1, chart_type: '', series_count: 0, columns: 0, rows: 0, items: 0, content_summary: '' }],
-      density: 'normal',
-      font_tier: 'standard',
-      layout_pattern: 'two_column',
-      layout_hint: '',
-      content_data: {},
-    };
-    this.slides.update(slides => [...slides, defaultSlide]);
+    this.slides.update(slides => [...slides, emptyOutlineSlide(slides.length)]);
   }
 
   onConfirm(): void {
-    this.confirm.emit({ core_hook: this.coreHook(), slides: this.slides() });
+    this.generation.confirmOutline({
+      deck_title: this.deckTitle(),
+      core_hook: this.coreHook(),
+      slides: this.slides(),
+    });
   }
 }

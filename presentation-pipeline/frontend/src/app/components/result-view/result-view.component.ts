@@ -52,6 +52,28 @@ import { ApiService } from '../../services/api.service';
           </div>
         </div>
 
+        @if (gen.planReview(); as review) {
+          <div class="rounded-lg p-4 mb-4 border" [class]="review.approved ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium text-gray-900">Plan Quality</span>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full"
+                [class]="review.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'">
+                {{ (review.confidence_score * 100).toFixed(0) }}% confidence
+              </span>
+            </div>
+            @if (review.summary) {
+              <p class="text-xs text-gray-600 mb-1">{{ review.summary }}</p>
+            }
+            @if (review.issues.length > 0) {
+              <ul class="text-xs text-gray-600 list-disc list-inside mt-1 space-y-0.5">
+                @for (issue of review.issues; track $index) {
+                  <li>{{ issue.description }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+
         @if (gen.evaluationSummary()) {
           <div class="bg-gray-50 rounded-lg p-4 mb-6 grid grid-cols-2 gap-3 text-sm">
             @if (gen.evaluationSummary()!.tokens) {

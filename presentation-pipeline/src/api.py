@@ -78,6 +78,7 @@ class GenerateRequest(BaseModel):
     supplied_content: dict[str, Any] | None = None
     audience_context: dict[str, str] | None = None
     deck_settings: dict[str, Any] | None = None
+    outline_run_id: str | None = None
 
 
 class ComponentPlanPayload(BaseModel):
@@ -263,6 +264,7 @@ def _build_event(
             for k in ("passed", "compile_ok", "tokens", "cost")
             if k in evaluation
         }
+        data["plan_review"] = accumulated.get("plan_review")
 
     return ProgressEvent(
         event=event_type, data=data,
@@ -290,6 +292,12 @@ def _run_pipeline_sync(
     if deck_settings is None and request.theme:
         deck_settings = {"theme": request.theme}
 
+    outline_plan = None
+    if request.outline_run_id:
+        outline_plan = _edited_outlines.get(request.outline_run_id)
+        if outline_plan is None:
+            logger.warning(f"outline_run_id {request.outline_run_id} not found in cache, replanning from scratch")
+
     state = initial_state(
         run_id=run_id,
         raw_request=request.prompt,
@@ -299,6 +307,7 @@ def _run_pipeline_sync(
         supplied_content=request.supplied_content,
         audience_context=request.audience_context,
         deck_settings=deck_settings,
+        outline_plan=outline_plan,
     )
     graph = compile_graph()
     config = {

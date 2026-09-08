@@ -1,13 +1,14 @@
 import { Component, output, signal } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { GenerateRequest, CriticMode } from '../../models/api.models';
-import { THEME_PALETTES } from '../../constants/theme.constants';
+import { GenerateRequest, CriticMode, DeckSettings } from '../../models/api.models';
+import { THEME_PALETTES, SLIDE_COUNT_TO_THRESHOLD } from '../../constants/theme.constants';
+import { DeckSettingsFormComponent } from '../deck-settings-form/deck-settings-form.component';
 
 @Component({
   selector: 'app-prompt-form',
   standalone: true,
-  imports: [ReactiveFormsModule, TitleCasePipe],
+  imports: [ReactiveFormsModule, TitleCasePipe, DeckSettingsFormComponent],
   template: `
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <h2 class="text-xl font-semibold text-gray-900 mb-1">Create a Presentation</h2>
@@ -51,7 +52,9 @@ import { THEME_PALETTES } from '../../constants/theme.constants';
           </div>
         </div>
 
-        <div class="mb-6">
+        <app-deck-settings-form (settingsChange)="onDeckSettingsChange($event)" />
+
+        <div class="mb-6 mt-5">
           <button
             type="button"
             (click)="advancedOpen.set(!advancedOpen())"
@@ -85,25 +88,6 @@ import { THEME_PALETTES } from '../../constants/theme.constants';
                   }
                 </div>
               </div>
-
-              <div>
-                <label for="targetSlides" class="block text-sm font-medium text-gray-700 mb-1.5">
-                  Target slides: {{ form.value.targetSlides }}
-                </label>
-                <input
-                  id="targetSlides"
-                  type="range"
-                  formControlName="targetSlides"
-                  min="1"
-                  max="20"
-                  class="w-full accent-blue-600"
-                />
-                <div class="flex justify-between text-xs text-gray-400 mt-0.5">
-                  <span>1</span>
-                  <span>20</span>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">1 = single slide · higher = multi-slide deck</p>
-              </div>
             </div>
           }
         </div>
@@ -132,10 +116,10 @@ export class PromptFormComponent {
     prompt: ['', Validators.required],
     theme: ['corporate-slate'],
     criticMode: ['off' as CriticMode],
-    targetSlides: [1],
   });
 
   readonly selectedAccent = signal(THEME_PALETTES[0].accent);
+  private deckSettings = signal<DeckSettings | null>(null);
 
   constructor() {
     this.form.controls.theme.valueChanges.subscribe(themeId => {
@@ -146,14 +130,22 @@ export class PromptFormComponent {
     });
   }
 
+  onDeckSettingsChange(settings: DeckSettings): void {
+    this.deckSettings.set(settings);
+  }
+
   onSubmit(): void {
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
+    const ds = this.deckSettings();
+    const threshold = SLIDE_COUNT_TO_THRESHOLD[ds?.slide_count ?? '6-10'] ?? 8;
+
     this.generate.emit({
       prompt: v.prompt.trim(),
       theme: v.theme,
       critic_mode: v.criticMode,
-      deck_min_threshold: v.targetSlides,
+      deck_min_threshold: threshold,
+      deck_settings: ds ? { ...ds, theme: v.theme, user_prompt: v.prompt.trim() } : null,
     });
   }
 }

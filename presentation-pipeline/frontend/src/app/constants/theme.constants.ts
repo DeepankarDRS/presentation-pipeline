@@ -18,20 +18,23 @@ export const THEME_PALETTES: ThemePalette[] = [
 ];
 
 export const STEP_LABELS: Record<string, string> = {
-  planning:         'Planning your deck...',
-  styling:          'Resolving theme...',
-  generating_slide: 'Generating slides...',
-  validating:       'Validating output...',
-  repairing:        'Fixing issues...',
-  reviewing:        'Reviewing quality...',
-  assembling:       'Assembling deck...',
-  complete:         'Done!',
-  error:            'Error',
+  planning:          'Planning your deck...',
+  elicitation_needed: 'Waiting for clarification...',
+  reviewing_plan:    'Reviewing plan quality...',
+  styling:           'Resolving theme...',
+  generating_slide:  'Generating slides...',
+  validating:        'Validating output...',
+  repairing:         'Fixing issues...',
+  reviewing:         'Reviewing quality...',
+  assembling:        'Assembling deck...',
+  complete:          'Done!',
+  error:             'Error',
 };
 
 export const PROGRESS_RANGES: Record<string, [number, number]> = {
   planning:         [5, 15],
-  styling:          [15, 20],
+  reviewing_plan:   [15, 18],
+  styling:          [18, 20],
   generating_slide: [20, 70],
   validating:       [70, 80],
   repairing:        [70, 80],
@@ -47,9 +50,15 @@ export interface PipelinePhase {
 
 export const PIPELINE_PHASES: PipelinePhase[] = [
   { label: 'Planning your deck',    events: ['planning'] },
+  { label: 'Reviewing plan',        events: ['reviewing_plan'] },
   { label: 'Resolving theme',       events: ['styling'] },
   { label: 'Generating slides',     events: ['generating_slide'] },
   { label: 'Validating and fixing', events: ['validating', 'repairing'] },
   { label: 'Reviewing quality',     events: ['reviewing'] },
   { label: 'Assembling deck',       events: ['assembling'] },
 ];
+
+// Mirrors SLIDE_COUNT_TO_THRESHOLD in src/agents/settings_mapper.py
+export const SLIDE_COUNT_TO_THRESHOLD: Record<string, number> = {
+  '1': 1, '3-5': 4, '6-10': 8, '10-15': 12, '15+': 16,
+};

@@ -205,6 +205,8 @@ def initial_state(
     critic_mode: Literal["auto", "manual", "off"] = "off",
     retry_budget: int = 3,
     interactive: bool = False,
+    outline_plan: OutlinePlan | None = None,
+    elicitation_answers: dict[str, str] | None = None,
 ) -> PresentationState:
     """Create a fully-initialized starting state for the graph."""
     return PresentationState(
@@ -220,8 +222,8 @@ def initial_state(
         deck_settings=deck_settings,
         elicitation_needed=False,
         elicitation_questions=[],
-        elicitation_answers=None,
-        outline_plan=None,
+        elicitation_answers=elicitation_answers,
+        outline_plan=outline_plan,
         current_outline_slide=None,
         assembled_slide_plans=[],
         plan_review=None,
