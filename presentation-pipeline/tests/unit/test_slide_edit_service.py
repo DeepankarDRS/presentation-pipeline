@@ -113,9 +113,10 @@ def test_call_repair_llm_accepts_slide_plan(mock_get_llm):
 # ensure_single_theme() injecting the deck's theme_element before compiling,
 # $tokens in the edited XML never resolve.
 
+@patch("src.agents.slide_edit_service.render_screenshots")
 @patch("src.agents.slide_edit_service.compile_xml")
 @patch("src.agents.slide_edit_service.get_llm")
-def test_edit_slide_xml_injects_theme_before_compiling(mock_get_llm, mock_compile_xml):
+def test_edit_slide_xml_injects_theme_before_compiling(mock_get_llm, mock_compile_xml, mock_render_screenshots):
     from src.agents.slide_edit_service import edit_slide_xml
 
     edited_xml = '<Slide><VStack backgroundColor="$surface"><Text color="$textMain">T</Text></VStack></Slide>'
@@ -123,6 +124,7 @@ def test_edit_slide_xml_injects_theme_before_compiling(mock_get_llm, mock_compil
     mock_llm.invoke.return_value = MagicMock(content=edited_xml)
     mock_get_llm.return_value = mock_llm
     mock_compile_xml.return_value = {"ok": True, "pptx_path": "/tmp/out.pptx", "diagnostics": [], "warnings": []}
+    mock_render_screenshots.return_value = MagicMock(ok=True, slides=[MagicMock(png_path="/tmp/slide-0.png")])
 
     result = edit_slide_xml(
         current_xml="<Slide><VStack><Text>T</Text></VStack></Slide>",
@@ -136,3 +138,35 @@ def test_edit_slide_xml_injects_theme_before_compiling(mock_get_llm, mock_compil
     assert compiled_xml.count("<Theme") == 1
     assert 'surface="F7F9FC"' in compiled_xml
     assert result.xml.count("<Theme") == 1
+
+
+# ── Screenshot retry ───────────────────────────────────────────────────────
+
+@patch("src.agents.slide_edit_service.time.sleep")
+@patch("src.agents.slide_edit_service.render_screenshots")
+def test_try_screenshot_retries_once_with_delay(mock_render_screenshots, mock_sleep):
+    from src.agents.slide_edit_service import _try_screenshot
+
+    failing = MagicMock(ok=False, error="COM error: Presentations.Open failed", slides=[])
+    succeeding = MagicMock(ok=True, slides=[MagicMock(png_path="/tmp/slide-0.png")])
+    mock_render_screenshots.side_effect = [failing, succeeding]
+
+    result = _try_screenshot("/tmp/out.pptx", "/tmp/screenshots")
+
+    assert result == "/tmp/slide-0.png"
+    assert mock_render_screenshots.call_count == 2
+    mock_sleep.assert_called_once_with(2)
+
+
+@patch("src.agents.slide_edit_service.time.sleep")
+@patch("src.agents.slide_edit_service.render_screenshots")
+def test_try_screenshot_gives_up_after_two_failures(mock_render_screenshots, mock_sleep):
+    from src.agents.slide_edit_service import _try_screenshot
+
+    failing = MagicMock(ok=False, error="COM error", slides=[])
+    mock_render_screenshots.return_value = failing
+
+    result = _try_screenshot("/tmp/out.pptx", "/tmp/screenshots")
+
+    assert result is None
+    assert mock_render_screenshots.call_count == 2

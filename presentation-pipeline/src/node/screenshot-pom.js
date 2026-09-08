@@ -127,10 +127,17 @@ async function main() {
   try {
     // Step 1: PPTX → PDF via LibreOffice
     const absPptx = path.resolve(pptxPath);
-    execSync(`${soffice} --headless --convert-to pdf --outdir "${tempDir}" "${absPptx}"`, {
-      stdio: "pipe",
-      timeout: 60_000,
-    });
+    // -env:UserInstallation gives this invocation its own profile. Without it,
+    // consecutive soffice --headless calls share the default profile's lock —
+    // if the previous call's soffice.bin hasn't fully released it yet (LibreOffice
+    // is slow to tear down), the next call hangs or fails with no useful error.
+    const profileDir = path.join(tempDir, ".lo-profile");
+    const profileUrl = "file:///" + path.resolve(profileDir).replace(/\\/g, "/");
+    execSync(
+      `${soffice} --headless --norestore -env:UserInstallation=${profileUrl} ` +
+      `--convert-to pdf --outdir "${tempDir}" "${absPptx}"`,
+      { stdio: "pipe", timeout: 60_000 },
+    );
 
     const pptxBasename = path.basename(pptxPath, path.extname(pptxPath));
     const pdfPath = path.join(tempDir, `${pptxBasename}.pdf`);

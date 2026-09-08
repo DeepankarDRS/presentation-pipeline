@@ -129,6 +129,19 @@ def _render_via_node(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
     return ScreenshotBatchResult(ok=True, slides=slides, backend="node")
 
 
+def _write_error_artifact(output_dir: str, backend: str, step: str, error: str) -> None:
+    """Persist a failure record to disk. Log lines get missed; a file doesn't."""
+    try:
+        path = Path(output_dir) / "screenshot-error.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({"backend": backend, "step": step, "error": error}, indent=2),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
+
+
 def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
     """Use PowerPoint COM automation to export slides as PNG."""
     output_path = Path(output_dir)
@@ -137,15 +150,17 @@ def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
     try:
         import comtypes.client
     except ImportError:
-        return ScreenshotBatchResult(
-            ok=False, backend="com",
-            error="comtypes not installed (pip install comtypes)",
-        )
+        error = "comtypes not installed (pip install comtypes)"
+        _write_error_artifact(output_dir, "com", "import", error)
+        return ScreenshotBatchResult(ok=False, backend="com", error=error)
 
     app = None
     pres = None
+    step = "CreateObject"
     try:
         app = comtypes.client.CreateObject("PowerPoint.Application")
+
+        step = "Presentations.Open"
         pres = app.Presentations.Open(
             str(Path(pptx_path).resolve()),
             ReadOnly=True,
@@ -155,6 +170,7 @@ def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
 
         slides: list[ScreenshotResult] = []
         for i, slide in enumerate(pres.Slides):
+            step = f"Slide[{i}].Export"
             png_name = f"slide-{i}.png"
             png_full = str(output_path / png_name)
             slide.Export(png_full, "PNG", 1280, 720)
@@ -165,21 +181,21 @@ def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
         return ScreenshotBatchResult(ok=True, slides=slides, backend="com")
 
     except Exception as e:
-        return ScreenshotBatchResult(
-            ok=False, backend="com",
-            error=f"PowerPoint COM error: {e}",
-        )
+        error = f"{step} failed: {type(e).__name__}: {e}"
+        logger.error(f"screenshot: COM error — {error}")
+        _write_error_artifact(output_dir, "com", step, error)
+        return ScreenshotBatchResult(ok=False, backend="com", error=error)
     finally:
         if pres is not None:
             try:
                 pres.Close()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"screenshot: COM presentation close failed: {e}")
         if app is not None:
             try:
                 app.Quit()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"screenshot: COM app quit failed: {e}")
 
 
 def render_screenshots(

@@ -7,6 +7,7 @@ Reuses the same normalizer, compiler, and repair guidance as the main pipeline.
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -228,11 +229,17 @@ def _try_screenshot(pptx_path: str | None, output_dir: str) -> str | None:
     A failure here doesn't fail the edit (the XML already compiled fine and
     is what ends up in the download) — but it does leave the review UI
     showing a stale preview, so log clearly and give transient rendering
-    failures one retry before giving up.
+    failures one retry before giving up. The retry waits briefly first:
+    back-to-back PowerPoint COM automation calls commonly hit "call rejected
+    by callee" if the previous call's PowerPoint instance hasn't fully
+    released before the next one starts — an instant retry just repeats
+    the same rejection.
     """
     if not pptx_path:
         return None
     for attempt in (1, 2):
+        if attempt > 1:
+            time.sleep(2)
         batch = render_screenshots(pptx_path, output_dir)
         if batch.ok and batch.slides:
             return batch.slides[0].png_path
