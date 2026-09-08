@@ -183,8 +183,18 @@ def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
     pids_before = _list_powerpnt_pids() if sys.platform == "win32" else set()
     app = None
     pres = None
-    step = "CreateObject"
+    step = "CoInitialize"
     try:
+        # COM is initialized per-thread, not per-process. Each edit runs via
+        # asyncio.to_thread, which can land on a different worker thread each
+        # time — only the one thread where comtypes happened to init COM
+        # first would work; every other thread fails CreateObject with
+        # "CoInitialize has not been called". Safe to call even if this
+        # thread already has COM initialized (refcounted, matched by
+        # CoUninitialize below).
+        comtypes.CoInitialize()
+
+        step = "CreateObject"
         app = comtypes.client.CreateObject("PowerPoint.Application")
 
         step = "Presentations.Open"
@@ -223,6 +233,10 @@ def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
                 app.Quit()
             except Exception as e:
                 logger.warning(f"screenshot: COM app quit failed: {e}")
+        try:
+            comtypes.CoUninitialize()
+        except Exception as e:
+            logger.warning(f"screenshot: CoUninitialize failed: {e}")
 
         # Safety net: Quit() doesn't always fully tear down the underlying
         # process. A lingering POWERPNT.EXE left in a bad state gets
