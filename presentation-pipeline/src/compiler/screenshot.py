@@ -13,6 +13,7 @@ import logging
 import os
 import subprocess
 import sys
+import time
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -142,6 +143,31 @@ def _write_error_artifact(output_dir: str, backend: str, step: str, error: str) 
         pass
 
 
+def _list_powerpnt_pids() -> set[str]:
+    """PIDs of currently running POWERPNT.EXE processes (Windows only)."""
+    try:
+        result = subprocess.run(
+            ["tasklist", "/FI", "IMAGENAME eq POWERPNT.EXE", "/FO", "CSV", "/NH"],
+            capture_output=True, text=True, timeout=10,
+        )
+        pids: set[str] = set()
+        for line in result.stdout.strip().splitlines():
+            parts = [p.strip('"') for p in line.split(",")]
+            if len(parts) >= 2 and parts[0].upper() == "POWERPNT.EXE":
+                pids.add(parts[1])
+        return pids
+    except Exception:
+        return set()
+
+
+def _kill_pids(pids: set[str]) -> None:
+    for pid in pids:
+        try:
+            subprocess.run(["taskkill", "/PID", pid, "/F"], capture_output=True, timeout=10)
+        except Exception:
+            pass
+
+
 def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
     """Use PowerPoint COM automation to export slides as PNG."""
     output_path = Path(output_dir)
@@ -154,6 +180,7 @@ def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
         _write_error_artifact(output_dir, "com", "import", error)
         return ScreenshotBatchResult(ok=False, backend="com", error=error)
 
+    pids_before = _list_powerpnt_pids() if sys.platform == "win32" else set()
     app = None
     pres = None
     step = "CreateObject"
@@ -196,6 +223,24 @@ def _render_via_com(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
                 app.Quit()
             except Exception as e:
                 logger.warning(f"screenshot: COM app quit failed: {e}")
+
+        # Safety net: Quit() doesn't always fully tear down the underlying
+        # process. A lingering POWERPNT.EXE left in a bad state gets
+        # re-attached to by the *next* CreateObject call instead of a clean
+        # instance, poisoning every screenshot after it (not just retries of
+        # this one). Force-kill only PIDs that appeared during this specific
+        # call — never a PID that existed before it — so a user's own
+        # already-open PowerPoint windows are never touched.
+        if sys.platform == "win32":
+            _kill_new_powerpnt_processes(pids_before)
+
+
+def _kill_new_powerpnt_processes(pids_before: set[str]) -> None:
+    time.sleep(1)
+    new_pids = _list_powerpnt_pids() - pids_before
+    if new_pids:
+        logger.warning(f"screenshot: force-killing lingering PowerPoint process(es): {new_pids}")
+        _kill_pids(new_pids)
 
 
 def render_screenshots(
