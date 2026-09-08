@@ -1,7 +1,7 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GenerationService } from '../../services/generation.service';
-import { ComponentKind, OutlineSlide, SlideType } from '../../models/api.models';
+import { OutlineSlide } from '../../models/api.models';
 
 const SLIDE_TYPE_COLORS: Record<string, string> = {
   cover: 'bg-purple-100 text-purple-700',
@@ -10,14 +10,6 @@ const SLIDE_TYPE_COLORS: Record<string, string> = {
   section_break: 'bg-yellow-100 text-yellow-700',
   closing: 'bg-gray-100 text-gray-700',
 };
-
-const SLIDE_TYPES: SlideType[] = ['cover', 'content', 'data', 'section_break', 'closing'];
-
-const COMPONENT_KINDS: ComponentKind[] = [
-  'title', 'narrative', 'caption', 'kpi_row', 'bullet_list',
-  'chart', 'table', 'timeline', 'flow', 'layer',
-  'tree', 'matrix', 'process_arrow', 'pyramid',
-];
 
 function emptyOutlineSlide(index: number): OutlineSlide {
   return {
@@ -33,6 +25,14 @@ function emptyOutlineSlide(index: number): OutlineSlide {
   };
 }
 
+/**
+ * Narrative-only outline review — deck title, core hook, and per-slide
+ * title + key messages. Deliberately hides section/narrative_role/
+ * layout_intent/suggested_components/data_anchors: those still travel on
+ * each OutlineSlide and still reach slide_component_planner untouched,
+ * they're just implementation detail a reviewer shouldn't have to read
+ * through to judge whether the outline actually covers the core hook.
+ */
 @Component({
   selector: 'app-plan-editor',
   standalone: true,
@@ -76,15 +76,23 @@ function emptyOutlineSlide(index: number): OutlineSlide {
       <!-- Slide cards -->
       <div class="space-y-3 mb-5">
         @for (slide of slides(); track $index; let i = $index) {
-          <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <!-- Card header -->
-            <div class="flex items-center gap-3 px-4 py-3 bg-white">
-              <span class="text-sm font-medium text-gray-400 w-6">{{ i + 1 }}</span>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ slideTypeColor(slide.slide_type) }}">
-                {{ slide.slide_type }}
-              </span>
-              <span class="flex-1 text-sm text-gray-700 truncate">{{ slide.slide_title || '(untitled slide)' }}</span>
-
+          <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex items-start gap-3 mb-3">
+              <span class="text-sm font-medium text-gray-400 w-6 pt-1.5">{{ i + 1 }}</span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ slideTypeColor(slide.slide_type) }}">
+                    {{ slide.slide_type }}
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  class="w-full font-medium text-gray-900 border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 px-0 py-1 text-sm focus:outline-none"
+                  [ngModel]="slide.slide_title"
+                  (ngModelChange)="patchSlide(i, { slide_title: $event })"
+                  placeholder="Slide title"
+                />
+              </div>
               <div class="flex items-center gap-1 shrink-0">
                 @if (i > 0) {
                   <button type="button" (click)="moveSlide(i, -1)"
@@ -94,10 +102,6 @@ function emptyOutlineSlide(index: number): OutlineSlide {
                   <button type="button" (click)="moveSlide(i, 1)"
                     class="p-1 text-gray-400 hover:text-gray-600" title="Move down">&#9660;</button>
                 }
-                <button type="button" (click)="toggleExpand(i)"
-                  class="p-1 text-gray-400 hover:text-gray-600 text-sm"
-                  [class.text-blue-600]="expandedIndex() === i"
-                >{{ expandedIndex() === i ? 'Close' : 'Edit' }}</button>
                 <button type="button" (click)="removeSlide(i)"
                   class="p-1 text-red-400 hover:text-red-600"
                   [disabled]="slides().length <= 1"
@@ -105,102 +109,25 @@ function emptyOutlineSlide(index: number): OutlineSlide {
               </div>
             </div>
 
-            <!-- Expanded editor -->
-            @if (expandedIndex() === i) {
-              <div class="border-t border-gray-100 p-4 space-y-4 bg-gray-50">
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Slide title</label>
-                    <input type="text" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
-                      [ngModel]="slide.slide_title" (ngModelChange)="patchSlide(i, { slide_title: $event })" />
+            <!-- Key messages -->
+            <div class="pl-9">
+              <div class="space-y-1.5 mb-2">
+                @for (msg of slide.key_messages; track $index; let mi = $index) {
+                  <div class="flex items-start gap-2 text-sm text-gray-700">
+                    <span class="text-gray-300 mt-0.5">&bull;</span>
+                    <span class="flex-1">{{ msg }}</span>
+                    <button type="button" (click)="removeListItem(i, mi)" class="text-gray-300 hover:text-red-500 shrink-0">&times;</button>
                   </div>
-                  <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Slide type</label>
-                    <select class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
-                      [ngModel]="slide.slide_type" (ngModelChange)="patchSlide(i, { slide_type: $event })">
-                      @for (t of slideTypes; track t) {
-                        <option [value]="t">{{ t }}</option>
-                      }
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1">Section</label>
-                  <input type="text" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
-                    [ngModel]="slide.section" (ngModelChange)="patchSlide(i, { section: $event })"
-                    placeholder="e.g. Problem, Deep Dive, Recommendation" />
-                </div>
-
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1">Narrative role</label>
-                  <textarea rows="2" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm resize-y"
-                    [ngModel]="slide.narrative_role" (ngModelChange)="patchSlide(i, { narrative_role: $event })"
-                    placeholder="How does this slide advance the core hook?"></textarea>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1">Key messages</label>
-                  <div class="flex flex-wrap gap-1.5 mb-1.5">
-                    @for (msg of slide.key_messages; track $index; let mi = $index) {
-                      <span class="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
-                        {{ msg }}
-                        <button type="button" (click)="removeListItem(i, 'key_messages', mi)" class="text-gray-400 hover:text-red-500">&times;</button>
-                      </span>
-                    }
-                  </div>
-                  <div class="flex gap-1.5">
-                    <input type="text" class="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
-                      [(ngModel)]="newKeyMessage[i]" (keydown.enter)="$event.preventDefault(); commitKeyMessage(i)"
-                      placeholder="e.g. Revenue grew 34% YoY to $2.1B" />
-                    <button type="button" (click)="commitKeyMessage(i)"
-                      class="px-3 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100">+</button>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1">Data anchors</label>
-                  <div class="flex flex-wrap gap-1.5 mb-1.5">
-                    @for (anchor of slide.data_anchors; track $index; let ai = $index) {
-                      <span class="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded-full">
-                        {{ anchor }}
-                        <button type="button" (click)="removeListItem(i, 'data_anchors', ai)" class="text-gray-400 hover:text-red-500">&times;</button>
-                      </span>
-                    }
-                  </div>
-                  <div class="flex gap-1.5">
-                    <input type="text" class="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
-                      [(ngModel)]="newDataAnchor[i]" (keydown.enter)="$event.preventDefault(); commitDataAnchor(i)"
-                      placeholder="e.g. ARR: $12M" />
-                    <button type="button" (click)="commitDataAnchor(i)"
-                      class="px-3 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100">+</button>
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1">Layout intent</label>
-                  <textarea rows="2" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm resize-y"
-                    [ngModel]="slide.layout_intent" (ngModelChange)="patchSlide(i, { layout_intent: $event })"
-                    placeholder="e.g. Three-column comparison grid with a verdict column"></textarea>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1.5">Suggested components</label>
-                  <div class="flex flex-wrap gap-1.5">
-                    @for (kind of componentKinds; track kind) {
-                      <button type="button" (click)="toggleComponent(i, kind)"
-                        [class.bg-blue-600]="slide.suggested_components.includes(kind)"
-                        [class.text-white]="slide.suggested_components.includes(kind)"
-                        [class.border-blue-600]="slide.suggested_components.includes(kind)"
-                        [class.text-gray-600]="!slide.suggested_components.includes(kind)"
-                        [class.border-gray-200]="!slide.suggested_components.includes(kind)"
-                        class="text-xs font-medium px-2.5 py-1 rounded-full border hover:border-blue-300 transition-colors"
-                      >{{ kind }}</button>
-                    }
-                  </div>
-                </div>
+                }
               </div>
-            }
+              <div class="flex gap-1.5">
+                <input type="text" class="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
+                  [(ngModel)]="newKeyMessage[i]" (keydown.enter)="$event.preventDefault(); commitKeyMessage(i)"
+                  placeholder="Add a key message..." />
+                <button type="button" (click)="commitKeyMessage(i)"
+                  class="px-3 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100">+</button>
+              </div>
+            </div>
           </div>
         }
       </div>
@@ -236,14 +163,9 @@ export class PlanEditorComponent {
   readonly deckTitle = signal('');
   readonly coreHook = signal('');
   readonly slides = signal<OutlineSlide[]>([]);
-  readonly expandedIndex = signal<number | null>(null);
 
-  readonly slideTypes = SLIDE_TYPES;
-  readonly componentKinds = COMPONENT_KINDS;
-
-  // Scratch input state for the tag-list editors, keyed by slide index.
+  // Scratch input state for the key-message list editor, keyed by slide index.
   newKeyMessage: Record<number, string> = {};
-  newDataAnchor: Record<number, string> = {};
 
   constructor() {
     effect(() => {
@@ -252,7 +174,6 @@ export class PlanEditorComponent {
         this.deckTitle.set(outline.deck_title);
         this.coreHook.set(outline.core_hook);
         this.slides.set(structuredClone(outline.slides));
-        this.expandedIndex.set(null);
       }
     });
   }
@@ -266,53 +187,29 @@ export class PlanEditorComponent {
     return s.length >= 1 && s.length <= 20;
   }
 
-  toggleExpand(index: number): void {
-    this.expandedIndex.set(this.expandedIndex() === index ? null : index);
-  }
-
   patchSlide(index: number, patch: Partial<OutlineSlide>): void {
     this.slides.update(slides =>
       slides.map((s, i) => i === index ? { ...s, ...patch } : s)
     );
   }
 
-  addListItem(index: number, field: 'key_messages' | 'data_anchors', value: string): void {
+  addListItem(index: number, value: string): void {
     const trimmed = value.trim();
     if (!trimmed) return;
     this.slides.update(slides =>
-      slides.map((s, i) => i === index ? { ...s, [field]: [...s[field], trimmed] } : s)
+      slides.map((s, i) => i === index ? { ...s, key_messages: [...s.key_messages, trimmed] } : s)
+    );
+  }
+
+  removeListItem(index: number, itemIndex: number): void {
+    this.slides.update(slides =>
+      slides.map((s, i) => i === index ? { ...s, key_messages: s.key_messages.filter((_, j) => j !== itemIndex) } : s)
     );
   }
 
   commitKeyMessage(index: number): void {
-    this.addListItem(index, 'key_messages', this.newKeyMessage[index] ?? '');
+    this.addListItem(index, this.newKeyMessage[index] ?? '');
     this.newKeyMessage[index] = '';
-  }
-
-  commitDataAnchor(index: number): void {
-    this.addListItem(index, 'data_anchors', this.newDataAnchor[index] ?? '');
-    this.newDataAnchor[index] = '';
-  }
-
-  removeListItem(index: number, field: 'key_messages' | 'data_anchors', itemIndex: number): void {
-    this.slides.update(slides =>
-      slides.map((s, i) => i === index ? { ...s, [field]: s[field].filter((_, j) => j !== itemIndex) } : s)
-    );
-  }
-
-  toggleComponent(index: number, kind: ComponentKind): void {
-    this.slides.update(slides =>
-      slides.map((s, i) => {
-        if (i !== index) return s;
-        const has = s.suggested_components.includes(kind);
-        return {
-          ...s,
-          suggested_components: has
-            ? s.suggested_components.filter(k => k !== kind)
-            : [...s.suggested_components, kind],
-        };
-      })
-    );
   }
 
   moveSlide(index: number, direction: number): void {
@@ -328,7 +225,6 @@ export class PlanEditorComponent {
     this.slides.update(slides =>
       slides.filter((_, i) => i !== index).map((s, i) => ({ ...s, slide_index: i }))
     );
-    if (this.expandedIndex() === index) this.expandedIndex.set(null);
   }
 
   addSlide(): void {
