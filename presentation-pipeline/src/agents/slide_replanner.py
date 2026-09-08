@@ -6,7 +6,7 @@ row"). A stale plan would under-cover exactly that edit when building the
 generation contract (missing node types, missing pitfall notes). This module
 gates on that: cheap keyword detection decides whether the existing plan
 already covers the feedback, and only replans (one extra LLM call) when it
-doesn't — reusing the same planner_node the plan-editor's refine loop uses.
+doesn't — calling slide_component_planner for the single slide.
 
 Reads:  slide_plan, feedback, theme_info
 Writes: nothing (pure function, caller persists the result)
@@ -18,8 +18,8 @@ import logging
 from typing import Any
 
 from src.agents.context_builder import _detect_components_from_text, build_contract
-from src.agents.planner import planner_node
-from src.state import SlidePlan, initial_state
+from src.agents.slide_component_planner import plan_single_slide
+from src.state import SlidePlan
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,22 @@ def _merge_content_data(original: dict[str, Any], replanned: dict[str, Any]) -> 
     values would silently overwrite real user data.
     """
     return {**replanned, **original}
+
+
+def _slide_plan_to_outline_slide(slide_plan: SlidePlan) -> dict[str, Any]:
+    """Convert an existing SlidePlan to a minimal OutlineSlide for re-planning."""
+    components = slide_plan.get("components") or []
+    return {
+        "slide_index": slide_plan.get("slide_index", 0),
+        "slide_title": slide_plan.get("content_data", {}).get("title", ""),
+        "slide_type": slide_plan.get("slide_type", "content"),
+        "section": "",
+        "narrative_role": "",
+        "key_messages": [],
+        "data_anchors": [],
+        "layout_intent": slide_plan.get("layout_hint", ""),
+        "suggested_components": [c.get("kind") for c in components],
+    }
 
 
 def resolve_slide_plan(
@@ -57,12 +73,20 @@ def resolve_slide_plan(
         return slide_plan, build_contract(slide_plan, theme_info)
 
     logger.info(f"slide_replanner: feedback introduces new kind(s) {detected_kinds - existing_kinds}, replanning")
-    state = initial_state(run_id=run_id, raw_request="", theme_name=theme_info.get("name", ""))
-    state["prior_plan"] = {"core_hook": "", "slides": [dict(slide_plan)]}
-    state["refine_feedback"] = feedback
 
-    result = planner_node(state)
-    updated_plan = result["slide_plans"][0]
+    outline_slide = _slide_plan_to_outline_slide(slide_plan)
+    outline_plan = {"core_hook": "", "slides": [outline_slide]}
+
+    try:
+        updated_plan = plan_single_slide(
+            outline_slide,
+            outline_plan=outline_plan,
+            deck_settings={"theme": theme_info.get("name", "")},
+        )
+    except Exception as exc:
+        logger.warning(f"slide_replanner: plan_single_slide failed, using original: {exc}")
+        return slide_plan, build_contract(slide_plan, theme_info)
+
     updated_plan["slide_index"] = slide_plan.get("slide_index", 0)
     updated_plan["content_data"] = _merge_content_data(
         slide_plan.get("content_data", {}), updated_plan.get("content_data", {}),

@@ -28,7 +28,6 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from src.agents.planner import planner_node
 from src.agents.planner_schema import (
     ComponentKindLiteral,
     DensityLiteral,
@@ -36,6 +35,7 @@ from src.agents.planner_schema import (
     LayoutPatternLiteral,
     SlideTypeLiteral,
 )
+from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.graph import compile_graph
 from src.state import (
     ComponentPlan,
@@ -77,6 +77,7 @@ class GenerateRequest(BaseModel):
     )
     supplied_content: dict[str, Any] | None = None
     audience_context: dict[str, str] | None = None
+    deck_settings: dict[str, Any] | None = None
 
 
 class ComponentPlanPayload(BaseModel):
@@ -198,7 +199,13 @@ def _get_run_record(run_id: str) -> RunRecord | None:
 
 NODE_EVENT_MAP: dict[str, str] = {
     "questionnaire": "planning",
-    "planner": "planning",
+    "elicitor": "planning",
+    "elicitation_wait": "elicitation_needed",
+    "outline_planner": "planning",
+    "slide_component_planner": "planning",
+    "slide_plan_serial": "planning",
+    "slide_plan_sorter": "planning",
+    "plan_reviewer": "reviewing_plan",
     "style_resolver": "styling",
     "context_builder": "generating_slide",
     "generator": "generating_slide",
@@ -211,8 +218,10 @@ NODE_EVENT_MAP: dict[str, str] = {
 }
 
 _NODE_WEIGHTS: dict[str, int] = {
-    "questionnaire": 2, "planner": 8, "style_resolver": 3,
-    "context_builder": 5, "generator": 25, "validator": 10,
+    "questionnaire": 2, "elicitor": 2, "elicitation_wait": 0,
+    "outline_planner": 5, "slide_component_planner": 4, "slide_plan_serial": 8,
+    "slide_plan_sorter": 1, "plan_reviewer": 3,
+    "style_resolver": 3, "context_builder": 5, "generator": 25, "validator": 10,
     "repairer": 15, "critic": 10, "slide_router": 2,
     "deck_assembler": 10, "evaluator": 5,
 }
@@ -261,9 +270,12 @@ def _build_event(
     )
 
 
+_ACCUMULATOR_KEYS = {"completed_slides", "generation_history", "assembled_slide_plans", "slide_critic_results"}
+
+
 def _merge_state(accumulated: dict[str, Any], update: dict[str, Any]) -> None:
     for key, value in update.items():
-        if key in ("completed_slides", "generation_history") and isinstance(value, list):
+        if key in _ACCUMULATOR_KEYS and isinstance(value, list):
             accumulated.setdefault(key, []).extend(value)
         else:
             accumulated[key] = value
@@ -274,6 +286,10 @@ def _merge_state(accumulated: dict[str, Any], update: dict[str, Any]) -> None:
 def _run_pipeline_sync(
     run_id: str, request: GenerateRequest,
 ) -> Generator[tuple[str, dict[str, Any]], None, None]:
+    deck_settings = request.deck_settings
+    if deck_settings is None and request.theme:
+        deck_settings = {"theme": request.theme}
+
     state = initial_state(
         run_id=run_id,
         raw_request=request.prompt,
@@ -282,6 +298,7 @@ def _run_pipeline_sync(
         deck_min_threshold=request.deck_min_threshold,
         supplied_content=request.supplied_content,
         audience_context=request.audience_context,
+        deck_settings=deck_settings,
     )
     graph = compile_graph()
     config = {
@@ -441,8 +458,6 @@ def _payload_to_slide_plans(
     slides: list[SlidePlanPayload],
     supplied_content: dict[str, Any] | None,
 ) -> list[SlidePlan]:
-    from src.agents.planner import _compute_provenance
-
     result: list[SlidePlan] = []
     for i, s in enumerate(slides):
         components: list[ComponentPlan] = []
@@ -469,28 +484,249 @@ def _payload_to_slide_plans(
             layout_pattern=s.layout_pattern,
             layout_hint=s.layout_hint,
             content_data=s.content_data,
-            data_provenance=_compute_provenance(s.content_data, supplied_content or {}),
+            data_provenance=compute_provenance(s.content_data, supplied_content or {}),
         ))
     return result
 
 
-@app.post("/plan")
-async def create_plan(request: GenerateRequest) -> dict[str, Any]:
+class OutlineRequest(BaseModel):
+    prompt: str
+    theme: str = ""
+    deck_min_threshold: int = Field(default=6, ge=1, le=20)
+    supplied_content: dict[str, Any] | None = None
+    deck_settings: dict[str, Any] | None = None
+    elicitation_answers: dict[str, str] | None = None
+
+
+class ElicitRequest(BaseModel):
+    prompt: str
+    deck_settings: dict[str, Any] | None = None
+    supplied_content: dict[str, Any] | None = None
+    domain_hint: str = ""
+
+
+class ElicitAnswerRequest(BaseModel):
+    answers: dict[str, str]
+
+
+@app.get("/deck-settings-schema")
+async def deck_settings_schema() -> dict[str, Any]:
+    """Return the Gamma-style deck settings form schema for the frontend to render."""
+    from src.agents.settings_mapper import DeckSettings as DS
+    import inspect
+
+    # Load available themes from palettes.yaml
+    themes: list[str] = []
+    try:
+        import yaml
+        palettes_path = _PIPELINE_ROOT / "palettes.yaml"
+        if palettes_path.exists():
+            data = yaml.safe_load(palettes_path.read_text(encoding="utf-8"))
+            themes = list(data.get("palettes", {}).keys())
+    except Exception:
+        themes = ["corporate-slate"]
+
+    return {
+        "fields": [
+            {
+                "key": "text_mode",
+                "label": "Content handling",
+                "type": "single_choice",
+                "options": [
+                    {"value": "generate", "label": "Generate", "description": "LLM invents the content from your prompt"},
+                    {"value": "condense", "label": "Condense", "description": "LLM compresses your supplied content"},
+                    {"value": "preserve", "label": "Preserve", "description": "LLM uses your supplied content verbatim"},
+                ],
+                "default": "generate",
+            },
+            {
+                "key": "amount_of_text",
+                "label": "Amount of text",
+                "type": "single_choice",
+                "options": [
+                    {"value": "minimal", "label": "Minimal"},
+                    {"value": "concise", "label": "Concise"},
+                    {"value": "detailed", "label": "Detailed"},
+                    {"value": "extensive", "label": "Extensive"},
+                ],
+                "default": "concise",
+            },
+            {
+                "key": "write_for",
+                "label": "Write for",
+                "type": "multi_choice",
+                "options": [
+                    "Board", "C-suite", "Investors", "All-hands",
+                    "Sales", "Engineering", "General public",
+                ],
+                "default": [],
+            },
+            {
+                "key": "tone",
+                "label": "Tone",
+                "type": "multi_choice",
+                "options": [
+                    "Professional", "Persuasive", "Inspiring",
+                    "Data-driven", "Conversational", "Executive",
+                ],
+                "default": [],
+            },
+            {
+                "key": "theme",
+                "label": "Theme",
+                "type": "single_choice",
+                "options": [{"value": t, "label": t.replace("-", " ").title()} for t in themes],
+                "default": "corporate-slate",
+            },
+            {
+                "key": "slide_count",
+                "label": "Slide count",
+                "type": "single_choice",
+                "options": [
+                    {"value": "1", "label": "1"},
+                    {"value": "3-5", "label": "3–5"},
+                    {"value": "6-10", "label": "6–10"},
+                    {"value": "10-15", "label": "10–15"},
+                    {"value": "15+", "label": "15+"},
+                ],
+                "default": "6-10",
+            },
+            {
+                "key": "additional_instructions",
+                "label": "Additional instructions",
+                "type": "free_text",
+                "default": "",
+            },
+        ]
+    }
+
+
+@app.post("/elicit")
+async def elicit(request: ElicitRequest) -> dict[str, Any]:
+    """Run the elicitor on a prompt and return questions if needed."""
+    from src.agents.elicitor import check_and_elicit
+
     run_id = uuid.uuid4().hex[:12]
+    try:
+        result = await asyncio.to_thread(
+            check_and_elicit,
+            request.prompt,
+            deck_settings=request.deck_settings,
+            supplied_content=request.supplied_content,
+            domain_hint=request.domain_hint,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Elicitor failed: {exc}")
+
+    return {
+        "run_id": run_id,
+        "is_sufficient": result.is_sufficient,
+        "reasoning": result.reasoning,
+        "questions": [q.model_dump() for q in result.questions],
+    }
+
+
+@app.post("/plan/outline")
+async def create_outline(request: OutlineRequest) -> dict[str, Any]:
+    """Run elicitor + outline_planner; return the editable deck skeleton."""
+    from src.agents.elicitor import check_and_elicit
+    from src.agents.outline_planner import outline_planner_node
+    from src.agents.settings_mapper import DeckSettings as DS, settings_to_constraints
+
+    run_id = uuid.uuid4().hex[:12]
+    deck_settings = request.deck_settings or {}
+    if request.theme and "theme" not in deck_settings:
+        deck_settings = {**deck_settings, "theme": request.theme}
+
+    # Resolve deck_min_threshold from deck_settings or request
+    threshold = request.deck_min_threshold
+    if "slide_count" in deck_settings:
+        try:
+            s = DS.model_validate(deck_settings)
+            threshold = settings_to_constraints(s).get("deck_min_threshold", threshold)
+        except Exception:
+            pass
+
     state = initial_state(
         run_id=run_id,
         raw_request=request.prompt,
-        theme_name=request.theme,
-        deck_min_threshold=request.deck_min_threshold,
+        theme_name=deck_settings.get("theme", request.theme),
+        deck_min_threshold=threshold,
         supplied_content=request.supplied_content,
-        audience_context=request.audience_context,
+        deck_settings=deck_settings,
+        elicitation_answers=request.elicitation_answers,
     )
-    result = await asyncio.to_thread(planner_node, state)
+
+    # Check elicitation need
+    elicitation_result = None
+    if not request.elicitation_answers:
+        try:
+            ec = await asyncio.to_thread(
+                check_and_elicit,
+                request.prompt,
+                additional_instructions=deck_settings.get("additional_instructions", ""),
+                deck_settings=deck_settings,
+                supplied_content=request.supplied_content,
+            )
+            if not ec.is_sufficient:
+                return {
+                    "run_id": run_id,
+                    "elicitation_needed": True,
+                    "questions": [q.model_dump() for q in ec.questions],
+                    "outline": None,
+                }
+        except Exception as exc:
+            logger.warning(f"elicitor failed during /plan/outline, proceeding: {exc}")
+
+    try:
+        result = await asyncio.to_thread(outline_planner_node, state)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Outline planning failed: {exc}")
+
+    outline = result.get("outline_plan") or {}
     return {
         "run_id": run_id,
-        "core_hook": result["core_hook"],
-        "slides": result["slide_plans"],
+        "elicitation_needed": False,
+        "questions": [],
+        "outline": {
+            "deck_title": outline.get("deck_title", ""),
+            "core_hook": outline.get("core_hook", ""),
+            "slides": outline.get("slides", []),
+        },
     }
+
+
+@app.put("/plan/{run_id}/outline")
+async def update_outline(run_id: str, outline: dict[str, Any]) -> dict[str, Any]:
+    """Store a user-edited outline for use in the next generation call.
+
+    The edited outline is cached in-memory keyed by run_id. The subsequent
+    POST /generate-from-plan or POST /generate call should include this run_id
+    so the graph picks up the user-edited version from state.
+    """
+    _edited_outlines[run_id] = outline
+    return {"run_id": run_id, "accepted": True, "slide_count": len(outline.get("slides", []))}
+
+
+@app.post("/plan/review")
+async def review_plan(run_id: str, slides: list[SlidePlanPayload]) -> dict[str, Any]:
+    """Run the plan reviewer on a set of slide plans (for standalone plan review)."""
+    from src.agents.plan_reviewer import plan_reviewer_node
+
+    slide_plans = _payload_to_slide_plans(slides, None)
+    state = initial_state(run_id=run_id, raw_request="")
+    state["slide_plans"] = slide_plans
+
+    try:
+        result = await asyncio.to_thread(plan_reviewer_node, state)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Plan review failed: {exc}")
+
+    return result.get("plan_review") or {}
+
+
+# ── Edited-outline cache ──────────────────────────────────────────────────
+_edited_outlines: dict[str, dict[str, Any]] = {}
 
 
 @app.post("/plan/refine")
@@ -515,15 +751,16 @@ async def refine_plan(request: RefinePlanRequest) -> dict[str, Any]:
     }
     state["refine_feedback"] = request.feedback
 
+    from src.agents.outline_planner import outline_planner_node
     try:
-        result = await asyncio.to_thread(planner_node, state)
+        result = await asyncio.to_thread(outline_planner_node, state)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Plan refinement failed: {exc}")
 
+    outline = result.get("outline_plan") or {}
     return {
         "run_id": run_id,
-        "core_hook": result["core_hook"],
-        "slides": result["slide_plans"],
+        "outline": outline,
     }
 
 
@@ -539,6 +776,7 @@ def _run_pipeline_from_plan_sync(
         deck_min_threshold=request.deck_min_threshold,
         supplied_content=request.supplied_content,
         audience_context=request.audience_context,
+        deck_settings=getattr(request, "deck_settings", None),
     )
     state["core_hook"] = request.core_hook
     state["slide_plans"] = slide_plans

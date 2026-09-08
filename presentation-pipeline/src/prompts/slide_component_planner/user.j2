@@ -1,0 +1,49 @@
+DECK CONTEXT:
+Core hook: {{ core_hook }}
+Other slides in deck: {{ deck_context | join(' | ') }}
+{% if deck_settings %}
+Density target: {{ constraints.get('density', 'normal') }}
+Text mode: {{ deck_settings.get('text_mode', 'generate') }}
+Write for: {{ deck_settings.get('write_for') | join(', ') or 'general' }}
+Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}
+{% endif %}
+
+---
+
+SLIDE TO PLAN (slide {{ slide.slide_index + 1 }} of {{ total_slides }}):
+
+Title: {{ slide.slide_title }}
+Type: {{ slide.slide_type }}
+Section: {{ slide.section or '(none)' }}
+
+Narrative role:
+{{ slide.narrative_role }}
+
+Key messages (MUST appear in content_data — use verbatim or near-verbatim):
+{% for msg in slide.key_messages %}
+{{ loop.index }}. {{ msg }}
+{% endfor %}
+
+Data anchors (use these exact values in content_data numeric/data fields):
+{% if slide.data_anchors %}
+{% for anchor in slide.data_anchors %}
+- {{ anchor }}
+{% endfor %}
+{% else %}
+(none — this is a qualitative slide)
+{% endif %}
+
+Layout intent (translate this to layout_pattern + layout_hint):
+{{ slide.layout_intent }}
+
+Suggested components (soft hint, you may adjust):
+{{ slide.suggested_components | join(', ') or '(no hint)' }}
+{% if supplied_content_for_slide %}
+
+SUPPLIED CONTENT FOR THIS SLIDE (use VERBATIM in content_data):
+```json
+{{ supplied_content_for_slide | tojson(indent=2) }}
+```
+{% endif %}
+
+Plan this one slide completely. Populate ALL content_data keys with specific, realistic values derived directly from the key_messages and data_anchors above. Do not use placeholders.

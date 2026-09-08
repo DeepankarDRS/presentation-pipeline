@@ -16,6 +16,31 @@ from typing import Annotated, Any, Literal, TypedDict
 
 # ── Sub-structures ──────────────────────────────────────────────────────────
 
+class OutlineSlide(TypedDict, total=False):
+    slide_index: int
+    slide_title: str
+    slide_type: str
+    section: str
+    narrative_role: str
+    key_messages: list[str]
+    data_anchors: list[str]
+    layout_intent: str
+    suggested_components: list[str]
+
+
+class OutlinePlan(TypedDict, total=False):
+    deck_title: str
+    core_hook: str
+    slides: list[OutlineSlide]
+
+
+class PlanReview(TypedDict, total=False):
+    confidence_score: float
+    approved: bool
+    summary: str
+    issues: list[dict[str, Any]]
+
+
 class ComponentPlan(TypedDict, total=False):
     kind: str
     count: int
@@ -100,7 +125,25 @@ class PresentationState(TypedDict, total=False):
     # ── Questionnaire (questionnaire writes, planner reads) ──
     audience_context: dict[str, str] | None
 
-    # ── Planning (planner writes, generator reads) ──
+    # ── Deck settings (Gamma-style form, written by API layer) ──
+    deck_settings: dict[str, Any] | None
+
+    # ── Elicitation (elicitor writes; API writes answers before resume) ──
+    elicitation_needed: bool
+    elicitation_questions: list[dict[str, Any]]
+    elicitation_answers: dict[str, str] | None
+
+    # ── Outline plan (outline_planner writes, user may edit via API) ──
+    outline_plan: OutlinePlan | None
+    current_outline_slide: OutlineSlide | None  # injected per-slide via Send()
+
+    # ── Per-slide assembly (fan-in accumulator, slide_plan_sorter reads) ──
+    assembled_slide_plans: Annotated[list[SlidePlan], operator.add]
+
+    # ── Plan review (plan_reviewer writes) ──
+    plan_review: PlanReview | None
+
+    # ── Planning (outline/slide planner writes, generator reads) ──
     core_hook: str
     deck_plan: DeckPlan | None
     slide_plans: list[SlidePlan]
@@ -158,6 +201,7 @@ def initial_state(
     test_case: dict[str, Any] | None = None,
     deck_min_threshold: int = 1,
     audience_context: dict[str, str] | None = None,
+    deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "manual", "off"] = "off",
     retry_budget: int = 3,
     interactive: bool = False,
@@ -173,6 +217,14 @@ def initial_state(
         supplied_content=supplied_content,
         theme_name=theme_name,
         audience_context=audience_context,
+        deck_settings=deck_settings,
+        elicitation_needed=False,
+        elicitation_questions=[],
+        elicitation_answers=None,
+        outline_plan=None,
+        current_outline_slide=None,
+        assembled_slide_plans=[],
+        plan_review=None,
         core_hook="",
         deck_plan=None,
         slide_plans=[],

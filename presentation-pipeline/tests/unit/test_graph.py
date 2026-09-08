@@ -3,7 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 from src.agents.critic_schema import CriticOutput
-from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSlide
+from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.graph import (
     build_graph, compile_graph,
     route_after_start, route_after_validator, route_after_critic,
@@ -37,14 +37,14 @@ def test_route_after_start_skips_planner():
     assert route_after_start(state) == "style_resolver"
 
 
-def test_route_after_start_uses_planner():
+def test_route_after_start_uses_elicitor():
     state = initial_state(run_id="r2", raw_request="test")
-    assert route_after_start(state) == "planner"
+    assert route_after_start(state) == "elicitor"
 
 
-def test_route_after_start_uses_planner_no_test_case():
+def test_route_after_start_uses_elicitor_no_test_case():
     state = initial_state(run_id="r2b", raw_request="test", test_case={})
-    assert route_after_start(state) == "planner"
+    assert route_after_start(state) == "elicitor"
 
 
 def test_route_after_start_interactive_questionnaire():
@@ -57,7 +57,7 @@ def test_route_after_start_preloaded_skips_questionnaire():
         run_id="r2d", raw_request="test", interactive=True,
         audience_context={"audience": "Board"},
     )
-    assert route_after_start(state) == "planner"
+    assert route_after_start(state) == "elicitor"
 
 
 def test_route_after_validator_ok_to_critic():
@@ -145,28 +145,9 @@ def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_valida
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
-@patch("src.agents.planner.get_llm")
-def test_full_graph_with_planner(mock_planner_llm, mock_gen_llm, mock_compile, mock_validate, mock_critic_llm):
-    """End-to-end: graph runs through planner (mocked LLM) when threshold > 0."""
+def test_full_graph_with_preloaded_plans(mock_gen_llm, mock_compile, mock_validate, mock_critic_llm):
+    """End-to-end: graph runs with pre-provided slide_plans (skips planning phase)."""
     mock_critic_llm.return_value = _mock_critic_llm()
-    output = PlannerOutput(
-        core_hook="KPI metrics reveal strong growth but rising costs.",
-        slides=[
-            PlannerSlide(
-                slide_type="data",
-                components=[
-                    PlannerComponent(kind="title", count=1, content_summary="Dashboard"),
-                    PlannerComponent(kind="kpi_row", count=4, content_summary="Key metrics"),
-                ],
-                density="dense",
-                font_tier="compact",
-                layout_pattern="dashboard_grid",
-                layout_hint="Title at top, KPI tiles in row below",
-            ),
-        ],
-    )
-    mock_planner_llm.return_value = MagicMock()
-    mock_planner_llm.return_value.with_structured_output.return_value.invoke.return_value = output
 
     mock_gen_response = MagicMock()
     mock_gen_response.content = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n<Slide><VStack w="1280" h="720" padding="48"><Text fontSize="32" bold="true" color="$textMain">Dashboard</Text></VStack></Slide>'
@@ -189,6 +170,19 @@ def test_full_graph_with_planner(mock_planner_llm, mock_gen_llm, mock_compile, m
         raw_request="Create a dense KPI dashboard",
         deck_min_threshold=3,
     )
+    state["slide_plans"] = [
+        {
+            "slide_index": 0, "slide_type": "data",
+            "components": [
+                {"kind": "title", "count": 1, "content_summary": "Dashboard"},
+                {"kind": "kpi_row", "count": 4, "content_summary": "Key metrics"},
+            ],
+            "density": "dense", "font_tier": "compact",
+            "layout_pattern": "dashboard_grid",
+            "layout_hint": "Title at top, KPI tiles in row below",
+            "content_data": {}, "data_provenance": {},
+        }
+    ]
 
     app = compile_graph()
     result = app.invoke(state)
@@ -270,36 +264,13 @@ def test_route_single_slide_still_goes_evaluator():
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
-@patch("src.agents.planner.get_llm")
 @patch("src.agents.deck_nodes.compile_xml")
 def test_multi_slide_e2e(
-    mock_deck_compile, mock_planner_llm, mock_gen_llm,
+    mock_deck_compile, mock_gen_llm,
     mock_compile, mock_validate, mock_critic_llm,
 ):
-    """Multi-slide: planner produces 2 slides, both compile, deck assembles."""
+    """Multi-slide: 2 pre-loaded slides, both compile, deck assembles."""
     mock_critic_llm.return_value = _mock_critic_llm()
-
-    output = PlannerOutput(
-        core_hook="Revenue grew 40% but margins are shrinking.",
-        slides=[
-            PlannerSlide(
-                slide_type="cover",
-                components=[PlannerComponent(kind="title", count=1, content_summary="Cover")],
-                density="sparse", font_tier="display",
-                layout_pattern="hero_statement",
-                layout_hint="centered title",
-            ),
-            PlannerSlide(
-                slide_type="data",
-                components=[PlannerComponent(kind="chart", count=1, content_summary="Revenue")],
-                density="normal", font_tier="standard",
-                layout_pattern="full_width_chart",
-                layout_hint="chart full width",
-            ),
-        ],
-    )
-    mock_planner_llm.return_value = MagicMock()
-    mock_planner_llm.return_value.with_structured_output.return_value.invoke.return_value = output
 
     slide_xmls = [
         '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n<Slide><VStack w="1280" h="720"><Text>Cover</Text></VStack></Slide>',
@@ -332,6 +303,22 @@ def test_multi_slide_e2e(
     }
 
     state = initial_state(run_id="ms-e2e", raw_request="Create a 2-slide deck")
+    state["slide_plans"] = [
+        {
+            "slide_index": 0, "slide_type": "cover",
+            "components": [{"kind": "title", "count": 1, "content_summary": "Cover"}],
+            "density": "sparse", "font_tier": "display",
+            "layout_pattern": "hero_statement", "layout_hint": "centered title",
+            "content_data": {}, "data_provenance": {},
+        },
+        {
+            "slide_index": 1, "slide_type": "data",
+            "components": [{"kind": "chart", "count": 1, "content_summary": "Revenue"}],
+            "density": "normal", "font_tier": "standard",
+            "layout_pattern": "full_width_chart", "layout_hint": "chart full width",
+            "content_data": {}, "data_provenance": {},
+        },
+    ]
     app = compile_graph()
     result = app.invoke(state)
 

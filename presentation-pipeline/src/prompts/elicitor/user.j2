@@ -1,0 +1,27 @@
+USER REQUEST:
+{{ raw_request }}
+{% if additional_instructions %}
+
+ADDITIONAL INSTRUCTIONS:
+{{ additional_instructions }}
+{% endif %}
+{% if deck_settings %}
+
+DECK SETTINGS ALREADY CAPTURED (do NOT ask about these):
+- Audience: {{ deck_settings.get('write_for') | join(', ') or 'not specified' }}
+- Tone: {{ deck_settings.get('tone') | join(', ') or 'not specified' }}
+- Theme: {{ deck_settings.get('theme', 'default') }}
+- Density: {{ deck_settings.get('amount_of_text', 'concise') }}
+- Target slide count: {{ deck_settings.get('slide_count', '6-10') }}
+- Text mode: {{ deck_settings.get('text_mode', 'generate') }}
+{% endif %}
+{% if supplied_content %}
+
+SUPPLIED CONTENT (user has already provided data):
+```json
+{{ supplied_content | tojson(indent=2) }}
+```
+Note: supplied content significantly reduces the need for elicitation — most data is already available.
+{% endif %}
+
+Analyse whether the request (plus any supplied content and additional instructions) provides enough specific content to produce a high-quality, data-anchored deck. Return your assessment.

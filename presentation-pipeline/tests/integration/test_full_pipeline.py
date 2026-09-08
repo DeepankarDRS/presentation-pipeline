@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.agents.critic_schema import CriticOutput
-from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSlide
+from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.graph import compile_graph
 from src.state import initial_state
 from src.utils.case_loader import load_all_cases, case_to_state
@@ -44,36 +44,6 @@ def _make_gen_llm():
     return llm
 
 
-def _make_planner_llm(case: dict):
-    """Mock planner LLM that returns a plan matching the case components."""
-    components = []
-    for comp_name in case.get("components", ["title"]):
-        comp_name = comp_name.replace("-", "_")
-        if comp_name not in (
-            "title", "narrative", "caption", "kpi_row", "bullet_list",
-            "chart", "table", "timeline", "flow", "layer",
-            "tree", "matrix", "process_arrow", "pyramid",
-        ):
-            comp_name = "title"
-        components.append(PlannerComponent(kind=comp_name, count=1))
-
-    output = PlannerOutput(
-        core_hook="Test narrative anchor for integration test.",
-        slides=[
-            PlannerSlide(
-                slide_type="content",
-                components=components,
-                density="normal",
-                font_tier="standard",
-                layout_pattern="stacked_sections",
-                layout_hint="Standard layout",
-            ),
-        ],
-    )
-    llm = MagicMock()
-    llm.with_structured_output.return_value.invoke.return_value = output
-    return llm
-
 
 def _make_critic_llm():
     """Mock critic LLM that passes."""
@@ -89,17 +59,20 @@ def _make_critic_llm():
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
-@patch("src.agents.planner.get_llm")
 def test_pipeline_runs_for_case(
-    mock_planner_llm,
     mock_gen_llm,
     mock_compile,
     mock_validate,
     mock_critic_llm,
     case,
 ):
-    """Each test case loads, runs through the full graph, and produces a valid evaluation."""
-    mock_planner_llm.return_value = _make_planner_llm(case)
+    """Each test case loads, runs through the full graph, and produces a valid evaluation.
+
+    Test cases that supply components bypass the planning pipeline entirely via
+    route_after_start → style_resolver. Cases without components are expected to
+    provide slide_plans directly in the case fixture (or use the new hierarchical
+    planning path, which would require additional mocks not set up here).
+    """
     mock_gen_llm.return_value = _make_gen_llm()
     mock_validate.return_value = {
         "ok": True, "diagnostics": [], "warnings": [], "retryable": False,
@@ -124,41 +97,94 @@ def test_pipeline_runs_for_case(
     assert result["current_xml"] == MOCK_XML
 
 
+@patch("src.agents.plan_reviewer.get_llm")
+@patch("src.agents.slide_component_planner.get_llm")
+@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.elicitor.get_llm")
 @patch("src.agents.critic.get_llm")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
-@patch("src.agents.planner.get_llm")
-def test_pipeline_with_planner_enabled(
-    mock_planner_llm,
+def test_pipeline_with_hierarchical_planner(
     mock_gen_llm,
     mock_compile,
     mock_validate,
     mock_critic_llm,
+    mock_elicitor_llm,
+    mock_outline_llm,
+    mock_slide_planner_llm,
+    mock_reviewer_llm,
 ):
-    """Pipeline runs through planner for free-form prompts (no test_case components)."""
-    case = next((c for c in _CASES if c.get("name") == "maximal-density"), _CASES[0])
+    """Pipeline runs through the full hierarchical planning pipeline."""
+    from src.agents.elicitor_schema import ElicitorOutput
+    from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide as OSlide
+    from src.agents.plan_reviewer_schema import PlanReviewerOutput
 
-    mock_planner_llm.return_value = _make_planner_llm(case)
+    # Elicitor: prompt is sufficient — no questions needed
+    elicitor_output = ElicitorOutput(is_sufficient=True, reasoning="Prompt is specific.", questions=[])
+    mock_elicitor_llm.return_value = MagicMock()
+    mock_elicitor_llm.return_value.with_structured_output.return_value.invoke.return_value = elicitor_output
+
+    # Outline planner: one content slide
+    outline_output = OutlinePlannerOutput(
+        deck_title="KPI Dashboard",
+        core_hook="Revenue grew 40% but margins are shrinking.",
+        slides=[
+            OSlide(
+                slide_index=0, slide_title="Key Metrics", slide_type="data",
+                section="Metrics", narrative_role="Establishes baseline.",
+                key_messages=["ARR $12M", "NRR 115%"],
+                data_anchors=["ARR: $12M", "NRR: 115%"],
+                layout_intent="4 KPI tiles in a row below the title",
+                suggested_components=["title", "kpi_row"],
+            )
+        ],
+    )
+    mock_outline_llm.return_value = MagicMock()
+    mock_outline_llm.return_value.with_structured_output.return_value.invoke.return_value = outline_output
+
+    # Slide component planner: produce a valid PlannerSlide
+    slide_output = PlannerSlide(
+        slide_type="data",
+        components=[
+            PlannerComponent(kind="title", count=1, content_summary="Key Metrics"),
+            PlannerComponent(kind="kpi_row", count=4, content_summary="ARR, NRR, Margin, CAC"),
+        ],
+        density="normal", font_tier="standard",
+        layout_pattern="hero_big_number",
+        layout_hint="Title at top, 4 KPI tiles in row below",
+        content_data_json='{"title": "Key Metrics", "kpi_labels": ["ARR", "NRR", "Margin", "CAC"]}',
+    )
+    mock_slide_planner_llm.return_value = MagicMock()
+    mock_slide_planner_llm.return_value.with_structured_output.return_value.invoke.return_value = slide_output
+
+    # Plan reviewer: approve the plan
+    review_output = PlanReviewerOutput(
+        confidence_score=0.9, approved=True, summary="Plan looks good.", issues=[],
+    )
+    mock_reviewer_llm.return_value = MagicMock()
+    mock_reviewer_llm.return_value.with_structured_output.return_value.invoke.return_value = review_output
+
     mock_gen_llm.return_value = _make_gen_llm()
-    mock_validate.return_value = {
-        "ok": True, "diagnostics": [], "warnings": [], "retryable": False,
-    }
+    mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
     mock_compile.return_value = {
-        "ok": True, "pptx_path": "/tmp/planner-test.pptx",
+        "ok": True, "pptx_path": "/tmp/hierarchical-test.pptx",
         "diagnostics": [], "warnings": [], "retryable": False,
     }
     mock_critic_llm.return_value = _make_critic_llm()
 
     state = initial_state(
-        run_id="planner-e2e",
-        raw_request="Create a dense KPI dashboard with charts and tables",
+        run_id="hierarchical-e2e",
+        raw_request="Create a KPI dashboard slide with ARR and NRR metrics",
     )
     app = compile_graph()
     result = app.invoke(state)
 
     assert result["passed"] is True
     assert len(result["slide_plans"]) > 0
+    plan_review = result.get("plan_review") or {}
+    assert plan_review.get("approved") is True
+    assert plan_review.get("confidence_score", 0) >= 0.9
 
 
 @patch("src.agents.repairer.get_llm")

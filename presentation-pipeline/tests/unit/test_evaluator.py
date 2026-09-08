@@ -178,9 +178,8 @@ def test_evaluator_writes_manifest():
     assert "cost" in data
     assert "steps" in data
 
-    # Cleanup
-    manifest_path.unlink()
-    manifest_path.parent.rmdir()
+    # Cleanup (evaluator may write extra files, so use rmtree not rmdir)
+    shutil.rmtree(manifest_path.parent, ignore_errors=True)
 
 
 def test_evaluator_writes_resolved_theme_to_manifest():

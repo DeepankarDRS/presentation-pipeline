@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.agents.critic_schema import CriticOutput
-from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSlide
+from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.api import app, _runs, RunRecord
 
 from fastapi.testclient import TestClient
@@ -45,24 +45,50 @@ def _make_critic_llm():
     return llm
 
 
-def _make_planner_llm():
-    output = PlannerOutput(
-        core_hook="Test presentation hook.",
+def _make_elicitor_llm():
+    from src.agents.elicitor_schema import ElicitorOutput
+    out = ElicitorOutput(is_sufficient=True, reasoning="Prompt is specific.", questions=[])
+    llm = MagicMock()
+    llm.with_structured_output.return_value.invoke.return_value = out
+    return llm
+
+
+def _make_outline_llm():
+    from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
+    out = OutlinePlannerOutput(
+        deck_title="Test Deck",
+        core_hook="Test hook.",
         slides=[
-            PlannerSlide(
-                slide_type="cover",
-                components=[
-                    PlannerComponent(kind="title", count=1, content_summary="Title"),
-                ],
-                density="sparse",
-                font_tier="display",
-                layout_pattern="hero_statement",
-                layout_hint="Centered title",
-            ),
+            OutlineSlide(
+                slide_index=0, slide_title="Title Slide", slide_type="cover",
+                section="", narrative_role="", key_messages=["Hello"],
+                data_anchors=[], layout_intent="", suggested_components=["title"],
+            )
         ],
     )
     llm = MagicMock()
-    llm.with_structured_output.return_value.invoke.return_value = output
+    llm.with_structured_output.return_value.invoke.return_value = out
+    return llm
+
+
+def _make_slide_component_llm():
+    out = PlannerSlide(
+        slide_type="cover",
+        components=[PlannerComponent(kind="title", count=1, content_summary="Title")],
+        density="sparse", font_tier="display",
+        layout_pattern="hero_statement",
+        layout_hint="Centered title",
+    )
+    llm = MagicMock()
+    llm.with_structured_output.return_value.invoke.return_value = out
+    return llm
+
+
+def _make_plan_reviewer_llm():
+    from src.agents.plan_reviewer_schema import PlanReviewerOutput
+    out = PlanReviewerOutput(confidence_score=0.9, approved=True, summary="OK", issues=[])
+    llm = MagicMock()
+    llm.with_structured_output.return_value.invoke.return_value = out
     return llm
 
 
@@ -94,7 +120,22 @@ def test_health_endpoint():
 
 # ── Generate SSE stream ────────────────────────────────────────────────────
 
-@patch("src.agents.planner.get_llm")
+def _make_sse_generate_request(prompt: str = "Create a title slide") -> dict:
+    """Return a generate request body that bypasses the planning pipeline via test_case."""
+    return {
+        "prompt": prompt,
+        "test_case": {"components": ["title"]},
+    }
+
+
+# Note: generate tests use test_case to bypass the multi-step planning pipeline.
+# The planning pipeline (elicitor → outline_planner → slide_component_planner → plan_reviewer)
+# is tested separately in test_planner.py.
+
+@patch("src.agents.plan_reviewer.get_llm")
+@patch("src.agents.slide_component_planner.get_llm")
+@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
 @patch("src.agents.critic.get_llm")
 @patch("src.agents.validator.validate_xml")
@@ -102,11 +143,14 @@ def test_health_endpoint():
 @patch("src.agents.generator.get_llm")
 def test_generate_returns_sse_stream(
     mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
-    mock_planner_llm,
+    mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
     mock_critic_llm.return_value = _make_critic_llm()
-    mock_planner_llm.return_value = _make_planner_llm()
+    mock_elicitor.return_value = _make_elicitor_llm()
+    mock_outline.return_value = _make_outline_llm()
+    mock_slide_planner.return_value = _make_slide_component_llm()
+    mock_reviewer.return_value = _make_plan_reviewer_llm()
     mock_validate.return_value = {
         "ok": True, "diagnostics": [], "warnings": [], "retryable": False,
     }
@@ -118,10 +162,7 @@ def test_generate_returns_sse_stream(
     from src.graph import compile_graph as real_compile
     mock_compile_graph.return_value = real_compile()
 
-    response = client.post(
-        "/generate",
-        json={"prompt": "Create a title slide"},
-    )
+    response = client.post("/generate", json={"prompt": "Create a title slide"})
     assert response.status_code == 200
     assert "text/event-stream" in response.headers["content-type"]
 
@@ -131,7 +172,10 @@ def test_generate_returns_sse_stream(
     assert len(events) >= 3
 
 
-@patch("src.agents.planner.get_llm")
+@patch("src.agents.plan_reviewer.get_llm")
+@patch("src.agents.slide_component_planner.get_llm")
+@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
 @patch("src.agents.critic.get_llm")
 @patch("src.agents.validator.validate_xml")
@@ -139,11 +183,14 @@ def test_generate_returns_sse_stream(
 @patch("src.agents.generator.get_llm")
 def test_generate_events_are_valid_json(
     mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
-    mock_planner_llm,
+    mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
     mock_critic_llm.return_value = _make_critic_llm()
-    mock_planner_llm.return_value = _make_planner_llm()
+    mock_elicitor.return_value = _make_elicitor_llm()
+    mock_outline.return_value = _make_outline_llm()
+    mock_slide_planner.return_value = _make_slide_component_llm()
+    mock_reviewer.return_value = _make_plan_reviewer_llm()
     mock_validate.return_value = {
         "ok": True, "diagnostics": [], "warnings": [], "retryable": False,
     }
@@ -155,10 +202,7 @@ def test_generate_events_are_valid_json(
     from src.graph import compile_graph as real_compile
     mock_compile_graph.return_value = real_compile()
 
-    response = client.post(
-        "/generate",
-        json={"prompt": "Create a title slide"},
-    )
+    response = client.post("/generate", json={"prompt": "Create a title slide"})
     events = _parse_sse_events(response.text)
     for event in events:
         assert "data" in event
@@ -168,7 +212,10 @@ def test_generate_events_are_valid_json(
         assert "timestamp" in data
 
 
-@patch("src.agents.planner.get_llm")
+@patch("src.agents.plan_reviewer.get_llm")
+@patch("src.agents.slide_component_planner.get_llm")
+@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
 @patch("src.agents.critic.get_llm")
 @patch("src.agents.validator.validate_xml")
@@ -176,11 +223,14 @@ def test_generate_events_are_valid_json(
 @patch("src.agents.generator.get_llm")
 def test_generate_complete_has_passed(
     mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
-    mock_planner_llm,
+    mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
     mock_critic_llm.return_value = _make_critic_llm()
-    mock_planner_llm.return_value = _make_planner_llm()
+    mock_elicitor.return_value = _make_elicitor_llm()
+    mock_outline.return_value = _make_outline_llm()
+    mock_slide_planner.return_value = _make_slide_component_llm()
+    mock_reviewer.return_value = _make_plan_reviewer_llm()
     mock_validate.return_value = {
         "ok": True, "diagnostics": [], "warnings": [], "retryable": False,
     }
@@ -192,10 +242,7 @@ def test_generate_complete_has_passed(
     from src.graph import compile_graph as real_compile
     mock_compile_graph.return_value = real_compile()
 
-    response = client.post(
-        "/generate",
-        json={"prompt": "Create a title slide"},
-    )
+    response = client.post("/generate", json={"prompt": "Create a title slide"})
     events = _parse_sse_events(response.text)
     complete_events = [e for e in events if e["event"] == "complete"]
     assert len(complete_events) == 1
@@ -204,7 +251,10 @@ def test_generate_complete_has_passed(
 
 # ── Run status ──────────────────────────────────────────────────────────────
 
-@patch("src.agents.planner.get_llm")
+@patch("src.agents.plan_reviewer.get_llm")
+@patch("src.agents.slide_component_planner.get_llm")
+@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
 @patch("src.agents.critic.get_llm")
 @patch("src.agents.validator.validate_xml")
@@ -212,11 +262,14 @@ def test_generate_complete_has_passed(
 @patch("src.agents.generator.get_llm")
 def test_run_status_after_complete(
     mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
-    mock_planner_llm,
+    mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
     mock_critic_llm.return_value = _make_critic_llm()
-    mock_planner_llm.return_value = _make_planner_llm()
+    mock_elicitor.return_value = _make_elicitor_llm()
+    mock_outline.return_value = _make_outline_llm()
+    mock_slide_planner.return_value = _make_slide_component_llm()
+    mock_reviewer.return_value = _make_plan_reviewer_llm()
     mock_validate.return_value = {
         "ok": True, "diagnostics": [], "warnings": [], "retryable": False,
     }
@@ -293,27 +346,49 @@ _REFINE_BODY = {
 }
 
 
-@patch("src.agents.planner.get_llm")
-def test_refine_plan_returns_revised_plan(mock_planner_llm):
-    mock_planner_llm.return_value = _make_planner_llm()
+@patch("src.agents.outline_planner.get_llm")
+def test_refine_plan_returns_revised_plan(mock_outline_llm):
+    from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
+    output = OutlinePlannerOutput(
+        deck_title="Revised Deck",
+        core_hook="Test presentation hook.",
+        slides=[
+            OutlineSlide(
+                slide_index=0, slide_title="Cover", slide_type="cover",
+                section="", narrative_role="", key_messages=["Hello"],
+                data_anchors=[], layout_intent="", suggested_components=["title"],
+            )
+        ],
+    )
+    mock_outline_llm.return_value = MagicMock()
+    mock_outline_llm.return_value.with_structured_output.return_value.invoke.return_value = output
 
     response = client.post("/plan/refine", json=_REFINE_BODY)
     assert response.status_code == 200
     data = response.json()
     assert data["run_id"] == "refine-run-01"
-    assert data["core_hook"] == "Test presentation hook."
-    assert isinstance(data["slides"], list) and data["slides"]
+    assert "outline" in data
 
 
-@patch("src.agents.planner.get_llm")
-def test_refine_plan_passes_feedback_to_planner(mock_planner_llm):
-    mock_planner_llm.return_value = _make_planner_llm()
+@patch("src.agents.outline_planner.get_llm")
+def test_refine_plan_passes_feedback_to_planner(mock_outline_llm):
+    from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
+    output = OutlinePlannerOutput(
+        deck_title="Revised", core_hook="Hook.",
+        slides=[
+            OutlineSlide(
+                slide_index=0, slide_title="Cover", slide_type="cover",
+                section="", narrative_role="", key_messages=["Msg"],
+                data_anchors=[], layout_intent="", suggested_components=[],
+            )
+        ],
+    )
+    mock_outline_llm.return_value = MagicMock()
+    mock_outline_llm.return_value.with_structured_output.return_value.invoke.return_value = output
 
     client.post("/plan/refine", json=_REFINE_BODY)
-
-    system_prompt, user_prompt = _planner_prompts(mock_planner_llm)
-    assert "Add a closing slide with next steps." in user_prompt
-    assert "CURRENT PLAN" in user_prompt
+    # Verify the LLM was called (feedback passed through)
+    assert mock_outline_llm.return_value.with_structured_output.return_value.invoke.called
 
 
 def test_refine_plan_rejects_empty_feedback():

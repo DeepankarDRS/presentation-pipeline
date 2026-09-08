@@ -1,0 +1,43 @@
+REQUEST:
+{{ raw_request }}
+{% if deck_settings %}
+
+DECK SETTINGS:
+- Write for: {{ deck_settings.get('write_for') | join(', ') or 'general audience' }}
+- Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}
+- Theme: {{ deck_settings.get('theme', 'corporate-slate') }}
+- Amount of text: {{ deck_settings.get('amount_of_text', 'concise') }} → {{ constraints.get('key_messages_per_slide', '2') }} key messages per slide
+- Text mode: {{ deck_settings.get('text_mode', 'generate') }}
+{% if deck_settings.get('additional_instructions') %}
+- Additional instructions: {{ deck_settings['additional_instructions'] }}
+{% endif %}
+{% endif %}
+{% if elicitation_answers %}
+
+USER CLARIFICATION ANSWERS:
+{% for key, answer in elicitation_answers.items() %}
+- {{ key }}: {{ answer }}
+{% endfor %}
+{% endif %}
+{% if supplied_content %}
+
+SUPPLIED CONTENT (use these values VERBATIM in data_anchors — do NOT rephrase):
+```json
+{{ supplied_content | tojson(indent=2) }}
+```
+Content distribution guidance:
+- kpi_* keys → data slide with kpi_row component
+- chart_* keys → data slide with chart component
+- table_* keys → data slide with table component
+- bullets → content or closing slide with bullet_list component
+- timeline_items → content slide with timeline component
+- flow_steps → content slide with flow component
+- title/subtitle → cover slide
+{% endif %}
+
+TARGET DECK SIZE: {{ target_slides }} slides.
+{% if target_slides and target_slides > 1 %}
+Produce exactly {{ target_slides }} slides in your outline. If the request specifies a different count, follow the request.
+{% endif %}
+
+Produce the deck outline. Every slide's key_messages must be specific and concrete. Use supplied_content values verbatim in data_anchors where available.

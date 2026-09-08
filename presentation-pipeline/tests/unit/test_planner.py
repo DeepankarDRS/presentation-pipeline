@@ -1,18 +1,47 @@
-"""Tests for the planner agent with mocked LLM responses."""
+"""Tests for the hierarchical planning pipeline.
+
+Replaces the old monolithic planner tests. Tests now cover:
+- outline_planner_node (mocked LLM)
+- _planner_slide_to_state / plan_single_slide helpers
+- compute_provenance from settings_mapper
+- enforce_layout_variety
+"""
 
 from unittest.mock import MagicMock, patch
 
-from src.agents.planner import planner_node, _render_system, _render_user, _slide_to_state, _compute_provenance
-from src.agents.planner_schema import PlannerComponent, PlannerOutput, PlannerSlide
-from src.state import initial_state
+from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
+from src.agents.plan_reviewer_schema import PlanReviewerOutput, PlanReviewIssue
+from src.agents.planner_schema import PlannerComponent, PlannerSlide
+from src.agents.settings_mapper import compute_provenance, settings_to_constraints, DeckSettings
+from src.agents.slide_component_planner import (
+    _planner_slide_to_state,
+    enforce_layout_variety,
+)
+from src.state import SlidePlan, initial_state
 
 
-def _mock_planner_output(*slides: PlannerSlide, core_hook: str = "Test narrative anchor.") -> PlannerOutput:
-    return PlannerOutput(core_hook=core_hook, slides=list(slides))
+def _mock_outline_output(
+    *slide_overrides: dict,
+    deck_title: str = "Test Deck",
+    core_hook: str = "Test narrative anchor.",
+) -> OutlinePlannerOutput:
+    slides = []
+    for i, kwargs in enumerate(slide_overrides):
+        slides.append(OutlineSlide(
+            slide_index=kwargs.get("slide_index", i),
+            slide_title=kwargs.get("slide_title", f"Slide {i+1}"),
+            slide_type=kwargs.get("slide_type", "content"),
+            section=kwargs.get("section", ""),
+            narrative_role=kwargs.get("narrative_role", ""),
+            key_messages=kwargs.get("key_messages", ["Message 1"]),
+            data_anchors=kwargs.get("data_anchors", []),
+            layout_intent=kwargs.get("layout_intent", ""),
+            suggested_components=kwargs.get("suggested_components", ["title"]),
+        ))
+    return OutlinePlannerOutput(deck_title=deck_title, core_hook=core_hook, slides=slides)
 
 
-def _make_structured_llm(output: PlannerOutput):
-    """Create a mock that mimics llm.with_structured_output().invoke()."""
+def _make_structured_llm(output):
     structured = MagicMock()
     structured.invoke.return_value = output
     llm = MagicMock()
@@ -20,90 +49,9 @@ def _make_structured_llm(output: PlannerOutput):
     return llm
 
 
-# ── Template rendering tests ────────────────────────────────────────────────
+# ── _planner_slide_to_state tests ──────────────────────────────────────────
 
-def test_render_system_not_empty():
-    text = _render_system()
-    assert "Component Vocabulary" in text
-    assert "Density" in text
-    assert len(text) > 200
-
-
-def test_render_user_basic():
-    state = initial_state(run_id="t1", raw_request="A simple title slide")
-    text = _render_user(state)
-    assert "A simple title slide" in text
-    assert "SUPPLIED CONTENT" not in text
-
-
-def test_render_user_with_supplied_content():
-    state = initial_state(
-        run_id="t2",
-        raw_request="KPI dashboard",
-        supplied_content={"title": "Q3 Metrics", "kpi_labels": ["ARR", "NRR"]},
-    )
-    text = _render_user(state)
-    assert "Q3 Metrics" in text
-    assert "kpi_labels" in text
-    assert "SUPPLIED CONTENT" in text
-
-
-def test_render_user_with_theme():
-    state = initial_state(
-        run_id="t3",
-        raw_request="A slide",
-        theme_name="corporate-slate",
-    )
-    state["theme_name"] = "corporate-slate"
-    text = _render_user(state)
-    assert "corporate-slate" in text
-
-
-def test_render_user_with_components_hint():
-    state = initial_state(run_id="t4", raw_request="A slide")
-    state["test_case"] = {"components": ["title", "chart", "table"]}
-    text = _render_user(state)
-    assert "title, chart, table" in text
-
-
-def test_render_user_includes_target_when_gt_one():
-    state = initial_state(run_id="t5", raw_request="A deck", deck_min_threshold=5)
-    text = _render_user(state)
-    assert "TARGET DECK SIZE" in text
-    assert "5" in text
-
-
-def test_render_user_omits_target_when_one():
-    state = initial_state(run_id="t6", raw_request="A slide", deck_min_threshold=1)
-    text = _render_user(state)
-    assert "TARGET DECK SIZE" not in text
-
-
-def test_render_user_includes_refine_block():
-    state = initial_state(run_id="t7", raw_request="A deck", deck_min_threshold=4)
-    state["prior_plan"] = {
-        "core_hook": "Old hook.",
-        "slides": [{"slide_index": 0, "slide_type": "cover", "components": []}],
-    }
-    state["refine_feedback"] = "Add a pricing comparison slide."
-    text = _render_user(state)
-    assert "CURRENT PLAN" in text
-    assert "Add a pricing comparison slide." in text
-    assert "Old hook." in text
-    # In refine mode the rigid target-size directive is suppressed
-    assert "TARGET DECK SIZE" not in text
-
-
-def test_render_user_no_refine_block_without_prior_plan():
-    state = initial_state(run_id="t8", raw_request="A deck")
-    text = _render_user(state)
-    assert "CURRENT PLAN" not in text
-    assert "USER FEEDBACK ON THE CURRENT PLAN" not in text
-
-
-# ── Conversion tests ────────────────────────────────────────────────────────
-
-def test_slide_to_state_basic():
+def test_planner_slide_to_state_basic():
     slide = PlannerSlide(
         slide_type="content",
         components=[
@@ -115,7 +63,7 @@ def test_slide_to_state_basic():
         layout_pattern="stacked_sections",
         layout_hint="Title at top, text below",
     )
-    result = _slide_to_state(0, slide)
+    result = _planner_slide_to_state(0, slide)
     assert result["slide_index"] == 0
     assert result["slide_type"] == "content"
     assert result["density"] == "normal"
@@ -125,7 +73,7 @@ def test_slide_to_state_basic():
     assert result["components"][1]["content_summary"] == "Body"
 
 
-def test_slide_to_state_chart_fields():
+def test_planner_slide_to_state_chart_fields():
     slide = PlannerSlide(
         slide_type="data",
         components=[
@@ -139,7 +87,7 @@ def test_slide_to_state_chart_fields():
         layout_pattern="full_width_chart",
         layout_hint="Chart centered",
     )
-    result = _slide_to_state(0, slide)
+    result = _planner_slide_to_state(0, slide)
     comp = result["components"][0]
     assert comp["kind"] == "chart"
     assert comp["chart_type"] == "bar"
@@ -147,7 +95,7 @@ def test_slide_to_state_chart_fields():
     assert comp["count"] == 6
 
 
-def test_slide_to_state_table_fields():
+def test_planner_slide_to_state_table_fields():
     slide = PlannerSlide(
         slide_type="data",
         components=[
@@ -161,13 +109,13 @@ def test_slide_to_state_table_fields():
         layout_pattern="full_width_chart",
         layout_hint="Table fills width",
     )
-    result = _slide_to_state(0, slide)
+    result = _planner_slide_to_state(0, slide)
     comp = result["components"][0]
     assert comp["columns"] == 4
     assert comp["rows"] == 3
 
 
-def test_slide_to_state_omits_zero_fields():
+def test_planner_slide_to_state_omits_zero_fields():
     slide = PlannerSlide(
         slide_type="cover",
         components=[
@@ -178,256 +126,134 @@ def test_slide_to_state_omits_zero_fields():
         layout_pattern="hero_statement",
         layout_hint="Centered title",
     )
-    result = _slide_to_state(0, slide)
+    result = _planner_slide_to_state(0, slide)
     comp = result["components"][0]
     assert "chart_type" not in comp
     assert "series_count" not in comp
     assert "columns" not in comp
 
 
-# ── Planner node tests (mocked LLM) ────────────────────────────────────────
+# ── outline_planner_node tests (mocked LLM) ────────────────────────────────
 
-@patch("src.agents.planner.get_llm")
-def test_planner_text_only(mock_get_llm):
-    output = _mock_planner_output(
-        PlannerSlide(
-            slide_type="content",
-            components=[
-                PlannerComponent(kind="title", count=1, content_summary="Title"),
-                PlannerComponent(kind="narrative", count=1, content_summary="Body text"),
-            ],
-            density="sparse",
-            font_tier="display",
-            layout_pattern="stacked_sections",
-            layout_hint="Title centered, text below",
-        )
+@patch("src.agents.outline_planner.get_llm")
+def test_outline_planner_single_slide(mock_get_llm):
+    output = _mock_outline_output(
+        {"slide_type": "cover", "slide_title": "Company Overview", "key_messages": ["We are great"]},
     )
-    mock_get_llm.return_value = _make_structured_llm(output).with_structured_output.return_value
-    mock_get_llm.return_value = MagicMock()
-    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
+    mock_get_llm.return_value = _make_structured_llm(output)
 
-    state = initial_state(run_id="p1", raw_request="A simple title slide", deck_min_threshold=3)
-    result = planner_node(state)
+    state = initial_state(run_id="op1", raw_request="A company overview slide")
+    result = outline_planner_node(state)
 
-    assert result["mode"] == "single"
-    assert result["deck_plan"] is None
-    assert result["core_hook"] == "Test narrative anchor."
-    assert len(result["slide_plans"]) == 1
-    plan = result["slide_plans"][0]
-    assert plan["density"] == "sparse"
-    assert plan["font_tier"] == "display"
-    assert len(plan["components"]) == 2
-    assert plan["components"][0]["kind"] == "title"
+    outline = result["outline_plan"]
+    assert outline["deck_title"] == "Test Deck"
+    assert outline["core_hook"] == "Test narrative anchor."
+    assert len(outline["slides"]) == 1
+    assert outline["slides"][0]["slide_type"] == "cover"
+    assert outline["slides"][0]["key_messages"] == ["We are great"]
 
 
-@patch("src.agents.planner.get_llm")
-def test_planner_kpi_row(mock_get_llm):
-    output = _mock_planner_output(
-        PlannerSlide(
-            slide_type="data",
-            components=[
-                PlannerComponent(kind="title", count=1, content_summary="Key Metrics"),
-                PlannerComponent(
-                    kind="kpi_row", count=4,
-                    content_summary="ARR, NRR, Gross Margin, Customer Count"
-                ),
-            ],
-            density="normal",
-            font_tier="standard",
-            layout_pattern="hero_big_number",
-            layout_hint="Title at top, 4 KPI tiles in horizontal row below",
-            content_data_json='{"title": "Key Metrics - Q3 FY26", "kpi_labels": ["ARR", "NRR", "Gross Margin", "Customer Count"]}',
-        )
+@patch("src.agents.outline_planner.get_llm")
+def test_outline_planner_multi_slide(mock_get_llm):
+    output = _mock_outline_output(
+        {"slide_type": "cover", "slide_title": "Cover"},
+        {"slide_type": "content", "slide_title": "Problem", "key_messages": ["Market is broken"], "data_anchors": ["$50B opportunity"]},
+        {"slide_type": "data", "slide_title": "Metrics", "key_messages": ["ARR grew 140% YoY"], "data_anchors": ["ARR: $12M"]},
     )
-    mock_get_llm.return_value = MagicMock()
-    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
+    mock_get_llm.return_value = _make_structured_llm(output)
+
+    state = initial_state(run_id="op2", raw_request="Investor pitch deck", deck_min_threshold=3)
+    result = outline_planner_node(state)
+
+    outline = result["outline_plan"]
+    assert len(outline["slides"]) == 3
+    assert outline["slides"][1]["data_anchors"] == ["$50B opportunity"]
+    assert outline["slides"][2]["key_messages"] == ["ARR grew 140% YoY"]
+
+
+@patch("src.agents.outline_planner.get_llm")
+def test_outline_planner_with_deck_settings(mock_get_llm):
+    output = _mock_outline_output(
+        {"slide_type": "cover", "slide_title": "Cover"},
+    )
+    mock_get_llm.return_value = _make_structured_llm(output)
 
     state = initial_state(
-        run_id="p2",
-        raw_request="KPI row slide for Q3 FY26",
-        supplied_content={"title": "Key Metrics - Q3 FY26", "kpi_labels": ["ARR", "NRR", "Gross Margin", "Customer Count"]},
+        run_id="op3",
+        raw_request="Board deck",
+        deck_settings={
+            "text_mode": "condense",
+            "amount_of_text": "minimal",
+            "tone": ["Executive"],
+            "write_for": ["Board"],
+            "slide_count": "6-10",
+        },
     )
-    result = planner_node(state)
-
-    plan = result["slide_plans"][0]
-    assert plan["density"] == "normal"
-    kpi = [c for c in plan["components"] if c["kind"] == "kpi_row"][0]
-    assert kpi["count"] == 4
-    assert plan["content_data"]["title"] == "Key Metrics - Q3 FY26"
+    result = outline_planner_node(state)
+    assert "outline_plan" in result
+    assert result["outline_plan"]["slides"][0]["slide_type"] == "cover"
 
 
-@patch("src.agents.planner.get_llm")
-def test_planner_maximal_density(mock_get_llm):
-    output = _mock_planner_output(
-        PlannerSlide(
-            slide_type="data",
-            components=[
-                PlannerComponent(kind="title", count=1, content_summary="Q3 FY26 Operating Review"),
-                PlannerComponent(kind="kpi_row", count=4, content_summary="ARR, NRR, Margin, CAC"),
-                PlannerComponent(kind="chart", count=6, chart_type="bar", series_count=1, content_summary="Revenue by quarter"),
-                PlannerComponent(kind="chart", count=6, chart_type="line", series_count=1, content_summary="Margin trend"),
-                PlannerComponent(kind="bullet_list", items=5, content_summary="Key takeaways"),
-                PlannerComponent(kind="table", columns=4, rows=4, content_summary="Segment breakdown"),
-                PlannerComponent(kind="caption", count=1, content_summary="Footnote"),
-            ],
-            density="tight_fit",
-            font_tier="micro",
-            layout_pattern="dashboard_grid",
-            layout_hint="Title+kicker at top, 4 KPI tiles below, then 3 columns (bar chart | line chart | bullet list), table spanning full width below, footnote at bottom",
-            content_data_json='{"kicker": "Q3 FY26 OPERATING REVIEW", "title": "The Whole Quarter, One View"}',
-        )
-    )
-    mock_get_llm.return_value = MagicMock()
-    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
+# ── enforce_layout_variety tests ───────────────────────────────────────────
 
-    state = initial_state(
-        run_id="p3",
-        raw_request="An extremely dense Q3 FY26 operating-review slide",
-        supplied_content={"kicker": "Q3 FY26 OPERATING REVIEW", "title": "The Whole Quarter, One View"},
-    )
-    result = planner_node(state)
-
-    plan = result["slide_plans"][0]
-    assert plan["density"] == "tight_fit"
-    assert plan["font_tier"] == "micro"
-    kinds = [c["kind"] for c in plan["components"]]
-    assert "kpi_row" in kinds
-    assert "chart" in kinds
-    assert "table" in kinds
-    assert "bullet_list" in kinds
-    assert "caption" in kinds
-    charts = [c for c in plan["components"] if c["kind"] == "chart"]
-    assert len(charts) == 2
+def test_enforce_layout_variety_swaps_adjacent_repeats():
+    plans: list[SlidePlan] = [
+        SlidePlan(slide_index=0, slide_type="content", layout_pattern="two_column", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
+        SlidePlan(slide_index=1, slide_type="content", layout_pattern="two_column", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
+    ]
+    swaps = enforce_layout_variety(plans)
+    assert swaps >= 1
+    assert plans[0]["layout_pattern"] != plans[1]["layout_pattern"]
 
 
-@patch("src.agents.planner.get_llm")
-def test_planner_chart_and_table(mock_get_llm):
-    output = _mock_planner_output(
-        PlannerSlide(
-            slide_type="data",
-            components=[
-                PlannerComponent(kind="title", count=1, content_summary="Bookings Performance"),
-                PlannerComponent(kind="chart", count=4, chart_type="bar", series_count=1, content_summary="Bookings by quarter"),
-                PlannerComponent(kind="table", columns=4, rows=4, content_summary="Quarterly metrics"),
-            ],
-            density="normal",
-            font_tier="standard",
-            layout_pattern="chart_table_split",
-            layout_hint="Title at top, chart on left and table on right side by side",
-        )
-    )
-    mock_get_llm.return_value = MagicMock()
-    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
-
-    state = initial_state(
-        run_id="p4",
-        raw_request="Two-column slide with bar chart and table",
-        supplied_content={"chart_type": "bar", "quarters": ["Q4", "Q1", "Q2", "Q3"]},
-    )
-    result = planner_node(state)
-
-    plan = result["slide_plans"][0]
-    assert plan["density"] == "normal"
-    kinds = [c["kind"] for c in plan["components"]]
-    assert "chart" in kinds
-    assert "table" in kinds
-    assert "side by side" in plan["layout_hint"]
+def test_enforce_layout_variety_skips_cover():
+    plans: list[SlidePlan] = [
+        SlidePlan(slide_index=0, slide_type="cover", layout_pattern="hero_statement", components=[], density="sparse", font_tier="display", layout_hint="", content_data={}, data_provenance={}),
+        SlidePlan(slide_index=1, slide_type="content", layout_pattern="hero_statement", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
+    ]
+    swaps = enforce_layout_variety(plans)
+    assert swaps == 0
 
 
-@patch("src.agents.planner.get_llm")
-def test_planner_multi_slide_deck_mode(mock_get_llm):
-    output = _mock_planner_output(
-        PlannerSlide(
-            slide_type="cover",
-            components=[PlannerComponent(kind="title", count=1)],
-            density="sparse", font_tier="display",
-            layout_pattern="hero_statement",
-            layout_hint="Cover slide",
-        ),
-        PlannerSlide(
-            slide_type="data",
-            components=[PlannerComponent(kind="kpi_row", count=4)],
-            density="normal", font_tier="standard",
-            layout_pattern="three_column_cards",
-            layout_hint="KPI dashboard",
-        ),
-        PlannerSlide(
-            slide_type="data",
-            components=[PlannerComponent(kind="chart", chart_type="bar", count=4)],
-            density="normal", font_tier="standard",
-            layout_pattern="full_width_chart",
-            layout_hint="Revenue chart",
-        ),
-    )
-    mock_get_llm.return_value = MagicMock()
-    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
-
-    state = initial_state(
-        run_id="p5",
-        raw_request="A 3-slide deck with cover, KPIs, and revenue chart",
-        deck_min_threshold=3,
-    )
-    result = planner_node(state)
-
-    assert result["mode"] == "deck"
-    assert result["deck_plan"] is not None
-    assert result["deck_plan"]["slide_count"] == 3
-    assert len(result["slide_plans"]) == 3
-    assert result["slide_plans"][0]["slide_index"] == 0
-    assert result["slide_plans"][2]["slide_index"] == 2
+def test_enforce_layout_variety_no_repeat():
+    plans: list[SlidePlan] = [
+        SlidePlan(slide_index=0, slide_type="content", layout_pattern="two_column", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
+        SlidePlan(slide_index=1, slide_type="content", layout_pattern="full_width_chart", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
+    ]
+    swaps = enforce_layout_variety(plans)
+    assert swaps == 0
 
 
-@patch("src.agents.planner.get_llm")
-def test_planner_single_slide_mode(mock_get_llm):
-    output = _mock_planner_output(
-        PlannerSlide(
-            slide_type="cover",
-            components=[PlannerComponent(kind="title", count=1)],
-            density="sparse", font_tier="display",
-            layout_pattern="hero_statement",
-            layout_hint="Simple title",
-        ),
-    )
-    mock_get_llm.return_value = MagicMock()
-    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
-
-    state = initial_state(run_id="p6", raw_request="Title slide", deck_min_threshold=3)
-    result = planner_node(state)
-
-    assert result["mode"] == "single"
-    assert result["deck_plan"] is None
-
-
-# ── Data provenance tests ──────────────────────────────────────────────────
+# ── compute_provenance tests ───────────────────────────────────────────────
 
 def test_compute_provenance_all_sample():
     content = {"title": "Q3", "subtitle": "Revenue", "chart_data": [1, 2]}
-    prov = _compute_provenance(content, {})
+    prov = compute_provenance(content, {})
     assert prov == {"title": "sample", "subtitle": "sample", "chart_data": "sample"}
 
 
 def test_compute_provenance_all_user():
     content = {"title": "Q3", "kpi_labels": ["ARR"]}
     supplied = {"title": "Q3", "kpi_labels": ["ARR"]}
-    prov = _compute_provenance(content, supplied)
+    prov = compute_provenance(content, supplied)
     assert prov == {"title": "user", "kpi_labels": "user"}
 
 
 def test_compute_provenance_mixed():
     content = {"title": "Q3", "subtitle": "Revenue", "kpi_labels": ["ARR"]}
     supplied = {"title": "Q3", "kpi_labels": ["ARR"]}
-    prov = _compute_provenance(content, supplied)
+    prov = compute_provenance(content, supplied)
     assert prov["title"] == "user"
     assert prov["kpi_labels"] == "user"
     assert prov["subtitle"] == "sample"
 
 
 def test_compute_provenance_empty_content():
-    prov = _compute_provenance({}, {"title": "Q3"})
+    prov = compute_provenance({}, {"title": "Q3"})
     assert prov == {}
 
 
-def test_slide_to_state_provenance_with_supplied():
+def test_planner_slide_to_state_provenance_with_supplied():
     slide = PlannerSlide(
         slide_type="data",
         components=[PlannerComponent(kind="title", count=1)],
@@ -436,12 +262,12 @@ def test_slide_to_state_provenance_with_supplied():
         layout_hint="Title at top",
         content_data_json='{"title": "Q3 Metrics", "chart_data": [1, 2, 3]}',
     )
-    result = _slide_to_state(0, slide, supplied_content={"title": "Q3 Metrics"})
+    result = _planner_slide_to_state(0, slide, supplied_content={"title": "Q3 Metrics"})
     assert result["data_provenance"]["title"] == "user"
     assert result["data_provenance"]["chart_data"] == "sample"
 
 
-def test_slide_to_state_provenance_no_supplied():
+def test_planner_slide_to_state_provenance_no_supplied():
     slide = PlannerSlide(
         slide_type="content",
         components=[PlannerComponent(kind="title", count=1)],
@@ -450,31 +276,28 @@ def test_slide_to_state_provenance_no_supplied():
         layout_hint="Title at top",
         content_data_json='{"title": "Generated Title"}',
     )
-    result = _slide_to_state(0, slide)
+    result = _planner_slide_to_state(0, slide)
     assert result["data_provenance"]["title"] == "sample"
 
 
-@patch("src.agents.planner.get_llm")
-def test_planner_node_populates_provenance(mock_get_llm):
-    output = _mock_planner_output(
-        PlannerSlide(
-            slide_type="data",
-            components=[PlannerComponent(kind="title", count=1, content_summary="Title")],
-            density="normal", font_tier="standard",
-            layout_pattern="stacked_sections",
-            layout_hint="Title at top",
-            content_data_json='{"title": "Q3 Metrics", "subtitle": "Revenue Growth"}',
-        )
-    )
-    mock_get_llm.return_value = MagicMock()
-    mock_get_llm.return_value.with_structured_output.return_value.invoke.return_value = output
+# ── DeckSettings constraint mapping tests ─────────────────────────────────
 
-    state = initial_state(
-        run_id="prov1",
-        raw_request="Q3 metrics slide",
-        supplied_content={"title": "Q3 Metrics"},
-    )
-    result = planner_node(state)
-    prov = result["slide_plans"][0]["data_provenance"]
-    assert prov["title"] == "user"
-    assert prov["subtitle"] == "sample"
+def test_settings_to_constraints_minimal():
+    s = DeckSettings(amount_of_text="minimal", text_mode="generate", slide_count="3-5")
+    c = settings_to_constraints(s)
+    assert c["density"] == "sparse"
+    assert c["key_messages_per_slide"] == "1"
+    assert c["deck_min_threshold"] == 4
+
+
+def test_settings_to_constraints_extensive():
+    s = DeckSettings(amount_of_text="extensive", text_mode="preserve", slide_count="10-15")
+    c = settings_to_constraints(s)
+    assert c["density"] == "tight_fit"
+    assert c["key_messages_per_slide"] == "4-6"
+    assert c["provenance_rule"] == "llm_preserves_verbatim"
+    assert c["deck_min_threshold"] == 12
+
+
+# Local import needed for the outline node tests
+from src.agents.outline_planner import outline_planner_node
