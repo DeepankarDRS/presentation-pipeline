@@ -507,6 +507,13 @@ class OutlineRequest(BaseModel):
     elicitation_answers: dict[str, str] | None = None
 
 
+class RegenerateOutlineSlideRequest(BaseModel):
+    core_hook: str
+    outline_slide: dict[str, Any]
+    feedback: str
+    deck_settings: dict[str, Any] | None = None
+
+
 class ElicitRequest(BaseModel):
     prompt: str
     deck_settings: dict[str, Any] | None = None
@@ -715,6 +722,23 @@ async def update_outline(run_id: str, outline: dict[str, Any]) -> dict[str, Any]
     """
     _edited_outlines[run_id] = outline
     return {"run_id": run_id, "accepted": True, "slide_count": len(outline.get("slides", []))}
+
+
+@app.post("/plan/outline/regenerate-slide")
+async def regenerate_outline_slide_endpoint(request: RegenerateOutlineSlideRequest) -> dict[str, Any]:
+    """Regenerate one outline slide's content from user feedback. Stateless — no run_id."""
+    from src.agents.outline_replanner import regenerate_outline_slide
+
+    try:
+        return await asyncio.to_thread(
+            regenerate_outline_slide,
+            request.outline_slide,
+            request.core_hook,
+            request.feedback,
+            request.deck_settings,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Slide regeneration failed: {exc}")
 
 
 @app.post("/plan/review")

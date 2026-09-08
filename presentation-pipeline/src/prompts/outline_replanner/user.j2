@@ -1,0 +1,19 @@
+DECK CORE HOOK:
+{{ core_hook }}
+
+CURRENT SLIDE:
+```json
+{{ outline_slide | tojson(indent=2) }}
+```
+{% if deck_settings %}
+
+DECK SETTINGS:
+- Write for: {{ deck_settings.get('write_for') | join(', ') or 'general audience' }}
+- Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}
+- Text mode: {{ deck_settings.get('text_mode', 'generate') }}
+{% endif %}
+
+USER FEEDBACK:
+{{ feedback }}
+
+Produce the revised OutlineSlide, applying the feedback above.

@@ -14,6 +14,7 @@ import {
   OutlineRequest,
   OutlineResponse,
   OutlinePlan,
+  OutlineSlide,
 } from '../models/api.models';
 
 const API_BASE = 'http://localhost:8000';
@@ -177,6 +178,26 @@ export class ApiService {
       body: JSON.stringify(outline),
     });
     if (!res.ok) throw new Error(`Outline update failed: ${res.status} ${res.statusText}`);
+    return res.json();
+  }
+
+  async regenerateOutlineSlide(
+    coreHook: string,
+    slide: OutlineSlide,
+    feedback: string,
+    deckSettings?: DeckSettings | null,
+  ): Promise<OutlineSlide> {
+    const res = await fetch(`${API_BASE}/plan/outline/regenerate-slide`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        core_hook: coreHook,
+        outline_slide: slide,
+        feedback,
+        deck_settings: deckSettings ?? null,
+      }),
+    });
+    if (!res.ok) throw new Error(`Slide regeneration failed: ${res.status} ${res.statusText}`);
     return res.json();
   }
 }

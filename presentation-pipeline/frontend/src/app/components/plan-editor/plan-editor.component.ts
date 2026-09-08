@@ -1,6 +1,7 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GenerationService } from '../../services/generation.service';
+import { ApiService } from '../../services/api.service';
 import { OutlineSlide } from '../../models/api.models';
 
 const SLIDE_TYPE_COLORS: Record<string, string> = {
@@ -94,6 +95,8 @@ function emptyOutlineSlide(index: number): OutlineSlide {
                 />
               </div>
               <div class="flex items-center gap-1 shrink-0">
+                <button type="button" (click)="toggleRegenerate(i)"
+                  class="p-1 text-gray-400 hover:text-blue-600" title="Regenerate this slide">&#8635;</button>
                 @if (i > 0) {
                   <button type="button" (click)="moveSlide(i, -1)"
                     class="p-1 text-gray-400 hover:text-gray-600" title="Move up">&#9650;</button>
@@ -127,6 +130,30 @@ function emptyOutlineSlide(index: number): OutlineSlide {
                 <button type="button" (click)="commitKeyMessage(i)"
                   class="px-3 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100">+</button>
               </div>
+
+              <!-- Regenerate feedback box -->
+              @if (regeneratingIndex() === i) {
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                  @if (regenerateError() && regeneratingIndex() === i) {
+                    <p class="text-xs text-red-600 mb-1.5">{{ regenerateError() }}</p>
+                  }
+                  <textarea rows="2" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm resize-y mb-1.5"
+                    [(ngModel)]="regenerateFeedback[i]"
+                    placeholder="Describe how this slide should change..."
+                    [disabled]="regeneratingLoading() === i"
+                  ></textarea>
+                  <div class="flex gap-1.5">
+                    <button type="button" (click)="submitRegenerate(i)"
+                      class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 disabled:bg-gray-300"
+                      [disabled]="regeneratingLoading() === i || !feedbackFor(i).trim()"
+                    >{{ regeneratingLoading() === i ? 'Regenerating...' : 'Regenerate' }}</button>
+                    <button type="button" (click)="toggleRegenerate(i)"
+                      class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs text-gray-600 hover:bg-gray-100"
+                      [disabled]="regeneratingLoading() === i"
+                    >Cancel</button>
+                  </div>
+                </div>
+              }
             </div>
           </div>
         }
@@ -159,6 +186,7 @@ function emptyOutlineSlide(index: number): OutlineSlide {
 })
 export class PlanEditorComponent {
   protected readonly generation = inject(GenerationService);
+  private readonly api = inject(ApiService);
 
   readonly deckTitle = signal('');
   readonly coreHook = signal('');
@@ -166,6 +194,12 @@ export class PlanEditorComponent {
 
   // Scratch input state for the key-message list editor, keyed by slide index.
   newKeyMessage: Record<number, string> = {};
+
+  // Per-slide regenerate state.
+  readonly regeneratingIndex = signal<number | null>(null);
+  readonly regeneratingLoading = signal<number | null>(null);
+  readonly regenerateError = signal<string | null>(null);
+  regenerateFeedback: Record<number, string> = {};
 
   constructor() {
     effect(() => {
@@ -229,6 +263,47 @@ export class PlanEditorComponent {
 
   addSlide(): void {
     this.slides.update(slides => [...slides, emptyOutlineSlide(slides.length)]);
+  }
+
+  replaceSlide(index: number, updated: OutlineSlide): void {
+    this.slides.update(slides =>
+      slides.map((s, i) => i === index ? updated : s)
+    );
+  }
+
+  feedbackFor(index: number): string {
+    return this.regenerateFeedback[index] ?? '';
+  }
+
+  toggleRegenerate(index: number): void {
+    this.regenerateError.set(null);
+    this.regeneratingIndex.set(this.regeneratingIndex() === index ? null : index);
+  }
+
+  submitRegenerate(index: number): void {
+    const feedback = (this.regenerateFeedback[index] ?? '').trim();
+    if (!feedback) return;
+
+    this.regenerateError.set(null);
+    this.regeneratingLoading.set(index);
+
+    this.api.regenerateOutlineSlide(
+      this.coreHook(),
+      this.slides()[index],
+      feedback,
+      this.generation.originalRequest()?.deck_settings,
+    ).then(
+      (updated) => {
+        this.replaceSlide(index, updated);
+        this.regeneratingLoading.set(null);
+        this.regeneratingIndex.set(null);
+        this.regenerateFeedback[index] = '';
+      },
+      (err: Error) => {
+        this.regeneratingLoading.set(null);
+        this.regenerateError.set(err.message || 'Regeneration failed');
+      },
+    );
   }
 
   onConfirm(): void {
