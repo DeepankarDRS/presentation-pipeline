@@ -42,7 +42,10 @@ class OutlineSlide(BaseModel):
                     "MUST be specific and falsifiable — not vague summaries. "
                     "BAD: 'Shows strong growth.' "
                     "GOOD: 'Revenue grew 40% YoY to $42.8M in FY2025.' "
-                    "Use supplied data verbatim when available.",
+                    "Use supplied data verbatim when available; otherwise invent a plausible "
+                    "concrete number. Never write literal placeholder syntax like '[estimate]' "
+                    "or '[TBD]' here — that tag belongs only in data_anchors. Do not restate "
+                    "a data_anchor verbatim; write the full sentence it supports instead.",
     )
 
     data_anchors: list[str] = Field(

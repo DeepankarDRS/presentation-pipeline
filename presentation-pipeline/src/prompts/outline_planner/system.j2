@@ -50,7 +50,7 @@ Each slide's `narrative_role` must:
 Rules:
 - Must be specific and falsifiable. BAD: "Shows strong growth." GOOD: "Revenue grew 40% YoY to $42.8M in FY2025."
 - Use numbers from supplied_content VERBATIM when available
-- When no supplied_content: derive plausible estimates from the request context, mark nothing as generic
+- When no supplied_content: derive a plausible, concrete number from the request context — never write literal placeholder syntax like "[estimate]", "[TBD]", or "[value]" into a key_message. That bracket-tag convention belongs only in data_anchors (see below).
 - Count: governed by `amount_of_text` setting:
   - minimal → 1 key message per slide
   - concise → 2 key messages per slide
@@ -60,11 +60,25 @@ Rules:
 
 ## data_anchors Requirements
 
-Pull specific quantitative facts that will anchor data components:
+Pull specific quantitative facts that will anchor data components — NOT a restatement of the key_message sentence. A data_anchor is the bare fact/number extracted out, terse enough to drop directly into a KPI tile or chart value:
 - Source from supplied_content first (use exact values)
-- If no supplied content: mark estimates with [estimate] suffix
-- Format naturally: "$42.8M ARR", "73% of enterprise customers", "3.2x faster"
+- If no supplied content: mark estimates with [estimate] suffix — this is the ONLY field where that tag belongs
+- Format naturally and tersely: "$42.8M ARR", "73% of enterprise customers", "3.2x faster"
 - Leave empty for qualitative slides (cover, section_break)
+
+**key_messages vs data_anchors — do not duplicate them.** key_messages is the full sentence-in-context; data_anchors is the terse fact lifted out of it. Example, for the same underlying number with no supplied_content:
+
+BAD (redundant, and the placeholder tag leaks into the sentence):
+```
+key_messages: ["Fable 5.1 generated $[estimate]M in revenue last year, reflecting robust market demand."]
+data_anchors: ["$[estimate]M revenue (last year)"]
+```
+
+GOOD (complementary — the sentence states a concrete invented number, the anchor is the terse tagged fact):
+```
+key_messages: ["Fable 5.1 generated an estimated $38M in revenue last year, reflecting strong market demand."]
+data_anchors: ["$38M revenue [estimate]"]
+```
 
 ## layout_intent Requirements
 
