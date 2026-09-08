@@ -115,6 +115,12 @@ interface EditHistoryEntry {
                   <span class="text-green-600">({{ lastEditResult()!.repair_attempts }} repair(s))</span>
                 }
               </div>
+              @if (!lastEditResult()!.screenshot_updated) {
+                <div class="mb-2 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                  The change was applied, but the preview couldn't be refreshed — it's still
+                  included in your download. Try the edit again to retry the preview.
+                </div>
+              }
             }
             <div class="flex gap-2">
               <input
@@ -178,6 +184,7 @@ export class SlideReviewComponent {
   readonly lastEditResult = signal<SlideEditResponse | null>(null);
   readonly editHistoryMap = signal<Map<number, EditHistoryEntry[]>>(new Map());
   readonly slideVersions = signal<Map<number, number>>(new Map());
+  readonly screenshotVersions = signal<Map<number, number>>(new Map());
 
   feedbackText = '';
 
@@ -196,7 +203,7 @@ export class SlideReviewComponent {
     const runId = this.gen.runId();
     if (!runId) return null;
     const idx = this.selectedIndex();
-    const ver = this.slideVersions().get(idx) ?? 0;
+    const ver = this.screenshotVersions().get(idx) ?? 0;
     return this.api.getScreenshotUrl(runId, idx, ver);
   });
 
@@ -207,7 +214,7 @@ export class SlideReviewComponent {
   screenshotSrc(slideIndex: number): string {
     const runId = this.gen.runId();
     if (!runId) return '';
-    const ver = this.slideVersions().get(slideIndex) ?? 0;
+    const ver = this.screenshotVersions().get(slideIndex) ?? 0;
     return this.api.getScreenshotUrl(runId, slideIndex, ver);
   }
 
@@ -249,6 +256,13 @@ export class SlideReviewComponent {
         const verMap = new Map(this.slideVersions());
         verMap.set(idx, result.version);
         this.slideVersions.set(verMap);
+
+        if (result.screenshot_updated) {
+          const screenshotMap = new Map(this.screenshotVersions());
+          screenshotMap.set(idx, (screenshotMap.get(idx) ?? 0) + 1);
+          this.screenshotVersions.set(screenshotMap);
+        }
+
         this.feedbackText = '';
       } else {
         this.editError.set(result.error ?? 'Edit failed');

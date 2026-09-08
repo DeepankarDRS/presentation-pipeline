@@ -223,10 +223,18 @@ def edit_slide_xml(
 
 
 def _try_screenshot(pptx_path: str | None, output_dir: str) -> str | None:
-    """Attempt screenshot, return path or None."""
+    """Attempt screenshot, retrying once on failure. Returns path or None.
+
+    A failure here doesn't fail the edit (the XML already compiled fine and
+    is what ends up in the download) — but it does leave the review UI
+    showing a stale preview, so log clearly and give transient rendering
+    failures one retry before giving up.
+    """
     if not pptx_path:
         return None
-    batch = render_screenshots(pptx_path, output_dir)
-    if batch.ok and batch.slides:
-        return batch.slides[0].png_path
+    for attempt in (1, 2):
+        batch = render_screenshots(pptx_path, output_dir)
+        if batch.ok and batch.slides:
+            return batch.slides[0].png_path
+        logger.warning(f"slide_editor: screenshot attempt {attempt}/2 failed: {batch.error}")
     return None

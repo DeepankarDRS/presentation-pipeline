@@ -392,3 +392,54 @@ def test_load_edit_session_legacy_manifest_no_resolved_theme():
         assert session.theme_element == '<Theme accent="2563EB" />'
     finally:
         shutil.rmtree(run_dir)
+
+
+def test_edit_endpoint_screenshot_failure_does_not_go_stale_looking():
+    """A screenshot render failure must not produce a "fresh-looking" URL for stale content.
+
+    Regression test: edit_slide_xml can succeed (xml compiles, is correct in
+    the eventual download) while its own screenshot render fails. Before the
+    fix, the response's screenshot_url was built from the edit version number
+    (which always bumps), making a stale screenshot look like a fresh one to
+    the frontend even though the file on disk hadn't changed.
+    """
+    from src.agents.slide_edit_service import SlideEditResult
+    from src.api import _edit_sessions
+
+    run_dir = _write_run_files(
+        "edit-screenshot-stale-test",
+        manifest={"theme_element": "<Theme />", "resolved_theme": {}, "pptx_path": None},
+        slides=[{
+            "slide_index": 0, "xml": "<Slide></Slide>", "screenshot_path": None,
+            "slide_plan": {"components": [{"kind": "title"}]},
+        }],
+    )
+    try:
+        resp = client.post("/runs/edit-screenshot-stale-test/edit-session")
+        assert resp.status_code == 200
+
+        results = iter([
+            SlideEditResult(ok=True, xml="<Slide>v1</Slide>", compile_ok=True, screenshot_path="/tmp/v1.png"),
+            SlideEditResult(ok=True, xml="<Slide>v2</Slide>", compile_ok=True, screenshot_path=None),
+        ])
+
+        with patch("src.agents.slide_edit_service.edit_slide_xml", side_effect=lambda **kw: next(results)):
+            resp1 = client.post("/runs/edit-screenshot-stale-test/slides/0/edit", json={"feedback": "add a paragraph"})
+            resp2 = client.post("/runs/edit-screenshot-stale-test/slides/0/edit", json={"feedback": "add a pyramid"})
+
+        body1, body2 = resp1.json(), resp2.json()
+
+        assert body1["ok"] is True and body1["screenshot_updated"] is True
+        assert body2["ok"] is True and body2["screenshot_updated"] is False
+
+        # The edit itself succeeded and the XML moved forward both times...
+        assert body1["xml"] == "<Slide>v1</Slide>"
+        assert body2["xml"] == "<Slide>v2</Slide>"
+        assert body2["version"] > body1["version"]
+
+        # ...but since edit 2's screenshot failed, its URL must be identical to
+        # edit 1's (same underlying file), not a new-looking URL for stale content.
+        assert body2["screenshot_url"] == body1["screenshot_url"]
+    finally:
+        _edit_sessions.pop("edit-screenshot-stale-test", None)
+        shutil.rmtree(run_dir)

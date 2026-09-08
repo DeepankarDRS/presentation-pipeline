@@ -661,6 +661,7 @@ class EditSlideState:
     screenshot_path: str | None = None
     edit_history: list[EditRecord] = field(default_factory=list)
     version: int = 0
+    screenshot_version: int = 0
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     slide_plan: dict[str, Any] = field(default_factory=dict)
 
@@ -701,6 +702,7 @@ class SlideEditResponse(BaseModel):
     slide_index: int
     version: int
     screenshot_url: str | None
+    screenshot_updated: bool = False
     xml: str | None = None
     compile_ok: bool = False
     repair_attempts: int = 0
@@ -790,7 +792,7 @@ async def create_edit_session(run_id: str) -> EditSessionResponse:
         slide_infos.append(SlideInfoResponse(
             slide_index=s.slide_index,
             version=s.version,
-            screenshot_url=_screenshot_url(run_id, s.slide_index, s.version)
+            screenshot_url=_screenshot_url(run_id, s.slide_index, s.screenshot_version)
                 if s.screenshot_path else None,
             has_edits=len(s.edit_history) > 0,
             edit_count=len(s.edit_history),
@@ -854,6 +856,13 @@ async def edit_slide(
             slide.slide_plan = updated_plan
             if result.screenshot_path:
                 slide.screenshot_path = result.screenshot_path
+                slide.screenshot_version += 1
+            else:
+                logger.warning(
+                    f"edit_slide: run {run_id} slide {slide_index} v{slide.version} "
+                    "compiled successfully but screenshot generation failed — "
+                    "preview will show the last successful render"
+                )
             slide.edit_history.append(EditRecord(
                 version=slide.version,
                 feedback=request.feedback,
@@ -869,8 +878,9 @@ async def edit_slide(
             ok=result.ok,
             slide_index=slide_index,
             version=slide.version,
-            screenshot_url=_screenshot_url(run_id, slide_index, slide.version)
+            screenshot_url=_screenshot_url(run_id, slide_index, slide.screenshot_version)
                 if slide.screenshot_path else None,
+            screenshot_updated=bool(result.screenshot_path),
             xml=result.xml if result.ok else None,
             compile_ok=result.compile_ok,
             repair_attempts=result.repair_attempts,

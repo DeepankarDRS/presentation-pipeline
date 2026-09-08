@@ -136,6 +136,7 @@ export interface SlideEditResponse {
   slide_index: number;
   version: number;
   screenshot_url: string | null;
+  screenshot_updated: boolean;
   xml: string | null;
   compile_ok: boolean;
   repair_attempts: number;
