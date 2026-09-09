@@ -1,9 +1,10 @@
 """Deck multi-slide nodes — slide_router and deck_assembler.
 
-slide_router: saves completed slide XML + critic verdict, increments index,
-resets per-slide state.
-deck_assembler: extracts <Slide> blocks from all completed slides, combines with
-one <Theme>, runs final compile with a bounded compile-repair loop.
+slide_router: saves the completed slide's *normalized* XML + critic verdict,
+increments index, resets per-slide state.
+deck_assembler: extracts <Slide> blocks from all completed slides, combines them
+under one <Theme> (re-running normalize so per-slide auto-fixes stick), runs the
+final compile with a bounded compile-repair loop.
 
 These nodes are only active when len(slide_plans) > 1.
 """
@@ -15,9 +16,9 @@ import re
 from pathlib import Path
 from typing import Any
 
+from src.agents.repairer import build_patch_prompts
 from src.compiler.compiler_client import CompilerError, compile_xml
-from src.compiler.normalizer import normalize_xml, strip_theme
-from src.compiler.repair_guidance import build_error_guidance
+from src.compiler.normalizer import ensure_single_theme, normalize_xml, strip_theme
 from src.state import PresentationState
 from src.utils.llm_client import get_llm
 
@@ -28,26 +29,76 @@ _PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
 MAX_DECK_REPAIR_ATTEMPTS = 2
 
 
-def _call_deck_repair_llm(failing_xml: str, problems: list[str], guidance: str) -> str:
-    """Fix compile errors in the assembled multi-slide document, preserving all slides."""
-    user_prompt = (
-        f"## FAILING MULTI-SLIDE POM DOCUMENT\n{failing_xml}\n\n"
-        f"## COMPILE ERRORS\n" + "\n".join(f"- {p}" for p in problems) + "\n\n"
-        f"## ERROR GUIDANCE\n{guidance}\n\n"
-        "Fix the compile errors. Preserve every <Slide> block and the single "
-        "top-level <Theme>. Return the complete corrected document only."
+def _call_deck_repair_llm(
+    failing_xml: str,
+    diags: list[dict[str, Any]],
+    *,
+    forbidden_tags: list[str],
+    theme_element: str,
+) -> str:
+    """Fix compile errors in the assembled multi-slide document, preserving all slides.
+
+    Reuses the repairer's shared PATCH prompt builder so the deck repair gets the
+    same forbidden-tag rules, error-scoped node knowledge, and targeted fix
+    guidance that a single-slide repair gets.
+    """
+    system_prompt, user_prompt = build_patch_prompts(
+        failing_xml=failing_xml,
+        problems=[f"{d.get('type', 'ERROR')}: {d.get('message', '')}" for d in diags],
+        pre_issues=[],
+        compile_diags=diags,
+        objective=(
+            "Repair the assembled multi-slide deck. Preserve every <Slide> block "
+            "and the single top-level <Theme>."
+        ),
+        forbidden_tags=forbidden_tags,
+        theme_element=theme_element,
     )
     response = get_llm("repairer").invoke([
-        {"role": "system", "content": "You repair POM presentation XML. Output only valid POM XML."},
+        {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ])
     return response.content
 
 
+def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> str:
+    """Combine per-slide XML into one normalized multi-slide POM document.
+
+    Extracts each <Slide> block, drops per-slide themes, concatenates under a
+    single top-level <Theme>, then runs the same normalize + ensure_single_theme
+    pass the per-slide validator uses — so br/hr, #-hex, spacing=, fontWeight=,
+    and zero-spacing contamination that was auto-fixed per slide cannot reach
+    the deck compile. Returns "" if no <Slide> block is found.
+    """
+    blocks: list[str] = []
+    for xml in slide_xmls:
+        block = _extract_slide_block(xml)
+        if block:
+            blocks.append(strip_theme(block))
+        else:
+            logger.warning("assemble_deck_xml: slide had no <Slide> block — dropped")
+    if not blocks:
+        return ""
+
+    theme = (theme_element or "").strip()
+    if not theme:
+        for xml in slide_xmls:
+            theme = _extract_theme(xml)
+            if theme:
+                break
+
+    combined = (theme + "\n" if theme else "") + "\n".join(blocks)
+    return ensure_single_theme(normalize_xml(combined)["cleaned_xml"], theme)
+
+
 def slide_router_node(state: PresentationState) -> dict[str, Any]:
     """Save current slide result and advance to next slide index."""
     idx = state.get("current_slide_index", 0)
-    xml = state.get("current_xml", "")
+    # Save the normalized XML the validator actually compiled, not the raw LLM
+    # output — otherwise per-slide auto-fixes (br/hr, #-hex, spacing=, …) are lost
+    # and resurface as deck-compile failures.
+    norm = state.get("normalize_result") or {}
+    xml = norm.get("cleaned_xml") or state.get("current_xml", "")
 
     logger.info(f"slide_router: saving slide {idx}, advancing to {idx + 1}")
 
@@ -103,21 +154,9 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
     # The pipeline owns the single top-level <Theme>. Prefer the resolved theme
     # from state; fall back to scraping a slide only if state has none.
     theme = (state.get("resolved_theme") or {}).get("element") or state.get("theme_element", "")
-    if not theme:
-        for slide in sorted_slides:
-            theme = _extract_theme(slide["xml"])
-            if theme:
-                break
 
-    slide_blocks: list[str] = []
-    for slide in sorted_slides:
-        block = _extract_slide_block(slide["xml"])
-        if block:
-            slide_blocks.append(strip_theme(block))
-        else:
-            logger.warning(f"deck_assembler: no <Slide> block in slide {slide.get('slide_index')}")
-
-    if not slide_blocks:
+    combined_xml = assemble_deck_xml([s["xml"] for s in sorted_slides], theme)
+    if not combined_xml:
         logger.error("deck_assembler: no valid <Slide> blocks found")
         return {
             "compile_result": {
@@ -126,9 +165,9 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
                 "warnings": [], "retryable": False,
             },
         }
-
-    combined_xml = theme.strip() + "\n" + "\n".join(slide_blocks)
-    logger.info(f"deck_assembler: combined {len(slide_blocks)} slides, {len(combined_xml)} chars")
+    if not theme:
+        theme = _extract_theme(combined_xml)
+    logger.info(f"deck_assembler: assembled {len(sorted_slides)} slides, {len(combined_xml)} chars")
 
     run_id = state.get("run_id", "unknown")
     output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "deck"
@@ -146,6 +185,7 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
             },
         }
 
+    forbidden_tags = (state.get("contract") or {}).get("forbidden_tags", [])
     working_xml = combined_xml
     attempt = 0
     while (
@@ -155,17 +195,18 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
     ):
         attempt += 1
         diags = compile_result.get("diagnostics", [])
-        problems = [f"{d.get('type', 'ERROR')}: {d.get('message', '')}" for d in diags]
-        guidance = build_error_guidance([], diags)
         logger.info(f"deck_assembler: compile failed, repair attempt {attempt}/{MAX_DECK_REPAIR_ATTEMPTS}")
 
         try:
-            repaired = _call_deck_repair_llm(working_xml, problems, guidance)
+            repaired = _call_deck_repair_llm(
+                working_xml, diags,
+                forbidden_tags=forbidden_tags, theme_element=theme,
+            )
         except Exception as exc:
             logger.error(f"deck_assembler: repair LLM call failed: {exc}")
             break
 
-        working_xml = normalize_xml(repaired).get("cleaned_xml", repaired)
+        working_xml = ensure_single_theme(normalize_xml(repaired)["cleaned_xml"], theme)
         try:
             compile_result = compile_xml(working_xml, output_dir / f"repair-{attempt}")
         except CompilerError as exc:

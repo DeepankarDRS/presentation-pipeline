@@ -32,8 +32,8 @@ mechanical scorer behind.
 | `validator` | – | Ground truth. `normalize_xml` (strip fences, `#`-hex, `<br>/<hr>`, `spacing→gap`, `fontWeight→bold`, flag zero dims, extract `<Notes>`) → `parseXml` (fast structural check) → `buildPptx` (real compile). Also runs `audit_layout` (mechanical spatial checks). Never parses Node stderr — reads `compile-result.json`. |
 | `repairer` | ✅ free text | Two strategies: **PATCH** (feed back failing XML + targeted guidance, fix in place) and **REGENERATE** (rebuild from the plan, seeded with a verified skeleton when one fits). Routed by error class (`needs_regeneration`), stall (≥65% error-signature overlap), and attempt number. Loops back to `validator`, not `generator`. |
 | `critic` | ✅ structured | Post-compile quality gate for what the compiler can't see: component completeness vs plan, supplied-value fidelity, structural sanity, slide-type coherence, theme adherence. `auto` = high-severity issue → fail → repair. `manual` = human A/R/E checkpoint. `off` = skip. |
-| `slide_router` | – | Deck-only. Saves the finished slide XML into `completed_slides`, bumps `current_slide_index`, **resets every per-slide key** (xml, results, retry counters) for the next iteration. |
-| `deck_assembler` | – | Deck-only. Regex-extracts one `<Theme>` + every `<Slide>` block from the completed slides, concatenates, runs **one final compile**. |
+| `slide_router` | – | Deck-only. Saves the slide's **normalized** XML (`normalize_result.cleaned_xml`) into `completed_slides`, bumps `current_slide_index`, **resets every per-slide key** (xml, results, retry counters) for the next iteration. |
+| `deck_assembler` | – | Deck-only. `assemble_deck_xml()` regex-extracts every `<Slide>` block, re-normalizes + puts one `<Theme>` back, runs **one final compile** with a bounded (2×) repair loop. |
 | `evaluator` | – | Mechanical scoring. `passed = compile_ok AND critic_ok`. Sums tokens/cost from `generation_history`, writes `run-manifest.json`. Terminal node. |
 
 ## 1.3 State discipline
@@ -99,15 +99,18 @@ reports `passed=True` as long as the final assembly compiles. **The critic is
 effectively disabled for decks.** Fix: accumulate per-slide critic results (e.g.
 into `completed_slides`) and have `evaluator` AND them.
 
-### 2. The assembled deck gets zero validation and zero retries
-`deck_assembler` regex-extracts `<Slide>` blocks, concatenates, and calls
-`compile_xml` once. The graph then goes straight to `evaluator` — there is no
-`route_after_deck_assembler`, no repair path. A single slide gets 3 repair
-attempts; the whole deck gets none. If assembly compile fails (e.g. two slides
-declared conflicting IDs, or a slide block had a subtle issue that only surfaces in
-multi-slide context), the run just fails. Worse, the failure modes are
-`retryable=False` hardcoded on the error branches
-([`deck_nodes.py:100,119`](src/agents/deck_nodes.py)).
+### 2. The assembled deck gets weaker validation and repair than a single slide — PARTLY ADDRESSED
+`slide_router` now persists each slide's *normalized* XML (`normalize_result.cleaned_xml`),
+and `assemble_deck_xml()` re-runs `normalize_xml` + `ensure_single_theme` on the combined
+document — so per-slide auto-fixes (br/hr, `#`-hex, `spacing=`, `fontWeight=`) no longer
+resurface at the deck compile. The deck repair loop also now uses the real
+`build_patch_prompts` (contract + knowledge) instead of a one-line prompt.
+Still open: no `route_after_deck_assembler` graph loop, `MAX_DECK_REPAIR_ATTEMPTS = 2`
+vs. a single slide's `retry_budget = 4`, and structural/cross-slide issues (conflicting
+ids, etc.) still only get the inline loop.
+
+_Original finding:_ `deck_assembler` regex-extracted `<Slide>` blocks, concatenated, and
+called `compile_xml` once with a one-line repair fallback and no normalization.
 
 ### 3. Stall detection compares mismatched signature namespaces — RESOLVED
 Fixed: `AttemptRecord` now persists `error_sigs` (canonical `error_signatures()`

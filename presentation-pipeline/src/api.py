@@ -13,7 +13,6 @@ import asyncio
 import json
 import logging
 import queue as stdlib_queue
-import re
 import time
 import uuid
 from collections.abc import AsyncGenerator, Generator
@@ -1217,38 +1216,20 @@ async def finalize_deck(run_id: str) -> FinalizeResponse:
     if session is None:
         raise HTTPException(status_code=404, detail="Edit session not found")
 
+    from src.agents.deck_nodes import assemble_deck_xml
     from src.compiler.compiler_client import CompilerError, compile_xml
-    from src.compiler.normalizer import strip_theme
-
-    def _extract_slide_block(xml: str) -> str:
-        m = re.search(r'(<Slide\b[^>]*>.*?</Slide>)', xml, re.DOTALL)
-        return m.group(1) if m else ""
-
-    def _extract_theme(xml: str) -> str:
-        m = re.search(r'<Theme\s[^>]*/>', xml)
-        return m.group(0) if m else ""
 
     def _do_finalize() -> FinalizeResponse:
-        theme = session.theme_element
-        if not theme:
-            for s in session.slides:
-                theme = _extract_theme(s.current_xml)
-                if theme:
-                    break
+        # Same normalize + single-theme assembly the pipeline's deck_assembler
+        # uses, so an edited slide that reintroduces br/hr / #-hex / etc. still
+        # compiles instead of hard-failing here.
+        combined_xml = assemble_deck_xml(
+            [s.current_xml for s in sorted(session.slides, key=lambda x: x.slide_index)],
+            session.theme_element,
+        )
 
-        slide_blocks: list[str] = []
-        for s in sorted(session.slides, key=lambda x: x.slide_index):
-            block = _extract_slide_block(s.current_xml)
-            if block:
-                slide_blocks.append(strip_theme(block))
-
-        if not slide_blocks:
+        if not combined_xml:
             return FinalizeResponse(ok=False, error="No valid slide blocks found")
-
-        if len(slide_blocks) == 1 and not theme:
-            combined_xml = session.slides[0].current_xml
-        else:
-            combined_xml = theme.strip() + "\n" + "\n".join(slide_blocks)
 
         output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "finalized"
 

@@ -5,6 +5,7 @@ from unittest.mock import patch
 from src.agents.deck_nodes import (
     _extract_slide_block,
     _extract_theme,
+    assemble_deck_xml,
     deck_assembler_node,
     slide_router_node,
 )
@@ -34,6 +35,41 @@ def test_extract_slide_block():
     assert "Slide 1" in block
 
 
+def test_assemble_deck_xml_strips_contamination():
+    theme = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />'
+    dirty_1 = f'{theme}\n<Slide><VStack w="1280" h="720"><Text color="#FF0000">a<br/>b</Text></VStack></Slide>'
+    dirty_2 = f'{theme}\n<Slide><VStack w="1280" h="720" spacing="8"><Text>Slide 2</Text></VStack></Slide>'
+
+    combined = assemble_deck_xml([dirty_1, dirty_2], theme)
+
+    assert "<br" not in combined
+    assert "#FF0000" not in combined
+    assert "spacing=" not in combined
+    assert combined.count("<Theme") == 1
+    assert combined.lstrip().startswith("<Theme")
+    assert combined.count("<Slide>") == 2
+
+
+def test_assemble_deck_xml_no_slide_block():
+    assert assemble_deck_xml(["<Theme />", "no slide here"], "<Theme />") == ""
+
+
+def test_slide_router_saves_normalized_xml():
+    """slide_router must persist the validator's cleaned XML, not the raw output."""
+    state = initial_state(run_id="sr-norm", raw_request="test")
+    state["current_slide_index"] = 0
+    state["current_xml"] = '<Slide><VStack w="1280" h="720"><Text>a<br/>b</Text></VStack></Slide>'
+    state["normalize_result"] = {
+        "cleaned_xml": '<Slide><VStack w="1280" h="720"><Text>ab</Text></VStack></Slide>\n',
+    }
+
+    result = slide_router_node(state)
+
+    saved = result["completed_slides"][0]["xml"]
+    assert "<br" not in saved
+    assert saved == state["normalize_result"]["cleaned_xml"]
+
+
 def test_slide_router_saves_and_advances():
     state = initial_state(run_id="sr1", raw_request="test")
     state["current_slide_index"] = 0
@@ -47,6 +83,7 @@ def test_slide_router_saves_and_advances():
 
     assert len(result["completed_slides"]) == 1
     assert result["completed_slides"][0]["slide_index"] == 0
+    # no normalize_result in state → falls back to raw current_xml
     assert result["completed_slides"][0]["xml"] == _SLIDE_XML_1
     assert result["current_slide_index"] == 1
     assert result["current_xml"] == ""
@@ -99,6 +136,26 @@ def test_deck_assembler_combines_slides(mock_compile):
     compiled_xml = mock_compile.call_args[0][0]
     assert compiled_xml.count("<Slide>") == 2
     assert compiled_xml.count("<Theme") == 1
+
+
+@patch("src.agents.deck_nodes.compile_xml")
+def test_deck_assembler_normalizes_before_compile(mock_compile):
+    """A per-slide <br/> that reached completed_slides must be stripped before the deck compile."""
+    mock_compile.return_value = {
+        "ok": True, "pptx_path": "/tmp/deck.pptx",
+        "diagnostics": [], "warnings": [], "retryable": False,
+    }
+
+    state = initial_state(run_id="da-norm", raw_request="test")
+    state["completed_slides"] = [
+        {"slide_index": 0, "xml": _SLIDE_XML_1},
+        {"slide_index": 1, "xml": _SLIDE_XML_2.replace("Slide 2", "Slide<br/>2")},
+    ]
+
+    deck_assembler_node(state)
+
+    compiled_xml = mock_compile.call_args[0][0]
+    assert "<br" not in compiled_xml
 
 
 @patch("src.agents.deck_nodes.compile_xml")
