@@ -1,0 +1,36 @@
+{{ previous_user }}
+
+======================  REPAIR — REGENERATE  ======================
+In-place PATCH attempts did not resolve the errors below. Rebuild this slide.
+
+WHAT WENT WRONG:
+{% for problem in problems %}
+- {{ problem }}
+{% endfor %}
+{% if template_xml %}
+
+--- VERIFIED SKELETON (this structure compiles cleanly) ---
+{{ template_xml }}
+--- END SKELETON ---
+
+INSTRUCTIONS:
+1. Start from the skeleton's structure and dimensions.
+2. Replace its text, colors ($tokens) and data with content for THIS slide's objective.
+3. You may repeat or drop repeated items (table rows, KPI tiles, chart points) to fit the
+   content, but keep the nesting shallow and everything inside 1280x720.
+4. Keep all w / h / padding / gap / fontSize values from the skeleton unless a value is
+   the cause of an error above.
+{% else %}
+
+Rebuild with a SIMPLER layout:
+- At most 3 visual sections (header, body, footer)
+- body fontSize 12, heading fontSize 18; root padding 32; gaps 8-12
+- If >4 KPI tiles, reduce to 3; if 2 charts, keep the most important one
+- Drop the least important component if it doesn't fit; keep what the objective needs
+- All dimensions positive, fits within 1280x720
+
+INSTRUCTIONS:
+1. Generate the slide from scratch with the simplified layout above.
+2. Use ONLY valid POM nodes: {{ allowed_nodes | join(', ') }}
+3. Keep all content meaningful.
+{% endif %}

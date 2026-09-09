@@ -19,7 +19,7 @@
 Everything else is last-write-wins.
 
 `initial_state()` ([`src/state.py:138-186`](src/state.py)) sets every key to a zero value. Notable initial values:
-`mode="single"`, `retry_tier=0`, `retry_count=0`, `retry_budget=3`, `current_slide_index=0`, `passed=False`, `current_xml=""`, all result dicts `None`, all lists `[]`.
+`mode="single"`, `retry_tier=0`, `retry_count=0`, `retry_budget=4`, `current_slide_index=0`, `passed=False`, `current_xml=""`, all result dicts `None`, all lists `[]`.
 
 ---
 
@@ -220,14 +220,13 @@ Reached from `route_after_validator` (compile failed + retryable + budget left) 
 - `L166` `curr_sigs = error_signatures(pre_issues, compile_diags)` ([`src/compiler/repair_guidance.py`](src/compiler/repair_guidance.py)).
 - `L168-177` reconstruct `prev_sigs` from the last `generation_history` record that had `errors_in`.
 - `L179` `stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)` (≥65% signature overlap).
-- `L180-184` **tier escalation**: if `stalled` → `current_tier = min(tier+1, 3)`; else `current_tier = max(tier, 1)`.
-- `L193-218` build the repair user prompt by tier:
-  - **tier ≤1 PATCH** (`L193-203`): `prompts/repairer/patch.j2` with `previous_user`, `failing_xml` (from `normalize_result.cleaned_xml`), `problems`, `guidance` (`build_error_guidance`).
-  - **tier 2 SIMPLIFY** (`L204-211`): `prompts/repairer/simplify.j2` + `_SIMPLIFY_INSTRUCTIONS` (`L52-60`) + `allowed_nodes`.
-  - **tier 3 TEMPLATE** (`L212-218`): `_select_template(state)` (`L95-120`) picks a verified example XML by component kinds; `prompts/repairer/template.j2`.
-- `L220` `system_prompt = _render_system_prompt(state)` — re-renders the generator system.j2 from the contract.
+- **strategy choice** (`_choose_strategy`): attempt 1 → PATCH; the pass right after a REGENERATE → PATCH; `needs_regeneration(...)` / `stalled` / attempt ≥ 3 → REGENERATE; else PATCH.
+- build the repair user prompt by strategy:
+  - **PATCH**: `prompts/repairer/patch.j2` with `objective`, `failing_xml` (from `normalize_result.cleaned_xml`), `problems`, `guidance` (`build_error_guidance`).
+  - **REGENERATE**: `prompts/repairer/regenerate.j2` with `previous_user` (original plan), `problems`, `allowed_nodes`, and `template_xml` from `_select_template(state)` (a verified skeleton, or `""` for a free-form simplified rebuild).
+- `system_prompt`: PATCH → `build_patch_prompts`; REGENERATE → `_render_repair_system` (repairer `system.j2` + error-scoped knowledge).
 - `L222-228` **LLM CALL** → `repaired_xml = response.content`.
-- `L237-246` `AttemptRecord` with `attempt=current_count+1`, `tier=current_tier`, `errors_in=problems`, `stalled`.
+- `AttemptRecord` with `attempt=current_count+1`, `tier=strategy` (1=PATCH, 2=REGENERATE), `errors_in=problems`, `error_sigs=sorted(curr_sigs)`, `stalled`.
 
 **State writes** (`L248-254`):
 | key | value | reducer |
@@ -344,14 +343,14 @@ route_after_validator          → repairer           (retry_count 0 < 3)
 repairer_node         [LLM]    → current_xml=v2, retry_tier=1, retry_count=1, generation_history+=[a1(PATCH)]
 route_after_repairer           → validator
 validator_node                 → compile_result{ok:False, retryable:True}   (same errors)
-route_after_validator          → repairer           (retry_count 1 < 3)
-repairer_node         [LLM]    → is_stalled → retry_tier=2 (SIMPLIFY), retry_count=2, current_xml=v3, generation_history+=[a2]
+route_after_validator          → repairer           (retry_count 1 < 4)
+repairer_node         [LLM]    → is_stalled → retry_tier=2 (REGENERATE), retry_count=2, current_xml=v3, generation_history+=[a2]
 route_after_repairer           → validator
 validator_node                 → compile_result{ok:True, pptx_path}
 route_after_validator          → critic → ... → evaluator
 evaluator_node                 → passed = compile_ok and critic_ok
 ```
-Budget exhaustion: once `retry_count == retry_budget (3)`, `route_after_validator`/`route_after_critic` fall through to `evaluator` (single) or `slide_router` (deck) with the last (failing) `compile_result`, so `evaluator` sets `passed=False`.
+Budget exhaustion: once `retry_count == retry_budget (4)`, `route_after_validator`/`route_after_critic` fall through to `evaluator` (single) or `slide_router` (deck) with the last (failing) `compile_result`, so `evaluator` sets `passed=False`.
 
 ### 5.3 Deck (planner returns > 1 slide — driven by `deck_min_threshold` target or an explicit multi-slide request)
 ```

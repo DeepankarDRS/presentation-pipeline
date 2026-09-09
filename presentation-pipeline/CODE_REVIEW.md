@@ -30,7 +30,7 @@ mechanical scorer behind.
 | `context_builder` | – | The "contract" builder. From the component kinds it selects **only** the POM nodes, per-node attribute whitelists, forbidden lists, pitfalls/notes, one compressed example, and a layout skeleton relevant to this slide. This is the token-budget lever (minimal / standard / dense tiers). |
 | `generator` | ✅ free text | Renders tiered Jinja prompts from the contract + plan + data, calls the LLM, stores raw XML. |
 | `validator` | – | Ground truth. `normalize_xml` (strip fences, `#`-hex, `<br>/<hr>`, `spacing→gap`, `fontWeight→bold`, flag zero dims, extract `<Notes>`) → `parseXml` (fast structural check) → `buildPptx` (real compile). Also runs `audit_layout` (mechanical spatial checks). Never parses Node stderr — reads `compile-result.json`. |
-| `repairer` | ✅ free text | 3-tier escalating repair: **PATCH** (feed back failing XML + targeted guidance), **SIMPLIFY** (regenerate with hard constraints), **TEMPLATE** (verified example as skeleton). Escalates on **stall** (≥65% error-signature overlap between attempts). Loops back to `validator`, not `generator`. |
+| `repairer` | ✅ free text | Two strategies: **PATCH** (feed back failing XML + targeted guidance, fix in place) and **REGENERATE** (rebuild from the plan, seeded with a verified skeleton when one fits). Routed by error class (`needs_regeneration`), stall (≥65% error-signature overlap), and attempt number. Loops back to `validator`, not `generator`. |
 | `critic` | ✅ structured | Post-compile quality gate for what the compiler can't see: component completeness vs plan, supplied-value fidelity, structural sanity, slide-type coherence, theme adherence. `auto` = high-severity issue → fail → repair. `manual` = human A/R/E checkpoint. `off` = skip. |
 | `slide_router` | – | Deck-only. Saves the finished slide XML into `completed_slides`, bumps `current_slide_index`, **resets every per-slide key** (xml, results, retry counters) for the next iteration. |
 | `deck_assembler` | – | Deck-only. Regex-extracts one `<Theme>` + every `<Slide>` block from the completed slides, concatenates, runs **one final compile**. |
@@ -63,8 +63,8 @@ table in `CODE_FLOW.md §6`).
    `{UNKNOWN_TAG, UNKNOWN_ATTRIBUTE, PARSE_ERROR, INVALID_VALUE, INVALID_CHILD,
    THEME_ERROR, DIAGNOSTIC}`; a harness/timeout error sets `retryable=False` so the
    loop doesn't burn budget on something it can't fix.
-6. **Stall → escalate** — if PATCH keeps producing the same errors, tier bumps to
-   SIMPLIFY then TEMPLATE. (But see Part 2 #3 — the detector is partly broken.)
+6. **Stall / structural / attempt ≥ 3 → REGENERATE** — otherwise PATCH in place;
+   the pass after a REGENERATE is a PATCH cleanup.
 7. **Dark-theme chart axis bug** — POM v10.3.0 hardcodes chart axis text to black;
    `context_builder` injects a "wrap `<Chart>` in `$chartSurface` VStack" note only
    for dark palettes. ([`context_builder.py:288-293`](src/agents/context_builder.py))
@@ -109,7 +109,12 @@ multi-slide context), the run just fails. Worse, the failure modes are
 `retryable=False` hardcoded on the error branches
 ([`deck_nodes.py:100,119`](src/agents/deck_nodes.py)).
 
-### 3. Stall detection compares mismatched signature namespaces
+### 3. Stall detection compares mismatched signature namespaces — RESOLVED
+Fixed: `AttemptRecord` now persists `error_sigs` (canonical `error_signatures()`
+output) and `repairer` compares that directly instead of round-tripping through
+display strings.
+
+_Original finding:_
 `repairer` builds `curr_sigs` from live `pre_issues` + `compile_diags` via
 `error_signatures()` — compile diagnostics become `"COMPILE:<type>:<msg[:40]>"`.
 But `prev_sigs` is reconstructed from `generation_history[].errors_in`, which
@@ -123,13 +128,16 @@ rarely escalates on real compile-error stalls; the pipeline PATCH-loops 3× and
 gives up. Fix: persist the structured `pre_issues`/`compile_diags` (or their
 signatures) on the `AttemptRecord`, don't round-trip through display strings.
 
-### 4. "Escalating" retry doesn't escalate by attempt
-`retry_tier` only advances when `is_stalled` is true
-([`repairer.py:180-184`](src/agents/repairer.py)); otherwise it's pinned at
-`max(tier, 1)` = 1 (PATCH). If each attempt yields *different* errors, all 3
-retries are PATCH — SIMPLIFY and TEMPLATE never run. Combined with #3 (stall
-underfires), the two lower tiers are close to dead code in practice. Decide: should
-attempt 2 be SIMPLIFY regardless? The docstring and tier names imply yes.
+### 4. "Escalating" retry doesn't escalate by attempt — RESOLVED
+Fixed: the 3-tier ladder was replaced with two strategies (PATCH / REGENERATE).
+`_choose_strategy` routes by error class (`needs_regeneration` → structural /
+post-autoFit overflow), stall, and attempt number — attempt 1 is always PATCH,
+attempt ≥ 3 (or a structural error, or a stall) is REGENERATE, and the pass right
+after a REGENERATE is a PATCH cleanup. `retry_budget` bumped 3 → 4 so that
+cleanup pass fits.
+
+_Original finding:_ `retry_tier` only advanced on `is_stalled`; otherwise pinned
+at PATCH, so SIMPLIFY/TEMPLATE were near-dead code.
 
 ### 5. Speaker notes are captured and then thrown away
 `normalize_xml` extracts `<Notes>` into `speaker_notes` **and strips it from the
@@ -225,12 +233,15 @@ slide, so the manifest's `steps[]` has repeated `attempt=0` rows across slides w
 no `slide_index`. The evaluator's "component completion rate" (docstring promise)
 isn't actually computed anywhere.
 
-### 16. `layout_issues` feeds only the critic, never the repairer directly
-`audit_layout` produces `ROOT_SIZE` / `FONT_TOO_SMALL` / `ZERO_DIM` /
-`MISSING_DIMS` etc. as `severity: high` in some cases, but these are passed to the
-critic prompt as text, not turned into `problems` in `_collect_problems`. A
-compile-OK slide with a `high` ROOT_SIZE audit issue only fails if the *critic LLM*
-decides to echo it.
+### 16. `layout_issues` feeds only the critic, never the repairer directly — PARTLY ADDRESSED
+`validator._promote_severe_layout_warnings` now turns the compiler's own
+post-autoFit overflow warnings (`AUTOFIT_OVERFLOW`, `NODE_OUT_OF_BOUNDS`,
+`SCALE_BELOW_THRESHOLD`) into a retryable failure, so genuine overflow reaches the
+repairer (→ REGENERATE) instead of silently passing. `audit_layout`'s own issues
+(`ROOT_SIZE` / `FONT_TOO_SMALL` / `MISSING_DIMS`) are still critic-only.
+
+_Original finding:_ `audit_layout` `severity: high` issues were passed to the
+critic prompt as text only, never turned into `problems`.
 
 ### 17. `_ZERO_DIM_RE` in normalizer vs memory note
 Memory says a bare `<Shape w="0">` "slips through POM silently". Normalizer flags
@@ -262,7 +273,7 @@ wins and diverges silently.
 
 1. **Fix deck-mode critic accounting** (#1) — correctness of the headline `passed` flag.
 2. **Add validation + bounded retry after `deck_assembler`** (#2).
-3. **Fix stall-detection signatures** (#3) and **decide tier-escalation policy** (#4) together — they're the same subsystem.
+3. ~~Fix stall-detection signatures (#3) and decide tier-escalation policy (#4)~~ — DONE (error_sigs persisted; 3 tiers → PATCH/REGENERATE).
 4. **Re-inject speaker notes at assembly / keep `<Notes>` through compile** (#5).
 5. **Add a real deck integration test** (#18) — it would have caught #1, #2, #13.
 6. Then the medium cluster: wire `layout_pattern` through (#7), delete or use `mode` (#8), provenance on all paths (#9), critic-degraded signal (#6).

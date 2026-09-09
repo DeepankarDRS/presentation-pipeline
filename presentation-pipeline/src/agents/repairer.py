@@ -1,10 +1,14 @@
-"""Repairer agent — 3-tier escalating repair strategy.
+"""Repairer agent — two repair strategies.
 
-Tier 1 (Patch):    feed back failing XML + errors + guidance → fix in place
-Tier 2 (Simplify): regenerate with simpler constraints
-Tier 3 (Template): verified example as skeleton, fill content only
+PATCH:      feed back failing XML + errors + guidance → fix in place.
+REGENERATE: rebuild the slide from its plan, using a verified skeleton when one
+            exists for the component mix, otherwise a simplified free rebuild.
 
-Stall detection: >=65% error signature overlap between attempts → escalate.
+Strategy is chosen per attempt (see repairer_node):
+- attempt 1 is always PATCH (a cheap in-place fix often works);
+- structural/layout errors (needs_regeneration), a detected stall, or attempt >= 3
+  select REGENERATE;
+- the attempt right after a REGENERATE is a PATCH cleanup pass.
 
 The repairer calls the LLM with a targeted repair prompt and produces fixed
 XML. The graph routes repairer → validator (skipping the generator).
@@ -27,6 +31,7 @@ from src.compiler.repair_guidance import (
     build_error_guidance,
     error_signatures,
     is_stalled,
+    needs_regeneration,
     select_repair_knowledge,
 )
 from src.state import AttemptRecord, PresentationState
@@ -50,15 +55,8 @@ _gen_env = Environment(
 _SRC_DIR = Path(__file__).resolve().parent.parent
 _EXAMPLES_DIR = _SRC_DIR / "knowledge" / "examples"
 
-_SIMPLIFY_INSTRUCTIONS = """The previous XML was too complex or structurally broken.
-Simplify the layout:
-- Reduce to at most 3 visual sections (header, body, footer)
-- Use body fontSize=12, heading fontSize=18 (compact tier)
-- Reduce root padding to 32, gaps to 8-12
-- If there are >4 KPI tiles, reduce to 3
-- If there are 2 charts, keep only the most important one
-- Drop the bullet list if charts+table are present
-- Ensure all dimensions are positive and fit within 1280x720"""
+PATCH, REGENERATE = 1, 2
+_STRATEGY_NAME = {PATCH: "PATCH", REGENERATE: "REGENERATE"}
 
 
 def _collect_problems(state: PresentationState) -> list[str]:
@@ -94,7 +92,7 @@ def _get_compile_diags(state: PresentationState) -> list[dict[str, Any]]:
 
 
 def _select_template(state: PresentationState) -> str:
-    """Pick the best verified example XML for tier 3 fallback."""
+    """Pick the best verified example XML to seed a REGENERATE, or "" if none fits."""
     slide_plans = state.get("slide_plans", [])
     idx = state.get("current_slide_index", 0)
     plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
@@ -111,14 +109,15 @@ def _select_template(state: PresentationState) -> str:
         name = "table-slide.xml"
     elif "kpi_row" in kinds:
         name = "kpi-slide.xml"
-    else:
+    elif kinds and all(k in ("title", "narrative", "caption") for k in kinds):
         name = "text-slide.xml"
+    else:
+        # No verified skeleton for this component mix (timeline, flow, matrix,
+        # tree, pyramid, process_arrow, bullet_list, …) — REGENERATE free-form.
+        return ""
 
     path = _EXAMPLES_DIR / name
-    if path.exists():
-        return path.read_text(encoding="utf-8").strip()
-    fallback = _EXAMPLES_DIR / "text-slide.xml"
-    return fallback.read_text(encoding="utf-8").strip() if fallback.exists() else ""
+    return path.read_text(encoding="utf-8").strip() if path.exists() else ""
 
 
 def _render_original_user(state: PresentationState) -> str:
@@ -149,9 +148,9 @@ def build_patch_prompts(
     forbidden_tags: list[str],
     theme_element: str,
 ) -> tuple[str, str]:
-    """Build the (system, user) prompts for a tier-1 patch repair.
+    """Build the (system, user) prompts for a PATCH (in-place fix) repair.
 
-    Shared by repairer_node's tier-1 branch and the slide edit service's mini
+    Shared by repairer_node's PATCH branch and the slide edit service's mini
     repair loop, so both get the same error-scoped node reference (attribute
     docs, pitfalls, a verified syntax example) injected into the system prompt.
     """
@@ -192,9 +191,30 @@ def _render_repair_system(state: PresentationState, knowledge: dict) -> str:
     )
 
 
+def _choose_strategy(
+    *,
+    attempt: int,
+    prev_strategy: int | None,
+    regen_error: bool,
+    stalled: bool,
+) -> int:
+    """Pick PATCH or REGENERATE for this attempt.
+
+    attempt 1 is always a cheap in-place PATCH. After a REGENERATE the next attempt
+    is a PATCH cleanup pass on the rebuilt XML. Otherwise structural/layout errors,
+    a detected stall, or reaching attempt 3 escalate to REGENERATE.
+    """
+    if attempt == 1:
+        return PATCH
+    if prev_strategy == REGENERATE:
+        return PATCH
+    if regen_error or stalled or attempt >= 3:
+        return REGENERATE
+    return PATCH
+
+
 def repairer_node(state: PresentationState) -> dict[str, Any]:
-    """3-tier escalating repair: build repair prompt, call LLM, update state."""
-    current_tier = state.get("retry_tier", 0)
+    """Choose a repair strategy, build the prompt, call the LLM, update state."""
     current_count = state.get("retry_count", 0)
     problems = _collect_problems(state)
     pre_issues = _get_pre_issues(state)
@@ -208,21 +228,32 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         if record.get("error_sigs"):
             prev_sigs = set(record["error_sigs"])
             break
+    prev_strategy = next(
+        (r.get("tier") for r in reversed(prev_history)
+         if r.get("tier") in (PATCH, REGENERATE)),
+        None,
+    )
 
     stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)
-    if stalled:
-        current_tier = min(current_tier + 1, 3)
-        logger.info(f"repairer: STALL detected, escalating to tier {current_tier}")
-    else:
-        current_tier = max(current_tier, 1)
+    regen_error = needs_regeneration(pre_issues, compile_diags)
+    strategy = _choose_strategy(
+        attempt=current_count + 1,
+        prev_strategy=prev_strategy,
+        regen_error=regen_error,
+        stalled=stalled,
+    )
 
-    tier_name = {1: "PATCH", 2: "SIMPLIFY", 3: "TEMPLATE"}.get(current_tier, "PATCH")
-    logger.info(f"repairer: attempt {current_count + 1}, tier {current_tier} ({tier_name}), "
-                f"{len(problems)} problem(s)")
+    reasons = [r for r, on in
+               (("stall", stalled), ("structural", regen_error)) if on]
+    logger.info(
+        f"repairer: attempt {current_count + 1}, {_STRATEGY_NAME[strategy]}"
+        + (f" ({', '.join(reasons)})" if reasons else "")
+        + f", {len(problems)} problem(s)"
+    )
 
     contract = state.get("contract") or {}
 
-    if current_tier <= 1:
+    if strategy == PATCH:
         norm = state.get("normalize_result") or {}
         failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
         system_prompt, user_prompt = build_patch_prompts(
@@ -235,24 +266,17 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
             theme_element=contract.get("theme_element", state.get("theme_element", "")),
         )
     else:
-        # Tiers 2/3 regenerate rather than patch, so they need the broader
-        # knowledge slice for the system prompt and the original user prompt.
+        # REGENERATE rebuilds from the plan, so it needs the broader knowledge
+        # slice for the system prompt and the original user prompt.
         knowledge = select_repair_knowledge(pre_issues, compile_diags)
         if knowledge["nodes_involved"]:
             logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
-        previous_user = _render_original_user(state)
-        if current_tier == 2:
-            user_prompt = _repair_env.get_template("simplify.j2").render(
-                previous_user=previous_user,
-                problems=problems,
-                simplify_instructions=_SIMPLIFY_INSTRUCTIONS,
-                allowed_nodes=contract.get("allowed_nodes", []),
-            )
-        else:
-            user_prompt = _repair_env.get_template("template.j2").render(
-                previous_user=previous_user,
-                template_xml=_select_template(state),
-            )
+        user_prompt = _repair_env.get_template("regenerate.j2").render(
+            previous_user=_render_original_user(state),
+            problems=problems,
+            template_xml=_select_template(state),
+            allowed_nodes=contract.get("allowed_nodes", []),
+        )
         system_prompt = _render_repair_system(state, knowledge)
 
     llm = get_llm("repairer")
@@ -272,7 +296,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
 
     record = AttemptRecord(
         attempt=current_count + 1,
-        tier=current_tier,
+        tier=strategy,
         errors_in=problems,
         errors_out=[],
         error_sigs=sorted(curr_sigs),
@@ -284,7 +308,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
 
     return {
         "current_xml": repaired_xml,
-        "retry_tier": current_tier,
+        "retry_tier": strategy,
         "retry_count": current_count + 1,
         "stall_detected": stalled,
         "generation_history": [record],

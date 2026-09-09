@@ -4,10 +4,10 @@ from unittest.mock import MagicMock, patch
 
 from src.agents.repairer import (
     repairer_node, _collect_problems, _select_template, build_patch_prompts,
-    _get_pre_issues, _get_compile_diags,
+    _get_pre_issues, _get_compile_diags, PATCH, REGENERATE,
 )
 from src.compiler.repair_guidance import (
-    build_error_guidance, error_signatures, is_stalled,
+    build_error_guidance, error_signatures, is_stalled, needs_regeneration,
 )
 from src.state import initial_state
 
@@ -135,6 +135,24 @@ def test_is_stalled_false():
 def test_is_stalled_empty():
     assert is_stalled(set(), {"A"}) is False
     assert is_stalled({"A"}, set()) is False
+
+
+# ── Regenerate classification ─────────────────────────────────────────────
+
+def test_needs_regeneration_structural():
+    assert needs_regeneration([], [{"type": "INVALID_CHILD", "message": "Unknown child element <Td> inside <Table>"}]) is True
+    assert needs_regeneration([], [{"type": "PARSE_ERROR", "message": "<Shape>: Unexpected child elements. <Shape> does not accept child elements"}]) is True
+
+
+def test_needs_regeneration_overflow():
+    assert needs_regeneration([], [{"type": "DIAGNOSTIC", "message": "OVERFLOW (AUTOFIT_OVERFLOW): content height 784px exceeds 720px"}]) is True
+    assert needs_regeneration([], [{"type": "DIAGNOSTIC", "message": "OVERFLOW (NODE_OUT_OF_BOUNDS): <Table> extends beyond bounds"}]) is True
+
+
+def test_needs_regeneration_local_errors_false():
+    assert needs_regeneration([], [{"type": "UNKNOWN_TAG", "message": "Unknown tag: <div>"}]) is False
+    assert needs_regeneration([], [{"type": "UNKNOWN_ATTRIBUTE", "message": '<VStack>: Unknown attribute "flex"'}]) is False
+    assert needs_regeneration([], []) is False
 
 
 # ── Problem collection ────────────────────────────────────────────────────
@@ -267,7 +285,7 @@ def test_repairer_escalates_on_stall(mock_get_llm):
 
     result = repairer_node(state)
 
-    assert result["retry_tier"] >= 2
+    assert result["retry_tier"] == REGENERATE
     assert result["stall_detected"] is True
 
 
@@ -278,7 +296,7 @@ def test_repairer_stall_detected_from_compile_diags(mock_get_llm):
     The old code rebuilt prev_sigs from display strings, turning a stored
     "COMPILE:UNKNOWN_TAG:..." into "UNKNOWN_TAG:div", which never matched the
     structured curr_sigs — so is_stalled() stayed False forever on compile-error
-    loops and tiers 2/3 were unreachable.
+    loops and REGENERATE was unreachable.
     """
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'
@@ -305,7 +323,7 @@ def test_repairer_stall_detected_from_compile_diags(mock_get_llm):
     result = repairer_node(state)
 
     assert result["stall_detected"] is True
-    assert result["retry_tier"] >= 2
+    assert result["retry_tier"] == REGENERATE
 
 
 @patch("src.agents.repairer.get_llm")
@@ -330,29 +348,84 @@ def test_repairer_no_stall_when_errors_change(mock_get_llm):
     result = repairer_node(state)
 
     assert result["stall_detected"] is False
-    assert result["retry_tier"] == 1
+    assert result["retry_tier"] == PATCH
 
 
-@patch("src.agents.repairer.get_llm")
-def test_repairer_tier3_template(mock_get_llm):
+def _mock_llm(mock_get_llm, content='<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'):
     mock_response = MagicMock()
-    mock_response.content = '<Theme />\n<Slide><VStack><Text>Template fill</Text></VStack></Slide>'
+    mock_response.content = content
     mock_response.response_metadata = {
-        "token_usage": {"prompt_tokens": 1200, "completion_tokens": 500},
+        "token_usage": {"prompt_tokens": 800, "completion_tokens": 300},
         "model_name": "gpt-4.1-mini",
     }
     mock_llm = MagicMock()
     mock_llm.invoke.return_value = mock_response
     mock_get_llm.return_value = mock_llm
+    return mock_llm
 
-    state = _make_state(retry_tier=3, retry_count=2)
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_regenerate_uses_skeleton(mock_get_llm):
+    mock_llm = _mock_llm(mock_get_llm)
+
+    # attempt 3 → REGENERATE; _make_state has title + kpi_row → kpi-slide skeleton
+    state = _make_state(retry_tier=PATCH, retry_count=2)
     result = repairer_node(state)
 
-    assert result["retry_tier"] == 3
-    call_args = mock_llm.invoke.call_args[0][0]
-    user_msg = call_args[1]["content"]
-    assert "TEMPLATE" in user_msg
-    assert "VERIFIED TEMPLATE" in user_msg
+    assert result["retry_tier"] == REGENERATE
+    user_msg = mock_llm.invoke.call_args[0][0][1]["content"]
+    assert "REGENERATE" in user_msg
+    assert "VERIFIED SKELETON" in user_msg
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_regenerate_without_skeleton(mock_get_llm):
+    mock_llm = _mock_llm(mock_get_llm)
+
+    state = _make_state(retry_tier=PATCH, retry_count=2)  # attempt 3 → REGENERATE
+    state["slide_plans"][0]["components"] = [{"kind": "timeline", "count": 1}]
+
+    result = repairer_node(state)
+
+    assert result["retry_tier"] == REGENERATE
+    user_msg = mock_llm.invoke.call_args[0][0][1]["content"]
+    assert "REGENERATE" in user_msg
+    assert "VERIFIED SKELETON" not in user_msg  # no template for timeline
+    assert "SIMPLER layout" in user_msg
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_regenerate_on_structural_error(mock_get_llm):
+    mock_llm = _mock_llm(mock_get_llm)
+
+    state = _make_state(retry_tier=PATCH, retry_count=1)  # attempt 2
+    state["normalize_result"]["issues"] = []
+    state["compile_result"]["diagnostics"] = [{
+        "type": "INVALID_CHILD",
+        "message": "Unknown child element <Td> inside <Table>. Expected: <Col>, <Tr>",
+    }]
+
+    result = repairer_node(state)
+
+    assert result["retry_tier"] == REGENERATE  # structural → skip straight to rebuild
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_patch_cleanup_after_regenerate(mock_get_llm):
+    mock_llm = _mock_llm(mock_get_llm)
+
+    state = _make_state(retry_tier=REGENERATE, retry_count=2)  # attempt 3
+    state["generation_history"] = [{
+        "attempt": 2, "tier": REGENERATE, "errors_in": ["x"], "errors_out": [],
+        "error_sigs": ["HTML_TAG:section"], "stalled": False,
+        "tokens_in": 1, "tokens_out": 1, "model": "gpt-4.1-mini",
+    }]
+
+    result = repairer_node(state)
+
+    assert result["retry_tier"] == PATCH  # one cleanup pass on the regenerated XML
+    user_msg = mock_llm.invoke.call_args[0][0][1]["content"]
+    assert "PATCH" in user_msg
 
 
 @patch("src.agents.repairer.get_llm")

@@ -27,6 +27,32 @@ from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
 
+# POM's autoFit already shrinks fonts/padding/rows to fit content. A warning from
+# this set means the layout is *still* broken after all that — patching layout is
+# futile, so treat it as a retryable failure and let the repairer REGENERATE.
+# Flip _PROMOTE_SEVERE_LAYOUT_WARNINGS to False to restore the old "overflow warns
+# but passes" behaviour.
+_PROMOTE_SEVERE_LAYOUT_WARNINGS = True
+_SEVERE_LAYOUT_CODES = {"AUTOFIT_OVERFLOW", "NODE_OUT_OF_BOUNDS", "SCALE_BELOW_THRESHOLD"}
+
+
+def _promote_severe_layout_warnings(compile_result: dict[str, Any]) -> None:
+    """In place: turn a severe post-autoFit layout warning into a retryable failure."""
+    if not (_PROMOTE_SEVERE_LAYOUT_WARNINGS and compile_result.get("ok")):
+        return
+    severe = [w for w in compile_result.get("warnings", [])
+              if w.get("code") in _SEVERE_LAYOUT_CODES]
+    if not severe:
+        return
+    compile_result["ok"] = False
+    compile_result["retryable"] = True
+    compile_result["diagnostics"] = [
+        {"type": "DIAGNOSTIC", "message": f"OVERFLOW ({w.get('code')}): {w.get('message', '')}"}
+        for w in severe
+    ]
+    logger.info(f"validator: promoted {len(severe)} severe layout warning(s) "
+                "to a retryable failure")
+
 
 def validator_node(state: PresentationState) -> dict[str, Any]:
     """Run the normalize → validate → compile pipeline on current_xml."""
@@ -118,6 +144,8 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             },
             "layout_issues": [],
         }
+
+    _promote_severe_layout_warnings(compile_result)
 
     layout_issues = audit_layout(cleaned)
     if layout_issues:

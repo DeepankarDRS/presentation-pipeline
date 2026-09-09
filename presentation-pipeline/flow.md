@@ -13,7 +13,7 @@ The pipeline takes a natural-language request (e.g. "Create a KPI dashboard slid
 **Key design decisions (locked):**
 - **Component-based planning** — no archetypes. The planner outputs a free-form component list, not a fixed template.
 - **Tiered prompt assembly** — minimal / standard / dense tiers keep system prompts under 6K tokens.
-- **3-tier escalating retry** — patch → simplify → template, with stall detection.
+- **Two-strategy retry** — PATCH (fix in place) / REGENERATE (rebuild from plan), routed by error class + stall detection.
 - **Dual-mode critic** — auto (AI) runs first; manual (human) is a future checkpoint.
 - **Single state object** — `PresentationState` TypedDict flows through every node.
 
@@ -313,29 +313,29 @@ AI quality gate — catches what the compiler can't. Runs after successful compi
 | **File** | `src/agents/repairer.py` |
 | **LLM** | Yes |
 
-3-tier escalating repair strategy. Builds a repair prompt and calls the LLM; the graph routes back to generator.
+Two repair strategies. Builds a repair prompt and calls the LLM; the graph routes back to the validator.
 
 **Reads:** `current_xml`, `normalize_result`, `validate_result`, `compile_result`, `critic_result`, `contract`, `slide_plans`, `generation_history`, `retry_tier`, `retry_count`
-**Writes:** `current_xml` (repaired), `retry_tier`, `retry_count`, `stall_detected`, `generation_history`
+**Writes:** `current_xml` (repaired), `retry_tier` (1=PATCH, 2=REGENERATE), `retry_count`, `stall_detected`, `generation_history`
 
-### The 3 tiers
+### The 2 strategies
 
-| Tier | Strategy | Template |
-|------|----------|----------|
-| 1 — Patch | Feed back failing XML + errors + targeted guidance. Fix in place. | `repairer/patch.j2` |
-| 2 — Simplify | Regenerate from scratch with simpler constraints. | `repairer/simplify.j2` |
-| 3 — Template | Use a verified example XML as skeleton. Replace only content. | `repairer/template.j2` |
+| Strategy | When | What | Template |
+|------|------|------|----------|
+| PATCH | attempt 1; local errors; the pass right after a REGENERATE | Feed back failing XML + errors + targeted guidance. Fix in place. | `repairer/patch.j2` |
+| REGENERATE | structural/layout errors (`needs_regeneration`), a detected stall, or attempt ≥ 3 | Rebuild from the plan; seed with a verified skeleton when one fits the component mix. | `repairer/regenerate.j2` |
 
 ### Stall detection
-Compares error signatures between consecutive attempts using `repair_guidance.error_signatures()`. If ≥80% of current errors appeared in the previous attempt → **stall detected** → escalate to next tier.
+Compares error signatures between consecutive attempts using `repair_guidance.error_signatures()` (stored as `AttemptRecord.error_sigs`). If ≥65% of current errors appeared in the previous attempt → **stall detected** → forces REGENERATE.
 
-### Template selection (tier 3)
+### Skeleton selection (REGENERATE)
 ```
-has chart+table → mixed-slide.xml
-has chart       → chart-slide.xml
-has table       → table-slide.xml
-has kpi_row     → kpi-slide.xml
-else            → text-slide.xml
+has chart+table         → mixed-slide.xml
+has chart               → chart-slide.xml
+has table               → table-slide.xml
+has kpi_row             → kpi-slide.xml
+only title/narrative/caption → text-slide.xml
+else                    → "" (free-form simplified rebuild)
 ```
 
 ---
@@ -367,9 +367,8 @@ All prompts are Jinja2 templates in `src/prompts/`.
 | `planner/user.j2` | planner | Raw request + theme + supplied content + components hint |
 | `generator/system.j2` | generator, repairer | Tiered POM rules (critical rules always, attrs/layout/shrink conditional) |
 | `generator/user.j2` | generator, repairer | Objective + components + density + layout + data |
-| `repairer/patch.j2` | repairer (tier 1) | Previous XML + errors + targeted fix guidance |
-| `repairer/simplify.j2` | repairer (tier 2) | Simplification rules + allowed nodes |
-| `repairer/template.j2` | repairer (tier 3) | Verified template XML skeleton |
+| `repairer/patch.j2` | repairer (PATCH) | Previous XML + errors + targeted fix guidance |
+| `repairer/regenerate.j2` | repairer (REGENERATE) | Original plan + errors + verified skeleton (when one fits) |
 | `critic/system.j2` | critic | 4-point checklist (completeness, fidelity, structure, theme) |
 | `critic/user.j2` | critic | Generated XML + plan + supplied content + theme |
 
@@ -428,7 +427,7 @@ Builds targeted fix instructions from errors:
 | `test_context_builder.py` | 32 | Node/attribute/notes/example/layout selection, full contract, prompt token counting |
 | `test_generator.py` | — | Generator with mocked LLM |
 | `test_validator.py` | — | Normalizer + compiler client with mocked subprocess |
-| `test_repairer.py` | — | 3-tier repair with mocked LLM |
+| `test_repairer.py` | — | PATCH/REGENERATE repair with mocked LLM |
 | `test_critic.py` | — | Critic with mocked LLM structured output |
 
 ---
@@ -483,7 +482,7 @@ presentation-pipeline/
 │   │   ├── validator.py        — normalize → parseXml → buildPptx
 │   │   ├── critic.py           — AI quality gate (4-point checklist)
 │   │   ├── critic_schema.py    — CriticOutput Pydantic model
-│   │   ├── repairer.py         — 3-tier escalating retry
+│   │   ├── repairer.py         — PATCH / REGENERATE retry
 │   │   └── evaluator.py        — scoring + run-manifest.json
 │   │
 │   ├── compiler/
@@ -522,7 +521,7 @@ presentation-pipeline/
 | Phase 0 — Scaffold | state.py, graph.py, llm_client.py, models.yaml, all 7 nodes wired, 22 tests |
 | Phase 1 — Planner | planner.py + planner_schema.py + Jinja2 templates, structured output, 15 tests |
 | Phase 2 — Context Builder + Prompts | context_builder.py, generator system.j2/user.j2 (tiered), 32 tests, token counts verified |
-| Phase 3 — Generator + Validator + Repairer | generator.py (LLM), validator.py (normalize → validate → compile), repairer.py (3-tier), compiler/, repair templates |
+| Phase 3 — Generator + Validator + Repairer | generator.py (LLM), validator.py (normalize → validate → compile), repairer.py (PATCH/REGENERATE), compiler/, repair templates |
 | Phase 4 — Critic | critic.py + critic_schema.py + templates, structured output, dual-mode |
 
 ### Remaining
@@ -538,7 +537,7 @@ presentation-pipeline/
 - Theme-aware generation with $token color references
 - Dark theme handling (chart axis wrapping)
 - Supplied content fidelity (verbatim values)
-- 3-tier retry with stall detection and escalation
+- Two-strategy retry (PATCH/REGENERATE) with stall detection and error-class routing
 - AI quality gate (completeness, fidelity, structure, theme)
 - Run manifests with per-step cost tracking
 

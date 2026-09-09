@@ -73,7 +73,7 @@ class DeckPlan(TypedDict, total=False):
 
 class AttemptRecord(TypedDict, total=False):
     attempt: int
-    tier: int          # 0=initial, 1=patch, 2=simplify, 3=template
+    tier: int          # 0=initial, 1=patch, 2=regenerate
     errors_in: list[str]
     errors_out: list[str]
     error_sigs: list[str]   # canonical error_signatures() output for this attempt
@@ -204,7 +204,7 @@ def initial_state(
     audience_context: dict[str, str] | None = None,
     deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "manual", "off"] = "off",
-    retry_budget: int = 3,
+    retry_budget: int = 4,  # PATCH, PATCH, REGENERATE, PATCH-cleanup
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,

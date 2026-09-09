@@ -264,6 +264,47 @@ def test_validator_compile_error_not_retryable(mock_compile, mock_validate):
 
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
+def test_validator_promotes_overflow_warning(mock_compile, mock_validate):
+    mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
+    mock_compile.return_value = {
+        "ok": True, "pptx_path": "/tmp/test.pptx",
+        "diagnostics": [],
+        "warnings": [{"code": "AUTOFIT_OVERFLOW", "message": "content height 784px exceeds 720px"}],
+        "retryable": False,
+    }
+
+    state = initial_state(run_id="v-overflow", raw_request="test")
+    state["current_xml"] = VALID_XML
+    result = validator_node(state)
+
+    cr = result["compile_result"]
+    assert cr["ok"] is False
+    assert cr["retryable"] is True
+    assert len(cr["diagnostics"]) == 1
+    assert cr["diagnostics"][0]["type"] == "DIAGNOSTIC"
+    assert "OVERFLOW" in cr["diagnostics"][0]["message"]
+
+
+@patch("src.agents.validator.validate_xml")
+@patch("src.agents.validator.compile_xml")
+def test_validator_ignores_benign_warning(mock_compile, mock_validate):
+    mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
+    mock_compile.return_value = {
+        "ok": True, "pptx_path": "/tmp/test.pptx",
+        "diagnostics": [],
+        "warnings": [{"code": "IMAGE_NOT_PREFETCHED", "message": "using default size"}],
+        "retryable": False,
+    }
+
+    state = initial_state(run_id="v-benign", raw_request="test")
+    state["current_xml"] = VALID_XML
+    result = validator_node(state)
+
+    assert result["compile_result"]["ok"] is True
+
+
+@patch("src.agents.validator.validate_xml")
+@patch("src.agents.validator.compile_xml")
 def test_validator_returns_layout_issues(mock_compile, mock_validate):
     mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
     mock_compile.return_value = {

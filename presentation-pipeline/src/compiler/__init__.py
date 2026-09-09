@@ -2,7 +2,12 @@
 
 from src.compiler.normalizer import normalize_xml
 from src.compiler.compiler_client import compile_xml, validate_xml, CompilerError
-from src.compiler.repair_guidance import build_error_guidance, error_signatures, is_stalled
+from src.compiler.repair_guidance import (
+    build_error_guidance,
+    error_signatures,
+    is_stalled,
+    needs_regeneration,
+)
 
 __all__ = [
     "normalize_xml",
@@ -12,4 +17,5 @@ __all__ = [
     "build_error_guidance",
     "error_signatures",
     "is_stalled",
+    "needs_regeneration",
 ]

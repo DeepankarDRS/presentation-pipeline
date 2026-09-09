@@ -101,7 +101,7 @@ route_after_start ──┐
                         END
 ```
 
-**Retry loop**: Generator → Validator → (fail) → Repairer → Generator. Up to `retry_budget` times (default: 3).
+**Retry loop**: Generator → Validator → (fail) → Repairer → Validator. Up to `retry_budget` times (default: 4).
 
 ---
 
@@ -376,9 +376,8 @@ prompts/
     system.j2     ← 4-item quality checklist
     user.j2       ← current XML + plan + theme for review
   repairer/
-    patch.j2      ← tier 1: failing XML + errors + guidance
-    simplify.j2   ← tier 2: simplification instructions
-    template.j2   ← tier 3: verified example as skeleton
+    patch.j2      ← PATCH: failing XML + errors + guidance → fix in place
+    regenerate.j2 ← REGENERATE: rebuild from plan (verified skeleton if one fits)
 ```
 
 ---
@@ -413,7 +412,7 @@ tests/
     test_context_builder.py  ← contract assembly
     test_generator.py        ← prompt rendering + LLM mock
     test_validator.py        ← normalizer + compiler mock
-    test_repairer.py         ← 3-tier repair + stall detection
+    test_repairer.py         ← PATCH/REGENERATE strategy + stall detection
     test_critic.py           ← quality gate + severity logic
     test_evaluator.py        ← cost computation + manifest
     test_graph.py            ← end-to-end graph mock tests
@@ -567,7 +566,7 @@ presentation-pipeline/
 │   │   ├── validator.py        ← [no LLM] normalize → validate → compile
 │   │   ├── critic.py           ← [LLM] AI quality gate
 │   │   ├── critic_schema.py    ← Pydantic schemas for critic output
-│   │   ├── repairer.py         ← [LLM] 3-tier escalating repair
+│   │   ├── repairer.py         ← [LLM] PATCH / REGENERATE repair
 │   │   └── evaluator.py        ← [no LLM] scoring + manifest
 │   ├── compiler/
 │   │   ├── compiler_client.py  ← Node.js subprocess bridge
