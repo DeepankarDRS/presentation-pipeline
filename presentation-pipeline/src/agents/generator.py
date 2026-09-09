@@ -86,6 +86,9 @@ def generator_node(state: PresentationState) -> dict[str, Any]:
     tokens_in = token_usage.get("prompt_tokens", 0)
     tokens_out = token_usage.get("completion_tokens", 0)
     model = response.response_metadata.get("model_name", "unknown")
+    truncated = response.response_metadata.get("finish_reason") == "length"
+    if truncated:
+        logger.warning("generator: LLM output truncated at max_tokens — XML is incomplete")
 
     logger.info(f"generator: {model} tokens_in={tokens_in} tokens_out={tokens_out}")
 
@@ -95,6 +98,7 @@ def generator_node(state: PresentationState) -> dict[str, Any]:
         errors_in=[],
         errors_out=[],
         stalled=False,
+        truncated=truncated,
         tokens_in=tokens_in,
         tokens_out=tokens_out,
         model=model,

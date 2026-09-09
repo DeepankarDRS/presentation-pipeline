@@ -78,6 +78,8 @@ class AttemptRecord(TypedDict, total=False):
     errors_out: list[str]
     error_sigs: list[str]   # canonical error_signatures() output for this attempt
     stalled: bool
+    truncated: bool         # LLM response hit max_tokens (finish_reason == "length")
+    noop: bool              # PATCH returned XML identical to its input
     tokens_in: int
     tokens_out: int
     model: str
@@ -186,6 +188,10 @@ class PresentationState(TypedDict, total=False):
     retry_count: int
     retry_budget: int
     stall_detected: bool
+    # Best compiling attempt seen so far (validator/critic write, evaluator ships it).
+    # best_score = [compile_ok, critic_passed, -high_count, -attempt]; -1 = none yet.
+    best_attempt: int
+    best_score: list[int]
 
     # ── Output ──
     evaluation: dict[str, Any] | None
@@ -254,6 +260,8 @@ def initial_state(
         retry_count=0,
         retry_budget=retry_budget,
         stall_detected=False,
+        best_attempt=-1,
+        best_score=[0, 0, 0, 0],
         evaluation=None,
         pptx_path=None,
         passed=False,

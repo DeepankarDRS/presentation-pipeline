@@ -20,6 +20,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from src.agents.best_attempt import keep_best_attempt
 from src.compiler.compiler_client import CompilerError, compile_xml, validate_xml
 from src.compiler.layout_audit import audit_layout
 from src.compiler.normalizer import ensure_single_theme, normalize_xml, pre_validate
@@ -157,10 +158,15 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     if compile_result["ok"] and compile_result.get("pptx_path"):
         logger.info(f"validator: pptx → {compile_result['pptx_path']}")
 
-    return {
+    result = {
         "normalize_result": norm,
         "validate_result": val_result or {"ok": True, "diagnostics": [], "warnings": []},
         "compile_result": compile_result,
         "speaker_notes": speaker_notes,
         "layout_issues": layout_issues,
     }
+    # When the critic is off, validator is the last quality gate for this attempt,
+    # so record the best-of-N candidate here. With the critic on, critic_node does it.
+    if state.get("critic_mode", "off") == "off":
+        keep_best_attempt(state, result)
+    return result

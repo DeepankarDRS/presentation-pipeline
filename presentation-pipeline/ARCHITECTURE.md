@@ -301,9 +301,9 @@ All LLM calls go through `src/utils/llm_client.py`, which reads `models.yaml`:
 ```yaml
 steps:
   planner:    { model: gpt-4.1-mini, temperature: 0.3, max_tokens: 2000 }
-  generator:  { model: gpt-4.1-mini, temperature: 0.2, max_tokens: 4000 }
+  generator:  { model: gpt-4.1-mini, temperature: 0.2, max_tokens: 12000 }
   critic:     { model: gpt-4.1-mini, temperature: 0.1, max_tokens: 1000 }
-  repairer:   { model: gpt-4.1-mini, temperature: 0.1, max_tokens: 4000 }
+  repairer:   { model: gpt-4.1-mini, temperature: 0.1, max_tokens: 12000 }
 
 pricing:
   gpt-4.1-mini: { input: 0.40, output: 1.60 }  # per 1M tokens

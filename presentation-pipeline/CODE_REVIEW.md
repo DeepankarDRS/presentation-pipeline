@@ -142,6 +142,25 @@ cleanup pass fits.
 _Original finding:_ `retry_tier` only advanced on `is_stalled`; otherwise pinned
 at PATCH, so SIMPLIFY/TEMPLATE were near-dead code.
 
+### 4b. Maximal-content slides: truncation + divergence + shipping the worst — RESOLVED
+For a slide denser than the token budget, the generator's XML truncated (no
+`finish_reason` check), POM leniently rendered the fragment, the critic (correctly)
+failed it, and the repair loop drifted — sometimes shipping a *worse* attempt than
+an earlier one because the evaluator always took the last `current_xml`. Fixes:
+- `models.yaml` generator/repairer `max_tokens` 4000 → 12000.
+- generator + repairer set `AttemptRecord["truncated"]` on `finish_reason == "length"`;
+  a truncated attempt can never be selected as best.
+- repairer detects a no-op PATCH (`repaired == failing`) → `AttemptRecord["noop"]`,
+  and `_choose_strategy` escalates to REGENERATE next round instead of re-PATCHing.
+- `_choose_strategy` no longer forces REGENERATE at attempt ≥ 3 when the slide
+  already compiles (critic-only failure) — rebuilding from scratch under the token
+  cap was making things worse.
+- **Best-of-N** (`src/agents/best_attempt.py`): validator (critic off) / critic
+  (critic on) record the best compiling attempt via
+  `[compile_ok, critic_passed, -high_count, -attempt]`; `evaluator` ships that
+  attempt's `input.xml` / `presentation.pptx` when it beats the final one and sets
+  `manifest["shipped_best_attempt"]`. Single-slide only.
+
 ### 5. Speaker notes are captured and then thrown away
 `normalize_xml` extracts `<Notes>` into `speaker_notes` **and strips it from the
 XML that gets compiled** ([`normalizer.py:162-165`](src/compiler/normalizer.py)).

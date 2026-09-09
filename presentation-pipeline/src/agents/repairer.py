@@ -4,10 +4,11 @@ PATCH:      feed back failing XML + errors + guidance → fix in place.
 REGENERATE: rebuild the slide from its plan, using a verified skeleton when one
             exists for the component mix, otherwise a simplified free rebuild.
 
-Strategy is chosen per attempt (see repairer_node):
+Strategy is chosen per attempt (see _choose_strategy):
 - attempt 1 is always PATCH (a cheap in-place fix often works);
-- structural/layout errors (needs_regeneration), a detected stall, or attempt >= 3
+- a no-op PATCH, structural/layout errors (needs_regeneration), or a detected stall
   select REGENERATE;
+- attempt >= 3 falls back to REGENERATE only while the slide still won't compile;
 - the attempt right after a REGENERATE is a PATCH cleanup pass.
 
 The repairer calls the LLM with a targeted repair prompt and produces fixed
@@ -195,20 +196,27 @@ def _choose_strategy(
     *,
     attempt: int,
     prev_strategy: int | None,
+    prev_noop: bool,
     regen_error: bool,
     stalled: bool,
+    compile_ok: bool,
 ) -> int:
     """Pick PATCH or REGENERATE for this attempt.
 
     attempt 1 is always a cheap in-place PATCH. After a REGENERATE the next attempt
-    is a PATCH cleanup pass on the rebuilt XML. Otherwise structural/layout errors,
-    a detected stall, or reaching attempt 3 escalate to REGENERATE.
+    is a PATCH cleanup pass on the rebuilt XML. A PATCH that returned identical XML
+    (prev_noop), structural/layout errors, or a detected stall escalate to
+    REGENERATE. Falling back to REGENERATE by attempt number only applies when the
+    slide still doesn't compile — rebuilding a slide that compiles (only the critic
+    is unhappy) risks losing a working result.
     """
     if attempt == 1:
         return PATCH
     if prev_strategy == REGENERATE:
         return PATCH
-    if regen_error or stalled or attempt >= 3:
+    if prev_noop or regen_error or stalled:
+        return REGENERATE
+    if attempt >= 3 and not compile_ok:
         return REGENERATE
     return PATCH
 
@@ -233,18 +241,22 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
          if r.get("tier") in (PATCH, REGENERATE)),
         None,
     )
+    prev_noop = bool(prev_history[-1].get("noop")) if prev_history else False
 
     stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)
     regen_error = needs_regeneration(pre_issues, compile_diags)
+    compile_ok = bool((state.get("compile_result") or {}).get("ok"))
     strategy = _choose_strategy(
         attempt=current_count + 1,
         prev_strategy=prev_strategy,
+        prev_noop=prev_noop,
         regen_error=regen_error,
         stalled=stalled,
+        compile_ok=compile_ok,
     )
 
     reasons = [r for r, on in
-               (("stall", stalled), ("structural", regen_error)) if on]
+               (("stall", stalled), ("structural", regen_error), ("prev-noop", prev_noop)) if on]
     logger.info(
         f"repairer: attempt {current_count + 1}, {_STRATEGY_NAME[strategy]}"
         + (f" ({', '.join(reasons)})" if reasons else "")
@@ -252,6 +264,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     )
 
     contract = state.get("contract") or {}
+    failing_xml = ""
 
     if strategy == PATCH:
         norm = state.get("normalize_result") or {}
@@ -291,6 +304,12 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     tokens_in = token_usage.get("prompt_tokens", 0)
     tokens_out = token_usage.get("completion_tokens", 0)
     model = response.response_metadata.get("model_name", "unknown")
+    truncated = response.response_metadata.get("finish_reason") == "length"
+    noop = strategy == PATCH and repaired_xml.strip() == failing_xml.strip()
+    if truncated:
+        logger.warning("repairer: LLM output truncated at max_tokens — repair is incomplete")
+    if noop:
+        logger.warning("repairer: PATCH returned identical XML — no progress this attempt")
 
     logger.info(f"repairer: {model} tokens_in={tokens_in} tokens_out={tokens_out}")
 
@@ -301,6 +320,8 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         errors_out=[],
         error_sigs=sorted(curr_sigs),
         stalled=stalled,
+        truncated=truncated,
+        noop=noop,
         tokens_in=tokens_in,
         tokens_out=tokens_out,
         model=model,

@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from src.agents.repairer import (
     repairer_node, _collect_problems, _select_template, build_patch_prompts,
-    _get_pre_issues, _get_compile_diags, PATCH, REGENERATE,
+    _get_pre_issues, _get_compile_diags, _choose_strategy, PATCH, REGENERATE,
 )
 from src.compiler.repair_guidance import (
     build_error_guidance, error_signatures, is_stalled, needs_regeneration,
@@ -135,6 +135,38 @@ def test_is_stalled_false():
 def test_is_stalled_empty():
     assert is_stalled(set(), {"A"}) is False
     assert is_stalled({"A"}, set()) is False
+
+
+# ── Strategy choice ──────────────────────────────────────────────────────
+
+def _choose(**kw):
+    base = dict(attempt=2, prev_strategy=PATCH, prev_noop=False,
+                regen_error=False, stalled=False, compile_ok=False)
+    base.update(kw)
+    return _choose_strategy(**base)
+
+
+def test_choose_strategy_attempt1_always_patch():
+    assert _choose(attempt=1, regen_error=True, stalled=True) == PATCH
+
+
+def test_choose_strategy_patch_after_regenerate():
+    assert _choose(prev_strategy=REGENERATE, attempt=4) == PATCH
+
+
+def test_choose_strategy_noop_forces_regenerate():
+    assert _choose(prev_noop=True) == REGENERATE
+
+
+def test_choose_strategy_attempt3_regenerates_only_when_broken():
+    assert _choose(attempt=3, compile_ok=False) == REGENERATE
+    assert _choose(attempt=3, compile_ok=True) == PATCH   # critic-only → stay PATCH
+    assert _choose(attempt=5, compile_ok=True) == PATCH
+
+
+def test_choose_strategy_structural_or_stall_regenerates():
+    assert _choose(regen_error=True, compile_ok=True) == REGENERATE
+    assert _choose(stalled=True, compile_ok=True) == REGENERATE
 
 
 # ── Regenerate classification ─────────────────────────────────────────────
@@ -362,6 +394,50 @@ def _mock_llm(mock_get_llm, content='<Theme />\n<Slide><VStack><Text>x</Text></V
     mock_llm.invoke.return_value = mock_response
     mock_get_llm.return_value = mock_llm
     return mock_llm
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_flags_noop_patch(mock_get_llm):
+    state = _make_state(retry_tier=0, retry_count=0)
+    identical = state["normalize_result"]["cleaned_xml"]
+    _mock_llm(mock_get_llm, content=identical)
+
+    result = repairer_node(state)
+
+    assert result["generation_history"][0]["noop"] is True
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_regenerates_after_noop(mock_get_llm):
+    _mock_llm(mock_get_llm)
+    state = _make_state(retry_tier=PATCH, retry_count=1)  # attempt 2
+    state["generation_history"] = [{
+        "attempt": 1, "tier": PATCH, "errors_in": ["x"], "errors_out": [],
+        "error_sigs": ["HTML_TAG:div"], "stalled": False, "noop": True,
+        "tokens_in": 1, "tokens_out": 1, "model": "gpt-4.1-mini",
+    }]
+
+    result = repairer_node(state)
+
+    assert result["retry_tier"] == REGENERATE
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_flags_truncation(mock_get_llm):
+    mock_response = MagicMock()
+    mock_response.content = '<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'
+    mock_response.response_metadata = {
+        "token_usage": {"prompt_tokens": 100, "completion_tokens": 4000},
+        "model_name": "gpt-4.1-mini",
+        "finish_reason": "length",
+    }
+    mock_llm = MagicMock()
+    mock_llm.invoke.return_value = mock_response
+    mock_get_llm.return_value = mock_llm
+
+    result = repairer_node(_make_state(retry_count=1))
+
+    assert result["generation_history"][0]["truncated"] is True
 
 
 @patch("src.agents.repairer.get_llm")

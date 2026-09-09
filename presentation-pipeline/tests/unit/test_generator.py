@@ -123,6 +123,25 @@ def test_generator_calls_llm_and_returns_xml(mock_get_llm):
     assert record["model"] == "gpt-4.1-mini"
     assert record["attempt"] == 0
     assert record["tier"] == 0
+    assert record["truncated"] is False
+
+
+@patch("src.agents.generator.get_llm")
+def test_generator_flags_truncation(mock_get_llm):
+    mock_response = MagicMock()
+    mock_response.content = '<Theme />\n<Slide><VStack><Text>cut o'
+    mock_response.response_metadata = {
+        "token_usage": {"prompt_tokens": 500, "completion_tokens": 12000},
+        "model_name": "gpt-4.1-mini",
+        "finish_reason": "length",
+    }
+    mock_llm = MagicMock()
+    mock_llm.invoke.return_value = mock_response
+    mock_get_llm.return_value = mock_llm
+
+    result = generator_node(_make_state())
+
+    assert result["generation_history"][0]["truncated"] is True
 
 
 @patch("src.agents.generator.get_llm")
