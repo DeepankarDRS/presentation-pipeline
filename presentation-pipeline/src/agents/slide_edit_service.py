@@ -14,12 +14,10 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from src.agents.repairer import build_patch_prompts
 from src.compiler.compiler_client import CompilerError, compile_xml
 from src.compiler.normalizer import ensure_single_theme, normalize_xml
-from src.compiler.repair_guidance import (
-    build_error_guidance,
-    select_repair_knowledge,
-)
+from src.compiler.repair_guidance import error_signatures, is_stalled
 from src.compiler.screenshot import render_screenshots
 from src.utils.llm_client import get_llm
 
@@ -92,37 +90,33 @@ def _call_edit_llm(
 def _call_repair_llm(
     failing_xml: str,
     problems: list[str],
-    guidance: str,
-    feedback: str,
+    pre_issues: list[dict[str, Any]],
+    compile_diags: list[dict[str, Any]],
+    objective: str,
     theme_element: str,
     contract: dict[str, Any],
-    slide_plan: dict[str, Any],
 ) -> str:
-    """Call the LLM to fix compile errors while preserving the user's edit intent."""
-    system_prompt = _render_system_prompt(contract)
+    """Fix compile errors with the shared tier-1 patch prompt.
 
-    components = slide_plan.get("components", [])
-    component_summary = ", ".join(c.get("kind", "") for c in components) if components else ""
-
-    user_prompt = (
-        f"## FAILING XML\n{failing_xml}\n\n"
-        f"## COMPILE ERRORS\n" + "\n".join(f"- {p}" for p in problems) + "\n\n"
-        f"## ERROR GUIDANCE\n{guidance}\n\n"
-        f"## ORIGINAL USER INSTRUCTION\n{feedback}\n\n"
-        f"## SLIDE INTENT\nType: {slide_plan.get('slide_type', '')} | "
-        f"Components: {component_summary} | Density: {slide_plan.get('density', '')}\n\n"
-        f"## THEME\n{theme_element}\n\n"
-        "Fix the compile errors while keeping the user's edit intent. "
-        "Return the complete corrected XML."
+    Reuses the main pipeline repairer's prompt and error-scoped node reference,
+    so the repair LLM sees attribute docs and a verified syntax example for
+    exactly the nodes that failed.
+    """
+    system_prompt, user_prompt = build_patch_prompts(
+        failing_xml=failing_xml,
+        problems=problems,
+        pre_issues=pre_issues,
+        compile_diags=compile_diags,
+        objective=objective,
+        forbidden_tags=contract.get("forbidden_tags", []),
+        theme_element=contract.get("theme_element") or theme_element,
     )
 
     llm = get_llm("slide_editor")
-    messages = [
+    response = llm.invoke([
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
-    ]
-
-    response = llm.invoke(messages)
+    ])
     return response.content
 
 
@@ -179,17 +173,26 @@ def edit_slide_xml(
             error="Compile failed with non-retryable errors",
         )
 
+    title = slide_plan.get("content_data", {}).get("title", "")
+    objective = f"{title} — apply user edit: {feedback}".lstrip(" —")
+
+    prev_sigs: set[str] = set()
     for attempt in range(1, MAX_REPAIR_ATTEMPTS + 1):
         logger.info(f"slide_editor: repair attempt {attempt}/{MAX_REPAIR_ATTEMPTS}")
 
         diags = cr.get("diagnostics", [])
         pre_issues = [i for i in norm.get("issues", []) if not i.get("auto_fixed", False)]
         problems = [f"{d['type']}: {d['message']}" for d in diags]
-        guidance = build_error_guidance(pre_issues, diags)
+
+        sigs = error_signatures(pre_issues, diags)
+        if prev_sigs and is_stalled(prev_sigs, sigs):
+            logger.info("slide_editor: repair stalled (errors unchanged), stopping")
+            break
+        prev_sigs = sigs
 
         try:
             repaired_xml = _call_repair_llm(
-                working_xml, problems, guidance, feedback, theme_element, contract, slide_plan,
+                working_xml, problems, pre_issues, diags, objective, theme_element, contract,
             )
         except Exception as e:
             logger.error(f"slide_editor: repair LLM call failed: {e}")

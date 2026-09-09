@@ -71,7 +71,7 @@ def test_user_prompt_omits_slide_intent_when_empty():
     assert "<Slide></Slide>" in out
 
 
-# ── _call_edit_llm / _call_repair_llm accept slide_plan ──────────────────
+# ── _call_edit_llm / _call_repair_llm prompt wiring ─────────────────────
 
 @patch("src.agents.slide_edit_service.get_llm")
 def test_call_edit_llm_accepts_slide_plan(mock_get_llm):
@@ -90,7 +90,7 @@ def test_call_edit_llm_accepts_slide_plan(mock_get_llm):
 
 
 @patch("src.agents.slide_edit_service.get_llm")
-def test_call_repair_llm_accepts_slide_plan(mock_get_llm):
+def test_call_repair_llm_builds_patch_prompts(mock_get_llm):
     from src.agents.slide_edit_service import _call_repair_llm
 
     mock_llm = MagicMock()
@@ -98,12 +98,19 @@ def test_call_repair_llm_accepts_slide_plan(mock_get_llm):
     mock_get_llm.return_value = mock_llm
 
     result = _call_repair_llm(
-        failing_xml="<Slide></Slide>", problems=["BAD_TAG: div"], guidance="Use VStack instead.",
-        feedback="move left", theme_element="<Theme />",
+        failing_xml="<Slide><div>x</div></Slide>",
+        problems=["UNKNOWN_TAG: div"],
+        pre_issues=[{"code": "HTML_TAG", "message": "Found HTML tag <div>.", "auto_fixed": False}],
+        compile_diags=[{"type": "UNKNOWN_TAG", "message": "Unknown tag: <div>"}],
+        objective="Metrics — apply user edit: move left",
+        theme_element="<Theme />",
         contract={"forbidden_tags": ["div"]},
-        slide_plan={"slide_type": "data", "components": [{"kind": "chart"}]},
     )
     assert result == "<Slide></Slide>"
+
+    system_msg, user_msg = (m["content"] for m in mock_llm.invoke.call_args[0][0])
+    assert "PATCH" in user_msg
+    assert "div" in system_msg  # forbidden tags rendered into the repairer system prompt
 
 
 # ── Theme injection ────────────────────────────────────────────────────────

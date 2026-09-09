@@ -2,7 +2,9 @@
 
 from unittest.mock import MagicMock, patch
 
-from src.agents.repairer import repairer_node, _collect_problems, _select_template
+from src.agents.repairer import (
+    repairer_node, _collect_problems, _select_template, build_patch_prompts,
+)
 from src.compiler.repair_guidance import (
     build_error_guidance, error_signatures, is_stalled,
 )
@@ -179,6 +181,26 @@ def test_select_template_default():
     ]
     xml = _select_template(state)
     assert xml
+
+
+# ── Shared tier-1 patch prompts ──────────────────────────────────────────
+
+def test_build_patch_prompts():
+    system, user = build_patch_prompts(
+        failing_xml='<Slide><div>x</div></Slide>',
+        problems=["UNKNOWN_TAG: div"],
+        pre_issues=[{"code": "HTML_TAG", "message": "Found HTML tag <div>.", "auto_fixed": False}],
+        compile_diags=[{"type": "UNKNOWN_TAG", "message": "Unknown tag: <div>"}],
+        objective="Fix the layout",
+        forbidden_tags=["div", "p"],
+        theme_element='<Theme surface="F7F9FC" />',
+    )
+    assert "PATCH" in user
+    assert "Fix the layout" in user
+    assert "UNKNOWN_TAG: div" in user
+    assert "div, p" in system  # forbidden tags
+    assert "F7F9FC" in system  # theme element
+    assert "TARGETED FIX GUIDANCE" in user  # build_error_guidance output injected
 
 
 # ── Repairer node (mocked LLM) ───────────────────────────────────────────

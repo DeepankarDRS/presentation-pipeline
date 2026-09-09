@@ -139,6 +139,41 @@ def _render_original_user(state: PresentationState) -> str:
     )
 
 
+def build_patch_prompts(
+    *,
+    failing_xml: str,
+    problems: list[str],
+    pre_issues: list[dict[str, Any]],
+    compile_diags: list[dict[str, Any]],
+    objective: str,
+    forbidden_tags: list[str],
+    theme_element: str,
+) -> tuple[str, str]:
+    """Build the (system, user) prompts for a tier-1 patch repair.
+
+    Shared by repairer_node's tier-1 branch and the slide edit service's mini
+    repair loop, so both get the same error-scoped node reference (attribute
+    docs, pitfalls, a verified syntax example) injected into the system prompt.
+    """
+    knowledge = select_repair_knowledge(pre_issues, compile_diags)
+    if knowledge["nodes_involved"]:
+        logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
+
+    system_prompt = _repair_env.get_template("system.j2").render(
+        forbidden_tags=forbidden_tags,
+        theme_element=theme_element,
+        knowledge_text=knowledge.get("knowledge_text", ""),
+        reference_example=knowledge.get("example", ""),
+    )
+    user_prompt = _repair_env.get_template("patch.j2").render(
+        objective=objective,
+        failing_xml=failing_xml,
+        problems=problems,
+        guidance=build_error_guidance(pre_issues, compile_diags),
+    )
+    return system_prompt, user_prompt
+
+
 def _render_repair_system(state: PresentationState, knowledge: dict) -> str:
     """Build a focused repair system prompt with only error-relevant knowledge.
 
@@ -189,43 +224,40 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     logger.info(f"repairer: attempt {current_count + 1}, tier {current_tier} ({tier_name}), "
                 f"{len(problems)} problem(s)")
 
-    # Select targeted knowledge based on the actual errors
-    knowledge = select_repair_knowledge(pre_issues, compile_diags)
-    if knowledge["nodes_involved"]:
-        logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
-
     contract = state.get("contract") or {}
 
     if current_tier <= 1:
-        guidance = build_error_guidance(pre_issues, compile_diags)
         norm = state.get("normalize_result") or {}
         failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
-        patch_tmpl = _repair_env.get_template("patch.j2")
-        user_prompt = patch_tmpl.render(
-            objective=state.get("raw_request", ""),
+        system_prompt, user_prompt = build_patch_prompts(
             failing_xml=failing_xml,
             problems=problems,
-            guidance=guidance,
-        )
-    elif current_tier == 2:
-        previous_user = _render_original_user(state)
-        simplify_tmpl = _repair_env.get_template("simplify.j2")
-        user_prompt = simplify_tmpl.render(
-            previous_user=previous_user,
-            problems=problems,
-            simplify_instructions=_SIMPLIFY_INSTRUCTIONS,
-            allowed_nodes=contract.get("allowed_nodes", []),
+            pre_issues=pre_issues,
+            compile_diags=compile_diags,
+            objective=state.get("raw_request", ""),
+            forbidden_tags=contract.get("forbidden_tags", []),
+            theme_element=contract.get("theme_element", state.get("theme_element", "")),
         )
     else:
+        # Tiers 2/3 regenerate rather than patch, so they need the broader
+        # knowledge slice for the system prompt and the original user prompt.
+        knowledge = select_repair_knowledge(pre_issues, compile_diags)
+        if knowledge["nodes_involved"]:
+            logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
         previous_user = _render_original_user(state)
-        template_xml = _select_template(state)
-        template_tmpl = _repair_env.get_template("template.j2")
-        user_prompt = template_tmpl.render(
-            previous_user=previous_user,
-            template_xml=template_xml,
-        )
-
-    system_prompt = _render_repair_system(state, knowledge)
+        if current_tier == 2:
+            user_prompt = _repair_env.get_template("simplify.j2").render(
+                previous_user=previous_user,
+                problems=problems,
+                simplify_instructions=_SIMPLIFY_INSTRUCTIONS,
+                allowed_nodes=contract.get("allowed_nodes", []),
+            )
+        else:
+            user_prompt = _repair_env.get_template("template.j2").render(
+                previous_user=previous_user,
+                template_xml=_select_template(state),
+            )
+        system_prompt = _render_repair_system(state, knowledge)
 
     llm = get_llm("repairer")
     messages = [
