@@ -203,15 +203,11 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     curr_sigs = error_signatures(pre_issues, compile_diags)
 
     prev_history = state.get("generation_history", [])
-    prev_errors: list[str] = []
+    prev_sigs: set[str] = set()
     for record in reversed(prev_history):
-        if record.get("errors_in"):
-            prev_errors = record["errors_in"]
+        if record.get("error_sigs"):
+            prev_sigs = set(record["error_sigs"])
             break
-    prev_sigs = error_signatures(
-        [{"code": e.split(":")[0], "message": e} for e in prev_errors],
-        [],
-    ) if prev_errors else set()
 
     stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)
     if stalled:
@@ -279,6 +275,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         tier=current_tier,
         errors_in=problems,
         errors_out=[],
+        error_sigs=sorted(curr_sigs),
         stalled=stalled,
         tokens_in=tokens_in,
         tokens_out=tokens_out,

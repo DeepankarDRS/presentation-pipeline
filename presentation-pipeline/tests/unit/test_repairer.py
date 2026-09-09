@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from src.agents.repairer import (
     repairer_node, _collect_problems, _select_template, build_patch_prompts,
+    _get_pre_issues, _get_compile_diags,
 )
 from src.compiler.repair_guidance import (
     build_error_guidance, error_signatures, is_stalled,
@@ -243,20 +244,21 @@ def test_repairer_escalates_on_stall(mock_get_llm):
     mock_llm.invoke.return_value = mock_response
     mock_get_llm.return_value = mock_llm
 
+    # Prior attempt failed with the exact same errors _make_state() carries now
+    # (a compile diag + two normalize issues). The stored canonical signatures
+    # must round-trip so is_stalled() fires — the compile diag is the case that
+    # the old display-string reconstruction got wrong.
     state = _make_state(retry_tier=1, retry_count=1)
-    state["compile_result"] = {
-        "ok": False, "pptx_path": None,
-        "diagnostics": [],
-        "warnings": [], "retryable": True,
-    }
+    prior_sigs = sorted(error_signatures(
+        _get_pre_issues(state), _get_compile_diags(state)
+    ))
+    assert "COMPILE:UNKNOWN_TAG:Unknown tag: <div>" in prior_sigs  # guard the fixture
     state["generation_history"] = [{
         "attempt": 1,
         "tier": 1,
-        "errors_in": [
-            "HTML_TAG: Found HTML tag <div>.",
-            "HTML_TAG: Found HTML tag <p>.",
-        ],
+        "errors_in": ["HTML_TAG: Found HTML tag <div>."],
         "errors_out": [],
+        "error_sigs": prior_sigs,
         "stalled": False,
         "tokens_in": 500,
         "tokens_out": 200,
@@ -267,6 +269,68 @@ def test_repairer_escalates_on_stall(mock_get_llm):
 
     assert result["retry_tier"] >= 2
     assert result["stall_detected"] is True
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_stall_detected_from_compile_diags(mock_get_llm):
+    """Regression: a recurring compiler diagnostic must be recognised as a stall.
+
+    The old code rebuilt prev_sigs from display strings, turning a stored
+    "COMPILE:UNKNOWN_TAG:..." into "UNKNOWN_TAG:div", which never matched the
+    structured curr_sigs — so is_stalled() stayed False forever on compile-error
+    loops and tiers 2/3 were unreachable.
+    """
+    mock_response = MagicMock()
+    mock_response.content = '<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'
+    mock_response.response_metadata = {
+        "token_usage": {"prompt_tokens": 800, "completion_tokens": 300},
+        "model_name": "gpt-4.1-mini",
+    }
+    mock_llm = MagicMock()
+    mock_llm.invoke.return_value = mock_response
+    mock_get_llm.return_value = mock_llm
+
+    state = _make_state(retry_tier=1, retry_count=1)
+    state["normalize_result"]["issues"] = []  # only the compile diag remains
+    prior_sigs = sorted(error_signatures(
+        _get_pre_issues(state), _get_compile_diags(state)
+    ))
+    assert prior_sigs == ["COMPILE:UNKNOWN_TAG:Unknown tag: <div>"]
+    state["generation_history"] = [{
+        "attempt": 1, "tier": 1, "errors_in": ["UNKNOWN_TAG: Unknown tag: <div>"],
+        "errors_out": [], "error_sigs": prior_sigs, "stalled": False,
+        "tokens_in": 500, "tokens_out": 200, "model": "gpt-4.1-mini",
+    }]
+
+    result = repairer_node(state)
+
+    assert result["stall_detected"] is True
+    assert result["retry_tier"] >= 2
+
+
+@patch("src.agents.repairer.get_llm")
+def test_repairer_no_stall_when_errors_change(mock_get_llm):
+    mock_response = MagicMock()
+    mock_response.content = '<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'
+    mock_response.response_metadata = {
+        "token_usage": {"prompt_tokens": 800, "completion_tokens": 300},
+        "model_name": "gpt-4.1-mini",
+    }
+    mock_llm = MagicMock()
+    mock_llm.invoke.return_value = mock_response
+    mock_get_llm.return_value = mock_llm
+
+    state = _make_state(retry_tier=1, retry_count=1)
+    state["generation_history"] = [{
+        "attempt": 1, "tier": 1, "errors_in": ["something else"],
+        "errors_out": [], "error_sigs": ["ZERO_DIM", "UNKNOWN_ATTR:Chart:flex"],
+        "stalled": False, "tokens_in": 500, "tokens_out": 200, "model": "gpt-4.1-mini",
+    }]
+
+    result = repairer_node(state)
+
+    assert result["stall_detected"] is False
+    assert result["retry_tier"] == 1
 
 
 @patch("src.agents.repairer.get_llm")
@@ -311,3 +375,4 @@ def test_repairer_records_attempt(mock_get_llm):
     assert record["tokens_in"] == 600
     assert record["tokens_out"] == 250
     assert len(record["errors_in"]) > 0
+    assert isinstance(record["error_sigs"], list) and record["error_sigs"]

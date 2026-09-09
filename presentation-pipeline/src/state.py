@@ -76,6 +76,7 @@ class AttemptRecord(TypedDict, total=False):
     tier: int          # 0=initial, 1=patch, 2=simplify, 3=template
     errors_in: list[str]
     errors_out: list[str]
+    error_sigs: list[str]   # canonical error_signatures() output for this attempt
     stalled: bool
     tokens_in: int
     tokens_out: int

@@ -101,12 +101,14 @@ def test_attempt_record_structure():
         attempt=1, tier=1,
         errors_in=["UNKNOWN_TAG: Layerr"],
         errors_out=[],
+        error_sigs=["UNKNOWN_TAG:Layer"],
         stalled=False,
         tokens_in=1500, tokens_out=800,
         model="gpt-4.1-mini",
     )
     assert rec["tier"] == 1
     assert rec["model"] == "gpt-4.1-mini"
+    assert rec["error_sigs"] == ["UNKNOWN_TAG:Layer"]
 
 
 def test_generation_history_is_appendable():
