@@ -160,6 +160,45 @@ def _check_col_widths(root: ET.Element, root_padding: float,
             })
 
 
+def _check_band_height_sum(root: ET.Element, root_padding: float,
+                           issues: list[dict[str, str]]) -> None:
+    """Flag a root VStack whose children's explicit heights + gaps overflow 720.
+
+    POM children default flexShrink=1, so an over-budget stack does NOT raise
+    NODE_OUT_OF_BOUNDS — it silently squashes and overlaps. Catch it statically.
+    Only fires when the root is a VStack and enough children carry an explicit
+    numeric h that a real estimate is possible.
+    """
+    slide = root if root.tag == "Slide" else root.find(".//Slide")
+    if slide is None:
+        return
+    rootv = next((c for c in slide if c.tag == "VStack"), None)
+    if rootv is None:
+        return
+    children = [c for c in rootv if c.tag in _STACK_TAGS or c.tag == "Chart"]
+    if len(children) < 2:
+        return
+    gap = _parse_num(rootv.get("gap")) or 0.0
+    explicit = [_parse_num(c.get("h")) for c in children]
+    known = [h for h in explicit if h is not None]
+    # need most bands sized to make a meaningful claim
+    if len(known) < len(children) - 1 or not known:
+        return
+    # unknown bands (usually the header) — assume a modest 90px each
+    est_total = sum(known) + 90.0 * (len(children) - len(known))
+    est_total += gap * (len(children) - 1) + 2 * root_padding
+    if est_total > 760:
+        issues.append({
+            "severity": "high",
+            "code": "BAND_HEIGHT_SUM",
+            "message": (
+                f"Root VStack children's heights + gaps + padding ~= {est_total:.0f} "
+                f"> 720. POM will shrink and overlap the bands (no compile error). "
+                f"Reduce a band height, shrink the chart, or drop content."
+            ),
+        })
+
+
 def audit_layout(xml: str) -> list[dict[str, str]]:
     """Parse POM XML and check spatial/layout constraints.
 
@@ -180,5 +219,6 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_missing_dims(root, issues)
     _check_nesting(root, issues)
     _check_col_widths(root, root_padding, issues)
+    _check_band_height_sum(root, root_padding, issues)
 
     return issues

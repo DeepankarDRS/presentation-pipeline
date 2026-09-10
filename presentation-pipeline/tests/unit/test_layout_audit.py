@@ -152,3 +152,32 @@ def test_multiple_issues():
     assert "FONT_TOO_SMALL" in codes
     assert "MISSING_DIMS" in codes
     assert len(issues) >= 3
+
+
+def test_band_height_sum_overflow_flagged():
+    # header (auto) + 3 content bands whose h + gaps + padding blow past 720
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="28">
+    <HStack><Text>Header</Text></HStack>
+    <HStack h="320"><Text>KPI row</Text></HStack>
+    <VStack h="300"><Text>Chart card</Text></VStack>
+    <VStack h="140"><Text>Footer</Text></VStack>
+  </VStack>
+</Slide>"""
+    codes = [i["code"] for i in audit_layout(xml)]
+    assert "BAND_HEIGHT_SUM" in codes
+
+
+def test_band_height_sum_within_budget_ok():
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="36" gap="16">
+    <HStack><Text>Header</Text></HStack>
+    <HStack h="120"><Text>KPI row</Text></HStack>
+    <VStack h="300"><Text>Chart card</Text></VStack>
+    <VStack h="96"><Text>Callout</Text></VStack>
+  </VStack>
+</Slide>"""
+    codes = [i["code"] for i in audit_layout(xml)]
+    assert "BAND_HEIGHT_SUM" not in codes

@@ -75,24 +75,30 @@ header_band: >
   right optional - a badge or one headline KPI.
 
 # --- height budget -----------------------------------------------------
-# VERIFIED v10.3.0: a fixed-height root VStack does NOT top-align undersized
-# content - leftover vertical space pools as a gap (often BELOW the header),
-# and the slide reads half-empty. The fix is not justifyContent - it is:
-# give EVERY content band an explicit h, and make the heights add up to 720.
-height_budget: >
-  Header band: no h (auto, ~80-96px). Every CONTENT band: explicit h. The sum
-  header_h + all band h + all gaps + 2*P must reach ~720 (not just "<= 720" -
-  undershooting leaves dead space). A Chart/Matrix/Table inside a card:
-  h = band_h - 2*card_padding - card_title(~28); set that on the node.
-  Do NOT inflate one band's h to soak up leftover height - a tall band with
-  thin content is just a big empty card. Instead: size each band to what its
-  content needs, add up the total, and if it falls short of ~720 add ANOTHER
-  band (a callout, a supporting stat row, a second visual) or make the
-  richest band genuinely bigger (more table rows, a taller chart).
-worked_example: >
-  P=36 G=18, header + 2 content bands: 36 + header~92 + 18 + band 404 + 18 +
-  band 96 + 36 = 700 ~= 720. A chart in the 404 band (card padding 18, title):
-  h = 404 - 36 - 28 ~= 340.
+# THE #1 FAILURE: VStack/HStack children default to flexShrink=1. If your
+# band heights sum to MORE than the root's 720, nothing errors - POM silently
+# shrinks every band to fit, text overflows its squashed card, and bands
+# overlap (the chart slides up over the KPI deltas, the title sits on the
+# cards). It compiles clean. So the budget must come in UNDER 720, not over.
+height_budget: |
+  1. Header band: no h (auto, ~80-96). Every CONTENT band gets an explicit h.
+  2. Pick each band's h from what its content needs (sizes below), NOT from
+     "whatever is left over".
+  3. Add it ALL up: header_h + every band h + every gap + 2*padding.
+     - total <= ~700  -> good.
+     - total > 720    -> the slide WILL overlap. Cut a band, shrink the chart,
+       or drop to 3 KPIs.
+     - total < ~640   -> add a band (callout / stat row / second visual) or
+       genuinely enlarge one (more rows, taller chart). Do not just inflate h.
+  4. Chart / Matrix / Table in a card: h = band_h - 2*card_padding - ~28 title.
+  Typical band heights: KPI row 110-150 | stat/number card 150-220 |
+  chart card 260-360 | table card 240-360 | callout strip 80-110 |
+  bullet list ~40 per bullet + padding.
+worked_example: |
+  P=36, G=16, bands: header + KPI row + chart card + callout.
+  36 + 90(header) + 16 + 120(KPI) + 16 + 288(chart) + 16 + 88(callout) + 36
+  = 706. First pass 736 -> over, so chart 288 not 320 and callout 88 not 100.
+  Chart inside the 288 card (padding 18, ~28 title): h = 288 - 36 - 28 = 224.
 
 # --- rigid nodes (verified v10.3.0 render behaviour) -------------------
 rigid_nodes: >
@@ -128,14 +134,12 @@ recipes:
     instead. Heading is ONE line (<= ~24 chars - long headings wrap to 3 lines
     and overrun the panel); body one short sentence; optional a 2-3 row stat
     list. Do NOT stack heading + long body + stats in a short panel. One per slide.
-  callout: >
-    a tinted band for a note/next-step: backgroundColor a pale tint,
-    borderLeft.color="$warning"|"$accent" borderLeft.width="5", a bold label
-    10-11 + one bold sentence 13-14.
   micro_pair: >
-    label over value: <VStack gap="2"><Text 10-12 "$textMuted">Label</Text>
-    <Text 24-34 bold "$textMain">Value</Text></VStack>. Put 2-3 in an HStack
-    with justifyContent="spaceBetween" for a compact stat row (no card bg).
+    a label-over-value stat with no card: <VStack gap="2"><Text 10-12
+    "$textMuted">Label</Text><Text 24-34 bold "$textMain">Value</Text></VStack>.
+    2-3 side by side in an HStack; justifyContent="spaceBetween" spreads them
+    across the row. spaceBetween is for that horizontal row ONLY - never as the
+    justifyContent of a vertical card.
   accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" /> under a title.'
   badge: >
     <Shape shapeType="roundRect" w="100-160" h="24-30" fill.color="a pale tint"
@@ -165,6 +169,14 @@ color_discipline: >
 
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:
+  - "FLEX SHRINK (the big one): VStack/HStack children default to flexShrink=1.
+     If the band heights sum to more than 720 the compiler does NOT error - it
+     shrinks every band, text overflows its squashed card, and bands overlap
+     (chart over the KPI deltas, title over the cards). Budget must land <=700.
+     Verify by adding up the numbers, every time."
+  - "A KPI tile with justifyContent=\"spaceBetween\" and h=300+ is the classic
+     bad KPI card: label glued to the top, number floating low, delta clipped
+     at the bottom. Use justifyContent=\"center\" and h=110-150."
   - "Text wrapping: POM measures text with its own font; the renderer may wrap
      one line more than POM expected, pushing siblings down. Keep headings on
      hero panels and cards SHORT and give panels/cards a little height slack.
@@ -188,10 +200,12 @@ checklist:
   - "Root VStack is w=1280 h=720 with padding 32-40, gap 14-22."
   - "2-4 bands, each w=\"max\"; the divisions differ band-to-band."
   - "Every CONTENT band has an explicit h=; header band is auto."
-  - "header_h + sum(band h) + sum(gaps) + 2*padding ~= 720 (not just <=)."
+  - "I ADDED UP header_h + every band h + every gap + 2*padding and the total
+     is between ~640 and ~700. If over 720 the slide WILL overlap."
+  - "KPI row band is h=110-150, tiles use justifyContent=\"center\"."
   - "Every Chart/Matrix/ProcessArrow has w=\"max\" AND an explicit computed h."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
   - "No fontSize < 11. No fixed-px width on a text or chart column."
   - "At most one hero_panel. Accent used as a highlight, not a fill."
-  - "If content can't fill 720, ADD substance (a stat row, a second callout,
-     a supporting chart) - never leave a slide three-quarters full."
+  - "If the total is well under ~640, ADD a band (stat row / callout / second
+     visual) - don't inflate one band's h to fill the gap."

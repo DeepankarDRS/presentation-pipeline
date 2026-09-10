@@ -254,17 +254,17 @@ def test_prompt_standard_tier():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    # Standard tier carries the full house-style GRAMMAR (~1.8k tok) — the core
-    # of the layout rework. ~5.2k is the accepted budget; the hard gate is the
-    # dense-tier < 6k test below.
-    assert tokens < 5300, f"Standard tier too large: {tokens} tokens"
+    # Standard tier carries the house-style GRAMMAR (~2.5k) + concrete compiled
+    # component recipes (~0.6k) — both load-bearing for correct layout.
+    assert tokens < 5700, f"Standard tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "LAYOUT GRAMMAR" in prompt
+    assert "COMPONENT RECIPES" in prompt
     assert "SHRINK CHECKLIST" not in prompt
 
 
-def test_prompt_dense_tier_under_6k():
-    """The key acceptance test: maximal-density must stay under 6K tokens."""
+def test_prompt_dense_tier_bounded():
+    """Maximal-density (6 components): grammar + recipes + shrink checklist."""
     plan = _make_plan(
         ["title", "kpi_row", "chart", "bullet_list", "table", "caption"],
         density="tight_fit",
@@ -272,9 +272,10 @@ def test_prompt_dense_tier_under_6k():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 6000, f"Dense tier too large: {tokens} tokens (target: <6000)"
+    assert tokens < 6600, f"Dense tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
+    assert "COMPONENT RECIPES" in prompt
     assert "NOTES" in prompt
 
 

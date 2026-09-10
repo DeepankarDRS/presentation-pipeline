@@ -199,8 +199,15 @@ def _select_attributes(allowed_nodes: list[str], nodes_yaml: dict) -> dict[str, 
 # ── Notes selection ──────────────────────────────────────────────────────────
 
 def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
-                  component_yamls: dict[str, dict], theme_info: dict) -> list[str]:
-    """Select only notes relevant to the components in this slide."""
+                  component_yamls: dict[str, dict], theme_info: dict,
+                  *, has_grammar: bool = False) -> list[str]:
+    """Select only notes relevant to the components in this slide.
+
+    When has_grammar is True (standard/dense tiers) the house-style grammar and
+    the concrete component recipes already carry layout / card / sizing / bullet
+    guidance, so the overlapping design-language rules are skipped to keep the
+    prompt small. Component pitfalls and validation rules are always included.
+    """
     notes: list[str] = []
 
     for row in (validation.get("translations") or []):
@@ -212,7 +219,7 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     for pitfall in (text_yaml.get("pitfalls") or []):
         notes.append(pitfall)
 
-    if "kpi_row" in kinds and text_yaml.get("kpi_numeral_note"):
+    if "kpi_row" in kinds and not has_grammar and text_yaml.get("kpi_numeral_note"):
         notes.append(str(text_yaml["kpi_numeral_note"]).strip())
 
     for kind in kinds:
@@ -220,7 +227,7 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
         if not cy:
             continue
         struct = cy.get("structure")
-        if struct:
+        if struct and not has_grammar:
             notes.append(f"{kind} structure:\n{str(struct).strip()}")
         for pitfall in (cy.get("pitfalls") or []):
             notes.append(pitfall)
@@ -257,17 +264,19 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
 
     design = _load_yaml("core/design-language.yaml")
     if design:
+        # Content-quality guidance is never in the grammar — always include it.
         for rule in design.get("content_invention", []):
             notes.append(rule)
-        for principle in design.get("design_principles", []):
-            notes.append(principle)
-        for rule in design.get("card_recipe", {}).get("rules", []):
-            notes.append(rule)
-        for rule in design.get("bullet_list_styling", []):
-            notes.append(rule)
-        if any(k in kinds for k in ("chart", "kpi_row")):
-            for rule in design.get("chart_sizing", []):
+        if not has_grammar:
+            for principle in design.get("design_principles", []):
+                notes.append(principle)
+            for rule in design.get("card_recipe", {}).get("rules", []):
                 notes.append(rule)
+            for rule in design.get("bullet_list_styling", []):
+                notes.append(rule)
+            if any(k in kinds for k in ("chart", "kpi_row")):
+                for rule in design.get("chart_sizing", []):
+                    notes.append(rule)
         if "table" in kinds:
             for rule in design.get("table_styling", []):
                 if "Col" in rule or "column" in rule.lower():
@@ -324,6 +333,46 @@ def _render_house_style() -> str:
     return "\n\n".join(parts)
 
 
+# ── Concrete component recipes ──────────────────────────────────────────────
+# Compiled copy-the-shape snippets for the components a generator gets wrong
+# from prose alone. Injected per component-kind so the prompt only carries the
+# recipes this slide needs. See core/recipes.yaml.
+
+_KIND_TO_RECIPE: dict[str, str] = {
+    "kpi_row":     "kpi_row",
+    "chart":       "chart_card",
+    "table":       "table_card",
+    "bullet_list": "bullet_list",
+    "caption":     "callout",
+    "narrative":   "callout",
+}
+
+
+@functools.lru_cache(maxsize=1)
+def _all_recipes() -> dict[str, str]:
+    return _load_yaml("core/recipes.yaml") or {}
+
+
+def _render_component_recipes(kinds: list[str]) -> str:
+    """Concrete snippets for the component kinds on this slide (deduped, ordered)."""
+    recipes = _all_recipes()
+    picked: list[str] = []
+    seen: set[str] = set()
+    for kind in kinds:
+        key = _KIND_TO_RECIPE.get(kind)
+        if key and key not in seen and key in recipes:
+            seen.add(key)
+            picked.append(f"# {key}\n{str(recipes[key]).strip()}")
+    if not picked:
+        return ""
+    return (
+        "Compiled recipes for THIS slide's components. Copy the structure and "
+        "the sizing (heights, fontSizes, justifyContent); change the content, "
+        "the token colours and the item count. These are single regions, not "
+        "whole slides.\n\n" + "\n\n".join(picked)
+    )
+
+
 # ── Forbidden lists ──────────────────────────────────────────────────────────
 
 def _clean_list(values: Any) -> list[str]:
@@ -351,7 +400,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
 
     Returns a dict with: allowed_nodes, allowed_attributes, forbidden_tags,
     forbidden_attributes, theme_element, theme_name, theme_mode, chart_colors,
-    notes, house_style, density_tier.
+    notes, house_style, component_recipes, density_tier.
     """
     kinds = [c.get("kind", "") for c in slide_plan.get("components", [])]
     density = slide_plan.get("density", "normal")
@@ -372,7 +421,6 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     forbidden_attributes = _clean_list(validation.get("forbidden_attributes"))
 
     theme = theme_info
-    notes = _select_notes(kinds, validation, text_yaml, component_yamls, theme)
 
     if density in ("sparse",):
         tier = "minimal"
@@ -381,10 +429,15 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     else:
         tier = "dense"
 
-    # The full layout grammar goes to standard/dense tiers. Minimal (sparse /
-    # cover / section_break) slides fall back to the compact DESIGN LANGUAGE
-    # block in the generator prompt instead.
-    house_style = _render_house_style() if tier in ("standard", "dense") else ""
+    # The full layout grammar + concrete component recipes go to standard/dense
+    # tiers. Minimal (sparse / cover / section_break) slides fall back to the
+    # compact DESIGN LANGUAGE block in the generator prompt instead.
+    has_grammar = tier in ("standard", "dense")
+    notes = _select_notes(
+        kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
+    )
+    house_style = _render_house_style() if has_grammar else ""
+    component_recipes = _render_component_recipes(kinds) if has_grammar else ""
 
     return {
         "allowed_nodes": allowed_nodes,
@@ -397,6 +450,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "chart_colors": theme["chart_colors"],
         "notes": notes,
         "house_style": house_style,
+        "component_recipes": component_recipes,
         "density_tier": tier,
     }
 

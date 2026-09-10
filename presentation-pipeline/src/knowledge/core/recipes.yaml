@@ -1,0 +1,84 @@
+# pom-knowledge/core/recipes.yaml
+# Compiled copy-the-shape snippets for the components a generator gets wrong
+# from prose (KPI tiles, number+unit, chart/table in a card). context_builder
+# injects only the snippets whose component kind is on the slide. Every snippet
+# compiles on POM v10.3.0 and fits inside a multi-component slide - note the
+# modest band heights. Copy the STRUCTURE and the SIZING; swap the content,
+# the $token colours and the item count.
+
+kpi_row: |
+  # KPI row: band h=110-150. Inside each tile justifyContent="center" (NOT
+  # spaceBetween). Unit in a <Span> inside the value <Text>.
+  <HStack w="max" h="120" gap="14" alignItems="stretch">
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="11" color="$textMuted">Annual recurring revenue</Text>
+      <Text fontSize="30" bold="true" color="$textMain">$42.8<Span fontSize="16" color="$textMuted">M</Span></Text>
+      <Text fontSize="11" bold="true" color="$positive">+18% QoQ</Text>
+    </VStack>
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="11" color="$textMuted">Net revenue retention</Text>
+      <Text fontSize="30" bold="true" color="$textMain">114<Span fontSize="16" color="$textMuted">%</Span></Text>
+      <Text fontSize="11" bold="true" color="$positive">+2 pts</Text>
+    </VStack>
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="11" color="$textMuted">Gross margin</Text>
+      <Text fontSize="30" bold="true" color="$textMain">72.1<Span fontSize="16" color="$textMuted">%</Span></Text>
+      <Text fontSize="11" bold="true" color="$negative">-1.4 pts</Text>
+    </VStack>
+  </HStack>
+
+chart_card: |
+  # Chart card: band h 260-360. Chart is w="max" + an EXPLICIT h = band h minus
+  # 2*padding minus the ~28 title. Never omit chart h.
+  <VStack w="max" h="300" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
+    <Chart w="max" h="236" chartType="bar" showLegend="false" chartColors='["2563EB","0EA5E9","10B981","F59E0B"]'>
+      <ChartSeries name="Revenue">
+        <ChartDataPoint label="Q1" value="36.1" />
+        <ChartDataPoint label="Q2" value="39.1" />
+        <ChartDataPoint label="Q3" value="42.3" />
+        <ChartDataPoint label="Q4" value="48.2" />
+      </ChartSeries>
+    </Chart>
+  </VStack>
+
+table_card: |
+  # Table card: band h 240-360. Every <Td> sets backgroundColor AND color.
+  # <Col width> per column, summing to roughly the card inner width.
+  <VStack w="max" h="280" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">ARR by segment</Text>
+    <Table defaultRowHeight="44" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="240" /><Col width="150" /><Col width="150" />
+      <Tr>
+        <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Segment</Td>
+        <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">ARR</Td>
+        <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">QoQ</Td>
+      </Tr>
+      <Tr>
+        <Td backgroundColor="$surface" color="$textMuted">Enterprise</Td>
+        <Td backgroundColor="$surface" color="$textMain" textAlign="right">$28.1M</Td>
+        <Td backgroundColor="$surface" color="$positive" textAlign="right">+22%</Td>
+      </Tr>
+      <Tr>
+        <Td backgroundColor="$surface" color="$textMuted">Mid-Market</Td>
+        <Td backgroundColor="$surface" color="$textMain" textAlign="right">$14.4M</Td>
+        <Td backgroundColor="$surface" color="$positive" textAlign="right">+14%</Td>
+      </Tr>
+    </Table>
+  </VStack>
+
+bullet_list: |
+  # Bullets: each is its OWN <Text> in a VStack gap="8". Band h ~ 40 per bullet
+  # + padding. Never one <Text> with line breaks.
+  <VStack w="max" h="200" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+    <Text fontSize="13" color="$textMain" lineHeight="1.4">- Close 3 enterprise logos worth $4M+ combined ARR</Text>
+    <Text fontSize="13" color="$textMain" lineHeight="1.4">- Launch self-serve onboarding to cut CAC payback to 10 months</Text>
+    <Text fontSize="13" color="$textMain" lineHeight="1.4">- Ship the analytics v2 dashboard before the board meeting</Text>
+  </VStack>
+
+callout: |
+  # Callout / narrative strip: band h 80-120.
+  <VStack w="max" h="96" padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
+    <Text fontSize="10" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
+    <Text fontSize="13" color="$textMain" lineHeight="1.45">A large, measurable problem that targeted enforcement could meaningfully reduce.</Text>
+  </VStack>

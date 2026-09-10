@@ -100,6 +100,11 @@ LAYOUT INTENT -> choose 2-4 bands and each band's division -> run the HEIGHT
 BUDGET so band heights sum to ~720 -> size the rigid nodes -> fill with content.
 {{ house_style }}
 {% endif %}
+{% if component_recipes %}
+
+## COMPONENT RECIPES
+{{ component_recipes }}
+{% endif %}
 {% if density_tier == 'dense' %}
 
 ## SHRINK CHECKLIST (tight_fit slides)
