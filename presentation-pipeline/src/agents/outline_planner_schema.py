@@ -1,15 +1,13 @@
 """Pydantic models for the outline planner's structured output.
 
 The outline planner produces a rich per-slide skeleton (key_messages, data_anchors,
-narrative_role, layout_intent) but NOT component-level details or content_data JSON.
-That is the slide_component_planner's job.
+narrative_role, visual_emphasis) but NOT slide_type, component-level details, or
+content_data JSON. Those are the slide_component_planner's job.
 """
 
 from __future__ import annotations
 
 from pydantic import BaseModel, Field
-
-from src.agents.planner_schema import SlideTypeLiteral
 
 
 class OutlineSlide(BaseModel):
@@ -19,9 +17,6 @@ class OutlineSlide(BaseModel):
     slide_title: str = Field(
         description="Short headline for the slide (≤8 words). "
                     "E.g. 'Revenue Grew 40% — At What Cost?'"
-    )
-    slide_type: SlideTypeLiteral = Field(
-        description="cover | content | data | section_break | closing"
     )
     section: str = Field(
         default="",
@@ -53,21 +48,14 @@ class OutlineSlide(BaseModel):
         description="Specific numbers, facts, or named comparisons to feature prominently. "
                     "Source directly from supplied_content when available; otherwise mark with "
                     "'[estimate]' suffix. E.g. ['$42.8M ARR (+40% YoY)', 'CAC $3,200 (+18% QoQ)']."
-                    "Empty list is fine for purely qualitative slides (cover, section_break).",
+                    "Empty list is fine for purely qualitative slides.",
     )
 
-    layout_intent: str = Field(
-        description="Plain English spatial description for the slide component planner. "
-                    "Describe the visual layout without POM syntax. "
-                    "E.g. 'Three-column comparison grid, one column per model, verdict column on right.' "
-                    "E.g. 'Large headline number top-center, supporting context bullets below, small bar chart bottom-right.'"
-    )
-
-    suggested_components: list[str] = Field(
-        default_factory=list,
-        description="Soft hints for the slide component planner. Use component vocabulary: "
-                    "title, narrative, caption, kpi_row, bullet_list, chart, table, timeline, "
-                    "flow, layer, tree, matrix, process_arrow, pyramid. Not binding — planner may override.",
+    visual_emphasis: str = Field(
+        description="One short phrase describing the slide's visual weight — NOT a layout. "
+                    "Examples: 'side-by-side comparison', 'one dominant number', "
+                    "'timeline progression', 'data table with callout'. The slide component "
+                    "planner uses this to pick components and density."
     )
 
 
@@ -84,6 +72,5 @@ class OutlinePlannerOutput(BaseModel):
     )
     slides: list[OutlineSlide] = Field(
         min_length=1,
-        description="One rich outline entry per slide, in presentation order. "
-                    "First slide must be 'cover' and last must be 'closing' for decks >1 slide.",
+        description="One rich outline entry per slide, in presentation order.",
     )

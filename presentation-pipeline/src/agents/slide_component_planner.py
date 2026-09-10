@@ -108,24 +108,6 @@ def _filter_supplied_content_for_slide(
     for key in supplied_content:
         if key.lower() in anchors_text or any(part in anchors_text for part in key.lower().split("_")):
             suggested.add(key)
-    # Always include key-value types that match component hints
-    hints = [c.lower() for c in (slide.get("suggested_components") or [])]
-    component_key_prefixes = {
-        "kpi_row": ["kpi_"],
-        "chart": ["chart_"],
-        "table": ["table_"],
-        "bullet_list": ["bullets"],
-        "timeline": ["timeline_"],
-        "flow": ["flow_"],
-        "process_arrow": ["process_"],
-        "pyramid": ["pyramid_"],
-        "tree": ["tree_"],
-    }
-    for hint in hints:
-        for prefix in component_key_prefixes.get(hint, []):
-            for key in supplied_content:
-                if key.startswith(prefix):
-                    suggested.add(key)
     return {k: v for k, v in supplied_content.items() if k in suggested} if suggested else {}
 
 

@@ -1,11 +1,11 @@
 """Outline planner agent — produces the deck skeleton (replaces planner.py).
 
 Takes the enriched request (raw_request + deck_settings + elicitation_answers +
-supplied_content) and produces a rich per-slide outline: slide_title, slide_type,
-section, narrative_role, key_messages, data_anchors, layout_intent, suggested_components.
+supplied_content) and produces a rich per-slide outline: slide_title, section,
+narrative_role, key_messages, data_anchors, visual_emphasis.
 
-Does NOT produce component-level details or content_data JSON. Those are the
-slide_component_planner's job.
+Does NOT produce slide_type, component lists, density values, or content_data
+JSON. Those are the slide_component_planner's job.
 
 Reads:  raw_request, deck_settings, elicitation_answers, supplied_content, theme_name
 Writes: outline_plan

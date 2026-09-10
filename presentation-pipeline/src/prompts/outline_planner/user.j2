@@ -26,13 +26,13 @@ SUPPLIED CONTENT (use these values VERBATIM in data_anchors — do NOT rephrase)
 {{ supplied_content | tojson(indent=2) }}
 ```
 Content distribution guidance:
-- kpi_* keys → data slide with kpi_row component
-- chart_* keys → data slide with chart component
-- table_* keys → data slide with table component
-- bullets → content or closing slide with bullet_list component
-- timeline_items → content slide with timeline component
-- flow_steps → content slide with flow component
-- title/subtitle → cover slide
+- kpi_* keys → slide whose visual_emphasis highlights metrics
+- chart_* keys → slide whose visual_emphasis highlights data
+- table_* keys → slide whose visual_emphasis highlights tabular data
+- bullets → slide with narrative or takeaway emphasis
+- timeline_items → slide with progression emphasis
+- flow_steps → slide with process emphasis
+- title/subtitle → first slide (intro emphasis)
 {% endif %}
 
 TARGET DECK SIZE: {{ target_slides }} slides.

@@ -19,13 +19,11 @@ from typing import Annotated, Any, Literal, TypedDict
 class OutlineSlide(TypedDict, total=False):
     slide_index: int
     slide_title: str
-    slide_type: str
     section: str
     narrative_role: str
     key_messages: list[str]
     data_anchors: list[str]
-    layout_intent: str
-    suggested_components: list[str]
+    visual_emphasis: str
 
 
 class OutlinePlan(TypedDict, total=False):

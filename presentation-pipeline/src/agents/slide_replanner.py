@@ -35,18 +35,21 @@ def _merge_content_data(original: dict[str, Any], replanned: dict[str, Any]) -> 
 
 
 def _slide_plan_to_outline_slide(slide_plan: SlidePlan) -> dict[str, Any]:
-    """Convert an existing SlidePlan to a minimal OutlineSlide for re-planning."""
-    components = slide_plan.get("components") or []
+    """Convert an existing SlidePlan to a minimal OutlineSlide for re-planning.
+
+    visual_emphasis is left empty rather than back-filling from layout_hint,
+    because layout_hint is a spatial priority statement (e.g. "KPI row across
+    the top; chart below") that would anchor the planner on a stale layout.
+    The slide_component_planner re-derives it from the content.
+    """
     return {
         "slide_index": slide_plan.get("slide_index", 0),
         "slide_title": slide_plan.get("content_data", {}).get("title", ""),
-        "slide_type": slide_plan.get("slide_type", "content"),
         "section": "",
         "narrative_role": "",
         "key_messages": [],
         "data_anchors": [],
-        "layout_intent": slide_plan.get("layout_hint", ""),
-        "suggested_components": [c.get("kind") for c in components],
+        "visual_emphasis": "",
     }
 
 

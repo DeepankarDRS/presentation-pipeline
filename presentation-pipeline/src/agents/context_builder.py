@@ -482,10 +482,10 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     else:
         tier = "dense"
 
-    # The full layout grammar + concrete component recipes go to standard/dense
-    # tiers. Minimal (sparse / cover / section_break) slides fall back to the
-    # compact DESIGN LANGUAGE block in the generator prompt instead.
-    has_grammar = tier in ("standard", "dense")
+    # Always inject the full layout grammar + component recipes regardless of
+    # density tier. The density label in the user prompt steers sparse vs dense
+    # output; withholding the grammar just creates failure modes.
+    has_grammar = True
     notes = _select_notes(
         kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
     )

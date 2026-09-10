@@ -13,7 +13,6 @@ Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}
 SLIDE TO PLAN (slide {{ slide.slide_index + 1 }} of {{ total_slides }}):
 
 Title: {{ slide.slide_title }}
-Type: {{ slide.slide_type }}
 Section: {{ slide.section or '(none)' }}
 
 Narrative role:
@@ -33,11 +32,8 @@ Data anchors (use these exact values in content_data numeric/data fields):
 (none - this is a qualitative slide)
 {% endif %}
 
-Layout intent (turn this into a short priority-statement layout_hint):
-{{ slide.layout_intent }}
-
-Suggested components (soft hint, you may adjust):
-{{ slide.suggested_components | join(', ') or '(no hint)' }}
+Visual emphasis:
+{{ slide.visual_emphasis or '(none)' }}
 {% if supplied_content_for_slide %}
 
 SUPPLIED CONTENT FOR THIS SLIDE (use VERBATIM in content_data):
