@@ -140,7 +140,7 @@ def test_is_stalled_empty():
 # ── Strategy choice ──────────────────────────────────────────────────────
 
 def _choose(**kw):
-    base = dict(attempt=2, prev_strategy=PATCH, prev_noop=False,
+    base = dict(attempt=2, prev_strategy=PATCH, prev_noop=False, prev_truncated=False,
                 regen_error=False, stalled=False, compile_ok=False)
     base.update(kw)
     return _choose_strategy(**base)
@@ -151,17 +151,18 @@ def test_choose_strategy_attempt1_always_patch():
 
 
 def test_choose_strategy_patch_after_regenerate():
-    assert _choose(prev_strategy=REGENERATE, attempt=4) == PATCH
+    assert _choose(prev_strategy=REGENERATE, attempt=3) == PATCH
 
 
-def test_choose_strategy_noop_forces_regenerate():
+def test_choose_strategy_noop_or_truncated_forces_regenerate():
     assert _choose(prev_noop=True) == REGENERATE
+    assert _choose(prev_truncated=True) == REGENERATE
 
 
-def test_choose_strategy_attempt3_regenerates_only_when_broken():
-    assert _choose(attempt=3, compile_ok=False) == REGENERATE
-    assert _choose(attempt=3, compile_ok=True) == PATCH   # critic-only → stay PATCH
-    assert _choose(attempt=5, compile_ok=True) == PATCH
+def test_choose_strategy_attempt2_regenerates_only_when_broken():
+    assert _choose(attempt=2, compile_ok=False) == REGENERATE     # still won't compile → rebuild
+    assert _choose(attempt=2, compile_ok=True) == PATCH           # compiles, critic-only → stay PATCH
+    assert _choose(attempt=3, compile_ok=True) == PATCH
 
 
 def test_choose_strategy_structural_or_stall_regenerates():
@@ -174,11 +175,6 @@ def test_choose_strategy_structural_or_stall_regenerates():
 def test_needs_regeneration_structural():
     assert needs_regeneration([], [{"type": "INVALID_CHILD", "message": "Unknown child element <Td> inside <Table>"}]) is True
     assert needs_regeneration([], [{"type": "PARSE_ERROR", "message": "<Shape>: Unexpected child elements. <Shape> does not accept child elements"}]) is True
-
-
-def test_needs_regeneration_overflow():
-    assert needs_regeneration([], [{"type": "DIAGNOSTIC", "message": "OVERFLOW (AUTOFIT_OVERFLOW): content height 784px exceeds 720px"}]) is True
-    assert needs_regeneration([], [{"type": "DIAGNOSTIC", "message": "OVERFLOW (NODE_OUT_OF_BOUNDS): <Table> extends beyond bounds"}]) is True
 
 
 def test_needs_regeneration_local_errors_false():
@@ -379,8 +375,9 @@ def test_repairer_no_stall_when_errors_change(mock_get_llm):
 
     result = repairer_node(state)
 
-    assert result["stall_detected"] is False
-    assert result["retry_tier"] == PATCH
+    assert result["stall_detected"] is False  # different errors → not a stall
+    # attempt 2 still doesn't compile → REGENERATE by the budget-2 gate, not by stall
+    assert result["retry_tier"] == REGENERATE
 
 
 def _mock_llm(mock_get_llm, content='<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'):
@@ -444,8 +441,8 @@ def test_repairer_flags_truncation(mock_get_llm):
 def test_repairer_regenerate_uses_skeleton(mock_get_llm):
     mock_llm = _mock_llm(mock_get_llm)
 
-    # attempt 3 → REGENERATE; _make_state has title + kpi_row → kpi-slide skeleton
-    state = _make_state(retry_tier=PATCH, retry_count=2)
+    # attempt 2 still not compiling → REGENERATE; title + kpi_row → kpi-slide skeleton
+    state = _make_state(retry_tier=PATCH, retry_count=1)
     result = repairer_node(state)
 
     assert result["retry_tier"] == REGENERATE
@@ -458,7 +455,7 @@ def test_repairer_regenerate_uses_skeleton(mock_get_llm):
 def test_repairer_regenerate_without_skeleton(mock_get_llm):
     mock_llm = _mock_llm(mock_get_llm)
 
-    state = _make_state(retry_tier=PATCH, retry_count=2)  # attempt 3 → REGENERATE
+    state = _make_state(retry_tier=PATCH, retry_count=1)  # attempt 2 → REGENERATE
     state["slide_plans"][0]["components"] = [{"kind": "timeline", "count": 1}]
 
     result = repairer_node(state)

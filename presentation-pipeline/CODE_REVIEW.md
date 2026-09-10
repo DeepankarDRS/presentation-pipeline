@@ -133,33 +133,32 @@ signatures) on the `AttemptRecord`, don't round-trip through display strings.
 
 ### 4. "Escalating" retry doesn't escalate by attempt — RESOLVED
 Fixed: the 3-tier ladder was replaced with two strategies (PATCH / REGENERATE).
-`_choose_strategy` routes by error class (`needs_regeneration` → structural /
-post-autoFit overflow), stall, and attempt number — attempt 1 is always PATCH,
-attempt ≥ 3 (or a structural error, or a stall) is REGENERATE, and the pass right
-after a REGENERATE is a PATCH cleanup. `retry_budget` bumped 3 → 4 so that
-cleanup pass fits.
+`_choose_strategy` routes by error class (`needs_regeneration` → structural), a
+no-op/truncated previous PATCH, a stall, and attempt number — attempt 1 is always
+PATCH; a structural error, stall, no-op, or reaching attempt 2 while still not
+compiling → REGENERATE; the pass right after a REGENERATE is a PATCH cleanup.
+`retry_budget` is 2 (PATCH → REGENERATE).
 
 _Original finding:_ `retry_tier` only advanced on `is_stalled`; otherwise pinned
 at PATCH, so SIMPLIFY/TEMPLATE were near-dead code.
 
-### 4b. Maximal-content slides: truncation + divergence + shipping the worst — RESOLVED
+### 4b. Maximal-content slides: truncation → incomplete XML → repair drift
 For a slide denser than the token budget, the generator's XML truncated (no
-`finish_reason` check), POM leniently rendered the fragment, the critic (correctly)
-failed it, and the repair loop drifted — sometimes shipping a *worse* attempt than
-an earlier one because the evaluator always took the last `current_xml`. Fixes:
-- `models.yaml` generator/repairer `max_tokens` 4000 → 12000.
-- generator + repairer set `AttemptRecord["truncated"]` on `finish_reason == "length"`;
-  a truncated attempt can never be selected as best.
-- repairer detects a no-op PATCH (`repaired == failing`) → `AttemptRecord["noop"]`,
-  and `_choose_strategy` escalates to REGENERATE next round instead of re-PATCHing.
-- `_choose_strategy` no longer forces REGENERATE at attempt ≥ 3 when the slide
-  already compiles (critic-only failure) — rebuilding from scratch under the token
-  cap was making things worse.
-- **Best-of-N** (`src/agents/best_attempt.py`): validator (critic off) / critic
-  (critic on) record the best compiling attempt via
-  `[compile_ok, critic_passed, -high_count, -attempt]`; `evaluator` ships that
-  attempt's `input.xml` / `presentation.pptx` when it beats the final one and sets
-  `manifest["shipped_best_attempt"]`. Single-slide only.
+`finish_reason` check), POM leniently rendered the fragment, and the repair loop
+drifted trying to fix it. Fixes:
+- `models.yaml` generator/repairer `max_tokens` 4000 → 12000; all steps on `gpt-4.1`.
+- generator + repairer set `AttemptRecord["truncated"]` on `finish_reason == "length"`
+  (logged); a truncated PATCH escalates to REGENERATE next round.
+- repairer detects a no-op PATCH (`repaired == failing`) → `AttemptRecord["noop"]` →
+  REGENERATE next round instead of re-PATCHing.
+- The loop is now **compile-only**: `retry_budget = 2` (PATCH once, then REGENERATE
+  once), and it stops the moment `compile_result.ok` — an overflowing-but-compiling
+  slide ships as-is. `_choose_strategy` only falls back to REGENERATE while the slide
+  still won't compile.
+
+Tried and reverted: best-of-N attempt selection and promoting post-autoFit overflow
+warnings to failures — both fought the "the one that compiles is good to go" rule and
+added loop rounds.
 
 ### 5. Speaker notes are captured and then thrown away
 `normalize_xml` extracts `<Notes>` into `speaker_notes` **and strips it from the
@@ -255,15 +254,13 @@ slide, so the manifest's `steps[]` has repeated `attempt=0` rows across slides w
 no `slide_index`. The evaluator's "component completion rate" (docstring promise)
 isn't actually computed anywhere.
 
-### 16. `layout_issues` feeds only the critic, never the repairer directly — PARTLY ADDRESSED
-`validator._promote_severe_layout_warnings` now turns the compiler's own
-post-autoFit overflow warnings (`AUTOFIT_OVERFLOW`, `NODE_OUT_OF_BOUNDS`,
-`SCALE_BELOW_THRESHOLD`) into a retryable failure, so genuine overflow reaches the
-repairer (→ REGENERATE) instead of silently passing. `audit_layout`'s own issues
-(`ROOT_SIZE` / `FONT_TOO_SMALL` / `MISSING_DIMS`) are still critic-only.
-
-_Original finding:_ `audit_layout` `severity: high` issues were passed to the
-critic prompt as text only, never turned into `problems`.
+### 16. `layout_issues` feeds only the critic, never the repairer directly
+`audit_layout` produces `ROOT_SIZE` / `FONT_TOO_SMALL` / `ZERO_DIM` / `MISSING_DIMS`
+etc., some `severity: high`, but they're passed to the critic prompt as text only —
+never turned into `problems`, never routed. A compile-OK slide with a `high` audit
+issue only fails if the critic LLM echoes it. (A `_promote_severe_layout_warnings`
+experiment that turned overflow warnings into retryable failures was reverted — an
+overflowing-but-compiling slide is allowed to ship.)
 
 ### 17. `_ZERO_DIM_RE` in normalizer vs memory note
 Memory says a bare `<Shape w="0">` "slips through POM silently". Normalizer flags

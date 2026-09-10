@@ -20,39 +20,12 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from src.agents.best_attempt import keep_best_attempt
 from src.compiler.compiler_client import CompilerError, compile_xml, validate_xml
 from src.compiler.layout_audit import audit_layout
 from src.compiler.normalizer import ensure_single_theme, normalize_xml, pre_validate
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
-
-# POM's autoFit already shrinks fonts/padding/rows to fit content. A warning from
-# this set means the layout is *still* broken after all that — patching layout is
-# futile, so treat it as a retryable failure and let the repairer REGENERATE.
-# Flip _PROMOTE_SEVERE_LAYOUT_WARNINGS to False to restore the old "overflow warns
-# but passes" behaviour.
-_PROMOTE_SEVERE_LAYOUT_WARNINGS = True
-_SEVERE_LAYOUT_CODES = {"AUTOFIT_OVERFLOW", "NODE_OUT_OF_BOUNDS", "SCALE_BELOW_THRESHOLD"}
-
-
-def _promote_severe_layout_warnings(compile_result: dict[str, Any]) -> None:
-    """In place: turn a severe post-autoFit layout warning into a retryable failure."""
-    if not (_PROMOTE_SEVERE_LAYOUT_WARNINGS and compile_result.get("ok")):
-        return
-    severe = [w for w in compile_result.get("warnings", [])
-              if w.get("code") in _SEVERE_LAYOUT_CODES]
-    if not severe:
-        return
-    compile_result["ok"] = False
-    compile_result["retryable"] = True
-    compile_result["diagnostics"] = [
-        {"type": "DIAGNOSTIC", "message": f"OVERFLOW ({w.get('code')}): {w.get('message', '')}"}
-        for w in severe
-    ]
-    logger.info(f"validator: promoted {len(severe)} severe layout warning(s) "
-                "to a retryable failure")
 
 
 def validator_node(state: PresentationState) -> dict[str, Any]:
@@ -146,8 +119,6 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             "layout_issues": [],
         }
 
-    _promote_severe_layout_warnings(compile_result)
-
     layout_issues = audit_layout(cleaned)
     if layout_issues:
         logger.info(f"validator: layout audit — {len(layout_issues)} issue(s)")
@@ -158,15 +129,10 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     if compile_result["ok"] and compile_result.get("pptx_path"):
         logger.info(f"validator: pptx → {compile_result['pptx_path']}")
 
-    result = {
+    return {
         "normalize_result": norm,
         "validate_result": val_result or {"ok": True, "diagnostics": [], "warnings": []},
         "compile_result": compile_result,
         "speaker_notes": speaker_notes,
         "layout_issues": layout_issues,
     }
-    # When the critic is off, validator is the last quality gate for this attempt,
-    # so record the best-of-N candidate here. With the critic on, critic_node does it.
-    if state.get("critic_mode", "off") == "off":
-        keep_best_attempt(state, result)
-    return result

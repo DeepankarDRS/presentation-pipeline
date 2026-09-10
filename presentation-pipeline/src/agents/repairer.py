@@ -4,11 +4,11 @@ PATCH:      feed back failing XML + errors + guidance → fix in place.
 REGENERATE: rebuild the slide from its plan, using a verified skeleton when one
             exists for the component mix, otherwise a simplified free rebuild.
 
-Strategy is chosen per attempt (see _choose_strategy):
+The loop is "PATCH once; if it still won't compile, REGENERATE once"
+(retry_budget = 2). Strategy per attempt (see _choose_strategy):
 - attempt 1 is always PATCH (a cheap in-place fix often works);
-- a no-op PATCH, structural/layout errors (needs_regeneration), or a detected stall
-  select REGENERATE;
-- attempt >= 3 falls back to REGENERATE only while the slide still won't compile;
+- a no-op or truncated previous PATCH, a structural error (needs_regeneration), a
+  detected stall, or reaching attempt 2 while still not compiling → REGENERATE;
 - the attempt right after a REGENERATE is a PATCH cleanup pass.
 
 The repairer calls the LLM with a targeted repair prompt and produces fixed
@@ -197,26 +197,27 @@ def _choose_strategy(
     attempt: int,
     prev_strategy: int | None,
     prev_noop: bool,
+    prev_truncated: bool,
     regen_error: bool,
     stalled: bool,
     compile_ok: bool,
 ) -> int:
     """Pick PATCH or REGENERATE for this attempt.
 
-    attempt 1 is always a cheap in-place PATCH. After a REGENERATE the next attempt
-    is a PATCH cleanup pass on the rebuilt XML. A PATCH that returned identical XML
-    (prev_noop), structural/layout errors, or a detected stall escalate to
-    REGENERATE. Falling back to REGENERATE by attempt number only applies when the
-    slide still doesn't compile — rebuilding a slide that compiles (only the critic
-    is unhappy) risks losing a working result.
+    The loop is "PATCH once; if it still won't compile, REGENERATE once". attempt 1
+    is a cheap in-place PATCH. A structural error, a stall, or a previous PATCH that
+    was a no-op / got truncated escalates straight to REGENERATE. The attempt right
+    after a REGENERATE is a PATCH cleanup pass. Falling back to REGENERATE by attempt
+    number only applies while the slide still doesn't compile — rebuilding a slide
+    that compiles (only the critic is unhappy) risks losing a working result.
     """
     if attempt == 1:
         return PATCH
     if prev_strategy == REGENERATE:
         return PATCH
-    if prev_noop or regen_error or stalled:
+    if prev_noop or prev_truncated or regen_error or stalled:
         return REGENERATE
-    if attempt >= 3 and not compile_ok:
+    if attempt >= 2 and not compile_ok:
         return REGENERATE
     return PATCH
 
@@ -242,6 +243,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         None,
     )
     prev_noop = bool(prev_history[-1].get("noop")) if prev_history else False
+    prev_truncated = bool(prev_history[-1].get("truncated")) if prev_history else False
 
     stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)
     regen_error = needs_regeneration(pre_issues, compile_diags)
@@ -250,13 +252,15 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         attempt=current_count + 1,
         prev_strategy=prev_strategy,
         prev_noop=prev_noop,
+        prev_truncated=prev_truncated,
         regen_error=regen_error,
         stalled=stalled,
         compile_ok=compile_ok,
     )
 
     reasons = [r for r, on in
-               (("stall", stalled), ("structural", regen_error), ("prev-noop", prev_noop)) if on]
+               (("stall", stalled), ("structural", regen_error),
+                ("prev-noop", prev_noop), ("prev-truncated", prev_truncated)) if on]
     logger.info(
         f"repairer: attempt {current_count + 1}, {_STRATEGY_NAME[strategy]}"
         + (f" ({', '.join(reasons)})" if reasons else "")

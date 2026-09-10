@@ -20,7 +20,6 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from src.agents.best_attempt import score_attempt
 from src.compiler.screenshot import render_screenshots
 from src.state import PresentationState
 from src.utils.llm_client import get_pricing
@@ -28,53 +27,6 @@ from src.utils.llm_client import get_pricing
 logger = logging.getLogger(__name__)
 
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
-
-
-def _maybe_swap_in_best_attempt(state: PresentationState, run_id: str) -> PresentationState:
-    """If an earlier attempt scored better than the final one, ship that instead.
-
-    Single-slide only. Reads the earlier attempt's compiled artifacts from
-    output/runs/<run_id>[/retry-N]/ and returns a patched state with its XML,
-    pptx, and a consistent compile/critic verdict. Returns state unchanged when
-    there's nothing better or the artifacts are missing.
-    """
-    best_attempt = state.get("best_attempt", -1)
-    best_score = state.get("best_score") or [0, 0, 0, 0]
-    if best_attempt < 0 or state.get("completed_slides"):
-        return state
-
-    history = state.get("generation_history") or []
-    critic_result = state.get("critic_result") or {}
-    final_score = score_attempt(
-        compile_ok=bool((state.get("compile_result") or {}).get("ok")),
-        critic_passed=bool(critic_result.get("passed", True)),
-        high_count=sum(1 for i in critic_result.get("issues", []) if i.get("severity") == "high"),
-        attempt=state.get("retry_count", 0),
-        truncated=bool(history[-1].get("truncated")) if history else False,
-    )
-    if best_score <= final_score:
-        return state
-
-    out_dir = _PIPELINE_ROOT / "output" / "runs" / run_id
-    if best_attempt > 0:
-        out_dir = out_dir / f"retry-{best_attempt}"
-    xml_path = out_dir / "input.xml"
-    pptx_path = out_dir / "presentation.pptx"
-    if not xml_path.exists() or not pptx_path.exists():
-        logger.warning(f"evaluator: best attempt {best_attempt} artifacts missing — keeping final")
-        return state
-
-    logger.info(f"evaluator: shipping best attempt {best_attempt} "
-                f"(score {best_score} > final {final_score})")
-    patched = dict(state)
-    patched["current_xml"] = xml_path.read_text(encoding="utf-8")
-    patched["compile_result"] = {
-        "ok": True, "pptx_path": str(pptx_path),
-        "diagnostics": [], "warnings": [], "retryable": False,
-    }
-    patched["critic_result"] = {"passed": bool(best_score[1]), "issues": []}
-    patched["_shipped_best_attempt"] = best_attempt
-    return patched  # type: ignore[return-value]
 
 
 def _compute_cost(tokens_in: int, tokens_out: int, model: str) -> float:
@@ -207,7 +159,6 @@ def _write_manifest(manifest: dict[str, Any], run_id: str) -> str | None:
 def evaluator_node(state: PresentationState) -> dict[str, Any]:
     """Score the run and produce a manifest."""
     run_id = state.get("run_id", "")
-    state = _maybe_swap_in_best_attempt(state, run_id)
     compile_result = state.get("compile_result") or {}
     history = state.get("generation_history", [])
 
@@ -259,7 +210,6 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
         "retry_count": state.get("retry_count", 0),
         "max_tier": state.get("retry_tier", 0),
         "stall_detected": state.get("stall_detected", False),
-        "shipped_best_attempt": state.get("_shipped_best_attempt"),
         "tokens": {
             "total_in": total_tokens_in,
             "total_out": total_tokens_out,
@@ -315,9 +265,4 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
     }
     if screenshots:
         result["slide_screenshots"] = screenshots
-    if state.get("_shipped_best_attempt") is not None:
-        # propagate the swapped-in best attempt to final state (API / edit session)
-        result["current_xml"] = state["current_xml"]
-        result["compile_result"] = state["compile_result"]
-        result["critic_result"] = state["critic_result"]
     return result

@@ -121,8 +121,6 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
         "retry_tier": 0,
         "retry_count": 0,
         "stall_detected": False,
-        "best_attempt": -1,
-        "best_score": [0, 0, 0, 0],
     }
 
 

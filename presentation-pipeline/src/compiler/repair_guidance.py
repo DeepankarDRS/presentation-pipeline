@@ -317,13 +317,12 @@ def needs_regeneration(
     pre_issues: list[dict[str, Any]],
     compile_diagnostics: list[dict[str, Any]],
 ) -> bool:
-    """True when the errors are structural/layout — an in-place PATCH is unlikely to
-    fix them and a full rebuild is the better move.
+    """True when the errors are structural — an in-place PATCH is unlikely to fix
+    them and a full rebuild is the better move.
 
-    Covers: invalid child nesting (``INVALID_CHILD`` / "unexpected child elements"
-    parse errors) and post-autoFit layout overflow (``DIAGNOSTIC`` diagnostics carrying
-    OUT_OF_BOUNDS / OVERFLOW, promoted from compile warnings by the validator). The
-    substrings mirror ``build_error_guidance`` so the two stay consistent.
+    Covers invalid child nesting (``INVALID_CHILD`` / "unexpected child elements"
+    parse errors). The substrings mirror ``build_error_guidance`` so the two stay
+    consistent.
     """
     for diag in compile_diagnostics:
         dtype = diag.get("type", "")
@@ -331,8 +330,6 @@ def needs_regeneration(
         if dtype in _STRUCTURAL_DIAG_TYPES:
             return True
         if "unexpected child" in dmsg or "child elements" in dmsg:
-            return True
-        if dtype == "DIAGNOSTIC" and ("out_of_bounds" in dmsg or "overflow" in dmsg):
             return True
     return False
 

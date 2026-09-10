@@ -2,9 +2,7 @@
 
 import json
 import shutil
-import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
 from src.agents.evaluator import evaluator_node, _compute_cost, _build_step_summary
 from src.state import initial_state
@@ -94,43 +92,6 @@ def test_evaluator_fail_critic():
     result = evaluator_node(state)
     assert result["passed"] is False
     assert result["evaluation"]["critic"]["high"] == 1
-
-
-def test_evaluator_ships_best_attempt_over_worse_final():
-    tmpdir = Path(tempfile.mkdtemp())
-    try:
-        run_id = "eval-best"
-        best_dir = tmpdir / "output" / "runs" / run_id / "retry-1"
-        best_dir.mkdir(parents=True)
-        (best_dir / "input.xml").write_text(
-            "<Theme />\n<Slide><Text>BEST</Text></Slide>", encoding="utf-8")
-        (best_dir / "presentation.pptx").write_bytes(b"PK\x03\x04fake")
-
-        state = _make_state(run_id=run_id)
-        state["retry_count"] = 2  # final attempt failed the critic
-        state["critic_result"] = {"passed": False, "issues": [
-            {"severity": "high", "type": "x", "description": "y", "fix": "z"}]}
-        state["best_attempt"] = 1
-        state["best_score"] = [1, 1, 0, -1]
-
-        with patch("src.agents.evaluator._PIPELINE_ROOT", tmpdir):
-            result = evaluator_node(state)
-
-        assert result["evaluation"]["shipped_best_attempt"] == 1
-        assert "BEST" in result["current_xml"]
-        assert result["passed"] is True
-    finally:
-        shutil.rmtree(tmpdir, ignore_errors=True)
-
-
-def test_evaluator_keeps_final_when_best_not_better():
-    state = _make_state()
-    state["retry_count"] = 2
-    state["best_attempt"] = 0
-    state["best_score"] = [1, 0, -1, 0]  # worse than a passing final
-    result = evaluator_node(state)
-    assert result["evaluation"]["shipped_best_attempt"] is None
-    assert "current_xml" not in result
 
 
 def test_evaluator_deck_passes_when_all_slides_pass():

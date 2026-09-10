@@ -19,7 +19,7 @@
 Everything else is last-write-wins.
 
 `initial_state()` ([`src/state.py:138-186`](src/state.py)) sets every key to a zero value. Notable initial values:
-`mode="single"`, `retry_tier=0`, `retry_count=0`, `retry_budget=4`, `current_slide_index=0`, `passed=False`, `current_xml=""`, all result dicts `None`, all lists `[]`.
+`mode="single"`, `retry_tier=0`, `retry_count=0`, `retry_budget=2`, `current_slide_index=0`, `passed=False`, `current_xml=""`, all result dicts `None`, all lists `[]`.
 
 ---
 
@@ -350,7 +350,7 @@ validator_node                 → compile_result{ok:True, pptx_path}
 route_after_validator          → critic → ... → evaluator
 evaluator_node                 → passed = compile_ok and critic_ok
 ```
-Budget exhaustion: once `retry_count == retry_budget (4)`, `route_after_validator`/`route_after_critic` fall through to `evaluator` (single) or `slide_router` (deck) with the last (failing) `compile_result`, so `evaluator` sets `passed=False`.
+Budget exhaustion: once `retry_count == retry_budget (2)`, `route_after_validator`/`route_after_critic` fall through to `evaluator` (single) or `slide_router` (deck) with the last (failing) `compile_result`, so `evaluator` sets `passed=False`.
 
 ### 5.3 Deck (planner returns > 1 slide — driven by `deck_min_threshold` target or an explicit multi-slide request)
 ```

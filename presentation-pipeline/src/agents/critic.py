@@ -22,7 +22,6 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.agents.best_attempt import keep_best_attempt
 from src.agents.critic_schema import CriticOutput
 from src.agents.visual_critic import run_visual_critic
 from src.compiler.screenshot import render_screenshots
@@ -231,7 +230,6 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
             f"(high={high_count}, medium={med_count}, low={low_count})"
         )
         updates["critic_result"] = result
-        keep_best_attempt(state, updates)
         return updates
 
     has_high = any(i["severity"] == "high" for i in issues)
@@ -243,5 +241,4 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
     )
 
     updates["critic_result"] = CriticResult(passed=passed, issues=issues)
-    keep_best_attempt(state, updates)
     return updates

@@ -323,7 +323,7 @@ Two repair strategies. Builds a repair prompt and calls the LLM; the graph route
 | Strategy | When | What | Template |
 |------|------|------|----------|
 | PATCH | attempt 1; local errors; the pass right after a REGENERATE | Feed back failing XML + errors + targeted guidance. Fix in place. | `repairer/patch.j2` |
-| REGENERATE | structural/layout errors (`needs_regeneration`), a detected stall, or attempt ≥ 3 | Rebuild from the plan; seed with a verified skeleton when one fits the component mix. | `repairer/regenerate.j2` |
+| REGENERATE | structural errors (`needs_regeneration`), a stall, a no-op/truncated previous PATCH, or attempt ≥ 2 while still not compiling | Rebuild from the plan; seed with a verified skeleton when one fits the component mix. | `repairer/regenerate.j2` |
 
 ### Stall detection
 Compares error signatures between consecutive attempts using `repair_guidance.error_signatures()` (stored as `AttemptRecord.error_sigs`). If ≥65% of current errors appeared in the previous attempt → **stall detected** → forces REGENERATE.

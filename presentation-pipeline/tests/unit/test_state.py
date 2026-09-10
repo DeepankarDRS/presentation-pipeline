@@ -24,7 +24,7 @@ def test_initial_state_has_all_keys():
     assert state["generation_history"] == []
     assert state["retry_tier"] == 0
     assert state["retry_count"] == 0
-    assert state["retry_budget"] == 4
+    assert state["retry_budget"] == 2
     assert state["passed"] is False
     assert state["critic_mode"] == "off"
 

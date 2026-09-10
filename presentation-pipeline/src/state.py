@@ -188,10 +188,6 @@ class PresentationState(TypedDict, total=False):
     retry_count: int
     retry_budget: int
     stall_detected: bool
-    # Best compiling attempt seen so far (validator/critic write, evaluator ships it).
-    # best_score = [compile_ok, critic_passed, -high_count, -attempt]; -1 = none yet.
-    best_attempt: int
-    best_score: list[int]
 
     # ── Output ──
     evaluation: dict[str, Any] | None
@@ -210,7 +206,7 @@ def initial_state(
     audience_context: dict[str, str] | None = None,
     deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "manual", "off"] = "off",
-    retry_budget: int = 4,  # PATCH, PATCH, REGENERATE, PATCH-cleanup
+    retry_budget: int = 2,  # PATCH once, then REGENERATE once
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,
@@ -260,8 +256,6 @@ def initial_state(
         retry_count=0,
         retry_budget=retry_budget,
         stall_detected=False,
-        best_attempt=-1,
-        best_score=[0, 0, 0, 0],
         evaluation=None,
         pptx_path=None,
         passed=False,
