@@ -154,6 +154,54 @@ def _select_nodes(kinds: list[str]) -> list[str]:
     return result
 
 
+# ── Node hierarchy (parent → children) ──────────────────────────────────────
+
+def _build_node_hierarchy(allowed_nodes: list[str], nodes_yaml: dict) -> str:
+    """Render a compact parent -> children map for the nodes on this slide.
+
+    Extracts the 'children' field from nodes.yaml so the LLM knows which
+    nodes can contain which other nodes — the nesting hierarchy that a flat
+    ALLOWED NODES list does not convey.
+    """
+    children_map: dict[str, list[str]] = {}
+    for section in ("structural", "layout", "content", "phase_b", "phase_c",
+                     "phase_d", "post_mvp"):
+        for name, meta in (nodes_yaml.get(section) or {}).items():
+            if not isinstance(meta, dict):
+                continue
+            raw = meta.get("children")
+            if raw is None or raw == "none":
+                children_map[name] = []
+            elif isinstance(raw, list):
+                children_map[name] = raw
+            elif isinstance(raw, str):
+                if "any" in raw.lower():
+                    children_map[name] = ["(any layout/content node)"]
+                else:
+                    children_map[name] = [raw]
+    for name, meta in (nodes_yaml.get("inline") or {}).items():
+        children_map[name] = []
+
+    allowed_set = set(allowed_nodes)
+    inline_set = {"B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"}
+    lines: list[str] = []
+    for node in allowed_nodes:
+        if node in ("Slide", "Theme") or node in inline_set:
+            continue
+        kids = children_map.get(node)
+        if kids is None:
+            continue
+        if not kids:
+            lines.append(f"  <{node}> -- LEAF (no children)")
+        else:
+            kid_strs = [k for k in kids if k.startswith("(") or k in allowed_set]
+            if kid_strs:
+                lines.append(f"  <{node}> -> {', '.join(kid_strs)}")
+    if not lines:
+        return ""
+    return "\n".join(lines)
+
+
 # ── Attribute assembly ───────────────────────────────────────────────────────
 
 def _build_node_attributes(nodes_yaml: dict) -> dict[str, list[str]]:
@@ -339,12 +387,18 @@ def _render_house_style() -> str:
 # recipes this slide needs. See core/recipes.yaml.
 
 _KIND_TO_RECIPE: dict[str, str] = {
-    "kpi_row":     "kpi_row",
-    "chart":       "chart_card",
-    "table":       "table_card",
-    "bullet_list": "bullet_list",
-    "caption":     "callout",
-    "narrative":   "callout",
+    "kpi_row":       "kpi_row",
+    "chart":         "chart_card",
+    "table":         "table_card",
+    "bullet_list":   "bullet_list",
+    "caption":       "callout",
+    "narrative":     "callout",
+    "timeline":      "timeline",
+    "matrix":        "matrix",
+    "process_arrow": "process_arrow",
+    "flow":          "flow",
+    "pyramid":       "pyramid",
+    "tree":          "tree",
 }
 
 
@@ -417,6 +471,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
 
     allowed_nodes = _select_nodes(kinds)
     allowed_attributes = _select_attributes(allowed_nodes, nodes_yaml)
+    node_hierarchy = _build_node_hierarchy(allowed_nodes, nodes_yaml)
     forbidden_tags = _clean_list(validation.get("forbidden_tags"))
     forbidden_attributes = _clean_list(validation.get("forbidden_attributes"))
 
@@ -442,6 +497,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     return {
         "allowed_nodes": allowed_nodes,
         "allowed_attributes": allowed_attributes,
+        "node_hierarchy": node_hierarchy,
         "forbidden_tags": forbidden_tags,
         "forbidden_attributes": forbidden_attributes,
         "theme_element": theme["element"],

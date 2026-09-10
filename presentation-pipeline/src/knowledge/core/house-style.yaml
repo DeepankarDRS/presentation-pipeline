@@ -16,7 +16,7 @@ meta:
 # --- the frame -------------------------------------------------------------
 frame: >
   Root is ALWAYS <VStack w="1280" h="720" padding="P" gap="G"
-  backgroundColor="$surface">. P = 32-40, G = 14-22. Nothing on the slide is
+  alignItems="stretch" backgroundColor="$surface">. P = 32-40, G = 14-22. Nothing on the slide is
   positioned in absolute pixels from the slide origin - everything is a child
   of this VStack and flows. The root's fixed size is what makes every relative
   size below resolve to real pixels.
@@ -197,7 +197,7 @@ render_gotchas:
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:
-  - "Root VStack is w=1280 h=720 with padding 32-40, gap 14-22."
+  - "Root VStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
   - "2-4 bands, each w=\"max\"; the divisions differ band-to-band."
   - "Every CONTENT band has an explicit h=; header band is auto."
   - "I ADDED UP header_h + every band h + every gap + 2*padding and the total
@@ -205,6 +205,7 @@ checklist:
   - "KPI row band is h=110-150, tiles use justifyContent=\"center\"."
   - "Every Chart/Matrix/ProcessArrow has w=\"max\" AND an explicit computed h."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
+  - "Every <HStack> whose children use grow or w=\"max\" itself has w=\"max\"."
   - "No fontSize < 11. No fixed-px width on a text or chart column."
   - "At most one hero_panel. Accent used as a highlight, not a fill."
   - "If the total is well under ~640, ADD a band (stat row / callout / second

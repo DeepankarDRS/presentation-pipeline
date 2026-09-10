@@ -68,12 +68,14 @@ table_card: |
   </VStack>
 
 bullet_list: |
-  # Bullets: each is its OWN <Text> in a VStack gap="8". Band h ~ 40 per bullet
-  # + padding. Never one <Text> with line breaks.
+  # Bullets: use <Ul>/<Li> -- POM's native list nodes. Band h ~ 40 per item
+  # + padding. Never use separate <Text> elements with manual dashes.
   <VStack w="max" h="200" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
-    <Text fontSize="13" color="$textMain" lineHeight="1.4">- Close 3 enterprise logos worth $4M+ combined ARR</Text>
-    <Text fontSize="13" color="$textMain" lineHeight="1.4">- Launch self-serve onboarding to cut CAC payback to 10 months</Text>
-    <Text fontSize="13" color="$textMain" lineHeight="1.4">- Ship the analytics v2 dashboard before the board meeting</Text>
+    <Ul fontSize="13" color="$textMain" lineHeight="1.4">
+      <Li>Close 3 enterprise logos worth $4M+ combined ARR</Li>
+      <Li>Launch self-serve onboarding to cut CAC payback to 10 months</Li>
+      <Li>Ship the analytics v2 dashboard before the board meeting</Li>
+    </Ul>
   </VStack>
 
 callout: |
@@ -81,4 +83,93 @@ callout: |
   <VStack w="max" h="96" padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
     <Text fontSize="10" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
     <Text fontSize="13" color="$textMain" lineHeight="1.45">A large, measurable problem that targeted enforcement could meaningfully reduce.</Text>
+  </VStack>
+
+timeline: |
+  # Timeline in a card: band h 200-300. Node w="max", explicit h. Keep to 3-5
+  # items; short title + short description.
+  <VStack w="max" h="240" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">Rollout timeline</Text>
+    <Timeline direction="horizontal" w="max" h="180" dateColor="$textMuted" titleColor="$textMain" descriptionColor="$textMuted" connectorColor="$accent">
+      <TimelineItem date="Q1 2026" title="Alpha" description="Internal beta" color="2563EB" />
+      <TimelineItem date="Q2 2026" title="Public beta" description="Early adopters" color="0EA5E9" />
+      <TimelineItem date="Q3 2026" title="GA" description="Full launch" color="15803D" />
+      <TimelineItem date="Q4 2026" title="Enterprise" description="SSO, SLA, audit" color="7C3AED" />
+    </Timeline>
+  </VStack>
+
+matrix: |
+  # Matrix in a card: put it in a column >= 50% of the slide, band h 260-340,
+  # node h >= 200. 4 items max, ONE-word labels, spread the x/y (no two within
+  # 0.18 on both axes). Never textColor="FFFFFF" on a light card.
+  <VStack w="max" h="320" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <HStack justifyContent="spaceBetween"><Text fontSize="13" bold="true" color="$textMain">Prioritisation</Text><Text fontSize="10" color="$textMuted">Impact x Effort</Text></HStack>
+    <Matrix w="max" h="252" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
+      <MatrixAxes x="Effort" y="Impact" />
+      <MatrixQuadrants topLeft="Plan" topRight="Do first" bottomLeft="Skip" bottomRight="Quick wins" />
+      <MatrixItem label="Search" x="0.28" y="0.82" color="$accent" />
+      <MatrixItem label="Billing" x="0.72" y="0.7" color="8B5CF6" />
+      <MatrixItem label="Docs" x="0.34" y="0.36" color="0EA5E9" />
+      <MatrixItem label="Mobile" x="0.8" y="0.24" color="9AA6B8" />
+    </Matrix>
+  </VStack>
+
+process_arrow: |
+  # ProcessArrow in a card: band h 130-180, node h 66-90. Step labels are
+  # 1-2 SHORT words only (longer text clips inside the chevron). 3-5 steps.
+  <VStack w="max" h="150" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">Delivery process</Text>
+    <ProcessArrow w="max" h="72" direction="horizontal" fontSize="12" bold="true">
+      <ProcessArrowStep label="Discover" color="BFD3F7" textColor="16202E" />
+      <ProcessArrowStep label="Design" color="60A5FA" textColor="FFFFFF" />
+      <ProcessArrowStep label="Build" color="2563EB" textColor="FFFFFF" />
+      <ProcessArrowStep label="Ship" color="1E3A8A" textColor="FFFFFF" />
+    </ProcessArrow>
+  </VStack>
+
+flow: |
+  # Flow in a card: band h 260-380, node h to fit. Keep it to 4-6 nodes; short
+  # node text. Use Flow for branching; use ProcessArrow for a simple line.
+  <VStack w="max" h="320" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">Approval flow</Text>
+    <Flow direction="horizontal" w="max" h="260" nodeWidth="150" nodeHeight="56" nodeGap="64">
+      <FlowNode id="a" shape="flowChartTerminator" text="Request" color="2563EB" textColor="FFFFFF" />
+      <FlowNode id="b" shape="flowChartProcess" text="Review" color="0EA5E9" textColor="FFFFFF" />
+      <FlowNode id="c" shape="flowChartDecision" text="Approved?" color="F59E0B" textColor="FFFFFF" />
+      <FlowNode id="d" shape="flowChartTerminator" text="Done" color="15803D" textColor="FFFFFF" />
+      <FlowConnection from="a" to="b" />
+      <FlowConnection from="b" to="c" />
+      <FlowConnection from="c" to="d" label="Yes" />
+      <FlowConnection from="c" to="b" label="No" color="DC2626" />
+    </Flow>
+  </VStack>
+
+pyramid: |
+  # Pyramid in a card: band h 240-340, node h to fit. 3-5 levels, short labels.
+  <VStack w="max" h="300" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">Operating model</Text>
+    <Pyramid direction="up" w="max" h="240" fontSize="13" bold="true">
+      <PyramidLevel label="Strategy" color="1E3A8A" textColor="FFFFFF" />
+      <PyramidLevel label="Capabilities" color="2563EB" textColor="FFFFFF" />
+      <PyramidLevel label="Operations" color="60A5FA" textColor="FFFFFF" />
+      <PyramidLevel label="Foundation" color="BFD3F7" textColor="16202E" />
+    </Pyramid>
+  </VStack>
+
+tree: |
+  # Tree in a card: band h 260-380. One root. Keep depth <= 3 and total nodes
+  # <= ~10; short labels.
+  <VStack w="max" h="320" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">Org structure</Text>
+    <Tree layout="vertical" w="max" h="260" nodeShape="roundRect" textColor="FFFFFF" nodeWidth="130" nodeHeight="46" levelGap="52" siblingGap="22" connectorStyle.color="94A3B8" connectorStyle.width="2">
+      <TreeItem label="CEO" color="1E3A8A">
+        <TreeItem label="CTO" color="2563EB">
+          <TreeItem label="Eng" color="60A5FA" />
+          <TreeItem label="Product" color="60A5FA" />
+        </TreeItem>
+        <TreeItem label="CFO" color="2563EB">
+          <TreeItem label="Finance" color="60A5FA" />
+        </TreeItem>
+      </TreeItem>
+    </Tree>
   </VStack>

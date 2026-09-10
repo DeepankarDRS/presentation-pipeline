@@ -54,6 +54,7 @@ class ComponentPlan(TypedDict, total=False):
 
 class SlidePlan(TypedDict, total=False):
     slide_index: int
+    slide_title: str   # short headline from the outline planner
     slide_type: str    # cover | content | data | section_break | closing
     components: list[ComponentPlan]
     density: str       # sparse | normal | dense | tight_fit

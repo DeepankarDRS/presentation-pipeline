@@ -58,6 +58,15 @@ def _check_root_size(root: ET.Element, issues: list[dict[str, str]]) -> float:
                     "message": f"Root {child.tag} has w=\"{w}\" h=\"{h}\", "
                                f"expected w=\"1280\" h=\"720\" (or \"max\")",
                 })
+            align = child.get("alignItems")
+            if align and align not in ("stretch", "start"):
+                issues.append({
+                    "severity": "high",
+                    "code": "ROOT_ALIGN",
+                    "message": f"Root {child.tag} has alignItems=\"{align}\". "
+                               f"Use alignItems=\"stretch\" (or omit) so child "
+                               f"rows expand to full width.",
+                })
             padding = _parse_num(child.get("padding"))
             return padding if padding is not None else 48.0
 

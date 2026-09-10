@@ -47,6 +47,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         theme_element=contract.get("theme_element", state.get("theme_element", "")),
         allowed_nodes=contract.get("allowed_nodes", []),
         allowed_attributes=contract.get("allowed_attributes", {}),
+        node_hierarchy=contract.get("node_hierarchy", ""),
         density_tier=contract.get("density_tier", "standard"),
         house_style=contract.get("house_style", ""),
         component_recipes=contract.get("component_recipes", ""),
@@ -58,6 +59,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
     components = plan.get("components", [])
     user_prompt = user_tmpl.render(
         objective=state.get("raw_request", ""),
+        slide_title=plan.get("slide_title", ""),
         components=components,
         density=plan.get("density", "normal"),
         font_tier=plan.get("font_tier", "standard"),

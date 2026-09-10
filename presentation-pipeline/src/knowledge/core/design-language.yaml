@@ -72,9 +72,9 @@ table_styling:
   - "Col widths should sum to roughly the Table's container width (its card / column), not the whole slide"
 
 bullet_list_styling:
-  - "Each bullet point must be a SEPARATE <Text> element inside a <VStack gap=\"8\">"
-  - "Never concatenate multiple bullets into one <Text> — they merge into a single line in PowerPoint"
-  - "Prefix each bullet with a bullet character or dash: '• ' or '— '"
+  - "Use <Ul> with <Li> children for bullet lists -- POM's native list nodes"
+  - "Never use separate <Text> elements with manual dash/bullet prefixes"
+  - "Wrap the <Ul> in a card VStack with explicit h and padding"
 
 chart_sizing:
   - "Chart is w=\"max\" inside its column/card; set an explicit pixel h (never omit h)"

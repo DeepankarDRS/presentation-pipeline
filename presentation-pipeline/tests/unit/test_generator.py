@@ -46,7 +46,7 @@ def _make_state(**overrides):
 def test_render_prompts_system_has_critical_rules():
     state = _make_state()
     system, user = _render_prompts(state)
-    assert "CRITICAL RULES" in system
+    assert "STRICT RULES" in system
     assert "FORBIDDEN TAGS" in system
     assert "div" in system
     assert "Theme" in system
@@ -93,7 +93,7 @@ def test_render_prompts_empty_contract():
     state["contract"] = {}
     state["slide_plans"] = []
     system, user = _render_prompts(state)
-    assert "CRITICAL RULES" in system
+    assert "STRICT RULES" in system
 
 
 # ── LLM call ──────────────────────────────────────────────────────────────

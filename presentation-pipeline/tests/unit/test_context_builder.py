@@ -254,9 +254,9 @@ def test_prompt_standard_tier():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    # Standard tier carries the house-style GRAMMAR (~2.5k) + concrete compiled
-    # component recipes (~0.6k) — both load-bearing for correct layout.
-    assert tokens < 5700, f"Standard tier too large: {tokens} tokens"
+    # Standard tier carries POM STRUCTURE (~0.2k) + house-style GRAMMAR (~2.5k) +
+    # concrete compiled component recipes (~0.6k) — all load-bearing for correct layout.
+    assert tokens < 5900, f"Standard tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "LAYOUT GRAMMAR" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -272,7 +272,7 @@ def test_prompt_dense_tier_bounded():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 6600, f"Dense tier too large: {tokens} tokens"
+    assert tokens < 6800, f"Dense tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -284,7 +284,7 @@ def test_prompt_always_has_critical_rules():
         plan = _make_plan(["title"], density=density)
         contract = build_contract(plan, DEFAULT_THEME)
         prompt = _render_system_prompt(contract)
-        assert "CRITICAL RULES" in prompt
+        assert "STRICT RULES" in prompt
         assert "margin" in prompt.lower()
         assert "FORBIDDEN" in prompt
 

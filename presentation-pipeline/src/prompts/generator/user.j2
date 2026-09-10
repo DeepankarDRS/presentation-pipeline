@@ -1,4 +1,9 @@
+{% if slide_title %}
+SLIDE OBJECTIVE: {{ slide_title }}
+DECK CONTEXT: {{ objective }}
+{% else %}
 OBJECTIVE: {{ objective }}
+{% endif %}
 {% if slide_type %}
 SLIDE TYPE: {{ slide_type }}
 {% endif %}

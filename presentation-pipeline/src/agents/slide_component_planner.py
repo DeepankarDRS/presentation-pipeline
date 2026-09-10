@@ -56,6 +56,7 @@ def _planner_slide_to_state(
     idx: int,
     slide: PlannerSlide,
     supplied_content: dict[str, Any] | None = None,
+    slide_title: str = "",
 ) -> SlidePlan:
     """Convert PlannerSlide Pydantic model to SlidePlan TypedDict."""
     components: list[ComponentPlan] = []
@@ -81,6 +82,7 @@ def _planner_slide_to_state(
 
     return SlidePlan(
         slide_index=idx,
+        slide_title=slide_title,
         slide_type=slide.slide_type,
         components=components,
         density=slide.density,
@@ -174,6 +176,7 @@ def plan_single_slide(
         slide.get("slide_index", 0),
         result,
         supplied_content=supplied_content,
+        slide_title=slide.get("slide_title", ""),
     )
 
 
