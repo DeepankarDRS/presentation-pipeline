@@ -1,6 +1,8 @@
 {% if slide_title %}
 SLIDE OBJECTIVE: {{ slide_title }}
-DECK CONTEXT: {{ objective }}
+{% if core_hook %}
+DECK NARRATIVE: {{ core_hook }}
+{% endif %}
 {% else %}
 OBJECTIVE: {{ objective }}
 {% endif %}

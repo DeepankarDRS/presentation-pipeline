@@ -60,6 +60,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
     user_prompt = user_tmpl.render(
         objective=state.get("raw_request", ""),
         slide_title=plan.get("slide_title", ""),
+        core_hook=state.get("core_hook", ""),
         components=components,
         density=plan.get("density", "normal"),
         font_tier=plan.get("font_tier", "standard"),
