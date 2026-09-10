@@ -13,16 +13,19 @@ description: >
   request clearly needs more.
 
 structure: |
-  <Chart chartType="bar" w="1136" h="452" showLegend="false" chartColors='["2563EB", "0EA5E9", "14B8A6"]'>
-    <ChartSeries name="Revenue ($M)">
-      <ChartDataPoint label="Q1" value="100" />
-      <ChartDataPoint label="Q2" value="150" />
-    </ChartSeries>
-  </Chart>
+  <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="13" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
+    <Chart chartType="bar" w="max" h="196" showLegend="false" chartColors='["2563EB", "0EA5E9", "14B8A6"]'>
+      <ChartSeries name="Revenue">
+        <ChartDataPoint label="Q1" value="100" />
+        <ChartDataPoint label="Q2" value="150" />
+      </ChartSeries>
+    </Chart>
+  </VStack>
 
 Chart_attributes:
   chartType:   { type: enum, required: true, values: [bar, line, pie, area, doughnut, radar] }
-  w:           { type: number, required: true, note: "Chart needs an explicit positive w and h. It does NOT auto-size." }
+  w:           { type: string, required: true, note: "w=\"max\" to fill the column; h must be an explicit pixel number. Chart does NOT auto-size its height." }
   h:           { type: number, required: true }
   showLegend:  { type: bool, values: [true, false] }
   showTitle:   { type: bool, values: [true, false] }
@@ -41,9 +44,9 @@ ChartDataPoint_attributes:
 notes:
   - "chartColors is a JSON string with literal hex — theme $tokens do NOT resolve inside it. Copy the ACTIVE palette's chartColors values (the contract lists them); take as many leading entries as you have series / bars."
   - "Give the Chart an explicit w/h sized to its container. A Chart with no w/h will fail at render."
-  - "For a two-column chart+table slide, size the chart to the column width (see layouts/chart-table.yaml)."
+  - "In a two-column chart+table band, the Chart is w=\"max\" inside its column VStack; the column's % width sets the actual size."
   - "One series is enough for most MVP slides; add series only when the request compares groups."
-  - "AXIS TEXT IS ALWAYS BLACK: POM v10.3.0 hard-codes chart category/value axis text to 000000 and gridlines to 888888 (renderPptx/nodes/chart.js). There is no XML attribute to change it. On a DARK theme the axis labels vanish — wrap the chart: <VStack backgroundColor=\"$chartSurface\" borderRadius=\"12\" padding=\"16\"><Chart .../></VStack> and shrink the Chart w/h by ~2*padding. On a LIGHT theme the black axis text sits fine on $surface; no wrapper needed."
+  - "AXIS TEXT IS ALWAYS BLACK: POM v10.3.0 hard-codes chart category/value axis text to 000000 and gridlines to 888888 (renderPptx/nodes/chart.js). There is no XML attribute to change it. On a DARK theme the axis labels vanish — the chart's card must be a light surface: <VStack w=\"max\" backgroundColor=\"$chartSurface\" borderRadius=\"12\" padding=\"16\"><Chart w=\"max\" h=\"...\" /></VStack> (the padding gives the black text a light margin). On a LIGHT theme the card is $surfaceAlt and needs nothing special."
   - "To hide axes entirely (compact inline trend), use sparkline=\"true\" — then no wrapper is needed on any theme, but you lose axis labels, so put the numbers in a caption or table."
 
 examples:

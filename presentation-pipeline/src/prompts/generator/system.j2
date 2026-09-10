@@ -1,5 +1,5 @@
 You generate POM XML that compiles to PowerPoint via @hirokisakabe/pom v10.3.0.
-Output ONLY valid POM XML — no markdown fences, no explanation.
+Output ONLY valid POM XML - no markdown fences, no explanation.
 
 ## CRITICAL RULES (always apply)
 
@@ -7,17 +7,18 @@ POM is NOT HTML. These will crash the compiler:
 - FORBIDDEN TAGS: {{ forbidden_tags | join(', ') }}
 - FORBIDDEN ATTRS: {{ forbidden_attributes | join(', ') }}
 - Use <VStack>/<HStack> not <div>, <Text> not <p>, <Span> not <span>
-- <Shape> is a LEAF — never nest children inside it. Use text= attribute for text.
+- <Shape> is a LEAF - never nest children inside it. Use text= attribute for text.
 - Tables MUST use <Col width="..."> for every column so cells don't collapse together.
-  Column widths should sum to the usable slide width (1280 minus 2*root padding).
+  Column widths should sum to roughly the width of the Table's container (its card /
+  column), not the whole slide.
 - Bullet lists: each bullet is a SEPARATE <Text> inside a <VStack gap="8">.
   Never concatenate multiple bullets into one <Text> element.
 
-Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName —
+Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName -
   they resolve against the <Theme> the pipeline injects automatically.
   VALID: color="$textMain"  backgroundColor="FF0000"
   INVALID: color="#FF0000"  color="red"
-  Do NOT output a <Theme> element yourself — the pipeline adds exactly one.
+  Do NOT output a <Theme> element yourself - the pipeline adds exactly one.
 
 Margin & Padding: single number OR dot notation. NOT CSS shorthand.
   VALID: margin="10"  margin.top="48" margin.left="40"
@@ -37,27 +38,27 @@ Frame this slide's content to support the narrative above.
 
 ## SLIDE TYPE: {{ slide_type | upper }}
 {% if slide_type == "cover" %}
-Cover slide — centered layout, large display fonts, minimal elements.
+Cover slide - centered layout, large display fonts, minimal elements.
 Use a prominent title (fontSize 40-48), optional subtitle/tagline below.
-No charts, tables, or dense content. Think "hero" — one big statement.
+No charts, tables, or dense content. Think "hero" - one big statement.
 {% elif slide_type == "content" %}
-Content slide — narrative focus with title + body text or bullets.
+Content slide - narrative focus with title + body text or bullets.
 Standard density, readable fonts. Tell the story, don't overwhelm with data.
 {% elif slide_type == "data" %}
-Data slide — charts, tables, KPIs are the star. Title frames the data.
+Data slide - charts, tables, KPIs are the star. Title frames the data.
 Can be dense. Ensure charts have explicit dimensions and axis labels are readable.
 {% elif slide_type == "section_break" %}
-Section break — minimal divider page. One short phrase, large centered text.
-Use accent color prominently. Very sparse — almost empty slide.
+Section break - minimal divider page. One short phrase, large centered text.
+Use accent color prominently. Very sparse - almost empty slide.
 fontSize 36-48 for the text, centered vertically and horizontally.
 {% elif slide_type == "closing" %}
-Closing slide — wrap up with key takeaways or call-to-action.
+Closing slide - wrap up with key takeaways or call-to-action.
 Bullet list of 3-5 summary points, or a strong closing statement.
 Sparse to normal density, display or standard fonts.
 {% endif %}
 {% endif %}
 
-## THEME (reference only — do NOT emit this element)
+## THEME (reference only - do NOT emit this element)
 The pipeline injects the single top-level <Theme> automatically. Use the token
 names below as $tokenName references in color attributes; never output <Theme>.
 {{ theme_element }}
@@ -65,6 +66,7 @@ names below as $tokenName references in color attributes; never output <Theme>.
 ## ALLOWED NODES
 {{ allowed_nodes | join(', ') }}
 
+{% if not house_style %}
 ## DESIGN LANGUAGE
 
 Visual hierarchy (apply to every slide):
@@ -75,20 +77,9 @@ Visual hierarchy (apply to every slide):
   Deltas: color="$positive" for up, color="$negative" for down
 
 Slide structure:
-  Root: <VStack w="1280" h="720" padding="48-64" gap="24-36" backgroundColor="$surface">
-  Place an accent bar below the title: <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
+  Root: <VStack w="1280" h="720" padding="32-40" gap="14-22" backgroundColor="$surface">
   Charts: always set explicit w and h that fit within the parent container.
-  Account for axis labels — leave 40-60px margin so labels don't overflow.
-{% if density_tier in ('standard', 'dense') %}
-
-Card recipe (for KPI tiles, info boxes, feature callouts):
-  <VStack grow="1" padding="20-28" gap="8-12" backgroundColor="$surfaceAlt"
-    borderRadius="12" border.width="1" border.color="$border"
-    borderTop.width="4" borderTop.color="$accent">
-  IMPORTANT: border.color="$border" is a SUBTLE hairline (gray/light).
-  Only borderTop.color uses "$accent" (the bold colored stripe at top).
-  NEVER set border.color="$accent" — that makes the whole card outlined in blue.
-  Use grow="1" in HStack rows for even card distribution.
+  Account for axis labels - leave 40-60px margin so labels don't overflow.
 
 Color tokens:
   $surface=background  $surfaceAlt=cards  $accent=anchors  $textMain=headings
@@ -101,28 +92,22 @@ Color tokens:
   <{{ node }}>: {{ attrs | join(', ') }}
 {% endfor %}
 {% endif %}
-{% if density_tier in ('standard', 'dense') and layout_pattern %}
+{% if density_tier in ('standard', 'dense') and house_style %}
 
-## LAYOUT VOCABULARY
-Spatial building blocks and correctness guards for this pattern type — a reference,
-not a blueprint. The PRIMARY directive is the layout_hint in the user prompt; follow
-it exactly for positioning, sizing, and arrangement.
-{{ layout_pattern }}
-{% endif %}
-{% if example %}
-
-## REFERENCE EXAMPLE
-{{ example }}
+## LAYOUT GRAMMAR
+A GRAMMAR, not a template - no fixed shape to copy. Order of work: read the
+LAYOUT INTENT -> choose 2-4 bands and each band's division -> run the HEIGHT
+BUDGET so band heights sum to ~720 -> size the rigid nodes -> fill with content.
+{{ house_style }}
 {% endif %}
 {% if density_tier == 'dense' %}
 
 ## SHRINK CHECKLIST (tight_fit slides)
-- Start with micro fonts: title 18-20, body 11-13, caption 10
-- gap="8" between sections, gap="4" within components
-- padding="24" on root VStack (not 48/64)
-- KPI tiles: fontSize 28-32 for values (not 46+)
-- Chart/Table: explicit w and h, sized to fit remaining space
-- Check total height: all component heights + gaps + padding ≤ 720
+- Smaller fonts: title 20-24, card title 12, body/label 11 (never below 11)
+- gap="8-12" between bands, gap="4-8" within a card
+- root padding="24-30"
+- KPI / stat values 24-30 (not 40+)
+- More bands, tighter band heights - but they must still sum to ~720
 {% endif %}
 
 ## NOTES

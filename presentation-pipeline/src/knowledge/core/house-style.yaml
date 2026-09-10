@@ -1,0 +1,197 @@
+# pom-knowledge/core/house-style.yaml
+# ---------------------------------------------------------------------------
+# The house layout GRAMMAR. Not a set of templates - a compositional spec the
+# generator uses to lay out ANY slide. Distilled from compile+render-verified
+# reference slides (see tests/fixtures/golden/) and POM v10.3.0 behaviour.
+#
+# Rendered into the generator prompt by context_builder. Keep it tight.
+# The generator composes freely FROM this vocabulary; it never copies a shape.
+# ---------------------------------------------------------------------------
+
+meta:
+  slide: { w: 1280, h: 720 }        # fixed frame, always
+  min_font: 11                       # layout_audit rejects anything smaller
+  max_stack_nesting: 6
+
+# --- the frame -------------------------------------------------------------
+frame: >
+  Root is ALWAYS <VStack w="1280" h="720" padding="P" gap="G"
+  backgroundColor="$surface">. P = 32-40, G = 14-22. Nothing on the slide is
+  positioned in absolute pixels from the slide origin - everything is a child
+  of this VStack and flows. The root's fixed size is what makes every relative
+  size below resolve to real pixels.
+
+# --- sizing vocabulary ---------------------------------------------------
+# How to size any box. Pick by INTENT, not habit.
+vocabulary:
+  'w="1280" h="720"': 'the root VStack only. Never on a child.'
+  'w="max"': >
+    flexGrow:1 - take an equal share of the parent's remaining main-axis space.
+    The DEFAULT for anything that should stretch: content bands, equal-weight
+    sibling cards, a Chart/Table/Matrix filling its column. N siblings split evenly.
+  'w="62%" (any %)': >
+    an explicit share of the parent, for an ASYMMETRIC split - bigger % = the
+    side with more content / the primary element. Typical 60/40, 65/35. Sum to 100.
+  'grow="2" / grow="1"': 'ratio split (2:1) instead of computing percentages.'
+  'w="320" (fixed px)': >
+    only for things that must not flex: icon, accent bar, divider, sidebar rail,
+    badge. Never fixed-px a column holding flowing text or a chart.
+  'h="188" (fixed px)': >
+    REQUIRED on every content band and on Chart/Matrix/ProcessArrow. Do NOT set
+    h on text VStacks - they size to content.
+  'minW / maxW / minH / maxH': 'clamp a flexible box so it cannot collapse or run away.'
+
+alignment:
+  'alignItems': >
+    start | center | end | stretch(default). Content HStack: alignItems="stretch"
+    so side-by-side cards end up the same height. Header HStack: start/center/end.
+  'justifyContent': >
+    start | center | end | spaceBetween | spaceAround | spaceEvenly. spaceBetween
+    pushes two groups to the edges (eyebrow left / badge right; label / value).
+  'alignSelf': 'one child opting out of the parent''s alignItems.'
+  'flexWrap="wrap"': >
+    on a row of tiles/cards that might not fit - they wrap to a new line
+    instead of overflowing or overlapping. Use for KPI rows of 4+.
+
+# --- composition --------------------------------------------------------
+composition: >
+  Build a slide as 2-4 horizontal BANDS stacked in the root VStack, each
+  <HStack w="max" ...> (or a full-width <VStack w="max"> for a single-element
+  band). Top band is the header. Each lower band is one idea: a split, a row
+  of cards, a chart, a table.
+
+  WITHIN a band, choose the horizontal division:
+    - one element        -> the child is w="max"
+    - equal weight       -> N children each w="max", gap 12-18
+    - one side dominant  -> w="62%" / w="38%" (priority drives which is bigger)
+    - fixed rail + body  -> w="260" sidebar + w="max" body
+
+  Vary the division band-to-band so the slide has rhythm - don't stack three
+  identical 50/50 splits.
+
+header_band: >
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">: left a
+  <VStack gap="4-5"> of eyebrow + title + optional subtitle (see type ramp);
+  right optional - a badge or one headline KPI.
+
+# --- height budget -----------------------------------------------------
+# VERIFIED v10.3.0: a fixed-height root VStack does NOT top-align undersized
+# content - leftover vertical space pools as a gap (often BELOW the header),
+# and the slide reads half-empty. The fix is not justifyContent - it is:
+# give EVERY content band an explicit h, and make the heights add up to 720.
+height_budget: >
+  Header band: no h (auto, ~80-96px). Every CONTENT band: explicit h. The sum
+  header_h + all band h + all gaps + 2*P must reach ~720 (not just "<= 720" -
+  undershooting leaves dead space). A Chart/Matrix/Table inside a card:
+  h = band_h - 2*card_padding - card_title(~28); set that on the node.
+  Do NOT inflate one band's h to soak up leftover height - a tall band with
+  thin content is just a big empty card. Instead: size each band to what its
+  content needs, add up the total, and if it falls short of ~720 add ANOTHER
+  band (a callout, a supporting stat row, a second visual) or make the
+  richest band genuinely bigger (more table rows, a taller chart).
+worked_example: >
+  P=36 G=18, header + 2 content bands: 36 + header~92 + 18 + band 404 + 18 +
+  band 96 + 36 = 700 ~= 720. A chart in the 404 band (card padding 18, title):
+  h = 404 - 36 - 28 ~= 340.
+
+# --- rigid nodes (verified v10.3.0 render behaviour) -------------------
+rigid_nodes: >
+  Chart, Matrix, ProcessArrow, Table do NOT size themselves.
+    - width : w="max" WORKS on all of them - they fill their column. Prefer it.
+    - height: MUST be an explicit pixel h. No h -> renders wrong or tiny.
+    - Table : also needs a <Col width="..."> per column; widths should sum to
+      roughly the container width. Every <Td> needs backgroundColor + color.
+  A rigid node always lives inside a <VStack w="max"|"NN%"> that owns the
+  column; the node is w="max" h="<computed>" within it.
+
+# --- recipes (parameterised, not slides) ------------------------------
+recipes:
+  surface_card: >
+    <VStack w="max" padding="14-22" gap="6-14" backgroundColor="$surfaceAlt"
+      borderRadius="12-16" border.color="$border" border.width="1">
+    The default container for a chart, a stat cluster, a table.
+  accent_card: >
+    a card with ONE accent edge: borderTop.color="$accent" borderTop.width="4"
+    (top stripe) or borderLeft.color="$accent" borderLeft.width="5" (list item).
+    VERIFIED: a one-edge accent stripe renders cleanly ONLY on a SQUARE card -
+    do NOT combine borderTop/borderLeft accent with borderRadius (the stripe
+    wraps the rounded corner and looks like a bracket). Rounded cards
+    (borderRadius 12-16) use just the border.color="$border" hairline; put the
+    accent in the value text color or a small <Shape> bar instead.
+  hero_panel: >
+    <VStack w="max"|"NN%" padding="18-24" gap="10-16" borderRadius="14-18"
+      justifyContent="center">
+    A high-contrast panel for THE message / key choice. On a LIGHT theme:
+    backgroundColor="$textMain" with heading color="$surfaceAlt". On a DARK
+    theme $textMain is the light ink - use backgroundColor="$surfaceAlt" with a
+    borderLeft.color="$accent" borderLeft.width="5" and normal $textMain text
+    instead. Heading is ONE line (<= ~24 chars - long headings wrap to 3 lines
+    and overrun the panel); body one short sentence; optional a 2-3 row stat
+    list. Do NOT stack heading + long body + stats in a short panel. One per slide.
+  callout: >
+    a tinted band for a note/next-step: backgroundColor a pale tint,
+    borderLeft.color="$warning"|"$accent" borderLeft.width="5", a bold label
+    10-11 + one bold sentence 13-14.
+  micro_pair: >
+    label over value: <VStack gap="2"><Text 10-12 "$textMuted">Label</Text>
+    <Text 24-34 bold "$textMain">Value</Text></VStack>. Put 2-3 in an HStack
+    with justifyContent="spaceBetween" for a compact stat row (no card bg).
+  accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" /> under a title.'
+  badge: >
+    <Shape shapeType="roundRect" w="100-160" h="24-30" fill.color="a pale tint"
+    color="$textMain" fontSize="10" bold="true" borderRadius="999">SHORT LABEL</Shape>
+
+# --- type ramp (fontSize) --------------------------------------------
+type_ramp:
+  eyebrow: "10-11 bold, letterSpacing 2, $accent"
+  slide_title: "27-32 bold, $textMain"
+  subtitle: "12 $textMuted"
+  card_title: "12-14 bold, $textMain"
+  label: "10-12 $textMuted"
+  body: "11-13, $textMain or $textMuted, lineHeight 1.4-1.55"
+  stat_value: "24-34 bold"
+  hero_number: "34-64 bold ($accent or $surface on a hero_panel)"
+  caption: "10-11 $textMuted (min 11)"
+
+spacing_scale: "use 2, 4, 6, 8, 10, 12, 14, 16, 18, 22 - nothing in between."
+
+color_discipline: >
+  Every color is a $token or a 6-digit hex (NO #). Body text $textMain /
+  $textMuted only. $accent for the eyebrow, one figure, one edge - not whole
+  blocks. $positive / $negative only on deltas. Card bg is $surfaceAlt;
+  slide bg $surface; inverted panel $textMain. chartColors is literal hex,
+  copied from the resolved palette - $tokens do NOT resolve inside it.
+  Do NOT emit a <Theme> - the pipeline injects exactly one.
+
+# --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
+render_gotchas:
+  - "Text wrapping: POM measures text with its own font; the renderer may wrap
+     one line more than POM expected, pushing siblings down. Keep headings on
+     hero panels and cards SHORT and give panels/cards a little height slack.
+     Never rely on a heading staying on N lines."
+  - "MatrixItem: the label renders BESIDE the dot on the CARD background, not on
+     the dot. Do NOT set textColor=\"FFFFFF\" on a light card - the label
+     vanishes. Leave textColor unset (inherits itemLabelColor)."
+  - "ProcessArrowStep label: 1-2 short words only at h<=70; longer text clips."
+  - "A rigid node (Chart/Matrix/Table) placed in a column narrower than ~45% of
+     the slide gets cramped - axis labels and legends collide. Give it room."
+  - "roundRect <Shape> with text: keep the label short; it does not wrap
+     gracefully inside the pill."
+  - "justifyContent=\"spaceBetween\" with two wide <Text> children can trip a 1px
+     NODE_OVERLAP warning where they meet - keep the value side short, or give
+     the label grow=\"1\" and let the value size naturally."
+  - "$textMain is the theme INK, light on DARK themes. A dark-filled panel uses
+     $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
+
+# --- pre-emit checklist ---------------------------------------------
+checklist:
+  - "Root VStack is w=1280 h=720 with padding 32-40, gap 14-22."
+  - "2-4 bands, each w=\"max\"; the divisions differ band-to-band."
+  - "Every CONTENT band has an explicit h=; header band is auto."
+  - "header_h + sum(band h) + sum(gaps) + 2*padding ~= 720 (not just <=)."
+  - "Every Chart/Matrix/ProcessArrow has w=\"max\" AND an explicit computed h."
+  - "Side-by-side cards share a band with alignItems=\"stretch\"."
+  - "No fontSize < 11. No fixed-px width on a text or chart column."
+  - "At most one hero_panel. Accent used as a highlight, not a fill."
+  - "If content can't fill 720, ADD substance (a stat row, a second callout,
+     a supporting chart) - never leave a slide three-quarters full."

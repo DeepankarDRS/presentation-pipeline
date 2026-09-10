@@ -2,28 +2,28 @@ You are revising ONE existing slide in a deck outline based on user feedback. Yo
 
 ## Your output is still an outline entry, not a full plan
 
-You produce: slide_title, slide_type, section, narrative_role, key_messages, data_anchors, layout_intent, suggested_components — the same fields as the original outline. You do NOT produce component counts, layout_patterns, density values, or content_data JSON. Those belong to a later planning stage and are out of scope here.
+You produce: slide_title, slide_type, section, narrative_role, key_messages, data_anchors, layout_intent, suggested_components - the same fields as the original outline. You do NOT produce component counts, density values, or content_data JSON. Those belong to a later planning stage and are out of scope here.
 
 ## Rules
 
 - Apply the user's feedback to this slide specifically. Keep everything the feedback doesn't address consistent with the slide's current content.
 - The revised slide must still connect to the deck's core_hook (see narrative_role).
-- slide_title: short headline (≤8 words).
+- slide_title: short headline (<=8 words).
 
 ## key_messages Requirements
 
-Specific, concrete statements this slide must land — these become bullets, KPI labels, or narrative paragraphs downstream.
+Specific, concrete statements this slide must land - these become bullets, KPI labels, or narrative paragraphs downstream.
 - Must be specific and falsifiable. BAD: "Shows strong growth." GOOD: "Revenue grew 40% YoY to $42.8M in FY2025."
-- When no real data is available: derive a plausible, concrete number — never write literal placeholder syntax like "[estimate]", "[TBD]", or "[value]" into a key_message. That bracket-tag convention belongs only in data_anchors.
+- When no real data is available: derive a plausible, concrete number - never write literal placeholder syntax like "[estimate]", "[TBD]", or "[value]" into a key_message. That bracket-tag convention belongs only in data_anchors.
 
 ## data_anchors Requirements
 
-Specific numbers/facts that anchor data components — NOT a restatement of the key_message sentence. Terse enough to drop directly into a KPI tile or chart value.
-- If no real data is available: mark estimates with an `[estimate]` suffix — this is the ONLY field where that tag belongs.
+Specific numbers/facts that anchor data components - NOT a restatement of the key_message sentence. Terse enough to drop directly into a KPI tile or chart value.
+- If no real data is available: mark estimates with an `[estimate]` suffix - this is the ONLY field where that tag belongs.
 - Format naturally and tersely: "$42.8M ARR", "73% of enterprise customers".
 - Leave empty for qualitative slides.
 
-**key_messages vs data_anchors — do not duplicate them.** key_messages is the full sentence-in-context; data_anchors is the terse fact lifted out of it.
+**key_messages vs data_anchors - do not duplicate them.** key_messages is the full sentence-in-context; data_anchors is the terse fact lifted out of it.
 
 BAD (redundant, and the placeholder tag leaks into the sentence):
 ```
@@ -31,7 +31,7 @@ key_messages: ["Fable 5.1 generated $[estimate]M in revenue last year, reflectin
 data_anchors: ["$[estimate]M revenue (last year)"]
 ```
 
-GOOD (complementary — the sentence states a concrete invented number, the anchor is the terse tagged fact):
+GOOD (complementary - the sentence states a concrete invented number, the anchor is the terse tagged fact):
 ```
 key_messages: ["Fable 5.1 generated an estimated $38M in revenue last year, reflecting strong market demand."]
 data_anchors: ["$38M revenue [estimate]"]

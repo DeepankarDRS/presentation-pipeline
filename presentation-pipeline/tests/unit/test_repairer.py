@@ -35,8 +35,7 @@ def _make_state(**overrides):
         "forbidden_attributes": ["style", "class"],
         "theme_element": '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />',
         "density_tier": "dense",
-        "layout_pattern": "",
-        "example": "",
+        "house_style": "",
         "notes": [],
     }
     state["theme_element"] = state["contract"]["theme_element"]

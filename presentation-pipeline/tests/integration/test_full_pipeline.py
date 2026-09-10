@@ -151,7 +151,6 @@ def test_pipeline_with_hierarchical_planner(
             PlannerComponent(kind="kpi_row", count=4, content_summary="ARR, NRR, Margin, CAC"),
         ],
         density="normal", font_tier="standard",
-        layout_pattern="hero_big_number",
         layout_hint="Title at top, 4 KPI tiles in row below",
         content_data_json='{"title": "Key Metrics", "kpi_labels": ["ARR", "NRR", "Margin", "CAC"]}',
     )

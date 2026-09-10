@@ -7,7 +7,7 @@ Hierarchical planning topology:
         → fan_out_slide_plans  (Send() per slide, parallel by default)
             → slide_component_planner  (one focused LLM call per slide)
             → [fan-in via assembled_slide_plans operator.add]
-        → slide_plan_sorter  (sort + layout variety)
+        → slide_plan_sorter  (sort by slide_index)
         → plan_reviewer  (confidence score)
         → route_after_plan_review
             → style_resolver → context_builder → generator → validator
@@ -56,7 +56,6 @@ from src.agents.questionnaire import questionnaire_node
 from src.agents.repairer import repairer_node
 from src.agents.slide_component_planner import (
     SERIALIZE_SLIDES,
-    enforce_layout_variety,
     slide_component_planner_node,
     slide_plan_serial_node,
 )
@@ -128,13 +127,9 @@ def fan_out_slide_plans(state: PresentationState) -> list[Send] | str:
 
 
 def slide_plan_sorter_node(state: PresentationState) -> dict[str, Any]:
-    """Sort assembled_slide_plans by slide_index, enforce layout variety, write slide_plans."""
+    """Sort assembled_slide_plans by slide_index and write slide_plans."""
     assembled: list[SlidePlan] = list(state.get("assembled_slide_plans") or [])
     assembled.sort(key=lambda p: p.get("slide_index", 0))
-
-    swaps = enforce_layout_variety(assembled)
-    if swaps:
-        logger.info(f"slide_plan_sorter: {swaps} layout swap(s) for variety")
 
     outline = state.get("outline_plan") or {}
     core_hook = outline.get("core_hook", "")

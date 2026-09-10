@@ -3,41 +3,47 @@ OBJECTIVE: {{ objective }}
 SLIDE TYPE: {{ slide_type }}
 {% endif %}
 
-COMPONENTS:
+COMPONENTS (put every one on the slide):
 {% for comp in components %}
 - {{ comp.kind }}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
 
 {% endfor %}
 DENSITY: {{ density }} | FONT TIER: {{ font_tier }}
+{% if layout_hint %}
 
-SPATIAL ARRANGEMENT — governs WHERE and HOW components are positioned (not a content
-checklist; generate every component listed above and include all DATA below regardless):
+LAYOUT INTENT - which regions carry weight and how the components relate
+(e.g. "chart is primary, table is supporting context beside it"). This is a
+priority statement, NOT pixel coordinates: turn it into bands + a %/max split
+using the LAYOUT GRAMMAR. If it conflicts with the grammar's rules, the grammar wins.
 {{ layout_hint }}
+{% endif %}
 {% if supplied_content %}
 
-SUPPLIED CONTENT (use these values EXACTLY):
+SUPPLIED CONTENT (use these values EXACTLY, verbatim):
 {% for key, value in supplied_content.items() %}
 {{ key }}: {{ value }}
 {% endfor %}
 {% elif content_data %}
 
-DATA (use these values directly in your POM XML):
+DATA (use these values directly in the XML):
 {% for key, value in content_data.items() %}
 {{ key }}: {{ value }}
 {% endfor %}
 
-For any COMPONENT listed above that has no corresponding key in DATA, invent
-realistic specific content — real-sounding numbers ($42.8M, 114%, +18% QoQ),
-named entities, concise prose. Never use placeholders like "XX%", "TBD",
-"Lorem ipsum", "Company A", or "Metric 1".
+For any component with no matching key above, invent realistic, specific
+content - real-sounding numbers ($42.8M, 114%, +18% QoQ), named entities,
+concise prose. Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1".
 {% else %}
 
-CONTENT: No data supplied — invent realistic, specific figures and text.
-Use real-sounding numbers ($42.8M, 114%, +18% QoQ), named entities, and
-concise prose. Never use placeholders like "XX%", "TBD", "Lorem ipsum",
-"Company A", or "Metric 1". Every value should look like it came from a
-real business report.
+CONTENT: No data supplied - invent realistic, specific figures and text.
+Real-sounding numbers ($42.8M, 114%, +18% QoQ), named entities, concise prose.
+Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1". Every value should
+look like it came from a real business report.
 {% endif %}
 
-Generate the POM XML for this slide: a single <Slide> element. Do NOT include a
-<Theme> element — the pipeline adds it.
+Before you emit: decide the 2-4 bands, give each content band an explicit h that
+(with the header, gaps and padding) sums to ~720, then fill. If the content is
+thin, add substance rather than leaving the slide half-empty.
+
+Output the POM XML for this slide - a single <Slide> element, no <Theme>, no
+markdown fences, no commentary.

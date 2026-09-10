@@ -41,7 +41,7 @@ ProcessArrowStep_attributes:
   textColor: { type: hex, default: "FFFFFF", note: "Label text color" }
 
 notes:
-  - "ProcessArrow needs explicit w and h."
+  - "ProcessArrow needs explicit w and h. w=\"max\" works for width; h must be a pixel number."
   - "3-6 steps work best. More steps need wider w or smaller itemWidth."
   - "Use a gradient of related hues (light→dark or dark→light) across steps for visual flow."
   - "For branching or non-linear processes, use <Flow> instead."
@@ -51,3 +51,9 @@ pitfalls:
   - "label is required on every ProcessArrowStep."
   - "Missing w/h on ProcessArrow — will not render correctly."
   - "Too many steps (>6) in horizontal mode at 1280 wide will cause overflow."
+  - "VERIFIED v10.3.0 render: a ProcessArrowStep label longer than ~2 short words
+     clips / wraps badly inside the chevron at h<=70 (e.g. 'AUTONOMIZE' broke to
+     'AUTONOMI ZE'). Keep labels to 1-2 words. Put any longer phase description
+     in a caption Text or a card BELOW the ProcessArrow, not in the label.
+     Give a horizontal ProcessArrow h>=80 if labels must be two words."
+  - "No newlines in a label — they do not render as line breaks."

@@ -25,13 +25,13 @@ def test_system_prompt_includes_allowed_nodes():
     assert "VStack" in out
 
 
-def test_system_prompt_includes_notes_and_layout_pattern():
+def test_system_prompt_includes_notes_and_house_style():
     tmpl = _env.get_template("system.j2")
-    out = tmpl.render(notes=["Tables need explicit column widths."], layout_pattern="two_column reference")
+    out = tmpl.render(notes=["Tables need explicit column widths."], house_style="COMPOSITION\n2-4 horizontal bands.")
     assert "NOTES" in out
     assert "column widths" in out
-    assert "LAYOUT VOCABULARY" in out
-    assert "two_column reference" in out
+    assert "LAYOUT GRAMMAR" in out
+    assert "horizontal bands" in out
 
 
 def test_system_prompt_omits_empty_sections():

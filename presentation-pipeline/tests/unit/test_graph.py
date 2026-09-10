@@ -202,7 +202,6 @@ def test_full_graph_with_preloaded_plans(mock_gen_llm, mock_compile, mock_valida
                 {"kind": "kpi_row", "count": 4, "content_summary": "Key metrics"},
             ],
             "density": "dense", "font_tier": "compact",
-            "layout_pattern": "dashboard_grid",
             "layout_hint": "Title at top, KPI tiles in row below",
             "content_data": {}, "data_provenance": {},
         }
@@ -332,14 +331,14 @@ def test_multi_slide_e2e(
             "slide_index": 0, "slide_type": "cover",
             "components": [{"kind": "title", "count": 1, "content_summary": "Cover"}],
             "density": "sparse", "font_tier": "display",
-            "layout_pattern": "hero_statement", "layout_hint": "centered title",
+            "layout_hint": "centered title",
             "content_data": {}, "data_provenance": {},
         },
         {
             "slide_index": 1, "slide_type": "data",
             "components": [{"kind": "chart", "count": 1, "content_summary": "Revenue"}],
             "density": "normal", "font_tier": "standard",
-            "layout_pattern": "full_width_chart", "layout_hint": "chart full width",
+            "layout_hint": "chart full width",
             "content_data": {}, "data_provenance": {},
         },
     ]

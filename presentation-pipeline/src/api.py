@@ -31,7 +31,6 @@ from src.agents.planner_schema import (
     ComponentKindLiteral,
     DensityLiteral,
     FontTierLiteral,
-    LayoutPatternLiteral,
     SlideTypeLiteral,
 )
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
@@ -97,7 +96,7 @@ class SlidePlanPayload(BaseModel):
     components: list[ComponentPlanPayload]
     density: str = "normal"
     font_tier: str = "standard"
-    layout_pattern: str = "two_column"
+    layout_pattern: str = ""  # deprecated, ignored - kept so old clients don't 422
     layout_hint: str = ""
     content_data: dict[str, Any] = Field(default_factory=dict)
 
@@ -433,7 +432,6 @@ _VALID_COMPONENT_KINDS = set(ComponentKindLiteral.__args__)
 _VALID_SLIDE_TYPES = set(SlideTypeLiteral.__args__)
 _VALID_DENSITIES = set(DensityLiteral.__args__)
 _VALID_FONT_TIERS = set(FontTierLiteral.__args__)
-_VALID_LAYOUT_PATTERNS = set(LayoutPatternLiteral.__args__)
 
 
 def _validate_plan(slides: list[SlidePlanPayload]) -> list[str]:
@@ -448,8 +446,6 @@ def _validate_plan(slides: list[SlidePlanPayload]) -> list[str]:
             errors.append(f"Slide {i}: invalid density '{s.density}'")
         if s.font_tier not in _VALID_FONT_TIERS:
             errors.append(f"Slide {i}: invalid font_tier '{s.font_tier}'")
-        if s.layout_pattern not in _VALID_LAYOUT_PATTERNS:
-            errors.append(f"Slide {i}: invalid layout_pattern '{s.layout_pattern}'")
         if not s.components:
             errors.append(f"Slide {i}: must have at least one component")
         for j, c in enumerate(s.components):
@@ -489,7 +485,6 @@ def _payload_to_slide_plans(
             components=components,
             density=s.density,
             font_tier=s.font_tier,
-            layout_pattern=s.layout_pattern,
             layout_hint=s.layout_hint,
             content_data=s.content_data,
             data_provenance=compute_provenance(s.content_data, supplied_content or {}),

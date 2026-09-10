@@ -19,7 +19,7 @@ Section: {{ slide.section or '(none)' }}
 Narrative role:
 {{ slide.narrative_role }}
 
-Key messages (MUST appear in content_data — use verbatim or near-verbatim):
+Key messages (MUST appear in content_data - use verbatim or near-verbatim):
 {% for msg in slide.key_messages %}
 {{ loop.index }}. {{ msg }}
 {% endfor %}
@@ -30,10 +30,10 @@ Data anchors (use these exact values in content_data numeric/data fields):
 - {{ anchor }}
 {% endfor %}
 {% else %}
-(none — this is a qualitative slide)
+(none - this is a qualitative slide)
 {% endif %}
 
-Layout intent (translate this to layout_pattern + layout_hint):
+Layout intent (turn this into a short priority-statement layout_hint):
 {{ slide.layout_intent }}
 
 Suggested components (soft hint, you may adjust):

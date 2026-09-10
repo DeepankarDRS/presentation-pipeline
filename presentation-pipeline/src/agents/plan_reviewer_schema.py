@@ -27,7 +27,7 @@ class PlanReviewIssue(BaseModel):
     ] = Field(
         description="narrative_gap: slide doesn't support the core_hook. "
                     "density_low: too few components for the stated density. "
-                    "layout_repeat: adjacent slides with same layout_pattern (after variety enforcement). "
+                    "layout_repeat: several adjacent content/data slides whose layout_hint describes the same arrangement. "
                     "component_mismatch: wrong component kind for the data type. "
                     "content_weak: content_data values are generic/placeholder. "
                     "missing_data: required content_data keys absent for a component.",

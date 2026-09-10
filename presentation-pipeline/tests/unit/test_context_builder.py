@@ -8,9 +8,7 @@ from src.agents.context_builder import (
     _select_nodes,
     _select_attributes,
     _select_notes,
-    _select_example,
-    _select_layout,
-    _compress_example,
+    _render_house_style,
     _detect_components_from_text,
     build_contract,
     context_builder_node,
@@ -178,45 +176,21 @@ def test_notes_dark_theme_chart_wrapping():
     assert len(dark_notes) == 1
 
 
-# ── Example selection ────────────────────────────────────────────────────────
+# ── House-style grammar ──────────────────────────────────────────────────────
 
-def test_example_chart():
-    ex = _select_example(["chart"])
-    assert "<Chart" in ex or "Chart" in ex
-
-
-def test_example_kpi():
-    ex = _select_example(["kpi_row"])
-    assert "<Theme" in ex or "Theme" in ex
-
-
-def test_example_fallback():
-    ex = _select_example(["title"])
-    assert len(ex) > 0
+def test_render_house_style_has_core_sections():
+    hs = _render_house_style()
+    assert "FRAME" in hs
+    assert "COMPOSITION" in hs
+    assert "HEIGHT BUDGET" in hs
+    assert "RIGID NODES" in hs
+    assert "1280" in hs
 
 
-def test_compress_example():
-    long_xml = "\n".join([f'<Td>Row {i}</Td>' for i in range(30)])
-    compressed = _compress_example(long_xml, max_lines=10)
-    assert "..." in compressed
-    assert len(compressed.split("\n")) < len(long_xml.split("\n"))
-
-
-# ── Layout selection ─────────────────────────────────────────────────────────
-
-def test_layout_chart_table():
-    layout = _select_layout(["chart", "table"])
-    assert len(layout) > 0
-
-
-def test_layout_kpi():
-    layout = _select_layout(["kpi_row"])
-    assert len(layout) > 0
-
-
-def test_layout_timeline():
-    layout = _select_layout(["timeline"])
-    assert len(layout) > 0
+def test_render_house_style_is_not_a_slide():
+    hs = _render_house_style()
+    # It's a grammar, not an example slide — no full <Slide> to copy.
+    assert "<Slide>" not in hs
 
 
 # ── Full contract build ─────────────────────────────────────────────────────
@@ -280,8 +254,12 @@ def test_prompt_standard_tier():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 5000, f"Standard tier too large: {tokens} tokens"
+    # Standard tier carries the full house-style GRAMMAR (~1.8k tok) — the core
+    # of the layout rework. ~5.2k is the accepted budget; the hard gate is the
+    # dense-tier < 6k test below.
+    assert tokens < 5300, f"Standard tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
+    assert "LAYOUT GRAMMAR" in prompt
     assert "SHRINK CHECKLIST" not in prompt
 
 

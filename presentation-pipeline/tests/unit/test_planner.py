@@ -4,7 +4,6 @@ Replaces the old monolithic planner tests. Tests now cover:
 - outline_planner_node (mocked LLM)
 - _planner_slide_to_state / plan_single_slide helpers
 - compute_provenance from settings_mapper
-- enforce_layout_variety
 """
 
 from unittest.mock import MagicMock, patch
@@ -13,10 +12,7 @@ from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
 from src.agents.plan_reviewer_schema import PlanReviewerOutput, PlanReviewIssue
 from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.agents.settings_mapper import compute_provenance, settings_to_constraints, DeckSettings
-from src.agents.slide_component_planner import (
-    _planner_slide_to_state,
-    enforce_layout_variety,
-)
+from src.agents.slide_component_planner import _planner_slide_to_state
 from src.state import SlidePlan, initial_state
 
 
@@ -60,7 +56,6 @@ def test_planner_slide_to_state_basic():
         ],
         density="normal",
         font_tier="standard",
-        layout_pattern="stacked_sections",
         layout_hint="Title at top, text below",
     )
     result = _planner_slide_to_state(0, slide)
@@ -84,7 +79,6 @@ def test_planner_slide_to_state_chart_fields():
         ],
         density="normal",
         font_tier="standard",
-        layout_pattern="full_width_chart",
         layout_hint="Chart centered",
     )
     result = _planner_slide_to_state(0, slide)
@@ -106,7 +100,6 @@ def test_planner_slide_to_state_table_fields():
         ],
         density="dense",
         font_tier="compact",
-        layout_pattern="full_width_chart",
         layout_hint="Table fills width",
     )
     result = _planner_slide_to_state(0, slide)
@@ -123,7 +116,6 @@ def test_planner_slide_to_state_omits_zero_fields():
         ],
         density="sparse",
         font_tier="display",
-        layout_pattern="hero_statement",
         layout_hint="Centered title",
     )
     result = _planner_slide_to_state(0, slide)
@@ -194,36 +186,6 @@ def test_outline_planner_with_deck_settings(mock_get_llm):
     assert result["outline_plan"]["slides"][0]["slide_type"] == "cover"
 
 
-# ── enforce_layout_variety tests ───────────────────────────────────────────
-
-def test_enforce_layout_variety_swaps_adjacent_repeats():
-    plans: list[SlidePlan] = [
-        SlidePlan(slide_index=0, slide_type="content", layout_pattern="two_column", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
-        SlidePlan(slide_index=1, slide_type="content", layout_pattern="two_column", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
-    ]
-    swaps = enforce_layout_variety(plans)
-    assert swaps >= 1
-    assert plans[0]["layout_pattern"] != plans[1]["layout_pattern"]
-
-
-def test_enforce_layout_variety_skips_cover():
-    plans: list[SlidePlan] = [
-        SlidePlan(slide_index=0, slide_type="cover", layout_pattern="hero_statement", components=[], density="sparse", font_tier="display", layout_hint="", content_data={}, data_provenance={}),
-        SlidePlan(slide_index=1, slide_type="content", layout_pattern="hero_statement", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
-    ]
-    swaps = enforce_layout_variety(plans)
-    assert swaps == 0
-
-
-def test_enforce_layout_variety_no_repeat():
-    plans: list[SlidePlan] = [
-        SlidePlan(slide_index=0, slide_type="content", layout_pattern="two_column", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
-        SlidePlan(slide_index=1, slide_type="content", layout_pattern="full_width_chart", components=[], density="normal", font_tier="standard", layout_hint="", content_data={}, data_provenance={}),
-    ]
-    swaps = enforce_layout_variety(plans)
-    assert swaps == 0
-
-
 # ── compute_provenance tests ───────────────────────────────────────────────
 
 def test_compute_provenance_all_sample():
@@ -258,7 +220,6 @@ def test_planner_slide_to_state_provenance_with_supplied():
         slide_type="data",
         components=[PlannerComponent(kind="title", count=1)],
         density="normal", font_tier="standard",
-        layout_pattern="stacked_sections",
         layout_hint="Title at top",
         content_data_json='{"title": "Q3 Metrics", "chart_data": [1, 2, 3]}',
     )
@@ -272,7 +233,6 @@ def test_planner_slide_to_state_provenance_no_supplied():
         slide_type="content",
         components=[PlannerComponent(kind="title", count=1)],
         density="normal", font_tier="standard",
-        layout_pattern="stacked_sections",
         layout_hint="Title at top",
         content_data_json='{"title": "Generated Title"}',
     )

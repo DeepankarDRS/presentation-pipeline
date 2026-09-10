@@ -2,7 +2,7 @@
 
 Called once per slide via LangGraph Send() fan-out. Receives the rich
 OutlineSlide from the outline_planner and produces a full SlidePlan:
-components, layout_pattern, layout_hint, density, font_tier, content_data.
+components, layout_hint, density, font_tier, content_data.
 
 Each slide gets its own focused LLM call with full attention budget.
 
@@ -28,7 +28,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.planner_schema import LayoutPatternLiteral, PlannerSlide
+from src.agents.planner_schema import PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.state import ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm
@@ -49,34 +49,6 @@ _jinja_env = Environment(
     trim_blocks=True,
     lstrip_blocks=True,
 )
-
-# ── Layout variety enforcement ──────────────────────────────────────────────
-
-_LAYOUT_PATTERNS: list[str] = list(LayoutPatternLiteral.__args__)
-_VARIETY_SKIP_TYPES = {"cover", "section_break", "closing"}
-
-
-def enforce_layout_variety(plans: list[SlidePlan]) -> int:
-    """Swap layout_pattern on adjacent content/data slides that repeat. Returns swap count."""
-    swaps = 0
-    for i in range(1, len(plans)):
-        prev, curr = plans[i - 1], plans[i]
-        if prev.get("slide_type") in _VARIETY_SKIP_TYPES:
-            continue
-        if curr.get("slide_type") in _VARIETY_SKIP_TYPES:
-            continue
-        if prev.get("layout_pattern") != curr.get("layout_pattern"):
-            continue
-        used = {prev.get("layout_pattern")}
-        if i + 1 < len(plans):
-            used.add(plans[i + 1].get("layout_pattern"))
-        for alt in _LAYOUT_PATTERNS:
-            if alt not in used and alt != "hero_statement":
-                curr["layout_pattern"] = alt
-                swaps += 1
-                break
-    return swaps
-
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
 
@@ -113,7 +85,6 @@ def _planner_slide_to_state(
         components=components,
         density=slide.density,
         font_tier=slide.font_tier,
-        layout_pattern=slide.layout_pattern,
         layout_hint=slide.layout_hint,
         content_data=content_data,
         data_provenance=compute_provenance(content_data, supplied_content or {}),
@@ -267,7 +238,7 @@ def slide_component_planner_node(state: PresentationState) -> dict[str, Any]:
     logger.info(
         f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} done "
         f"({len(plan.get('components', []))} components, "
-        f"layout={plan.get('layout_pattern', '?')})"
+        f"density={plan.get('density', '?')})"
     )
 
     return {"assembled_slide_plans": [plan]}

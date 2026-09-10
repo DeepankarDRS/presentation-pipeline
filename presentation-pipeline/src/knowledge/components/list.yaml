@@ -58,7 +58,7 @@ notes:
   - "Lowercase <ul>/<ol>/<li> are HTML. Use <Ul>/<Ol>/<Li>."
   - "<Li> may contain inline tags (B, I, A, U, S, Sub, Sup, Span, Mark)."
   - "Give the list an explicit w on its parent (or the list) so long items wrap."
-  - "For a title + bullets slide, put the <Ul> where the body <Text> would go in layouts/title-content.yaml."
+  - "For a title + bullets slide, the <Ul> is the body of a content band below the header band."
   - "Line spacing: Ul/Ol use a different line-spacing rule than Text. Row height = measureFontLineHeightRatio * lineHeight * fontSize (bundled-font ratio). Text uses lineHeight * fontSize directly (PowerPoint spcPts). Use the same lineHeight value for visual consistency; absolute pixel values may differ slightly."
 
 pitfalls:

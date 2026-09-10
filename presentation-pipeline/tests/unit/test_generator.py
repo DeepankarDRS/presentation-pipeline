@@ -33,8 +33,7 @@ def _make_state(**overrides):
         "forbidden_attributes": ["style", "class", "width", "height"],
         "theme_element": '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />',
         "density_tier": "standard",
-        "layout_pattern": "Pattern: title-content",
-        "example": "<Slide>...</Slide>",
+        "house_style": "FRAME\nRoot is ALWAYS <VStack w=\"1280\" h=\"720\">.\n\nCOMPOSITION\n2-4 horizontal bands.",
         "notes": ["Use $tokens for colors", "All text in <Text> nodes"],
     }
     state["theme_element"] = state["contract"]["theme_element"]

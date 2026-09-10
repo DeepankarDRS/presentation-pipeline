@@ -1,0 +1,61 @@
+<!-- Not one of the 4 source references — built from house-style.yaml alone to
+     prove the grammar generalizes to a slide type the references don't cover
+     (comparison table + pull-quote hero panel + callout). -->
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+<Slide><VStack w="1280" h="720" padding="36" gap="18" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="5">
+      <Text fontSize="11" bold="true" color="$accent" letterSpacing="2">COMPETITIVE LANDSCAPE</Text>
+      <Text fontSize="29" bold="true" color="$textMain">We win on time-to-value, not feature count</Text>
+      <Text fontSize="12" color="$textMuted">How we compare against the two incumbents buyers shortlist</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="140" h="26" fill.color="EEF2FD" color="$textMain" fontSize="10" bold="true" borderRadius="999">Q3 FY26 REVIEW</Shape>
+  </HStack>
+  <HStack w="max" h="404" gap="16" alignItems="stretch">
+    <VStack w="62%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <Text fontSize="13" bold="true" color="$textMain">Evaluation scorecard</Text>
+      <Table defaultRowHeight="42" cellBorder.color="$border" cellBorder.width="1">
+        <Col width="220" /><Col width="150" /><Col width="150" /><Col width="150" />
+        <Tr>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Dimension</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Us</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Northwind</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Baseline</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted">Median time to first value</Td>
+          <Td backgroundColor="$surface" color="$positive" textAlign="right">9 days</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">6 weeks</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">11 weeks</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted">Implementation cost</Td>
+          <Td backgroundColor="$surface" color="$positive" textAlign="right">$0</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">$40k</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">$75k</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted">Prebuilt connectors</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">120</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">340</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">210</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted">Admin headcount to run</Td>
+          <Td backgroundColor="$surface" color="$positive" textAlign="right">0.5</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">2.0</Td>
+          <Td backgroundColor="$surface" color="$textMain" textAlign="right">3.0</Td>
+        </Tr>
+      </Table>
+    </VStack>
+    <VStack w="38%" padding="22" gap="14" backgroundColor="$textMain" borderRadius="16" justifyContent="center">
+      <Text fontSize="11" bold="true" color="$accentAlt" letterSpacing="2">WHAT BUYERS TELL US</Text>
+      <Text fontSize="19" bold="true" color="$surface" lineHeight="1.4">"We were live before the other vendor had finished scoping."</Text>
+      <Text fontSize="12" color="B8C0CE">VP Data, mid-market logistics customer</Text>
+    </VStack>
+  </HStack>
+  <VStack w="max" h="96" padding="16" gap="6" backgroundColor="FEF6EC" borderLeft.color="$warning" borderLeft.width="5" justifyContent="center">
+    <Text fontSize="10" bold="true" color="$warning" letterSpacing="1">WHERE WE ARE EXPOSED</Text>
+    <Text fontSize="14" bold="true" color="$textMain">Connector breadth is a real gap on deals that need niche ERP coverage; partner-built connectors ship in Q1 to close it.</Text>
+  </VStack>
+</VStack></Slide>

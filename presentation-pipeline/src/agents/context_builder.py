@@ -54,7 +54,6 @@ def _detect_components_from_text(text: str) -> list[str]:
 
 _SRC_DIR = Path(__file__).resolve().parent.parent
 _KNOWLEDGE_DIR = _SRC_DIR / "knowledge"
-_EXAMPLES_DIR = _KNOWLEDGE_DIR / "examples"
 
 # ── Component kind → POM node mapping ────────────────────────────────────────
 
@@ -89,33 +88,6 @@ _KIND_TO_COMPONENT_FILE: dict[str, str] = {
     "pyramid":       "components/pyramid.yaml",
 }
 
-_KIND_TO_LAYOUT: dict[str, str] = {
-    "timeline": "layouts/timeline-roadmap.yaml",
-    "layer":    "layouts/diagram-annotated.yaml",
-}
-
-# Maps planner layout_pattern → layout YAML. Takes priority over component-kind inference.
-_PATTERN_TO_LAYOUT: dict[str, str] = {
-    "hero_statement":     "layouts/hero-statement.yaml",
-    "hero_big_number":    "layouts/hero-big-number.yaml",
-    "two_column":         "layouts/two-column.yaml",
-    "three_column_cards": "layouts/three-column-cards.yaml",
-    "full_width_chart":   "layouts/full-width-chart.yaml",
-    "chart_table_split":  "layouts/chart-table.yaml",
-    "stacked_sections":   "layouts/stacked-sections.yaml",
-    "dashboard_grid":     "layouts/dashboard-grid.yaml",
-}
-
-_KIND_TO_EXAMPLE: dict[str, str] = {
-    "timeline":    "timeline-slide.xml",
-    "flow":        "flow-slide.xml",
-    "layer":       "drawing-slide.xml",
-    "chart":       "chart-slide.xml",
-    "table":       "table-slide.xml",
-    "kpi_row":     "kpi-slide.xml",
-    "bullet_list": "text-slide.xml",
-}
-
 _BASE_NODES = ["Slide", "Theme", "VStack", "Text", "Shape"]
 _INLINE_NODES = ["B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"]
 
@@ -148,36 +120,6 @@ def _load_yaml(relpath: str) -> dict[str, Any]:
     if not path.exists():
         return {}
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-
-
-def _load_example(name: str) -> str:
-    path = _EXAMPLES_DIR / name
-    return path.read_text(encoding="utf-8").strip() if path.exists() else ""
-
-
-def _compress_example(xml: str, max_lines: int = 45) -> str:
-    """Compress a full XML example to a skeleton with <!-- ... --> comments."""
-    lines = xml.split("\n")
-    if len(lines) <= max_lines:
-        return xml
-    keep: list[str] = []
-    skip_count = 0
-    prev_tag = ""
-    for line in lines:
-        stripped = line.strip()
-        tag = stripped.split("<")[-1].split(" ")[0].split(">")[0].rstrip("/") if "<" in stripped else ""
-        if tag == prev_tag and skip_count < 3:
-            skip_count += 1
-            continue
-        if skip_count > 0:
-            indent = len(line) - len(line.lstrip())
-            keep.append(" " * indent + f"<!-- ... {skip_count} more {prev_tag} entries ... -->")
-            skip_count = 0
-        keep.append(line)
-        prev_tag = tag
-    if skip_count > 0:
-        keep.append(f"    <!-- ... {skip_count} more entries ... -->")
-    return "\n".join(keep)
 
 
 # ── Node selection ───────────────────────────────────────────────────────────
@@ -334,79 +276,52 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     return notes
 
 
-# ── Layout selection ─────────────────────────────────────────────────────────
+# ── House-style grammar ──────────────────────────────────────────────────────
+# The generator learns layout from ONE compositional grammar (core/house-style
+# .yaml), the same for every slide — not from a per-pattern template or an
+# injected example slide. The grammar describes the vocabulary + rules + the
+# height-budget arithmetic; the LLM composes the actual structure from the
+# slide's own content.
 
-def _select_layout(kinds: list[str], layout_pattern: str = "") -> str:
-    """Pick a layout pattern YAML and render it as text.
-
-    Preference order:
-    1. Special component kinds that always override (timeline, layer).
-    2. Planner's layout_pattern when it maps to a known YAML.
-    3. Component-kind heuristic fallback.
-    """
-    # Priority 1: special component kinds that always override (timeline, layer).
-    special_kind = next((k for k in kinds if k in _KIND_TO_LAYOUT), None)
-    if special_kind:
-        pick = _KIND_TO_LAYOUT[special_kind]
-    elif layout_pattern and layout_pattern in _PATTERN_TO_LAYOUT:
-        # Priority 2: planner's explicit layout_pattern.
-        pick = _PATTERN_TO_LAYOUT[layout_pattern]
-    else:
-        # Priority 3: component-kind heuristic fallback.
-        has_chart = "chart" in kinds
-        has_table = "table" in kinds
-        has_narr = "narrative" in kinds
-        if has_chart and has_table:
-            pick = "layouts/chart-table.yaml"
-        elif (has_chart or has_table) and has_narr:
-            pick = "layouts/two-column.yaml"
-        elif "kpi_row" in kinds:
-            pick = "layouts/kpi-row.yaml"
-        else:
-            pick = "layouts/title-content.yaml"
-
-    layout = _load_yaml(pick)
-    if not layout:
-        layout = _load_yaml("layouts/title-content.yaml")
-    return _render_layout(layout)
+_HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
+    ("frame", "FRAME"),
+    ("vocabulary", "SIZING VOCABULARY"),
+    ("alignment", "ALIGNMENT"),
+    ("composition", "COMPOSITION"),
+    ("header_band", "HEADER BAND"),
+    ("height_budget", "HEIGHT BUDGET (do this arithmetic before setting heights)"),
+    ("worked_example", "HEIGHT BUDGET — worked example"),
+    ("rigid_nodes", "RIGID NODES (Chart / Table / Matrix / ProcessArrow)"),
+    ("recipes", "RECIPES (parameterised patterns, not slides)"),
+    ("type_ramp", "TYPE RAMP (fontSize)"),
+    ("spacing_scale", "SPACING SCALE"),
+    ("color_discipline", "COLOR DISCIPLINE"),
+    ("render_gotchas", "RENDER GOTCHAS"),
+    ("checklist", "PRE-EMIT CHECKLIST"),
+]
 
 
-_LAYOUT_EXAMPLE_MAX_LINES = 15
+def _fmt_house_style_value(value: Any) -> str:
+    """Render one house-style.yaml value (str / list / dict) as prompt text."""
+    if isinstance(value, dict):
+        return "\n".join(f"  {k}: {str(v).strip()}" for k, v in value.items())
+    if isinstance(value, list):
+        return "\n".join(f"  - {str(v).strip()}" for v in value)
+    return str(value).strip()
 
 
-def _render_layout(layout_yaml: dict) -> str:
-    if not layout_yaml:
+@functools.lru_cache(maxsize=1)
+def _render_house_style() -> str:
+    """Render core/house-style.yaml into a compact prompt block (cached)."""
+    hs = _load_yaml("core/house-style.yaml")
+    if not hs:
         return ""
     parts: list[str] = []
-    name = (layout_yaml.get("meta") or {}).get("name") or "layout"
-    parts.append(f"Pattern: {name}")
-    if layout_yaml.get("structure"):
-        parts.append(str(layout_yaml["structure"]).strip())
-    rules = layout_yaml.get("rules") or []
-    if rules:
-        parts.append("Rules:\n" + "\n".join(f"  - {r}" for r in rules))
-    verified = layout_yaml.get("verified_example")
-    if verified:
-        snippet = _compress_example(str(verified).strip(), max_lines=_LAYOUT_EXAMPLE_MAX_LINES)
-        parts.append(
-            "Verified POM snippet (compiler-tested reference, not a blueprint):\n" + snippet
-        )
+    for key, heading in _HOUSE_STYLE_SECTIONS:
+        if key not in hs:
+            continue
+        parts.append(f"{heading}\n{_fmt_house_style_value(hs[key])}")
     return "\n\n".join(parts)
-
-
-# ── Example selection ────────────────────────────────────────────────────────
-
-def _select_example(kinds: list[str], compress: bool = True) -> str:
-    """Pick at most 1 example, compressed."""
-    for kind in kinds:
-        name = _KIND_TO_EXAMPLE.get(kind)
-        if name:
-            xml = _load_example(name)
-            if xml:
-                return _compress_example(xml) if compress else xml
-
-    xml = _load_example("minimal-slide.xml")
-    return _compress_example(xml) if compress and xml else xml
 
 
 # ── Forbidden lists ──────────────────────────────────────────────────────────
@@ -435,8 +350,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         theme_info: Resolved theme dict from style_resolver.resolve_theme().
 
     Returns a dict with: allowed_nodes, allowed_attributes, forbidden_tags,
-    forbidden_attributes, theme_element, theme_name, theme_mode, notes,
-    example, layout_pattern, density_tier.
+    forbidden_attributes, theme_element, theme_name, theme_mode, chart_colors,
+    notes, house_style, density_tier.
     """
     kinds = [c.get("kind", "") for c in slide_plan.get("components", [])]
     density = slide_plan.get("density", "normal")
@@ -459,18 +374,17 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     theme = theme_info
     notes = _select_notes(kinds, validation, text_yaml, component_yamls, theme)
 
-    compress = density != "tight_fit"
-    example = _select_example(kinds, compress=compress)
-
-    planner_pattern = slide_plan.get("layout_pattern", "")
-    layout_pattern = _select_layout(kinds, layout_pattern=planner_pattern)
-
     if density in ("sparse",):
         tier = "minimal"
     elif density in ("normal", "dense"):
         tier = "standard"
     else:
         tier = "dense"
+
+    # The full layout grammar goes to standard/dense tiers. Minimal (sparse /
+    # cover / section_break) slides fall back to the compact DESIGN LANGUAGE
+    # block in the generator prompt instead.
+    house_style = _render_house_style() if tier in ("standard", "dense") else ""
 
     return {
         "allowed_nodes": allowed_nodes,
@@ -482,8 +396,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "theme_mode": theme["mode"],
         "chart_colors": theme["chart_colors"],
         "notes": notes,
-        "example": example,
-        "layout_pattern": layout_pattern,
+        "house_style": house_style,
         "density_tier": tier,
     }
 

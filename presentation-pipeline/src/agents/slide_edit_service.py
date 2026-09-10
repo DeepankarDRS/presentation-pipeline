@@ -52,7 +52,7 @@ def _render_system_prompt(contract: dict[str, Any]) -> str:
         forbidden_attributes=contract.get("forbidden_attributes", []),
         allowed_nodes=contract.get("allowed_nodes", []),
         notes=contract.get("notes", []),
-        layout_pattern=contract.get("layout_pattern", ""),
+        house_style=contract.get("house_style", ""),
     )
 
 

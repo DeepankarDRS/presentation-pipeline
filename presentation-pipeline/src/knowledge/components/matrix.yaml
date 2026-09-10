@@ -48,8 +48,8 @@ MatrixItem_attributes:
 notes:
   - "Coordinate system is mathematical: (0,0) = bottom-left, (1,1) = top-right."
   - "MatrixAxes x and y are string labels, NOT numbers. MatrixItem x and y are 0-1 floats."
-  - "Matrix needs explicit w and h."
-  - "4-8 items work best. Too many items will overlap."
+  - "Matrix needs explicit w and h. w=\"max\" works for width; h must be a pixel number (>=200 so labels have room)."
+  - "4-6 items work best. Too many items will overlap."
   - "Common patterns: effort-impact, risk-likelihood, cost-value, urgency-importance."
 
 pitfalls:
@@ -57,3 +57,12 @@ pitfalls:
   - "Confusing MatrixAxes x/y (string labels) with MatrixItem x/y (float coordinates)."
   - "Missing w/h on Matrix — will not render correctly."
   - "Too many items clustered in one quadrant will cause label overlap."
+  - "VERIFIED v10.3.0 render: item labels are drawn beside the dot with NO
+     collision avoidance and NO leader lines. A label of 2+ words WRAPS to
+     multiple lines and then collides with any neighbour within ~0.2 on either
+     axis, and long labels also collide with the quadrant labels near the
+     edges. Rules that actually hold up in render: (a) 4 items is the safe max,
+     5 only if widely spread; (b) labels 1 word, or a very short 2-word phrase;
+     (c) no two items within 0.18 on BOTH axes; (d) Matrix h >= 200, and give
+     it at least ~520px width (don't put a Matrix in a column narrower than
+     ~50% of the slide). Put the detail in a caption below, not in labels."

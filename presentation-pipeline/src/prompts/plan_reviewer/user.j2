@@ -3,8 +3,9 @@ CORE HOOK: {{ core_hook }}
 DECK PLAN ({{ slide_plans | length }} slides):
 
 {% for plan in slide_plans %}
---- Slide {{ plan.slide_index + 1 }}: {{ plan.slide_type | upper }} | layout={{ plan.layout_pattern }} | density={{ plan.density }} ---
+--- Slide {{ plan.slide_index + 1 }}: {{ plan.slide_type | upper }} | density={{ plan.density }} ---
 Components: {{ plan.components | map(attribute='kind') | join(', ') }}
+Layout intent: {{ plan.layout_hint or '(none)' }}
 
 content_data:
 ```json

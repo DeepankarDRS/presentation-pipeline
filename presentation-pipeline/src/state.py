@@ -58,8 +58,7 @@ class SlidePlan(TypedDict, total=False):
     components: list[ComponentPlan]
     density: str       # sparse | normal | dense | tight_fit
     font_tier: str     # display | standard | compact | micro
-    layout_pattern: str  # canonical layout category for variety enforcement
-    layout_hint: str   # freeform NL: "KPIs across top, chart+table side by side"
+    layout_hint: str   # freeform layout INTENT (priority/relationships, not pixels)
     content_data: dict[str, Any]
     data_provenance: dict[str, str]  # key → "user" | "sample"
 

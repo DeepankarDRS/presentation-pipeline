@@ -22,11 +22,10 @@ card_recipe:
       borderTop.width="4" borderTop.color="$accent">
   rules:
     - Always use backgroundColor="$surfaceAlt" (never leave it transparent)
-    - Add borderRadius="12" for rounded corners
-    - "border.color=\"$border\" — this is a SUBTLE gray hairline, NOT the accent color"
-    - "borderTop.color=\"$accent\" — ONLY the top edge gets the bold accent stripe"
-    - "NEVER use border.color=\"$accent\" — that makes the whole card outlined in blue"
-    - Use grow="1" when cards sit in an HStack row so they fill evenly
+    - "border.color=\"$border\" — a SUBTLE gray hairline, NEVER the accent color"
+    - "Rounded card (borderRadius 12-16): use ONLY the border.color hairline. Do NOT add a borderTop/borderLeft accent stripe on a rounded card — the stripe wraps the corner and looks broken. Put the accent in the value text or a small Shape bar."
+    - "Accent-stripe card (borderTop.color=\"$accent\" borderTop.width=\"4\"): SQUARE only, no borderRadius."
+    - Equal-width sibling cards in an HStack each get w="max"
 
 accent_elements:
   accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />'
@@ -70,7 +69,7 @@ table_styling:
   - "Use cellBorder.color=$border cellBorder.width=1 on the Table element"
   - "Right-align numeric columns with textAlign=right"
   - "ALWAYS define <Col width=\"...\"> for every column — without Col widths, columns collapse and text runs together"
-  - "Column widths should sum to the usable slide width (1280 minus 2*root padding)"
+  - "Col widths should sum to roughly the Table's container width (its card / column), not the whole slide"
 
 bullet_list_styling:
   - "Each bullet point must be a SEPARATE <Text> element inside a <VStack gap=\"8\">"
@@ -78,9 +77,8 @@ bullet_list_styling:
   - "Prefix each bullet with a bullet character or dash: '• ' or '— '"
 
 chart_sizing:
-  - "Always set explicit w and h on every Chart element"
-  - "Account for axis labels: leave 40-60px margin so labels don't overflow the container"
-  - "In a two-column layout, chart width = column width minus padding (not the full column)"
+  - "Chart is w=\"max\" inside its column/card; set an explicit pixel h (never omit h)"
+  - "h = the band height minus the card padding and any card title (~28)"
 
 content_invention:
   - "When no data is supplied, invent realistic, specific figures — never use 'XX%' or 'TBD'"
@@ -91,10 +89,6 @@ content_invention:
   - "Deltas: show direction (+18% QoQ, -2.3 pts) with appropriate $positive/$negative color"
 
 design_principles:
-  - "Every slide needs a clear visual hierarchy: title → content → footnote"
   - "Use $surfaceAlt cards to group related content — never float raw text on the background"
-  - "Balance whitespace: padding and gaps should feel generous, not cramped"
-  - "Align elements: use HStack with grow=1 children for even distribution"
   - "One idea per slide — if content overflows, simplify rather than shrink fonts below 11"
-  - "Charts and tables should have explicit w and h sized to their container"
   - "Card borders: border.color=$border (subtle gray), borderTop.color=$accent (bold stripe). Never accent the full border."
