@@ -61,14 +61,14 @@ def _call_deck_repair_llm(
     return response.content
 
 
-def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> str:
+def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> tuple[str, int]:
     """Combine per-slide XML into one normalized multi-slide POM document.
 
     Extracts each <Slide> block, drops per-slide themes, concatenates under a
     single top-level <Theme>, then runs the same normalize + ensure_single_theme
     pass the per-slide validator uses — so br/hr, #-hex, spacing=, fontWeight=,
     and zero-spacing contamination that was auto-fixed per slide cannot reach
-    the deck compile. Returns "" if no <Slide> block is found.
+    the deck compile. Returns ("", 0) if no <Slide> block is found.
     """
     blocks: list[str] = []
     for xml in slide_xmls:
@@ -78,7 +78,7 @@ def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> str:
         else:
             logger.warning("assemble_deck_xml: slide had no <Slide> block — dropped")
     if not blocks:
-        return ""
+        return "", 0
 
     theme = (theme_element or "").strip()
     if not theme:
@@ -88,7 +88,7 @@ def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> str:
                 break
 
     combined = (theme + "\n" if theme else "") + "\n".join(blocks)
-    return ensure_single_theme(normalize_xml(combined)["cleaned_xml"], theme)
+    return ensure_single_theme(normalize_xml(combined)["cleaned_xml"], theme), len(blocks)
 
 
 def slide_router_node(state: PresentationState) -> dict[str, Any]:
@@ -102,10 +102,13 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
 
     logger.info(f"slide_router: saving slide {idx}, advancing to {idx + 1}")
 
+    compile_ok = bool((state.get("compile_result") or {}).get("ok"))
+
     completed = {
         "slide_index": idx,
         "xml": xml,
         "speaker_notes": state.get("speaker_notes", ""),
+        "compile_ok": compile_ok,
     }
 
     return {
@@ -151,23 +154,45 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
             },
         }
 
+    good_slides = [s for s in sorted_slides if s.get("compile_ok", True)]
+    excluded = [s for s in sorted_slides if not s.get("compile_ok", True)]
+    for s in excluded:
+        logger.warning(f"deck_assembler: excluding slide {s['slide_index']} (compile_ok=False)")
+
+    if not good_slides:
+        logger.error("deck_assembler: all slides failed compile — none to assemble")
+        return {
+            "excluded_slides": [s["slide_index"] for s in excluded],
+            "compile_result": {
+                "ok": False, "pptx_path": None,
+                "diagnostics": [{"type": "EMPTY", "message": "All slides failed compile"}],
+                "warnings": [], "retryable": False,
+            },
+        }
+
     # The pipeline owns the single top-level <Theme>. Prefer the resolved theme
     # from state; fall back to scraping a slide only if state has none.
     theme = (state.get("resolved_theme") or {}).get("element") or state.get("theme_element", "")
 
-    combined_xml = assemble_deck_xml([s["xml"] for s in sorted_slides], theme)
+    combined_xml, assembled_count = assemble_deck_xml([s["xml"] for s in good_slides], theme)
     if not combined_xml:
         logger.error("deck_assembler: no valid <Slide> blocks found")
         return {
+            "excluded_slides": [s["slide_index"] for s in excluded],
             "compile_result": {
                 "ok": False, "pptx_path": None,
                 "diagnostics": [{"type": "ASSEMBLY", "message": "No valid Slide blocks"}],
                 "warnings": [], "retryable": False,
             },
         }
+    if assembled_count < len(good_slides):
+        logger.warning(
+            f"deck_assembler: {len(good_slides) - assembled_count} slide(s) "
+            "had malformed XML and were dropped during block extraction"
+        )
     if not theme:
         theme = _extract_theme(combined_xml)
-    logger.info(f"deck_assembler: assembled {len(sorted_slides)} slides, {len(combined_xml)} chars")
+    logger.info(f"deck_assembler: assembled {assembled_count}/{len(sorted_slides)} slides, {len(combined_xml)} chars")
 
     run_id = state.get("run_id", "unknown")
     output_dir = _PIPELINE_ROOT / "output" / "runs" / run_id / "deck"
@@ -178,6 +203,7 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
         logger.error(f"deck_assembler: compile error: {exc}")
         return {
             "current_xml": combined_xml,
+            "excluded_slides": [s["slide_index"] for s in excluded],
             "compile_result": {
                 "ok": False, "pptx_path": None,
                 "diagnostics": [{"type": "HARNESS_ERROR", "message": str(exc)}],
@@ -222,4 +248,5 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
         "current_xml": working_xml,
         "compile_result": compile_result,
         "pptx_path": compile_result.get("pptx_path"),
+        "excluded_slides": [s["slide_index"] for s in excluded],
     }

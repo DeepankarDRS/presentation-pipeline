@@ -48,6 +48,11 @@ import { ApiService } from '../../services/api.service';
                   Quality Check: Review Recommended
                 </span>
               }
+              @if (gen.evaluationSummary()?.excluded_slides?.length) {
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                  {{ gen.evaluationSummary()!.excluded_slides!.length }} slide(s) excluded
+                </span>
+              }
             </div>
           </div>
         </div>

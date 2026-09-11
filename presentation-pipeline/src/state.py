@@ -188,6 +188,7 @@ class PresentationState(TypedDict, total=False):
     stall_detected: bool
 
     # ── Output ──
+    excluded_slides: list[int]
     evaluation: dict[str, Any] | None
     pptx_path: str | None
     passed: bool

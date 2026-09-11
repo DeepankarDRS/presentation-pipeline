@@ -81,6 +81,7 @@ export interface RunStatus {
 export interface EvaluationSummary {
   passed: boolean;
   compile_ok: boolean;
+  excluded_slides?: number[];
   tokens?: { total_in: number; total_out: number; total: number };
   cost?: { total_usd: number; models_used: string[] };
 }

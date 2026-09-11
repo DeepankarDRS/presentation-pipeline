@@ -174,7 +174,9 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
         critic_issues = critic_result.get("issues", [])
 
     compile_ok = compile_result.get("ok", False)
-    passed = compile_ok and critic_ok
+    excluded_slides = state.get("excluded_slides") or []
+    slides_complete = len(excluded_slides) == 0
+    passed = compile_ok and critic_ok and slides_complete
 
     total_tokens_in = sum(r.get("tokens_in", 0) for r in history)
     total_tokens_out = sum(r.get("tokens_out", 0) for r in history)
@@ -207,6 +209,8 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
         "passed": passed,
         "compile_ok": compile_ok,
         "critic_ok": critic_ok,
+        "slides_complete": slides_complete,
+        "excluded_slides": excluded_slides,
         "retry_count": state.get("retry_count", 0),
         "max_tier": state.get("retry_tier", 0),
         "stall_detected": state.get("stall_detected", False),

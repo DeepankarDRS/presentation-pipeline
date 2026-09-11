@@ -259,7 +259,7 @@ def _build_event(
         evaluation = accumulated.get("evaluation") or {}
         data["evaluation_summary"] = {
             k: evaluation[k]
-            for k in ("passed", "compile_ok", "tokens", "cost")
+            for k in ("passed", "compile_ok", "tokens", "cost", "excluded_slides")
             if k in evaluation
         }
         data["plan_review"] = accumulated.get("plan_review")
