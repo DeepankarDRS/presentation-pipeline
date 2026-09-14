@@ -1,0 +1,59 @@
+# COMPARISON TEST — Slide Designer Upgrade
+# Purpose: Generate this slide with the pipeline, then compare
+# the output XML against a hand-crafted reference XML (below).
+#
+# Run with your pipeline to get "system output", then compare
+# side-by-side with the "reference output" at the bottom.
+
+name: comparison-saas-executive-dashboard
+objective: >
+  A single executive slide that combines KPI tiles, a revenue trend chart,
+  and a segment breakdown table — testing whether the planner assigns
+  meaningful weight hierarchy (hero chart, supporting table, minor title)
+  and whether design_hints produce visual differentiation.
+
+request: >
+  Create a single executive dashboard slide for our Q3 FY26 board meeting.
+  Show these exact numbers:
+
+  Headline KPIs:
+  - ARR: $42.8M (+18% QoQ)
+  - Net Revenue Retention: 114% (+2 pts)
+  - Gross Margin: 72.1% (-1.4 pts)
+  - CAC Payback: 14 months (-2 months)
+
+  Revenue trend (quarterly):
+  - Q4 FY25: $28.4M
+  - Q1 FY26: $31.2M
+  - Q2 FY26: $36.1M
+  - Q3 FY26: $42.8M
+
+  Segment breakdown:
+  | Segment      | Revenue | QoQ Growth | % of ARR |
+  |-------------|---------|-----------|---------|
+  | Enterprise  | $28.1M  | +22%      | 65.7%   |
+  | Mid-Market  | $10.4M  | +14%      | 24.3%   |
+  | SMB         | $4.3M   | +8%       | 10.0%   |
+
+  The revenue chart should be the hero — the thing the board sees first.
+  KPIs across the top as a quick scorecard. The segment table is supporting
+  context. Color-code the KPI deltas: green for positive, amber/red for negative.
+  The chart should feel like the centerpiece with the trend line emphasized.
+
+theme: sky-minimal
+content_source: All data provided by user — ZERO invention needed.
+
+# ── Expected planner output ────────────────────────────────────────────────
+expect:
+  compiles: true
+  planner_should_pick: [title, kpi_row, chart, table]
+  weight_assignments:
+    title: minor
+    kpi_row: supporting or peer
+    chart: hero
+    table: supporting
+  design_hints_present: true
+  data_fidelity: All numbers must match request exactly
+  watch: >
+    hero chart gets 50-60% height; KPI deltas color-coded by direction;
+    table is compact supporting band; no invented data

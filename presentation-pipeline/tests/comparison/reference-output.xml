@@ -1,0 +1,87 @@
+<Theme surface="F5F9FD" surfaceAlt="FFFFFF" accent="0284C7" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="18202B" textMuted="54627A" border="E4EDF5" />
+<Slide><VStack w="1280" h="720" padding="40" gap="16" backgroundColor="$surface">
+
+  <!-- BAND 1: Title — weight=minor → ~10% of 720 ≈ 56px -->
+  <HStack w="max" justifyContent="spaceBetween" alignItems="center">
+    <VStack gap="2">
+      <Text fontSize="10" color="$accent" bold="true" letterSpacing="2">Q3 FY26 BOARD REVIEW</Text>
+      <Text fontSize="24" color="$textMain" bold="true">Executive Dashboard</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="90" h="24" fill.color="E0F2FE" color="$accent" fontSize="9" bold="true" borderRadius="999">LIVE DATA</Shape>
+  </HStack>
+
+  <!-- BAND 2: KPI Row — weight=supporting → ~25-30% ≈ 140px -->
+  <HStack w="max" h="130" gap="12" alignItems="stretch">
+    <VStack w="25%" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">ARR</Text>
+      <Text fontSize="22" color="$textMain" bold="true">$42.8M</Text>
+      <HStack gap="4" alignItems="center">
+        <Icon name="trending-up" w="12" h="12" color="$positive" />
+        <Text fontSize="11" color="$positive" bold="true">+18% QoQ</Text>
+      </HStack>
+    </VStack>
+    <VStack w="25%" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">Net Revenue Retention</Text>
+      <Text fontSize="22" color="$textMain" bold="true">114%</Text>
+      <HStack gap="4" alignItems="center">
+        <Icon name="trending-up" w="12" h="12" color="$positive" />
+        <Text fontSize="11" color="$positive" bold="true">+2 pts</Text>
+      </HStack>
+    </VStack>
+    <VStack w="25%" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">Gross Margin</Text>
+      <Text fontSize="22" color="$textMain" bold="true">72.1%</Text>
+      <HStack gap="4" alignItems="center">
+        <Icon name="trending-down" w="12" h="12" color="$negative" />
+        <Text fontSize="11" color="$negative" bold="true">-1.4 pts</Text>
+      </HStack>
+    </VStack>
+    <VStack w="25%" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">CAC Payback</Text>
+      <Text fontSize="22" color="$textMain" bold="true">14 months</Text>
+      <HStack gap="4" alignItems="center">
+        <Icon name="trending-up" w="12" h="12" color="$positive" />
+        <Text fontSize="11" color="$positive" bold="true">-2 months</Text>
+      </HStack>
+    </VStack>
+  </HStack>
+
+  <!-- BAND 3: Hero Chart + Supporting Table — chart weight=hero ~55%, table weight=supporting ~30% of remaining -->
+  <HStack w="max" h="370" gap="14" alignItems="stretch">
+
+    <!-- Hero: Revenue Trend Chart — 62% width, full band height -->
+    <VStack w="62%" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <HStack justifyContent="spaceBetween" alignItems="center">
+        <Text fontSize="13" color="$textMain" bold="true">Revenue Trend</Text>
+        <Shape shapeType="roundRect" w="80" h="22" fill.color="DBEAFE" color="$accent" fontSize="9" bold="true" borderRadius="8">+50.7% YTD</Shape>
+      </HStack>
+      <Chart w="max" h="280" chartType="bar" showLegend="false" chartColors='["0284C7"]'>
+        <ChartSeries name="Revenue">
+          <ChartDataPoint label="Q4 FY25" value="28.4" />
+          <ChartDataPoint label="Q1 FY26" value="31.2" />
+          <ChartDataPoint label="Q2 FY26" value="36.1" />
+          <ChartDataPoint label="Q3 FY26" value="42.8" />
+        </ChartSeries>
+      </Chart>
+      <Text fontSize="10" color="$accent" bold="true">Accelerating: each quarter stronger than prior</Text>
+    </VStack>
+
+    <!-- Supporting: Segment Breakdown Table — 38% width -->
+    <VStack w="38%" padding="16" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <Text fontSize="13" color="$textMain" bold="true">Segment Breakdown</Text>
+      <Table w="max" h="290" border.color="$border" border.width="1">
+        <Col width="130" /><Col width="110" /><Col width="100" /><Col width="110" />
+        <Tr><Td bold="true">Segment</Td><Td bold="true">Revenue</Td><Td bold="true">QoQ</Td><Td bold="true">% ARR</Td></Tr>
+        <Tr><Td>Enterprise</Td><Td bold="true">$28.1M</Td><Td color="$positive" bold="true">+22%</Td><Td>65.7%</Td></Tr>
+        <Tr><Td>Mid-Market</Td><Td bold="true">$10.4M</Td><Td color="$positive" bold="true">+14%</Td><Td>24.3%</Td></Tr>
+        <Tr><Td>SMB</Td><Td bold="true">$4.3M</Td><Td color="$positive" bold="true">+8%</Td><Td>10.0%</Td></Tr>
+      </Table>
+      <HStack gap="6" alignItems="center">
+        <Shape shapeType="ellipse" w="8" h="8" fill.color="$accent" />
+        <Text fontSize="10" color="$textMuted">Enterprise drives 65.7% of ARR</Text>
+      </HStack>
+    </VStack>
+
+  </HStack>
+
+</VStack></Slide>
