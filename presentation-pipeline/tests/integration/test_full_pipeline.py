@@ -131,12 +131,10 @@ def test_pipeline_with_hierarchical_planner(
         core_hook="Revenue grew 40% but margins are shrinking.",
         slides=[
             OSlide(
-                slide_index=0, slide_title="Key Metrics", slide_type="data",
+                slide_index=0, slide_title="Key Metrics",
                 section="Metrics", narrative_role="Establishes baseline.",
                 key_messages=["ARR $12M", "NRR 115%"],
-                data_anchors=["ARR: $12M", "NRR: 115%"],
-                layout_intent="4 KPI tiles in a row below the title",
-                suggested_components=["title", "kpi_row"],
+                visual_emphasis="dashboard of metrics",
             )
         ],
     )
@@ -147,12 +145,19 @@ def test_pipeline_with_hierarchical_planner(
     slide_output = PlannerSlide(
         slide_type="data",
         components=[
-            PlannerComponent(kind="title", count=1, content_summary="Key Metrics"),
-            PlannerComponent(kind="kpi_row", count=4, content_summary="ARR, NRR, Margin, CAC"),
+            PlannerComponent(
+                component_id="slide_title", kind="title", count=1,
+                content_summary="Key Metrics",
+                content_data_json='{"title": "Key Metrics"}',
+            ),
+            PlannerComponent(
+                component_id="kpi_metrics", kind="kpi_row", count=4,
+                content_summary="ARR, NRR, Margin, CAC",
+                content_data_json='{"kpi_labels": ["ARR", "NRR", "Margin", "CAC"]}',
+            ),
         ],
         density="normal", font_tier="standard",
         layout_hint="Title at top, 4 KPI tiles in row below",
-        content_data_json='{"title": "Key Metrics", "kpi_labels": ["ARR", "NRR", "Margin", "CAC"]}',
     )
     mock_slide_planner_llm.return_value = MagicMock()
     mock_slide_planner_llm.return_value.with_structured_output.return_value.invoke.return_value = slide_output

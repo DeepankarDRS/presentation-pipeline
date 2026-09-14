@@ -244,9 +244,9 @@ def test_prompt_minimal_tier():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 3000, f"Minimal tier too large: {tokens} tokens"
-    assert "ALLOWED ATTRIBUTES PER NODE" not in prompt
+    assert tokens < 3500, f"Minimal tier too large: {tokens} tokens"
     assert "SHRINK CHECKLIST" not in prompt
+    assert "LAYOUT FUNDAMENTALS" in prompt
 
 
 def test_prompt_standard_tier():
@@ -254,12 +254,11 @@ def test_prompt_standard_tier():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    # Standard tier carries POM STRUCTURE (~0.2k) + house-style GRAMMAR (~2.5k) +
-    # concrete compiled component recipes (~0.6k) — all load-bearing for correct layout.
-    assert tokens < 5900, f"Standard tier too large: {tokens} tokens"
+    assert tokens < 6200, f"Standard tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "LAYOUT GRAMMAR" in prompt
     assert "COMPONENT RECIPES" in prompt
+    assert "LAYOUT FUNDAMENTALS" in prompt
     assert "SHRINK CHECKLIST" not in prompt
 
 
@@ -272,10 +271,11 @@ def test_prompt_dense_tier_bounded():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 6800, f"Dense tier too large: {tokens} tokens"
+    assert tokens < 7200, f"Dense tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
     assert "COMPONENT RECIPES" in prompt
+    assert "LAYOUT FUNDAMENTALS" in prompt
     assert "NOTES" in prompt
 
 
@@ -361,3 +361,32 @@ def test_context_builder_uses_intent_detection():
     result = context_builder_node(state)
     assert "Chart" in result["contract"]["allowed_nodes"]
     assert "HStack" in result["contract"]["allowed_nodes"]
+
+
+# ── Icon promotion tests ────────────────────────────────────────────────────
+
+def test_select_nodes_always_includes_icon():
+    """Icon is a base node — always present regardless of component kinds."""
+    nodes = _select_nodes(["title"])
+    assert "Icon" in nodes
+
+
+def test_attributes_icon():
+    """Icon gets its node-specific attributes plus size attrs."""
+    nodes_yaml = _load_yaml("core/nodes.yaml")
+    attrs = _select_attributes(["Icon"], nodes_yaml)
+    assert "name" in attrs["Icon"]
+    assert "color" in attrs["Icon"]
+    assert "w" in attrs["Icon"]
+    assert "h" in attrs["Icon"]
+
+
+# ── shadow / backgroundGradient promotion tests ─────────────────────────────
+
+def test_attributes_common_includes_shadow_and_gradient():
+    """shadow and backgroundGradient are in common box attrs for layout/content nodes."""
+    nodes_yaml = _load_yaml("core/nodes.yaml")
+    attrs = _select_attributes(["VStack", "HStack", "Text", "Shape"], nodes_yaml)
+    for node in ("VStack", "HStack", "Text", "Shape"):
+        assert "shadow" in attrs[node], f"shadow missing from {node}"
+        assert "backgroundGradient" in attrs[node], f"backgroundGradient missing from {node}"

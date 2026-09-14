@@ -109,10 +109,6 @@ def test_tier2_passes_prior_plan_and_feedback_to_state(mock_plan_single_slide):
 
     # outline_slide preserves the original slide's key fields
     assert outline_slide_arg["slide_index"] == plan["slide_index"]
-    assert outline_slide_arg["slide_type"] == plan["slide_type"]
-    assert set(outline_slide_arg["suggested_components"]) == {
-        c["kind"] for c in plan["components"]
-    }
     # outline_plan is passed as kwarg and contains the outline slide
     assert "outline_plan" in kwargs
     assert kwargs["outline_plan"]["slides"] == [outline_slide_arg]

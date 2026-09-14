@@ -74,7 +74,7 @@ def test_route_after_start_preloaded_outline_fans_out():
             "slides": [
                 {"slide_index": 0, "slide_title": "Cover", "slide_type": "cover",
                  "section": "", "narrative_role": "", "key_messages": [],
-                 "data_anchors": [], "layout_intent": "", "suggested_components": ["title"]},
+                 "visual_emphasis": ""},
             ],
         },
     )

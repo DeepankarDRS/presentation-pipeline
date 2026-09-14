@@ -88,12 +88,13 @@ _KIND_TO_COMPONENT_FILE: dict[str, str] = {
     "pyramid":       "components/pyramid.yaml",
 }
 
-_BASE_NODES = ["Slide", "Theme", "VStack", "HStack", "Text", "Shape"]
+_BASE_NODES = ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Icon"]
 _INLINE_NODES = ["B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"]
 
 _COMMON_BOX_ATTRS = [
     "w", "h", "grow", "padding", "margin", "backgroundColor",
-    "borderRadius", "border.color", "border.width", "alignSelf",
+    "backgroundGradient", "borderRadius", "border.color", "border.width",
+    "alignSelf", "shadow",
 ]
 _STACK_ATTRS = ["gap", "alignItems", "justifyContent", "flexWrap"]
 
@@ -108,7 +109,7 @@ _NO_BOX_NODES = frozenset([
 ])
 
 _SIZE_ONLY_NODES = frozenset([
-    "Chart", "Ul", "Ol",
+    "Chart", "Ul", "Ol", "Icon",
     "Timeline", "Flow", "Matrix", "Tree",
     "ProcessArrow", "Pyramid",
 ])
