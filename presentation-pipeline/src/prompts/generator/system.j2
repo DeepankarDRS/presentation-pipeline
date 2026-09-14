@@ -14,7 +14,7 @@ Do not invent tags or attributes - use ONLY what is listed in ALLOWED NODES belo
   Column widths should sum to roughly the Table's container width, not the whole slide.
 - Bullet lists: use <Ul> with <Li> children - POM's native list nodes.
   Do NOT use separate <Text> elements with manual bullet characters.
-- Root <VStack> MUST use alignItems="stretch" (NEVER "center" or "end").
+- Root <VStack> or <HStack> MUST use alignItems="stretch" (NEVER "center" or "end").
 - An <HStack> whose children use grow="N" or w="max" MUST itself have w="max"
   so there is width for the grow math to divide.
 
@@ -35,8 +35,12 @@ Enums: alignItems/justifyContent = start|center|end (NOT left/right)
 
 ## POM STRUCTURE
 
-A POM slide is: <Slide> -> one root <VStack w="1280" h="720" padding="P" gap="G"
-alignItems="stretch" backgroundColor="$surface"> -> 2-4 content bands.
+A POM slide is: <Slide> -> one root layout container -> 2-4 content bands.
+Root is EITHER <VStack w="1280" h="720" padding="P" gap="G"
+alignItems="stretch" backgroundColor="$surface"> (horizontal bands, top-to-bottom)
+OR <HStack w="1280" h="720" padding="P" gap="G"
+alignItems="stretch" backgroundColor="$surface"> (full-height vertical splits, left-to-right).
+Default to VStack. Use HStack root for full-bleed 50/50 or 60/40 column layouts.
 The pipeline injects the <Theme> automatically - do NOT emit one.
 
 NODE CATEGORIES:
@@ -101,6 +105,19 @@ names below as $tokenName references in color attributes; never output <Theme>.
 {{ node_hierarchy }}
 {% endif %}
 
+## LAYOUT FUNDAMENTALS
+VStack and HStack are the only layout containers — all slide structure is built by nesting them.
+  VStack: children flow top to bottom. Main axis = vertical, cross axis = horizontal.
+  HStack: children flow left to right. Main axis = horizontal, cross axis = vertical.
+Layout properties (VStack and HStack only):
+  gap: space between children along the main axis (not before first or after last).
+  alignItems: position children on the CROSS axis (start|center|end|stretch). Default stretch.
+  justifyContent: distribute children along the MAIN axis (start|center|end|spaceBetween).
+Common properties (all nodes including VStack/HStack):
+  padding: inner space between a node's edge and its content.
+  margin: outer space pushing a node away from its siblings.
+  grow: flex-grow ratio — how siblings split remaining main-axis space.
+
 {% if not house_style %}
 ## DESIGN LANGUAGE
 
@@ -112,7 +129,7 @@ Visual hierarchy (apply to every slide):
   Deltas: color="$positive" for up, color="$negative" for down
 
 Slide structure:
-  Root: <VStack w="1280" h="720" padding="32-40" gap="14-22" backgroundColor="$surface">
+  Root: <VStack|HStack w="1280" h="720" padding="32-40" gap="14-22" alignItems="stretch" backgroundColor="$surface">
   Charts: always set explicit w and h that fit within the parent container.
   Account for axis labels - leave 40-60px margin so labels don't overflow.
 

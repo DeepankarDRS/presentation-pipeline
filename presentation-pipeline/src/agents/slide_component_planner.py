@@ -2,7 +2,8 @@
 
 Called once per slide via LangGraph Send() fan-out. Receives the rich
 OutlineSlide from the outline_planner and produces a full SlidePlan:
-components, layout_hint, density, font_tier, content_data.
+components (each with component_id + content_data), layout_hint, density,
+font_tier.
 
 Each slide gets its own focused LLM call with full attention budget.
 
@@ -60,8 +61,15 @@ def _planner_slide_to_state(
 ) -> SlidePlan:
     """Convert PlannerSlide Pydantic model to SlidePlan TypedDict."""
     components: list[ComponentPlan] = []
+    merged_content_data: dict[str, Any] = {}
+
     for c in slide.components:
-        comp = ComponentPlan(kind=c.kind, count=c.count, content_summary=c.content_summary)
+        comp = ComponentPlan(
+            component_id=c.component_id,
+            kind=c.kind,
+            count=c.count,
+            content_summary=c.content_summary,
+        )
         if c.chart_type:
             comp["chart_type"] = c.chart_type
         if c.series_count:
@@ -72,13 +80,23 @@ def _planner_slide_to_state(
             comp["rows"] = c.rows
         if c.items:
             comp["items"] = c.items
-        components.append(comp)
+        if c.orientation:
+            comp["orientation"] = c.orientation
+        if c.design_hint:
+            comp["design_hint"] = c.design_hint
 
-    try:
-        content_data = json.loads(slide.content_data_json) if slide.content_data_json else {}
-    except (json.JSONDecodeError, TypeError):
-        logger.warning("slide_component_planner: invalid content_data_json, using empty dict")
-        content_data = {}
+        try:
+            comp_data = json.loads(c.content_data_json) if c.content_data_json else {}
+        except (json.JSONDecodeError, TypeError):
+            logger.warning(
+                f"slide_component_planner: invalid content_data_json for "
+                f"component '{c.component_id}', using empty dict"
+            )
+            comp_data = {}
+
+        comp["content_data"] = comp_data
+        merged_content_data.update(comp_data)
+        components.append(comp)
 
     return SlidePlan(
         slide_index=idx,
@@ -88,8 +106,8 @@ def _planner_slide_to_state(
         density=slide.density,
         font_tier=slide.font_tier,
         layout_hint=slide.layout_hint,
-        content_data=content_data,
-        data_provenance=compute_provenance(content_data, supplied_content or {}),
+        content_data=merged_content_data,
+        data_provenance=compute_provenance(merged_content_data, supplied_content or {}),
     )
 
 
@@ -99,14 +117,15 @@ def _filter_supplied_content_for_slide(
     supplied_content: dict[str, Any] | None,
     slide: dict[str, Any],
 ) -> dict[str, Any]:
-    """Return subset of supplied_content relevant to this slide's data_anchors."""
+    """Return subset of supplied_content relevant to this slide's key_messages."""
     if not supplied_content:
         return {}
-    # Heuristic: include all keys that are mentioned in data_anchors text
-    anchors_text = " ".join(slide.get("data_anchors") or []).lower()
+    messages_text = " ".join(slide.get("key_messages") or []).lower()
     suggested = set()
     for key in supplied_content:
-        if key.lower() in anchors_text or any(part in anchors_text for part in key.lower().split("_")):
+        if key.lower() in messages_text or any(
+            part in messages_text for part in key.lower().split("_")
+        ):
             suggested.add(key)
     return {k: v for k, v in supplied_content.items() if k in suggested} if suggested else {}
 

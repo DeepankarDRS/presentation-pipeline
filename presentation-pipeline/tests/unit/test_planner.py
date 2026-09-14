@@ -26,13 +26,10 @@ def _mock_outline_output(
         slides.append(OutlineSlide(
             slide_index=kwargs.get("slide_index", i),
             slide_title=kwargs.get("slide_title", f"Slide {i+1}"),
-            slide_type=kwargs.get("slide_type", "content"),
             section=kwargs.get("section", ""),
             narrative_role=kwargs.get("narrative_role", ""),
             key_messages=kwargs.get("key_messages", ["Message 1"]),
-            data_anchors=kwargs.get("data_anchors", []),
-            layout_intent=kwargs.get("layout_intent", ""),
-            suggested_components=kwargs.get("suggested_components", ["title"]),
+            visual_emphasis=kwargs.get("visual_emphasis", ""),
         ))
     return OutlinePlannerOutput(deck_title=deck_title, core_hook=core_hook, slides=slides)
 
@@ -51,8 +48,8 @@ def test_planner_slide_to_state_basic():
     slide = PlannerSlide(
         slide_type="content",
         components=[
-            PlannerComponent(kind="title", count=1, content_summary="Main title"),
-            PlannerComponent(kind="narrative", count=1, content_summary="Body"),
+            PlannerComponent(component_id="main_title", kind="title", count=1, content_summary="Main title"),
+            PlannerComponent(component_id="body_text", kind="narrative", count=1, content_summary="Body"),
         ],
         density="normal",
         font_tier="standard",
@@ -65,6 +62,7 @@ def test_planner_slide_to_state_basic():
     assert result["font_tier"] == "standard"
     assert len(result["components"]) == 2
     assert result["components"][0]["kind"] == "title"
+    assert result["components"][0]["component_id"] == "main_title"
     assert result["components"][1]["content_summary"] == "Body"
 
 
@@ -73,6 +71,7 @@ def test_planner_slide_to_state_chart_fields():
         slide_type="data",
         components=[
             PlannerComponent(
+                component_id="revenue_chart",
                 kind="chart", count=6, chart_type="bar",
                 series_count=3, content_summary="Revenue by quarter"
             ),
@@ -87,6 +86,7 @@ def test_planner_slide_to_state_chart_fields():
     assert comp["chart_type"] == "bar"
     assert comp["series_count"] == 3
     assert comp["count"] == 6
+    assert comp["component_id"] == "revenue_chart"
 
 
 def test_planner_slide_to_state_table_fields():
@@ -94,6 +94,7 @@ def test_planner_slide_to_state_table_fields():
         slide_type="data",
         components=[
             PlannerComponent(
+                component_id="segment_table",
                 kind="table", count=1, columns=4, rows=3,
                 content_summary="Segment breakdown"
             ),
@@ -112,7 +113,7 @@ def test_planner_slide_to_state_omits_zero_fields():
     slide = PlannerSlide(
         slide_type="cover",
         components=[
-            PlannerComponent(kind="title", count=1),
+            PlannerComponent(component_id="hero_title", kind="title", count=1),
         ],
         density="sparse",
         font_tier="display",
@@ -125,12 +126,40 @@ def test_planner_slide_to_state_omits_zero_fields():
     assert "columns" not in comp
 
 
+def test_planner_slide_to_state_per_component_content_data():
+    """Each component's content_data_json is parsed into its own content_data dict."""
+    slide = PlannerSlide(
+        slide_type="data",
+        components=[
+            PlannerComponent(
+                component_id="kpi_metrics",
+                kind="kpi_row", count=3,
+                content_data_json='{"kpi_labels": ["ARR", "NRR"], "kpi_values": ["$42.8M", "114%"]}',
+            ),
+            PlannerComponent(
+                component_id="revenue_chart",
+                kind="chart", count=1, chart_type="bar",
+                content_data_json='{"chart_labels": ["Q1", "Q2"], "chart_values": [28.4, 31.2]}',
+            ),
+        ],
+        density="dense",
+        font_tier="compact",
+        layout_hint="KPIs on top, chart below",
+    )
+    result = _planner_slide_to_state(0, slide)
+    assert result["components"][0]["content_data"]["kpi_labels"] == ["ARR", "NRR"]
+    assert result["components"][1]["content_data"]["chart_labels"] == ["Q1", "Q2"]
+    # Slide-level content_data is merged from all components
+    assert "kpi_labels" in result["content_data"]
+    assert "chart_labels" in result["content_data"]
+
+
 # ── outline_planner_node tests (mocked LLM) ────────────────────────────────
 
 @patch("src.agents.outline_planner.get_llm")
 def test_outline_planner_single_slide(mock_get_llm):
     output = _mock_outline_output(
-        {"slide_type": "cover", "slide_title": "Company Overview", "key_messages": ["We are great"]},
+        {"slide_title": "Company Overview", "key_messages": ["We are great"]},
     )
     mock_get_llm.return_value = _make_structured_llm(output)
 
@@ -141,16 +170,15 @@ def test_outline_planner_single_slide(mock_get_llm):
     assert outline["deck_title"] == "Test Deck"
     assert outline["core_hook"] == "Test narrative anchor."
     assert len(outline["slides"]) == 1
-    assert outline["slides"][0]["slide_type"] == "cover"
     assert outline["slides"][0]["key_messages"] == ["We are great"]
 
 
 @patch("src.agents.outline_planner.get_llm")
 def test_outline_planner_multi_slide(mock_get_llm):
     output = _mock_outline_output(
-        {"slide_type": "cover", "slide_title": "Cover"},
-        {"slide_type": "content", "slide_title": "Problem", "key_messages": ["Market is broken"], "data_anchors": ["$50B opportunity"]},
-        {"slide_type": "data", "slide_title": "Metrics", "key_messages": ["ARR grew 140% YoY"], "data_anchors": ["ARR: $12M"]},
+        {"slide_title": "Cover", "key_messages": ["Welcome"]},
+        {"slide_title": "Problem", "key_messages": ["Market is broken — $50B opportunity untapped"]},
+        {"slide_title": "Metrics", "key_messages": ["ARR grew 140% YoY to $12M"]},
     )
     mock_get_llm.return_value = _make_structured_llm(output)
 
@@ -159,14 +187,14 @@ def test_outline_planner_multi_slide(mock_get_llm):
 
     outline = result["outline_plan"]
     assert len(outline["slides"]) == 3
-    assert outline["slides"][1]["data_anchors"] == ["$50B opportunity"]
-    assert outline["slides"][2]["key_messages"] == ["ARR grew 140% YoY"]
+    assert "50B" in outline["slides"][1]["key_messages"][0]
+    assert outline["slides"][2]["key_messages"] == ["ARR grew 140% YoY to $12M"]
 
 
 @patch("src.agents.outline_planner.get_llm")
 def test_outline_planner_with_deck_settings(mock_get_llm):
     output = _mock_outline_output(
-        {"slide_type": "cover", "slide_title": "Cover"},
+        {"slide_title": "Cover", "key_messages": ["Board update Q3"]},
     )
     mock_get_llm.return_value = _make_structured_llm(output)
 
@@ -183,7 +211,6 @@ def test_outline_planner_with_deck_settings(mock_get_llm):
     )
     result = outline_planner_node(state)
     assert "outline_plan" in result
-    assert result["outline_plan"]["slides"][0]["slide_type"] == "cover"
 
 
 # ── compute_provenance tests ───────────────────────────────────────────────
@@ -218,10 +245,13 @@ def test_compute_provenance_empty_content():
 def test_planner_slide_to_state_provenance_with_supplied():
     slide = PlannerSlide(
         slide_type="data",
-        components=[PlannerComponent(kind="title", count=1)],
+        components=[PlannerComponent(
+            component_id="slide_title",
+            kind="title", count=1,
+            content_data_json='{"title": "Q3 Metrics", "chart_data": [1, 2, 3]}',
+        )],
         density="normal", font_tier="standard",
         layout_hint="Title at top",
-        content_data_json='{"title": "Q3 Metrics", "chart_data": [1, 2, 3]}',
     )
     result = _planner_slide_to_state(0, slide, supplied_content={"title": "Q3 Metrics"})
     assert result["data_provenance"]["title"] == "user"
@@ -231,10 +261,13 @@ def test_planner_slide_to_state_provenance_with_supplied():
 def test_planner_slide_to_state_provenance_no_supplied():
     slide = PlannerSlide(
         slide_type="content",
-        components=[PlannerComponent(kind="title", count=1)],
+        components=[PlannerComponent(
+            component_id="slide_title",
+            kind="title", count=1,
+            content_data_json='{"title": "Generated Title"}',
+        )],
         density="normal", font_tier="standard",
         layout_hint="Title at top",
-        content_data_json='{"title": "Generated Title"}',
     )
     result = _planner_slide_to_state(0, slide)
     assert result["data_provenance"]["title"] == "sample"

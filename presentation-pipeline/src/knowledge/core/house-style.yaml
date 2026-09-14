@@ -15,16 +15,20 @@ meta:
 
 # --- the frame -------------------------------------------------------------
 frame: >
-  Root is ALWAYS <VStack w="1280" h="720" padding="P" gap="G"
-  alignItems="stretch" backgroundColor="$surface">. P = 32-40, G = 14-22. Nothing on the slide is
-  positioned in absolute pixels from the slide origin - everything is a child
-  of this VStack and flows. The root's fixed size is what makes every relative
-  size below resolve to real pixels.
+  Root is EITHER <VStack w="1280" h="720" padding="P" gap="G"
+  alignItems="stretch" backgroundColor="$surface"> (horizontal bands, top-to-
+  bottom) OR <HStack w="1280" h="720" padding="P" gap="G"
+  alignItems="stretch" backgroundColor="$surface"> (vertical splits, left-to-
+  right — use for full-bleed 50/50 or 60/40 layouts). P = 32-40, G = 14-22.
+  Nothing on the slide is positioned in absolute pixels from the slide origin —
+  everything is a child of this root stack and flows. The root's fixed size is
+  what makes every relative size below resolve to real pixels. DEFAULT to VStack
+  unless the layout intent calls for full-height vertical columns.
 
 # --- sizing vocabulary ---------------------------------------------------
 # How to size any box. Pick by INTENT, not habit.
 vocabulary:
-  'w="1280" h="720"': 'the root VStack only. Never on a child.'
+  'w="1280" h="720"': 'the root VStack or HStack only. Never on a child.'
   'w="max"': >
     flexGrow:1 - take an equal share of the parent's remaining main-axis space.
     The DEFAULT for anything that should stretch: content bands, equal-weight
@@ -68,6 +72,12 @@ composition: >
 
   Vary the division band-to-band so the slide has rhythm - don't stack three
   identical 50/50 splits.
+
+  HStack ROOT (full-bleed vertical splits): when the layout calls for full-
+  height columns (hero left + content right, or 50/50 comparison), use an
+  HStack root. Each direct child is a full-height <VStack> column.
+  Divide widths with w="62%"/w="38%" or w="max" for equal columns.
+  Inside each column, stack content bands vertically with their own gaps.
 
 header_band: >
   <HStack w="max" justifyContent="spaceBetween" alignItems="start">: left a
@@ -197,7 +207,7 @@ render_gotchas:
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:
-  - "Root VStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
+  - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
   - "2-4 bands, each w=\"max\"; the divisions differ band-to-band."
   - "Every CONTENT band has an explicit h=; header band is auto."
   - "I ADDED UP header_h + every band h + every gap + 2*padding and the total

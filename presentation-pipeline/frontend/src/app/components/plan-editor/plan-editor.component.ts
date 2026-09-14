@@ -4,35 +4,25 @@ import { GenerationService } from '../../services/generation.service';
 import { ApiService } from '../../services/api.service';
 import { OutlineSlide } from '../../models/api.models';
 
-const SLIDE_TYPE_COLORS: Record<string, string> = {
-  cover: 'bg-purple-100 text-purple-700',
-  content: 'bg-blue-100 text-blue-700',
-  data: 'bg-green-100 text-green-700',
-  section_break: 'bg-yellow-100 text-yellow-700',
-  closing: 'bg-gray-100 text-gray-700',
-};
 
 function emptyOutlineSlide(index: number): OutlineSlide {
   return {
     slide_index: index,
     slide_title: '',
-    slide_type: 'content',
     section: '',
     narrative_role: '',
     key_messages: [],
-    data_anchors: [],
-    layout_intent: '',
-    suggested_components: ['title'],
+    visual_emphasis: '',
   };
 }
 
 /**
  * Narrative-only outline review — deck title, core hook, and per-slide
  * title + key messages. Deliberately hides section/narrative_role/
- * layout_intent/suggested_components/data_anchors: those still travel on
- * each OutlineSlide and still reach slide_component_planner untouched,
- * they're just implementation detail a reviewer shouldn't have to read
- * through to judge whether the outline actually covers the core hook.
+ * visual_emphasis: those still travel on each OutlineSlide and still reach
+ * slide_component_planner untouched — they're implementation detail a
+ * reviewer shouldn't have to read through to judge whether the outline
+ * actually covers the core hook.
  */
 @Component({
   selector: 'app-plan-editor',
@@ -81,11 +71,6 @@ function emptyOutlineSlide(index: number): OutlineSlide {
             <div class="flex items-start gap-3 mb-3">
               <span class="text-sm font-medium text-gray-400 w-6 pt-1.5">{{ i + 1 }}</span>
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="text-xs font-medium px-2 py-0.5 rounded-full {{ slideTypeColor(slide.slide_type) }}">
-                    {{ slide.slide_type }}
-                  </span>
-                </div>
                 <input
                   type="text"
                   class="w-full font-medium text-gray-900 border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 px-0 py-1 text-sm focus:outline-none"
@@ -210,10 +195,6 @@ export class PlanEditorComponent {
         this.slides.set(structuredClone(outline.slides));
       }
     });
-  }
-
-  slideTypeColor(type: string): string {
-    return SLIDE_TYPE_COLORS[type] ?? 'bg-gray-100 text-gray-700';
   }
 
   isValid(): boolean {

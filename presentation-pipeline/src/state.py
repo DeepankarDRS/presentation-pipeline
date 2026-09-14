@@ -22,7 +22,6 @@ class OutlineSlide(TypedDict, total=False):
     section: str
     narrative_role: str
     key_messages: list[str]
-    data_anchors: list[str]
     visual_emphasis: str
 
 
@@ -40,6 +39,7 @@ class PlanReview(TypedDict, total=False):
 
 
 class ComponentPlan(TypedDict, total=False):
+    component_id: str
     kind: str
     count: int
     chart_type: str
@@ -48,6 +48,9 @@ class ComponentPlan(TypedDict, total=False):
     rows: int
     items: int
     content_summary: str
+    content_data: dict[str, Any]
+    orientation: str
+    design_hint: str
 
 
 class SlidePlan(TypedDict, total=False):

@@ -80,6 +80,7 @@ class GenerateRequest(BaseModel):
 
 
 class ComponentPlanPayload(BaseModel):
+    component_id: str = ""
     kind: str
     count: int = 1
     chart_type: str = ""
@@ -88,6 +89,9 @@ class ComponentPlanPayload(BaseModel):
     rows: int = 0
     items: int = 0
     content_summary: str = ""
+    content_data: dict[str, Any] = Field(default_factory=dict)
+    orientation: str = ""
+    design_hint: str = ""
 
 
 class SlidePlanPayload(BaseModel):
@@ -98,7 +102,6 @@ class SlidePlanPayload(BaseModel):
     font_tier: str = "standard"
     layout_pattern: str = ""  # deprecated, ignored - kept so old clients don't 422
     layout_hint: str = ""
-    content_data: dict[str, Any] = Field(default_factory=dict)
 
 
 class GenerateFromPlanRequest(BaseModel):
@@ -465,8 +468,11 @@ def _payload_to_slide_plans(
     result: list[SlidePlan] = []
     for i, s in enumerate(slides):
         components: list[ComponentPlan] = []
+        merged_content_data: dict[str, Any] = {}
         for c in s.components:
             comp = ComponentPlan(kind=c.kind, count=c.count, content_summary=c.content_summary)
+            if c.component_id:
+                comp["component_id"] = c.component_id
             if c.chart_type:
                 comp["chart_type"] = c.chart_type
             if c.series_count:
@@ -477,6 +483,12 @@ def _payload_to_slide_plans(
                 comp["rows"] = c.rows
             if c.items:
                 comp["items"] = c.items
+            if c.orientation:
+                comp["orientation"] = c.orientation
+            if c.design_hint:
+                comp["design_hint"] = c.design_hint
+            comp["content_data"] = c.content_data
+            merged_content_data.update(c.content_data)
             components.append(comp)
 
         result.append(SlidePlan(
@@ -486,8 +498,8 @@ def _payload_to_slide_plans(
             density=s.density,
             font_tier=s.font_tier,
             layout_hint=s.layout_hint,
-            content_data=s.content_data,
-            data_provenance=compute_provenance(s.content_data, supplied_content or {}),
+            content_data=merged_content_data,
+            data_provenance=compute_provenance(merged_content_data, supplied_content or {}),
         ))
     return result
 

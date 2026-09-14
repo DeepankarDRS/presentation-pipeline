@@ -2,7 +2,10 @@
 
 Takes the enriched request (raw_request + deck_settings + elicitation_answers +
 supplied_content) and produces a rich per-slide outline: slide_title, section,
-narrative_role, key_messages, data_anchors, visual_emphasis.
+narrative_role, key_messages, visual_emphasis.
+
+key_messages is the absolute source of truth — every message carries semantic
+intent that the slide component planner routes to the right component type.
 
 Does NOT produce slide_type, component lists, density values, or content_data
 JSON. Those are the slide_component_planner's job.

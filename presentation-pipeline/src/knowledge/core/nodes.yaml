@@ -12,7 +12,7 @@ meta:
   pom_version: "10.3.0"
 
 phase_a_allowlist: [Slide, Theme, VStack, HStack, Text, B, I, Span, Mark, Shape]
-phase_b_allowlist: [Chart, ChartSeries, ChartDataPoint, Ul, Ol, Li]   # + Phase A
+phase_b_allowlist: [Chart, ChartSeries, ChartDataPoint, Ul, Ol, Li, Icon]   # + Phase A
 phase_c_allowlist: [Table, Col, Tr, Td]                               # + Phase A + B
 phase_d_allowlist: [Layer, Line, Arrow, Svg, A, U, S, Sub, Sup, Timeline, TimelineItem, Flow, FlowNode, FlowConnection]   # + Phase A + B + C
 post_mvp_allowlist: [Matrix, MatrixAxes, MatrixQuadrants, MatrixItem, Tree, TreeItem, ProcessArrow, ProcessArrowStep, Pyramid, PyramidLevel]   # + all prior phases
@@ -144,6 +144,12 @@ phase_b:
   Ul: { description: "Bullet list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight], children: [Li] }
   Ol: { description: "Numbered list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight, numberType, numberStartAt], children: [Li] }
   Li: { description: "List item. May contain inline tags.", node_attributes: [bold, italic, strike, subscript, superscript, underline, highlight, color, fontSize, fontFamily], children: [B, I, A, U, S, Sub, Sup, Span, Mark] }
+  Icon:
+    description: "Named icon (Lucide set). Self-closing leaf."
+    node_attributes: [name, color, w, h, rotate]
+    required: [name]
+    children: none
+    defaults: { w: 24, h: 24 }
 
 # ── Phase C nodes (table) ───────────────────────────────────────────────────
 # Full reference: components/table.yaml.
@@ -284,4 +290,4 @@ post_mvp:
 
 # ── Still deferred (NOT in the prompt yet) ───────────────────────────────
 deferred:
-  phase_b_more: [Image, Icon]
+  phase_b_more: [Image]

@@ -18,21 +18,12 @@ Section: {{ slide.section or '(none)' }}
 Narrative role:
 {{ slide.narrative_role }}
 
-Key messages (MUST appear in content_data - use verbatim or near-verbatim):
+Key messages (the ABSOLUTE source of truth — route each to the right component and extract data VERBATIM into content_data_json):
 {% for msg in slide.key_messages %}
 {{ loop.index }}. {{ msg }}
 {% endfor %}
 
-Data anchors (use these exact values in content_data numeric/data fields):
-{% if slide.data_anchors %}
-{% for anchor in slide.data_anchors %}
-- {{ anchor }}
-{% endfor %}
-{% else %}
-(none - this is a qualitative slide)
-{% endif %}
-
-Visual emphasis:
+Visual emphasis (conceptual focus, not spatial layout):
 {{ slide.visual_emphasis or '(none)' }}
 {% if supplied_content_for_slide %}
 
@@ -42,4 +33,4 @@ SUPPLIED CONTENT FOR THIS SLIDE (use VERBATIM in content_data):
 ```
 {% endif %}
 
-Plan this one slide completely. Populate ALL content_data keys with specific, realistic values derived directly from the key_messages and data_anchors above. Do not use placeholders.
+Plan this one slide completely. For EACH component, assign a unique component_id and populate its content_data_json with specific values extracted directly from the key_messages above. Do not merge data across components. Do not use placeholders.

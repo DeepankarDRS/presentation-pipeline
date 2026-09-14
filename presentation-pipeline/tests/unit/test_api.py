@@ -60,9 +60,9 @@ def _make_outline_llm():
         core_hook="Test hook.",
         slides=[
             OutlineSlide(
-                slide_index=0, slide_title="Title Slide", slide_type="cover",
+                slide_index=0, slide_title="Title Slide",
                 section="", narrative_role="", key_messages=["Hello"],
-                data_anchors=[], layout_intent="", suggested_components=["title"],
+                visual_emphasis="",
             )
         ],
     )
@@ -74,9 +74,8 @@ def _make_outline_llm():
 def _make_slide_component_llm():
     out = PlannerSlide(
         slide_type="cover",
-        components=[PlannerComponent(kind="title", count=1, content_summary="Title")],
+        components=[PlannerComponent(component_id="hero_title", kind="title", count=1, content_summary="Title")],
         density="sparse", font_tier="display",
-        layout_pattern="hero_statement",
         layout_hint="Centered title",
     )
     llm = MagicMock()
@@ -354,9 +353,9 @@ def test_refine_plan_returns_revised_plan(mock_outline_llm):
         core_hook="Test presentation hook.",
         slides=[
             OutlineSlide(
-                slide_index=0, slide_title="Cover", slide_type="cover",
+                slide_index=0, slide_title="Cover",
                 section="", narrative_role="", key_messages=["Hello"],
-                data_anchors=[], layout_intent="", suggested_components=["title"],
+                visual_emphasis="",
             )
         ],
     )
@@ -377,9 +376,9 @@ def test_refine_plan_passes_feedback_to_planner(mock_outline_llm):
         deck_title="Revised", core_hook="Hook.",
         slides=[
             OutlineSlide(
-                slide_index=0, slide_title="Cover", slide_type="cover",
+                slide_index=0, slide_title="Cover",
                 section="", narrative_role="", key_messages=["Msg"],
-                data_anchors=[], layout_intent="", suggested_components=[],
+                visual_emphasis="",
             )
         ],
     )

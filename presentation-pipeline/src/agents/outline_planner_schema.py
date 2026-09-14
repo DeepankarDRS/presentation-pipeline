@@ -1,8 +1,8 @@
 """Pydantic models for the outline planner's structured output.
 
-The outline planner produces a rich per-slide skeleton (key_messages, data_anchors,
-narrative_role, visual_emphasis) but NOT slide_type, component-level details, or
-content_data JSON. Those are the slide_component_planner's job.
+The outline planner produces a rich per-slide skeleton (key_messages,
+narrative_role, visual_emphasis) but NOT slide_type, component-level details,
+or content_data JSON. Those are the slide_component_planner's job.
 """
 
 from __future__ import annotations
@@ -32,30 +32,48 @@ class OutlineSlide(BaseModel):
 
     key_messages: list[str] = Field(
         min_length=1,
-        description="2–4 specific, concrete statements this slide must land. These become "
-                    "bullets, KPI labels, or narrative paragraphs in the final slide. "
-                    "MUST be specific and falsifiable — not vague summaries. "
-                    "BAD: 'Shows strong growth.' "
-                    "GOOD: 'Revenue grew 40% YoY to $42.8M in FY2025.' "
-                    "Use supplied data verbatim when available; otherwise invent a plausible "
-                    "concrete number. Never write literal placeholder syntax like '[estimate]' "
-                    "or '[TBD]' here — that tag belongs only in data_anchors. Do not restate "
-                    "a data_anchor verbatim; write the full sentence it supports instead.",
-    )
-
-    data_anchors: list[str] = Field(
-        default_factory=list,
-        description="Specific numbers, facts, or named comparisons to feature prominently. "
-                    "Source directly from supplied_content when available; otherwise mark with "
-                    "'[estimate]' suffix. E.g. ['$42.8M ARR (+40% YoY)', 'CAC $3,200 (+18% QoQ)']."
-                    "Empty list is fine for purely qualitative slides.",
+        description="The ABSOLUTE source of truth for this slide's content. Every "
+                    "message must be specific and data-dense — a concrete claim the "
+                    "slide component planner can route directly to the right component "
+                    "(KPI tile, chart series, table row, bullet, or narrative paragraph).\n"
+                    "\n"
+                    "Each key_message carries SEMANTIC intent — it is NOT just text for "
+                    "a bullet list. The slide component planner reads the shape of the "
+                    "message to decide which component type fits:\n"
+                    "  • A standalone metric → KPI tile: 'ARR reached $42.8M (+18% QoQ)'\n"
+                    "  • A time-series or comparison → chart: 'Revenue by quarter: "
+                    "Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M'\n"
+                    "  • A multi-column record set → table: 'Enterprise $28.1M +22% | "
+                    "Mid-Market $10.4M +14% | SMB $4.3M +8%'\n"
+                    "  • A qualitative insight → narrative or bullet: 'Self-serve "
+                    "onboarding could cut CAC payback from 14 to 10 months'\n"
+                    "\n"
+                    "Rules:\n"
+                    "  - MUST be specific and falsifiable — not vague summaries.\n"
+                    "    BAD: 'Shows strong growth.'\n"
+                    "    GOOD: 'Revenue grew 40% YoY to $42.8M in FY2025.'\n"
+                    "  - Use supplied data VERBATIM when available.\n"
+                    "  - When no data is supplied: invent a plausible concrete number. "
+                    "Never write placeholder syntax like '[estimate]', '[TBD]', or "
+                    "'[value]'.\n"
+                    "  - For dashboard/metrics slides: provide 4-6 quantitative messages "
+                    "(one per metric tile or data point).\n"
+                    "  - Count per slide is governed by amount_of_text setting:\n"
+                    "    minimal → 1, concise → 2, detailed → 3-4, extensive → 4-6\n"
+                    "  - Hero/intro slides: 1-2 messages max regardless of setting.",
     )
 
     visual_emphasis: str = Field(
-        description="One short phrase describing the slide's visual weight — NOT a layout. "
-                    "Examples: 'side-by-side comparison', 'one dominant number', "
-                    "'timeline progression', 'data table with callout'. The slide component "
-                    "planner uses this to pick components and density."
+        description="One short phrase describing the slide's conceptual focus — "
+                    "NOT a spatial layout.\n"
+                    "\n"
+                    "Do NOT dictate spatial layouts (e.g. 'left column', 'top row', "
+                    "'right panel'). Provide only the conceptual focus.\n"
+                    "\n"
+                    "GOOD: 'dashboard of metrics', 'timeline progression', "
+                    "'side-by-side comparison', 'one dominant number', "
+                    "'data table with callout'\n"
+                    "BAD: 'KPI row on top, chart in the left column, table on the right'"
     )
 
 

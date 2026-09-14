@@ -114,13 +114,10 @@ export interface ElicitResponse {
 export interface OutlineSlide {
   slide_index: number;
   slide_title: string;
-  slide_type: SlideType;
   section: string;
   narrative_role: string;
   key_messages: string[];
-  data_anchors: string[];
-  layout_intent: string;
-  suggested_components: string[];
+  visual_emphasis: string;
 }
 
 export interface OutlinePlan {

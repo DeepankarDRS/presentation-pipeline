@@ -10,10 +10,16 @@ OBJECTIVE: {{ objective }}
 SLIDE TYPE: {{ slide_type }}
 {% endif %}
 
-COMPONENTS (put every one on the slide):
+COMPONENTS (put every one on the slide — each carries its own data):
 {% for comp in components %}
-- {{ comp.kind }}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
+- {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
 
+{% if comp.content_data %}
+  Data for {{ comp.component_id or comp.kind }}:
+  {% for key, value in comp.content_data.items() %}
+  {{ key }}: {{ value }}
+  {% endfor %}
+{% endif %}
 {% endfor %}
 DENSITY: {{ density }} | FONT TIER: {{ font_tier }}
 {% if layout_hint %}
@@ -32,7 +38,7 @@ SUPPLIED CONTENT (use these values EXACTLY, verbatim):
 {% endfor %}
 {% elif content_data %}
 
-DATA (use these values directly in the XML):
+SLIDE-LEVEL DATA (fallback — use per-component data above when available):
 {% for key, value in content_data.items() %}
 {{ key }}: {{ value }}
 {% endfor %}
