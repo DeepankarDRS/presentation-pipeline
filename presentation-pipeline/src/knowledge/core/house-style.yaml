@@ -92,8 +92,10 @@ header_band: >
 # cards). It compiles clean. So the budget must come in UNDER 720, not over.
 height_budget: |
   1. Header band: no h (auto, ~80-96). Every CONTENT band gets an explicit h.
-  2. Pick each band's h from what its content needs (sizes below), NOT from
-     "whatever is left over".
+  2. Compute available_h = 720 - 2*padding - header_h - (N_bands-1)*gap.
+     If the component list carries height-weight tags, use WEIGHT ALLOCATION
+     below to divide available_h. Otherwise pick each band's h from what its
+     content needs (sizes below).
   3. Add it ALL up: header_h + every band h + every gap + 2*padding.
      - total <= ~700  -> good.
      - total > 720    -> the slide WILL overlap. Cut a band, shrink the chart,
@@ -111,15 +113,16 @@ worked_example: |
   Chart inside the 288 card (padding 18, ~28 title): h = 288 - 36 - 28 = 224.
 
 weight_allocation: |
-  Components carry a weight tag (hero/peer/supporting/minor) from the planner.
+  Components may carry a height-weight tag (hero/peer/supporting/minor).
   Use it to divide available_h (after header, padding, gaps are subtracted):
     hero:       50-60% of available_h. Max one per slide. THE thing to see.
     peer:       equal share of what remains after hero/supporting/minor.
     supporting: 25-35%. Secondary context beside a hero.
     minor:      10-15%. Accent, caption, footnote.
   When no hero exists, peers split evenly: available_h / N.
-  design_hint per component guides visual treatment WITHIN the band (emphasis,
-  gradient, highlight) — not the band's height.
+  height-weight is NOT a POM attribute — never put it in XML tags.
+  visual-intent per component guides look-and-feel WITHIN the band (emphasis,
+  gradient, highlight) — not the band's height. It is also NOT a POM attribute.
 
 # --- rigid nodes (verified v10.3.0 render behaviour) -------------------
 rigid_nodes: >
