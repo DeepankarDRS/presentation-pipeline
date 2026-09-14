@@ -1,0 +1,26 @@
+# Enterprise test case: Project status update
+# Mixed data — some supplied, some invented. Tests timeline + bullets + KPIs.
+name: project-status
+phase: AB
+objective: Give stakeholders a quick project status with milestones, health metrics, and key risks.
+request: >
+  A project status slide for "Project Atlas" migration. Bold title with accent
+  bar. Below it, three KPI tiles showing Sprint Velocity, Burn Rate, and
+  Completion %. Below the KPIs, two columns: left a horizontal timeline of five
+  milestones from kickoff to go-live, right a bullet list of top risks and
+  blockers. Keep the layout clean and balanced on 1280x720.
+theme: teal-slate
+components:
+  - title
+  - kpi_row
+  - timeline
+  - bullet_list
+supplied_content:
+  title: "Project Atlas — Status Update"
+  kpi_labels: [Sprint Velocity, Monthly Burn Rate, Completion]
+  timeline_dates: [Jan 2025, Mar 2025, Jun 2025, Sep 2025, Dec 2025]
+  timeline_labels: [Kickoff, Design Complete, Alpha Release, Beta Launch, Go-Live]
+content_source: Title, KPI labels, and timeline milestones supplied; KPI values, deltas, and risk bullets invented
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Span, Shape, Timeline, TimelineItem, Ul, Li]

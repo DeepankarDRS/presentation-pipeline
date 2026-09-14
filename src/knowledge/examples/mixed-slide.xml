@@ -1,0 +1,65 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="20" backgroundColor="$surface" alignItems="start">
+    <Text fontSize="34" bold="true" color="$textMain">Q3 FY26 — Executive Summary</Text>
+    <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
+    <HStack w="1168" h="132" gap="24" justifyContent="spaceBetween">
+      <VStack grow="1" h="132" padding="20" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.width="1" border.color="$border" borderTop.width="4" borderTop.color="$accent" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">ARR</Text>
+        <Text fontSize="34" bold="true" color="$textMain">$42.8<Span fontSize="18">M</Span></Text>
+        <Text fontSize="13" color="$positive">+18% QoQ</Text>
+      </VStack>
+      <VStack grow="1" h="132" padding="20" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.width="1" border.color="$border" borderTop.width="4" borderTop.color="$accent" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">NRR</Text>
+        <Text fontSize="34" bold="true" color="$textMain">114<Span fontSize="18">%</Span></Text>
+        <Text fontSize="13" color="$positive">+3 pts QoQ</Text>
+      </VStack>
+      <VStack grow="1" h="132" padding="20" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.width="1" border.color="$border" borderTop.width="4" borderTop.color="$accent" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">Gross Margin</Text>
+        <Text fontSize="34" bold="true" color="$textMain">78<Span fontSize="18">%</Span></Text>
+        <Text fontSize="13" color="$textMuted">Flat QoQ</Text>
+      </VStack>
+    </HStack>
+    <HStack w="1168" h="336" gap="24" alignItems="start">
+      <VStack w="572" h="336" gap="8">
+        <Text fontSize="14" color="$textMuted">Revenue by quarter ($M)</Text>
+        <Chart chartType="bar" w="572" h="304" showLegend="false" chartColors='["2563EB"]'>
+          <ChartSeries name="Revenue">
+            <ChartDataPoint label="Q4 FY25" value="34.9" />
+            <ChartDataPoint label="Q1 FY26" value="37.1" />
+            <ChartDataPoint label="Q2 FY26" value="40.3" />
+            <ChartDataPoint label="Q3 FY26" value="42.8" />
+          </ChartSeries>
+        </Chart>
+      </VStack>
+      <VStack w="572" h="336" gap="8">
+        <Text fontSize="14" color="$textMuted">Top segments</Text>
+        <Table defaultRowHeight="48" cellBorder.color="$border" cellBorder.width="1">
+          <Col width="252" />
+          <Col width="160" />
+          <Col width="160" />
+          <Tr>
+            <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Segment</Td>
+            <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Revenue</Td>
+            <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">QoQ</Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="$surface" color="$textMuted">Enterprise</Td>
+            <Td backgroundColor="$surface" color="$textMain" textAlign="right">$24.9M</Td>
+            <Td backgroundColor="$surface" color="$positive" textAlign="right">+21%</Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="$surface" color="$textMuted">Mid-Market</Td>
+            <Td backgroundColor="$surface" color="$textMain" textAlign="right">$11.3M</Td>
+            <Td backgroundColor="$surface" color="$positive" textAlign="right">+14%</Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="$surface" color="$textMuted">SMB</Td>
+            <Td backgroundColor="$surface" color="$textMain" textAlign="right">$4.4M</Td>
+            <Td backgroundColor="$surface" color="$positive" textAlign="right">+6%</Td>
+          </Tr>
+        </Table>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

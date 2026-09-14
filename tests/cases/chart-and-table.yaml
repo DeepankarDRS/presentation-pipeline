@@ -1,0 +1,23 @@
+# Phase 5 test case #8. Consumed by slide_ir.from_test_case().
+# NOTE: needs Phase B (Chart) AND Phase C (Table) nodes.
+name: chart-and-table
+phase: BC
+objective: Show a metric's trajectory next to the numbers behind it.
+request: >
+  A two-column slide with a bold title. Left column: a bar chart of new bookings
+  by quarter for the last four quarters. Right column: a table with the same four
+  quarters as rows and columns for Bookings, Win Rate, and Average Deal Size.
+  Keep the two columns visually balanced.
+theme: corporate-slate
+components:
+  - title
+  - chart
+  - table
+supplied_content:
+  chart_type: bar
+  quarters: [Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]
+  table_columns: [Quarter, Bookings, Win Rate, Avg Deal Size]
+content_source: Quarters and headers supplied; all figures invented and consistent between chart and table
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Chart, ChartSeries, ChartDataPoint, Table, Col, Tr, Td]

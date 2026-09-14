@@ -1,0 +1,56 @@
+# Mixed test case: process arrow + timeline + table on one slide.
+name: mixed-process-timeline-table
+phase: post-mvp
+objective: Show a product launch plan with a process arrow for phases, a timeline for milestones, and a table for the RACI matrix.
+request: >
+  A dense project-planning slide. Title "Product Launch Plan — Project Atlas".
+  Three visual sections stacked vertically:
+
+  1) Top: a horizontal process arrow with 5 phases (Discovery, Design, Build,
+     Beta, Launch) in a blue gradient. Bold white labels.
+
+  2) Middle: a horizontal timeline with 6 key milestones spanning Jan–Jun 2027.
+     Each milestone has a date and short title. Use accent colors that
+     complement the process arrows above.
+
+  3) Bottom: a compact 5-column RACI table. Columns: Phase, Product, Engineering,
+     Design, QA. 5 rows matching the 5 phases. Cells contain R/A/C/I with
+     colored backgrounds (blue for R, green for A, yellow for C, gray for I).
+     Header row with dark background and white text.
+
+  Caption: "PMO — Last updated Sep 2026"
+theme: corporate-slate
+components:
+  - title
+  - process_arrow
+  - timeline
+  - table
+  - caption
+supplied_content:
+  title: "Product Launch Plan — Project Atlas"
+  phases:
+    - "Discovery"
+    - "Design"
+    - "Build"
+    - "Beta"
+    - "Launch"
+  milestones:
+    - { date: "Jan 2027", title: "Kickoff" }
+    - { date: "Feb 2027", title: "PRD Sign-off" }
+    - { date: "Mar 2027", title: "Alpha Build" }
+    - { date: "Apr 2027", title: "Beta Open" }
+    - { date: "May 2027", title: "RC Freeze" }
+    - { date: "Jun 2027", title: "GA Launch" }
+  raci:
+    headers: ["Phase", "Product", "Engineering", "Design", "QA"]
+    rows:
+      - ["Discovery",  "R", "C", "C", "I"]
+      - ["Design",     "A", "C", "R", "I"]
+      - ["Build",      "C", "R", "C", "A"]
+      - ["Beta",       "C", "R", "I", "R"]
+      - ["Launch",     "R", "A", "C", "R"]
+  caption: "PMO — Last updated Sep 2026"
+content_source: All phases, milestones, and RACI data supplied; colors and sizing invented.
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, Text, Shape, ProcessArrow, ProcessArrowStep, Timeline, TimelineItem, Table, Col, Tr, Td]

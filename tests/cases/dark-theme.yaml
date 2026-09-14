@@ -1,0 +1,33 @@
+# Enterprise test case: Dark theme with chart
+# Tests dark-theme chart wrapping (chartSurface background for readable axes)
+# and proper $token usage on dark backgrounds.
+name: dark-theme
+phase: ABC
+objective: Present revenue metrics on a dark theme to verify chart axis readability and token usage.
+request: >
+  A KPI + chart slide on a dark theme. Bold title "Revenue Dashboard" in light
+  text on the dark surface. A row of three KPI tiles: ARR, MRR Growth, and
+  Churn Rate — each with a muted label, large bold value, and coloured delta.
+  Below the KPIs, a full-width line chart showing Monthly Recurring Revenue
+  over the past 12 months. The chart MUST be wrapped in a light-background
+  container so axis labels remain readable against the dark slide. Use theme
+  tokens for all colors — no hardcoded hex values.
+theme: midnight-indigo
+components:
+  - title
+  - kpi_row
+  - chart
+supplied_content:
+  title: "Revenue Dashboard"
+  kpi_labels: [ARR, MRR Growth, Churn Rate]
+  kpi_values: ["$18.4M", "+6.2%", "1.8%"]
+  kpi_deltas: ["+28% YoY", "+0.4 pts", "-0.3 pts"]
+  kpi_directions: [up, up, up]
+  chart_type: line
+  chart_title: "Monthly Recurring Revenue ($K)"
+  chart_labels: [Oct, Nov, Dec, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep]
+  chart_values: [1280, 1310, 1355, 1390, 1420, 1448, 1475, 1502, 1530, 1548, 1572, 1610]
+content_source: All values supplied; tests dark theme chart wrapping and token adherence
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Span, Shape, Chart, ChartSeries, ChartDataPoint]

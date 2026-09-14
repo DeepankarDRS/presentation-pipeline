@@ -1,0 +1,25 @@
+# LLM_TEST_PLAN Family B — deck. NO components (planner must produce 5 slide plans).
+# Run: python -m src.runner deck-qbr --deck-min-threshold 3
+name: deck-qbr
+objective: 5-slide quarterly business review with an explicit per-slide brief.
+request: >
+  A five-slide Q3 FY26 quarterly business review for the executive team.
+  Slide 1: cover — "Q3 FY26 Business Review", a one-line summary of the quarter,
+  and the audience.
+  Slide 2: a KPI dashboard — four headline metrics (ARR, NRR, Gross Margin,
+  CAC Payback) with QoQ deltas.
+  Slide 3: revenue story — a bar chart of revenue for the last six quarters with
+  two or three commentary bullets beside it.
+  Slide 4: segment performance — a table of Enterprise / Mid-Market / SMB with
+  ARR, QoQ growth and a note column, plus a bold total row.
+  Slide 5: closing — the three priorities for Q4 as a short list.
+theme: corporate-slate
+content_source: LLM invents every figure; keep chart and table internally consistent
+expect:
+  compiles: true
+  slide_count: 5
+  slide_types: [cover, data, data, data, closing]
+  watch: >
+    slide_plans length == 5 and completed_slides == 5 (CODE_REVIEW #13);
+    theme consistent across slides; per-slide critic results are NOT lost
+    in the final verdict (CODE_REVIEW #1 — check each slide XML by hand)

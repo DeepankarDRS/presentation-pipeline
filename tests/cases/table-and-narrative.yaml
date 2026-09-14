@@ -1,0 +1,22 @@
+# Phase 5 test case #7. Consumed by slide_ir.from_test_case().
+# NOTE: Table nodes are Phase C (see single-table.yaml).
+name: table-and-narrative
+phase: C
+objective: Support a written takeaway with a compact backing table.
+request: >
+  A two-column slide. Bold title across the top. Left column: two or three
+  sentences of narrative on cost discipline this quarter. Right column: a small
+  table with the three largest operating expense lines - line item, this quarter,
+  last quarter, and change. Numeric columns right-aligned.
+theme: teal-slate
+components:
+  - title
+  - narrative
+  - table
+supplied_content:
+  topic: "Operating expense discipline, Q3 FY26"
+  columns: [Line item, This Q, Last Q, Change]
+content_source: Topic and column headers supplied; expense lines, figures, and narrative invented
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Table, Col, Tr, Td]

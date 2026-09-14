@@ -1,0 +1,17 @@
+# LLM_TEST_PLAN Family B — deck. NO components (planner must produce 3 slide plans).
+# Run: python -m src.runner deck-strategy-3slide --deck-min-threshold 3
+name: deck-strategy-3slide
+objective: 3-slide strategy arc — core_hook must tie all three together.
+request: >
+  A tight three-slide strategy story.
+  Slide 1: where we are — our current position in three KPIs.
+  Slide 2: where we're going — a chart showing the target trajectory over the
+  next eight quarters.
+  Slide 3: how we get there — the plan as a four-step process arrow.
+theme: violet-modern
+content_source: LLM invents the KPIs, the trajectory and the four steps
+expect:
+  compiles: true
+  slide_count: 3
+  slide_types: [data, data, content]
+  watch: core_hook is one sentence that spans all three slides, not three topics

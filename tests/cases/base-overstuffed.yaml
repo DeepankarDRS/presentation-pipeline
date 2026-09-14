@@ -1,0 +1,17 @@
+# LLM_TEST_PLAN Family A — ADVERSARIAL. Layout stress on the planner path.
+name: base-overstuffed
+objective: Everything on one slide — force tight_fit, overflow, repair.
+request: >
+  One slide with a row of four KPIs, a bar chart of revenue by quarter, a line
+  chart of margin by quarter, a five-row table of segment performance, and a
+  five-point takeaways list — all on a single 1280x720 slide with a title and a
+  footnote. Shrink whatever you must so nothing clips.
+theme: graphite-dark
+content_source: LLM invents every figure, internally consistent
+expect:
+  compiles: true
+  planner_should_pick: [title, kpi_row, chart, chart, table, bullet_list, caption]
+  density: tight_fit
+  watch: >
+    overflow -> repairer; does the tier escalate past PATCH (CODE_REVIEW #3/#4)?
+    dark theme -> charts wrapped in $chartSurface container

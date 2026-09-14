@@ -1,0 +1,40 @@
+# Enterprise test case: P&L financial report
+# Stresses chart+table data consistency with fully supplied values.
+name: financial-report
+phase: ABC
+objective: Present a quarterly P&L summary with KPI headlines, revenue trend, and segment breakdown.
+request: >
+  A financial report slide for Q3 FY26. Bold title "P&L Summary — Q3 FY26" with
+  a thin accent bar. Below it, a row of four KPI tiles: Revenue, COGS, Gross
+  Profit, and Net Income — each with value and QoQ delta. Below the KPIs, two
+  balanced columns: left a bar chart of quarterly revenue for the last four
+  quarters, right a table with rows for Revenue, COGS, Gross Profit, OpEx, and
+  Net Income showing Q2 FY26 and Q3 FY26 columns plus a QoQ Change column.
+  All figures must be internally consistent.
+theme: corporate-slate
+components:
+  - title
+  - kpi_row
+  - chart
+  - table
+supplied_content:
+  title: "P&L Summary — Q3 FY26"
+  kpi_labels: [Revenue, COGS, Gross Profit, Net Income]
+  kpi_values: ["$48.2M", "$13.5M", "$34.7M", "$12.1M"]
+  kpi_deltas: ["+14% QoQ", "+8% QoQ", "+17% QoQ", "+22% QoQ"]
+  kpi_directions: [up, up, up, up]
+  chart_type: bar
+  chart_title: "Quarterly Revenue ($M)"
+  chart_labels: [Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]
+  chart_values: [36.8, 39.1, 42.3, 48.2]
+  table_columns: [Line Item, Q2 FY26, Q3 FY26, QoQ Change]
+  table_rows:
+    - [Revenue, "$42.3M", "$48.2M", "+14%"]
+    - [COGS, "$12.5M", "$13.5M", "+8%"]
+    - [Gross Profit, "$29.8M", "$34.7M", "+17%"]
+    - [OpEx, "$19.6M", "$22.6M", "+15%"]
+    - [Net Income, "$10.2M", "$12.1M", "+22%"]
+content_source: All figures supplied and internally consistent across KPIs, chart, and table
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Span, Shape, Chart, ChartSeries, ChartDataPoint, Table, Col, Tr, Td]

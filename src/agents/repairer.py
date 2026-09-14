@@ -1,0 +1,340 @@
+"""Repairer agent — two repair strategies.
+
+PATCH:      feed back failing XML + errors + guidance → fix in place.
+REGENERATE: rebuild the slide from its plan, using a verified skeleton when one
+            exists for the component mix, otherwise a simplified free rebuild.
+
+The loop is "PATCH once; if it still won't compile, REGENERATE once"
+(retry_budget = 2). Strategy per attempt (see _choose_strategy):
+- attempt 1 is always PATCH (a cheap in-place fix often works);
+- a no-op or truncated previous PATCH, a structural error (needs_regeneration), a
+  detected stall, or reaching attempt 2 while still not compiling → REGENERATE;
+- the attempt right after a REGENERATE is a PATCH cleanup pass.
+
+The repairer calls the LLM with a targeted repair prompt and produces fixed
+XML. The graph routes repairer → validator (skipping the generator).
+
+Reads:  current_xml, normalize_result, validate_result, compile_result,
+        critic_result, contract, slide_plans, retry_tier, retry_count,
+        generation_history
+Writes: current_xml, retry_tier, retry_count, stall_detected, generation_history
+"""
+
+from __future__ import annotations
+
+import logging
+from pathlib import Path
+from typing import Any
+
+from jinja2 import Environment, FileSystemLoader
+
+from src.compiler.repair_guidance import (
+    build_error_guidance,
+    error_signatures,
+    is_stalled,
+    needs_regeneration,
+    select_repair_knowledge,
+)
+from src.state import AttemptRecord, PresentationState
+from src.utils.llm_client import get_llm
+
+logger = logging.getLogger(__name__)
+
+_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
+_REPAIRER_DIR = _PROMPTS_DIR / "repairer"
+_GENERATOR_DIR = _PROMPTS_DIR / "generator"
+
+_repair_env = Environment(
+    loader=FileSystemLoader(str(_REPAIRER_DIR)),
+    keep_trailing_newline=True,
+)
+_gen_env = Environment(
+    loader=FileSystemLoader(str(_GENERATOR_DIR)),
+    keep_trailing_newline=True,
+)
+
+_SRC_DIR = Path(__file__).resolve().parent.parent
+_EXAMPLES_DIR = _SRC_DIR / "knowledge" / "examples"
+
+PATCH, REGENERATE = 1, 2
+_STRATEGY_NAME = {PATCH: "PATCH", REGENERATE: "REGENERATE"}
+
+
+def _collect_problems(state: PresentationState) -> list[str]:
+    """Collect error strings from normalize_result, compile_result, and critic_result."""
+    problems: list[str] = []
+
+    norm = state.get("normalize_result") or {}
+    for issue in norm.get("issues", []):
+        if not issue.get("auto_fixed", False):
+            problems.append(f"{issue['code']}: {issue['message']}")
+
+    cr = state.get("compile_result") or {}
+    for diag in cr.get("diagnostics", []):
+        problems.append(f"{diag['type']}: {diag['message']}")
+
+    critic = state.get("critic_result") or {}
+    for issue in critic.get("issues", []):
+        severity = issue.get("severity", "")
+        msg = issue.get("message", str(issue))
+        problems.append(f"CRITIC_{severity.upper()}: {msg}")
+
+    return problems
+
+
+def _get_pre_issues(state: PresentationState) -> list[dict[str, Any]]:
+    norm = state.get("normalize_result") or {}
+    return [i for i in norm.get("issues", []) if not i.get("auto_fixed", False)]
+
+
+def _get_compile_diags(state: PresentationState) -> list[dict[str, Any]]:
+    cr = state.get("compile_result") or {}
+    return cr.get("diagnostics", [])
+
+
+def _select_template(state: PresentationState) -> str:
+    """Pick the best verified example XML to seed a REGENERATE, or "" if none fits."""
+    slide_plans = state.get("slide_plans", [])
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
+    kinds = [c.get("kind", "") for c in plan.get("components", [])]
+
+    has_chart = "chart" in kinds
+    has_table = "table" in kinds
+
+    if has_chart and has_table:
+        name = "mixed-slide.xml"
+    elif has_chart:
+        name = "chart-slide.xml"
+    elif has_table:
+        name = "table-slide.xml"
+    elif "kpi_row" in kinds:
+        name = "kpi-slide.xml"
+    elif kinds and all(k in ("title", "narrative", "caption") for k in kinds):
+        name = "text-slide.xml"
+    else:
+        # No verified skeleton for this component mix (timeline, flow, matrix,
+        # tree, pyramid, process_arrow, bullet_list, …) — REGENERATE free-form.
+        return ""
+
+    path = _EXAMPLES_DIR / name
+    return path.read_text(encoding="utf-8").strip() if path.exists() else ""
+
+
+def _render_original_user(state: PresentationState) -> str:
+    """Re-render the original user prompt for inclusion in repair prompts."""
+    slide_plans = state.get("slide_plans", [])
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
+
+    user_tmpl = _gen_env.get_template("user.j2")
+    return user_tmpl.render(
+        objective=state.get("raw_request", ""),
+        components=plan.get("components", []),
+        density=plan.get("density", "normal"),
+        font_tier=plan.get("font_tier", "standard"),
+        layout_hint=plan.get("layout_hint", ""),
+        content_data=plan.get("content_data", {}),
+        supplied_content=state.get("supplied_content"),
+    )
+
+
+def build_patch_prompts(
+    *,
+    failing_xml: str,
+    problems: list[str],
+    pre_issues: list[dict[str, Any]],
+    compile_diags: list[dict[str, Any]],
+    objective: str,
+    forbidden_tags: list[str],
+    theme_element: str,
+) -> tuple[str, str]:
+    """Build the (system, user) prompts for a PATCH (in-place fix) repair.
+
+    Shared by repairer_node's PATCH branch and the slide edit service's mini
+    repair loop, so both get the same error-scoped node reference (attribute
+    docs, pitfalls, a verified syntax example) injected into the system prompt.
+    """
+    knowledge = select_repair_knowledge(pre_issues, compile_diags)
+    if knowledge["nodes_involved"]:
+        logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
+
+    system_prompt = _repair_env.get_template("system.j2").render(
+        forbidden_tags=forbidden_tags,
+        theme_element=theme_element,
+        knowledge_text=knowledge.get("knowledge_text", ""),
+        reference_example=knowledge.get("example", ""),
+    )
+    user_prompt = _repair_env.get_template("patch.j2").render(
+        objective=objective,
+        failing_xml=failing_xml,
+        problems=problems,
+        guidance=build_error_guidance(pre_issues, compile_diags),
+    )
+    return system_prompt, user_prompt
+
+
+def _render_repair_system(state: PresentationState, knowledge: dict) -> str:
+    """Build a focused repair system prompt with only error-relevant knowledge.
+
+    Instead of re-rendering the full generator system.j2 (all design rules,
+    all node attributes, layout vocabulary), this loads the repairer's own
+    system.j2 and injects only the knowledge slices for the nodes that had
+    errors — attribute docs, pitfalls, and a verified syntax example.
+    """
+    contract = state.get("contract") or {}
+    system_tmpl = _repair_env.get_template("system.j2")
+    return system_tmpl.render(
+        forbidden_tags=contract.get("forbidden_tags", []),
+        theme_element=contract.get("theme_element", state.get("theme_element", "")),
+        knowledge_text=knowledge.get("knowledge_text", ""),
+        reference_example=knowledge.get("example", ""),
+    )
+
+
+def _choose_strategy(
+    *,
+    attempt: int,
+    prev_strategy: int | None,
+    prev_noop: bool,
+    prev_truncated: bool,
+    regen_error: bool,
+    stalled: bool,
+    compile_ok: bool,
+) -> int:
+    """Pick PATCH or REGENERATE for this attempt.
+
+    The loop is "PATCH once; if it still won't compile, REGENERATE once". attempt 1
+    is a cheap in-place PATCH. A structural error, a stall, or a previous PATCH that
+    was a no-op / got truncated escalates straight to REGENERATE. The attempt right
+    after a REGENERATE is a PATCH cleanup pass. Falling back to REGENERATE by attempt
+    number only applies while the slide still doesn't compile — rebuilding a slide
+    that compiles (only the critic is unhappy) risks losing a working result.
+    """
+    if attempt == 1:
+        return PATCH
+    if prev_strategy == REGENERATE:
+        return PATCH
+    if prev_noop or prev_truncated or regen_error or stalled:
+        return REGENERATE
+    if attempt >= 2 and not compile_ok:
+        return REGENERATE
+    return PATCH
+
+
+def repairer_node(state: PresentationState) -> dict[str, Any]:
+    """Choose a repair strategy, build the prompt, call the LLM, update state."""
+    current_count = state.get("retry_count", 0)
+    problems = _collect_problems(state)
+    pre_issues = _get_pre_issues(state)
+    compile_diags = _get_compile_diags(state)
+
+    curr_sigs = error_signatures(pre_issues, compile_diags)
+
+    prev_history = state.get("generation_history", [])
+    prev_sigs: set[str] = set()
+    for record in reversed(prev_history):
+        if record.get("error_sigs"):
+            prev_sigs = set(record["error_sigs"])
+            break
+    prev_strategy = next(
+        (r.get("tier") for r in reversed(prev_history)
+         if r.get("tier") in (PATCH, REGENERATE)),
+        None,
+    )
+    prev_noop = bool(prev_history[-1].get("noop")) if prev_history else False
+    prev_truncated = bool(prev_history[-1].get("truncated")) if prev_history else False
+
+    stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)
+    regen_error = needs_regeneration(pre_issues, compile_diags)
+    compile_ok = bool((state.get("compile_result") or {}).get("ok"))
+    strategy = _choose_strategy(
+        attempt=current_count + 1,
+        prev_strategy=prev_strategy,
+        prev_noop=prev_noop,
+        prev_truncated=prev_truncated,
+        regen_error=regen_error,
+        stalled=stalled,
+        compile_ok=compile_ok,
+    )
+
+    reasons = [r for r, on in
+               (("stall", stalled), ("structural", regen_error),
+                ("prev-noop", prev_noop), ("prev-truncated", prev_truncated)) if on]
+    logger.info(
+        f"repairer: attempt {current_count + 1}, {_STRATEGY_NAME[strategy]}"
+        + (f" ({', '.join(reasons)})" if reasons else "")
+        + f", {len(problems)} problem(s)"
+    )
+
+    contract = state.get("contract") or {}
+    failing_xml = ""
+
+    if strategy == PATCH:
+        norm = state.get("normalize_result") or {}
+        failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
+        system_prompt, user_prompt = build_patch_prompts(
+            failing_xml=failing_xml,
+            problems=problems,
+            pre_issues=pre_issues,
+            compile_diags=compile_diags,
+            objective=state.get("raw_request", ""),
+            forbidden_tags=contract.get("forbidden_tags", []),
+            theme_element=contract.get("theme_element", state.get("theme_element", "")),
+        )
+    else:
+        # REGENERATE rebuilds from the plan, so it needs the broader knowledge
+        # slice for the system prompt and the original user prompt.
+        knowledge = select_repair_knowledge(pre_issues, compile_diags)
+        if knowledge["nodes_involved"]:
+            logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
+        user_prompt = _repair_env.get_template("regenerate.j2").render(
+            previous_user=_render_original_user(state),
+            problems=problems,
+            template_xml=_select_template(state),
+            allowed_nodes=contract.get("allowed_nodes", []),
+        )
+        system_prompt = _render_repair_system(state, knowledge)
+
+    llm = get_llm("repairer")
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    response = llm.invoke(messages)
+    repaired_xml = response.content
+
+    token_usage = response.response_metadata.get("token_usage", {})
+    tokens_in = token_usage.get("prompt_tokens", 0)
+    tokens_out = token_usage.get("completion_tokens", 0)
+    model = response.response_metadata.get("model_name", "unknown")
+    truncated = response.response_metadata.get("finish_reason") == "length"
+    noop = strategy == PATCH and repaired_xml.strip() == failing_xml.strip()
+    if truncated:
+        logger.warning("repairer: LLM output truncated at max_tokens — repair is incomplete")
+    if noop:
+        logger.warning("repairer: PATCH returned identical XML — no progress this attempt")
+
+    logger.info(f"repairer: {model} tokens_in={tokens_in} tokens_out={tokens_out}")
+
+    record = AttemptRecord(
+        attempt=current_count + 1,
+        tier=strategy,
+        errors_in=problems,
+        errors_out=[],
+        error_sigs=sorted(curr_sigs),
+        stalled=stalled,
+        truncated=truncated,
+        noop=noop,
+        tokens_in=tokens_in,
+        tokens_out=tokens_out,
+        model=model,
+    )
+
+    return {
+        "current_xml": repaired_xml,
+        "retry_tier": strategy,
+        "retry_count": current_count + 1,
+        "stall_detected": stalled,
+        "generation_history": [record],
+    }

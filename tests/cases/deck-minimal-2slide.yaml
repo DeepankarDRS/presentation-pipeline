@@ -1,0 +1,15 @@
+# LLM_TEST_PLAN Family B — deck. NO components (planner must produce 2 slide plans).
+# Run: python -m src.runner deck-minimal-2slide --deck-min-threshold 2
+name: deck-minimal-2slide
+objective: Smallest possible deck — tests the len(slide_plans) > 1 boundary.
+request: >
+  A two-slide deck.
+  Slide 1: a cover slide — one bold statement of our 2026 theme, nothing else.
+  Slide 2: three short bullets giving the reasons that theme matters now.
+theme: sky-minimal
+content_source: LLM invents the theme line and the three reasons
+expect:
+  compiles: true
+  slide_count: 2
+  slide_types: [cover, content]
+  watch: completed_slides length == 2; one shared <Theme>; deck_assembler compile ok

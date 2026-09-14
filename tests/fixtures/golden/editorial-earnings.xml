@@ -1,0 +1,45 @@
+<Theme surface="F4F0E7" surfaceAlt="FFFDF8" accent="1F6B4F" accentAlt="B9E769" positive="1F6B4F" negative="F06B52" warning="B45309" textMain="17211B" textMuted="6F786F" border="D9D5CB" />
+<Slide><VStack w="1280" h="720" padding="40" gap="20" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="5">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">FY2026 / Q3 EARNINGS</Text>
+      <Text fontSize="30" color="$textMain" bold="true">Record profit while sustaining growth investment</Text>
+      <Text fontSize="12" color="$textMuted">Aurora Works | consolidated results, Apr-Dec 2026 (illustrative)</Text>
+    </VStack>
+    <VStack gap="4" alignItems="end">
+      <Text fontSize="10" color="$textMuted">Full-year progress</Text>
+      <Text fontSize="26" color="$accent" bold="true">76.4%</Text>
+      <Shape shapeType="roundRect" w="128" h="24" fill.color="$accentAlt" color="$textMain" fontSize="10" bold="true" borderRadius="999">+2.8pt vs plan</Shape>
+    </VStack>
+  </HStack>
+  <HStack w="max" h="360" gap="18" alignItems="stretch">
+    <VStack w="31%" padding="22" gap="14" backgroundColor="$textMain" borderRadius="18" justifyContent="center">
+      <Text fontSize="11" color="$accentAlt" bold="true" letterSpacing="1">KEY MESSAGE</Text>
+      <Text fontSize="23" color="$surfaceAlt" bold="true" lineHeight="1.35">Profit grew faster than revenue.</Text>
+      <Text fontSize="12" color="C5CDC6" lineHeight="1.5">Enterprise expansion and lower cloud cost of goods lifted operating margin 2.1 points year on year.</Text>
+      <HStack justifyContent="spaceBetween" alignItems="end">
+        <VStack gap="2"><Text fontSize="10" color="98A39B">Operating margin</Text><Text fontSize="33" color="$accentAlt" bold="true">18.6%</Text></VStack>
+        <Text fontSize="11" color="$surfaceAlt" bold="true">+2.1pt YoY</Text>
+      </HStack>
+    </VStack>
+    <VStack w="69%" gap="14">
+      <HStack w="max" h="118" gap="12" alignItems="stretch">
+        <VStack w="max" padding="15" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="10" color="$textMuted">Revenue</Text><Text fontSize="26" color="$textMain" bold="true">$42.8B</Text><Text fontSize="11" color="$positive" bold="true">+12.4% YoY</Text></VStack>
+        <VStack w="max" padding="15" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="10" color="$textMuted">Operating income</Text><Text fontSize="26" color="$textMain" bold="true">$7.96B</Text><Text fontSize="11" color="$positive" bold="true">+27.1% YoY</Text></VStack>
+        <VStack w="max" padding="15" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="10" color="$textMuted">Free cash flow</Text><Text fontSize="26" color="$textMain" bold="true">$5.31B</Text><Text fontSize="11" color="$positive" bold="true">+18.8% YoY</Text></VStack>
+      </HStack>
+      <VStack w="max" h="228" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+        <HStack justifyContent="spaceBetween" alignItems="center"><Text fontSize="13" color="$textMain" bold="true">Quarterly revenue and operating profit</Text><Text fontSize="10" color="$textMuted">$B</Text></HStack>
+        <Chart w="max" h="168" chartType="bar" showLegend="true" chartColors='["1F6B4F","B9E769"]'>
+          <ChartSeries name="Revenue"><ChartDataPoint label="Q1" value="12.4" /><ChartDataPoint label="Q2" value="13.7" /><ChartDataPoint label="Q3" value="16.7" /></ChartSeries>
+          <ChartSeries name="Operating profit"><ChartDataPoint label="Q1" value="2.1" /><ChartDataPoint label="Q2" value="2.5" /><ChartDataPoint label="Q3" value="3.36" /></ChartSeries>
+        </Chart>
+      </VStack>
+    </VStack>
+  </HStack>
+  <HStack w="max" h="92" gap="12" alignItems="stretch">
+    <VStack w="max" padding="13" gap="4" backgroundColor="E4F0E9" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center"><Text fontSize="10" color="$accent" bold="true">GROWTH</Text><Text fontSize="13" color="$textMain" bold="true">Enterprise ARR +31%</Text><Text fontSize="10" color="$textMuted">Top-20 account expansions led the quarter</Text></VStack>
+    <VStack w="max" padding="13" gap="4" backgroundColor="FFF1EC" borderLeft.color="$negative" borderLeft.width="5" justifyContent="center"><Text fontSize="10" color="$negative" bold="true">WATCH</Text><Text fontSize="13" color="$textMain" bold="true">APAC acquisition cost +8%</Text><Text fontSize="10" color="$textMuted">One-time channel stand-up spend</Text></VStack>
+    <VStack w="max" padding="13" gap="4" backgroundColor="EEF2D8" borderLeft.color="$accentAlt" borderLeft.width="5" justifyContent="center"><Text fontSize="10" color="$accent" bold="true">OUTLOOK</Text><Text fontSize="13" color="$textMain" bold="true">Full-year guidance raised</Text><Text fontSize="10" color="$textMuted">Operating income $10.2B to $10.8B</Text></VStack>
+  </HStack>
+</VStack></Slide>

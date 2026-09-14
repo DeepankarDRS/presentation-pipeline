@@ -1,0 +1,12 @@
+# LLM_TEST_PLAN Family A — base prompt, no components. Planner must decompose.
+name: base-roadmap
+objective: Product roadmap — planner should reach for a timeline.
+request: >
+  Give me a slide with our product roadmap for the next four quarters. Each
+  quarter has a theme and two or three headline deliverables.
+theme: violet-modern
+content_source: LLM invents quarter themes and deliverables
+expect:
+  compiles: true
+  planner_should_pick: [title, timeline]
+  watch: timeline vs bullet_list fallback; 4 periods; text fits each node

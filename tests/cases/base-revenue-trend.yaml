@@ -1,0 +1,13 @@
+# LLM_TEST_PLAN Family A — base prompt, no components. Planner must decompose.
+name: base-revenue-trend
+objective: Revenue over time, planner chooses the chart form.
+request: >
+  Show how our revenue has trended over the last two years. One clear chart,
+  a title, and a single caption line calling out the overall growth rate.
+theme: emerald-clean
+content_source: LLM invents ~8 quarters of plausible upward-trending revenue
+expect:
+  compiles: true
+  planner_should_pick: [title, chart, caption]
+  layout: full_width_chart
+  watch: chart has explicit w/h; 6-8 data points; caption number matches the data

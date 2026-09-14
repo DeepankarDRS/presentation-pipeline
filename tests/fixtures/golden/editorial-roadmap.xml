@@ -1,0 +1,53 @@
+<Theme surface="F5F3EE" surfaceAlt="FFFFFF" accent="4F7CFF" accentAlt="69D2E7" positive="184D43" negative="E66B5B" warning="F1A24A" textMain="192235" textMuted="6D7687" border="DCE1E8" />
+<Slide><VStack w="1280" h="720" padding="36" gap="16" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="end">
+    <VStack gap="5">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">TRANSFORMATION HORIZON / 2026-2029</Text>
+      <Text fontSize="31" color="$textMain" bold="true">From point digitization to a learning business</Text>
+      <Text fontSize="12" color="$textMuted">Connect customer, operations and finance data; double decision speed in three years</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="150" h="30" fill.color="E7ECFF" color="$textMain" fontSize="10" bold="true" borderRadius="999">North Star: 2x speed</Shape>
+  </HStack>
+  <VStack w="max" h="244" padding="18" gap="12" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1">
+    <HStack w="max" justifyContent="spaceBetween" alignItems="center"><Text fontSize="12" color="$textMain" bold="true">Three horizons</Text><Text fontSize="10" color="$textMuted">foundation to transform to autonomy</Text></HStack>
+    <ProcessArrow w="max" h="64" direction="horizontal" fontSize="11" bold="true">
+      <ProcessArrowStep label="Connect" color="B9C8F7" textColor="192235" />
+      <ProcessArrowStep label="Redesign" color="4F7CFF" textColor="FFFFFF" />
+      <ProcessArrowStep label="Autonomize" color="253B67" textColor="FFFFFF" />
+    </ProcessArrow>
+    <HStack w="max" gap="12" alignItems="stretch">
+      <VStack w="max" padding="12" gap="4" backgroundColor="F0F3FD" borderTop.color="$accent" borderTop.width="4"><Text fontSize="10" color="$accent" bold="true">2026 / FOUNDATION</Text><Text fontSize="12" color="$textMain" bold="true">Unify customer and product data</Text></VStack>
+      <VStack w="max" padding="12" gap="4" backgroundColor="EEF9FB" borderTop.color="$accentAlt" borderTop.width="4"><Text fontSize="10" color="2B8DA0" bold="true">2027 / SCALE</Text><Text fontSize="12" color="$textMain" bold="true">Redesign core workflows</Text></VStack>
+      <VStack w="max" padding="12" gap="4" backgroundColor="F2EFFB" borderTop.color="8967D8" borderTop.width="4"><Text fontSize="10" color="8967D8" bold="true">2028 / INTELLIGENCE</Text><Text fontSize="12" color="$textMain" bold="true">Embed prediction in decisions</Text></VStack>
+      <VStack w="max" padding="12" gap="4" backgroundColor="FFF4E7" borderTop.color="$warning" borderTop.width="4"><Text fontSize="10" color="B46F1C" bold="true">2029 / AUTONOMY</Text><Text fontSize="12" color="$textMain" bold="true">Standardize continuous improvement</Text></VStack>
+    </HStack>
+  </VStack>
+  <HStack w="max" h="270" gap="14" alignItems="stretch">
+    <VStack w="55%" padding="17" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <HStack justifyContent="spaceBetween"><Text fontSize="12" color="$textMain" bold="true">Investment portfolio</Text><Text fontSize="10" color="$textMuted">Impact x Readiness</Text></HStack>
+      <Matrix w="max" h="212" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
+        <MatrixAxes x="Readiness" y="Business impact" />
+        <MatrixQuadrants topLeft="Nurture" topRight="Scale now" bottomLeft="Explore" bottomRight="Optimize" />
+        <MatrixItem label="Customer 360" x="0.8" y="0.86" color="$accent" textColor="FFFFFF" />
+        <MatrixItem label="Forecasting" x="0.32" y="0.66" color="8967D8" />
+        <MatrixItem label="Copilot" x="0.66" y="0.44" color="$accentAlt" />
+        <MatrixItem label="Doc AI" x="0.85" y="0.2" color="9AA6B8" />
+      </Matrix>
+    </VStack>
+    <VStack w="45%" gap="12">
+      <VStack w="max" h="132" padding="16" gap="10" backgroundColor="$textMain" borderRadius="14" justifyContent="center">
+        <Text fontSize="10" color="$accentAlt" bold="true" letterSpacing="1">VALUE CASE / 3 YEARS</Text>
+        <HStack justifyContent="spaceBetween">
+          <VStack gap="2"><Text fontSize="23" color="FFFFFF" bold="true">$3.8B</Text><Text fontSize="9" color="B9C6DD">Cumulative</Text></VStack>
+          <VStack gap="2"><Text fontSize="23" color="FFFFFF" bold="true">2.4x</Text><Text fontSize="9" color="B9C6DD">ROI</Text></VStack>
+          <VStack gap="2"><Text fontSize="23" color="FFFFFF" bold="true">18 mo</Text><Text fontSize="9" color="B9C6DD">Payback</Text></VStack>
+        </HStack>
+      </VStack>
+      <VStack w="max" h="126" padding="16" gap="6" backgroundColor="FFF4E7" borderLeft.color="$warning" borderLeft.width="5" justifyContent="center">
+        <Text fontSize="10" color="B46F1C" bold="true">NEXT 90 DAYS</Text>
+        <Text fontSize="13" color="$textMain" bold="true">Prove value before building the platform</Text>
+        <Text fontSize="10" color="$textMuted">Run Customer 360 in one business unit; validate +8% win rate</Text>
+      </VStack>
+    </VStack>
+  </HStack>
+</VStack></Slide>

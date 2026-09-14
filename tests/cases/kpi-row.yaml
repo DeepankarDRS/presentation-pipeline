@@ -1,0 +1,25 @@
+# Phase 5 test case #3. Consumed by slide_ir.from_test_case().
+name: kpi-row
+phase: A
+objective: Show the quarter's headline metrics as a row of KPI tiles.
+request: >
+  A KPI row slide for Q3 FY26. A bold title, then a horizontal row of four equal
+  KPI tiles. Each tile: a small status dot, a muted metric label, a large bold
+  value with the unit set smaller on the same baseline, and a short delta line
+  (green if up, red if down). Tiles on the alt surface with rounded
+  corners and a top accent border.
+theme: corporate-slate
+components:
+  - title
+  - kpi_row
+supplied_content:
+  title: "Key Metrics - Q3 FY26"
+  kpi_labels:
+    - "Annual Recurring Revenue"
+    - "Net Revenue Retention"
+    - "Gross Margin"
+    - "Customer Count"
+content_source: KPI labels supplied; values and deltas invented (plausible SaaS numbers)
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Span, Shape]

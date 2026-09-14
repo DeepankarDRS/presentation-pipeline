@@ -1,0 +1,47 @@
+# Enterprise test case: Multi-slide pitch deck
+# Tests multi-slide planning (5 slides). Currently only slide[0] is generated,
+# but validates the planner can produce a coherent multi-slide plan.
+name: pitch-deck
+phase: ABC
+objective: Create a 5-slide investor pitch deck for a SaaS startup.
+request: >
+  A five-slide pitch deck for "Nextera AI", a B2B SaaS platform for automated
+  compliance monitoring. Slide 1: cover slide with company name, tagline, and
+  logo placeholder. Slide 2: problem statement with three pain-point bullets.
+  Slide 3: solution overview with a process flow diagram showing the product
+  workflow. Slide 4: market opportunity with a bar chart of TAM/SAM/SOM and
+  a table of target segments. Slide 5: team slide with four founders listed
+  in a grid. Use a clean, modern theme.
+theme: sky-minimal
+components:
+  - title
+  - bullet_list
+  - flow
+  - chart
+  - table
+supplied_content:
+  company: "Nextera AI"
+  tagline: "Compliance, Automated"
+  pain_points:
+    - "Manual compliance audits cost enterprises $2.4M/year on average"
+    - "85% of compliance violations stem from process gaps, not intent"
+    - "Current tools require 6+ months to implement and customize"
+  flow_steps: [Ingest Policies, Map Controls, Monitor Continuously, Auto-Report, Alert & Remediate]
+  chart_type: bar
+  market_labels: [TAM, SAM, SOM]
+  market_values: [84, 12.6, 2.1]
+  segment_columns: [Segment, Size, Growth, Priority]
+  segment_rows:
+    - [Financial Services, "$4.2B", "18%", "P0"]
+    - [Healthcare, "$3.1B", "22%", "P0"]
+    - [Government, "$2.8B", "12%", "P1"]
+    - [Manufacturing, "$2.5B", "15%", "P2"]
+  founders:
+    - { name: "Sarah Chen", role: "CEO", background: "Ex-Palantir, Stanford CS" }
+    - { name: "Marcus Williams", role: "CTO", background: "Ex-Google, MIT" }
+    - { name: "Priya Patel", role: "CPO", background: "Ex-Stripe, Product" }
+    - { name: "James Park", role: "CRO", background: "Ex-Datadog, Sales" }
+content_source: All content supplied — company info, pain points, product flow, market data, team bios
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Shape]

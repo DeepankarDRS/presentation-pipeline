@@ -1,0 +1,38 @@
+<Theme surface="EEF2F1" surfaceAlt="FFFFFF" accent="184D43" accentAlt="72D6B5" positive="184D43" negative="E66B5B" warning="F2C14E" textMain="132522" textMuted="6F7D79" border="D7E0DD" />
+<Slide><VStack w="1280" h="720" padding="32" gap="16" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="center">
+    <VStack gap="3">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">SIGNAL ROOM / WEEK 24</Text>
+      <Text fontSize="27" color="$textMain" bold="true">Read the change, not the numbers</Text>
+    </VStack>
+    <HStack gap="8" alignItems="center"><Shape shapeType="ellipse" w="8" h="8" fill.color="$accentAlt" /><Text fontSize="11" color="$textMuted">Data refreshed 09:00</Text></HStack>
+  </HStack>
+  <HStack w="max" h="330" gap="14" alignItems="stretch">
+    <VStack w="62%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1">
+      <HStack justifyContent="spaceBetween" alignItems="start">
+        <VStack gap="2"><Text fontSize="12" color="$textMuted">NET REVENUE</Text><Text fontSize="28" color="$textMain" bold="true">$86.4M <Span fontSize="13">/ week</Span></Text></VStack>
+        <Shape shapeType="roundRect" w="108" h="26" fill.color="DFF5EC" color="$accent" fontSize="10" bold="true" borderRadius="999">+18.2% YoY</Shape>
+      </HStack>
+      <Chart w="max" h="196" chartType="area" showLegend="true" chartColors='["184D43","72D6B5"]'>
+        <ChartSeries name="Actual"><ChartDataPoint label="W19" value="62" /><ChartDataPoint label="W20" value="66" /><ChartDataPoint label="W21" value="64" /><ChartDataPoint label="W22" value="75" /><ChartDataPoint label="W23" value="79" /><ChartDataPoint label="W24" value="86.4" /></ChartSeries>
+        <ChartSeries name="Plan"><ChartDataPoint label="W19" value="60" /><ChartDataPoint label="W20" value="63" /><ChartDataPoint label="W21" value="67" /><ChartDataPoint label="W22" value="70" /><ChartDataPoint label="W23" value="74" /><ChartDataPoint label="W24" value="78" /></ChartSeries>
+      </Chart>
+      <Text fontSize="11" color="$accent" bold="true">Above plan since W22 on enterprise add-ons</Text>
+    </VStack>
+    <VStack w="38%" padding="18" gap="10" backgroundColor="$textMain" borderRadius="16" justifyContent="center">
+      <Text fontSize="12" color="$accentAlt" bold="true" letterSpacing="1">REVENUE MIX</Text>
+      <Chart w="max" h="176" chartType="doughnut" showLegend="true" chartColors='["72D6B5","F2C14E","E66B5B","9FB0AC"]'>
+        <ChartSeries name="Mix"><ChartDataPoint label="Enterprise" value="48" /><ChartDataPoint label="Growth" value="31" /><ChartDataPoint label="Starter" value="14" /><ChartDataPoint label="Services" value="7" /></ChartSeries>
+      </Chart>
+      <HStack justifyContent="spaceBetween">
+        <VStack gap="2"><Text fontSize="10" color="9FB0AC">Largest</Text><Text fontSize="16" color="FFFFFF" bold="true">Enterprise 48%</Text></VStack>
+        <VStack gap="2" alignItems="end"><Text fontSize="10" color="9FB0AC">QoQ</Text><Text fontSize="16" color="$accentAlt" bold="true">+6pt</Text></VStack>
+      </HStack>
+    </VStack>
+  </HStack>
+  <HStack w="max" h="214" gap="14" alignItems="stretch">
+    <VStack w="34%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1"><Text fontSize="12" color="$textMain" bold="true">Channel efficiency</Text><Chart w="max" h="150" chartType="bar" showLegend="false" chartColors='["184D43"]'><ChartSeries name="Rate"><ChartDataPoint label="Referral" value="42" /><ChartDataPoint label="Event" value="31" /><ChartDataPoint label="Search" value="24" /><ChartDataPoint label="Ads" value="16" /></ChartSeries></Chart></VStack>
+    <VStack w="34%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1"><Text fontSize="12" color="$textMain" bold="true">CSAT structure</Text><Chart w="max" h="150" chartType="radar" showLegend="false" chartColors='["72D6B5"]'><ChartSeries name="Score"><ChartDataPoint label="Value" value="91" /><ChartDataPoint label="Ease" value="78" /><ChartDataPoint label="Speed" value="84" /><ChartDataPoint label="Support" value="88" /><ChartDataPoint label="Integ" value="72" /></ChartSeries></Chart></VStack>
+    <VStack w="32%" padding="18" gap="9" backgroundColor="FFF8E7" borderRadius="14" border.color="E8D8A8" border.width="1" justifyContent="center"><Text fontSize="10" color="8B6B13" bold="true">ANALYST NOTE</Text><Text fontSize="17" color="$textMain" bold="true" lineHeight="1.35">Quality of growth is improving</Text><Text fontSize="11" color="$textMuted" lineHeight="1.5">Referral efficiency and support are strong. Integration at 72 may bottleneck enterprise expansion.</Text><Shape shapeType="roundRect" w="max" h="30" fill.color="$warning" color="$textMain" fontSize="10" bold="true" borderRadius="8">NEXT: prioritize API integrations</Shape></VStack>
+  </HStack>
+</VStack></Slide>

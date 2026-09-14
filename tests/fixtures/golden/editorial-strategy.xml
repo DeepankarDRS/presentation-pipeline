@@ -1,0 +1,41 @@
+<Theme surface="F3EEE4" surfaceAlt="FFFCF6" accent="7E2F45" accentAlt="C79B43" positive="8EA38C" negative="B91C1C" warning="C79B43" textMain="25231F" textMuted="756F66" border="DED5C7" />
+<Slide><VStack w="1280" h="720" padding="38" gap="18" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="end">
+    <VStack gap="5">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">FY2027 STRATEGY / ONE-PAGE CHOICE</Text>
+      <Text fontSize="31" color="$textMain" bold="true">Win deep, not wide</Text>
+      <Text fontSize="12" color="$textMuted">Concentrate on mid-size manufacturers and redesign the product and sales model</Text>
+    </VStack>
+    <Text fontSize="10" color="$textMuted">Strategy Office | July 2026</Text>
+  </HStack>
+  <HStack w="max" h="356" gap="16" alignItems="stretch">
+    <VStack w="33%" padding="22" gap="14" backgroundColor="$textMain" borderRadius="16" justifyContent="center">
+      <Text fontSize="10" color="F1C7D2" bold="true" letterSpacing="1">THE CHOICE</Text>
+      <Text fontSize="22" color="$surfaceAlt" bold="true" lineHeight="1.35">Own mid-size manufacturing</Text>
+      <Text fontSize="11" color="F0DCE1" lineHeight="1.5">Manufacturers with $100M-$500M revenue. Leave the feature race; sell data integration plus adoption support as one package.</Text>
+      <VStack gap="9">
+        <HStack justifyContent="spaceBetween"><Text fontSize="10" color="F1C7D2">Target ARR</Text><Text fontSize="15" color="$surfaceAlt" bold="true">$12.0B</Text></HStack>
+        <HStack justifyContent="spaceBetween"><Text fontSize="10" color="F1C7D2">Target NRR</Text><Text fontSize="15" color="$surfaceAlt" bold="true">125%</Text></HStack>
+        <HStack justifyContent="spaceBetween"><Text fontSize="10" color="F1C7D2">Payback</Text><Text fontSize="15" color="$surfaceAlt" bold="true">under 14 mo</Text></HStack>
+      </VStack>
+    </VStack>
+    <VStack w="67%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1">
+      <HStack justifyContent="spaceBetween"><Text fontSize="13" color="$textMain" bold="true">Strategic option assessment</Text><Text fontSize="10" color="$textMuted">Impact x Right to win</Text></HStack>
+      <Matrix w="max" h="262" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
+        <MatrixAxes x="Right to win" y="Economic impact" />
+        <MatrixQuadrants topLeft="Partner" topRight="Invest" bottomLeft="Pass" bottomRight="Optimize" />
+        <MatrixItem label="Mid-size mfg" x="0.8" y="0.85" color="$accent" />
+        <MatrixItem label="Enterprise" x="0.44" y="0.7" color="$accentAlt" />
+        <MatrixItem label="Overseas" x="0.24" y="0.5" color="D99AA9" />
+        <MatrixItem label="Generic AI" x="0.66" y="0.36" color="8EA38C" />
+      </Matrix>
+      <Text fontSize="11" color="$accent" bold="true">Mid-size manufacturing is the only cell high on both axes</Text>
+    </VStack>
+  </HStack>
+  <HStack w="max" h="96" gap="12" alignItems="stretch">
+    <VStack w="max" padding="14" gap="4" backgroundColor="$surfaceAlt" borderTop.color="$accent" borderTop.width="4" justifyContent="center"><Text fontSize="10" color="$accent" bold="true">01 / PRODUCT</Text><Text fontSize="13" color="$textMain" bold="true">Shop-floor data at the core</Text><Text fontSize="10" color="$textMuted">Equipment, quality and cost in one view</Text></VStack>
+    <VStack w="max" padding="14" gap="4" backgroundColor="$surfaceAlt" borderTop.color="$accentAlt" borderTop.width="4" justifyContent="center"><Text fontSize="10" color="936E27" bold="true">02 / GO-TO-MARKET</Text><Text fontSize="13" color="$textMain" bold="true">Template the industry play</Text><Text fontSize="10" color="$textMuted">Three verticals, packaged rollouts</Text></VStack>
+    <VStack w="max" padding="14" gap="4" backgroundColor="$surfaceAlt" borderTop.color="$positive" borderTop.width="4" justifyContent="center"><Text fontSize="10" color="5E775D" bold="true">03 / DELIVERY</Text><Text fontSize="13" color="$textMain" bold="true">Make adoption the product</Text><Text fontSize="10" color="$textMuted">90-day guided program to expand usage</Text></VStack>
+    <VStack w="max" padding="14" gap="4" backgroundColor="E9DFD2" borderTop.color="$textMain" borderTop.width="4" justifyContent="center"><Text fontSize="10" color="$textMain" bold="true">NOT DOING</Text><Text fontSize="13" color="$textMain" bold="true">Competing on feature count</Text><Text fontSize="10" color="$textMuted">Drop low-price SMB and custom builds</Text></VStack>
+  </HStack>
+</VStack></Slide>

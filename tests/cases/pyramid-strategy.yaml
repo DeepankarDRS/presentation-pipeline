@@ -1,0 +1,32 @@
+# Post-MVP test case: Pyramid with 6 levels and side annotations.
+name: pyramid-strategy
+phase: post-mvp
+objective: Show a strategic planning pyramid with 6 hierarchical tiers and explanatory text beside it.
+request: >
+  A strategy pyramid slide. Title "Strategic Planning Framework" with subtitle
+  "FY2027 Planning Cycle". Two-column layout: left column has an upward pyramid
+  with 6 levels (Vision at top, narrowest; Execution at bottom, widest). Right
+  column has a bullet list explaining what each level means. Use a deep-to-light
+  blue gradient from top to bottom. White text on darker tiers, dark text on the
+  lightest tier. Add a caption "Adapted from Kaplan & Norton Balanced Scorecard".
+theme: corporate-slate
+components:
+  - title
+  - pyramid
+  - bullet_list
+  - caption
+supplied_content:
+  title: "Strategic Planning Framework"
+  subtitle: "FY2027 Planning Cycle"
+  levels:
+    - { label: "Vision",     meaning: "10-year aspirational north star" }
+    - { label: "Mission",    meaning: "Why we exist and who we serve" }
+    - { label: "Strategy",   meaning: "3-year competitive positioning" }
+    - { label: "Objectives", meaning: "Annual measurable outcomes (OKRs)" }
+    - { label: "Initiatives",meaning: "Quarterly programs and projects" }
+    - { label: "Execution",  meaning: "Sprint-level tasks and deliverables" }
+  caption: "Adapted from Kaplan & Norton Balanced Scorecard"
+content_source: All levels and meanings supplied; colors and layout invented.
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, HStack, Text, Shape, Pyramid, PyramidLevel, Ul, Li]

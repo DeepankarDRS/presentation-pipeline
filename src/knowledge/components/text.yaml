@@ -1,0 +1,94 @@
+# pom-knowledge/components/text.yaml
+# The <Text> node + its inline-formatting children (Phase A subset: B, I, Span, Mark).
+# Source: llm.txt "Text" section + "Child Element Tag Reference".
+# Verified against v10.3.0: attribute set from NODE_COERCION_MAP.text,
+# inline tags from INLINE_FORMAT_TAG_LIST, Span attrs from CHILD_ELEMENT_COERCION_MAP.Span.
+
+meta:
+  phase: A
+  node: Text
+
+description: >
+  A single run of styled text. The text is the element body. Multiple lines of
+  copy = multiple <Text> nodes inside a <VStack> (there is no <br>). Give a <Text>
+  an explicit w if you want it to wrap at a specific width.
+
+attributes:
+  fontSize:      { type: number,  default: 24, note: "Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12" }
+  color:         { type: hex,     note: "6-digit hex, no #." }
+  textAlign:     { type: enum,    values: [left, center, right], note: "NOT start/end. Wrong value throws ParseXmlError." }
+  bold:          { type: bool,    values: [true, false] }
+  italic:        { type: bool,    values: [true, false] }
+  underline:     { type: bool,    values: [true, false] }
+  strike:        { type: bool,    values: [true, false] }
+  subscript:     { type: bool,    values: [true, false] }
+  superscript:   { type: bool,    values: [true, false] }
+  highlight:     { type: hex,     note: "highlight color behind the text" }
+  fontFamily:    { type: string,  default: "Noto Sans JP" }
+  lineHeight:    { type: number,  default: 1.3 }
+  letterSpacing: { type: number,  note: "px; converted to pt on output" }
+  textGradient:  { type: string,  note: "linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%) — native gradient fill; overrides color" }
+  glow:          { type: object,  note: 'glow.size="8" glow.opacity="0.5" glow.color="FF3399" (defaults 8 / 0.75 / FFFFFF)' }
+  outline:       { type: object,  note: 'outline.size="2" outline.color="0088CC" (defaults 1 / FFFFFF)' }
+  rotate:        { type: number,  note: "degrees clockwise, render-only" }
+  # plus all common box attributes (w, h, grow, padding, margin, backgroundColor,
+  # border*, borderRadius, opacity, alignSelf, shadow, ...) from core/attributes.yaml
+
+inline_children:
+  allowed_phase_a: [B, I, Span, Mark]
+  allowed_full: [B, I, A, U, S, Sub, Sup, Mark, Span]
+  also_valid_inside: [Li, Td]   # Phase B / C
+  B:    { effect: bold,      attributes: none }
+  I:    { effect: italic,    attributes: none }
+  Mark: { effect: highlight, attributes: [color], default_color: FFFF00, example: '<Mark color="FDE047">key figure</Mark>' }
+  Span:
+    effect: "per-run style override (no semantic meaning)"
+    attributes:
+      color:         hex
+      fontFamily:    "string — overrides parent fontFamily for this run"
+      fontSize:      "number — overrides font size for this run"
+      letterSpacing: "number px — effective inside <Text> only"
+  A:
+    effect: "hyperlink — wraps text in a clickable link"
+    attributes:
+      href: "URL string (required) — must be a full URL including protocol"
+    example: '<Text fontSize="16" color="$textMuted">See <A href="https://example.com">our docs</A> for details.</Text>'
+  U:   { effect: underline,      attributes: none, example: "Plain <U>underlined</U> text" }
+  S:   { effect: strikethrough,  attributes: none, example: "Was <S>$99</S> now $79" }
+  Sub: { effect: subscript,      attributes: none, example: "CO<Sub>2</Sub> emissions" }
+  Sup: { effect: superscript,    attributes: none, example: "Revenue grew 18%<Sup>1</Sup>" }
+
+examples:
+  title: |
+    <Text fontSize="40" bold="true" color="$textMain">Quarterly Business Review</Text>
+  body: |
+    <Text fontSize="16" color="$textMuted" lineHeight="1.4" w="900">Revenue grew 18% quarter over quarter, driven by enterprise expansion.</Text>
+  partial_emphasis: |
+    <Text fontSize="16" color="$textMain">Net retention reached <B>114%</B>, up <Mark color="DCFCE7">3 points</Mark>.</Text>
+  kpi_numeral_trailing_unit: |
+    <Text fontSize="52" bold="true" color="$accent">$84.2<Span fontSize="20">M</Span></Text>
+  kpi_numeral_leading_symbol: |
+    <Text fontSize="52" bold="true" color="$textMain"><Span fontSize="24">$</Span>2,480</Text>
+  gradient_cover_title: |
+    <Text fontSize="64" bold="true" textGradient="linear-gradient(90deg, #38BDF8 0%, #A78BFA 100%)">Fiscal Year 2026</Text>
+  hyperlink: |
+    <Text fontSize="16" color="$textMuted">Visit <A href="https://example.com/report">the full report</A> for details.</Text>
+  footnote_ref: |
+    <Text fontSize="16" color="$textMuted">Revenue grew 18% QoQ<Sup>1</Sup>, driven by <U>enterprise expansion</U>.</Text>
+  chemical: |
+    <Text fontSize="16" color="$textMuted">Reducing CO<Sub>2</Sub> by 40% is our <S>stretch</S> core goal.</Text>
+
+kpi_numeral_note: >
+  Use <Span fontSize> INSIDE one <Text> for "big number + small unit" so the digit
+  and unit sit on one baseline. Layout measurement uses the largest run fontSize,
+  so the container is sized for the biggest glyph (no clipping). Put the <Span>
+  first for leading symbols like $ or ¥.
+
+pitfalls:
+  - "No <br>. Split into multiple <Text> nodes in a VStack."
+  - "textAlign is left/center/right — textAlign=\"start\" throws."
+  - "A <Text> that ends up with w=0 or h=0 throws 'must be a finite positive EMU value' at render."
+  - "Raw HTML inline tags (<b>, <strong>, <em>, <span> lowercase) are wrong — use <B>, <I>, <Span>."
+  - "<A href> must be a full URL with protocol (https://...). A bare domain or relative path may not resolve in PowerPoint."
+  - "<Sub> and <Sup> are purely typographic — they shrink and shift the run. They do not create mathematical notation."
+  - "Lowercase <a>, <u>, <s>, <sub>, <sup> are HTML — use <A>, <U>, <S>, <Sub>, <Sup> (capitals)."

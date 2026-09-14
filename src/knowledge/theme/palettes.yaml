@@ -1,0 +1,289 @@
+# pom-knowledge/theme/palettes.yaml
+# ---------------------------------------------------------------------------
+# The theme LIBRARY for the MVP. Each entry is a complete <Theme> token set.
+# Resolved by python/theme.py; selected per deck/slide via a project-root
+# theme.yaml, a test-case `theme:` field, or the --theme CLI flag.
+#
+# This file replaces the old theme/default.yaml. All the usage guidance that
+# used to live there is folded in below (see `usage:` and `token_roles:`).
+#
+# All colors are bare 6-digit hex (NO leading '#'). Token names follow POM's
+# rule: start with a letter; letters / digits / _ / - only. Reference a token
+# in any color attribute as $tokenName (e.g. color="$textMain").
+# ---------------------------------------------------------------------------
+
+meta:
+  phase: A
+  # The palette used when nothing else selects one.
+  default: corporate-slate
+  # Contrast is checked at load time (python/theme.py verify()). Failures are
+  # warnings, not errors; a badly-broken custom palette falls back to `default`.
+  contrast_targets:
+    textMain_on_surface:    { min: 4.5, want: 7.0 }
+    textMain_on_surfaceAlt: { min: 4.5, want: 7.0 }
+    textMuted_on_surface:   { min: 3.0, want: 4.5 }
+    accent_on_surface:      { min: 3.0, want: 3.0 }
+
+# --- token roles (was theme/default.yaml `usage:`) --------------------------
+token_roles:
+  surface:     "slide background — backgroundColor=\"$surface\" on the root VStack"
+  surfaceAlt:  "cards / plates / KPI tiles / table header cells"
+  accent:      "primary accent — accent bar, KPI top-border, links, first chart series"
+  accentAlt:   "secondary accent — second chart series, sparklines"
+  positive:    "good deltas / up arrows (color=\"$positive\")"
+  negative:    "bad deltas / down arrows"
+  warning:     "caution figures"
+  textMain:    "primary text / big numbers (bold headings)"
+  textMuted:   "labels, captions, secondary rows"
+  border:      "hairline borders, table cellBorder.color, KPI tile outline"
+  chartSurface: "DARK palettes only — light card placed BEHIND a chart so POM's
+                 hard-coded black axis text stays readable (see below)"
+  chartInk:    "DARK palettes only — a dark ink for text drawn on $chartSurface"
+
+usage:
+  slide_background: 'backgroundColor="$surface" on the root VStack'
+  card: 'backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1"'
+  title_text: 'color="$textMain" bold="true"'
+  label_text: 'color="$textMuted"'
+  accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />'
+  kpi_dot_good: '<Shape shapeType="ellipse" w="12" h="12" backgroundColor="$positive" />'
+  delta_up: 'color="$positive"'
+  delta_down: 'color="$negative"'
+  table_cell: 'EVERY <Td> needs an explicit backgroundColor AND color. Unstyled
+               cells fall back to PowerPoint''s default table style (white fill,
+               black text, row banding) — a white island on any themed deck.
+               Header row: backgroundColor="$surfaceAlt" color="$textMain" bold="true".
+               Body rows: backgroundColor="$surface" color="$textMuted" (labels)
+               or color="$textMain" (values). cellBorder.color="$border".'
+  chart_colors: 'chartColors is a JSON string of LITERAL hex — $tokens do NOT
+                 resolve inside it. Copy the palette''s `chartColors` values in.'
+  chart_on_dark: 'POM v10.3.0 hard-codes chart axis/label text to 000000 and
+                  gridlines to 888888 (renderPptx/nodes/chart.js) — unfixable in
+                  XML. On a DARK palette, wrap the chart in
+                  <VStack backgroundColor="$chartSurface" padding="16" borderRadius="12">
+                  so the black axis text is legible. On a LIGHT palette the chart
+                  sits directly on $surface and needs no wrapper.'
+
+# --- the library -----------------------------------------------------------
+# mode: light | dark  — drives the chart-wrapper rule and the contrast check.
+palettes:
+
+  # ---- LIGHT ----------------------------------------------------------------
+  corporate-slate:
+    tone: "Corporate / cool blue"
+    mode: light
+    surface: "F7F9FC"
+    surfaceAlt: "FFFFFF"
+    accent: "2563EB"
+    accentAlt: "0EA5E9"
+    positive: "15803D"
+    negative: "DC2626"
+    warning: "B45309"
+    textMain: "16202E"
+    textMuted: "55627A"
+    border: "E2E8F0"
+    chartColors: ["2563EB", "0EA5E9", "14B8A6", "6366F1", "F59E0B"]
+
+  sky-minimal:
+    tone: "Airy / high-key blue"
+    mode: light
+    surface: "F5F9FD"
+    surfaceAlt: "FFFFFF"
+    accent: "0284C7"
+    accentAlt: "0EA5E9"
+    positive: "15803D"
+    negative: "DC2626"
+    warning: "B45309"
+    textMain: "18202B"
+    textMuted: "54627A"
+    border: "E4EDF5"
+    chartColors: ["0284C7", "0EA5E9", "38BDF8", "6366F1", "F59E0B"]
+
+  teal-slate:
+    tone: "Cool grey with teal accent"
+    mode: light
+    surface: "F5F8F8"
+    surfaceAlt: "FFFFFF"
+    accent: "0F766E"
+    accentAlt: "0891B2"
+    positive: "15803D"
+    negative: "DC2626"
+    warning: "B45309"
+    textMain: "152625"
+    textMuted: "50635F"
+    border: "DEE9E7"
+    chartColors: ["0F766E", "0891B2", "14B8A6", "2563EB", "F59E0B"]
+
+  emerald-clean:
+    tone: "Fresh / green"
+    mode: light
+    surface: "F4FAF7"
+    surfaceAlt: "FFFFFF"
+    accent: "047857"
+    accentAlt: "0D9488"
+    positive: "047857"
+    negative: "DC2626"
+    warning: "B45309"
+    textMain: "10241D"
+    textMuted: "4F665C"
+    border: "D9EAE1"
+    chartColors: ["047857", "0D9488", "10B981", "65A30D", "F59E0B"]
+
+  forest-editorial:
+    tone: "Deep forest green on warm paper"
+    mode: light
+    surface: "F7F8F3"
+    surfaceAlt: "FFFFFF"
+    accent: "3F6212"
+    accentAlt: "4D7C0F"
+    positive: "3F6212"
+    negative: "B91C1C"
+    warning: "A16207"
+    textMain: "1E2411"
+    textMuted: "5C6047"
+    border: "E4E7D8"
+    chartColors: ["3F6212", "4D7C0F", "65A30D", "0F766E", "A16207"]
+
+  warm-editorial:
+    tone: "Warm / terracotta on cream"
+    mode: light
+    surface: "FBF7F1"
+    surfaceAlt: "FFFFFF"
+    accent: "C2410C"
+    accentAlt: "B45309"
+    positive: "4D7C0F"
+    negative: "B91C1C"
+    warning: "A16207"
+    textMain: "2A211B"
+    textMuted: "6E6153"
+    border: "EBE2D6"
+    chartColors: ["C2410C", "B45309", "4D7C0F", "A16207", "7C6F5B"]
+
+  amber-mono:
+    tone: "Near-monochrome warm, amber accent"
+    mode: light
+    surface: "FBF8F2"
+    surfaceAlt: "FFFFFF"
+    accent: "B45309"
+    accentAlt: "D97706"
+    positive: "4D7C0F"
+    negative: "B91C1C"
+    warning: "92400E"
+    textMain: "2A2419"
+    textMuted: "6B6250"
+    border: "ECE4D5"
+    chartColors: ["B45309", "D97706", "92400E", "A16207", "4D7C0F"]
+
+  rose-report:
+    tone: "Warm neutral with rose / burgundy accent"
+    mode: light
+    surface: "FDF6F7"
+    surfaceAlt: "FFFFFF"
+    accent: "BE123C"
+    accentAlt: "E11D48"
+    positive: "15803D"
+    negative: "B91C1C"
+    warning: "A16207"
+    textMain: "2B1A20"
+    textMuted: "6B5560"
+    border: "EFE0E4"
+    chartColors: ["BE123C", "E11D48", "9F1239", "DB2777", "F59E0B"]
+
+  violet-modern:
+    tone: "Modern / purple"
+    mode: light
+    surface: "F8F7FC"
+    surfaceAlt: "FFFFFF"
+    accent: "6D28D9"
+    accentAlt: "7C3AED"
+    positive: "15803D"
+    negative: "DC2626"
+    warning: "B45309"
+    textMain: "1E1B2E"
+    textMuted: "5E5772"
+    border: "E6E2F0"
+    chartColors: ["6D28D9", "7C3AED", "9333EA", "DB2777", "F59E0B"]
+
+  graphite-mono:
+    tone: "Monochrome corporate grey, single blue pop"
+    mode: light
+    surface: "F7F8FA"
+    surfaceAlt: "FFFFFF"
+    accent: "1D4ED8"
+    accentAlt: "0EA5E9"
+    positive: "15803D"
+    negative: "DC2626"
+    warning: "B45309"
+    textMain: "1B1F27"
+    textMuted: "5A6472"
+    border: "E3E7EC"
+    chartColors: ["1D4ED8", "64748B", "0EA5E9", "334155", "94A3B8"]
+
+  # ---- DARK ---------------------------------------------------------------
+  graphite-dark:
+    tone: "Neutral blue-dark executive (the improved MVP dark)"
+    mode: dark
+    surface: "0F1729"
+    surfaceAlt: "1E2A44"
+    accent: "60A5FA"
+    accentAlt: "38BDF8"
+    positive: "4ADE80"
+    negative: "F87171"
+    warning: "FBBF24"
+    textMain: "F1F5F9"
+    textMuted: "AAB7C7"
+    border: "36455F"
+    chartSurface: "F4F7FB"
+    chartInk: "1E293B"
+    chartColors: ["60A5FA", "34D399", "FBBF24", "A78BFA", "F472B6"]
+
+  midnight-indigo:
+    tone: "Deep indigo dark"
+    mode: dark
+    surface: "12122A"
+    surfaceAlt: "232346"
+    accent: "818CF8"
+    accentAlt: "A5B4FC"
+    positive: "4ADE80"
+    negative: "F87171"
+    warning: "FBBF24"
+    textMain: "EEF0FB"
+    textMuted: "AAAECF"
+    border: "3A3A63"
+    chartSurface: "F5F5FC"
+    chartInk: "232346"
+    chartColors: ["818CF8", "34D399", "FBBF24", "F472B6", "38BDF8"]
+
+  forest-dark:
+    tone: "Dark green"
+    mode: dark
+    surface: "0C1A14"
+    surfaceAlt: "172C22"
+    accent: "4ADE80"
+    accentAlt: "2DD4BF"
+    positive: "4ADE80"
+    negative: "F87171"
+    warning: "FBBF24"
+    textMain: "ECF5EF"
+    textMuted: "9BB4A6"
+    border: "2C4438"
+    chartSurface: "F2F8F4"
+    chartInk: "172C22"
+    chartColors: ["4ADE80", "2DD4BF", "FBBF24", "60A5FA", "F472B6"]
+
+  carbon-dark:
+    tone: "Charcoal neutral, warm orange accent"
+    mode: dark
+    surface: "171717"
+    surfaceAlt: "262626"
+    accent: "FB923C"
+    accentAlt: "FBBF24"
+    positive: "4ADE80"
+    negative: "F87171"
+    warning: "FBBF24"
+    textMain: "F5F5F4"
+    textMuted: "A8A29E"
+    border: "3F3F3F"
+    chartSurface: "FAFAF9"
+    chartInk: "262626"
+    chartColors: ["FB923C", "FBBF24", "A3E635", "38BDF8", "F472B6"]

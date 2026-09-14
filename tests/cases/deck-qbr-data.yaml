@@ -1,0 +1,62 @@
+# Deck test: QBR with fully supplied data across all slides.
+# Tests planner's ability to distribute real data across 5 slides.
+# Run: python -m src.runner deck-qbr-data --deck-min-threshold 5
+name: deck-qbr-data
+objective: 5-slide QBR where every slide has real supplied data — planner must allocate correctly.
+request: >
+  Create a Q3 FY26 quarterly business review for the executive team.
+  Here is our actual data:
+
+  Company: Acme Analytics. Quarter: Q3 FY26.
+
+  Headline KPIs:
+  - ARR: $48.2M (+18% QoQ)
+  - Net Revenue Retention: 114% (+2pts)
+  - Gross Margin: 72.1% (-1.4pts)
+  - CAC Payback: 14 months (-2 months)
+
+  Revenue by quarter (last 6):
+  Q2 FY25: $28.4M, Q3 FY25: $31.2M, Q4 FY25: $36.1M,
+  Q1 FY26: $39.1M, Q2 FY26: $42.3M, Q3 FY26: $48.2M
+
+  Segment breakdown:
+  Enterprise: ARR $28.1M, QoQ +22%, 142 customers
+  Mid-Market: ARR $14.4M, QoQ +14%, 487 customers
+  SMB: ARR $5.7M, QoQ +8%, 2,341 customers
+
+  Q4 priorities:
+  1. Close 3 enterprise logos worth $4M+ combined ARR
+  2. Launch self-serve onboarding to reduce CAC payback to 10 months
+  3. Ship analytics v2 dashboard before Jan board meeting
+theme: corporate-slate
+supplied_content:
+  title: "Q3 FY26 Business Review"
+  subtitle: "Acme Analytics — Executive Update"
+  kpi_labels: ["ARR", "NRR", "Gross Margin", "CAC Payback"]
+  kpi_values: ["$48.2M", "114%", "72.1%", "14 months"]
+  kpi_deltas: ["+18% QoQ", "+2 pts", "-1.4 pts", "-2 months"]
+  kpi_directions: ["up", "up", "down", "up"]
+  chart_type: bar
+  chart_title: "Revenue Trend ($M)"
+  chart_labels: ["Q2 FY25", "Q3 FY25", "Q4 FY25", "Q1 FY26", "Q2 FY26", "Q3 FY26"]
+  chart_values: [28.4, 31.2, 36.1, 39.1, 42.3, 48.2]
+  table_columns: ["Segment", "ARR", "QoQ Growth", "Customers"]
+  table_rows:
+    - ["Enterprise", "$28.1M", "+22%", "142"]
+    - ["Mid-Market", "$14.4M", "+14%", "487"]
+    - ["SMB", "$5.7M", "+8%", "2,341"]
+  bullets:
+    - "Close 3 enterprise logos worth $4M+ combined ARR"
+    - "Launch self-serve onboarding to reduce CAC payback to 10 months"
+    - "Ship analytics v2 dashboard before Jan board meeting"
+content_source: All data supplied — planner must use verbatim, not invent
+expect:
+  compiles: true
+  slide_count: 5
+  slide_types: [cover, data, data, data, closing]
+  watch: >
+    supplied KPIs appear on KPI slide with exact values;
+    chart uses supplied 6-quarter revenue data;
+    table uses supplied segment breakdown;
+    closing bullets match supplied Q4 priorities;
+    data_provenance marks all keys as "user" not "sample"

@@ -1,0 +1,21 @@
+# LLM_TEST_PLAN Family B — deck. NO components (planner must produce 5 slide plans).
+# Run: python -m src.runner deck-sales-enablement --deck-min-threshold 3
+name: deck-sales-enablement
+objective: 5-slide table-heavy sales enablement deck.
+request: >
+  A five-slide sales enablement deck.
+  Slide 1: cover — "Selling Atlas: Field Guide".
+  Slide 2: buyer personas — a table of three personas with their role, top
+  priority, and the message that lands with them.
+  Slide 3: competitive matrix — us versus two named competitors across four
+  capabilities, showing where we win.
+  Slide 4: pricing — a table of our three plans with price and what's included.
+  Slide 5: objection handling — five common objections with a one-line response
+  each, as a list.
+theme: corporate-slate
+content_source: LLM invents personas, competitors, pricing and objections
+expect:
+  compiles: true
+  slide_count: 5
+  slide_types: [cover, data, data, data, content]
+  watch: three tables in one deck all styled (every Td has bg + color); fit at density

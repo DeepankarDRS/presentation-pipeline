@@ -1,0 +1,6 @@
+<Slide>
+  <VStack w="1280" h="720" padding="64" gap="16" backgroundColor="F7F9FC" justifyContent="center">
+    <Text fontSize="48" bold="true" color="16202E">Minimal Slide</Text>
+    <Text fontSize="22" color="55627A">The simplest valid POM slide: one VStack, two Text nodes.</Text>
+  </VStack>
+</Slide>

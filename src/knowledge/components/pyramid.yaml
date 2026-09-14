@@ -1,0 +1,46 @@
+# pom-knowledge/components/pyramid.yaml
+# <Pyramid> + <PyramidLevel>. Post-MVP.
+# Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+
+meta:
+  phase: post_mvp
+  nodes: [Pyramid, PyramidLevel]
+
+description: >
+  A pyramid visualization for hierarchical data. Levels stack from narrow (top)
+  to wide (bottom) when direction is "up", or wide-to-narrow when "down".
+  Use for Maslow's hierarchy, strategic priority tiers, or any layered model.
+
+structure: |
+  <Pyramid direction="up" w="600" h="400" fontSize="14" bold="true">
+    <PyramidLevel label="Self-Actualization" color="6D28D9" textColor="FFFFFF" />
+    <PyramidLevel label="Esteem" color="7C3AED" textColor="FFFFFF" />
+    <PyramidLevel label="Belonging" color="8B5CF6" textColor="FFFFFF" />
+    <PyramidLevel label="Safety" color="A78BFA" textColor="FFFFFF" />
+    <PyramidLevel label="Physiological" color="C4B5FD" textColor="1E293B" />
+  </Pyramid>
+
+Pyramid_attributes:
+  direction:  { type: enum, values: [up, down], default: up, note: "'up' = first level is top/narrow; 'down' = first level is top/wide" }
+  fontSize:   { type: number, default: 14 }
+  bold:       { type: bool }
+  fontFamily: { type: string, default: "Noto Sans JP" }
+  w:          { type: number, note: "Explicit width — required" }
+  h:          { type: number, note: "Explicit height — required" }
+
+PyramidLevel_attributes:
+  label:     { type: string, required: true, note: "Level display label" }
+  color:     { type: hex, default: "4472C4", note: "Level fill color" }
+  textColor: { type: hex, default: "FFFFFF", note: "Label text color" }
+
+notes:
+  - "Pyramid needs explicit w and h."
+  - "3-7 levels work best."
+  - "Direction 'up': first PyramidLevel = top/narrowest. Direction 'down': first PyramidLevel = top/widest."
+  - "Use a gradient of related hues across levels for visual hierarchy."
+  - "For light-colored levels, set textColor to a dark value (e.g. '1E293B')."
+
+pitfalls:
+  - "label is required on every PyramidLevel."
+  - "Missing w/h on Pyramid — will not render correctly."
+  - "Direction 'up' vs 'down' controls which end is narrow — verify by reading the level order."

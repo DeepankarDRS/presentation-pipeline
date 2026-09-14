@@ -1,0 +1,574 @@
+"""Context builder agent — assembles knowledge base into a generation contract.
+
+Reads YAML knowledge base and selects only the nodes, attributes, examples,
+and notes relevant to THIS slide's component plan. No phase gating — all POM
+nodes available, selection is purely component-driven from the SlidePlan.
+
+Reads:  slide_plans, theme_name
+Writes: contract, theme_element, resolved_theme
+"""
+
+from __future__ import annotations
+
+import functools
+import logging
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
+from src.state import ComponentPlan, PresentationState, SlidePlan
+
+logger = logging.getLogger(__name__)
+
+# ── Keyword-based intent detection (no LLM needed) ──────────────────────────
+
+_INTENT_KEYWORDS: dict[str, list[str]] = {
+    "chart":         ["chart", "graph", "bar chart", "pie chart", "line chart",
+                      "area chart", "donut", "histogram", "visualization"],
+    "table":         ["table", "data table", "spreadsheet", "grid", "rows and columns"],
+    "kpi_row":       ["kpi", "metric", "dashboard", "scorecard", "kpi card",
+                      "key performance", "indicator"],
+    "timeline":      ["timeline", "roadmap", "milestone", "gantt", "chronolog"],
+    "bullet_list":   ["bullet", "list", "points", "takeaway", "key point"],
+    "flow":          ["flow", "flowchart", "process flow", "workflow", "decision tree"],
+    "matrix":        ["matrix", "quadrant", "2x2"],
+    "pyramid":       ["pyramid", "hierarchy", "funnel"],
+    "layer":         ["diagram", "architecture diagram", "layer", "annotated"],
+    "process_arrow": ["process arrow", "step by step", "pipeline"],
+    "tree":          ["tree", "org chart", "organization"],
+}
+
+
+def _detect_components_from_text(text: str) -> list[str]:
+    """Extract component kinds by scanning text for keywords."""
+    lower = text.lower()
+    found: list[str] = []
+    for kind, keywords in _INTENT_KEYWORDS.items():
+        for kw in keywords:
+            if kw in lower:
+                found.append(kind)
+                break
+    return found
+
+_SRC_DIR = Path(__file__).resolve().parent.parent
+_KNOWLEDGE_DIR = _SRC_DIR / "knowledge"
+
+# ── Component kind → POM node mapping ────────────────────────────────────────
+
+_KIND_TO_NODES: dict[str, list[str]] = {
+    "title":         [],
+    "narrative":     [],
+    "caption":       [],
+    "kpi_row":       ["HStack", "Span"],
+    "bullet_list":   ["Ul", "Li"],
+    "chart":         ["HStack", "Chart", "ChartSeries", "ChartDataPoint"],
+    "table":         ["HStack", "Table", "Col", "Tr", "Td"],
+    "timeline":      ["Timeline", "TimelineItem"],
+    "flow":          ["Flow", "FlowNode", "FlowConnection"],
+    "layer":         ["Layer", "Line", "Arrow", "Svg"],
+    "tree":          ["Tree", "TreeItem"],
+    "matrix":        ["Matrix", "MatrixAxes", "MatrixQuadrants", "MatrixItem"],
+    "process_arrow": ["ProcessArrow", "ProcessArrowStep"],
+    "pyramid":       ["Pyramid", "PyramidLevel"],
+}
+
+_KIND_TO_COMPONENT_FILE: dict[str, str] = {
+    "kpi_row":       "components/shape.yaml",
+    "bullet_list":   "components/list.yaml",
+    "chart":         "components/chart.yaml",
+    "table":         "components/table.yaml",
+    "timeline":      "components/timeline.yaml",
+    "flow":          "components/flow.yaml",
+    "layer":         "components/drawing.yaml",
+    "tree":          "components/tree.yaml",
+    "matrix":        "components/matrix.yaml",
+    "process_arrow": "components/process-arrow.yaml",
+    "pyramid":       "components/pyramid.yaml",
+}
+
+_BASE_NODES = ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Icon"]
+_INLINE_NODES = ["B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"]
+
+_COMMON_BOX_ATTRS = [
+    "w", "h", "grow", "padding", "margin", "backgroundColor",
+    "backgroundGradient", "borderRadius", "border.color", "border.width",
+    "alignSelf", "shadow",
+]
+_STACK_ATTRS = ["gap", "alignItems", "justifyContent", "flexWrap"]
+
+_NO_BOX_NODES = frozenset([
+    "B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup",
+    "ChartSeries", "ChartDataPoint",
+    "Table", "Col", "Tr", "Td", "Li",
+    "TimelineItem", "FlowNode", "FlowConnection",
+    "MatrixAxes", "MatrixQuadrants", "MatrixItem",
+    "TreeItem", "ProcessArrowStep", "PyramidLevel",
+    "Line", "Arrow",
+])
+
+_SIZE_ONLY_NODES = frozenset([
+    "Chart", "Ul", "Ol", "Icon",
+    "Timeline", "Flow", "Matrix", "Tree",
+    "ProcessArrow", "Pyramid",
+])
+
+
+@functools.lru_cache(maxsize=32)
+def _load_yaml(relpath: str) -> dict[str, Any]:
+    path = _KNOWLEDGE_DIR / relpath
+    if not path.exists():
+        return {}
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+
+
+# ── Node selection ───────────────────────────────────────────────────────────
+
+def _select_nodes(kinds: list[str]) -> list[str]:
+    """Select POM nodes needed for the given component kinds."""
+    needed = set(_BASE_NODES)
+    for kind in kinds:
+        extra = _KIND_TO_NODES.get(kind, [])
+        needed.update(extra)
+    needed.update(_INLINE_NODES)
+
+    order = _BASE_NODES + [
+        "Chart", "ChartSeries", "ChartDataPoint", "Ul", "Ol", "Li",
+        "Table", "Col", "Tr", "Td",
+        "Layer", "Line", "Arrow", "Svg",
+        "Timeline", "TimelineItem",
+        "Flow", "FlowNode", "FlowConnection",
+        "Matrix", "MatrixAxes", "MatrixQuadrants", "MatrixItem",
+        "Tree", "TreeItem",
+        "ProcessArrow", "ProcessArrowStep",
+        "Pyramid", "PyramidLevel",
+    ] + _INLINE_NODES
+    seen: set[str] = set()
+    result: list[str] = []
+    for n in order:
+        if n in needed and n not in seen:
+            result.append(n)
+            seen.add(n)
+    return result
+
+
+# ── Node hierarchy (parent → children) ──────────────────────────────────────
+
+def _build_node_hierarchy(allowed_nodes: list[str], nodes_yaml: dict) -> str:
+    """Render a compact parent -> children map for the nodes on this slide.
+
+    Extracts the 'children' field from nodes.yaml so the LLM knows which
+    nodes can contain which other nodes — the nesting hierarchy that a flat
+    ALLOWED NODES list does not convey.
+    """
+    children_map: dict[str, list[str]] = {}
+    for section in ("structural", "layout", "content", "phase_b", "phase_c",
+                     "phase_d", "post_mvp"):
+        for name, meta in (nodes_yaml.get(section) or {}).items():
+            if not isinstance(meta, dict):
+                continue
+            raw = meta.get("children")
+            if raw is None or raw == "none":
+                children_map[name] = []
+            elif isinstance(raw, list):
+                children_map[name] = raw
+            elif isinstance(raw, str):
+                if "any" in raw.lower():
+                    children_map[name] = ["(any layout/content node)"]
+                else:
+                    children_map[name] = [raw]
+    for name, meta in (nodes_yaml.get("inline") or {}).items():
+        children_map[name] = []
+
+    allowed_set = set(allowed_nodes)
+    inline_set = {"B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"}
+    lines: list[str] = []
+    for node in allowed_nodes:
+        if node in ("Slide", "Theme") or node in inline_set:
+            continue
+        kids = children_map.get(node)
+        if kids is None:
+            continue
+        if not kids:
+            lines.append(f"  <{node}> -- LEAF (no children)")
+        else:
+            kid_strs = [k for k in kids if k.startswith("(") or k in allowed_set]
+            if kid_strs:
+                lines.append(f"  <{node}> -> {', '.join(kid_strs)}")
+    if not lines:
+        return ""
+    return "\n".join(lines)
+
+
+# ── Attribute assembly ───────────────────────────────────────────────────────
+
+def _build_node_attributes(nodes_yaml: dict) -> dict[str, list[str]]:
+    """node name -> node-specific attributes from nodes.yaml."""
+    out: dict[str, list[str]] = {}
+    for section in ("layout", "content", "phase_b", "phase_c", "phase_d", "post_mvp"):
+        for name, meta in (nodes_yaml.get(section) or {}).items():
+            if not isinstance(meta, dict):
+                continue
+            out[name] = list(meta.get("node_attributes") or [])
+    for name, meta in (nodes_yaml.get("inline") or {}).items():
+        attrs = meta.get("attributes")
+        if isinstance(attrs, dict):
+            out[name] = list(attrs.keys())
+        elif isinstance(attrs, list):
+            out[name] = [a for a in attrs if a != "none"]
+        else:
+            out[name] = []
+    return out
+
+
+def _select_attributes(allowed_nodes: list[str], nodes_yaml: dict) -> dict[str, list[str]]:
+    """Build per-node attribute lists for only the nodes we selected."""
+    node_attrs = _build_node_attributes(nodes_yaml)
+    result: dict[str, list[str]] = {}
+    for node in allowed_nodes:
+        if node in ("Slide", "Theme"):
+            continue
+        base = list(node_attrs.get(node, []))
+        if node in ("VStack", "HStack"):
+            attrs = _STACK_ATTRS + _COMMON_BOX_ATTRS
+        elif node in _NO_BOX_NODES:
+            attrs = base
+        elif node in _SIZE_ONLY_NODES:
+            attrs = base + ["w", "h", "grow", "padding", "margin"]
+        else:
+            attrs = base + _COMMON_BOX_ATTRS
+        seen: set[str] = set()
+        result[node] = [a for a in attrs if not (a in seen or seen.add(a))]  # type: ignore[func-returns-value]
+    return result
+
+
+# ── Notes selection ──────────────────────────────────────────────────────────
+
+def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
+                  component_yamls: dict[str, dict], theme_info: dict,
+                  *, has_grammar: bool = False) -> list[str]:
+    """Select only notes relevant to the components in this slide.
+
+    When has_grammar is True (standard/dense tiers) the house-style grammar and
+    the concrete component recipes already carry layout / card / sizing / bullet
+    guidance, so the overlapping design-language rules are skipped to keep the
+    prompt small. Component pitfalls and validation rules are always included.
+    """
+    notes: list[str] = []
+
+    for row in (validation.get("translations") or []):
+        notes.append(f"NOT {row.get('wrong')}  ->  {row.get('right')}")
+
+    for rule in (validation.get("semantic_rules") or []):
+        notes.append(rule)
+
+    for pitfall in (text_yaml.get("pitfalls") or []):
+        notes.append(pitfall)
+
+    if "kpi_row" in kinds and not has_grammar and text_yaml.get("kpi_numeral_note"):
+        notes.append(str(text_yaml["kpi_numeral_note"]).strip())
+
+    for kind in kinds:
+        cy = component_yamls.get(kind)
+        if not cy:
+            continue
+        struct = cy.get("structure")
+        if struct and not has_grammar:
+            notes.append(f"{kind} structure:\n{str(struct).strip()}")
+        for pitfall in (cy.get("pitfalls") or []):
+            notes.append(pitfall)
+
+    theme_name = theme_info.get("name", "")
+    theme_mode = theme_info.get("mode", "light")
+    if theme_name:
+        notes.append(
+            f"Theme palette: {theme_name} ({theme_mode}). Do NOT emit a <Theme> "
+            "element — the pipeline injects it. Use $tokens for every color."
+        )
+
+    if "chart" in kinds:
+        chart_colors = theme_info.get("chart_colors_json", "")
+        notes.append(
+            "Chart chartColors must be LITERAL hex (no $tokens). Use: "
+            f"chartColors='{chart_colors}'"
+        )
+        if theme_info.get("is_dark"):
+            notes.append(
+                "DARK theme: POM v10.3.0 draws chart axis text in black. Wrap "
+                '<Chart> in <VStack backgroundColor="$chartSurface" padding="16" '
+                'borderRadius="12"> so axis labels stay readable.'
+            )
+
+    if "table" in kinds:
+        notes.append(
+            "EVERY <Td> needs explicit backgroundColor AND color. Unstyled "
+            "cells render with PowerPoint's default white table style. "
+            "Header: backgroundColor=$surfaceAlt color=$textMain bold=true. "
+            "Body: backgroundColor=$surface, labels color=$textMuted, values color=$textMain. "
+            "Right-align numeric columns with textAlign=right."
+        )
+
+    design = _load_yaml("core/design-language.yaml")
+    if design:
+        # Content-quality guidance is never in the grammar — always include it.
+        for rule in design.get("content_invention", []):
+            notes.append(rule)
+        if not has_grammar:
+            for principle in design.get("design_principles", []):
+                notes.append(principle)
+            for rule in design.get("card_recipe", {}).get("rules", []):
+                notes.append(rule)
+            for rule in design.get("bullet_list_styling", []):
+                notes.append(rule)
+            if any(k in kinds for k in ("chart", "kpi_row")):
+                for rule in design.get("chart_sizing", []):
+                    notes.append(rule)
+        if "table" in kinds:
+            for rule in design.get("table_styling", []):
+                if "Col" in rule or "column" in rule.lower():
+                    notes.append(rule)
+
+    return notes
+
+
+# ── House-style grammar ──────────────────────────────────────────────────────
+# The generator learns layout from ONE compositional grammar (core/house-style
+# .yaml), the same for every slide — not from a per-pattern template or an
+# injected example slide. The grammar describes the vocabulary + rules + the
+# height-budget arithmetic; the LLM composes the actual structure from the
+# slide's own content.
+
+_HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
+    ("frame", "FRAME"),
+    ("vocabulary", "SIZING VOCABULARY"),
+    ("alignment", "ALIGNMENT"),
+    ("composition", "COMPOSITION"),
+    ("header_band", "HEADER BAND"),
+    ("height_budget", "HEIGHT BUDGET (do this arithmetic before setting heights)"),
+    ("worked_example", "HEIGHT BUDGET — worked example"),
+    ("rigid_nodes", "RIGID NODES (Chart / Table / Matrix / ProcessArrow)"),
+    ("recipes", "RECIPES (parameterised patterns, not slides)"),
+    ("type_ramp", "TYPE RAMP (fontSize)"),
+    ("spacing_scale", "SPACING SCALE"),
+    ("color_discipline", "COLOR DISCIPLINE"),
+    ("render_gotchas", "RENDER GOTCHAS"),
+    ("checklist", "PRE-EMIT CHECKLIST"),
+]
+
+
+def _fmt_house_style_value(value: Any) -> str:
+    """Render one house-style.yaml value (str / list / dict) as prompt text."""
+    if isinstance(value, dict):
+        return "\n".join(f"  {k}: {str(v).strip()}" for k, v in value.items())
+    if isinstance(value, list):
+        return "\n".join(f"  - {str(v).strip()}" for v in value)
+    return str(value).strip()
+
+
+@functools.lru_cache(maxsize=1)
+def _render_house_style() -> str:
+    """Render core/house-style.yaml into a compact prompt block (cached)."""
+    hs = _load_yaml("core/house-style.yaml")
+    if not hs:
+        return ""
+    parts: list[str] = []
+    for key, heading in _HOUSE_STYLE_SECTIONS:
+        if key not in hs:
+            continue
+        parts.append(f"{heading}\n{_fmt_house_style_value(hs[key])}")
+    return "\n\n".join(parts)
+
+
+# ── Concrete component recipes ──────────────────────────────────────────────
+# Compiled copy-the-shape snippets for the components a generator gets wrong
+# from prose alone. Injected per component-kind so the prompt only carries the
+# recipes this slide needs. See core/recipes.yaml.
+
+_KIND_TO_RECIPE: dict[str, str] = {
+    "kpi_row":       "kpi_row",
+    "chart":         "chart_card",
+    "table":         "table_card",
+    "bullet_list":   "bullet_list",
+    "caption":       "callout",
+    "narrative":     "callout",
+    "timeline":      "timeline",
+    "matrix":        "matrix",
+    "process_arrow": "process_arrow",
+    "flow":          "flow",
+    "pyramid":       "pyramid",
+    "tree":          "tree",
+}
+
+
+@functools.lru_cache(maxsize=1)
+def _all_recipes() -> dict[str, str]:
+    return _load_yaml("core/recipes.yaml") or {}
+
+
+def _render_component_recipes(kinds: list[str]) -> str:
+    """Concrete snippets for the component kinds on this slide (deduped, ordered)."""
+    recipes = _all_recipes()
+    picked: list[str] = []
+    seen: set[str] = set()
+    for kind in kinds:
+        key = _KIND_TO_RECIPE.get(kind)
+        if key and key not in seen and key in recipes:
+            seen.add(key)
+            picked.append(f"# {key}\n{str(recipes[key]).strip()}")
+    if not picked:
+        return ""
+    return (
+        "Compiled recipes for THIS slide's components. Copy the structure and "
+        "the sizing (heights, fontSizes, justifyContent); change the content, "
+        "the token colours and the item count. These are single regions, not "
+        "whole slides.\n\n" + "\n\n".join(picked)
+    )
+
+
+# ── Forbidden lists ──────────────────────────────────────────────────────────
+
+def _clean_list(values: Any) -> list[str]:
+    out: list[str] = []
+    for v in values or []:
+        s = str(v)
+        if "_lowercase" in s:
+            s = s.split("_lowercase")[0]
+        if "_on_" in s:
+            s = s.split("_on_")[0]
+        s = s.strip().strip('"')
+        if s and s not in out:
+            out.append(s)
+    return out
+
+
+# ── Public entry point ───────────────────────────────────────────────────────
+
+def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[str, Any]:
+    """Build a generation contract for one slide from its plan.
+
+    Args:
+        slide_plan: The slide's component plan.
+        theme_info: Resolved theme dict from style_resolver.resolve_theme().
+
+    Returns a dict with: allowed_nodes, allowed_attributes, forbidden_tags,
+    forbidden_attributes, theme_element, theme_name, theme_mode, chart_colors,
+    notes, house_style, component_recipes, density_tier.
+    """
+    kinds = [c.get("kind", "") for c in slide_plan.get("components", [])]
+    density = slide_plan.get("density", "normal")
+
+    nodes_yaml = _load_yaml("core/nodes.yaml")
+    validation = _load_yaml("core/validation.yaml")
+    text_yaml = _load_yaml("components/text.yaml")
+
+    component_yamls = {}
+    for kind in kinds:
+        path = _KIND_TO_COMPONENT_FILE.get(kind)
+        if path:
+            component_yamls[kind] = _load_yaml(path)
+
+    allowed_nodes = _select_nodes(kinds)
+    allowed_attributes = _select_attributes(allowed_nodes, nodes_yaml)
+    node_hierarchy = _build_node_hierarchy(allowed_nodes, nodes_yaml)
+    forbidden_tags = _clean_list(validation.get("forbidden_tags"))
+    forbidden_attributes = _clean_list(validation.get("forbidden_attributes"))
+
+    theme = theme_info
+
+    if density in ("sparse",):
+        tier = "minimal"
+    elif density in ("normal", "dense"):
+        tier = "standard"
+    else:
+        tier = "dense"
+
+    # Always inject the full layout grammar + component recipes regardless of
+    # density tier. The density label in the user prompt steers sparse vs dense
+    # output; withholding the grammar just creates failure modes.
+    has_grammar = True
+    notes = _select_notes(
+        kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
+    )
+    house_style = _render_house_style() if has_grammar else ""
+    component_recipes = _render_component_recipes(kinds) if has_grammar else ""
+
+    return {
+        "allowed_nodes": allowed_nodes,
+        "allowed_attributes": allowed_attributes,
+        "node_hierarchy": node_hierarchy,
+        "forbidden_tags": forbidden_tags,
+        "forbidden_attributes": forbidden_attributes,
+        "theme_element": theme["element"],
+        "theme_name": theme["name"],
+        "theme_mode": theme["mode"],
+        "chart_colors": theme["chart_colors"],
+        "notes": notes,
+        "house_style": house_style,
+        "component_recipes": component_recipes,
+        "density_tier": tier,
+    }
+
+
+def _build_default_plan(state: PresentationState) -> SlidePlan:
+    """Build a SlidePlan from test_case components, intent detection, or fallback."""
+    test_case = state.get("test_case") or {}
+    raw_request = state.get("raw_request", "")
+
+    case_components = test_case.get("components", [])
+    if case_components:
+        kinds = list(case_components)
+        source = "test_case"
+    else:
+        detected = _detect_components_from_text(raw_request)
+        if detected:
+            kinds = detected
+            source = "intent"
+        else:
+            kinds = ["title", "narrative", "bullet_list"]
+            source = "fallback"
+
+    if "title" not in kinds:
+        kinds.insert(0, "title")
+
+    components = [ComponentPlan(kind=k, count=1) for k in kinds]
+
+    n = len(kinds)
+    if n >= 5:
+        density, font_tier = "tight_fit", "compact"
+    elif n >= 3:
+        density, font_tier = "normal", "standard"
+    else:
+        density, font_tier = "sparse", "standard"
+
+    logger.info(f"context_builder: built plan from {source}: {kinds}")
+    return SlidePlan(
+        slide_index=0,
+        components=components,
+        density=density,
+        font_tier=font_tier,
+        layout_hint=test_case.get("layout_hint", ""),
+    )
+
+
+def context_builder_node(state: PresentationState) -> dict[str, Any]:
+    """LangGraph node: build contract from slide_plans[current_slide_index]."""
+    slide_plans = state.get("slide_plans", [])
+    idx = state.get("current_slide_index", 0)
+
+    if not slide_plans:
+        slide_plans = [_build_default_plan(state)]
+
+    plan = slide_plans[idx] if idx < len(slide_plans) else slide_plans[0]
+
+    theme_info = state.get("resolved_theme") or resolve_theme(
+        state.get("theme_name", "")
+    )
+    contract = build_contract(plan, theme_info)
+
+    logger.info(
+        f"context_builder: {len(contract['allowed_nodes'])} nodes, "
+        f"{len(contract['notes'])} notes, tier={contract['density_tier']}"
+    )
+
+    return {"contract": contract}

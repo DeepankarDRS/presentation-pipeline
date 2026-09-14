@@ -1,0 +1,15 @@
+## RENDERED SLIDE SCREENSHOT
+[The screenshot image is provided as an attachment.]
+
+## POM XML SOURCE
+{{ current_xml }}
+
+{% if slide_type %}## SLIDE TYPE: {{ slide_type }}
+{% endif %}
+{% if components %}## EXPECTED COMPONENTS
+{% for comp in components %}
+- {{ comp.kind }}{% if comp.count is defined and comp.count > 1 %} (count: {{ comp.count }}){% endif %}
+{% endfor %}
+{% endif %}
+
+Review the screenshot against all 5 visual checklist items. Report any visual issues you see.

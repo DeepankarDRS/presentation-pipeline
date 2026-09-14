@@ -1,0 +1,28 @@
+# Phase D test case. Consumed by slide_ir.from_test_case().
+name: flowchart
+phase: D
+objective: Show a data processing pipeline as a flowchart with a decision branch.
+request: >
+  A flowchart slide for a data processing pipeline. Title at the top. Below, a
+  horizontal flowchart with six nodes: Start (terminator), Ingest Data (input/output),
+  Validate (process), Valid? (decision), Transform (process), Done (terminator).
+  The decision has a "Yes" path forward and a "No" path looping back to Ingest.
+  Use semantic colors: blue for start/end, teal for processing, amber for decision,
+  red for the error path.
+theme: corporate-slate
+components:
+  - title
+  - flow
+supplied_content:
+  title: "Data Processing Pipeline"
+  nodes:
+    - { id: start, shape: flowChartTerminator, text: "Start" }
+    - { id: ingest, shape: flowChartInputOutput, text: "Ingest Data" }
+    - { id: validate, shape: flowChartProcess, text: "Validate" }
+    - { id: check, shape: flowChartDecision, text: "Valid?" }
+    - { id: transform, shape: flowChartProcess, text: "Transform" }
+    - { id: done, shape: flowChartTerminator, text: "Done" }
+content_source: Pipeline structure supplied; colors invented.
+expect:
+  compiles: true
+  nodes_used: [Slide, Theme, VStack, Text, Shape, Flow, FlowNode, FlowConnection]
