@@ -110,6 +110,17 @@ worked_example: |
   = 706. First pass 736 -> over, so chart 288 not 320 and callout 88 not 100.
   Chart inside the 288 card (padding 18, ~28 title): h = 288 - 36 - 28 = 224.
 
+weight_allocation: |
+  Components carry a weight tag (hero/peer/supporting/minor) from the planner.
+  Use it to divide available_h (after header, padding, gaps are subtracted):
+    hero:       50-60% of available_h. Max one per slide. THE thing to see.
+    peer:       equal share of what remains after hero/supporting/minor.
+    supporting: 25-35%. Secondary context beside a hero.
+    minor:      10-15%. Accent, caption, footnote.
+  When no hero exists, peers split evenly: available_h / N.
+  design_hint per component guides visual treatment WITHIN the band (emphasis,
+  gradient, highlight) — not the band's height.
+
 # --- rigid nodes (verified v10.3.0 render behaviour) -------------------
 rigid_nodes: >
   Chart, Matrix, ProcessArrow, Table do NOT size themselves.

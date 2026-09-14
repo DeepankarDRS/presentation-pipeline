@@ -51,6 +51,7 @@ class ComponentPlan(TypedDict, total=False):
     content_data: dict[str, Any]
     orientation: str
     design_hint: str
+    weight: str
 
 
 class SlidePlan(TypedDict, total=False):

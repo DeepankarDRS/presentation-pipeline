@@ -92,6 +92,7 @@ class ComponentPlanPayload(BaseModel):
     content_data: dict[str, Any] = Field(default_factory=dict)
     orientation: str = ""
     design_hint: str = ""
+    weight: str = "peer"
 
 
 class SlidePlanPayload(BaseModel):
@@ -487,6 +488,8 @@ def _payload_to_slide_plans(
                 comp["orientation"] = c.orientation
             if c.design_hint:
                 comp["design_hint"] = c.design_hint
+            if c.weight:
+                comp["weight"] = c.weight
             comp["content_data"] = c.content_data
             merged_content_data.update(c.content_data)
             components.append(comp)

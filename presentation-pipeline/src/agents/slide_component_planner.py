@@ -84,6 +84,8 @@ def _planner_slide_to_state(
             comp["orientation"] = c.orientation
         if c.design_hint:
             comp["design_hint"] = c.design_hint
+        if c.weight:
+            comp["weight"] = c.weight
 
         try:
             comp_data = json.loads(c.content_data_json) if c.content_data_json else {}

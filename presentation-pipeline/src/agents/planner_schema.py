@@ -18,6 +18,7 @@ ComponentKindLiteral = Literal[
     "tree", "matrix", "process_arrow", "pyramid",
 ]
 
+WeightLiteral = Literal["hero", "peer", "supporting", "minor"]
 SlideTypeLiteral = Literal["cover", "content", "data", "section_break", "closing"]
 DensityLiteral = Literal["sparse", "normal", "dense", "tight_fit"]
 FontTierLiteral = Literal["display", "standard", "compact", "micro"]
@@ -97,6 +98,12 @@ class PlannerComponent(BaseModel):
         description="Optional visual design hint for this specific component. "
                     "E.g. 'emphasize the largest value', 'use gradient progression', "
                     "'highlight the decision node'. Leave empty when not needed."
+    )
+    weight: WeightLiteral = Field(
+        default="peer",
+        description="Visual weight — drives height budget allocation. "
+                    "hero=50-60% (max 1/slide), peer=equal split, "
+                    "supporting=25-35%, minor=10-15%.",
     )
 
 

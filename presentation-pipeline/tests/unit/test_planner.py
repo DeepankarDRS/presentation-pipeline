@@ -154,6 +154,59 @@ def test_planner_slide_to_state_per_component_content_data():
     assert "chart_labels" in result["content_data"]
 
 
+def test_planner_slide_to_state_copies_weight():
+    slide = PlannerSlide(
+        slide_type="data",
+        components=[
+            PlannerComponent(
+                component_id="revenue_chart", kind="chart", count=1,
+                chart_type="bar", weight="hero",
+                content_summary="Revenue by quarter",
+            ),
+            PlannerComponent(
+                component_id="segment_table", kind="table", count=1,
+                columns=3, rows=4, weight="supporting",
+                content_summary="Segment breakdown",
+            ),
+        ],
+        density="normal", font_tier="standard",
+        layout_hint="Chart is primary, table is supporting",
+    )
+    result = _planner_slide_to_state(0, slide)
+    assert result["components"][0]["weight"] == "hero"
+    assert result["components"][1]["weight"] == "supporting"
+
+
+def test_planner_slide_to_state_default_weight():
+    slide = PlannerSlide(
+        slide_type="content",
+        components=[
+            PlannerComponent(component_id="body", kind="narrative", count=1),
+        ],
+        density="normal", font_tier="standard",
+        layout_hint="Body text",
+    )
+    result = _planner_slide_to_state(0, slide)
+    assert result["components"][0].get("weight") == "peer"
+
+
+def test_planner_slide_to_state_copies_design_hint():
+    slide = PlannerSlide(
+        slide_type="data",
+        components=[
+            PlannerComponent(
+                component_id="hero_chart", kind="chart", count=1,
+                chart_type="bar",
+                design_hint="emphasize Q4 value with accent color",
+            ),
+        ],
+        density="normal", font_tier="standard",
+        layout_hint="Chart centered",
+    )
+    result = _planner_slide_to_state(0, slide)
+    assert result["components"][0]["design_hint"] == "emphasize Q4 value with accent color"
+
+
 # ── outline_planner_node tests (mocked LLM) ────────────────────────────────
 
 @patch("src.agents.outline_planner.get_llm")

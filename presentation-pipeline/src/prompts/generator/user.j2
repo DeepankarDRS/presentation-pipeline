@@ -12,8 +12,9 @@ SLIDE TYPE: {{ slide_type }}
 
 COMPONENTS (put every one on the slide — each carries its own data):
 {% for comp in components %}
-- {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
-
+- {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.weight %} weight={{ comp.weight }}{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
+{% if comp.design_hint %}  design: {{ comp.design_hint }}
+{% endif %}
 {% if comp.content_data %}
   Data for {{ comp.component_id or comp.kind }}:
   {% for key, value in comp.content_data.items() %}
@@ -54,9 +55,16 @@ Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1". Every value should
 look like it came from a real business report.
 {% endif %}
 
-Before you emit: decide the 2-4 bands, give each content band an explicit h that
-(with the header, gaps and padding) sums to ~720, then fill. If the content is
-thin, add substance rather than leaving the slide half-empty.
+WEIGHT-BUDGET ARITHMETIC — run this before setting any band's h:
+1. available_h = 720 - 2*padding - header_h - (N_bands-1)*gap.
+2. Read each component's weight (hero/peer/supporting/minor). No weight = peer.
+3. Allocate available_h by weight:
+   hero: 50-60% (max one per slide). supporting: 25-35%. minor: 10-15%.
+   peers: split whatever remains equally.
+   When there is no hero, peers split the full available_h evenly.
+4. Each band's h = its allocated share. Verify total <= ~700.
+5. design_hint per component guides visual treatment within each band, not height.
+If the content is thin, add substance rather than leaving the slide half-empty.
 
 Output the POM XML for this slide - a single <Slide> element, no <Theme>, no
 markdown fences, no commentary.

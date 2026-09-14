@@ -149,11 +149,13 @@ def test_pipeline_with_hierarchical_planner(
                 component_id="slide_title", kind="title", count=1,
                 content_summary="Key Metrics",
                 content_data_json='{"title": "Key Metrics"}',
+                weight="minor",
             ),
             PlannerComponent(
                 component_id="kpi_metrics", kind="kpi_row", count=4,
                 content_summary="ARR, NRR, Margin, CAC",
                 content_data_json='{"kpi_labels": ["ARR", "NRR", "Margin", "CAC"]}',
+                weight="hero",
             ),
         ],
         density="normal", font_tier="standard",
