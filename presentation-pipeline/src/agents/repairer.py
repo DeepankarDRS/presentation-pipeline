@@ -131,6 +131,9 @@ def _render_original_user(state: PresentationState) -> str:
     user_tmpl = _gen_env.get_template("user.j2")
     return user_tmpl.render(
         objective=state.get("raw_request", ""),
+        slide_title=plan.get("slide_title", ""),
+        core_hook=state.get("core_hook", ""),
+        slide_type=plan.get("slide_type", ""),
         components=plan.get("components", []),
         density=plan.get("density", "normal"),
         font_tier=plan.get("font_tier", "standard"),
