@@ -46,7 +46,7 @@ def _get_constraints(deck_settings_dict: dict[str, Any]) -> dict[str, Any]:
     except Exception:
         return {
             "density": "normal",
-            "key_messages_per_slide": "2",
+            "narrative_guidance": "data-focused — add narrative only when it reveals something the numbers alone do not",
             "text_mode": "generate",
             "provenance_rule": "llm_generates_freely",
         }

@@ -89,11 +89,11 @@ AMOUNT_TO_DENSITY: dict[str, str] = {
     "extensive": "tight_fit",
 }
 
-AMOUNT_TO_KEY_MESSAGES_PER_SLIDE: dict[str, str] = {
-    "minimal":   "1",
-    "concise":   "2",
-    "detailed":  "3-4",
-    "extensive": "4-6",
+AMOUNT_TO_NARRATIVE_GUIDANCE: dict[str, str] = {
+    "minimal":   "data only — no narrative commentary, let the numbers speak",
+    "concise":   "data-focused — add narrative only when it reveals something the numbers alone do not",
+    "detailed":  "data + context — include analytical narrative that frames the data",
+    "extensive": "rich narrative — full analysis, interpretation, and context alongside data",
 }
 
 SLIDE_COUNT_TO_THRESHOLD: dict[str, int] = {
@@ -111,7 +111,7 @@ def settings_to_constraints(settings: DeckSettings) -> dict[str, Any]:
         "text_mode": settings.text_mode,
         "provenance_rule": TEXT_MODE_TO_PROVENANCE_RULE[settings.text_mode],
         "density": AMOUNT_TO_DENSITY[settings.amount_of_text],
-        "key_messages_per_slide": AMOUNT_TO_KEY_MESSAGES_PER_SLIDE[settings.amount_of_text],
+        "narrative_guidance": AMOUNT_TO_NARRATIVE_GUIDANCE[settings.amount_of_text],
         "write_for": settings.write_for,
         "tone": settings.tone,
         "theme": settings.theme,

@@ -41,29 +41,41 @@ Rules:
 - Must be specific and falsifiable. BAD: "Shows strong growth." GOOD: "Revenue grew 40% YoY to $42.8M in FY2025."
 - Use numbers from supplied_content VERBATIM when available.
 - When no supplied_content: derive a plausible, concrete number from the request context. Never write literal placeholder syntax like "[estimate]", "[TBD]", or "[value]".
-- For dashboard/metrics slides: provide 4-6 quantitative messages (one per metric or data point).
-- Count: governed by `amount_of_text` setting:
-  - minimal → 1 key message per slide
-  - concise → 2 key messages per slide
-  - detailed → 3-4 key messages per slide
-  - extensive → 4-6 key messages per slide
-- Hero/intro slides (1-2 key_messages): keep messages minimal regardless of setting.
+- For dashboard/metrics slides: provide one quantitative message per metric or data point.
+- Count has TWO layers — data completeness is non-negotiable, verbosity is adjustable:
+  DATA messages carry explicit numbers, series, or records from the user's input
+  (metrics, chart data, table rows, timelines). These are MANDATORY — one per
+  distinct data group, regardless of amount_of_text. Never merge two data groups
+  into one message and never drop a data group to hit a count target.
+  NARRATIVE messages add insight, commentary, or qualitative context beyond the
+  raw data. The amount_of_text setting (injected in DECK SETTINGS) controls how
+  much narrative accompanies the data — follow its guidance qualitatively, do not
+  reduce it to a fixed number.
+  Total key_messages per slide = all data messages + whatever narrative the
+  amount_of_text guidance calls for.
+  FLOOR: every slide must have at least 1 key_message. If no explicit data
+  groups exist (qualitative/vision prompts), produce at least 1 key_message
+  that captures the slide's essential content regardless of amount_of_text.
+- Hero/intro slides: keep to 1-2 messages regardless of setting (title + hook).
 
 ## visual_emphasis Requirements
 
-One short phrase describing the slide's conceptual focus — NOT a spatial layout.
-The slide component planner uses this to pick components and density.
+One short phrase describing the slide's conceptual focus and priority hierarchy.
+The slide component planner uses this to pick components, density, and weight.
 
-- Describe WHAT is prominent, not WHERE it goes.
-- Do NOT dictate spatial layouts (e.g. "left column", "top row", "right panel"). Provide only the conceptual focus (e.g. "dashboard of metrics", "timeline progression").
+- Describe WHAT is prominent and its role (hero, supporting, accent).
+- Do NOT dictate pixel-level spatial layouts (e.g. "left column 62% width").
+- DO preserve the user's stated ordering or grouping preferences. If the user says
+  "KPIs across the top" or "chart below the scorecard", relay that ordering — it is
+  user intent, not a pixel spec. The downstream planner uses it to inform layout_hint.
 
 Examples:
-  - "side-by-side comparison"
+  - "revenue chart as hero, KPI scorecard across the top, segment table supporting"
   - "one dominant number"
   - "timeline progression"
   - "data table with callout"
   - "big statement, nothing else"
-  - "dashboard of metrics"
+  - "dashboard of metrics with KPIs first, detail chart below"
   - "process workflow"
   - "hierarchical breakdown"
 

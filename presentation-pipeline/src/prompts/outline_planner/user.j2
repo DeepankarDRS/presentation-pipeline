@@ -6,7 +6,7 @@ DECK SETTINGS:
 - Write for: {{ deck_settings.get('write_for') | join(', ') or 'general audience' }}
 - Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}
 - Theme: {{ deck_settings.get('theme', 'corporate-slate') }}
-- Amount of text: {{ deck_settings.get('amount_of_text', 'concise') }} → {{ constraints.get('key_messages_per_slide', '2') }} key messages per slide
+- Amount of text: {{ deck_settings.get('amount_of_text', 'concise') }} → {{ constraints.get('narrative_guidance', 'data-focused') }}
 - Text mode: {{ deck_settings.get('text_mode', 'generate') }}
 {% if deck_settings.get('additional_instructions') %}
 - Additional instructions: {{ deck_settings['additional_instructions'] }}

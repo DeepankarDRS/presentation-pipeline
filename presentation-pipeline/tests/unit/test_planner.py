@@ -332,7 +332,7 @@ def test_settings_to_constraints_minimal():
     s = DeckSettings(amount_of_text="minimal", text_mode="generate", slide_count="3-5")
     c = settings_to_constraints(s)
     assert c["density"] == "sparse"
-    assert c["key_messages_per_slide"] == "1"
+    assert "data only" in c["narrative_guidance"]
     assert c["deck_min_threshold"] == 4
 
 
@@ -340,7 +340,7 @@ def test_settings_to_constraints_extensive():
     s = DeckSettings(amount_of_text="extensive", text_mode="preserve", slide_count="10-15")
     c = settings_to_constraints(s)
     assert c["density"] == "tight_fit"
-    assert c["key_messages_per_slide"] == "4-6"
+    assert "rich narrative" in c["narrative_guidance"]
     assert c["provenance_rule"] == "llm_preserves_verbatim"
     assert c["deck_min_threshold"] == 12
 
