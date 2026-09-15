@@ -29,7 +29,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.planner_schema import PlannerSlide
+from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.state import ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, unpack_raw
@@ -53,6 +53,57 @@ _jinja_env = Environment(
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
 
+def _convert_component(
+    c: PlannerComponent,
+) -> tuple[ComponentPlan, dict[str, Any]]:
+    """Convert one PlannerComponent to ComponentPlan, return (plan, content_data)."""
+    comp = ComponentPlan(
+        component_id=c.component_id,
+        kind=c.kind,
+        count=c.count,
+        content_summary=c.content_summary,
+    )
+    if c.chart_type:
+        comp["chart_type"] = c.chart_type
+    if c.series_count:
+        comp["series_count"] = c.series_count
+    if c.columns:
+        comp["columns"] = c.columns
+    if c.rows:
+        comp["rows"] = c.rows
+    if c.items:
+        comp["items"] = c.items
+    if c.orientation:
+        comp["orientation"] = c.orientation
+    if c.design_hint:
+        comp["design_hint"] = c.design_hint
+    if c.weight:
+        comp["weight"] = c.weight
+
+    comp_data: dict[str, Any] = {}
+
+    if c.kind == "group":
+        child_plans: list[ComponentPlan] = []
+        for child in c.children:
+            child_plan, child_data = _convert_component(child)
+            child_plans.append(child_plan)
+            comp_data.update(child_data)
+        comp["children"] = child_plans
+        comp["content_data"] = {}
+    else:
+        try:
+            comp_data = json.loads(c.content_data_json) if c.content_data_json else {}
+        except (json.JSONDecodeError, TypeError):
+            logger.warning(
+                f"slide_component_planner: invalid content_data_json for "
+                f"component '{c.component_id}', using empty dict"
+            )
+            comp_data = {}
+        comp["content_data"] = comp_data
+
+    return comp, comp_data
+
+
 def _planner_slide_to_state(
     idx: int,
     slide: PlannerSlide,
@@ -64,41 +115,9 @@ def _planner_slide_to_state(
     merged_content_data: dict[str, Any] = {}
 
     for c in slide.components:
-        comp = ComponentPlan(
-            component_id=c.component_id,
-            kind=c.kind,
-            count=c.count,
-            content_summary=c.content_summary,
-        )
-        if c.chart_type:
-            comp["chart_type"] = c.chart_type
-        if c.series_count:
-            comp["series_count"] = c.series_count
-        if c.columns:
-            comp["columns"] = c.columns
-        if c.rows:
-            comp["rows"] = c.rows
-        if c.items:
-            comp["items"] = c.items
-        if c.orientation:
-            comp["orientation"] = c.orientation
-        if c.design_hint:
-            comp["design_hint"] = c.design_hint
-        if c.weight:
-            comp["weight"] = c.weight
-
-        try:
-            comp_data = json.loads(c.content_data_json) if c.content_data_json else {}
-        except (json.JSONDecodeError, TypeError):
-            logger.warning(
-                f"slide_component_planner: invalid content_data_json for "
-                f"component '{c.component_id}', using empty dict"
-            )
-            comp_data = {}
-
-        comp["content_data"] = comp_data
-        merged_content_data.update(comp_data)
+        comp, comp_data = _convert_component(c)
         components.append(comp)
+        merged_content_data.update(comp_data)
 
     return SlidePlan(
         slide_index=idx,

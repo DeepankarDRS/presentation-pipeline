@@ -52,6 +52,7 @@ class ComponentPlan(TypedDict, total=False):
     orientation: str
     design_hint: str
     weight: str
+    children: list[ComponentPlan]
 
 
 class SlidePlan(TypedDict, total=False):

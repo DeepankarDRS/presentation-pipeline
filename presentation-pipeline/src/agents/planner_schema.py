@@ -16,6 +16,7 @@ ComponentKindLiteral = Literal[
     "title", "narrative", "caption", "kpi_row", "bullet_list",
     "chart", "table", "timeline", "flow", "layer",
     "tree", "matrix", "process_arrow", "pyramid",
+    "group", "icon", "badge", "eyebrow", "cta",
 ]
 
 WeightLiteral = Literal["hero", "peer", "supporting", "minor"]
@@ -85,6 +86,11 @@ class PlannerComponent(BaseModel):
                     "  tree: {\"layout\": \"vertical\", \"tree_nodes\": [...]}\n"
                     "  narrative: {\"text\": \"...\"}\n"
                     "  caption: {\"text\": \"...\"}\n"
+                    "  icon: {\"name\": \"rocket\", \"variant\": \"circle-filled\"}\n"
+                    "  badge: {\"text\": \"ON TRACK\", \"variant\": \"success\"}\n"
+                    "  eyebrow: {\"text\": \"VALUE CASE / 3 YEARS\"}\n"
+                    "  cta: {\"text\": \"Start free trial →\"}\n"
+                    "  group: always \"{}\" — groups carry no content data.\n"
                     "Must be valid JSON. No placeholders."
     )
     orientation: str = Field(
@@ -105,6 +111,16 @@ class PlannerComponent(BaseModel):
                     "hero=50-60% (max 1/slide), peer=equal split, "
                     "supporting=25-35%, minor=10-15%.",
     )
+    children: list[PlannerComponent] = Field(
+        default_factory=list,
+        description="Child components when kind='group'. A group composes "
+                    "related components into a single semantic unit. Children "
+                    "are content-bearing components — NOT other groups (max 1 "
+                    "level of nesting). Must be empty when kind is not 'group'.",
+    )
+
+
+PlannerComponent.model_rebuild()
 
 
 class PlannerSlide(BaseModel):

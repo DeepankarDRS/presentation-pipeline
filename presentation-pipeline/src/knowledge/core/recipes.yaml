@@ -70,6 +70,8 @@ table_card: |
 bullet_list: |
   # Bullets: use <Ul>/<Li> -- POM's native list nodes. Band h ~ 40 per item
   # + padding. Never use separate <Text> elements with manual dashes.
+  # IMPORTANT: <Li> only allows inline children (B, I, Span, Mark, etc.).
+  # Do NOT put <Icon>, <Shape>, or any block element inside <Li>.
   <VStack w="max" h="200" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
     <Ul fontSize="13" color="$textMain" lineHeight="1.4">
       <Li>Close 3 enterprise logos worth $4M+ combined ARR</Li>
@@ -77,6 +79,30 @@ bullet_list: |
       <Li>Ship the analytics v2 dashboard before the board meeting</Li>
     </Ul>
   </VStack>
+
+icon_bullet_list: |
+  # Icon + text rows: when you want icons alongside items, do NOT put <Icon>
+  # inside <Li>. Instead use a VStack of HStack rows, each with Icon + Text.
+  <VStack w="max" h="200" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+    <HStack w="max" gap="10" alignItems="center">
+      <Icon name="zap" size="18" color="$accent" />
+      <Text fontSize="13" color="$textMain">Instant delivery under 10 minutes</Text>
+    </HStack>
+    <HStack w="max" gap="10" alignItems="center">
+      <Icon name="clock" size="18" color="$accent" />
+      <Text fontSize="13" color="$textMain">24/7 availability across all zones</Text>
+    </HStack>
+    <HStack w="max" gap="10" alignItems="center">
+      <Icon name="target" size="18" color="$accent" />
+      <Text fontSize="13" color="$textMain">Targeted visibility during peak moments</Text>
+    </HStack>
+  </VStack>
+
+badge: |
+  # Badge: status pill / category tag. Inline accent, NOT a band.
+  # Variants: success=pale green, warning=pale amber, danger=pale red,
+  # info=pale blue, neutral=pale gray, accent=$accent tint.
+  <Shape shapeType="roundRect" w="120" h="26" fill.color="DCFCE7" color="15803D" fontSize="10" bold="true" borderRadius="999">ON TRACK</Shape>
 
 callout: |
   # Callout / narrative strip: band h 80-120.

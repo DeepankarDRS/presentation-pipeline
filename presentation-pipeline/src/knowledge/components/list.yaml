@@ -65,3 +65,4 @@ pitfalls:
   - "No nested <Ul> inside <Li> in the MVP — keep lists flat."
   - "Don't mix a <Ul> and manual bullet characters in <Text>; pick one."
   - "Lowercase <ul>/<li> are HTML tags — POM silently rejects them. Use <Ul>/<Li>."
+  - "<Li> ONLY allows inline formatting children: B, I, A, U, S, Sub, Sup, Span, Mark. <Icon>, <Shape>, <VStack>, <HStack> are NOT valid inside <Li> — they will be silently stripped. To place an icon next to a bullet item, put the <Ul> and <Icon> side by side inside an <HStack>, or use a Span with a unicode symbol."

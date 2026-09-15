@@ -190,6 +190,9 @@ color_discipline: >
   slide bg $surface; inverted panel $textMain. chartColors is literal hex,
   copied from the resolved palette - $tokens do NOT resolve inside it.
   Do NOT emit a <Theme> - the pipeline injects exactly one.
+  COVER/HERO slides follow the SAME token rules — never hardcode raw hex
+  for large backgrounds (use $surface, $surfaceAlt, $textMain, $accent).
+  Raw hex is acceptable ONLY for chartColors and small decorative accents.
 
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:
@@ -220,6 +223,80 @@ render_gotchas:
      $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
 
 # --- pre-emit checklist ---------------------------------------------
+group_rendering: |
+  When the user prompt contains a GROUP, render it as a VStack container.
+  The group's visual-intent (design_hint) determines the container treatment:
+
+  GRAMMAR:
+    group -> <VStack w="max" h="<from weight budget>" padding="P" gap="G"
+             [styling from intent] alignItems="stretch">
+             ...children rendered inside...
+           </VStack>
+
+  INTENT -> STYLING MAP:
+    "card"              -> backgroundColor="$surfaceAlt" borderRadius="14"
+                           border.color="$border" border.width="1"
+                           padding="16-22" gap="8-14"
+    "card with shadow"  -> same as card + shadow.type="outer" shadow.color="000000"
+                           shadow.opacity="0.08" shadow.blur="16" shadow.offset="4"
+    "dark panel"        -> backgroundColor="$textMain" borderRadius="14-18"
+                           padding="18-24" gap="10-16"
+                           (children use color="$surfaceAlt" for text)
+    "accent card"       -> backgroundColor="$surfaceAlt"
+                           borderLeft.color="$accent" borderLeft.width="5"
+                           padding="16-22" gap="8-14"
+                           (NO borderRadius with accent stripe - renders poorly)
+    "metric strip"      -> direction changes to HStack instead of VStack.
+                           <HStack w="max" h="<budget>" gap="14" alignItems="stretch">
+                           Children are peer-weight tiles side by side.
+    "dashboard section" -> backgroundColor="$surfaceAlt" borderRadius="14"
+                           border.color="$border" border.width="1"
+                           padding="16-22" gap="10-14"
+                           First child is typically a header (eyebrow or title).
+    "bordered section"  -> border.color="$border" border.width="1"
+                           borderRadius="12" padding="14-18" gap="8-12"
+    "comparison"        -> HStack root: children sit side by side with gap="14-18".
+                           Each child gets equal width (w="max").
+    (no intent / empty) -> plain VStack with gap="10-14", no background.
+                           Children still grouped spatially but no card treatment.
+
+  HEIGHT BUDGET FOR GROUPS:
+    A group's weight determines its band height (same rules as any component).
+    Internal padding + children heights + gaps must fit within it.
+    Compute: child_available = group_h - 2*padding - (N_children-1)*gap.
+    Children split child_available by their own weights.
+
+  CHILDREN RENDERING:
+    Each child inside a group is rendered exactly as if it were a standalone
+    component - same recipes, same sizing rules. The group container is JUST
+    the wrapper; it does not change how its children look internally.
+
+  ICON, BADGE, EYEBROW, CTA (lightweight children):
+    icon     -> <Icon name="..." size="N" color="..." /> or with variant:
+               <Icon name="..." size="N" color="..." variant="circle-filled"
+                bgColor="..." w="36" h="36" />
+    badge    -> the existing badge recipe: <Shape shapeType="roundRect"
+               w="80-160" h="24-30" fill.color="<tint>" color="$textMain"
+               fontSize="10" bold="true" borderRadius="999">LABEL</Shape>
+               Variants: success=pale green fill, warning=pale amber,
+               danger=pale red, info=pale blue, neutral=pale gray, accent=$accent tint
+    eyebrow  -> <Text fontSize="10-11" bold="true" letterSpacing="2"
+               color="$accent">CATEGORY LABEL</Text>
+    cta      -> <Shape shapeType="roundRect" w="max" h="44-52"
+               fill.color="$accent" color="$surface" fontSize="14"
+               bold="true" borderRadius="10">Button Text</Shape>
+    These are SMALL: icon h 28-42, badge h 24-30, eyebrow auto, cta h 44-52.
+    They do NOT get their own band - they live INSIDE a group's VStack as
+    children alongside larger content components.
+
+design_variety: >
+  NEVER repeat the same visual pattern across consecutive slides. Vary the
+  closing band treatment across the deck — use at most ONE inverted panel
+  ($textMain bg) per 3 slides; alternate with accent-stripe callouts,
+  bordered sections, metric strips, or no closing band at all. Vary card
+  treatments too — not every slide needs a card. A deck with five identical
+  dark bottom panels looks templated, not designed.
+
 checklist:
   - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
   - "2-4 bands, each w=\"max\"; the divisions differ band-to-band."

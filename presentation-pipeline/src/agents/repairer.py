@@ -28,6 +28,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from src.agents.context_builder import _collect_kinds
 from src.compiler.repair_guidance import (
     build_error_guidance,
     error_signatures,
@@ -97,7 +98,7 @@ def _select_template(state: PresentationState) -> str:
     slide_plans = state.get("slide_plans", [])
     idx = state.get("current_slide_index", 0)
     plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
-    kinds = [c.get("kind", "") for c in plan.get("components", [])]
+    kinds = _collect_kinds(plan.get("components", []))
 
     has_chart = "chart" in kinds
     has_table = "table" in kinds

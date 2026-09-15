@@ -30,12 +30,14 @@ Each slide's `narrative_role` must:
 
 **The single source of truth for all slide content.** Every downstream agent — the slide component planner, the generator — derives its content exclusively from these messages.
 
-Each key_message carries SEMANTIC intent. It is NOT just text for a bullet list. The slide component planner reads the shape of each message to decide which component type fits:
-- A standalone metric → KPI tile: "ARR reached $42.8M (+18% QoQ)"
-- A time-series or comparison → chart: "Revenue by quarter: Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M"
-- A multi-column record set → table: "Enterprise $28.1M +22% | Mid-Market $10.4M +14% | SMB $4.3M +8%"
-- A qualitative insight → narrative or bullet: "Self-serve onboarding could cut CAC payback from 14 to 10 months"
-- A sequential process → flow/timeline: "Phase 1: Discovery → Phase 2: Design → Phase 3: Build → Phase 4: Deploy"
+Each key_message carries SEMANTIC intent — it describes the SHAPE of the information, not the component that will render it. The downstream slide component planner reads the shape to decide which component type and composition fits:
+- A standalone metric → quantitative emphasis: "ARR reached $42.8M (+18% QoQ)"
+- A time-series or comparison → temporal/comparative data: "Revenue by quarter: Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M"
+- A multi-column record set → structured multi-attribute data: "Enterprise $28.1M +22% | Mid-Market $10.4M +14% | SMB $4.3M +8%"
+- A qualitative insight → explanatory prose: "Self-serve onboarding could cut CAC payback from 14 to 10 months"
+- A sequential process → ordered sequence: "Phase 1: Discovery → Phase 2: Design → Phase 3: Build → Phase 4: Deploy"
+
+These describe information shape only. The downstream slide component planner decides the actual component representation and whether multiple related messages should be composed into a grouped structure.
 
 Rules:
 - Must be specific and falsifiable. BAD: "Shows strong growth." GOOD: "Revenue grew 40% YoY to $42.8M in FY2025."
@@ -96,3 +98,21 @@ When supplied_content is available:
 ## Section Labels (optional)
 
 Use section labels when the deck has clear phases: "Context", "Problem", "Solution", "Data", "Roadmap", "Recommendation". Leave empty if no sections apply.
+
+## Downstream Component Planning Boundary
+
+You define WHAT the slide communicates, not HOW its visual components are structured.
+
+The downstream slide component planner is responsible for:
+- Choosing component types (kpi_row, chart, table, etc.)
+- Determining whether components are independent or grouped into compositions
+- Creating hierarchical component structures when appropriate
+- Assigning component weights, density, and layout hints
+- Producing component-level content_data
+
+You must NOT:
+- Prescribe component types, nesting, or group/container structures
+- Reference POM nodes (VStack, HStack, Text, Shape, etc.)
+- Specify component IDs or component-level layout attributes
+
+Preserve semantic relationships in key_messages and visual_emphasis so the downstream planner has enough information to construct the composition hierarchy.
