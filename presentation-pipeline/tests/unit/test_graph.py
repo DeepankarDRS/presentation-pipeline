@@ -110,6 +110,14 @@ def test_route_after_validator_fail_budget_exhausted():
     assert route_after_validator(state) == "evaluator"
 
 
+def test_route_after_validator_fail_stall_breaks_loop():
+    state = initial_state(run_id="r5s", raw_request="test")
+    state["compile_result"] = {"ok": False, "retryable": True, "diagnostics": [{"type": "OVERFLOW", "message": "err"}], "warnings": []}
+    state["retry_count"] = 1
+    state["stall_detected"] = True
+    assert route_after_validator(state) == "evaluator"
+
+
 def test_route_after_critic_pass():
     state = initial_state(run_id="r7", raw_request="test")
     state["critic_result"] = {"passed": True, "issues": []}
@@ -121,6 +129,14 @@ def test_route_after_critic_fail():
     state["critic_result"] = {"passed": False, "issues": [{"severity": "high"}]}
     state["retry_count"] = 0
     assert route_after_critic(state) == "repairer"
+
+
+def test_route_after_critic_fail_stall_breaks_loop():
+    state = initial_state(run_id="r8s", raw_request="test")
+    state["critic_result"] = {"passed": False, "issues": [{"severity": "high"}]}
+    state["retry_count"] = 1
+    state["stall_detected"] = True
+    assert route_after_critic(state) == "evaluator"
 
 
 @patch("src.agents.critic.get_llm")
@@ -246,6 +262,15 @@ def test_route_validator_budget_exhausted_multi_slide():
         compile_result={"ok": False, "retryable": True, "diagnostics": [{"type": "X", "message": "e"}], "warnings": []},
         retry_count=3,
         retry_budget=3,
+    )
+    assert route_after_validator(state) == "slide_router"
+
+
+def test_route_validator_stall_breaks_loop_multi_slide():
+    state = _multi_slide_state(
+        compile_result={"ok": False, "retryable": True, "diagnostics": [{"type": "OVERFLOW", "message": "e"}], "warnings": []},
+        retry_count=1,
+        stall_detected=True,
     )
     assert route_after_validator(state) == "slide_router"
 

@@ -18,7 +18,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.state import AttemptRecord, PresentationState
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import extract_usage, get_llm
 
 logger = logging.getLogger(__name__)
 
@@ -87,10 +87,10 @@ def generator_node(state: PresentationState) -> dict[str, Any]:
     response = llm.invoke(messages)
     raw_xml = response.content
 
-    token_usage = response.response_metadata.get("token_usage", {})
-    tokens_in = token_usage.get("prompt_tokens", 0)
-    tokens_out = token_usage.get("completion_tokens", 0)
-    model = response.response_metadata.get("model_name", "unknown")
+    usage = extract_usage(response)
+    tokens_in = usage["tokens_in"]
+    tokens_out = usage["tokens_out"]
+    model = usage["model"]
     truncated = response.response_metadata.get("finish_reason") == "length"
     if truncated:
         logger.warning("generator: LLM output truncated at max_tokens — XML is incomplete")

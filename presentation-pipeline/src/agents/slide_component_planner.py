@@ -32,7 +32,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from src.agents.planner_schema import PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.state import ComponentPlan, PresentationState, SlidePlan
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
 
@@ -168,19 +168,28 @@ def plan_single_slide(
     system_msg = _jinja_env.get_template("system.j2").render()
 
     llm = get_llm("slide_component_planner")
-    structured_llm = llm.with_structured_output(PlannerSlide, method="json_schema")
+    structured_llm = llm.with_structured_output(
+        PlannerSlide, method="json_schema", include_raw=True,
+    )
 
-    result: PlannerSlide = structured_llm.invoke([
+    raw_result = structured_llm.invoke([
         SystemMessage(content=system_msg),
         HumanMessage(content=user_msg),
     ])
+    result, usage = unpack_raw(raw_result)
 
-    return _planner_slide_to_state(
+    logger.info(
+        f"slide_component_planner: slide {slide.get('slide_index', 0)} "
+        f"{usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}"
+    )
+
+    plan = _planner_slide_to_state(
         slide.get("slide_index", 0),
         result,
         supplied_content=supplied_content,
         slide_title=slide.get("slide_title", ""),
     )
+    return plan, usage
 
 
 # ── Serial batch node (used when SERIALIZE_SLIDES=True) ────────────────────
@@ -195,20 +204,22 @@ def slide_plan_serial_node(state: PresentationState) -> dict[str, Any]:
     logger.info(f"slide_plan_serial: planning {len(slides)} slide(s) sequentially")
 
     assembled: list[SlidePlan] = []
+    history: list[dict[str, Any]] = []
     for slide in slides:
-        plan = plan_single_slide(
+        plan, usage = plan_single_slide(
             slide,
             outline_plan=outline,
             deck_settings=deck_settings,
             supplied_content=supplied_content,
         )
         assembled.append(plan)
+        history.append({"attempt": 0, "tier": 0, **usage})
         logger.info(
             f"slide_plan_serial: slide {slide.get('slide_index', 0) + 1}/{len(slides)} done "
             f"({len(plan.get('components', []))} components)"
         )
 
-    return {"assembled_slide_plans": assembled}
+    return {"assembled_slide_plans": assembled, "generation_history": history}
 
 
 # ── Fan-out node (used when SERIALIZE_SLIDES=False, default) ───────────────
@@ -234,7 +245,7 @@ def slide_component_planner_node(state: PresentationState) -> dict[str, Any]:
         f"'{slide.get('slide_title', '')}'"
     )
 
-    plan = plan_single_slide(
+    plan, usage = plan_single_slide(
         slide,
         outline_plan=outline,
         deck_settings=deck_settings,
@@ -247,4 +258,7 @@ def slide_component_planner_node(state: PresentationState) -> dict[str, Any]:
         f"density={plan.get('density', '?')})"
     )
 
-    return {"assembled_slide_plans": [plan]}
+    return {
+        "assembled_slide_plans": [plan],
+        "generation_history": [{"attempt": 0, "tier": 0, **usage}],
+    }

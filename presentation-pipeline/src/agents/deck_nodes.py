@@ -20,7 +20,7 @@ from src.agents.repairer import build_patch_prompts
 from src.compiler.compiler_client import CompilerError, compile_xml
 from src.compiler.normalizer import ensure_single_theme, normalize_xml, strip_theme
 from src.state import PresentationState
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import extract_usage, get_llm
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,9 @@ def _call_deck_repair_llm(
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ])
-    return response.content
+    usage = extract_usage(response)
+    logger.info(f"deck_repair: {usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}")
+    return response.content, usage
 
 
 def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> tuple[str, int]:
@@ -214,6 +216,7 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
     forbidden_tags = (state.get("contract") or {}).get("forbidden_tags", [])
     working_xml = combined_xml
     attempt = 0
+    repair_history: list[dict[str, Any]] = []
     while (
         not compile_result.get("ok", False)
         and compile_result.get("retryable", False)
@@ -224,10 +227,11 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
         logger.info(f"deck_assembler: compile failed, repair attempt {attempt}/{MAX_DECK_REPAIR_ATTEMPTS}")
 
         try:
-            repaired = _call_deck_repair_llm(
+            repaired, usage = _call_deck_repair_llm(
                 working_xml, diags,
                 forbidden_tags=forbidden_tags, theme_element=theme,
             )
+            repair_history.append({"attempt": attempt, "tier": 0, **usage})
         except Exception as exc:
             logger.error(f"deck_assembler: repair LLM call failed: {exc}")
             break
@@ -244,9 +248,12 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
     if compile_result.get("pptx_path"):
         logger.info(f"deck_assembler: pptx → {compile_result['pptx_path']}")
 
-    return {
+    result: dict[str, Any] = {
         "current_xml": working_xml,
         "compile_result": compile_result,
         "pptx_path": compile_result.get("pptx_path"),
         "excluded_slides": [s["slide_index"] for s in excluded],
     }
+    if repair_history:
+        result["generation_history"] = repair_history
+    return result

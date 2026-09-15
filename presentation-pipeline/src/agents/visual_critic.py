@@ -17,7 +17,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.agents.critic_schema import CriticOutput
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +38,15 @@ def run_visual_critic(
     current_xml: str,
     slide_plan: dict[str, Any],
     theme_element: str,
-) -> list[dict[str, Any]]:
-    """Run vision LLM on the screenshot and return visual issues.
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Run vision LLM on the screenshot and return (visual_issues, usage).
 
-    Returns an empty list on any failure (fail-open, same as text critic).
+    Returns ([], zero_usage) on any failure (fail-open, same as text critic).
     """
+    zero_usage = {"tokens_in": 0, "tokens_out": 0, "model": "unknown"}
     if not Path(screenshot_path).exists():
         logger.warning(f"visual_critic: screenshot not found: {screenshot_path}")
-        return []
+        return [], zero_usage
 
     system_tmpl = _jinja_env.get_template("system.j2")
     user_tmpl = _jinja_env.get_template("user.j2")
@@ -60,7 +61,9 @@ def run_visual_critic(
     image_b64 = _encode_image(screenshot_path)
 
     llm = get_llm("visual_critic")
-    structured_llm = llm.with_structured_output(CriticOutput, method="json_schema")
+    structured_llm = llm.with_structured_output(
+        CriticOutput, method="json_schema", include_raw=True,
+    )
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -80,10 +83,12 @@ def run_visual_critic(
     ]
 
     try:
-        result: CriticOutput = structured_llm.invoke(messages)
+        raw_result = structured_llm.invoke(messages)
     except Exception as e:
         logger.error(f"visual_critic: LLM call failed: {e}")
-        return []
+        return [], zero_usage
+
+    result, usage = unpack_raw(raw_result)
 
     issues = []
     for issue in result.issues:
@@ -96,4 +101,5 @@ def run_visual_critic(
         })
 
     logger.info(f"visual_critic: found {len(issues)} visual issue(s)")
-    return issues
+    logger.info(f"visual_critic: {usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}")
+    return issues, usage

@@ -19,7 +19,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.elicitor_schema import ElicitorOutput
 from src.state import PresentationState
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
 
@@ -69,19 +69,23 @@ def check_and_elicit(
     system_prompt = _jinja_env.get_template("system.j2").render()
 
     llm = get_llm(llm_role)
-    structured_llm = llm.with_structured_output(ElicitorOutput, method="json_schema")
+    structured_llm = llm.with_structured_output(
+        ElicitorOutput, method="json_schema", include_raw=True,
+    )
 
-    result: ElicitorOutput = structured_llm.invoke([
+    raw_result = structured_llm.invoke([
         SystemMessage(content=system_prompt),
         HumanMessage(content=user_prompt),
     ])
+    result, usage = unpack_raw(raw_result)
 
     logger.info(
         f"elicitor: is_sufficient={result.is_sufficient}, "
         f"reasoning='{result.reasoning[:80]}', "
         f"questions={len(result.questions)}"
     )
-    return result
+    logger.info(f"elicitor: {usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}")
+    return result, usage
 
 
 # ── Graph node ──────────────────────────────────────────────────────────────
@@ -98,18 +102,25 @@ def elicitor_node(state: PresentationState) -> dict[str, Any]:
         return {"elicitation_needed": False}
 
     deck_settings = state.get("deck_settings") or {}
-    result = check_and_elicit(
+    result, usage = check_and_elicit(
         context=state.get("raw_request", ""),
         additional_instructions=deck_settings.get("additional_instructions", ""),
         deck_settings=deck_settings,
         supplied_content=state.get("supplied_content"),
     )
 
+    history = [{"attempt": 0, "tier": 0, **usage}]
+
     if result.is_sufficient:
-        return {"elicitation_needed": False, "elicitation_questions": []}
+        return {
+            "elicitation_needed": False,
+            "elicitation_questions": [],
+            "generation_history": history,
+        }
 
     questions = [q.model_dump() for q in result.questions]
     return {
         "elicitation_needed": True,
         "elicitation_questions": questions,
+        "generation_history": history,
     }

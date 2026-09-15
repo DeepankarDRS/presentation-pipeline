@@ -633,7 +633,7 @@ async def elicit(request: ElicitRequest) -> dict[str, Any]:
 
     run_id = uuid.uuid4().hex[:12]
     try:
-        result = await asyncio.to_thread(
+        result, _usage = await asyncio.to_thread(
             check_and_elicit,
             request.prompt,
             deck_settings=request.deck_settings,
@@ -686,7 +686,7 @@ async def create_outline(request: OutlineRequest) -> dict[str, Any]:
     elicitation_result = None
     if not request.elicitation_answers:
         try:
-            ec = await asyncio.to_thread(
+            ec, _usage = await asyncio.to_thread(
                 check_and_elicit,
                 request.prompt,
                 additional_instructions=deck_settings.get("additional_instructions", ""),

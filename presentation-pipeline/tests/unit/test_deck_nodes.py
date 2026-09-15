@@ -40,7 +40,7 @@ def test_assemble_deck_xml_strips_contamination():
     dirty_1 = f'{theme}\n<Slide><VStack w="1280" h="720"><Text color="#FF0000">a<br/>b</Text></VStack></Slide>'
     dirty_2 = f'{theme}\n<Slide><VStack w="1280" h="720" spacing="8"><Text>Slide 2</Text></VStack></Slide>'
 
-    combined = assemble_deck_xml([dirty_1, dirty_2], theme)
+    combined, count = assemble_deck_xml([dirty_1, dirty_2], theme)
 
     assert "<br" not in combined
     assert "#FF0000" not in combined
@@ -48,10 +48,13 @@ def test_assemble_deck_xml_strips_contamination():
     assert combined.count("<Theme") == 1
     assert combined.lstrip().startswith("<Theme")
     assert combined.count("<Slide>") == 2
+    assert count == 2
 
 
 def test_assemble_deck_xml_no_slide_block():
-    assert assemble_deck_xml(["<Theme />", "no slide here"], "<Theme />") == ""
+    combined, count = assemble_deck_xml(["<Theme />", "no slide here"], "<Theme />")
+    assert combined == ""
+    assert count == 0
 
 
 def test_slide_router_saves_normalized_xml():
@@ -195,7 +198,8 @@ def test_deck_assembler_dedupes_theme_inside_slide(mock_compile):
 def test_deck_assembler_repairs_retryable_compile_failure(mock_compile, mock_repair):
     good_slide = '<Slide><VStack w="1280" h="720"><Text>Fixed</Text></VStack></Slide>'
     mock_repair.return_value = (
-        '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n' + good_slide
+        '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n' + good_slide,
+        {"tokens_in": 100, "tokens_out": 200, "model": "gpt-4.1"},
     )
     mock_compile.side_effect = [
         {"ok": False, "pptx_path": None,
@@ -222,7 +226,10 @@ def test_deck_assembler_repairs_retryable_compile_failure(mock_compile, mock_rep
 @patch("src.agents.deck_nodes._call_deck_repair_llm")
 @patch("src.agents.deck_nodes.compile_xml")
 def test_deck_assembler_gives_up_after_two_repairs(mock_compile, mock_repair):
-    mock_repair.return_value = "<Theme />\n<Slide><VStack w='1280' h='720'/></Slide>"
+    mock_repair.return_value = (
+        "<Theme />\n<Slide><VStack w='1280' h='720'/></Slide>",
+        {"tokens_in": 100, "tokens_out": 200, "model": "gpt-4.1"},
+    )
     mock_compile.return_value = {
         "ok": False, "pptx_path": None,
         "diagnostics": [{"type": "X", "message": "y"}],

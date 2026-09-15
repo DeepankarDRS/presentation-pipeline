@@ -26,7 +26,7 @@ from src.agents.critic_schema import CriticOutput
 from src.agents.visual_critic import run_visual_critic
 from src.compiler.screenshot import render_screenshots
 from src.state import CriticResult, PresentationState, VisualCriticResult
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +62,14 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
     return system_prompt, user_prompt
 
 
-def _run_ai_check(state: PresentationState) -> list[dict[str, Any]]:
-    """Run the AI quality check and return the list of issues."""
+def _run_ai_check(state: PresentationState) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Run the AI quality check and return (issues, usage)."""
     system_prompt, user_prompt = _render_prompts(state)
 
     llm = get_llm("critic")
-    structured_llm = llm.with_structured_output(CriticOutput, method="json_schema")
+    structured_llm = llm.with_structured_output(
+        CriticOutput, method="json_schema", include_raw=True,
+    )
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -75,12 +77,15 @@ def _run_ai_check(state: PresentationState) -> list[dict[str, Any]]:
     ]
 
     try:
-        result: CriticOutput = structured_llm.invoke(messages)
+        raw_result = structured_llm.invoke(messages)
     except Exception as e:
         logger.error(f"critic: LLM call failed: {e}")
-        return []
+        return [], {"tokens_in": 0, "tokens_out": 0, "model": "unknown"}
 
-    return [
+    result, usage = unpack_raw(raw_result)
+    logger.info(f"critic: {usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}")
+
+    issues = [
         {
             "severity": issue.severity,
             "type": issue.type,
@@ -89,6 +94,7 @@ def _run_ai_check(state: PresentationState) -> list[dict[str, Any]]:
         }
         for issue in result.issues
     ]
+    return issues, usage
 
 
 def _format_issues_for_display(issues: list[dict[str, Any]]) -> str:
@@ -154,12 +160,13 @@ def _manual_checkpoint(
 
 def _run_visual_review(
     state: PresentationState,
-) -> tuple[list[dict[str, Any]], str | None]:
-    """Take screenshot and run visual critic. Returns (issues, screenshot_path)."""
+) -> tuple[list[dict[str, Any]], str | None, dict[str, Any]]:
+    """Take screenshot and run visual critic. Returns (issues, screenshot_path, usage)."""
+    zero_usage = {"tokens_in": 0, "tokens_out": 0, "model": "unknown"}
     cr = state.get("compile_result") or {}
     pptx_path = cr.get("pptx_path")
     if not pptx_path or not cr.get("ok", False):
-        return [], None
+        return [], None, zero_usage
 
     run_id = state.get("run_id", "unknown")
     idx = state.get("current_slide_index", 0)
@@ -175,23 +182,23 @@ def _run_visual_review(
     batch = render_screenshots(pptx_path, str(output_dir))
     if not batch.ok or not batch.slides:
         logger.warning(f"critic: screenshot failed: {batch.error}")
-        return [], None
+        return [], None, zero_usage
 
     screenshot_path = batch.slides[0].png_path
     if not screenshot_path:
-        return [], None
+        return [], None, zero_usage
 
     slide_plans = state.get("slide_plans", [])
     plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
 
-    visual_issues = run_visual_critic(
+    visual_issues, visual_usage = run_visual_critic(
         screenshot_path=screenshot_path,
         current_xml=state.get("current_xml", ""),
         slide_plan=plan,
         theme_element=state.get("theme_element", ""),
     )
 
-    return visual_issues, screenshot_path
+    return visual_issues, screenshot_path, visual_usage
 
 
 def critic_node(state: PresentationState) -> dict[str, Any]:
@@ -201,9 +208,9 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
     idx = state.get("current_slide_index", 0)
 
     logger.info(f"critic: {mode} mode — running LLM quality check")
-    issues = _run_ai_check(state)
+    issues, critic_usage = _run_ai_check(state)
 
-    visual_issues, screenshot_path = _run_visual_review(state)
+    visual_issues, screenshot_path, visual_usage = _run_visual_review(state)
     issues.extend(visual_issues)
 
     visual_result = VisualCriticResult(
@@ -223,6 +230,10 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
     med_count = sum(1 for i in issues if i["severity"] == "medium")
     low_count = sum(1 for i in issues if i["severity"] == "low")
 
+    usage_record = [{"attempt": 0, "tier": 0, **critic_usage}]
+    if visual_usage.get("tokens_in", 0) > 0:
+        usage_record.append({"attempt": 0, "tier": 0, **visual_usage})
+
     if mode == "manual":
         result = _manual_checkpoint(issues, interactive)
         logger.info(
@@ -230,6 +241,7 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
             f"(high={high_count}, medium={med_count}, low={low_count})"
         )
         updates["critic_result"] = result
+        updates["generation_history"] = usage_record
         return updates
 
     has_high = any(i["severity"] == "high" for i in issues)
@@ -241,4 +253,5 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
     )
 
     updates["critic_result"] = CriticResult(passed=passed, issues=issues)
+    updates["generation_history"] = usage_record
     return updates

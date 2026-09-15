@@ -10,12 +10,15 @@ Usage:
 from __future__ import annotations
 
 import functools
+import logging
 import os
 from pathlib import Path
 from typing import Any
 
 import yaml
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
+
+logger = logging.getLogger(__name__)
 
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
 _MODELS_FILE = _PIPELINE_ROOT / "models.yaml"
@@ -69,8 +72,40 @@ def get_llm(step: str, **overrides: Any) -> ChatOpenAI | AzureChatOpenAI:
     )
 
 
+_ZERO_USAGE: dict[str, Any] = {"tokens_in": 0, "tokens_out": 0, "model": "unknown"}
+
+
+def extract_usage(response) -> dict[str, Any]:
+    """Extract tokens_in, tokens_out, model from an AIMessage's metadata."""
+    meta = getattr(response, "response_metadata", None) or {}
+    token_usage = meta.get("token_usage", {})
+    return {
+        "tokens_in": token_usage.get("prompt_tokens", 0),
+        "tokens_out": token_usage.get("completion_tokens", 0),
+        "model": meta.get("model_name", "unknown"),
+    }
+
+
+def unpack_raw(result) -> tuple[Any, dict[str, Any]]:
+    """Unpack a with_structured_output(include_raw=True) result.
+
+    Returns (parsed_object, usage_dict). Falls back gracefully when the
+    result is already a parsed Pydantic model (e.g. in test mocks that
+    don't use include_raw).
+    """
+    if isinstance(result, dict) and "parsed" in result and "raw" in result:
+        return result["parsed"], extract_usage(result["raw"])
+    return result, dict(_ZERO_USAGE)
+
+
 def get_pricing(model: str) -> dict[str, float]:
     """Return {input, output} cost per 1M tokens for a model name."""
     cfg = _load_models_config()
     pricing = cfg.get("pricing") or {}
-    return pricing.get(model, {"input": 0.0, "output": 0.0})
+    if model in pricing:
+        return pricing[model]
+    candidates = [k for k in pricing if model.startswith(k)]
+    if candidates:
+        return pricing[max(candidates, key=len)]
+    logger.warning("get_pricing: no pricing entry for %r; cost will be 0", model)
+    return {"input": 0.0, "output": 0.0}

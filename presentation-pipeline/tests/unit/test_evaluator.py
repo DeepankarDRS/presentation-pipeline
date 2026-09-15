@@ -31,8 +31,18 @@ def test_compute_cost_mini():
     assert cost == 2.0  # 0.40 input + 1.60 output
 
 
+def test_compute_cost_dated_snapshot():
+    cost = _compute_cost(1_000_000, 1_000_000, "gpt-4.1-mini-2025-04-14")
+    assert cost == 2.0  # matches gpt-4.1-mini via prefix
+
+
+def test_compute_cost_dated_snapshot_full():
+    cost = _compute_cost(1_000_000, 1_000_000, "gpt-4.1-2025-04-14")
+    assert cost == 10.0  # matches gpt-4.1 (2.00 + 8.00)
+
+
 def test_compute_cost_unknown_model():
-    cost = _compute_cost(1000, 1000, "unknown-model")
+    cost = _compute_cost(1000, 1000, "totally-unknown-model")
     assert cost == 0.0
 
 

@@ -26,7 +26,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from src.agents.outline_planner_schema import OutlinePlannerOutput
 from src.agents.settings_mapper import DeckSettings, settings_to_constraints
 from src.state import PresentationState
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
 
@@ -76,12 +76,15 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
     system_msg = _jinja_env.get_template("system.j2").render()
 
     llm = get_llm("outline_planner")
-    structured_llm = llm.with_structured_output(OutlinePlannerOutput, method="json_schema")
+    structured_llm = llm.with_structured_output(
+        OutlinePlannerOutput, method="json_schema", include_raw=True,
+    )
 
-    result: OutlinePlannerOutput = structured_llm.invoke([
+    raw_result = structured_llm.invoke([
         SystemMessage(content=system_msg),
         HumanMessage(content=user_msg),
     ])
+    result, usage = unpack_raw(raw_result)
 
     outline = {
         "deck_title": result.deck_title,
@@ -93,5 +96,9 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
         f"outline_planner: {len(result.slides)} slide(s), "
         f"core_hook='{result.core_hook[:60]}...'"
     )
+    logger.info(f"outline_planner: {usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}")
 
-    return {"outline_plan": outline}
+    return {
+        "outline_plan": outline,
+        "generation_history": [{"attempt": 0, "tier": 0, **usage}],
+    }

@@ -23,7 +23,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.plan_reviewer_schema import PlanReviewerOutput
 from src.state import PresentationState
-from src.utils.llm_client import get_llm
+from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
 
@@ -59,12 +59,15 @@ def plan_reviewer_node(state: PresentationState) -> dict[str, Any]:
     system_msg = _jinja_env.get_template("system.j2").render()
 
     llm = get_llm("plan_reviewer")
-    structured_llm = llm.with_structured_output(PlanReviewerOutput, method="json_schema")
+    structured_llm = llm.with_structured_output(
+        PlanReviewerOutput, method="json_schema", include_raw=True,
+    )
 
-    result: PlanReviewerOutput = structured_llm.invoke([
+    raw_result = structured_llm.invoke([
         SystemMessage(content=system_msg),
         HumanMessage(content=user_msg),
     ])
+    result, usage = unpack_raw(raw_result)
 
     high_issues = [i for i in result.issues if i.severity == "high"]
     medium_issues = [i for i in result.issues if i.severity == "medium"]
@@ -81,11 +84,14 @@ def plan_reviewer_node(state: PresentationState) -> dict[str, Any]:
                 f"plan_reviewer: HIGH [{issue.type}] on {slide_ref}: {issue.description}"
             )
 
+    logger.info(f"plan_reviewer: {usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}")
+
     return {
         "plan_review": {
             "confidence_score": result.confidence_score,
             "approved": result.approved,
             "summary": result.summary,
             "issues": [i.model_dump() for i in result.issues],
-        }
+        },
+        "generation_history": [{"attempt": 0, "tier": 0, **usage}],
     }

@@ -173,11 +173,13 @@ def route_after_validator(state: PresentationState) -> str:
     if not cr.get("ok", False) and cr.get("retryable", False):
         budget = state.get("retry_budget", 2)
         count = state.get("retry_count", 0)
-        if count < budget:
+        stalled = state.get("stall_detected", False)
+        if count < budget and not stalled:
             logger.info(f"route: compile failed, retry {count+1}/{budget} → repairer")
             return "repairer"
+        reason = "stall" if stalled else "budget"
         target = _slide_done_target(state)
-        logger.info(f"route: compile failed but retry budget exhausted → {target}")
+        logger.info(f"route: compile failed but {reason} → {target}")
         return target
 
     mode = state.get("critic_mode", "off")
@@ -194,11 +196,13 @@ def route_after_critic(state: PresentationState) -> str:
     if not cr.get("passed", True):
         budget = state.get("retry_budget", 2)
         count = state.get("retry_count", 0)
-        if count < budget:
+        stalled = state.get("stall_detected", False)
+        if count < budget and not stalled:
             logger.info(f"route: critic failed, retry {count+1}/{budget} → repairer")
             return "repairer"
+        reason = "stall" if stalled else "budget"
         target = _slide_done_target(state)
-        logger.info(f"route: critic failed but retry budget exhausted → {target}")
+        logger.info(f"route: critic failed but {reason} → {target}")
         return target
     target = _slide_done_target(state)
     logger.info(f"route: critic passed → {target}")
