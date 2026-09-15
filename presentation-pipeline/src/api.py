@@ -316,6 +316,7 @@ def _run_pipeline_sync(
         "run_name": f"api-{run_id}",
         "tags": ["presentation-pipeline", "api"],
         "metadata": {"run_id": run_id},
+        "recursion_limit": 150,
     }
     for chunk in graph.stream(state, config=config):
         for node_name, state_update in chunk.items():
@@ -836,6 +837,7 @@ def _run_pipeline_from_plan_sync(
         "run_name": f"api-from-plan-{run_id}",
         "tags": ["presentation-pipeline", "api", "from-plan"],
         "metadata": {"run_id": run_id},
+        "recursion_limit": 150,
     }
     for chunk in graph.stream(state, config=config):
         for node_name, state_update in chunk.items():

@@ -375,3 +375,63 @@ def test_multi_slide_e2e(
     assert result["completed_slides"][0]["slide_index"] == 0
     assert result["completed_slides"][1]["slide_index"] == 1
     assert mock_deck_compile.called
+
+
+@patch("src.agents.critic.get_llm")
+@patch("src.agents.validator.validate_xml")
+@patch("src.agents.validator.compile_xml")
+@patch("src.agents.generator.get_llm")
+@patch("src.agents.deck_nodes.compile_xml")
+def test_8_slide_deck_no_recursion_error(
+    mock_deck_compile, mock_gen_llm,
+    mock_compile, mock_validate, mock_critic_llm,
+):
+    """8-slide deck completes without hitting the recursion limit."""
+    mock_critic_llm.return_value = _mock_critic_llm()
+
+    xml_tpl = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n<Slide><VStack w="1280" h="720"><Text>Slide {n}</Text></VStack></Slide>'
+
+    call_count = {"n": 0}
+
+    def gen_side_effect(messages):
+        resp = MagicMock()
+        resp.content = xml_tpl.format(n=call_count["n"])
+        resp.response_metadata = {
+            "token_usage": {"prompt_tokens": 100, "completion_tokens": 50},
+            "model_name": "gpt-4.1-mini",
+        }
+        call_count["n"] += 1
+        return resp
+
+    gen_llm = MagicMock()
+    gen_llm.invoke.side_effect = gen_side_effect
+    mock_gen_llm.return_value = gen_llm
+
+    mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
+    mock_compile.return_value = {
+        "ok": True, "pptx_path": "/tmp/slide.pptx",
+        "diagnostics": [], "warnings": [], "retryable": False,
+    }
+    mock_deck_compile.return_value = {
+        "ok": True, "pptx_path": "/tmp/deck-8.pptx",
+        "diagnostics": [], "warnings": [], "retryable": False,
+    }
+
+    state = initial_state(run_id="ms-8slide", raw_request="Create an 8-slide deck")
+    state["slide_plans"] = [
+        {
+            "slide_index": i, "slide_type": "data",
+            "components": [{"kind": "title", "count": 1, "content_summary": f"Slide {i}"}],
+            "density": "normal", "font_tier": "standard",
+            "layout_hint": "standard layout",
+            "content_data": {}, "data_provenance": {},
+        }
+        for i in range(8)
+    ]
+    app = compile_graph()
+    result = app.invoke(state, config={"recursion_limit": 150})
+
+    assert result["passed"] is True
+    assert len(result["completed_slides"]) == 8
+    for i in range(8):
+        assert result["completed_slides"][i]["slide_index"] == i

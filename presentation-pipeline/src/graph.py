@@ -352,6 +352,7 @@ def run(
         "run_name": f"pom-pipeline-{rid}",
         "tags": ["presentation-pipeline"],
         "metadata": {"run_id": rid, "theme": theme, "critic_mode": critic_mode},
+        "recursion_limit": 150,
     }
     final = app.invoke(state, config=config)
     return final
