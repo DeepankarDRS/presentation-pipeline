@@ -270,6 +270,11 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     contract = state.get("contract") or {}
     failing_xml = ""
 
+    slide_plans = state.get("slide_plans", [])
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
+    objective = plan.get("slide_title") or state.get("raw_request", "")
+
     if strategy == PATCH:
         norm = state.get("normalize_result") or {}
         failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
@@ -278,7 +283,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
             problems=problems,
             pre_issues=pre_issues,
             compile_diags=compile_diags,
-            objective=state.get("raw_request", ""),
+            objective=objective,
             forbidden_tags=contract.get("forbidden_tags", []),
             theme_element=contract.get("theme_element", state.get("theme_element", "")),
         )
