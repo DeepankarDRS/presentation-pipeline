@@ -1,0 +1,3794 @@
+{
+  "nodes": [
+    {
+      "id": "architecture_langgraph_presentation_pipeline",
+      "label": "LangGraph Presentation Pipeline",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_pom_xml",
+      "label": "POM XML Markup Language",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_presentation_state",
+      "label": "PresentationState TypedDict",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_planner_node",
+      "label": "Planner Node (LLM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_context_builder_node",
+      "label": "Context Builder Node",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_generator_node",
+      "label": "Generator Node (LLM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_validator_node",
+      "label": "Validator Node (Mechanical)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_critic_node",
+      "label": "Critic Node (LLM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_repairer_node",
+      "label": "Repairer Node (LLM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_evaluator_node",
+      "label": "Evaluator Node (Mechanical)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_compiler_bridge",
+      "label": "Node.js Compiler Bridge",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_xml_normalizer",
+      "label": "XML Normalizer",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_repair_guidance",
+      "label": "Repair Guidance System",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_retry_loop",
+      "label": "Generate-Validate-Repair Retry Loop",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_tiered_prompts",
+      "label": "Tiered Prompt Assembly",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_stall_detection",
+      "label": "Stall Detection Mechanism",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_pom_compiler_v10_3_0",
+      "label": "POM Compiler v10.3.0 (@hirokisakabe/pom)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_knowledge_base",
+      "label": "YAML Knowledge Base",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "architecture_generation_contract",
+      "label": "Generation Contract",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_flow_state_flow",
+      "label": "Line-by-Line Code and State Flow",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_flow_questionnaire_node",
+      "label": "Questionnaire Node",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_flow_style_resolver_node",
+      "label": "Style Resolver Node",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_flow_slide_router_node",
+      "label": "Slide Router Node (Deck Mode)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_flow_deck_assembler_node",
+      "label": "Deck Assembler Node",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_flow_api_path",
+      "label": "API Path (FastAPI + SSE)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_review_critical_review",
+      "label": "Pipeline Critical Review",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_review_deck_critic_bug",
+      "label": "Deck Mode Critic Accounting Bug",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_review_speaker_notes_lost",
+      "label": "Speaker Notes Lost in Pipeline",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_review_fail_open_critic",
+      "label": "Fail-Open Critic Risk",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "code_review_layout_variety_discarded",
+      "label": "Layout Variety Enforcement Discarded",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "editing_architecture_loosely_coupled",
+      "label": "Loosely Coupled Editing Architecture",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "editing_architecture_deck_state",
+      "label": "DeckState Extended State Model",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "editing_architecture_pipeline_tool",
+      "label": "PipelineTool Base Class",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "editing_architecture_reentry_points",
+      "label": "State Re-Entry Points",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "editing_architecture_xml_source_of_truth",
+      "label": "XML as Source of Truth",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "genoffice_feature_adoption",
+      "label": "GenOffice Feature Adoption Plan",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "genoffice_core_hook",
+      "label": "Core Hook Narrative Anchor",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "genoffice_slide_type_taxonomy",
+      "label": "Slide Type Taxonomy",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "genoffice_data_provenance",
+      "label": "Data Source Provenance",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "genoffice_layout_audit",
+      "label": "Layout Audit Post-Generation",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "genoffice_genoffice_pipeline",
+      "label": "GenOffice Pipeline (genspark-ai)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": "https://github.com/genspark-ai/genoffice",
+      "source_url": "https://github.com/genspark-ai/genoffice",
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "flow_pipeline_overview",
+      "label": "POM Pipeline Architecture Overview",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\flow.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "flow_component_vocabulary",
+      "label": "14-Kind Component Vocabulary",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\flow.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "frontend_readme_angular_app",
+      "label": "Angular Frontend Application",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\frontend\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "frontend_src_index_html",
+      "label": "Frontend Index HTML",
+      "file_type": "code",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\frontend\\src\\index.html",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "llm_test_slides_1_xtsy_output",
+      "label": "XTSY Quick Commerce Test Output (Layer Variant)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\llm_test\\slides(1).txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "llm_test_slides_xtsy_output",
+      "label": "XTSY Quick Commerce Test Output",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\llm_test\\slides.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "models_llm_configuration",
+      "label": "LLM Model Configuration",
+      "file_type": "code",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "models_gpt_4_1",
+      "label": "GPT-4.1 Model",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "models_hierarchical_planning",
+      "label": "Hierarchical Planning Pipeline Steps",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "otherpc_test_fable_dashboard",
+      "label": "Fable 5.1 Market Dashboard Test",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\otherpc_test.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "requirements_python_dependencies",
+      "label": "Python Dependencies",
+      "file_type": "code",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\requirements.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_chart",
+      "label": "Chart Component Spec",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\chart.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_chart_dark_theme_axis_bug",
+      "label": "Dark Theme Chart Axis Bug Workaround",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\chart.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_drawing",
+      "label": "Drawing Component Spec (Layer/Line/Arrow/Svg)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\drawing.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_flow",
+      "label": "Flow Component Spec (Flowchart)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\flow.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_list",
+      "label": "List Component Spec (Ul/Ol/Li)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\list.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_matrix",
+      "label": "Matrix Component Spec (2x2 Grid)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\matrix.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_process_arrow",
+      "label": "ProcessArrow Component Spec",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\process-arrow.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_pyramid",
+      "label": "Pyramid Component Spec",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\pyramid.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_shape",
+      "label": "Shape Component Spec",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\shape.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_table_table_component",
+      "label": "Table Component (POM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\table.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_text_text_component",
+      "label": "Text Component (POM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\text.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_timeline_timeline_component",
+      "label": "Timeline Component (POM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\timeline.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_components_tree_tree_component",
+      "label": "Tree Component (POM)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\tree.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_attributes_common_attributes",
+      "label": "Common Box/Layout Attributes",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\attributes.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_design_language_design_language",
+      "label": "Design Language Patterns",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\design-language.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_document_document_structure",
+      "label": "POM Document Structure",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\document.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_house_style_house_style_grammar",
+      "label": "House Style Layout Grammar",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_house_style_height_budget",
+      "label": "Height Budget System",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_house_style_weight_allocation",
+      "label": "Weight Allocation System",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_house_style_group_rendering",
+      "label": "Group Rendering Rules",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_nodes_node_allowlist",
+      "label": "POM Node Allowlist (Phase Registry)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\nodes.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_recipes_compiled_recipes",
+      "label": "Compiled POM Recipes (Copy-the-Shape Snippets)",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\recipes.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_core_validation_validation_rules",
+      "label": "POM Validation Rules & Forbidden Tags",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\validation.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_theme_palettes_palette_library",
+      "label": "Theme Palette Library",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\theme\\palettes.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_knowledge_theme_palettes_chart_on_dark",
+      "label": "Chart-on-Dark Workaround",
+      "file_type": "rationale",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\theme\\palettes.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_node_compile_pom_compiler_wrapper",
+      "label": "compile-pom.js (POM Compiler Wrapper)",
+      "file_type": "code",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\node\\compile-pom.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_node_package_npm_package",
+      "label": "presentation-mvp-compiler (npm package)",
+      "file_type": "code",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\node\\package.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "src_node_package_hirokisakabe_pom",
+      "label": "@hirokisakabe/pom v10.3.0 (External Dependency)",
+      "file_type": "code",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\node\\package.txt",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_llm_test_plan_test_plan",
+      "label": "LLM Test Plan (Planner & Generator)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\LLM_TEST_PLAN.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_cases_architecture_diagram_test_case",
+      "label": "Test Case: Architecture Diagram (Phase D)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\architecture-diagram.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_cases_base_competitor_comparison_test_case",
+      "label": "Test Case: Competitor Comparison",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-competitor-comparison.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_cases_base_org_structure_test_case",
+      "label": "Test Case: Org Structure",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-org-structure.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_cases_base_overstuffed_test_case",
+      "label": "Test Case: Overstuffed (Adversarial)",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-overstuffed.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_cases_base_process_overview_test_case",
+      "label": "Test Case: Process Overview",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-process-overview.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_cases_base_quarterly_metrics_test_case",
+      "label": "Test Case: Quarterly Metrics",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-quarterly-metrics.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tests_cases_base_revenue_trend_yaml",
+      "label": "Base Revenue Trend Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-revenue-trend.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "A",
+        "theme": "emerald-clean",
+        "layout": "full_width_chart",
+        "rationale": "Tests planner decomposition of a revenue trend prompt into title+chart+caption with no pre-specified components"
+      }
+    },
+    {
+      "id": "concept_family_a_base_tests",
+      "label": "Family A — Base Prompt Tests",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-revenue-trend.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "rationale": "Test family where no components are pre-specified — planner must decompose the request autonomously"
+      }
+    },
+    {
+      "id": "tests_cases_base_risks_yaml",
+      "label": "Base Risks Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-risks.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "A",
+        "theme": "amber-mono",
+        "rationale": "Tests planner choosing between table or bullet_list for risk-mitigation pairing"
+      }
+    },
+    {
+      "id": "tests_cases_base_roadmap_yaml",
+      "label": "Base Roadmap Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-roadmap.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "A",
+        "theme": "violet-modern",
+        "rationale": "Tests planner reaching for timeline component for a quarterly roadmap"
+      }
+    },
+    {
+      "id": "tests_cases_base_strategy_statement_yaml",
+      "label": "Base Strategy Statement Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-strategy-statement.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "A",
+        "theme": "corporate-slate",
+        "layout": "hero_statement",
+        "rationale": "Tests planner restraint — choosing title+narrative without adding unrequested charts or KPIs"
+      }
+    },
+    {
+      "id": "tests_cases_base_vague_yaml",
+      "label": "Base Vague Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-vague.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "A",
+        "subtype": "adversarial",
+        "theme": "corporate-slate",
+        "rationale": "Adversarial test — deliberately under-specified prompt to test planner coherence under ambiguity"
+      }
+    },
+    {
+      "id": "tests_cases_chart_and_narrative_yaml",
+      "label": "Chart and Narrative Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\chart-and-narrative.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "B",
+        "theme": "violet-modern",
+        "components": [
+          "title",
+          "chart",
+          "narrative"
+        ],
+        "rationale": "Tests two-column layout pairing a line chart with interpretive narrative text"
+      }
+    },
+    {
+      "id": "concept_phase_test_system",
+      "label": "Phase-Based Test System",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\chart-and-narrative.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phases": [
+          "A",
+          "B",
+          "BC",
+          "AC",
+          "ABC",
+          "D"
+        ],
+        "rationale": "Test cases are organized by IR node phases — Phase B (Chart), C (Table), D (Flow/Formatting), with combinations"
+      }
+    },
+    {
+      "id": "tests_cases_chart_and_table_yaml",
+      "label": "Chart and Table Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\chart-and-table.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "BC",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "chart",
+          "table"
+        ],
+        "rationale": "Tests two-column layout with bar chart and tabular data that must be internally consistent"
+      }
+    },
+    {
+      "id": "tests_cases_comparison_matrix_yaml",
+      "label": "Comparison Matrix Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\comparison-matrix.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "AC",
+        "theme": "violet-modern",
+        "components": [
+          "title",
+          "matrix",
+          "table"
+        ],
+        "rationale": "Tests matrix component (2x2 impact vs effort) alongside a detail table on the same slide"
+      }
+    },
+    {
+      "id": "tests_cases_dark_theme_yaml",
+      "label": "Dark Theme Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\dark-theme.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "ABC",
+        "theme": "midnight-indigo",
+        "components": [
+          "title",
+          "kpi_row",
+          "chart"
+        ],
+        "rationale": "Tests dark theme chart wrapping (chartSurface background for readable axes) and proper token usage"
+      }
+    },
+    {
+      "id": "tests_cases_deck_board_update_yaml",
+      "label": "Deck Board Update Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-board-update.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "B",
+        "theme": "graphite-dark",
+        "slide_count": 6,
+        "slide_types": [
+          "cover",
+          "section_break",
+          "data",
+          "section_break",
+          "content",
+          "closing"
+        ],
+        "rationale": "Tests 6-slide board update with section breaks for slide_type variety and layout_hint diversity"
+      }
+    },
+    {
+      "id": "concept_family_b_deck_tests",
+      "label": "Family B — Deck Tests",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-board-update.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "rationale": "Test family for multi-slide deck generation — planner must produce multiple slide plans with consistent theme"
+      }
+    },
+    {
+      "id": "tests_cases_deck_minimal_2slide_yaml",
+      "label": "Deck Minimal 2-Slide Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-minimal-2slide.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "B",
+        "theme": "sky-minimal",
+        "slide_count": 2,
+        "rationale": "Tests the smallest possible deck — boundary case for len(slide_plans) > 1"
+      }
+    },
+    {
+      "id": "tests_cases_deck_product_launch_data_yaml",
+      "label": "Deck Product Launch Data Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-product-launch-data.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "theme": "midnight-indigo",
+        "slide_count": 6,
+        "product": "Nexus API Gateway",
+        "rationale": "Tests planner with fully supplied data (timeline, flow, KPIs, bullets) across 6 slides — verbatim data usage"
+      }
+    },
+    {
+      "id": "tests_cases_deck_product_launch_yaml",
+      "label": "Deck Product Launch Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-product-launch.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "B",
+        "theme": "emerald-clean",
+        "slide_count": 4,
+        "rationale": "Tests 4-slide product launch with flow and timeline rendering; LLM invents all content"
+      }
+    },
+    {
+      "id": "tests_cases_deck_qbr_data_yaml",
+      "label": "Deck QBR Data Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-qbr-data.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "theme": "corporate-slate",
+        "slide_count": 5,
+        "company": "Acme Analytics",
+        "rationale": "Tests planner distributing fully supplied KPI, chart, table, and bullet data across 5 slides with data_provenance tracking"
+      }
+    },
+    {
+      "id": "concept_supplied_data_test_pattern",
+      "label": "Supplied Data Test Pattern",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-qbr-data.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "rationale": "Test pattern where all data is supplied via supplied_content and planner must use it verbatim with data_provenance tracking"
+      }
+    },
+    {
+      "id": "tests_cases_deck_qbr_yaml",
+      "label": "Deck QBR Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-qbr.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "B",
+        "theme": "corporate-slate",
+        "slide_count": 5,
+        "rationale": "Tests 5-slide QBR with explicit per-slide brief; watches for completed_slides == 5 and per-slide critic preservation"
+      }
+    },
+    {
+      "id": "tests_cases_deck_sales_data_yaml",
+      "label": "Deck Sales Data Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-sales-data.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "theme": "teal-slate",
+        "slide_count": 5,
+        "rationale": "Tests planner distributing heavy supplied pipeline, win-rate, and deal data across 5 slides verbatim"
+      }
+    },
+    {
+      "id": "tests_cases_deck_sales_enablement_yaml",
+      "label": "Deck Sales Enablement Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-sales-enablement.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "B",
+        "theme": "corporate-slate",
+        "slide_count": 5,
+        "rationale": "Tests table-heavy 5-slide deck — three tables all needing consistent Td styling and readable density"
+      }
+    },
+    {
+      "id": "tests_cases_deck_strategy_3slide_yaml",
+      "label": "Deck Strategy 3-Slide Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-strategy-3slide.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "family": "B",
+        "theme": "violet-modern",
+        "slide_count": 3,
+        "rationale": "Tests core_hook spanning all three slides as one unifying sentence, not three separate topics"
+      }
+    },
+    {
+      "id": "tests_cases_financial_report_yaml",
+      "label": "Financial Report Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\financial-report.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "ABC",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "kpi_row",
+          "chart",
+          "table"
+        ],
+        "rationale": "Stresses chart+table data consistency with fully supplied P&L values across KPIs, chart, and table"
+      }
+    },
+    {
+      "id": "tests_cases_flowchart_yaml",
+      "label": "Flowchart Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\flowchart.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "D",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "flow"
+        ],
+        "rationale": "Tests Flow/FlowNode/FlowConnection nodes for a data processing pipeline with decision branching"
+      }
+    },
+    {
+      "id": "tests_cases_inline_formatting_yaml",
+      "label": "Inline Formatting Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\inline-formatting.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "D",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "narrative",
+          "bullet_list",
+          "table"
+        ],
+        "rationale": "Tests all Phase D inline formatting tags (A, U, S, Sub, Sup) in Text, Li, and Td contexts"
+      }
+    },
+    {
+      "id": "tests_cases_kpi_row",
+      "label": "KPI Row Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\kpi-row.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "A",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "kpi_row"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "HStack",
+          "Text",
+          "Span",
+          "Shape"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_matrix_prioritization",
+      "label": "Matrix Prioritization Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\matrix-prioritization.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "post-mvp",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "matrix",
+          "caption"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text",
+          "Shape",
+          "Matrix",
+          "MatrixAxes",
+          "MatrixQuadrants",
+          "MatrixItem"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_maximal_density",
+      "label": "Maximal Density Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\maximal-density.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "ABC",
+        "theme": "graphite-dark",
+        "components": [
+          "title",
+          "kpi_row",
+          "chart",
+          "bullet_list",
+          "table",
+          "caption"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "HStack",
+          "Text",
+          "Span",
+          "Shape",
+          "Ul",
+          "Li",
+          "Chart",
+          "ChartSeries",
+          "ChartDataPoint",
+          "Table",
+          "Col",
+          "Tr",
+          "Td"
+        ],
+        "rationale": "Complexity ceiling case: exercises full node vocabulary, FORBIDDEN blocklist under load, KPI + chart + table + bullets competing for vertical budget. If layout breaks, it breaks here first."
+      }
+    },
+    {
+      "id": "concept_test_case_phases",
+      "label": "Test Case Phase System",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\maximal-density.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "description": "Test cases organized by pipeline phase: A (text/KPI), B (chart), C (table), D (timeline), AB/ABC (mixed), post-mvp (advanced nodes like Matrix, Pyramid, Tree, ProcessArrow)"
+      }
+    },
+    {
+      "id": "tests_cases_minimal_statement",
+      "label": "Minimal Statement Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\minimal-statement.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "A",
+        "theme": "sky-minimal",
+        "components": [
+          "narrative"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text"
+        ],
+        "rationale": "Complexity floor case: smallest possible slide. If contract balloons past {Slide, Theme, VStack, Text}, something regressed."
+      }
+    },
+    {
+      "id": "concept_complexity_spectrum",
+      "label": "Complexity Spectrum Testing",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\minimal-statement.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "description": "Test suite spans from minimal-statement (floor: single text node) to maximal-density (ceiling: full node vocabulary). Boundary cases catch regressions in contract scope and layout overflow."
+      }
+    },
+    {
+      "id": "tests_cases_mixed_chart_matrix",
+      "label": "Mixed Chart-Matrix Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-chart-matrix.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "post-mvp",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "chart",
+          "matrix",
+          "caption"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "HStack",
+          "Text",
+          "Shape",
+          "Chart",
+          "ChartSeries",
+          "ChartDataPoint",
+          "Matrix",
+          "MatrixAxes",
+          "MatrixQuadrants",
+          "MatrixItem"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_mixed_executive_slide",
+      "label": "Mixed Executive Slide Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-executive-slide.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "ABC",
+        "theme": "amber-mono",
+        "components": [
+          "title",
+          "kpi_row",
+          "chart",
+          "table"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "HStack",
+          "Text",
+          "Span",
+          "Shape",
+          "Chart",
+          "ChartSeries",
+          "ChartDataPoint",
+          "Table",
+          "Col",
+          "Tr",
+          "Td"
+        ],
+        "rationale": "Hardest case: KPI row (Phase A) + Table (Phase C) + Chart (Phase B) on one slide. Stress test of layout density and FORBIDDEN blocklist under load."
+      }
+    },
+    {
+      "id": "tests_cases_mixed_process_timeline_table",
+      "label": "Mixed Process-Timeline-Table Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-process-timeline-table.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "post-mvp",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "process_arrow",
+          "timeline",
+          "table",
+          "caption"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text",
+          "Shape",
+          "ProcessArrow",
+          "ProcessArrowStep",
+          "Timeline",
+          "TimelineItem",
+          "Table",
+          "Col",
+          "Tr",
+          "Td"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_pitch_deck",
+      "label": "Pitch Deck Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\pitch-deck.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "ABC",
+        "theme": "sky-minimal",
+        "components": [
+          "title",
+          "bullet_list",
+          "flow",
+          "chart",
+          "table"
+        ],
+        "slide_count": 5,
+        "rationale": "Enterprise multi-slide test: validates that the planner can produce a coherent 5-slide plan. Currently only slide[0] is generated."
+      }
+    },
+    {
+      "id": "tests_cases_process_arrow_onboarding",
+      "label": "Process Arrow Onboarding Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\process-arrow-onboarding.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "post-mvp",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "process_arrow",
+          "narrative"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text",
+          "Shape",
+          "ProcessArrow",
+          "ProcessArrowStep"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_project_status",
+      "label": "Project Status Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\project-status.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "AB",
+        "theme": "teal-slate",
+        "components": [
+          "title",
+          "kpi_row",
+          "timeline",
+          "bullet_list"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "HStack",
+          "Text",
+          "Span",
+          "Shape",
+          "Timeline",
+          "TimelineItem",
+          "Ul",
+          "Li"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_pyramid_strategy",
+      "label": "Pyramid Strategy Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\pyramid-strategy.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "post-mvp",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "pyramid",
+          "bullet_list",
+          "caption"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "HStack",
+          "Text",
+          "Shape",
+          "Pyramid",
+          "PyramidLevel",
+          "Ul",
+          "Li"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_single_chart",
+      "label": "Single Chart Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\single-chart.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "B",
+        "theme": "emerald-clean",
+        "components": [
+          "title",
+          "chart",
+          "caption"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text",
+          "Chart",
+          "ChartSeries",
+          "ChartDataPoint"
+        ],
+        "rationale": "Chart is a Phase B node. Knowledge base gains components/chart.yaml and Chart/ChartSeries/ChartDataPoint allowlist in Phase 6."
+      }
+    },
+    {
+      "id": "tests_cases_single_table",
+      "label": "Single Table Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\single-table.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "C",
+        "theme": "warm-editorial",
+        "components": [
+          "title",
+          "table"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text",
+          "Table",
+          "Col",
+          "Tr",
+          "Td"
+        ],
+        "rationale": "Table/Col/Tr/Td are Phase C nodes. Knowledge base + allowlist added in Phase 6."
+      }
+    },
+    {
+      "id": "tests_cases_table_and_narrative",
+      "label": "Table and Narrative Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\table-and-narrative.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "C",
+        "theme": "teal-slate",
+        "components": [
+          "title",
+          "narrative",
+          "table"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "HStack",
+          "Text",
+          "Table",
+          "Col",
+          "Tr",
+          "Td"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_text_only",
+      "label": "Text-Only Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\text-only.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "A",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "narrative"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_timeline_roadmap",
+      "label": "Timeline Roadmap Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\timeline-roadmap.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "D",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "timeline"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text",
+          "Shape",
+          "Timeline",
+          "TimelineItem"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_title_and_narrative",
+      "label": "Title and Narrative Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\title-and-narrative.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "theme": "sky-minimal",
+        "components": [
+          "title",
+          "narrative",
+          "caption"
+        ]
+      }
+    },
+    {
+      "id": "tests_cases_tree_org_chart",
+      "label": "Tree Org Chart Test Case",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\tree-org-chart.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "phase": "post-mvp",
+        "theme": "corporate-slate",
+        "components": [
+          "title",
+          "tree"
+        ],
+        "nodes_used": [
+          "Slide",
+          "Theme",
+          "VStack",
+          "Text",
+          "Shape",
+          "Tree",
+          "TreeItem"
+        ]
+      }
+    },
+    {
+      "id": "tests_comparison_readme",
+      "label": "Slide Designer Comparison README",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\comparison\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "rationale": "Instructions for comparing pipeline output against hand-crafted reference XML. Scoring rubric: data fidelity, weight hierarchy, visual differentiation, layout quality, compilability, design polish, readability (each 1-5, total /35)."
+      }
+    },
+    {
+      "id": "tests_comparison_slide_designer_comparison",
+      "label": "Slide Designer Comparison Test",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\comparison\\slide-designer-comparison.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "theme": "sky-minimal",
+        "components": [
+          "title",
+          "kpi_row",
+          "chart",
+          "table"
+        ],
+        "rationale": "Comparison test to evaluate weight/design_hint upgrade against hand-crafted reference XML. Tests weight hierarchy (hero chart, supporting table, minor title) and design_hints for visual differentiation."
+      }
+    },
+    {
+      "id": "concept_weight_hierarchy",
+      "label": "Weight Hierarchy Design Pattern",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\comparison\\slide-designer-comparison.yaml",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "description": "Component weight assignment (hero/supporting/minor) determines visual prominence. Hero gets 50-60% height. Tested via comparison against hand-crafted reference."
+      }
+    },
+    {
+      "id": "tests_fixtures_golden_readme",
+      "label": "Golden Fixtures README",
+      "file_type": "document",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\fixtures\\golden\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "rationale": "Golden slide fixtures define quality bar and act as regression set. NOT injected into any prompt. Generator learns style from house-style.yaml grammar; these prove the grammar can express that quality. Five fixtures: editorial-earnings, editorial-dashboard, editorial-roadmap, editorial-strategy, editorial-comparison."
+      }
+    },
+    {
+      "id": "concept_golden_fixtures",
+      "label": "Golden Fixture Regression Testing",
+      "file_type": "concept",
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\fixtures\\golden\\README.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": "2026-09-16",
+      "author": null,
+      "contributor": null,
+      "attributes": {
+        "description": "Compile + render-verified reference slides in dense editorial house style. Five fixtures (earnings, dashboard, roadmap, strategy, comparison). All must stay compile=ok and audit_high=0."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_pom_xml",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_presentation_state",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_planner_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_context_builder_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_generator_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_validator_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_critic_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_repairer_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_evaluator_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_planner_node",
+      "target": "architecture_context_builder_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_context_builder_node",
+      "target": "architecture_generator_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_generator_node",
+      "target": "architecture_validator_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_validator_node",
+      "target": "architecture_critic_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_validator_node",
+      "target": "architecture_repairer_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology - route_after_validator",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_repairer_node",
+      "target": "architecture_generator_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology - repair loop",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_critic_node",
+      "target": "architecture_repairer_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology - route_after_critic",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_critic_node",
+      "target": "architecture_evaluator_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Pipeline Topology - critic passed",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_validator_node",
+      "target": "architecture_xml_normalizer",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Validator section",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_validator_node",
+      "target": "architecture_compiler_bridge",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Validator section",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_compiler_bridge",
+      "target": "architecture_pom_compiler_v10_3_0",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Compiler Bridge section",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_repairer_node",
+      "target": "architecture_repair_guidance",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Repair Guidance section",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_repairer_node",
+      "target": "architecture_stall_detection",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Repairer section - stall detection",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_context_builder_node",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Context Builder section",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_context_builder_node",
+      "target": "architecture_generation_contract",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Context Builder section",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_generator_node",
+      "target": "architecture_tiered_prompts",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Generator section",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_generator_node",
+      "target": "architecture_generation_contract",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Generator reads contract from context_builder",
+      "weight": 1.0
+    },
+    {
+      "source": "architecture_langgraph_presentation_pipeline",
+      "target": "architecture_retry_loop",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md",
+      "source_location": "Retry loop description",
+      "weight": 1.0
+    },
+    {
+      "source": "code_flow_state_flow",
+      "target": "architecture_langgraph_presentation_pipeline",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": "Header: companion to ARCHITECTURE.md",
+      "weight": 1.0
+    },
+    {
+      "source": "code_flow_state_flow",
+      "target": "code_flow_questionnaire_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": "Section 4.1",
+      "weight": 1.0
+    },
+    {
+      "source": "code_flow_state_flow",
+      "target": "code_flow_style_resolver_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": "Section 4.3",
+      "weight": 1.0
+    },
+    {
+      "source": "code_flow_state_flow",
+      "target": "code_flow_slide_router_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": "Section 4.9",
+      "weight": 1.0
+    },
+    {
+      "source": "code_flow_state_flow",
+      "target": "code_flow_deck_assembler_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": "Section 4.10",
+      "weight": 1.0
+    },
+    {
+      "source": "code_flow_state_flow",
+      "target": "code_flow_api_path",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": "Section 1 - API path",
+      "weight": 1.0
+    },
+    {
+      "source": "code_flow_slide_router_node",
+      "target": "code_flow_deck_assembler_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md",
+      "source_location": "route_after_slide_router",
+      "weight": 1.0
+    },
+    {
+      "source": "code_review_critical_review",
+      "target": "code_flow_state_flow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": "Header: companion to CODE_FLOW.md",
+      "weight": 1.0
+    },
+    {
+      "source": "code_review_deck_critic_bug",
+      "target": "code_flow_slide_router_node",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": "Part 2, Bug #1",
+      "weight": 1.0
+    },
+    {
+      "source": "code_review_deck_critic_bug",
+      "target": "architecture_evaluator_node",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": "Part 2, Bug #1 - evaluator always sees passed=True in deck mode",
+      "weight": 1.0
+    },
+    {
+      "source": "code_review_speaker_notes_lost",
+      "target": "architecture_xml_normalizer",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": "Part 2, Bug #5",
+      "weight": 1.0
+    },
+    {
+      "source": "code_review_fail_open_critic",
+      "target": "architecture_critic_node",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": "Part 2, Bug #6",
+      "weight": 1.0
+    },
+    {
+      "source": "code_review_layout_variety_discarded",
+      "target": "architecture_context_builder_node",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_REVIEW.md",
+      "source_location": "Part 2, Bug #7 - context_builder recomputes layout_pattern",
+      "weight": 1.0
+    },
+    {
+      "source": "editing_architecture_loosely_coupled",
+      "target": "architecture_langgraph_presentation_pipeline",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": "Context section",
+      "weight": 1.0
+    },
+    {
+      "source": "editing_architecture_deck_state",
+      "target": "architecture_presentation_state",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": "Key Differences from Current State table",
+      "weight": 1.0
+    },
+    {
+      "source": "editing_architecture_xml_source_of_truth",
+      "target": "architecture_pom_xml",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": "Design Principle 1",
+      "weight": 1.0
+    },
+    {
+      "source": "editing_architecture_pipeline_tool",
+      "target": "architecture_generator_node",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\EDITING_ARCHITECTURE.md",
+      "source_location": "Tool Decoupling Architecture - GeneratorTool",
+      "weight": 1.0
+    },
+    {
+      "source": "genoffice_feature_adoption",
+      "target": "genoffice_genoffice_pipeline",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": "Context section - genspark-ai/genoffice",
+      "weight": 1.0
+    },
+    {
+      "source": "genoffice_feature_adoption",
+      "target": "architecture_langgraph_presentation_pipeline",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": "Context section",
+      "weight": 1.0
+    },
+    {
+      "source": "genoffice_core_hook",
+      "target": "architecture_planner_node",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": "Tier 1.1 - core_hook added to PlannerOutput",
+      "weight": 1.0
+    },
+    {
+      "source": "genoffice_slide_type_taxonomy",
+      "target": "architecture_planner_node",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": "Tier 1.2 - slide_type added to PlannerSlide",
+      "weight": 1.0
+    },
+    {
+      "source": "genoffice_data_provenance",
+      "target": "architecture_planner_node",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": "Tier 2.2 - provenance tracking in content_data",
+      "weight": 1.0
+    },
+    {
+      "source": "genoffice_layout_audit",
+      "target": "architecture_validator_node",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\GENOFFICE_FEATURE_ADOPTION.md",
+      "source_location": "Tier 2.4 - audit_layout in validator",
+      "weight": 1.0
+    },
+    {
+      "source": "flow_pipeline_overview",
+      "target": "architecture_langgraph_presentation_pipeline",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\flow.md",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "flow_component_vocabulary",
+      "target": "architecture_planner_node",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\flow.md",
+      "source_location": "Section 4 - Component vocabulary (14 kinds)",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_readme_angular_app",
+      "target": "frontend_src_index_html",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\frontend\\README.md",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "frontend_readme_angular_app",
+      "target": "code_flow_api_path",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\frontend\\README.md",
+      "source_location": null,
+      "weight": 0.6
+    },
+    {
+      "source": "llm_test_slides_1_xtsy_output",
+      "target": "architecture_pom_xml",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\llm_test\\slides(1).txt",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "llm_test_slides_xtsy_output",
+      "target": "architecture_pom_xml",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\llm_test\\slides.txt",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "llm_test_slides_xtsy_output",
+      "target": "llm_test_slides_1_xtsy_output",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\llm_test\\slides.txt",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "models_llm_configuration",
+      "target": "models_gpt_4_1",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "models_llm_configuration",
+      "target": "models_hierarchical_planning",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": "Hierarchical planning pipeline section",
+      "weight": 1.0
+    },
+    {
+      "source": "models_llm_configuration",
+      "target": "architecture_planner_node",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": "steps.planner",
+      "weight": 1.0
+    },
+    {
+      "source": "models_llm_configuration",
+      "target": "architecture_generator_node",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": "steps.generator",
+      "weight": 1.0
+    },
+    {
+      "source": "models_llm_configuration",
+      "target": "architecture_critic_node",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": "steps.critic",
+      "weight": 1.0
+    },
+    {
+      "source": "models_llm_configuration",
+      "target": "architecture_repairer_node",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\models.yaml",
+      "source_location": "steps.repairer",
+      "weight": 1.0
+    },
+    {
+      "source": "otherpc_test_fable_dashboard",
+      "target": "models_hierarchical_planning",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\otherpc_test.txt",
+      "source_location": "Shows OutlinePlannerOutput + slide_planner + plan_reviewer outputs",
+      "weight": 0.7
+    },
+    {
+      "source": "requirements_python_dependencies",
+      "target": "architecture_langgraph_presentation_pipeline",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\requirements.txt",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "src_knowledge_components_chart",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\chart.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_chart_dark_theme_axis_bug",
+      "target": "src_knowledge_components_chart",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\chart.yaml",
+      "source_location": "notes - AXIS TEXT IS ALWAYS BLACK",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_chart_dark_theme_axis_bug",
+      "target": "architecture_pom_compiler_v10_3_0",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\chart.yaml",
+      "source_location": "notes - POM v10.3.0 hard-codes chart axis text to 000000",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_drawing",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\drawing.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_drawing",
+      "target": "src_knowledge_components_flow",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\drawing.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "src_knowledge_components_flow",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\flow.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_flow",
+      "target": "src_knowledge_components_process_arrow",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\flow.yaml",
+      "source_location": "description - For a simple linear process, prefer ProcessArrow",
+      "weight": 0.8
+    },
+    {
+      "source": "src_knowledge_components_list",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\list.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_matrix",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\matrix.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_process_arrow",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\process-arrow.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_pyramid",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\pyramid.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_shape",
+      "target": "architecture_knowledge_base",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\shape.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_text_text_component",
+      "target": "src_knowledge_core_attributes_common_attributes",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\text.yaml",
+      "source_location": "line 35",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_timeline_timeline_component",
+      "target": "src_knowledge_components_tree_tree_component",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\components\\timeline.yaml",
+      "source_location": null,
+      "weight": 0.5
+    },
+    {
+      "source": "src_knowledge_core_design_language_design_language",
+      "target": "src_knowledge_theme_palettes_palette_library",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\design-language.yaml",
+      "source_location": "color_usage",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_design_language_design_language",
+      "target": "src_knowledge_components_table_table_component",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\design-language.yaml",
+      "source_location": "table_styling",
+      "weight": 0.8
+    },
+    {
+      "source": "src_knowledge_core_design_language_design_language",
+      "target": "src_knowledge_core_house_style_house_style_grammar",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\design-language.yaml",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "src_knowledge_core_document_document_structure",
+      "target": "src_knowledge_theme_palettes_palette_library",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\document.yaml",
+      "source_location": "skeleton",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_house_style_house_style_grammar",
+      "target": "src_knowledge_core_document_document_structure",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": "frame",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_house_style_height_budget",
+      "target": "src_knowledge_core_house_style_house_style_grammar",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": "height_budget",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_house_style_weight_allocation",
+      "target": "src_knowledge_core_house_style_height_budget",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": "weight_allocation",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_house_style_group_rendering",
+      "target": "src_knowledge_core_house_style_house_style_grammar",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": "group_rendering",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_house_style_house_style_grammar",
+      "target": "src_knowledge_core_design_language_design_language",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": "recipes section",
+      "weight": 0.8
+    },
+    {
+      "source": "src_knowledge_core_house_style_house_style_grammar",
+      "target": "src_knowledge_core_attributes_common_attributes",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml",
+      "source_location": "vocabulary section",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_table_table_component",
+      "target": "src_knowledge_core_nodes_node_allowlist",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\nodes.yaml",
+      "source_location": "phase_c",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_text_text_component",
+      "target": "src_knowledge_core_nodes_node_allowlist",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\nodes.yaml",
+      "source_location": "content.Text",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_timeline_timeline_component",
+      "target": "src_knowledge_core_nodes_node_allowlist",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\nodes.yaml",
+      "source_location": "phase_d",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_components_tree_tree_component",
+      "target": "src_knowledge_core_nodes_node_allowlist",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\nodes.yaml",
+      "source_location": "post_mvp",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_recipes_compiled_recipes",
+      "target": "src_knowledge_core_house_style_house_style_grammar",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\recipes.yaml",
+      "source_location": "header",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_recipes_compiled_recipes",
+      "target": "src_knowledge_core_design_language_design_language",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\recipes.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_core_validation_validation_rules",
+      "target": "src_knowledge_core_nodes_node_allowlist",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\validation.yaml",
+      "source_location": "forbidden_tags",
+      "weight": 1.0
+    },
+    {
+      "source": "src_knowledge_theme_palettes_chart_on_dark",
+      "target": "src_knowledge_theme_palettes_palette_library",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\theme\\palettes.yaml",
+      "source_location": "usage.chart_on_dark",
+      "weight": 1.0
+    },
+    {
+      "source": "src_node_compile_pom_compiler_wrapper",
+      "target": "src_node_package_hirokisakabe_pom",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\node\\compile-pom.txt",
+      "source_location": "line 14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_node_compile_pom_compiler_wrapper",
+      "target": "src_knowledge_core_document_document_structure",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\node\\compile-pom.txt",
+      "source_location": "line 16-17",
+      "weight": 0.8
+    },
+    {
+      "source": "src_node_compile_pom_compiler_wrapper",
+      "target": "src_knowledge_core_validation_validation_rules",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\node\\compile-pom.txt",
+      "source_location": "classifyError function",
+      "weight": 0.8
+    },
+    {
+      "source": "src_node_package_npm_package",
+      "target": "src_node_package_hirokisakabe_pom",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\node\\package.txt",
+      "source_location": "dependencies",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_llm_test_plan_test_plan",
+      "target": "tests_cases_base_competitor_comparison_test_case",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\LLM_TEST_PLAN.md",
+      "source_location": "Family A table",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_llm_test_plan_test_plan",
+      "target": "tests_cases_base_quarterly_metrics_test_case",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\LLM_TEST_PLAN.md",
+      "source_location": "Family A table",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_llm_test_plan_test_plan",
+      "target": "tests_cases_base_org_structure_test_case",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\LLM_TEST_PLAN.md",
+      "source_location": "Family A table",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_llm_test_plan_test_plan",
+      "target": "tests_cases_base_overstuffed_test_case",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\LLM_TEST_PLAN.md",
+      "source_location": "Family A table",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_llm_test_plan_test_plan",
+      "target": "tests_cases_base_process_overview_test_case",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\LLM_TEST_PLAN.md",
+      "source_location": "Family A table",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_architecture_diagram_test_case",
+      "target": "src_knowledge_core_nodes_node_allowlist",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\architecture-diagram.yaml",
+      "source_location": "expect.nodes_used",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_base_competitor_comparison_test_case",
+      "target": "src_knowledge_components_table_table_component",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-competitor-comparison.yaml",
+      "source_location": "planner_should_pick_one_of",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_base_org_structure_test_case",
+      "target": "src_knowledge_components_tree_tree_component",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-org-structure.yaml",
+      "source_location": "planner_should_pick",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_base_overstuffed_test_case",
+      "target": "src_knowledge_theme_palettes_chart_on_dark",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-overstuffed.yaml",
+      "source_location": "watch",
+      "weight": 0.8
+    },
+    {
+      "source": "tests_cases_base_process_overview_test_case",
+      "target": "src_knowledge_components_timeline_timeline_component",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-process-overview.yaml",
+      "source_location": "planner_should_pick_one_of",
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_base_revenue_trend_yaml",
+      "target": "concept_family_a_base_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-revenue-trend.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_base_risks_yaml",
+      "target": "concept_family_a_base_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-risks.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_base_roadmap_yaml",
+      "target": "concept_family_a_base_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-roadmap.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_base_strategy_statement_yaml",
+      "target": "concept_family_a_base_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-strategy-statement.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_base_vague_yaml",
+      "target": "concept_family_a_base_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-vague.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_chart_and_narrative_yaml",
+      "target": "concept_phase_test_system",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\chart-and-narrative.yaml",
+      "source_location": "line 4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_chart_and_table_yaml",
+      "target": "concept_phase_test_system",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\chart-and-table.yaml",
+      "source_location": "line 4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_comparison_matrix_yaml",
+      "target": "concept_phase_test_system",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\comparison-matrix.yaml",
+      "source_location": "line 4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_dark_theme_yaml",
+      "target": "concept_phase_test_system",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\dark-theme.yaml",
+      "source_location": "line 4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_dark_theme_yaml",
+      "target": "tests_cases_financial_report_yaml",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\dark-theme.yaml",
+      "source_location": null,
+      "weight": 0.6
+    },
+    {
+      "source": "tests_cases_deck_board_update_yaml",
+      "target": "concept_family_b_deck_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-board-update.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_minimal_2slide_yaml",
+      "target": "concept_family_b_deck_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-minimal-2slide.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_product_launch_data_yaml",
+      "target": "concept_supplied_data_test_pattern",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-product-launch-data.yaml",
+      "source_location": "line 54",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_product_launch_data_yaml",
+      "target": "tests_cases_deck_product_launch_yaml",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-product-launch-data.yaml",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "tests_cases_deck_product_launch_yaml",
+      "target": "concept_family_b_deck_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-product-launch.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_qbr_data_yaml",
+      "target": "concept_supplied_data_test_pattern",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-qbr-data.yaml",
+      "source_location": "line 52",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_qbr_data_yaml",
+      "target": "tests_cases_deck_qbr_yaml",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-qbr-data.yaml",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "tests_cases_deck_qbr_yaml",
+      "target": "concept_family_b_deck_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-qbr.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_sales_data_yaml",
+      "target": "concept_supplied_data_test_pattern",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-sales-data.yaml",
+      "source_location": "line 64",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_sales_data_yaml",
+      "target": "tests_cases_deck_sales_enablement_yaml",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-sales-data.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_deck_sales_enablement_yaml",
+      "target": "concept_family_b_deck_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-sales-enablement.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_deck_strategy_3slide_yaml",
+      "target": "concept_family_b_deck_tests",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-strategy-3slide.yaml",
+      "source_location": "line 1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_financial_report_yaml",
+      "target": "concept_phase_test_system",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\financial-report.yaml",
+      "source_location": "line 4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_financial_report_yaml",
+      "target": "tests_cases_chart_and_table_yaml",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\financial-report.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_flowchart_yaml",
+      "target": "concept_phase_test_system",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\flowchart.yaml",
+      "source_location": "line 3",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_inline_formatting_yaml",
+      "target": "concept_phase_test_system",
+      "relation": "belongs_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\inline-formatting.yaml",
+      "source_location": "line 3",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_maximal_density",
+      "target": "tests_cases_minimal_statement",
+      "relation": "complexity_counterpart",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\maximal-density.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_maximal_density",
+      "target": "tests_cases_mixed_executive_slide",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\maximal-density.yaml",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "concept_complexity_spectrum",
+      "target": "tests_cases_maximal_density",
+      "relation": "ceiling_case",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\maximal-density.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "concept_complexity_spectrum",
+      "target": "tests_cases_minimal_statement",
+      "relation": "floor_case",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\minimal-statement.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "tests_cases_mixed_chart_matrix",
+      "target": "tests_cases_single_chart",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-chart-matrix.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_mixed_chart_matrix",
+      "target": "tests_cases_matrix_prioritization",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-chart-matrix.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_mixed_executive_slide",
+      "target": "tests_cases_kpi_row",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-executive-slide.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_mixed_executive_slide",
+      "target": "tests_cases_single_chart",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-executive-slide.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_mixed_executive_slide",
+      "target": "tests_cases_single_table",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-executive-slide.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_mixed_process_timeline_table",
+      "target": "tests_cases_process_arrow_onboarding",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-process-timeline-table.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_mixed_process_timeline_table",
+      "target": "tests_cases_timeline_roadmap",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\mixed-process-timeline-table.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_process_arrow_onboarding",
+      "target": "tests_cases_timeline_roadmap",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\process-arrow-onboarding.yaml",
+      "source_location": null,
+      "weight": 0.6
+    },
+    {
+      "source": "tests_cases_project_status",
+      "target": "tests_cases_kpi_row",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\project-status.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_project_status",
+      "target": "tests_cases_timeline_roadmap",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\project-status.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_table_and_narrative",
+      "target": "tests_cases_single_table",
+      "relation": "extends_components_from",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\table-and-narrative.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_cases_text_only",
+      "target": "tests_cases_minimal_statement",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\text-only.yaml",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "tests_cases_title_and_narrative",
+      "target": "tests_cases_text_only",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\title-and-narrative.yaml",
+      "source_location": null,
+      "weight": 0.7
+    },
+    {
+      "source": "tests_comparison_slide_designer_comparison",
+      "target": "tests_comparison_readme",
+      "relation": "documented_by",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\comparison\\README.md",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "tests_comparison_slide_designer_comparison",
+      "target": "tests_cases_mixed_executive_slide",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\comparison\\slide-designer-comparison.yaml",
+      "source_location": null,
+      "weight": 0.8
+    },
+    {
+      "source": "tests_comparison_slide_designer_comparison",
+      "target": "concept_weight_hierarchy",
+      "relation": "tests_concept",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\comparison\\slide-designer-comparison.yaml",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "concept_golden_fixtures",
+      "target": "tests_fixtures_golden_readme",
+      "relation": "documented_by",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\fixtures\\golden\\README.md",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "pipeline_core_flow",
+      "label": "Core Pipeline Flow (Plan-Generate-Validate-Repair-Evaluate)",
+      "nodes": [
+        "architecture_planner_node",
+        "architecture_context_builder_node",
+        "architecture_generator_node",
+        "architecture_validator_node",
+        "architecture_critic_node",
+        "architecture_repairer_node",
+        "architecture_evaluator_node"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md"
+    },
+    {
+      "id": "knowledge_base_component_specs",
+      "label": "Component Knowledge Base Specifications",
+      "nodes": [
+        "architecture_knowledge_base",
+        "src_knowledge_components_chart",
+        "src_knowledge_components_drawing",
+        "src_knowledge_components_flow",
+        "src_knowledge_components_list",
+        "src_knowledge_components_matrix",
+        "src_knowledge_components_process_arrow",
+        "src_knowledge_components_pyramid",
+        "src_knowledge_components_shape"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\ARCHITECTURE.md"
+    },
+    {
+      "id": "deck_mode_multi_slide_loop",
+      "label": "Deck Mode Multi-Slide Processing Loop",
+      "nodes": [
+        "code_flow_slide_router_node",
+        "code_flow_deck_assembler_node",
+        "architecture_context_builder_node",
+        "architecture_generator_node",
+        "architecture_validator_node"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\CODE_FLOW.md"
+    },
+    {
+      "id": "slide_layout_composition_system",
+      "label": "Slide Layout Composition (House Style + Design Language + Recipes)",
+      "nodes": [
+        "src_knowledge_core_house_style_house_style_grammar",
+        "src_knowledge_core_design_language_design_language",
+        "src_knowledge_core_recipes_compiled_recipes",
+        "src_knowledge_theme_palettes_palette_library"
+      ],
+      "relation": "implement",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\house-style.yaml"
+    },
+    {
+      "id": "pom_knowledge_core_system",
+      "label": "POM Knowledge Core (Document + Nodes + Attributes + Validation)",
+      "nodes": [
+        "src_knowledge_core_document_document_structure",
+        "src_knowledge_core_nodes_node_allowlist",
+        "src_knowledge_core_attributes_common_attributes",
+        "src_knowledge_core_validation_validation_rules"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\src\\knowledge\\core\\nodes.yaml"
+    },
+    {
+      "id": "llm_test_family_a_base_prompt_cases",
+      "label": "LLM Test Family A Base-Prompt Cases",
+      "nodes": [
+        "tests_llm_test_plan_test_plan",
+        "tests_cases_base_competitor_comparison_test_case",
+        "tests_cases_base_org_structure_test_case",
+        "tests_cases_base_overstuffed_test_case",
+        "tests_cases_base_process_overview_test_case",
+        "tests_cases_base_quarterly_metrics_test_case"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\LLM_TEST_PLAN.md"
+    },
+    {
+      "nodes": [
+        "tests_cases_base_revenue_trend_yaml",
+        "tests_cases_base_risks_yaml",
+        "tests_cases_base_roadmap_yaml",
+        "tests_cases_base_strategy_statement_yaml",
+        "tests_cases_base_vague_yaml"
+      ],
+      "relation": "shared_pattern_planner_decomposition",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\base-revenue-trend.yaml",
+      "rationale": "All Family A base tests that give no components — planner must autonomously decompose the request"
+    },
+    {
+      "nodes": [
+        "tests_cases_chart_and_narrative_yaml",
+        "tests_cases_chart_and_table_yaml",
+        "tests_cases_comparison_matrix_yaml",
+        "tests_cases_dark_theme_yaml",
+        "tests_cases_financial_report_yaml",
+        "tests_cases_flowchart_yaml",
+        "tests_cases_inline_formatting_yaml"
+      ],
+      "relation": "shared_pattern_phase_component_tests",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\chart-and-narrative.yaml",
+      "rationale": "All phase-tagged single-slide test cases with pre-specified components consumed by slide_ir.from_test_case()"
+    },
+    {
+      "nodes": [
+        "tests_cases_deck_qbr_yaml",
+        "tests_cases_deck_qbr_data_yaml",
+        "tests_cases_deck_board_update_yaml",
+        "tests_cases_deck_sales_enablement_yaml",
+        "tests_cases_deck_sales_data_yaml"
+      ],
+      "relation": "shared_pattern_data_heavy_deck",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "C:\\Users\\deepa\\OneDrive\\Documents\\New folder\\presentation-pipeline\\tests\\cases\\deck-qbr.yaml",
+      "rationale": "All test data-heavy multi-slide decks with KPI/chart/table slides requiring consistent data across slides"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
