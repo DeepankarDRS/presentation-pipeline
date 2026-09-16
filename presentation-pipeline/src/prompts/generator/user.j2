@@ -12,26 +12,6 @@ SLIDE TYPE: {{ slide_type }}
 
 COMPONENTS (put every one on the slide — each carries its own data):
 {% for comp in components %}
-{% if comp.kind == "group" %}
-GROUP [{{ comp.component_id }}]{% if comp.weight and comp.weight != "peer" %} (weight: {{ comp.weight }}){% endif %}
-
-{% if comp.design_hint %}  visual-intent: {{ comp.design_hint }} (see GROUP RENDERING in layout grammar)
-{% endif %}
-  children:
-{% for child in comp.children %}
-    - {{ child.kind }}{% if child.component_id %} [{{ child.component_id }}]{% endif %}{% if child.count > 1 %} (x{{ child.count }}){% endif %}{% if child.chart_type %} [{{ child.chart_type }}]{% endif %}{% if child.content_summary %}: {{ child.content_summary }}{% endif %}
-{% if child.weight and child.weight != "peer" %}      height-weight: {{ child.weight }}
-{% endif %}
-{% if child.design_hint %}      visual-intent: {{ child.design_hint }}
-{% endif %}
-{% if child.content_data %}
-      Data for {{ child.component_id or child.kind }}:
-      {% for key, value in child.content_data.items() %}
-      {{ key }}: {{ value }}
-      {% endfor %}
-{% endif %}
-{% endfor %}
-{% else %}
 - {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
 {% if comp.weight and comp.weight != "peer" %}  height-weight: {{ comp.weight }} (see WEIGHT ALLOCATION in layout grammar)
 {% endif %}
@@ -42,7 +22,6 @@ GROUP [{{ comp.component_id }}]{% if comp.weight and comp.weight != "peer" %} (w
   {% for key, value in comp.content_data.items() %}
   {{ key }}: {{ value }}
   {% endfor %}
-{% endif %}
 {% endif %}
 {% endfor %}
 DENSITY: {{ density }} | FONT TIER: {{ font_tier }}

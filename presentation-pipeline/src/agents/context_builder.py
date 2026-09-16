@@ -72,10 +72,6 @@ _KIND_TO_NODES: dict[str, list[str]] = {
     "matrix":        ["Matrix", "MatrixAxes", "MatrixQuadrants", "MatrixItem"],
     "process_arrow": ["ProcessArrow", "ProcessArrowStep"],
     "pyramid":       ["Pyramid", "PyramidLevel"],
-    "icon":          ["Icon"],
-    "badge":         [],
-    "eyebrow":       [],
-    "cta":           [],
 }
 
 _KIND_TO_COMPONENT_FILE: dict[str, str] = {
@@ -91,20 +87,6 @@ _KIND_TO_COMPONENT_FILE: dict[str, str] = {
     "process_arrow": "components/process-arrow.yaml",
     "pyramid":       "components/pyramid.yaml",
 }
-
-def _collect_kinds(components: list[dict]) -> list[str]:
-    """Walk the component tree and collect all leaf kinds (skipping 'group')."""
-    kinds: list[str] = []
-    for c in components:
-        kind = c.get("kind", "")
-        if kind and kind != "group":
-            kinds.append(kind)
-        for child in c.get("children", []):
-            child_kind = child.get("kind", "")
-            if child_kind and child_kind != "group":
-                kinds.append(child_kind)
-    return kinds
-
 
 _BASE_NODES = ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Icon"]
 _INLINE_NODES = ["B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"]
@@ -372,8 +354,6 @@ _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("spacing_scale", "SPACING SCALE"),
     ("color_discipline", "COLOR DISCIPLINE"),
     ("render_gotchas", "RENDER GOTCHAS"),
-    ("group_rendering", "GROUP RENDERING"),
-    ("design_variety", "DESIGN VARIETY"),
     ("checklist", "PRE-EMIT CHECKLIST"),
 ]
 
@@ -419,11 +399,6 @@ _KIND_TO_RECIPE: dict[str, str] = {
     "flow":          "flow",
     "pyramid":       "pyramid",
     "tree":          "tree",
-    "badge":         "badge",
-}
-
-_EXTRA_RECIPES: dict[str, list[str]] = {
-    "bullet_list": ["icon_bullet_list"],
 }
 
 
@@ -442,10 +417,6 @@ def _render_component_recipes(kinds: list[str]) -> str:
         if key and key not in seen and key in recipes:
             seen.add(key)
             picked.append(f"# {key}\n{str(recipes[key]).strip()}")
-        for extra_key in _EXTRA_RECIPES.get(kind, []):
-            if extra_key not in seen and extra_key in recipes:
-                seen.add(extra_key)
-                picked.append(f"# {extra_key}\n{str(recipes[extra_key]).strip()}")
     if not picked:
         return ""
     return (
@@ -485,7 +456,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     forbidden_attributes, theme_element, theme_name, theme_mode, chart_colors,
     notes, house_style, component_recipes, density_tier.
     """
-    kinds = _collect_kinds(slide_plan.get("components", []))
+    kinds = [c.get("kind", "") for c in slide_plan.get("components", [])]
     density = slide_plan.get("density", "normal")
 
     nodes_yaml = _load_yaml("core/nodes.yaml")

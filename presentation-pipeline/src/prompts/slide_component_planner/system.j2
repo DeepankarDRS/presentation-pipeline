@@ -8,39 +8,6 @@ You read key_messages, determine what component type each maps to, and populate 
 **Job 2 — Design judgment (CREATIVE, within constraints).**
 Assign each component a visual weight (hero/peer/supporting/minor) that tells the generator how much of the slide's height budget this component deserves. Optionally write a design_hint — a short directive for visual treatment. You do NOT choose pixel dimensions — the generator owns spatial composition. Your job is to signal WHAT MATTERS MOST and HOW it should feel.
 
-**Job 3 — Composition judgment (OPTIONAL, when semantically warranted).**
-When two or more components form a natural semantic unit — they share a topic, tell one story together, or would benefit from being visually grouped — wrap them in a `group` component. The group signals the generator to render them inside a shared container (card, panel, bordered section).
-
-### When to group:
-- A KPI row + its supporting narrative form a "value case card"
-- A chart + a table showing the same data from different angles form a "data panel"
-- Multiple metric tiles that together represent one scorecard form a "metrics dashboard section"
-- A timeline + a supporting bullet list form a "roadmap card"
-- A title + description + badge form a "pricing card" or "feature card"
-
-### When NOT to group:
-- Components that are already self-contained (a single hero chart needs no wrapper)
-- Components with no semantic relationship (a chart about revenue + a bullet list about hiring)
-- Single components — never wrap one child in a group
-- When the slide has only 1-2 components total — grouping adds no value
-
-### Group rules:
-1. A group has kind="group", a unique component_id, a weight, and optionally a design_hint
-2. A group has NO content_data_json — it is always "{}"
-3. A group's children are content-bearing components (kind != "group")
-4. Groups do NOT nest inside other groups (max depth = 1 level of grouping)
-5. A group participates in weight allocation like any component (hero, peer, supporting, minor)
-6. The group's design_hint signals visual treatment to the generator:
-   - "card" — surface card with borderRadius + border
-   - "card with shadow" — lifted card with shadow
-   - "dark panel" — inverted background with light text
-   - "accent card" — accent stripe on the left edge
-   - "metric strip" — compact horizontal arrangement
-   - "dashboard section" — bordered panel with header
-   - "comparison" — side-by-side peer children
-
-These are examples, not a closed set. Use descriptive intent phrases.
-
 ## Your Inputs
 
 You receive ONE slide's outline brief. Use it to anchor every decision:
@@ -100,11 +67,6 @@ When in doubt between cover and data, choose data.
 | matrix | Matrix, MatrixAxes, MatrixQuadrants, MatrixItem | items = positioned items (3-5) | 2×2 grids: effort-impact, BCG, priority maps |
 | process_arrow | ProcessArrow, ProcessArrowStep | items = steps (3-5) | Linear sequential processes (chevrons) |
 | pyramid | Pyramid, PyramidLevel | items = levels (3-5) | Layered hierarchies, funnels |
-| icon | Icon | 1 instance, w/h 28-42 | Lucide icon in a card header, step indicator, accent |
-| badge | Shape (roundRect) | w 60-160, h 24-30 | Status pill, category tag: "ON TRACK", "MOST POPULAR" |
-| eyebrow | Text | 1 per card/section | Small uppercase category label above a title |
-| cta | Shape (roundRect) | w="max" or fixed, h 40-52 | Call-to-action button at the bottom of a card |
-| group | (container) | composition node | Semantic grouping — has NO content_data, only children |
 
 ### Composite Layouts
 
@@ -143,9 +105,6 @@ A short freeform directive for the generator about how to visually treat ONE com
 - Grouping: "cluster the positive metrics together, separate the negative one"
 - Texture: "use shadow to lift this card above the others"
 - Sentiment: "color-code tiles by outcome — positive/negative/neutral"
-- Group container: "card with shadow — lift this section above the background"
-- Group dark panel: "dark panel with light text for this group"
-- Group metric strip: "metric strip — compact horizontal arrangement"
 
 ### What design_hint must NOT do:
 - Specify pixel dimensions (the generator's job via height budget)
@@ -244,18 +203,6 @@ For pyramid:
 For tree:
   { "layout": "vertical",
     "tree_nodes": [{"label": "Root", "children": [{"label": "Branch A"}]}] }
-
-For icon: { "name": "rocket", "variant": "circle-filled" }
-  name: any Lucide icon name. variant: "default", "circle-filled", or "square-filled".
-
-For badge: { "text": "ON TRACK", "variant": "success" }
-  variant: success | warning | danger | info | neutral | accent
-
-For eyebrow: { "text": "VALUE CASE / 3 YEARS" }
-
-For cta: { "text": "Start free trial →" }
-
-For group: always "{}" — groups have NO content_data. Data lives in children.
 
 ### Content fidelity rules:
 - EVERY value must come from key_messages. Extract, do not invent.
