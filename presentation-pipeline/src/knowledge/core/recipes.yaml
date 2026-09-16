@@ -7,9 +7,9 @@
 # the $token colours and the item count.
 
 kpi_row: |
-  # KPI row: band h=110-150. Inside each tile justifyContent="center" (NOT
-  # spaceBetween). Unit in a <Span> inside the value <Text>.
-  <HStack w="max" h="120" gap="14" alignItems="stretch">
+  # KPI row: NO h on the band — auto-sizes to tile content. Inside each tile
+  # justifyContent="center" (NOT spaceBetween). Unit in a <Span> inside the value <Text>.
+  <HStack w="max" gap="14" alignItems="stretch">
     <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="11" color="$textMuted">Annual recurring revenue</Text>
       <Text fontSize="30" bold="true" color="$textMain">$42.8<Span fontSize="16" color="$textMuted">M</Span></Text>
@@ -68,9 +68,9 @@ table_card: |
   </VStack>
 
 bullet_list: |
-  # Bullets: use <Ul>/<Li> -- POM's native list nodes. Band h ~ 40 per item
-  # + padding. Never use separate <Text> elements with manual dashes.
-  <VStack w="max" h="200" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+  # Bullets: use <Ul>/<Li> — POM's native list nodes. NO h on the band —
+  # auto-sizes to content. Never use separate <Text> elements with manual dashes.
+  <VStack w="max" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
     <Ul fontSize="13" color="$textMain" lineHeight="1.4">
       <Li>Close 3 enterprise logos worth $4M+ combined ARR</Li>
       <Li>Launch self-serve onboarding to cut CAC payback to 10 months</Li>
@@ -79,22 +79,23 @@ bullet_list: |
   </VStack>
 
 callout: |
-  # Callout / narrative strip: band h 80-120.
-  <VStack w="max" h="96" padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
-    <Text fontSize="10" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
+  # Callout / narrative strip: NO h — auto-sizes to text content.
+  <VStack w="max" padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
+    <Text fontSize="11" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
     <Text fontSize="13" color="$textMain" lineHeight="1.45">A large, measurable problem that targeted enforcement could meaningfully reduce.</Text>
   </VStack>
 
 timeline: |
-  # Timeline in a card: band h 200-300. Node w="max", explicit h. Keep to 3-5
-  # items; short title + short description.
+  # Timeline in a card: band h 200-300. Give <Timeline> explicit w (container
+  # inner width) + explicit h. Horizontal: max 5 items; keep date/title/
+  # description SHORT (each column is only w/N px wide — long text collides).
   <VStack w="max" h="240" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="13" bold="true" color="$textMain">Rollout timeline</Text>
-    <Timeline direction="horizontal" w="max" h="180" dateColor="$textMuted" titleColor="$textMain" descriptionColor="$textMuted" connectorColor="$accent">
+    <Timeline direction="horizontal" w="1160" h="180" dateColor="$textMuted" titleColor="$textMain" descriptionColor="$textMuted" connectorColor="$accent">
       <TimelineItem date="Q1 2026" title="Alpha" description="Internal beta" color="2563EB" />
       <TimelineItem date="Q2 2026" title="Public beta" description="Early adopters" color="0EA5E9" />
       <TimelineItem date="Q3 2026" title="GA" description="Full launch" color="15803D" />
-      <TimelineItem date="Q4 2026" title="Enterprise" description="SSO, SLA, audit" color="7C3AED" />
+      <TimelineItem date="Q4 2026" title="Enterprise" description="SSO, SLA" color="7C3AED" />
     </Timeline>
   </VStack>
 
@@ -128,8 +129,8 @@ process_arrow: |
   </VStack>
 
 flow: |
-  # Flow in a card: band h 260-380, node h to fit. Keep it to 4-6 nodes; short
-  # node text. Use Flow for branching; use ProcessArrow for a simple line.
+  # Flow in a card: band h 260-380, node h to fit. Keep to 4-5 nodes; short
+  # node text (6+ overflows at default nodeWidth). Use ProcessArrow for a simple line.
   <VStack w="max" h="320" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="13" bold="true" color="$textMain">Approval flow</Text>
     <Flow direction="horizontal" w="max" h="260" nodeWidth="150" nodeHeight="56" nodeGap="64">
@@ -155,6 +156,22 @@ pyramid: |
       <PyramidLevel label="Foundation" color="BFD3F7" textColor="16202E" />
     </Pyramid>
   </VStack>
+
+layer_diagram: |
+  # Layer diagram: NOT a flex container — children use x/y absolute coords
+  # (relative to Layer top-left). NEVER use margin for positioning inside Layer.
+  # Layer MUST have explicit pixel w and h. All children x/y must be >= 0 and
+  # x+child_w <= Layer_w, y+child_h <= Layer_h (stay inside bounds).
+  # Arrow connects shapes by id; targets must be Shape(rect/roundRect/ellipse) or Text.
+  <Layer w="560" h="296" backgroundColor="$surfaceAlt" borderRadius="14">
+    <Shape id="hub" shapeType="ellipse" x="206" y="74" w="148" h="148" backgroundColor="$accent" color="$surfaceAlt" fontSize="14" bold="true" textAlign="center" text="Core Platform" />
+    <Shape id="svc-a" shapeType="roundRect" x="0" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="12" bold="true" textAlign="center" text="Service A" border.color="$border" border.width="1" borderRadius="10" />
+    <Shape id="svc-b" shapeType="roundRect" x="440" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="12" bold="true" textAlign="center" text="Service B" border.color="$border" border.width="1" borderRadius="10" />
+    <Shape id="svc-c" shapeType="roundRect" x="220" y="244" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="12" bold="true" textAlign="center" text="Service C" border.color="$border" border.width="1" borderRadius="10" />
+    <Arrow from="hub" to="svc-a" color="$accent" lineWidth="2" endArrow="true" />
+    <Arrow from="hub" to="svc-b" color="$accent" lineWidth="2" endArrow="true" />
+    <Arrow from="hub" to="svc-c" color="$accent" lineWidth="2" endArrow="true" />
+  </Layer>
 
 tree: |
   # Tree in a card: band h 260-380. One root. Keep depth <= 3 and total nodes

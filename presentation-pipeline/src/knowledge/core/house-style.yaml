@@ -41,8 +41,9 @@ vocabulary:
     only for things that must not flex: icon, accent bar, divider, sidebar rail,
     badge. Never fixed-px a column holding flowing text or a chart.
   'h="188" (fixed px)': >
-    REQUIRED on every content band and on Chart/Matrix/ProcessArrow. Do NOT set
-    h on text VStacks - they size to content.
+    REQUIRED on rigid nodes (Chart/Table/Matrix/ProcessArrow/Flow/Pyramid/
+    Tree/Timeline) and bands containing one. NEVER on text-only bands —
+    they auto-size. Forcing h on text causes overflow.
   'minW / maxW / minH / maxH': 'clamp a flexible box so it cannot collapse or run away.'
 
 alignment:
@@ -91,26 +92,21 @@ header_band: >
 # overlap (the chart slides up over the KPI deltas, the title sits on the
 # cards). It compiles clean. So the budget must come in UNDER 720, not over.
 height_budget: |
-  1. Header band: no h (auto, ~80-96). Every CONTENT band gets an explicit h.
-  2. Compute available_h = 720 - 2*padding - header_h - (N_bands-1)*gap.
-     If the component list carries height-weight tags, use WEIGHT ALLOCATION
-     below to divide available_h. Otherwise pick each band's h from what its
-     content needs (sizes below).
-  3. Add it ALL up: header_h + every band h + every gap + 2*padding.
-     - total <= ~700  -> good.
-     - total > 720    -> the slide WILL overlap. Cut a band, shrink the chart,
-       or drop to 3 KPIs.
-     - total < ~640   -> add a band (callout / stat row / second visual) or
-       genuinely enlarge one (more rows, taller chart). Do not just inflate h.
-  4. Chart / Matrix / Table in a card: h = band_h - 2*card_padding - ~28 title.
-  Typical band heights: KPI row 110-150 | stat/number card 150-220 |
-  chart card 260-360 | table card 240-360 | callout strip 80-110 |
-  bullet list ~40 per bullet + padding.
+  1. Classify bands: RIGID (contains Chart/Table/Matrix/ProcessArrow/Flow/
+     Pyramid/Tree/Timeline) → explicit pixel h. TEXT (no rigid child) →
+     NO h, auto-sizes. Header → no h (~80-96).
+  2. available_h = 720 - 2*padding - header_h - (N_bands-1)*gap.
+     Subtract ~100-120 per text band (auto estimate). Remainder = rigid
+     budget. Weight tags divide the rigid portion (see WEIGHT ALLOCATION).
+  3. Sanity: header + rigid h's + text estimates + gaps + 2*padding ≈ 640-700.
+     Over 720 → overlap. Cut rigid h, never force h on text bands.
+  4. Rigid node in card: h = band_h - 2*card_padding - ~28 title.
+  Rigid heights: chart 260-360 | table 240-360 | timeline 200-300 |
+  matrix 260-340 | process arrow 130-180.
 worked_example: |
-  P=36, G=16, bands: header + KPI row + chart card + callout.
-  36 + 90(header) + 16 + 120(KPI) + 16 + 288(chart) + 16 + 88(callout) + 36
-  = 706. First pass 736 -> over, so chart 288 not 320 and callout 88 not 100.
-  Chart inside the 288 card (padding 18, ~28 title): h = 288 - 36 - 28 = 224.
+  P=36, G=16: header(auto ~90) + KPI(text,auto ~120) + chart(rigid) + callout(text,auto ~88).
+  Rigid budget: 720-72-90-120-88-48(gaps)=302. Chart card h="300", inside h=236.
+  KPI + callout: NO h — auto-size.
 
 weight_allocation: |
   Components may carry a height-weight tag (hero/peer/supporting/minor).
@@ -126,13 +122,13 @@ weight_allocation: |
 
 # --- rigid nodes (verified v10.3.0 render behaviour) -------------------
 rigid_nodes: >
-  Chart, Matrix, ProcessArrow, Table do NOT size themselves.
-    - width : w="max" WORKS on all of them - they fill their column. Prefer it.
+  All rigid DATA nodes (see height_budget list) do NOT size themselves.
+    - width : w="max" WORKS on most. Horizontal Timeline: use explicit pixel w.
     - height: MUST be an explicit pixel h. No h -> renders wrong or tiny.
-    - Table : also needs a <Col width="..."> per column; widths should sum to
-      roughly the container width. Every <Td> needs backgroundColor + color.
-  A rigid node always lives inside a <VStack w="max"|"NN%"> that owns the
-  column; the node is w="max" h="<computed>" within it.
+    - Table : <Col width="..."> per column, sum ≈ container width. Every <Td>
+      needs backgroundColor + color.
+  A rigid node lives inside a <VStack w="max"|"NN%">; the node is
+  w="max" h="<computed>" within it.
 
 # --- recipes (parameterised, not slides) ------------------------------
 recipes:
@@ -197,7 +193,7 @@ render_gotchas:
      If the band heights sum to more than 720 the compiler does NOT error - it
      shrinks every band, text overflows its squashed card, and bands overlap
      (chart over the KPI deltas, title over the cards). Budget must land <=700.
-     Verify by adding up the numbers, every time."
+     Text-only bands should OMIT h (auto-size); forcing h causes overflow."
   - "A KPI tile with justifyContent=\"spaceBetween\" and h=300+ is the classic
      bad KPI card: label glued to the top, number floating low, delta clipped
      at the bottom. Use justifyContent=\"center\" and h=110-150."
@@ -209,6 +205,7 @@ render_gotchas:
      the dot. Do NOT set textColor=\"FFFFFF\" on a light card - the label
      vanishes. Leave textColor unset (inherits itemLabelColor)."
   - "ProcessArrowStep label: 1-2 short words only at h<=70; longer text clips."
+  - "Horizontal Timeline: max 5 items, short labels. Use explicit pixel w."
   - "A rigid node (Chart/Matrix/Table) placed in a column narrower than ~45% of
      the slide gets cramped - axis labels and legends collide. Give it room."
   - "roundRect <Shape> with text: keep the label short; it does not wrap
@@ -223,10 +220,10 @@ render_gotchas:
 checklist:
   - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
   - "2-4 bands, each w=\"max\"; the divisions differ band-to-band."
-  - "Every CONTENT band has an explicit h=; header band is auto."
+  - "Every RIGID band (Chart/Table/Matrix/etc. inside) has explicit h=. Text-only bands and header: NO h (auto-size)."
   - "I ADDED UP header_h + every band h + every gap + 2*padding and the total
      is between ~640 and ~700. If over 720 the slide WILL overlap."
-  - "KPI row band is h=110-150, tiles use justifyContent=\"center\"."
+  - "KPI row: no h (auto-sizes). Tiles: justifyContent=\"center\"."
   - "Every Chart/Matrix/ProcessArrow has w=\"max\" AND an explicit computed h."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
   - "Every <HStack> whose children use grow or w=\"max\" itself has w=\"max\"."

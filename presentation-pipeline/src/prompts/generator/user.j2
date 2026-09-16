@@ -57,10 +57,12 @@ Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1". Every value should
 look like it came from a real business report.
 {% endif %}
 
-HEIGHT BUDGET — follow the HEIGHT BUDGET + WEIGHT ALLOCATION sections in the
-layout grammar. Components tagged height-weight above get proportional shares of
-available_h. Untagged components are peers (equal split). visual-intent guides
-look-and-feel within a band, NOT the band's height.
+HEIGHT BUDGET — follow the HEIGHT BUDGET section in the layout grammar.
+RIGID bands (containing Chart/Table/Matrix/ProcessArrow/Flow/Pyramid/Tree/
+Timeline) get explicit pixel h from the budget. TEXT-ONLY bands (callout,
+narrative, bullet_list, kpi_row) get NO h — they auto-size to content.
+Weight tags apply to rigid bands' share of available_h only. visual-intent
+guides look-and-feel within a band, NOT the band's height.
 If the content is thin, add substance rather than leaving the slide half-empty.
 
 Output the POM XML for this slide - a single <Slide> element, no <Theme>, no

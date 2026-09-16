@@ -399,6 +399,7 @@ _KIND_TO_RECIPE: dict[str, str] = {
     "flow":          "flow",
     "pyramid":       "pyramid",
     "tree":          "tree",
+    "layer":         "layer_diagram",
 }
 
 
