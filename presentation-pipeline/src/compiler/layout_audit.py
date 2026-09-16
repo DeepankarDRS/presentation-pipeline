@@ -21,6 +21,10 @@ MAX_NESTING = 6
 
 _STACK_TAGS = {"VStack", "HStack"}
 _NEEDS_DIMS = {"Chart", "Table"}
+_BAND_TAGS = {
+    "VStack", "HStack", "Chart", "Table", "Matrix", "Timeline",
+    "ProcessArrow", "Flow", "Pyramid", "Tree", "Layer", "Ul", "Ol",
+}
 
 
 def _parse_num(value: str | None) -> float | None:
@@ -184,19 +188,17 @@ def _check_band_height_sum(root: ET.Element, root_padding: float,
     rootv = next((c for c in slide if c.tag == "VStack"), None)
     if rootv is None:
         return
-    children = [c for c in rootv if c.tag in _STACK_TAGS or c.tag == "Chart"]
+    children = [c for c in rootv if c.tag in _BAND_TAGS]
     if len(children) < 2:
         return
     gap = _parse_num(rootv.get("gap")) or 0.0
     explicit = [_parse_num(c.get("h")) for c in children]
     known = [h for h in explicit if h is not None]
-    # need most bands sized to make a meaningful claim
     if len(known) < len(children) - 1 or not known:
         return
-    # unknown bands (usually the header) — assume a modest 90px each
     est_total = sum(known) + 90.0 * (len(children) - len(known))
     est_total += gap * (len(children) - 1) + 2 * root_padding
-    if est_total > 760:
+    if est_total > 720:
         issues.append({
             "severity": "high",
             "code": "BAND_HEIGHT_SUM",
@@ -206,6 +208,76 @@ def _check_band_height_sum(root: ET.Element, root_padding: float,
                 f"Reduce a band height, shrink the chart, or drop content."
             ),
         })
+
+
+def _check_process_arrow(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """Flag ProcessArrow with too many steps or long labels."""
+    for pa in root.iter("ProcessArrow"):
+        steps = pa.findall("ProcessArrowStep")
+        if len(steps) > 5:
+            issues.append({
+                "severity": "medium",
+                "code": "PROCESS_ARROW_STEPS",
+                "message": (
+                    f"ProcessArrow has {len(steps)} steps (max 5). "
+                    f"Too many steps overflow horizontally — summarise or split."
+                ),
+            })
+        for step in steps:
+            label = step.get("label", "")
+            words = label.split()
+            if len(words) > 2:
+                issues.append({
+                    "severity": "medium",
+                    "code": "PROCESS_ARROW_LABEL",
+                    "message": (
+                        f"ProcessArrowStep label \"{label}\" has {len(words)} words "
+                        f"(max 2). Long labels clip inside the chevron."
+                    ),
+                })
+
+
+def _check_matrix_labels(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """Flag MatrixItem with multi-word labels."""
+    for matrix in root.iter("Matrix"):
+        for item in matrix.findall("MatrixItem"):
+            label = item.get("label", "")
+            words = label.split()
+            if len(words) > 2:
+                issues.append({
+                    "severity": "medium",
+                    "code": "MATRIX_LABEL_LONG",
+                    "message": (
+                        f"MatrixItem label \"{label}\" has {len(words)} words "
+                        f"(max 1-2). Long labels overlap on the scatter plot."
+                    ),
+                })
+
+
+def _check_layer_overlap(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """Warn when Layer is used — children are absolutely positioned and overlap."""
+    layers = list(root.iter("Layer"))
+    if not layers:
+        return
+    for layer in layers:
+        children_with_margin = []
+        for child in layer:
+            mt = child.get("margin.top")
+            ml = child.get("margin.left")
+            if mt or ml:
+                children_with_margin.append(child.tag)
+        if len(list(layer)) > 1:
+            issues.append({
+                "severity": "medium",
+                "code": "LAYER_OVERLAP",
+                "message": (
+                    f"<Layer> has {len(list(layer))} children that stack on top of "
+                    f"each other (absolute positioning). Children with margin offsets "
+                    f"({', '.join(children_with_margin) or 'none'}) may overlap. "
+                    f"Prefer VStack/HStack for flow layout; use Layer only for "
+                    f"intentional overlays like watermarks or background shapes."
+                ),
+            })
 
 
 def audit_layout(xml: str) -> list[dict[str, str]]:
@@ -229,5 +301,8 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_nesting(root, issues)
     _check_col_widths(root, root_padding, issues)
     _check_band_height_sum(root, root_padding, issues)
+    _check_layer_overlap(root, issues)
+    _check_process_arrow(root, issues)
+    _check_matrix_labels(root, issues)
 
     return issues

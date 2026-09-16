@@ -13,15 +13,13 @@ SLIDE TYPE: {{ slide_type }}
 COMPONENTS (put every one on the slide — each carries its own data):
 {% for comp in components %}
 {% if comp.kind == "group" %}
-GROUP [{{ comp.component_id }}]{% if comp.weight and comp.weight != "peer" %} (weight: {{ comp.weight }}){% endif %}
+GROUP [{{ comp.component_id }}]{% if band_heights and comp.component_id in band_heights %} → h="{{ band_heights[comp.component_id] }}"{% endif %}
 
 {% if comp.design_hint %}  visual-intent: {{ comp.design_hint }} (see GROUP RENDERING in layout grammar)
 {% endif %}
   children:
 {% for child in comp.children %}
     - {{ child.kind }}{% if child.component_id %} [{{ child.component_id }}]{% endif %}{% if child.count > 1 %} (x{{ child.count }}){% endif %}{% if child.chart_type %} [{{ child.chart_type }}]{% endif %}{% if child.content_summary %}: {{ child.content_summary }}{% endif %}
-{% if child.weight and child.weight != "peer" %}      height-weight: {{ child.weight }}
-{% endif %}
 {% if child.design_hint %}      visual-intent: {{ child.design_hint }}
 {% endif %}
 {% if child.content_data %}
@@ -33,7 +31,7 @@ GROUP [{{ comp.component_id }}]{% if comp.weight and comp.weight != "peer" %} (w
 {% endfor %}
 {% else %}
 - {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
-{% if comp.weight and comp.weight != "peer" %}  height-weight: {{ comp.weight }} (see WEIGHT ALLOCATION in layout grammar)
+{% if band_heights and comp.component_id in band_heights %}  → h="{{ band_heights[comp.component_id] }}" (MANDATORY — use this exact pixel height)
 {% endif %}
 {% if comp.design_hint %}  visual-intent: {{ comp.design_hint }}
 {% endif %}
@@ -78,11 +76,26 @@ Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1". Every value should
 look like it came from a real business report.
 {% endif %}
 
-HEIGHT BUDGET — follow the HEIGHT BUDGET + WEIGHT ALLOCATION sections in the
-layout grammar. Components tagged height-weight above get proportional shares of
-available_h. Untagged components are peers (equal split). visual-intent guides
-look-and-feel within a band, NOT the band's height.
-If the content is thin, add substance rather than leaving the slide half-empty.
+{% if band_heights %}
+HEIGHT BUDGET — PRE-COMPUTED (use these exact pixel heights):
+Each component above marked with → h="NNN" has a pre-computed band height.
+Copy that h value EXACTLY onto the component's container (VStack/HStack/Chart/Table).
+Do NOT recalculate or adjust these heights — they are already budgeted to fit
+within 720px with padding={{ band_heights.get('_padding', 48) }} and gap={{ band_heights.get('_gap', 24) }}.
+Use padding="48" and gap="24" on the root VStack unless you have a specific reason not to.
+{% else %}
+HEIGHT BUDGET — MANDATORY ARITHMETIC before writing any XML:
+1. Pick padding P and gap G for the root VStack.
+2. Header band has no h (auto, ~80-90).
+3. Compute available_h = 720 - 2*P - header_h_est - (N_bands-1)*G.
+4. Assign each content band an explicit h from its weight tag.
+5. ADD UP: header_est + all band h values + all gaps + 2*P. The total MUST be <= 700.
+   If over 700, SHRINK the largest band or drop a minor band. NEVER exceed 720.
+6. Untagged components are peers (equal split).
+{% endif %}
+Do NOT use <Layer> for content layouts — Layer children stack on top of each
+other causing overlaps. Use VStack/HStack flow layouts. Reserve Layer ONLY for
+intentional overlays (watermarks, background decorations behind content).
 
 Output the POM XML for this slide - a single <Slide> element, no <Theme>, no
 markdown fences, no commentary.
