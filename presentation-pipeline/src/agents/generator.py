@@ -68,7 +68,6 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         content_data=plan.get("content_data", {}),
         supplied_content=state.get("supplied_content"),
         slide_type=plan.get("slide_type", ""),
-        band_heights=contract.get("band_heights", {}),
     )
 
     return system_prompt, user_prompt

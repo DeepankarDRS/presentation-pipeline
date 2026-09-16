@@ -175,8 +175,8 @@ def test_band_height_sum_within_budget_ok():
   <VStack w="1280" h="720" padding="36" gap="16">
     <HStack><Text>Header</Text></HStack>
     <HStack h="120"><Text>KPI row</Text></HStack>
-    <VStack h="280"><Text>Chart card</Text></VStack>
-    <VStack h="88"><Text>Callout</Text></VStack>
+    <VStack h="300"><Text>Chart card</Text></VStack>
+    <VStack h="96"><Text>Callout</Text></VStack>
   </VStack>
 </Slide>"""
     codes = [i["code"] for i in audit_layout(xml)]

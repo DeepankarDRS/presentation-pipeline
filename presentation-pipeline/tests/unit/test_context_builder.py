@@ -10,7 +10,6 @@ from src.agents.context_builder import (
     _select_notes,
     _render_house_style,
     _detect_components_from_text,
-    allocate_band_heights,
     build_contract,
     context_builder_node,
     _load_yaml,
@@ -255,7 +254,7 @@ def test_prompt_standard_tier():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 8200, f"Standard tier too large: {tokens} tokens"
+    assert tokens < 6600, f"Standard tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "LAYOUT GRAMMAR" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -272,7 +271,7 @@ def test_prompt_dense_tier_bounded():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 9600, f"Dense tier too large: {tokens} tokens"
+    assert tokens < 7500, f"Dense tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -391,83 +390,3 @@ def test_attributes_common_includes_shadow_and_gradient():
     for node in ("VStack", "HStack", "Text", "Shape"):
         assert "shadow" in attrs[node], f"shadow missing from {node}"
         assert "backgroundGradient" in attrs[node], f"backgroundGradient missing from {node}"
-
-
-# ── Height allocator tests ─────────────────────────────────────────────────
-
-def test_allocate_hero_gets_majority():
-    comps = [
-        {"component_id": "chart1", "kind": "chart", "weight": "hero"},
-        {"component_id": "table1", "kind": "table", "weight": "supporting"},
-    ]
-    heights = allocate_band_heights(comps)
-    assert heights["chart1"] > heights["table1"]
-    assert heights["chart1"] >= 200
-
-
-def test_allocate_peers_split_evenly():
-    comps = [
-        {"component_id": "a", "kind": "chart", "weight": "peer"},
-        {"component_id": "b", "kind": "table", "weight": "peer"},
-    ]
-    heights = allocate_band_heights(comps)
-    assert abs(heights["a"] - heights["b"]) <= 1
-    total = sum(heights.values()) + 85 + 24 + 2 * 48
-    assert total <= 700
-
-
-def test_allocate_total_fits_in_budget():
-    comps = [
-        {"component_id": "hero", "kind": "chart", "weight": "hero"},
-        {"component_id": "sup", "kind": "table", "weight": "supporting"},
-        {"component_id": "minor", "kind": "kpi_row", "weight": "minor"},
-    ]
-    heights = allocate_band_heights(comps, padding=48, gap=24)
-    total = sum(heights.values()) + 85 + 2 * 24 + 2 * 48  # bands + header + gaps + padding
-    assert total <= 700, f"Total {total} exceeds 700"
-
-
-def test_allocate_skips_non_band_kinds():
-    comps = [
-        {"component_id": "t", "kind": "title"},
-        {"component_id": "c", "kind": "chart", "weight": "hero"},
-        {"component_id": "e", "kind": "eyebrow"},
-    ]
-    heights = allocate_band_heights(comps)
-    assert "t" not in heights
-    assert "e" not in heights
-    assert "c" in heights
-
-
-def test_allocate_empty_components():
-    assert allocate_band_heights([]) == {}
-
-
-def test_allocate_no_component_id_skipped():
-    comps = [{"kind": "chart", "weight": "hero"}]
-    heights = allocate_band_heights(comps)
-    assert heights == {}
-
-
-def test_allocate_group_is_band():
-    comps = [
-        {"component_id": "grp", "kind": "group", "weight": "hero",
-         "children": [{"component_id": "c1", "kind": "kpi_row"}]},
-        {"component_id": "chart1", "kind": "chart", "weight": "supporting"},
-    ]
-    heights = allocate_band_heights(comps)
-    assert "grp" in heights
-    assert "chart1" in heights
-    assert heights["grp"] > heights["chart1"]
-
-
-def test_contract_includes_band_heights():
-    plan = _make_plan(["title", "chart", "table"], density="normal")
-    plan["components"] = [
-        ComponentPlan(component_id="c1", kind="chart", count=1, weight="hero"),
-        ComponentPlan(component_id="t1", kind="table", count=1, weight="supporting"),
-    ]
-    contract = build_contract(plan, DEFAULT_THEME)
-    assert "band_heights" in contract
-    assert "c1" in contract["band_heights"]
-    assert "t1" in contract["band_heights"]

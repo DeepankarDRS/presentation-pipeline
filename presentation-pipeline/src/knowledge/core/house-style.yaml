@@ -97,11 +97,9 @@ height_budget: |
      below to divide available_h. Otherwise pick each band's h from what its
      content needs (sizes below).
   3. Add it ALL up: header_h + every band h + every gap + 2*padding.
-     - total <= 700   -> good.
-     - total 701-720  -> DANGER ZONE, will likely overlap after text wrapping.
-       Shrink the tallest band by the overage.
+     - total <= ~700  -> good.
      - total > 720    -> the slide WILL overlap. Cut a band, shrink the chart,
-       or drop to 3 KPIs. This is the #1 visual defect.
+       or drop to 3 KPIs.
      - total < ~640   -> add a band (callout / stat row / second visual) or
        genuinely enlarge one (more rows, taller chart). Do not just inflate h.
   4. Chart / Matrix / Table in a card: h = band_h - 2*card_padding - ~28 title.
@@ -223,21 +221,6 @@ render_gotchas:
      the label grow=\"1\" and let the value size naturally."
   - "$textMain is the theme INK, light on DARK themes. A dark-filled panel uses
      $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
-  - "LAYER OVERLAP: <Layer> children stack on top of each other (absolute
-     positioning). Do NOT use Layer for content layouts — shapes, text, and
-     charts placed with margin offsets in a Layer WILL overlap. Use
-     VStack/HStack for all content flow. Layer is only for intentional overlays
-     (watermarks, background shapes behind content, or a single positioned element)."
-  - "ProcessArrowStep labels: MAX 2 short words (e.g. 'Discover', 'Go Live').
-     Longer text clips inside the chevron — the step IS the label, not a
-     sentence. MAX 5 steps; 6+ steps overflow horizontally. If you have more
-     phases, summarise or split across slides."
-  - "MatrixItem labels: ONE word per item (e.g. 'Search', 'Billing', 'Docs').
-     Multi-word labels overlap each other on the scatter plot. If the concept
-     needs more words, abbreviate to the shortest recognisable form."
-  - "Cover slides (slide_type=cover) must be SPARSE: one big title, optional
-     subtitle, minimal decoration. No charts, tables, matrices, bullet lists,
-     or dense multi-card layouts. Think 'hero statement', not 'data slide'."
 
 # --- pre-emit checklist ---------------------------------------------
 group_rendering: |

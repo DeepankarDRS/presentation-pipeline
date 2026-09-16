@@ -78,93 +78,6 @@ _KIND_TO_NODES: dict[str, list[str]] = {
     "cta":           [],
 }
 
-# ── Deterministic height allocator ──────────────────────────────────────────
-
-SLIDE_H = 720
-_HEADER_ESTIMATE = 85
-_DEFAULT_PADDING = 48
-_DEFAULT_GAP = 24
-
-_WEIGHT_FRACTIONS: dict[str, tuple[float, float]] = {
-    "hero":       (0.50, 0.60),
-    "supporting": (0.25, 0.35),
-    "minor":      (0.10, 0.15),
-}
-
-_NON_BAND_KINDS = {"title", "eyebrow", "badge", "cta", "icon", "narrative", "caption"}
-
-
-def _is_band(comp: dict) -> bool:
-    """True if a component should get its own height band in the root VStack."""
-    kind = comp.get("kind", "")
-    if kind == "group":
-        return True
-    return kind not in _NON_BAND_KINDS
-
-
-def allocate_band_heights(
-    components: list[dict],
-    padding: int = _DEFAULT_PADDING,
-    gap: int = _DEFAULT_GAP,
-) -> dict[str, int]:
-    """Compute pixel heights for each band component from weight tags.
-
-    Returns {component_id: height_px}. Components without a component_id
-    or that are non-band (title, eyebrow, etc.) are excluded.
-    """
-    bands = [c for c in components if _is_band(c)]
-    if not bands:
-        return {}
-
-    n_gaps = max(len(bands) - 1, 0)
-    available = SLIDE_H - 2 * padding - _HEADER_ESTIMATE - n_gaps * gap
-    if available < 100:
-        available = 100
-
-    weights = [c.get("weight", "peer") for c in bands]
-    has_hero = "hero" in weights
-
-    allocated: dict[str, int] = {}
-    remaining = available
-    peer_indices: list[int] = []
-
-    for i, (comp, w) in enumerate(zip(bands, weights)):
-        cid = comp.get("component_id", "")
-        if not cid:
-            continue
-        if w in _WEIGHT_FRACTIONS:
-            lo, hi = _WEIGHT_FRACTIONS[w]
-            frac = (lo + hi) / 2
-            h = int(available * frac)
-            allocated[cid] = h
-            remaining -= h
-        else:
-            peer_indices.append(i)
-
-    if peer_indices:
-        per_peer = max(remaining // len(peer_indices), 60)
-        for idx in peer_indices:
-            cid = bands[idx].get("component_id", "")
-            if cid:
-                allocated[cid] = per_peer
-
-    fixed_cost = _HEADER_ESTIMATE + n_gaps * gap + 2 * padding
-    total = sum(allocated.values()) + fixed_cost
-    if total > 700 and allocated:
-        target_bands = 700 - fixed_cost
-        total_h = sum(allocated.values())
-        if total_h > 0 and target_bands > 0:
-            scaled = {cid: max(int(h * target_bands / total_h), 60)
-                      for cid, h in allocated.items()}
-            leftover = target_bands - sum(scaled.values())
-            if leftover > 0:
-                tallest = max(scaled, key=scaled.get)
-                scaled[tallest] += leftover
-            allocated = scaled
-
-    return allocated
-
-
 _KIND_TO_COMPONENT_FILE: dict[str, str] = {
     "kpi_row":       "components/shape.yaml",
     "bullet_list":   "components/list.yaml",
@@ -610,8 +523,6 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     house_style = _render_house_style() if has_grammar else ""
     component_recipes = _render_component_recipes(kinds) if has_grammar else ""
 
-    band_heights = allocate_band_heights(slide_plan.get("components", []))
-
     return {
         "allowed_nodes": allowed_nodes,
         "allowed_attributes": allowed_attributes,
@@ -626,7 +537,6 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "house_style": house_style,
         "component_recipes": component_recipes,
         "density_tier": tier,
-        "band_heights": band_heights,
     }
 
 
