@@ -199,12 +199,12 @@ phase_d:
     note: "color attribute sets stroke on the inner <svg>. Child elements with explicit stroke/fill override root."
   Timeline:
     description: "Timeline / roadmap visualization with connected milestones."
-    node_attributes: [direction, dateColor, titleColor, descriptionColor, connectorColor, connectorGradient, useColorForDate, fontFamily, w, h]
+    node_attributes: [direction, dateColor, titleColor, connectorColor, connectorGradient, useColorForDate, fontFamily, w, h]
     children: [TimelineItem]
     direction_values: [horizontal, vertical]
   TimelineItem:
     description: "Individual timeline milestone."
-    node_attributes: [date, title, description, color, dateColor]
+    node_attributes: [date, title, color, dateColor]
     required: [date, title]
     children: none
   Flow:
