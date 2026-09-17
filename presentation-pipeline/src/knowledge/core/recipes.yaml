@@ -68,18 +68,19 @@ table_card: |
   </VStack>
 
 bullet_list: |
-  # Bullets: use <Ul>/<Li> — POM's native list nodes. NO h on the band —
-  # auto-sizes to content. Never use separate <Text> elements with manual dashes.
+  # Bullets: <Ul>/<Li>. NO h — auto-sizes. Each bullet = ONE line (~55 chars).
+  # Multi-line paragraphs blow the height budget and cause overlap.
   <VStack w="max" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
     <Ul fontSize="13" color="$textMain" lineHeight="1.4">
       <Li>Close 3 enterprise logos worth $4M+ combined ARR</Li>
-      <Li>Launch self-serve onboarding to cut CAC payback to 10 months</Li>
-      <Li>Ship the analytics v2 dashboard before the board meeting</Li>
+      <Li>Launch self-serve onboarding, cut CAC payback to 10 mo</Li>
+      <Li>Ship analytics v2 dashboard before board meeting</Li>
     </Ul>
   </VStack>
 
 callout: |
   # Callout / narrative strip: NO h — auto-sizes to text content.
+  # STRICT: body text = 1 sentence, ≤ 80 chars. Longer text pushes total > 720.
   <VStack w="max" padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
     <Text fontSize="11" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
     <Text fontSize="13" color="$textMain" lineHeight="1.45">A large, measurable problem that targeted enforcement could meaningfully reduce.</Text>
@@ -87,15 +88,16 @@ callout: |
 
 timeline: |
   # Timeline in a card: band h 200-300. Give <Timeline> explicit w (container
-  # inner width) + explicit h. Horizontal: max 5 items; keep date/title/
-  # description SHORT (each column is only w/N px wide — long text collides).
+  # inner width) + explicit h. Horizontal: max 5 items.
+  # STRICT: date = 1-2 words, title = 1-2 words, description = 1-3 words ONLY.
+  # Full sentences WILL collide — each column is only w/N px wide.
   <VStack w="max" h="240" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="13" bold="true" color="$textMain">Rollout timeline</Text>
     <Timeline direction="horizontal" w="1160" h="180" dateColor="$textMuted" titleColor="$textMain" descriptionColor="$textMuted" connectorColor="$accent">
       <TimelineItem date="Q1 2026" title="Alpha" description="Internal beta" color="2563EB" />
-      <TimelineItem date="Q2 2026" title="Public beta" description="Early adopters" color="0EA5E9" />
+      <TimelineItem date="Q2 2026" title="Beta" description="Early adopters" color="0EA5E9" />
       <TimelineItem date="Q3 2026" title="GA" description="Full launch" color="15803D" />
-      <TimelineItem date="Q4 2026" title="Enterprise" description="SSO, SLA" color="7C3AED" />
+      <TimelineItem date="Q4 2026" title="Enterprise" description="SSO + SLA" color="7C3AED" />
     </Timeline>
   </VStack>
 
