@@ -109,7 +109,7 @@ export class PromptFormComponent {
 
   readonly lightPalettes = THEME_PALETTES.filter(p => p.mode === 'light');
   readonly darkPalettes = THEME_PALETTES.filter(p => p.mode === 'dark');
-  readonly criticModes: CriticMode[] = ['auto', 'manual', 'off'];
+  readonly criticModes: CriticMode[] = ['auto', 'off'];
 
   private fb = new FormBuilder();
   form = this.fb.nonNullable.group({

@@ -1,10 +1,10 @@
-"""Tests for the critic agent with mocked LLM responses."""
+"""Tests for the critic agent with mocked visual critic."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-from src.agents.critic import critic_node, _render_prompts, _format_issues_for_display, _manual_checkpoint
-from src.agents.critic_schema import CriticIssue, CriticOutput
-from src.state import CriticResult, initial_state
+from src.agents.critic import critic_node
+from src.agents.visual_critic import _filter_visual_notes
+from src.state import initial_state
 
 
 GOOD_XML = """\
@@ -17,27 +17,7 @@ GOOD_XML = """\
         <Text fontSize="28" color="$surface">$1.2M</Text>
         <Text fontSize="14" color="$surface">Revenue</Text>
       </VStack>
-      <VStack padding="16" backgroundColor="$accent" gap="4">
-        <Text fontSize="28" color="$surface">85%</Text>
-        <Text fontSize="14" color="$surface">Growth</Text>
-      </VStack>
-      <VStack padding="16" backgroundColor="$accent" gap="4">
-        <Text fontSize="28" color="$surface">$340K</Text>
-        <Text fontSize="14" color="$surface">Profit</Text>
-      </VStack>
-      <VStack padding="16" backgroundColor="$accent" gap="4">
-        <Text fontSize="28" color="$surface">12</Text>
-        <Text fontSize="14" color="$surface">Clients</Text>
-      </VStack>
     </HStack>
-  </VStack>
-</Slide>"""
-
-BAD_XML_HARDCODED_COLORS = """\
-<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />
-<Slide>
-  <VStack w="1280" h="720" padding="48" backgroundColor="F7F9FC">
-    <Text fontSize="32" color="16202E">Title</Text>
   </VStack>
 </Slide>"""
 
@@ -60,8 +40,9 @@ def _make_state(**overrides):
     }]
     state["contract"] = {
         "allowed_nodes": ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Span"],
-        "allowed_attributes": {"VStack": ["gap"], "Text": ["fontSize", "color", "bold"]},
         "theme_element": '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />',
+        "house_style": "height budget 720px, 48px padding",
+        "notes": ["Use $token colors only", "forbidden tag: div"],
     }
     state["theme_element"] = state["contract"]["theme_element"]
     state["current_xml"] = GOOD_XML
@@ -73,373 +54,238 @@ def _make_state(**overrides):
     return state
 
 
-def _mock_critic_output(issues=None):
-    """Create a mock structured LLM that returns a CriticOutput."""
-    output = CriticOutput(issues=issues or [])
-    mock_llm = MagicMock()
-    mock_structured = MagicMock()
-    mock_structured.invoke.return_value = output
-    mock_llm.with_structured_output.return_value = mock_structured
-    return mock_llm
+def _mock_visual_result(issues=None, assessment="good", strategy="none"):
+    """Return the 3-tuple that run_visual_critic returns."""
+    usage = {"tokens_in": 100, "tokens_out": 50, "model": "gpt-4.1"}
+    repair_hints = {
+        "strategy": strategy,
+        "assessment": assessment,
+        "affected_nodes": [],
+    }
+    return (issues or [], usage, repair_hints)
 
 
-# ── Prompt rendering ─────────────────────────────────────────────────────
+# ── Visual critic — clean pass ──────────────────────────────────────────
 
-def test_render_prompts_system_has_checklist():
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_clean_pass(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result()
+
     state = _make_state()
-    system, user = _render_prompts(state)
-    assert "Component Completeness" in system
-    assert "Content Fidelity" in system
-    assert "Structural Sanity" in system
-    assert "Theme Adherence" in system
+    result = critic_node(state)
+    assert result["critic_result"]["passed"] is True
+    assert result["critic_result"]["issues"] == []
+    assert result["visual_critic_result"]["repair_hints"]["strategy"] == "none"
 
 
-def test_render_prompts_user_has_xml():
+# ── Visual critic — high severity fails ─────────────────────────────────
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_high_severity_fails(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result(
+        issues=[{
+            "severity": "high",
+            "type": "completeness",
+            "description": "[Visual] Missing KPI tiles",
+            "fix": "Add KPI tiles",
+            "affected_nodes": ["HStack"],
+            "fix_xml_snippet": "",
+            "source": "visual",
+        }],
+        assessment="needs_tuning",
+        strategy="patch",
+    )
+
     state = _make_state()
-    _, user = _render_prompts(state)
-    assert "<Slide>" in user
-    assert "Q3 Results" in user
+    result = critic_node(state)
+    assert result["critic_result"]["passed"] is False
+    assert len(result["critic_result"]["issues"]) == 1
+    assert result["visual_critic_result"]["repair_hints"]["strategy"] == "patch"
 
 
-def test_render_prompts_user_has_components():
+# ── Visual critic — medium only passes ──────────────────────────────────
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_medium_only_passes(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result(
+        issues=[{
+            "severity": "medium",
+            "type": "theme",
+            "description": "[Visual] Theme mismatch",
+            "fix": "Use $accent",
+            "affected_nodes": [],
+            "fix_xml_snippet": "",
+            "source": "visual",
+        }],
+        assessment="needs_tuning",
+        strategy="patch",
+    )
+
     state = _make_state()
-    _, user = _render_prompts(state)
-    assert "title" in user
-    assert "kpi_row" in user
+    result = critic_node(state)
+    assert result["critic_result"]["passed"] is True
 
 
-def test_render_prompts_user_has_theme():
+# ── Screenshot failure — fail-open ──────────────────────────────────────
+
+@patch("src.agents.critic.render_screenshots")
+def test_critic_screenshot_failure_passes(mock_screenshots):
+    mock_screenshots.return_value = _mock_batch(None, ok=False, error="LibreOffice timeout")
+
     state = _make_state()
-    _, user = _render_prompts(state)
-    assert "Theme" in user
-    assert "F7F9FC" in user
-
-
-def test_render_prompts_includes_supplied_content():
-    state = _make_state(supplied_content={"title": "Q3 Metrics", "revenue": "$1.2M"})
-    _, user = _render_prompts(state)
-    assert "SUPPLIED CONTENT" in user
-    assert "Q3 Metrics" in user
-    assert "$1.2M" in user
-
-
-def test_render_prompts_no_supplied_content():
-    state = _make_state()
-    _, user = _render_prompts(state)
-    assert "SUPPLIED CONTENT" not in user
-
-
-def test_render_prompts_includes_layout_issues():
-    state = _make_state(layout_issues=[
-        {"severity": "medium", "code": "FONT_TOO_SMALL", "message": '<Text> has fontSize="9" (min 11)'},
-        {"severity": "high", "code": "ROOT_SIZE", "message": 'Root VStack has w="None"'},
-    ])
-    _, user = _render_prompts(state)
-    assert "LAYOUT AUDIT WARNINGS" in user
-    assert "FONT_TOO_SMALL" in user
-    assert "ROOT_SIZE" in user
-
-
-def test_render_prompts_no_layout_issues_no_section():
-    state = _make_state()
-    _, user = _render_prompts(state)
-    assert "LAYOUT AUDIT WARNINGS" not in user
-
-
-def test_render_prompts_empty_plan():
-    state = _make_state()
-    state["slide_plans"] = []
-    system, user = _render_prompts(state)
-    assert "Component Completeness" in system
-
-
-# ── Manual mode — non-interactive (tests, no CLI) ────────────────────────
-
-@patch("src.agents.critic.get_llm")
-def test_critic_manual_non_interactive_passes_clean(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[])
-    state = _make_state(critic_mode="manual", interactive=False)
     result = critic_node(state)
     assert result["critic_result"]["passed"] is True
     assert result["critic_result"]["issues"] == []
 
 
-@patch("src.agents.critic.get_llm")
-def test_critic_manual_non_interactive_fails_on_high(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(severity="high", type="completeness",
-                    description="Missing chart.", fix="Add Chart."),
-    ])
-    state = _make_state(critic_mode="manual", interactive=False)
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is False
+# ── No PPTX — skip visual review ───────────────────────────────────────
 
-
-# ── Manual mode — interactive Accept ─────────────────────────────────────
-
-@patch("builtins.input", side_effect=["a"])
-@patch("src.agents.critic.get_llm")
-def test_critic_manual_accept(mock_get_llm, mock_input):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(severity="medium", type="theme",
-                    description="Hardcoded color.", fix="Use $token."),
-    ])
-    state = _make_state(critic_mode="manual", interactive=True)
+def test_critic_no_pptx_skips_visual():
+    state = _make_state()
+    state["compile_result"] = {"ok": False, "pptx_path": None, "diagnostics": [], "warnings": []}
     result = critic_node(state)
     assert result["critic_result"]["passed"] is True
-    assert len(result["critic_result"]["issues"]) == 1
 
 
-# ── Manual mode — interactive Reject ─────────────────────────────────────
+# ── Compile warnings passed through ────────────────────────────────────
 
-@patch("builtins.input", side_effect=["r"])
-@patch("src.agents.critic.get_llm")
-def test_critic_manual_reject(mock_get_llm, mock_input):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(severity="medium", type="theme",
-                    description="Hardcoded color.", fix="Use $token."),
-    ])
-    state = _make_state(critic_mode="manual", interactive=True)
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is False
-    assert any("[User rejected]" in i["description"] for i in result["critic_result"]["issues"])
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_passes_compile_warnings(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result()
 
-
-# ── Manual mode — interactive Edit ───────────────────────────────────────
-
-@patch("builtins.input", side_effect=["e", "Make the title bigger"])
-@patch("src.agents.critic.get_llm")
-def test_critic_manual_edit(mock_get_llm, mock_input):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(severity="low", type="structure",
-                    description="Minor nesting.", fix="Flatten."),
-    ])
-    state = _make_state(critic_mode="manual", interactive=True)
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is False
-    assert any("Make the title bigger" in i["description"] for i in result["critic_result"]["issues"])
-    assert any(i["severity"] == "high" for i in result["critic_result"]["issues"])
-
-
-# ── Format issues helper ─────────────────────────────────────────────────
-
-def test_format_issues_empty():
-    text = _format_issues_for_display([])
-    assert "No issues" in text
-
-
-def test_format_issues_shows_severity():
-    issues = [
-        {"severity": "high", "type": "completeness", "description": "Missing chart.", "fix": "Add Chart."},
-        {"severity": "low", "type": "theme", "description": "Minor.", "fix": "Fix."},
+    state = _make_state()
+    state["compile_result"]["warnings"] = [
+        {"type": "NODE_OUT_OF_BOUNDS", "message": "Text at (100,750) outside slide"},
     ]
-    text = _format_issues_for_display(issues)
-    assert "[HIGH]" in text
-    assert "[LOW]" in text
-    assert "Missing chart" in text
+    critic_node(state)
+
+    call_kwargs = mock_vc.call_args
+    assert call_kwargs.kwargs.get("compile_warnings") or call_kwargs[1].get("compile_warnings")
 
 
-# ── Manual checkpoint unit tests ─────────────────────────────────────────
+# ── Layout issues passed through ────────────────────────────────────────
 
-def test_manual_checkpoint_non_interactive_auto_decides():
-    issues = [{"severity": "medium", "type": "theme", "description": "x", "fix": "y"}]
-    result = _manual_checkpoint(issues, interactive=False)
-    assert result["passed"] is True
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_passes_layout_issues(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result()
 
-    issues_high = [{"severity": "high", "type": "completeness", "description": "x", "fix": "y"}]
-    result = _manual_checkpoint(issues_high, interactive=False)
-    assert result["passed"] is False
-
-
-# ── Auto mode — clean pass ───────────────────────────────────────────────
-
-@patch("src.agents.critic.get_llm")
-def test_critic_clean_pass(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[])
     state = _make_state()
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is True
-    assert result["critic_result"]["issues"] == []
+    state["layout_issues"] = [
+        {"severity": "high", "code": "ROOT_SIZE", "message": "Root VStack wrong dims"},
+    ]
+    critic_node(state)
+
+    call_kwargs = mock_vc.call_args
+    assert call_kwargs.kwargs.get("layout_issues") or call_kwargs[1].get("layout_issues")
 
 
-# ── Auto mode — missing component (high severity) ───────────────────────
+# ── Repair hints propagation ───────────────────────────────────────────
 
-@patch("src.agents.critic.get_llm")
-def test_critic_catches_missing_component(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(
-            severity="high",
-            type="completeness",
-            description="Plan specifies kpi_row with 4 tiles but XML has no KPI elements.",
-            fix="Add 4 KPI tile VStacks inside an HStack with value + label Text nodes.",
-        ),
-    ])
-    state = _make_state()
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is False
-    assert len(result["critic_result"]["issues"]) == 1
-    assert result["critic_result"]["issues"][0]["type"] == "completeness"
-    assert result["critic_result"]["issues"][0]["severity"] == "high"
-
-
-# ── Auto mode — hardcoded color (medium severity) ───────────────────────
-
-@patch("src.agents.critic.get_llm")
-def test_critic_catches_hardcoded_color(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(
-            severity="medium",
-            type="theme",
-            description='<Text> uses hardcoded color="16202E" instead of $textMain.',
-            fix='Change color="16202E" to color="$textMain".',
-        ),
-    ])
-    state = _make_state(current_xml=BAD_XML_HARDCODED_COLORS)
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is True
-    assert len(result["critic_result"]["issues"]) == 1
-    assert result["critic_result"]["issues"][0]["type"] == "theme"
-    assert result["critic_result"]["issues"][0]["severity"] == "medium"
-
-
-# ── Auto mode — missing supplied value (medium severity) ─────────────────
-
-@patch("src.agents.critic.get_llm")
-def test_critic_catches_missing_supplied_value(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(
-            severity="medium",
-            type="fidelity",
-            description='Supplied value "Q3 Metrics" does not appear in the XML.',
-            fix='Replace the title Text content with "Q3 Metrics".',
-        ),
-    ])
-    state = _make_state(supplied_content={"title": "Q3 Metrics"})
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is True
-    assert result["critic_result"]["issues"][0]["type"] == "fidelity"
-
-
-# ── Auto mode — structural issue (high severity) ────────────────────────
-
-@patch("src.agents.critic.get_llm")
-def test_critic_catches_structural_issue(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(
-            severity="high",
-            type="structure",
-            description="Root element inside <Slide> is not a VStack/HStack with dimensions.",
-            fix="Wrap content in <VStack w='1280' h='720'>.",
-        ),
-    ])
-    state = _make_state()
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is False
-    assert result["critic_result"]["issues"][0]["type"] == "structure"
-
-
-# ── Auto mode — mixed severities ────────────────────────────────────────
-
-@patch("src.agents.critic.get_llm")
-def test_critic_mixed_severities_fails_on_high(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(
-            severity="high",
-            type="completeness",
-            description="Missing chart component.",
-            fix="Add a Chart element.",
-        ),
-        CriticIssue(
-            severity="medium",
-            type="theme",
-            description="Hardcoded color in backgroundColor.",
-            fix="Use $surface token.",
-        ),
-        CriticIssue(
-            severity="low",
-            type="structure",
-            description="Deep nesting (6 levels).",
-            fix="Flatten stack hierarchy.",
-        ),
-    ])
-    state = _make_state()
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is False
-    assert len(result["critic_result"]["issues"]) == 3
-
-
-@patch("src.agents.critic.get_llm")
-def test_critic_medium_and_low_only_passes(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(
-            severity="medium",
-            type="theme",
-            description="Hardcoded color.",
-            fix="Use $token.",
-        ),
-        CriticIssue(
-            severity="low",
-            type="structure",
-            description="Minor nesting.",
-            fix="Flatten.",
-        ),
-    ])
-    state = _make_state()
-    result = critic_node(state)
-    assert result["critic_result"]["passed"] is True
-    assert len(result["critic_result"]["issues"]) == 2
-
-
-# ── Auto mode — LLM error fallback ──────────────────────────────────────
-
-@patch("src.agents.critic.get_llm")
-def test_critic_llm_error_falls_back_to_pass(mock_get_llm):
-    mock_llm = MagicMock()
-    mock_structured = MagicMock()
-    mock_structured.invoke.side_effect = RuntimeError("API timeout")
-    mock_llm.with_structured_output.return_value = mock_structured
-    mock_get_llm.return_value = mock_llm
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_repair_hints_in_visual_result(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result(
+        issues=[{
+            "severity": "high",
+            "type": "visual",
+            "description": "[Visual] Layout broken",
+            "fix": "Rebuild",
+            "affected_nodes": ["VStack", "Chart"],
+            "fix_xml_snippet": "",
+            "source": "visual",
+        }],
+        assessment="layout_broken",
+        strategy="regenerate",
+    )
 
     state = _make_state()
     result = critic_node(state)
-    assert result["critic_result"]["passed"] is True
-    assert result["critic_result"]["issues"] == []
+    hints = result["visual_critic_result"]["repair_hints"]
+    assert hints["strategy"] == "regenerate"
+    assert hints["assessment"] == "layout_broken"
 
 
-# ── Issue format matches repairer expectations ───────────────────────────
+# ── Screenshot tracking ────────────────────────────────────────────────
 
-@patch("src.agents.critic.get_llm")
-def test_critic_issues_have_expected_keys(mock_get_llm):
-    mock_get_llm.return_value = _mock_critic_output(issues=[
-        CriticIssue(
-            severity="high",
-            type="completeness",
-            description="Missing title.",
-            fix="Add a title Text.",
-        ),
-    ])
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_tracks_screenshot(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result()
+
     state = _make_state()
     result = critic_node(state)
-    issue = result["critic_result"]["issues"][0]
-    assert "severity" in issue
-    assert "type" in issue
-    assert "description" in issue
-    assert "fix" in issue
+    assert result["slide_screenshots"][0] == "/tmp/slide-0.png"
+    assert result["visual_critic_result"]["screenshot_path"] == "/tmp/slide-0.png"
 
 
-# ── Verify repairer reads critic issues ──────────────────────────────────
+# ── _filter_visual_notes ───────────────────────────────────────────────
 
-def test_repairer_collect_problems_reads_critic():
-    """Verify that the repairer's _collect_problems picks up critic issues."""
+def test_filter_visual_notes_removes_structural():
+    notes = [
+        "Use $token colors only",
+        "forbidden tag: div",
+        "Must not use <br>",
+        "Keep 48px padding on all sides",
+        "allowed_nodes are strict",
+        "Use attribute fontSize not font-size",
+    ]
+    result = _filter_visual_notes(notes)
+    assert "Keep 48px padding on all sides" in result
+    assert "Use $token colors only" in result
+    assert len(result) == 2
+
+
+# ── Repairer reads critic issues ───────────────────────────────────────
+
+def test_repairer_collect_problems_reads_visual_issues():
     from src.agents.repairer import _collect_problems
 
     state = _make_state()
     state["critic_result"] = {
         "passed": False,
         "issues": [
-            {"severity": "high", "type": "completeness", "description": "Missing KPI tiles", "fix": "Add KPIs"},
+            {
+                "severity": "high",
+                "type": "completeness",
+                "description": "Missing KPI tiles",
+                "fix": "Add KPIs",
+                "affected_nodes": ["HStack"],
+                "fix_xml_snippet": '<HStack gap="16">...</HStack>',
+                "source": "visual",
+            },
         ],
     }
     problems = _collect_problems(state)
-    assert any("CRITIC" in p for p in problems)
-    assert any("Missing KPI" in p for p in problems)
+    assert any("VISUAL_HIGH" in p for p in problems)
+    assert any("Fix: Add KPIs" in p for p in problems)
+    assert any("Snippet:" in p for p in problems)
+
+
+# ── Helpers ─────────────────────────────────────────────────────────────
+
+class _MockSlide:
+    def __init__(self, png_path):
+        self.png_path = png_path
+
+
+class _MockBatch:
+    def __init__(self, png_path, ok=True, error=None):
+        self.ok = ok
+        self.error = error
+        self.slides = [_MockSlide(png_path)] if ok and png_path else []
+
+
+def _mock_batch(png_path, ok=True, error=None):
+    return _MockBatch(png_path, ok, error)

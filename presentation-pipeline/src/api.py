@@ -61,7 +61,6 @@ app.add_middleware(
 
 class CriticMode(str, Enum):
     auto = "auto"
-    manual = "manual"
     off = "off"
 
 

@@ -8,7 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.agents.critic_schema import CriticOutput
 from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.api import app, _runs, RunRecord
 
@@ -37,12 +36,24 @@ def _make_gen_llm():
     return llm
 
 
-def _make_critic_llm():
-    llm = MagicMock()
-    structured = MagicMock()
-    structured.invoke.return_value = CriticOutput(issues=[])
-    llm.with_structured_output.return_value = structured
-    return llm
+def _mock_visual_critic_pass(*args, **kwargs):
+    return (
+        [],
+        {"tokens_in": 50, "tokens_out": 20, "model": "gpt-4.1"},
+        {"strategy": "none", "assessment": "good", "affected_nodes": []},
+    )
+
+
+class _MockSlide:
+    def __init__(self, p):
+        self.png_path = p
+
+
+class _MockBatch:
+    def __init__(self):
+        self.ok = True
+        self.error = None
+        self.slides = [_MockSlide("/tmp/slide-0.png")]
 
 
 def _make_elicitor_llm():
@@ -136,16 +147,16 @@ def _make_sse_generate_request(prompt: str = "Create a title slide") -> dict:
 @patch("src.agents.outline_planner.get_llm")
 @patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots", return_value=_MockBatch())
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
 def test_generate_returns_sse_stream(
-    mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
+    mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc, mock_compile_graph,
     mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
-    mock_critic_llm.return_value = _make_critic_llm()
     mock_elicitor.return_value = _make_elicitor_llm()
     mock_outline.return_value = _make_outline_llm()
     mock_slide_planner.return_value = _make_slide_component_llm()
@@ -176,16 +187,16 @@ def test_generate_returns_sse_stream(
 @patch("src.agents.outline_planner.get_llm")
 @patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots", return_value=_MockBatch())
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
 def test_generate_events_are_valid_json(
-    mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
+    mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc, mock_compile_graph,
     mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
-    mock_critic_llm.return_value = _make_critic_llm()
     mock_elicitor.return_value = _make_elicitor_llm()
     mock_outline.return_value = _make_outline_llm()
     mock_slide_planner.return_value = _make_slide_component_llm()
@@ -216,16 +227,16 @@ def test_generate_events_are_valid_json(
 @patch("src.agents.outline_planner.get_llm")
 @patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots", return_value=_MockBatch())
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
 def test_generate_complete_has_passed(
-    mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
+    mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc, mock_compile_graph,
     mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
-    mock_critic_llm.return_value = _make_critic_llm()
     mock_elicitor.return_value = _make_elicitor_llm()
     mock_outline.return_value = _make_outline_llm()
     mock_slide_planner.return_value = _make_slide_component_llm()
@@ -255,16 +266,16 @@ def test_generate_complete_has_passed(
 @patch("src.agents.outline_planner.get_llm")
 @patch("src.agents.elicitor.get_llm")
 @patch("src.api.compile_graph")
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots", return_value=_MockBatch())
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
 def test_run_status_after_complete(
-    mock_gen_llm, mock_compile, mock_validate, mock_critic_llm, mock_compile_graph,
+    mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc, mock_compile_graph,
     mock_elicitor, mock_outline, mock_slide_planner, mock_reviewer,
 ):
     mock_gen_llm.return_value = _make_gen_llm()
-    mock_critic_llm.return_value = _make_critic_llm()
     mock_elicitor.return_value = _make_elicitor_llm()
     mock_outline.return_value = _make_outline_llm()
     mock_slide_planner.return_value = _make_slide_component_llm()

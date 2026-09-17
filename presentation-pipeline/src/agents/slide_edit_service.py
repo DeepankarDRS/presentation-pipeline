@@ -15,6 +15,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.agents.repairer import build_patch_prompts
+from src.agents.visual_critic import run_visual_critic
 from src.compiler.compiler_client import CompilerError, compile_xml
 from src.compiler.normalizer import ensure_single_theme, normalize_xml
 from src.compiler.repair_guidance import error_signatures, is_stalled
@@ -42,6 +43,8 @@ class SlideEditResult:
     compile_ok: bool = False
     repair_attempts: int = 0
     issues: list[dict[str, Any]] = field(default_factory=list)
+    visual_issues: list[dict[str, Any]] = field(default_factory=list)
+    visual_repair_applied: bool = False
     error: str | None = None
 
 
@@ -129,6 +132,7 @@ def edit_slide_xml(
     run_id: str,
     slide_index: int,
     version: int,
+    max_visual_repairs: int = 1,
 ) -> SlideEditResult:
     """Apply a user's NL edit to a slide XML, validate, and repair if needed.
 
@@ -157,12 +161,18 @@ def edit_slide_xml(
 
     if cr.get("ok", False):
         screenshot_path = _try_screenshot(cr.get("pptx_path"), str(output_dir / "screenshots"))
+        visual_result = _run_visual_check_loop(
+            working_xml, screenshot_path, slide_plan, theme_element, contract,
+            cr, output_dir, max_visual_repairs,
+        )
         return SlideEditResult(
             ok=True,
-            xml=working_xml,
-            pptx_path=cr.get("pptx_path"),
-            screenshot_path=screenshot_path,
+            xml=visual_result.get("xml", working_xml),
+            pptx_path=visual_result.get("pptx_path", cr.get("pptx_path")),
+            screenshot_path=visual_result.get("screenshot_path", screenshot_path),
             compile_ok=True,
+            visual_issues=visual_result.get("visual_issues", []),
+            visual_repair_applied=visual_result.get("repaired", False),
         )
 
     # Mini repair loop
@@ -209,13 +219,19 @@ def edit_slide_xml(
 
         if cr.get("ok", False):
             screenshot_path = _try_screenshot(cr.get("pptx_path"), str(repair_dir / "screenshots"))
+            visual_result = _run_visual_check_loop(
+                working_xml, screenshot_path, slide_plan, theme_element, contract,
+                cr, repair_dir, max_visual_repairs,
+            )
             return SlideEditResult(
                 ok=True,
-                xml=working_xml,
-                pptx_path=cr.get("pptx_path"),
-                screenshot_path=screenshot_path,
+                xml=visual_result.get("xml", working_xml),
+                pptx_path=visual_result.get("pptx_path", cr.get("pptx_path")),
+                screenshot_path=visual_result.get("screenshot_path", screenshot_path),
                 compile_ok=True,
                 repair_attempts=attempt,
+                visual_issues=visual_result.get("visual_issues", []),
+                visual_repair_applied=visual_result.get("repaired", False),
             )
 
     return SlideEditResult(
@@ -224,6 +240,95 @@ def edit_slide_xml(
         issues=cr.get("diagnostics", []),
         error=f"Compile failed after {MAX_REPAIR_ATTEMPTS} repair attempts",
     )
+
+
+def _run_visual_check_loop(
+    working_xml: str,
+    screenshot_path: str | None,
+    slide_plan: dict[str, Any],
+    theme_element: str,
+    contract: dict[str, Any],
+    compile_result: dict[str, Any],
+    output_dir: Path,
+    max_visual_repairs: int,
+) -> dict[str, Any]:
+    """Run visual critic and attempt repairs for high-severity issues.
+
+    Returns dict with xml, pptx_path, screenshot_path, visual_issues, repaired.
+    """
+    result: dict[str, Any] = {
+        "xml": working_xml,
+        "pptx_path": compile_result.get("pptx_path"),
+        "screenshot_path": screenshot_path,
+        "visual_issues": [],
+        "repaired": False,
+    }
+
+    if not screenshot_path or not contract:
+        return result
+
+    compile_warnings = compile_result.get("warnings", [])
+
+    visual_issues, _usage, repair_hints = run_visual_critic(
+        screenshot_path=screenshot_path,
+        current_xml=working_xml,
+        slide_plan=slide_plan,
+        theme_element=theme_element,
+        contract=contract,
+        compile_warnings=compile_warnings,
+    )
+
+    result["visual_issues"] = visual_issues
+    high_visual = [i for i in visual_issues if i["severity"] == "high"]
+
+    if not high_visual or max_visual_repairs <= 0:
+        return result
+
+    title = slide_plan.get("content_data", {}).get("title", "")
+    problems = []
+    for issue in visual_issues:
+        sev = issue.get("severity", "")
+        msg = issue.get("description", "")
+        line = f"VISUAL_{sev.upper()}: {msg}"
+        fix_hint = issue.get("fix", "")
+        snippet = issue.get("fix_xml_snippet", "")
+        if fix_hint:
+            line += f" | Fix: {fix_hint}"
+        if snippet:
+            line += f" | Snippet: {snippet}"
+        problems.append(line)
+
+    for v_attempt in range(1, max_visual_repairs + 1):
+        logger.info(f"slide_editor: visual repair attempt {v_attempt}/{max_visual_repairs}")
+        try:
+            repaired_xml = _call_repair_llm(
+                working_xml, problems, [], [],
+                f"{title} — fix visual issues", theme_element, contract,
+            )
+        except Exception as e:
+            logger.error(f"slide_editor: visual repair LLM call failed: {e}")
+            break
+
+        norm = normalize_xml(repaired_xml)
+        repaired_xml = ensure_single_theme(norm.get("cleaned_xml", repaired_xml), theme_element)
+
+        vr_dir = output_dir / f"visual-repair-{v_attempt}"
+        try:
+            cr = compile_xml(repaired_xml, vr_dir)
+        except CompilerError:
+            break
+
+        if not cr.get("ok", False):
+            break
+
+        new_screenshot = _try_screenshot(cr.get("pptx_path"), str(vr_dir / "screenshots"))
+        result["xml"] = repaired_xml
+        result["pptx_path"] = cr.get("pptx_path")
+        result["screenshot_path"] = new_screenshot
+        result["repaired"] = True
+        break
+
+    return result
 
 
 def _try_screenshot(pptx_path: str | None, output_dir: str) -> str | None:

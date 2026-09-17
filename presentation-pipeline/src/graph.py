@@ -317,7 +317,7 @@ def run(
     request: str = "Create a simple title slide",
     *,
     theme: str = "",
-    critic_mode: Literal["auto", "manual", "off"] = "off",
+    critic_mode: Literal["auto", "off"] = "off",
     deck_min_threshold: int = 1,
     run_id: str | None = None,
     supplied_content: dict[str, Any] | None = None,

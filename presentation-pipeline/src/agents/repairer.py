@@ -76,8 +76,18 @@ def _collect_problems(state: PresentationState) -> list[str]:
     critic = state.get("critic_result") or {}
     for issue in critic.get("issues", []):
         severity = issue.get("severity", "")
-        msg = issue.get("message", str(issue))
-        problems.append(f"CRITIC_{severity.upper()}: {msg}")
+        msg = issue.get("description", issue.get("message", str(issue)))
+        if issue.get("source") == "visual":
+            line = f"VISUAL_{severity.upper()}: {msg}"
+            fix_hint = issue.get("fix", "")
+            snippet = issue.get("fix_xml_snippet", "")
+            if fix_hint:
+                line += f" | Fix: {fix_hint}"
+            if snippet:
+                line += f" | Snippet: {snippet}"
+            problems.append(line)
+        else:
+            problems.append(f"CRITIC_{severity.upper()}: {msg}")
 
     return problems
 
@@ -151,6 +161,7 @@ def build_patch_prompts(
     objective: str,
     forbidden_tags: list[str],
     theme_element: str,
+    visual_issues: list[dict[str, Any]] | None = None,
 ) -> tuple[str, str]:
     """Build the (system, user) prompts for a PATCH (in-place fix) repair.
 
@@ -158,7 +169,7 @@ def build_patch_prompts(
     repair loop, so both get the same error-scoped node reference (attribute
     docs, pitfalls, a verified syntax example) injected into the system prompt.
     """
-    knowledge = select_repair_knowledge(pre_issues, compile_diags)
+    knowledge = select_repair_knowledge(pre_issues, compile_diags, visual_issues)
     if knowledge["nodes_involved"]:
         logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
 
@@ -204,6 +215,7 @@ def _choose_strategy(
     regen_error: bool,
     stalled: bool,
     compile_ok: bool,
+    visual_layout_broken: bool = False,
 ) -> int:
     """Pick PATCH or REGENERATE for this attempt.
 
@@ -213,12 +225,17 @@ def _choose_strategy(
     after a REGENERATE is a PATCH cleanup pass. Falling back to REGENERATE by attempt
     number only applies while the slide still doesn't compile — rebuilding a slide
     that compiles (only the critic is unhappy) risks losing a working result.
+    Visual critic can recommend regenerate for layout-broken slides.
     """
     if attempt == 1:
+        if visual_layout_broken:
+            return REGENERATE
         return PATCH
     if prev_strategy == REGENERATE:
         return PATCH
     if prev_noop or prev_truncated or regen_error or stalled:
+        return REGENERATE
+    if visual_layout_broken:
         return REGENERATE
     if attempt >= 2 and not compile_ok:
         return REGENERATE
@@ -232,7 +249,8 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     pre_issues = _get_pre_issues(state)
     compile_diags = _get_compile_diags(state)
 
-    curr_sigs = error_signatures(pre_issues, compile_diags)
+    visual_issues = (state.get("visual_critic_result") or {}).get("issues", [])
+    curr_sigs = error_signatures(pre_issues, compile_diags, visual_issues)
 
     prev_history = state.get("generation_history", [])
     prev_sigs: set[str] = set()
@@ -251,6 +269,14 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
     stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)
     regen_error = needs_regeneration(pre_issues, compile_diags)
     compile_ok = bool((state.get("compile_result") or {}).get("ok"))
+
+    visual_cr = state.get("visual_critic_result") or {}
+    hints = visual_cr.get("repair_hints") or {}
+    visual_layout_broken = (
+        hints.get("strategy") == "regenerate"
+        and hints.get("assessment") == "layout_broken"
+    )
+
     strategy = _choose_strategy(
         attempt=current_count + 1,
         prev_strategy=prev_strategy,
@@ -259,6 +285,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         regen_error=regen_error,
         stalled=stalled,
         compile_ok=compile_ok,
+        visual_layout_broken=visual_layout_broken,
     )
 
     reasons = [r for r, on in
@@ -289,11 +316,12 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
             objective=objective,
             forbidden_tags=contract.get("forbidden_tags", []),
             theme_element=contract.get("theme_element", state.get("theme_element", "")),
+            visual_issues=visual_issues,
         )
     else:
         # REGENERATE rebuilds from the plan, so it needs the broader knowledge
         # slice for the system prompt and the original user prompt.
-        knowledge = select_repair_knowledge(pre_issues, compile_diags)
+        knowledge = select_repair_knowledge(pre_issues, compile_diags, visual_issues)
         if knowledge["nodes_involved"]:
             logger.info(f"repairer: knowledge loaded for nodes: {knowledge['nodes_involved']}")
         user_prompt = _repair_env.get_template("regenerate.j2").render(

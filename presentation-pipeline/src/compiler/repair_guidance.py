@@ -278,6 +278,7 @@ def build_error_guidance(
 def error_signatures(
     pre_issues: list[dict[str, Any]],
     compile_diagnostics: list[dict[str, Any]],
+    visual_issues: list[dict[str, Any]] | None = None,
 ) -> set[str]:
     """Extract error signatures for stall detection."""
     sigs: set[str] = set()
@@ -298,6 +299,11 @@ def error_signatures(
 
     for diag in compile_diagnostics:
         sigs.add(f"COMPILE:{diag.get('type', '')}:{diag.get('message', '')[:40]}")
+
+    for issue in (visual_issues or []):
+        issue_type = issue.get("type", "visual")
+        desc = issue.get("description", "")[:40]
+        sigs.add(f"VISUAL:{issue_type}:{desc}")
 
     return sigs
 
@@ -422,8 +428,9 @@ def _format_attrs(node: str, attrs_data: Any) -> str:
 def _extract_nodes_from_errors(
     pre_issues: list[dict[str, Any]],
     compile_diagnostics: list[dict[str, Any]],
+    visual_issues: list[dict[str, Any]] | None = None,
 ) -> set[str]:
-    """Extract POM node names mentioned in error messages."""
+    """Extract POM node names mentioned in error messages and visual issues."""
     nodes: set[str] = set()
     for issue in pre_issues:
         if issue.get("auto_fixed"):
@@ -443,12 +450,17 @@ def _extract_nodes_from_errors(
         _, node = _extract_attr_from_error(msg)
         if node and node[0].isupper():
             nodes.add(node)
+    for issue in (visual_issues or []):
+        for node_name in issue.get("affected_nodes", []):
+            if node_name and node_name[0].isupper():
+                nodes.add(node_name)
     return nodes
 
 
 def select_repair_knowledge(
     pre_issues: list[dict[str, Any]],
     compile_diagnostics: list[dict[str, Any]],
+    visual_issues: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Select targeted knowledge slices based on error analysis.
 
@@ -461,7 +473,7 @@ def select_repair_knowledge(
         example: verified structure example from the relevant component YAML
         nodes_involved: set of POM node names found in the errors
     """
-    nodes = _extract_nodes_from_errors(pre_issues, compile_diagnostics)
+    nodes = _extract_nodes_from_errors(pre_issues, compile_diagnostics, visual_issues)
 
     sections: list[str] = []
     loaded_files: set[str] = set()

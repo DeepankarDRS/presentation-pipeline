@@ -110,6 +110,7 @@ class VisualCriticResult(TypedDict, total=False):
     passed: bool
     issues: list[dict[str, Any]]
     screenshot_path: str | None
+    repair_hints: dict[str, Any]
 
 
 # ── Main state ──────────────────────────────────────────────────────────────
@@ -179,7 +180,7 @@ class PresentationState(TypedDict, total=False):
 
     # ── Critique (critic writes) ──
     critic_result: CriticResult | None
-    critic_mode: Literal["auto", "manual", "off"]
+    critic_mode: Literal["auto", "off"]
     visual_critic_result: VisualCriticResult | None
     slide_screenshots: dict[int, str]
     # Per-slide critic verdicts captured by slide_router for the deck path
@@ -208,7 +209,7 @@ def initial_state(
     deck_min_threshold: int = 1,
     audience_context: dict[str, str] | None = None,
     deck_settings: dict[str, Any] | None = None,
-    critic_mode: Literal["auto", "manual", "off"] = "off",
+    critic_mode: Literal["auto", "off"] = "off",
     retry_budget: int = 2,  # PATCH once, then REGENERATE once
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,

@@ -8,8 +8,36 @@
 {% endif %}
 {% if components %}## EXPECTED COMPONENTS
 {% for comp in components %}
-- {{ comp.kind }}{% if comp.count is defined and comp.count > 1 %} (count: {{ comp.count }}){% endif %}
+- {{ comp.kind }}{% if comp.count is defined and comp.count > 1 %} (count: {{ comp.count }}){% endif %}{% if comp.content_summary is defined %} — {{ comp.content_summary }}{% endif %}
+{% endfor %}
+{% endif %}
+{% if theme_element %}## THEME DEFINITION
+{{ theme_element }}
+{% endif %}
+{% if house_style %}## HOUSE STYLE
+{{ house_style }}
+{% endif %}
+{% if component_recipes %}## COMPONENT RECIPES
+{% for recipe in component_recipes %}
+- {{ recipe }}
+{% endfor %}
+{% endif %}
+{% if density_tier %}## DENSITY TIER: {{ density_tier }}
+{% endif %}
+{% if compile_warnings %}## COMPILER WARNINGS (verify visually)
+{% for w in compile_warnings %}
+- {{ w.type }}: {{ w.message }}
+{% endfor %}
+{% endif %}
+{% if layout_issues %}## LAYOUT AUDIT WARNINGS (verify visually)
+{% for issue in layout_issues %}
+- {{ issue.code }}: {{ issue.message }}
+{% endfor %}
+{% endif %}
+{% if visual_notes %}## DESIGN NOTES
+{% for note in visual_notes %}
+- {{ note }}
 {% endfor %}
 {% endif %}
 
-Review the screenshot against all 5 visual checklist items. Report any visual issues you see.
+Review the screenshot against all 9 checklist items. Report any issues you find.

@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 
 from langgraph.types import Send
 
-from src.agents.critic_schema import CriticOutput
 from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.graph import (
     build_graph, compile_graph,
@@ -14,13 +13,29 @@ from src.graph import (
 from src.state import initial_state
 
 
-def _mock_critic_llm():
-    """Return a mock LLM that passes through with_structured_output for the critic."""
-    mock_llm = MagicMock()
-    mock_structured = MagicMock()
-    mock_structured.invoke.return_value = CriticOutput(issues=[])
-    mock_llm.with_structured_output.return_value = mock_structured
-    return mock_llm
+def _mock_visual_critic_pass(*args, **kwargs):
+    """Return a clean-pass 3-tuple matching run_visual_critic's signature."""
+    return (
+        [],
+        {"tokens_in": 50, "tokens_out": 20, "model": "gpt-4.1"},
+        {"strategy": "none", "assessment": "good", "affected_nodes": []},
+    )
+
+
+class _MockSlide:
+    def __init__(self, png_path):
+        self.png_path = png_path
+
+
+class _MockBatch:
+    def __init__(self, png_path):
+        self.ok = True
+        self.error = None
+        self.slides = [_MockSlide(png_path)]
+
+
+def _mock_screenshot_batch(png_path="/tmp/slide-0.png"):
+    return _MockBatch(png_path)
 
 
 def test_graph_builds():
@@ -139,13 +154,14 @@ def test_route_after_critic_fail_stall_breaks_loop():
     assert route_after_critic(state) == "evaluator"
 
 
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
-def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_validate, mock_critic_llm):
+def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc):
     """End-to-end: the graph runs to completion with mocked LLM + compiler."""
-    mock_critic_llm.return_value = _mock_critic_llm()
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
     mock_response = MagicMock()
     mock_response.content = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n<Slide><VStack w="1280" h="720" padding="48" backgroundColor="$surface"><Text fontSize="32" bold="true" color="$textMain">Title</Text></VStack></Slide>'
     mock_response.response_metadata = {
@@ -181,13 +197,14 @@ def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_valida
     assert result["retry_count"] == 0
 
 
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
-def test_full_graph_with_preloaded_plans(mock_gen_llm, mock_compile, mock_validate, mock_critic_llm):
+def test_full_graph_with_preloaded_plans(mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc):
     """End-to-end: graph runs with pre-provided slide_plans (skips planning phase)."""
-    mock_critic_llm.return_value = _mock_critic_llm()
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
 
     mock_gen_response = MagicMock()
     mock_gen_response.content = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n<Slide><VStack w="1280" h="720" padding="48"><Text fontSize="32" bold="true" color="$textMain">Dashboard</Text></VStack></Slide>'
@@ -308,17 +325,18 @@ def test_route_single_slide_still_goes_evaluator():
     assert route_after_critic(state) == "evaluator"
 
 
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
 @patch("src.agents.deck_nodes.compile_xml")
 def test_multi_slide_e2e(
     mock_deck_compile, mock_gen_llm,
-    mock_compile, mock_validate, mock_critic_llm,
+    mock_compile, mock_validate, mock_screenshots, mock_vc,
 ):
     """Multi-slide: 2 pre-loaded slides, both compile, deck assembles."""
-    mock_critic_llm.return_value = _mock_critic_llm()
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
 
     slide_xmls = [
         '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n<Slide><VStack w="1280" h="720"><Text>Cover</Text></VStack></Slide>',
@@ -377,17 +395,18 @@ def test_multi_slide_e2e(
     assert mock_deck_compile.called
 
 
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.critic.render_screenshots")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
 @patch("src.agents.deck_nodes.compile_xml")
 def test_8_slide_deck_no_recursion_error(
     mock_deck_compile, mock_gen_llm,
-    mock_compile, mock_validate, mock_critic_llm,
+    mock_compile, mock_validate, mock_screenshots, mock_vc,
 ):
     """8-slide deck completes without hitting the recursion limit."""
-    mock_critic_llm.return_value = _mock_critic_llm()
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
 
     xml_tpl = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n<Slide><VStack w="1280" h="720"><Text>Slide {n}</Text></VStack></Slide>'
 

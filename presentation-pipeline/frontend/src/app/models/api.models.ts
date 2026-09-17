@@ -1,4 +1,4 @@
-export type CriticMode = 'auto' | 'manual' | 'off';
+export type CriticMode = 'auto' | 'off';
 
 // ── Gamma-style deck settings (Phase A elicitation) ────────────────────────
 
