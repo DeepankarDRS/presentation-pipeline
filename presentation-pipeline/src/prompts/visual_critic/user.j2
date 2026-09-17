@@ -18,9 +18,7 @@
 {{ house_style }}
 {% endif %}
 {% if component_recipes %}## COMPONENT RECIPES
-{% for recipe in component_recipes %}
-- {{ recipe }}
-{% endfor %}
+{{ component_recipes }}
 {% endif %}
 {% if density_tier %}## DENSITY TIER: {{ density_tier }}
 {% endif %}

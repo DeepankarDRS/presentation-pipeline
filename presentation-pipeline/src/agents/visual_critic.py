@@ -76,7 +76,7 @@ def run_visual_critic(
         components=slide_plan.get("components", []),
         theme_element=theme_element,
         house_style=contract.get("house_style", ""),
-        component_recipes=contract.get("component_recipes", []),
+        component_recipes=contract.get("component_recipes", ""),
         density_tier=contract.get("density_tier", ""),
         compile_warnings=compile_warnings or [],
         layout_issues=layout_issues or [],
