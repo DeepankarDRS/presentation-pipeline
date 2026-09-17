@@ -1,0 +1,62 @@
+meta:
+  node: Icon
+  description: >
+    Named icon from the Lucide library, rendered as a PNG at the given size and
+    color. Self-closing leaf — no children.
+
+attributes:
+  name:
+    type: string
+    required: true
+    note: Lucide icon slug, e.g. "cpu", "check-circle", "arrow-right", "star"
+  size:
+    type: number
+    default: 24
+    note: Icon size in px (applies to both width and height).
+  color:
+    type: color
+    default: "000000"
+    note: 6-digit hex or $token for palette colors.
+  variant:
+    type: enum
+    values: [circle-filled, circle-outlined, square-filled, square-outlined]
+    note: Adds a background shape behind the icon glyph. Required for glow/outline.
+  bgColor:
+    type: color
+    default: "E0E0E0"
+    note: Background shape color when variant is set.
+  glow.size:
+    type: number
+    note: Blur radius of the glow on the background shape. Requires variant.
+  glow.opacity:
+    type: number
+    note: "Opacity 0.0-1.0 of the glow. Requires variant."
+  glow.color:
+    type: color
+    note: Glow color (6-digit hex). Requires variant.
+  outline.size:
+    type: number
+    note: Border width on the background shape. Requires variant.
+  outline.color:
+    type: color
+    note: Border color (6-digit hex). Requires variant.
+  rotate:
+    type: number
+    note: Degrees clockwise (render-only).
+
+pitfalls:
+  - Icon is self-closing — never nest children or text content inside it.
+  - name is required. Omitting it crashes the renderer.
+  - glow and outline apply to the background shape only — they are no-ops
+    without a variant. Always set variant before adding glow or outline.
+  - Use 6-digit hex (no #) or a $token for color and bgColor.
+  - Icon does not support text=, backgroundColor=, or border= attributes.
+  - Use size= not w= or h= for icon dimensions.
+
+structure: |
+  <!-- bare icon -->
+  <Icon name="cpu" size="32" color="$accent" />
+
+  <!-- icon with background and glow -->
+  <Icon name="star" size="16" variant="circle-filled" bgColor="3B82F6"
+        glow.size="10" glow.color="3B82F6" />

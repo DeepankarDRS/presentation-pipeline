@@ -34,3 +34,13 @@ SUPPLIED CONTENT FOR THIS SLIDE (use VERBATIM in content_data):
 {% endif %}
 
 Plan this one slide completely. For EACH component, assign a unique component_id and populate its content_data_json with specific values extracted directly from the key_messages above. Do not merge data across components. Do not use placeholders.
+{% if repair_context %}
+
+REPAIR CONTEXT — Previous generation failed. Avoid repeating the same mistakes:
+Failed components: {{ repair_context.failed_kinds | join(', ') }}
+Errors encountered:
+{% for err in repair_context.errors[:5] %}
+- {{ err }}
+{% endfor %}
+{{ repair_context.directive }}
+{% endif %}

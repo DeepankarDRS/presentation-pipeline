@@ -3,11 +3,14 @@
 from unittest.mock import MagicMock, patch
 
 from src.agents.repairer import (
-    repairer_node, _collect_problems, _select_template, build_patch_prompts,
-    _get_pre_issues, _get_compile_diags, _choose_strategy, PATCH, REGENERATE,
+    repairer_node, _collect_problems, build_patch_prompts,
+    _get_pre_issues, _get_compile_diags, _choose_strategy,
+    _build_repair_context, _plan_to_outline_slide, _cap_xml,
+    PATCH, REGENERATE,
 )
 from src.compiler.repair_guidance import (
-    build_error_guidance, error_signatures, is_stalled, needs_regeneration,
+    build_error_guidance, cap_diag_msg, error_signatures, is_stalled,
+    needs_regeneration, select_repair_knowledge,
 )
 from src.state import initial_state
 
@@ -201,32 +204,36 @@ def test_collect_problems_includes_critic():
     assert any("CRITIC" in p for p in problems)
 
 
-# ── Template selection ────────────────────────────────────────────────────
+# ── Repair context helpers ────────────────────────────────────────────────
 
-def test_select_template_kpi():
-    state = _make_state()
-    xml = _select_template(state)
-    assert xml  # non-empty
-    assert "<Slide>" in xml or "<Theme" in xml
-
-
-def test_select_template_chart():
-    state = _make_state()
-    state["slide_plans"][0]["components"] = [
-        {"kind": "chart", "count": 1, "chart_type": "bar"},
-    ]
-    xml = _select_template(state)
-    assert xml
-    assert "Chart" in xml or "Slide" in xml
+def test_build_repair_context():
+    plan = {
+        "components": [
+            {"kind": "timeline", "count": 1},
+            {"kind": "title", "count": 1},
+        ],
+    }
+    ctx = _build_repair_context(plan, ["UNKNOWN_TAG: div", "INVALID_CHILD: Td"])
+    assert "timeline" in ctx["failed_kinds"]
+    assert "title" in ctx["failed_kinds"]
+    assert len(ctx["errors"]) == 2
+    assert "directive" in ctx
 
 
-def test_select_template_default():
-    state = _make_state()
-    state["slide_plans"][0]["components"] = [
-        {"kind": "title", "count": 1},
-    ]
-    xml = _select_template(state)
-    assert xml
+def test_plan_to_outline_slide():
+    plan = {
+        "slide_index": 2,
+        "slide_title": "Revenue",
+        "components": [
+            {"kind": "chart", "content_summary": "Q4 revenue chart"},
+            {"kind": "title", "content_summary": "Revenue Overview"},
+        ],
+    }
+    outline = _plan_to_outline_slide(plan)
+    assert outline["slide_index"] == 2
+    assert outline["slide_title"] == "Revenue"
+    assert len(outline["key_messages"]) == 2
+    assert "Q4 revenue chart" in outline["key_messages"]
 
 
 # ── Shared tier-1 patch prompts ──────────────────────────────────────────
@@ -277,8 +284,40 @@ def test_repairer_tier1_patch(mock_get_llm):
     assert "PATCH" in user_msg
 
 
+def _mock_replan(mock_plan, mock_contract):
+    """Set up mocks for the REGENERATE path (plan_single_slide + build_contract)."""
+    mock_plan.return_value = (
+        {
+            "slide_index": 0,
+            "slide_title": "KPI Dashboard",
+            "slide_type": "data",
+            "components": [{"kind": "table", "count": 1, "content_summary": "Metrics"}],
+            "density": "normal",
+            "font_tier": "standard",
+            "layout_hint": "",
+            "content_data": {},
+        },
+        {"tokens_in": 100, "tokens_out": 50, "model": "test"},
+    )
+    mock_contract.return_value = {
+        "allowed_nodes": ["Slide", "VStack", "Text", "Table"],
+        "allowed_attributes": {},
+        "forbidden_tags": ["div"],
+        "forbidden_attributes": [],
+        "theme_element": "",
+        "density_tier": "standard",
+        "house_style": "",
+        "component_recipes": "",
+        "notes": [],
+        "node_hierarchy": "",
+    }
+
+
+@patch("src.agents.repairer.build_contract")
+@patch("src.agents.repairer.plan_single_slide")
 @patch("src.agents.repairer.get_llm")
-def test_repairer_escalates_on_stall(mock_get_llm):
+def test_repairer_escalates_on_stall(mock_get_llm, mock_plan, mock_contract):
+    _mock_replan(mock_plan, mock_contract)
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>Simplified</Text></VStack></Slide>'
     mock_response.response_metadata = {
@@ -289,15 +328,11 @@ def test_repairer_escalates_on_stall(mock_get_llm):
     mock_llm.invoke.return_value = mock_response
     mock_get_llm.return_value = mock_llm
 
-    # Prior attempt failed with the exact same errors _make_state() carries now
-    # (a compile diag + two normalize issues). The stored canonical signatures
-    # must round-trip so is_stalled() fires — the compile diag is the case that
-    # the old display-string reconstruction got wrong.
     state = _make_state(retry_tier=1, retry_count=1)
     prior_sigs = sorted(error_signatures(
         _get_pre_issues(state), _get_compile_diags(state)
     ))
-    assert "COMPILE:UNKNOWN_TAG:Unknown tag: <div>" in prior_sigs  # guard the fixture
+    assert "COMPILE:UNKNOWN_TAG:Unknown tag: <div>" in prior_sigs
     state["generation_history"] = [{
         "attempt": 1,
         "tier": 1,
@@ -314,17 +349,15 @@ def test_repairer_escalates_on_stall(mock_get_llm):
 
     assert result["retry_tier"] == REGENERATE
     assert result["stall_detected"] is True
+    assert mock_plan.called  # REGENERATE now calls plan_single_slide
 
 
+@patch("src.agents.repairer.build_contract")
+@patch("src.agents.repairer.plan_single_slide")
 @patch("src.agents.repairer.get_llm")
-def test_repairer_stall_detected_from_compile_diags(mock_get_llm):
-    """Regression: a recurring compiler diagnostic must be recognised as a stall.
-
-    The old code rebuilt prev_sigs from display strings, turning a stored
-    "COMPILE:UNKNOWN_TAG:..." into "UNKNOWN_TAG:div", which never matched the
-    structured curr_sigs — so is_stalled() stayed False forever on compile-error
-    loops and REGENERATE was unreachable.
-    """
+def test_repairer_stall_detected_from_compile_diags(mock_get_llm, mock_plan, mock_contract):
+    """Regression: a recurring compiler diagnostic must be recognised as a stall."""
+    _mock_replan(mock_plan, mock_contract)
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'
     mock_response.response_metadata = {
@@ -336,7 +369,7 @@ def test_repairer_stall_detected_from_compile_diags(mock_get_llm):
     mock_get_llm.return_value = mock_llm
 
     state = _make_state(retry_tier=1, retry_count=1)
-    state["normalize_result"]["issues"] = []  # only the compile diag remains
+    state["normalize_result"]["issues"] = []
     prior_sigs = sorted(error_signatures(
         _get_pre_issues(state), _get_compile_diags(state)
     ))
@@ -353,8 +386,11 @@ def test_repairer_stall_detected_from_compile_diags(mock_get_llm):
     assert result["retry_tier"] == REGENERATE
 
 
+@patch("src.agents.repairer.build_contract")
+@patch("src.agents.repairer.plan_single_slide")
 @patch("src.agents.repairer.get_llm")
-def test_repairer_no_stall_when_errors_change(mock_get_llm):
+def test_repairer_no_stall_when_errors_change(mock_get_llm, mock_plan, mock_contract):
+    _mock_replan(mock_plan, mock_contract)
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'
     mock_response.response_metadata = {
@@ -374,8 +410,7 @@ def test_repairer_no_stall_when_errors_change(mock_get_llm):
 
     result = repairer_node(state)
 
-    assert result["stall_detected"] is False  # different errors → not a stall
-    # attempt 2 still doesn't compile → REGENERATE by the budget-2 gate, not by stall
+    assert result["stall_detected"] is False
     assert result["retry_tier"] == REGENERATE
 
 
@@ -403,8 +438,11 @@ def test_repairer_flags_noop_patch(mock_get_llm):
     assert result["generation_history"][0]["noop"] is True
 
 
+@patch("src.agents.repairer.build_contract")
+@patch("src.agents.repairer.plan_single_slide")
 @patch("src.agents.repairer.get_llm")
-def test_repairer_regenerates_after_noop(mock_get_llm):
+def test_repairer_regenerates_after_noop(mock_get_llm, mock_plan, mock_contract):
+    _mock_replan(mock_plan, mock_contract)
     _mock_llm(mock_get_llm)
     state = _make_state(retry_tier=PATCH, retry_count=1)  # attempt 2
     state["generation_history"] = [{
@@ -416,6 +454,7 @@ def test_repairer_regenerates_after_noop(mock_get_llm):
     result = repairer_node(state)
 
     assert result["retry_tier"] == REGENERATE
+    assert mock_plan.called
 
 
 @patch("src.agents.repairer.get_llm")
@@ -436,41 +475,53 @@ def test_repairer_flags_truncation(mock_get_llm):
     assert result["generation_history"][0]["truncated"] is True
 
 
+@patch("src.agents.repairer.build_contract")
+@patch("src.agents.repairer.plan_single_slide")
 @patch("src.agents.repairer.get_llm")
-def test_repairer_regenerate_uses_skeleton(mock_get_llm):
+def test_repairer_regenerate_replans_slide(mock_get_llm, mock_plan, mock_contract):
+    """REGENERATE now calls plan_single_slide + generator LLM instead of repairer LLM."""
+    _mock_replan(mock_plan, mock_contract)
     mock_llm = _mock_llm(mock_get_llm)
 
-    # attempt 2 still not compiling → REGENERATE; title + kpi_row → kpi-slide skeleton
     state = _make_state(retry_tier=PATCH, retry_count=1)
     result = repairer_node(state)
 
     assert result["retry_tier"] == REGENERATE
-    user_msg = mock_llm.invoke.call_args[0][0][1]["content"]
-    assert "REGENERATE" in user_msg
-    assert "VERIFIED SKELETON" in user_msg
+    assert mock_plan.called
+    assert mock_contract.called
+    # REGENERATE returns updated slide_plans and contract
+    assert "slide_plans" in result
+    assert "contract" in result
 
 
+@patch("src.agents.repairer.build_contract")
+@patch("src.agents.repairer.plan_single_slide")
 @patch("src.agents.repairer.get_llm")
-def test_repairer_regenerate_without_skeleton(mock_get_llm):
-    mock_llm = _mock_llm(mock_get_llm)
+def test_repairer_regenerate_passes_repair_context(mock_get_llm, mock_plan, mock_contract):
+    """REGENERATE passes repair_context to plan_single_slide with failed component kinds."""
+    _mock_replan(mock_plan, mock_contract)
+    _mock_llm(mock_get_llm)
 
-    state = _make_state(retry_tier=PATCH, retry_count=1)  # attempt 2 → REGENERATE
-    state["slide_plans"][0]["components"] = [{"kind": "timeline", "count": 1}]
+    state = _make_state(retry_tier=PATCH, retry_count=1)
+    state["slide_plans"][0]["components"] = [{"kind": "timeline", "count": 1, "content_summary": "Events"}]
 
     result = repairer_node(state)
 
     assert result["retry_tier"] == REGENERATE
-    user_msg = mock_llm.invoke.call_args[0][0][1]["content"]
-    assert "REGENERATE" in user_msg
-    assert "VERIFIED SKELETON" not in user_msg  # no template for timeline
-    assert "SIMPLER layout" in user_msg
+    call_kwargs = mock_plan.call_args
+    repair_ctx = call_kwargs.kwargs.get("repair_context") or call_kwargs[1].get("repair_context")
+    assert repair_ctx is not None
+    assert "timeline" in repair_ctx["failed_kinds"]
 
 
+@patch("src.agents.repairer.build_contract")
+@patch("src.agents.repairer.plan_single_slide")
 @patch("src.agents.repairer.get_llm")
-def test_repairer_regenerate_on_structural_error(mock_get_llm):
+def test_repairer_regenerate_on_structural_error(mock_get_llm, mock_plan, mock_contract):
+    _mock_replan(mock_plan, mock_contract)
     mock_llm = _mock_llm(mock_get_llm)
 
-    state = _make_state(retry_tier=PATCH, retry_count=1)  # attempt 2
+    state = _make_state(retry_tier=PATCH, retry_count=1)
     state["normalize_result"]["issues"] = []
     state["compile_result"]["diagnostics"] = [{
         "type": "INVALID_CHILD",
@@ -479,7 +530,7 @@ def test_repairer_regenerate_on_structural_error(mock_get_llm):
 
     result = repairer_node(state)
 
-    assert result["retry_tier"] == REGENERATE  # structural → skip straight to rebuild
+    assert result["retry_tier"] == REGENERATE
 
 
 @patch("src.agents.repairer.get_llm")
@@ -521,3 +572,106 @@ def test_repairer_records_attempt(mock_get_llm):
     assert record["tokens_out"] == 250
     assert len(record["errors_in"]) > 0
     assert isinstance(record["error_sigs"], list) and record["error_sigs"]
+
+
+# ── select_repair_knowledge ──────────────────────────────────────────────────
+
+def test_select_repair_knowledge_icon_error():
+    pre_issues = [{"code": "UNKNOWN_ATTR",
+                   "message": '"bgcolor" not valid on <Icon>',
+                   "auto_fixed": False}]
+    result = select_repair_knowledge(pre_issues, [])
+    assert "Icon" in result["nodes_involved"]
+    assert result["knowledge_text"] != ""
+    assert "name" in result["knowledge_text"]
+
+
+def test_select_repair_knowledge_parse_error():
+    compile_diags = [{"type": "PARSE_ERROR", "message": "unclosed tag at line 12"}]
+    result = select_repair_knowledge([], compile_diags)
+    assert result["knowledge_text"] == ""
+
+
+def test_select_repair_knowledge_chart_error():
+    compile_diags = [{"type": "UNKNOWN_ATTRIBUTE",
+                      "message": 'attribute "foo" not valid on <Chart>'}]
+    result = select_repair_knowledge([], compile_diags)
+    assert "Chart" in result["nodes_involved"]
+    assert result["example"] != ""
+
+
+# ── cap_diag_msg ─────────────────────────────────────────────────────────────
+
+def test_cap_diag_msg_strips_expected_enum():
+    """The Lucide icon-name INVALID_VALUE message must not pass through raw."""
+    long_msg = '<Icon>: Invalid value for attribute "name". Expected: ' + ", ".join(
+        f'"{n}"' for n in ["a-arrow-down", "a-arrow-up", "activity"] * 100
+    )
+    result = cap_diag_msg(long_msg)
+    assert len(result) <= 225  # _MAX_MSG_LEN + ellipsis
+    assert "repair knowledge" in result
+
+
+def test_cap_diag_msg_preserves_parse_error_context():
+    """Single-value 'expected: <tag>' in parse errors must NOT be stripped."""
+    msg = 'unexpected token at line 5; expected: </VStack>'
+    result = cap_diag_msg(msg)
+    assert "VStack" in result
+    assert "repair knowledge" not in result
+
+
+def test_cap_diag_msg_short_message_unchanged():
+    msg = 'w must be > 0'
+    assert cap_diag_msg(msg) == msg
+
+
+def test_collect_problems_caps_large_invalid_value():
+    """INVALID_VALUE enum listing must not inflate the problems list."""
+    huge_enum = ", ".join(f'"{n}"' for n in ["icon-slug"] * 500)
+    state = initial_state(run_id="cap1", raw_request="test")
+    state["normalize_result"] = {"issues": [], "cleaned_xml": "<Slide/>"}
+    state["compile_result"] = {
+        "success": False,
+        "diagnostics": [{"type": "INVALID_VALUE",
+                          "message": f'<Icon>: Invalid value for "name". Expected: {huge_enum}'}],
+    }
+    from src.agents.repairer import _collect_problems
+    problems = _collect_problems(state)
+    assert len(problems) == 1
+    assert len(problems[0]) <= 250  # must be capped, not thousands of chars
+    assert "Expected" not in problems[0]
+
+
+# ── _cap_xml ───────────────────────────────────────────────────────────────────
+
+def test_cap_xml_short_unchanged():
+    xml = '<Slide><VStack w="1280" h="720"><Text>Hello</Text></VStack></Slide>'
+    assert _cap_xml(xml) == xml
+
+
+def test_cap_xml_truncates_middle():
+    head = '<Slide><VStack w="1280" h="720" padding="40" gap="16" alignItems="stretch">\n'
+    tail = '</VStack></Slide>'
+    middle = '<Text fontSize="14">x</Text>\n' * 1000  # ~30,000 chars
+    huge_xml = head + middle + tail
+    result = _cap_xml(huge_xml)
+    assert len(result) <= 8200  # _MAX_XML_CHARS + marker
+    assert result.startswith(head[:50])
+    assert result.endswith(tail)
+    assert "truncated" in result
+
+
+def test_cap_xml_applied_in_build_patch_prompts():
+    """build_patch_prompts must cap failing_xml before rendering."""
+    huge_xml = "<Slide>" + "<Text>x</Text>" * 2000 + "</Slide>"
+    _, user_prompt = build_patch_prompts(
+        failing_xml=huge_xml,
+        problems=["UNKNOWN_TAG: bad"],
+        pre_issues=[],
+        compile_diags=[],
+        objective="Test",
+        forbidden_tags=[],
+        theme_element="",
+    )
+    assert len(user_prompt) < len(huge_xml)
+    assert "truncated" in user_prompt

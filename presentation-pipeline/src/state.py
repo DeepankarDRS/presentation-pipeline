@@ -209,7 +209,7 @@ def initial_state(
     audience_context: dict[str, str] | None = None,
     deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "manual", "off"] = "off",
-    retry_budget: int = 2,  # PATCH once, then REGENERATE once
+    retry_budget: int = 3,  # PATCH, REGENERATE (replan+generate), cleanup PATCH
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,

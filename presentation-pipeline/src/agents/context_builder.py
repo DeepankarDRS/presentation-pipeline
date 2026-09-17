@@ -114,6 +114,12 @@ _SIZE_ONLY_NODES = frozenset([
     "ProcessArrow", "Pyramid",
 ])
 
+_ICON_ATTRS = [
+    "name", "size", "color", "variant", "bgColor",
+    "glow.size", "glow.opacity", "glow.color",
+    "outline.size", "outline.color", "rotate",
+]
+
 
 @functools.lru_cache(maxsize=32)
 def _load_yaml(relpath: str) -> dict[str, Any]:
@@ -235,7 +241,8 @@ def _select_attributes(allowed_nodes: list[str], nodes_yaml: dict) -> dict[str, 
         elif node in _NO_BOX_NODES:
             attrs = base
         elif node in _SIZE_ONLY_NODES:
-            attrs = base + ["w", "h", "grow", "padding", "margin"]
+            extra = _ICON_ATTRS if node == "Icon" else []
+            attrs = base + extra + ["w", "h", "grow", "padding", "margin"]
         else:
             attrs = base + _COMMON_BOX_ATTRS
         seen: set[str] = set()

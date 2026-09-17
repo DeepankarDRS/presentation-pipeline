@@ -36,3 +36,8 @@ include = ["src*"]
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
