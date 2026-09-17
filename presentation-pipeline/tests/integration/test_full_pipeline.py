@@ -11,7 +11,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.agents.critic_schema import CriticOutput
 from src.agents.planner_schema import PlannerComponent, PlannerSlide
 from src.graph import compile_graph
 from src.state import initial_state
@@ -45,17 +44,21 @@ def _make_gen_llm():
 
 
 
-def _make_critic_llm():
-    """Mock critic LLM that passes."""
-    llm = MagicMock()
-    structured = MagicMock()
-    structured.invoke.return_value = CriticOutput(issues=[])
-    llm.with_structured_output.return_value = structured
-    return llm
+def _make_screenshot_mock():
+    """Mock render_screenshots to return no screenshots (critic passes trivially)."""
+    batch = MagicMock()
+    batch.ok = False
+    batch.slides = []
+    batch.error = "mocked — no LibreOffice in test"
+    return batch
 
 
-@pytest.mark.parametrize("case", _CASES, ids=_CASE_NAMES)
-@patch("src.agents.critic.get_llm")
+_COMPONENT_CASES = [c for c in _CASES if c.get("components")]
+_COMPONENT_NAMES = [c.get("name", "unknown") for c in _COMPONENT_CASES]
+
+
+@pytest.mark.parametrize("case", _COMPONENT_CASES, ids=_COMPONENT_NAMES)
+@patch("src.agents.critic.render_screenshots")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
@@ -63,7 +66,7 @@ def test_pipeline_runs_for_case(
     mock_gen_llm,
     mock_compile,
     mock_validate,
-    mock_critic_llm,
+    mock_screenshots,
     case,
 ):
     """Each test case loads, runs through the full graph, and produces a valid evaluation.
@@ -81,7 +84,7 @@ def test_pipeline_runs_for_case(
         "ok": True, "pptx_path": f"/tmp/{case.get('name', 'test')}.pptx",
         "diagnostics": [], "warnings": [], "retryable": False,
     }
-    mock_critic_llm.return_value = _make_critic_llm()
+    mock_screenshots.return_value = _make_screenshot_mock()
 
     state = case_to_state(case, deck_min_threshold=0)
     app = compile_graph()
@@ -101,7 +104,7 @@ def test_pipeline_runs_for_case(
 @patch("src.agents.slide_component_planner.get_llm")
 @patch("src.agents.outline_planner.get_llm")
 @patch("src.agents.elicitor.get_llm")
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.render_screenshots")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
@@ -109,7 +112,7 @@ def test_pipeline_with_hierarchical_planner(
     mock_gen_llm,
     mock_compile,
     mock_validate,
-    mock_critic_llm,
+    mock_screenshots,
     mock_elicitor_llm,
     mock_outline_llm,
     mock_slide_planner_llm,
@@ -177,7 +180,7 @@ def test_pipeline_with_hierarchical_planner(
         "ok": True, "pptx_path": "/tmp/hierarchical-test.pptx",
         "diagnostics": [], "warnings": [], "retryable": False,
     }
-    mock_critic_llm.return_value = _make_critic_llm()
+    mock_screenshots.return_value = _make_screenshot_mock()
 
     state = initial_state(
         run_id="hierarchical-e2e",
@@ -194,7 +197,7 @@ def test_pipeline_with_hierarchical_planner(
 
 
 @patch("src.agents.repairer.get_llm")
-@patch("src.agents.critic.get_llm")
+@patch("src.agents.critic.render_screenshots")
 @patch("src.agents.validator.validate_xml")
 @patch("src.agents.validator.compile_xml")
 @patch("src.agents.generator.get_llm")
@@ -202,7 +205,7 @@ def test_pipeline_compile_failure_retries(
     mock_gen_llm,
     mock_compile,
     mock_validate,
-    mock_critic_llm,
+    mock_screenshots,
     mock_repairer_llm,
 ):
     """Pipeline retries on compile failure and eventually passes."""
@@ -225,7 +228,7 @@ def test_pipeline_compile_failure_retries(
         {"ok": False, "pptx_path": None, "diagnostics": [{"type": "UNKNOWN_TAG", "message": "err"}], "warnings": [], "retryable": True},
         {"ok": True, "pptx_path": "/tmp/retry-test.pptx", "diagnostics": [], "warnings": [], "retryable": False},
     ]
-    mock_critic_llm.return_value = _make_critic_llm()
+    mock_screenshots.return_value = _make_screenshot_mock()
 
     case = _CASES[0]
     state = case_to_state(case, deck_min_threshold=0)

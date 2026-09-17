@@ -187,24 +187,6 @@ def build_patch_prompts(
     return system_prompt, user_prompt
 
 
-def _render_repair_system(state: PresentationState, knowledge: dict) -> str:
-    """Build a focused repair system prompt with only error-relevant knowledge.
-
-    Instead of re-rendering the full generator system.j2 (all design rules,
-    all node attributes, layout vocabulary), this loads the repairer's own
-    system.j2 and injects only the knowledge slices for the nodes that had
-    errors — attribute docs, pitfalls, and a verified syntax example.
-    """
-    contract = state.get("contract") or {}
-    system_tmpl = _repair_env.get_template("system.j2")
-    return system_tmpl.render(
-        forbidden_tags=contract.get("forbidden_tags", []),
-        theme_element=contract.get("theme_element", state.get("theme_element", "")),
-        knowledge_text=knowledge.get("knowledge_text", ""),
-        reference_example=knowledge.get("example", ""),
-    )
-
-
 def _choose_strategy(
     *,
     attempt: int,
