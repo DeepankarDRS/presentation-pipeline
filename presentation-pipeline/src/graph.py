@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from html import escape as xml_escape
 from typing import Any, Literal
 
 from dotenv import load_dotenv
@@ -170,17 +171,19 @@ def _slide_done_target(state: PresentationState) -> str:
 
 def route_after_validator(state: PresentationState) -> str:
     cr = state.get("compile_result") or {}
-    if not cr.get("ok", False) and cr.get("retryable", False):
-        budget = state.get("retry_budget", 2)
-        count = state.get("retry_count", 0)
-        stalled = state.get("stall_detected", False)
-        if count < budget and not stalled:
-            logger.info(f"route: compile failed, retry {count+1}/{budget} → repairer")
-            return "repairer"
-        reason = "stall" if stalled else "budget"
-        target = _slide_done_target(state)
-        logger.info(f"route: compile failed but {reason} → {target}")
-        return target
+    if not cr.get("ok", False):
+        if cr.get("retryable", False):
+            budget = state.get("retry_budget", 3)
+            count = state.get("retry_count", 0)
+            stalled = state.get("stall_detected", False)
+            if count < budget and not stalled:
+                logger.info(f"route: compile failed, retry {count+1}/{budget} → repairer")
+                return "repairer"
+            reason = "stall" if stalled else "budget"
+            logger.info(f"route: compile failed, {reason} exhausted → placeholder")
+        else:
+            logger.info("route: compile failed (non-retryable) → placeholder")
+        return "placeholder"
 
     mode = state.get("critic_mode", "off")
     if mode == "off":
@@ -194,7 +197,7 @@ def route_after_validator(state: PresentationState) -> str:
 def route_after_critic(state: PresentationState) -> str:
     cr = state.get("critic_result") or {}
     if not cr.get("passed", True):
-        budget = state.get("retry_budget", 2)
+        budget = state.get("retry_budget", 3)
         count = state.get("retry_count", 0)
         stalled = state.get("stall_detected", False)
         if count < budget and not stalled:
@@ -235,6 +238,36 @@ def _elicitation_wait_node(state: PresentationState) -> dict[str, Any]:
     return {}
 
 
+def placeholder_node(state: PresentationState) -> dict[str, Any]:
+    """Insert a minimal valid POM slide when all repair attempts are exhausted."""
+    slide_plans = state.get("slide_plans", [])
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
+    title = xml_escape(plan.get("slide_title", "Slide"))
+
+    xml = (
+        '<Slide>\n'
+        '  <VStack w="1280" h="720" padding="64" gap="16"'
+        ' backgroundColor="F7F9FC" justifyContent="center">\n'
+        f'    <Text fontSize="48" bold="true" color="16202E">{title}</Text>\n'
+        '    <Text fontSize="22" color="55627A">Slide could not be generated.</Text>\n'
+        '  </VStack>\n'
+        '</Slide>'
+    )
+
+    logger.info(f"placeholder: inserting fallback slide for index {idx} ({title!r})")
+    return {
+        "current_xml": xml,
+        "compile_result": {
+            "ok": True,
+            "pptx_path": None,
+            "diagnostics": [],
+            "warnings": ["placeholder"],
+            "retryable": False,
+        },
+    }
+
+
 def build_graph() -> StateGraph:
     """Construct the presentation pipeline graph (uncompiled)."""
     graph = StateGraph(PresentationState)
@@ -256,6 +289,7 @@ def build_graph() -> StateGraph:
     graph.add_node("validator", validator_node)
     graph.add_node("critic", critic_node)
     graph.add_node("repairer", repairer_node)
+    graph.add_node("placeholder", placeholder_node)
     graph.add_node("slide_router", slide_router_node)
     graph.add_node("deck_assembler", deck_assembler_node)
     graph.add_node("evaluator", evaluator_node)
@@ -289,13 +323,17 @@ def build_graph() -> StateGraph:
     graph.add_edge("generator", "validator")
     graph.add_conditional_edges(
         "validator", route_after_validator,
-        ["repairer", "critic", "evaluator", "slide_router"],
+        ["repairer", "critic", "evaluator", "slide_router", "placeholder"],
     )
     graph.add_conditional_edges(
         "critic", route_after_critic,
         ["repairer", "evaluator", "slide_router"],
     )
     graph.add_conditional_edges("repairer", route_after_repairer, ["validator"])
+    graph.add_conditional_edges(
+        "placeholder", lambda s: _slide_done_target(s),
+        ["evaluator", "slide_router"],
+    )
     graph.add_conditional_edges(
         "slide_router", route_after_slide_router,
         ["context_builder", "deck_assembler"],

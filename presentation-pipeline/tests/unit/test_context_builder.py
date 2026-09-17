@@ -254,7 +254,7 @@ def test_prompt_standard_tier():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 6600, f"Standard tier too large: {tokens} tokens"
+    assert tokens < 7100, f"Standard tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "LAYOUT GRAMMAR" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -271,7 +271,7 @@ def test_prompt_dense_tier_bounded():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 7500, f"Dense tier too large: {tokens} tokens"
+    assert tokens < 8100, f"Dense tier too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
     assert "COMPONENT RECIPES" in prompt

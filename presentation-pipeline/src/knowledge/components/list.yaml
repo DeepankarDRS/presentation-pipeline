@@ -65,3 +65,4 @@ pitfalls:
   - "No nested <Ul> inside <Li> in the MVP — keep lists flat."
   - "Don't mix a <Ul> and manual bullet characters in <Text>; pick one."
   - "Lowercase <ul>/<li> are HTML tags — POM silently rejects them. Use <Ul>/<Li>."
+  - "Inline tags (<Span>, <B>, <I>, <Mark>, etc.) MUST be on the same line as the surrounding text — a newline before or after the tag is treated as a literal line break in the rendered slide. Write <Li>Normal <Span color=\"FF0000\">red</Span> item</Li> all on one line. Never split an inline tag onto its own line."

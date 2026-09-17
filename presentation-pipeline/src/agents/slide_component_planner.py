@@ -138,6 +138,7 @@ def plan_single_slide(
     outline_plan: dict[str, Any],
     deck_settings: dict[str, Any] | None = None,
     supplied_content: dict[str, Any] | None = None,
+    repair_context: dict[str, Any] | None = None,
 ) -> SlidePlan:
     """Plan one slide and return a SlidePlan TypedDict.
 
@@ -164,6 +165,7 @@ def plan_single_slide(
         deck_settings=deck_settings or {},
         constraints=constraints,
         supplied_content_for_slide=supplied_for_slide if supplied_for_slide else None,
+        repair_context=repair_context,
     )
     system_msg = _jinja_env.get_template("system.j2").render()
 

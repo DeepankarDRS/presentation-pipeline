@@ -122,7 +122,7 @@ def test_route_after_validator_fail_budget_exhausted():
     state = initial_state(run_id="r6", raw_request="test", retry_budget=3)
     state["compile_result"] = {"ok": False, "retryable": True, "diagnostics": [{"type": "UNKNOWN_TAG", "message": "err"}], "warnings": []}
     state["retry_count"] = 3
-    assert route_after_validator(state) == "evaluator"
+    assert route_after_validator(state) == "placeholder"
 
 
 def test_route_after_validator_fail_stall_breaks_loop():
@@ -130,7 +130,7 @@ def test_route_after_validator_fail_stall_breaks_loop():
     state["compile_result"] = {"ok": False, "retryable": True, "diagnostics": [{"type": "OVERFLOW", "message": "err"}], "warnings": []}
     state["retry_count"] = 1
     state["stall_detected"] = True
-    assert route_after_validator(state) == "evaluator"
+    assert route_after_validator(state) == "placeholder"
 
 
 def test_route_after_critic_pass():
@@ -280,7 +280,7 @@ def test_route_validator_budget_exhausted_multi_slide():
         retry_count=3,
         retry_budget=3,
     )
-    assert route_after_validator(state) == "slide_router"
+    assert route_after_validator(state) == "placeholder"
 
 
 def test_route_validator_stall_breaks_loop_multi_slide():
@@ -289,7 +289,7 @@ def test_route_validator_stall_breaks_loop_multi_slide():
         retry_count=1,
         stall_detected=True,
     )
-    assert route_after_validator(state) == "slide_router"
+    assert route_after_validator(state) == "placeholder"
 
 
 def test_route_critic_pass_multi_slide():

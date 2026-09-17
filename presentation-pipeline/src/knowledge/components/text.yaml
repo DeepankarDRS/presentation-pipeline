@@ -89,6 +89,7 @@ pitfalls:
   - "textAlign is left/center/right — textAlign=\"start\" throws."
   - "A <Text> that ends up with w=0 or h=0 throws 'must be a finite positive EMU value' at render."
   - "Raw HTML inline tags (<b>, <strong>, <em>, <span> lowercase) are wrong — use <B>, <I>, <Span>."
+  - "Inline tags (<Span>, <B>, <I>, <Mark>, etc.) MUST stay on the same line as their surrounding text. Any newline before or after an inline tag is rendered as a literal line break in the output. Write <Text>$84.2<Span fontSize=\"20\">M</Span></Text> on one line — never break the <Span> onto its own line."
   - "<A href> must be a full URL with protocol (https://...). A bare domain or relative path may not resolve in PowerPoint."
   - "<Sub> and <Sup> are purely typographic — they shrink and shift the run. They do not create mathematical notation."
   - "Lowercase <a>, <u>, <s>, <sub>, <sup> are HTML — use <A>, <U>, <S>, <Sub>, <Sup> (capitals)."

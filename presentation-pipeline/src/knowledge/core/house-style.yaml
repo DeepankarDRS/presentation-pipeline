@@ -100,7 +100,6 @@ height_budget: |
   3. Sanity: all heights + gaps + 2*padding ≈ 640-700. Over 720 → overlap.
   4. Rigid in card: h = band_h - 2*padding - ~28 title.
   TEXT LIMITS: bullets 1 line each (~55 chars), callout 1 sentence (≤ 80 chars),
-  Timeline description 1-3 words only.
   Rigid heights: chart 260-360 | table 240-360 | timeline 200-300 |
   matrix 260-340 | process arrow 130-180.
 worked_example: |

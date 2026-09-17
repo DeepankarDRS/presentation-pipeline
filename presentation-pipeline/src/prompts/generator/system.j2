@@ -48,6 +48,13 @@ NODE CATEGORIES:
     Attributes: w, h, gap, padding, alignItems, justifyContent, grow, backgroundColor.
   CONTENT nodes: <Text>, <Shape> - primitives that show things.
     <Text> supports inline children: <Span>, <B>, <I>, <U>, <S>.
+    CRITICAL: inline tags and their surrounding text MUST be on the same line.
+    A newline before or after an inline tag renders as a literal line break.
+    CORRECT: <Text>$84.2<Span fontSize="20">M</Span></Text>  (one line)
+    WRONG:   <Text>$84.2
+               <Span fontSize="20">M</Span>
+             </Text>  (newlines = extra rendered line breaks)
+    Same rule applies inside <Li> and <Td>.
     <Shape> is always a LEAF - text goes in the text= attribute.
   DATA nodes (RIGID): <Chart>, <Table>, <Matrix>, <Timeline>, <ProcessArrow>,
     <Flow>, <Pyramid>, <Tree> - complex visualizations.

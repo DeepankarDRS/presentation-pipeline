@@ -113,6 +113,22 @@ LAYOUT_SHRINK_GUIDANCE = """LAYOUT OVERFLOW FIX CHECKLIST (apply in order until 
 All dimensions must stay positive (never 0). Slide bounds: 1280x720."""
 
 
+_MAX_MSG_LEN = 220
+# Matches "Expected: "val1", "val2", "val3", ..." — 3+ quoted values = enum listing.
+# Deliberately does NOT match single-value expectations like 'expected: </VStack>',
+# so parse-error location hints are preserved.
+_ENUM_RE = re.compile(
+    r'\s*[Ee]xpected:\s*"[^"]*"(?:\s*,\s*"[^"]*"){2,}.*',
+    re.DOTALL,
+)
+
+
+def cap_diag_msg(msg: str) -> str:
+    """Strip enum listings and hard-cap length so no diagnostic bloats the prompt."""
+    msg = _ENUM_RE.sub(" (see repair knowledge for valid values)", msg)
+    return msg[:_MAX_MSG_LEN] + "…" if len(msg) > _MAX_MSG_LEN else msg
+
+
 def _extract_tag_from_error(msg: str) -> str | None:
     m = re.search(r"<(\w+)>", msg)
     return m.group(1) if m else None
@@ -245,7 +261,7 @@ def build_error_guidance(
             if key not in seen:
                 seen.add(key)
                 sections.append(
-                    f"SYNTAX FIX: XML parse error — {dmsg}. "
+                    f"SYNTAX FIX: XML parse error — {cap_diag_msg(dmsg)}. "
                     "Check for unclosed tags, mismatched quotes, or invalid XML."
                 )
 
@@ -254,7 +270,7 @@ def build_error_guidance(
             if key not in seen:
                 seen.add(key)
                 sections.append(
-                    f"VALUE FIX: {dmsg}. "
+                    f"VALUE FIX: {cap_diag_msg(dmsg)}. "
                     "All dimensions must be positive numbers. Colors: 6-digit hex."
                 )
 
@@ -347,6 +363,7 @@ def needs_regeneration(
 _KNOWLEDGE_DIR = Path(__file__).resolve().parent.parent / "knowledge"
 
 _NODE_TO_KNOWLEDGE_FILE: dict[str, str] = {
+    "Icon": "components/icon.yaml",
     "Text": "components/text.yaml",
     "Shape": "components/shape.yaml",
     "Chart": "components/chart.yaml",
