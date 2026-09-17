@@ -7,6 +7,10 @@ POM is NOT HTML:
 - <Shape> is a LEAF — never nest children inside it. Use text= attribute for text.
 - Tables MUST use <Col width="..."> for every column (note: width, not w).
 - Bullet lists: use <Ul>/<Li>, NOT <ul>/<li> (case-sensitive).
+- Inline tags (<Span>, <B>, <I>, <Mark>, etc.) MUST be on the same line as surrounding text.
+  A newline before/after an inline tag is a literal line break in the rendered output.
+  CORRECT: <Li>Normal <Span color="FF0000">red</Span> item</Li>
+  WRONG:   <Li>Normal\n  <Span color="FF0000">red</Span>\n  item\n</Li>
 
 Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName.
   VALID: color="$textMain"  backgroundColor="FF0000"

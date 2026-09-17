@@ -98,6 +98,10 @@ content:
     shapeType_note: "178 shapeTypes exist; stick to the subset above for the MVP. Common: rect (accent bar), ellipse (dot indicator), roundRect (plate/button)."
 
 # ── Inline formatting tags (only inside <Text>, <Li>, <Td>) ───────────────────
+# CRITICAL: every inline tag and its surrounding text MUST be on the same line.
+# A newline before or after the opening/closing tag is treated as a literal line
+# break at render time. Always write <Text>value<Span fontSize="20">unit</Span></Text>
+# on one line — never split the <Span> (or <B>, <I>, <Mark>, etc.) to a new line.
 inline:
   B:  { property: bold,   attributes: none, example: "Plain <B>bold</B> text" }
   I:  { property: italic, attributes: none, example: "Plain <I>italic</I> text" }
@@ -144,12 +148,7 @@ phase_b:
   Ul: { description: "Bullet list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight], children: [Li] }
   Ol: { description: "Numbered list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight, numberType, numberStartAt], children: [Li] }
   Li: { description: "List item. May contain inline tags.", node_attributes: [bold, italic, strike, subscript, superscript, underline, highlight, color, fontSize, fontFamily], children: [B, I, A, U, S, Sub, Sup, Span, Mark] }
-  Icon:
-    description: "Named icon (Lucide set). Self-closing leaf."
-    node_attributes: [name, color, w, h, rotate]
-    required: [name]
-    children: none
-    defaults: { w: 24, h: 24 }
+  Icon: { children: none }
 
 # ── Phase C nodes (table) ───────────────────────────────────────────────────
 # Full reference: components/table.yaml.

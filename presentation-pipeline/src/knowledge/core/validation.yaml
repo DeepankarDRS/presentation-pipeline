@@ -85,6 +85,12 @@ translations:
   - { wrong: '<u>',                   right: '<U> (capital U, Phase D inline tag)' }
   - { wrong: '<s>',                   right: '<S> (capital S, Phase D inline tag)' }
   - { wrong: '<svg>',                 right: '<Svg> (capital S, Phase D) — wraps an inner <svg> child element' }
+  - wrong: |
+      <Li>Normal
+        <Span color="FF0000">red</Span>
+        item
+      </Li>
+    right: "<Li>Normal <Span color=\"FF0000\">red</Span> item</Li>  — inline tags and surrounding text MUST be on one line; a newline before/after the tag renders as a literal line break"
 
 # ── Value constraints (Type 3 render errors pass XML parsing then fail) ───────
 value_constraints:
