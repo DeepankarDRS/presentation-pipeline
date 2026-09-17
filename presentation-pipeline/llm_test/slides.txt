@@ -1,0 +1,775 @@
+[
+  {
+    "slide_index": 0,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack w=\"max\" h=\"220\" alignItems=\"stretch\" justifyContent=\"center\">\n      <Text fontSize=\"46\" color=\"$textMain\" bold=\"true\" textAlign=\"center\" margin.top=\"88\" margin.bottom=\"8\">\n        Unlocking the Next Phase of Growth for XTSY on Quick Commerce\n      </Text>\n    </VStack>\n    <HStack w=\"max\" h=\"500\" gap=\"32\" alignItems=\"stretch\" justifyContent=\"center\" padding=\"0 120 0 120\">\n      <VStack w=\"max\" h=\"max\" backgroundColor=\"1A2233\" padding=\"36 32\" gap=\"12\" borderRadius=\"16\" justifyContent=\"center\">\n        <Text fontSize=\"18\" color=\"FFFFFF\" textAlign=\"center\" lineHeight=\"1.4\">\n          Quick Commerce platforms like Zepto, Blinkit, and Instamart are now primary drivers of impulse beverage consumption, representing a $500M+ annualized opportunity for energy drinks in India.\n        </Text>\n      </VStack>\n      <VStack w=\"max\" h=\"max\" backgroundColor=\"2563EB\" padding=\"36 32\" gap=\"12\" borderRadius=\"16\" justifyContent=\"center\">\n        <Text fontSize=\"20\" color=\"FFFFFF\" bold=\"true\" textAlign=\"center\" lineHeight=\"1.4\">\n          XTSY is positioned to accelerate growth by building share, visibility, and consumer penetration through advanced commerce execution across these platforms.\n        </Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-0.png",
+    "slide_plan": {
+      "slide_index": 0,
+      "slide_title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+      "slide_type": "cover",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Slide headline introducing the focus on XTSY's next phase of growth on Quick Commerce.",
+          "weight": "hero",
+          "content_data": {
+            "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+            "subtitle": ""
+          }
+        },
+        {
+          "component_id": "ecosystem_narrative",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Sets stage: Quick Commerce platforms like Zepto, Blinkit, and Instamart are now primary drivers of impulse beverage consumption, representing a $500M+ annualized opportunity for energy drinks in India.",
+          "design_hint": "inverted panel — dark background with light text for emphasis",
+          "weight": "peer",
+          "content_data": {
+            "text": "Quick Commerce platforms like Zepto, Blinkit, and Instamart are now primary drivers of impulse beverage consumption, representing a $500M+ annualized opportunity for energy drinks in India."
+          }
+        },
+        {
+          "component_id": "xtsy_growth_engine_narrative",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "XTSY is positioned to accelerate growth by building share, visibility, and consumer penetration through advanced commerce execution across these platforms.",
+          "design_hint": "use accent color or glow to highlight this as the engine for growth",
+          "weight": "peer",
+          "content_data": {
+            "text": "XTSY is positioned to accelerate growth by building share, visibility, and consumer penetration through advanced commerce execution across these platforms."
+          }
+        }
+      ],
+      "density": "sparse",
+      "font_tier": "display",
+      "layout_hint": "slide_title is the hero at the top; below, ecosystem_narrative and xtsy_growth_engine_narrative are parallel peer statements, with xtsy_growth_engine_narrative visually highlighted as the conceptual hero per visual emphasis.",
+      "content_data": {
+        "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+        "subtitle": "",
+        "text": "XTSY is positioned to accelerate growth by building share, visibility, and consumer penetration through advanced commerce execution across these platforms."
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "text": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 1,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <!-- Header Band -->\n    <HStack w=\"max\" justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"5\">\n        <Text fontSize=\"11\" bold=\"true\" color=\"$accent\" letterSpacing=\"2\">CATEGORY DYNAMICS</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$textMain\">Why the Energy Drink Category is Built for Quick Commerce</Text>\n        <Text fontSize=\"12\" color=\"$textMuted\">Impulse-driven moments and instant need make energy drinks a natural fit for rapid delivery platforms.</Text>\n      </VStack>\n    </HStack>\n    <!-- Hero Chart Band -->\n    <VStack w=\"max\" h=\"320\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n      <Text fontSize=\"13\" bold=\"true\" color=\"$textMain\">Energy Drink Consumption Moments</Text>\n      <Chart w=\"max\" h=\"256\" chartType=\"bar\" showLegend=\"false\" chartColors='[\"2563EB\",\"0EA5E9\",\"F59E0B\",\"10B981\",\"EF4444\",\"8B5CF6\"]'>\n        <ChartSeries name=\"Immediate Need Purchases\">\n          <ChartDataPoint label=\"Pre-workout\" value=\"68\" />\n          <ChartDataPoint label=\"Gaming\" value=\"54\" />\n          <ChartDataPoint label=\"Late-night work/study\" value=\"61\" />\n          <ChartDataPoint label=\"Commuting\" value=\"47\" />\n          <ChartDataPoint label=\"Parties\" value=\"39\" />\n          <ChartDataPoint label=\"Other instant-energy occasions\" value=\"33\" />\n        </ChartSeries>\n      </Chart>\n      <HStack w=\"max\" gap=\"10\" alignItems=\"center\">\n        <Shape shapeType=\"rect\" w=\"18\" h=\"8\" backgroundColor=\"$accent\" />\n        <Text fontSize=\"11\" color=\"$textMuted\">Bars show % of purchases driven by immediate need (impulse triggers highlighted)</Text>\n      </HStack>\n    </VStack>\n    <!-- Peer Band: KPI + Bullets -->\n    <HStack w=\"max\" h=\"140\" gap=\"18\" alignItems=\"stretch\">\n      <!-- KPI Card -->\n      <VStack w=\"38%\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"12\" color=\"$textMuted\">Impulse Purchase Rate (Quick Commerce vs. Retail)</Text>\n        <Text fontSize=\"36\" bold=\"true\" color=\"$accent\">2.5x<Span fontSize=\"18\" color=\"$textMuted\"> higher</Span></Text>\n        <Text fontSize=\"11\" bold=\"true\" color=\"$positive\">vs. traditional retail</Text>\n      </VStack>\n      <!-- Bulleted Growth Drivers Card -->\n      <VStack w=\"max\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"12\" bold=\"true\" color=\"$textMain\">Top Growth Drivers on Quick Commerce</Text>\n        <Ul fontSize=\"13\" color=\"$textMain\" lineHeight=\"1.4\">\n          <Li>\n            <Icon name=\"zap\" color=\"$accent\" w=\"16\" h=\"16\" margin.right=\"6\" />\n            <Span>Instant delivery</Span>\n          </Li>\n          <Li>\n            <Icon name=\"clock\" color=\"0EA5E9\" w=\"16\" h=\"16\" margin.right=\"6\" />\n            <Span>24/7 availability</Span>\n          </Li>\n          <Li>\n            <Icon name=\"target\" color=\"F59E0B\" w=\"16\" h=\"16\" margin.right=\"6\" />\n            <Span>Targeted visibility during peak demand moments</Span>\n          </Li>\n        </Ul>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-1.png",
+    "slide_plan": {
+      "slide_index": 1,
+      "slide_title": "Why the Energy Drink Category is Built for Quick Commerce",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "consumption_moments_chart",
+          "kind": "chart",
+          "count": 6,
+          "content_summary": "Bar chart showing energy drink consumption moments and the percentage of purchases driven by immediate need.",
+          "chart_type": "bar",
+          "series_count": 1,
+          "design_hint": "map each moment to a time-of-day band; highlight impulse triggers with accent color",
+          "weight": "hero",
+          "content_data": {
+            "chart_type": "bar",
+            "chart_title": "Energy Drink Consumption Moments",
+            "chart_labels": [
+              "Pre-workout",
+              "Gaming",
+              "Late-night work/study",
+              "Commuting",
+              "Parties",
+              "Other instant-energy occasions"
+            ],
+            "chart_values": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "chart_series": [
+              {
+                "name": "Immediate Need Purchases",
+                "values": [
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "component_id": "impulse_purchase_kpi",
+          "kind": "kpi_row",
+          "count": 1,
+          "content_summary": "KPI showing impulse purchase rates for energy drinks on Quick Commerce vs. traditional retail.",
+          "design_hint": "emphasize '2.5x higher' with bold color and size",
+          "weight": "peer",
+          "content_data": {
+            "kpi_labels": [
+              "Impulse Purchase Rate (Quick Commerce vs. Retail)"
+            ],
+            "kpi_values": [
+              "2.5x higher"
+            ],
+            "kpi_deltas": [
+              "vs. traditional retail"
+            ],
+            "kpi_directions": [
+              "up"
+            ]
+          }
+        },
+        {
+          "component_id": "growth_drivers_bullets",
+          "kind": "bullet_list",
+          "count": 3,
+          "content_summary": "Bulleted list of top category growth drivers for energy drinks on Quick Commerce.",
+          "items": 3,
+          "design_hint": "use icon accents for each driver to reinforce speed, availability, and targeting",
+          "weight": "peer",
+          "content_data": {
+            "bullets": [
+              "Instant delivery",
+              "24/7 availability",
+              "Targeted visibility during peak demand moments"
+            ]
+          }
+        }
+      ],
+      "density": "dense",
+      "font_tier": "compact",
+      "layout_hint": "consumption_moments_chart is the hero element spanning the top and center, visually mapping demand moments and impulse triggers. impulse_purchase_kpi and growth_drivers_bullets are peer elements below, side by side, reinforcing compatibility and key drivers.",
+      "content_data": {
+        "chart_type": "bar",
+        "chart_title": "Energy Drink Consumption Moments",
+        "chart_labels": [
+          "Pre-workout",
+          "Gaming",
+          "Late-night work/study",
+          "Commuting",
+          "Parties",
+          "Other instant-energy occasions"
+        ],
+        "chart_values": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "chart_series": [
+          {
+            "name": "Immediate Need Purchases",
+            "values": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          }
+        ],
+        "kpi_labels": [
+          "Impulse Purchase Rate (Quick Commerce vs. Retail)"
+        ],
+        "kpi_values": [
+          "2.5x higher"
+        ],
+        "kpi_deltas": [
+          "vs. traditional retail"
+        ],
+        "kpi_directions": [
+          "up"
+        ],
+        "bullets": [
+          "Instant delivery",
+          "24/7 availability",
+          "Targeted visibility during peak demand moments"
+        ]
+      },
+      "data_provenance": {
+        "chart_type": "sample",
+        "chart_title": "sample",
+        "chart_labels": "sample",
+        "chart_values": "sample",
+        "chart_series": "sample",
+        "kpi_labels": "sample",
+        "kpi_values": "sample",
+        "kpi_deltas": "sample",
+        "kpi_directions": "sample",
+        "bullets": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 2,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <!-- Header Band -->\n    <HStack w=\"max\" justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"5\">\n        <Text fontSize=\"11\" bold=\"true\" color=\"$accent\" letterSpacing=\"2\">GROWTH OPPORTUNITIES</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$textMain\">Growth Opportunities for XTSY Across Quick Commerce Platforms</Text>\n        <Text fontSize=\"12\" color=\"$textMuted\">Quick Commerce is rapidly becoming the primary channel for impulse beverage consumption. XTSY can unlock outsized growth by leveraging data-driven visibility, automation, and category execution to accelerate share and offtakes.</Text>\n      </VStack>\n    </HStack>\n    <!-- Hero Matrix Band -->\n    <VStack w=\"max\" h=\"340\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n      <HStack justifyContent=\"spaceBetween\" alignItems=\"center\">\n        <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Growth Levers by Platform</Text>\n        <Text fontSize=\"11\" color=\"$textMuted\">Hotspots highlighted</Text>\n      </HStack>\n      <Matrix w=\"max\" h=\"260\" axisLabelColor=\"$textMuted\" quadrantLabelColor=\"$textMuted\" itemLabelColor=\"$textMain\">\n        <MatrixAxes x=\"Growth Levers\" y=\"Platforms\" />\n        <MatrixQuadrants topLeft=\"Emerging\" topRight=\"High Impact\" bottomLeft=\"Low Priority\" bottomRight=\"Quick Wins\" />\n        <MatrixItem label=\"Key lever\" x=\"0.07\" y=\"0.85\" color=\"$accent\" /> <!-- Zepto, Search visibility expansion -->\n        <MatrixItem label=\"Key lever\" x=\"0.43\" y=\"0.85\" color=\"$accent\" /> <!-- Zepto, New city penetration -->\n        <MatrixItem label=\"Highest upside\" x=\"0.29\" y=\"0.5\" color=\"0EA5E9\" /> <!-- Blinkit, Category page dominance -->\n        <MatrixItem label=\"Highest upside\" x=\"0.71\" y=\"0.5\" color=\"0EA5E9\" /> <!-- Blinkit, Basket attachment -->\n        <MatrixItem label=\"Growth driver\" x=\"0.57\" y=\"0.15\" color=\"15803D\" /> <!-- Instamart, Portfolio expansion -->\n        <MatrixItem label=\"Growth driver\" x=\"0.93\" y=\"0.15\" color=\"15803D\" /> <!-- Instamart, Repeat purchase growth -->\n      </Matrix>\n      <HStack gap=\"10\" alignItems=\"center\">\n        <Shape shapeType=\"rect\" w=\"18\" h=\"10\" backgroundColor=\"$accent\" />\n        <Text fontSize=\"11\" color=\"$textMuted\">Key lever</Text>\n        <Shape shapeType=\"rect\" w=\"18\" h=\"10\" backgroundColor=\"0EA5E9\" />\n        <Text fontSize=\"11\" color=\"$textMuted\">Highest incremental upside</Text>\n        <Shape shapeType=\"rect\" w=\"18\" h=\"10\" backgroundColor=\"15803D\" />\n        <Text fontSize=\"11\" color=\"$textMuted\">Key growth driver</Text>\n      </HStack>\n    </VStack>\n    <!-- Platform Insights Band -->\n    <VStack w=\"max\" h=\"120\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n      <Ul fontSize=\"13\" color=\"$textMain\" lineHeight=\"1.45\">\n        <Li><B>For Zepto:</B> search visibility and new city penetration are under-leveraged.</Li>\n        <Li><B>For Blinkit:</B> category page dominance and basket attachment show highest incremental upside.</Li>\n        <Li><B>For Instamart:</B> portfolio expansion and repeat purchase programs are key growth drivers.</Li>\n      </Ul>\n    </VStack>\n    <!-- Narrative Callout Band -->\n    <VStack w=\"max\" h=\"66\" padding=\"14\" gap=\"4\" backgroundColor=\"EEF2FD\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" justifyContent=\"center\">\n      <Text fontSize=\"10\" bold=\"true\" color=\"$accent\" letterSpacing=\"1\">STRATEGIC INSIGHT</Text>\n      <Text fontSize=\"12\" color=\"$textMain\" lineHeight=\"1.45\">\n        <Span>Unlocking growth requires orchestrating </Span>\n        <B>visibility, availability, discoverability, and repeat purchase strategies</B>\n        <Span>, not just increasing ad spend.</Span>\n      </Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-2.png",
+    "slide_plan": {
+      "slide_index": 2,
+      "slide_title": "Growth Opportunities for XTSY Across Quick Commerce Platforms",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "opportunity_matrix",
+          "kind": "matrix",
+          "count": 7,
+          "content_summary": "Matrix showing growth levers (columns) across platforms (rows): Zepto, Blinkit, Instamart. Levers: search visibility expansion, sponsored placements, category page dominance, new city penetration, portfolio expansion, basket attachment, repeat purchase growth.",
+          "items": 7,
+          "design_hint": "highlight growth hotspots with accent color or callout badges",
+          "weight": "hero",
+          "content_data": {
+            "matrix_axes": {
+              "rows": [
+                "Zepto",
+                "Blinkit",
+                "Instamart"
+              ],
+              "columns": [
+                "Search visibility expansion",
+                "Sponsored placements",
+                "Category page dominance",
+                "New city penetration",
+                "Portfolio expansion",
+                "Basket attachment",
+                "Repeat purchase growth"
+              ]
+            },
+            "matrix_items": [
+              {
+                "row": "Zepto",
+                "column": "Search visibility expansion",
+                "label": "Key lever"
+              },
+              {
+                "row": "Zepto",
+                "column": "New city penetration",
+                "label": "Key lever"
+              },
+              {
+                "row": "Blinkit",
+                "column": "Category page dominance",
+                "label": "Highest incremental upside"
+              },
+              {
+                "row": "Blinkit",
+                "column": "Basket attachment",
+                "label": "Highest incremental upside"
+              },
+              {
+                "row": "Instamart",
+                "column": "Portfolio expansion",
+                "label": "Key growth driver"
+              },
+              {
+                "row": "Instamart",
+                "column": "Repeat purchase growth",
+                "label": "Key growth driver"
+              }
+            ]
+          }
+        },
+        {
+          "component_id": "platform_insights_list",
+          "kind": "bullet_list",
+          "count": 3,
+          "content_summary": "Platform-specific insights: Zepto (search visibility, new city penetration under-leveraged), Blinkit (category page dominance, basket attachment highest upside), Instamart (portfolio expansion, repeat purchase key drivers).",
+          "items": 3,
+          "design_hint": "cluster bullets by platform, align with matrix rows",
+          "weight": "supporting",
+          "content_data": {
+            "bullets": [
+              "For Zepto: search visibility and new city penetration are under-leveraged.",
+              "For Blinkit: category page dominance and basket attachment show highest incremental upside.",
+              "For Instamart: portfolio expansion and repeat purchase programs are key growth drivers."
+            ]
+          }
+        },
+        {
+          "component_id": "growth_narrative",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Narrative emphasizing that scalable growth comes from orchestrating visibility, availability, discoverability, and repeat purchase strategies, not just ad spend.",
+          "design_hint": "emphasize the holistic approach phrase with highlight or bold",
+          "weight": "minor",
+          "content_data": {
+            "text": "Unlocking growth requires orchestrating visibility, availability, discoverability, and repeat purchase strategies, not just increasing ad spend."
+          }
+        }
+      ],
+      "density": "dense",
+      "font_tier": "compact",
+      "layout_hint": "opportunity_matrix is the hero element, spanning the main region; platform_insights_list sits below or beside as supporting context, with growth_narrative as a minor accent at the bottom or side.",
+      "content_data": {
+        "matrix_axes": {
+          "rows": [
+            "Zepto",
+            "Blinkit",
+            "Instamart"
+          ],
+          "columns": [
+            "Search visibility expansion",
+            "Sponsored placements",
+            "Category page dominance",
+            "New city penetration",
+            "Portfolio expansion",
+            "Basket attachment",
+            "Repeat purchase growth"
+          ]
+        },
+        "matrix_items": [
+          {
+            "row": "Zepto",
+            "column": "Search visibility expansion",
+            "label": "Key lever"
+          },
+          {
+            "row": "Zepto",
+            "column": "New city penetration",
+            "label": "Key lever"
+          },
+          {
+            "row": "Blinkit",
+            "column": "Category page dominance",
+            "label": "Highest incremental upside"
+          },
+          {
+            "row": "Blinkit",
+            "column": "Basket attachment",
+            "label": "Highest incremental upside"
+          },
+          {
+            "row": "Instamart",
+            "column": "Portfolio expansion",
+            "label": "Key growth driver"
+          },
+          {
+            "row": "Instamart",
+            "column": "Repeat purchase growth",
+            "label": "Key growth driver"
+          }
+        ],
+        "bullets": [
+          "For Zepto: search visibility and new city penetration are under-leveraged.",
+          "For Blinkit: category page dominance and basket attachment show highest incremental upside.",
+          "For Instamart: portfolio expansion and repeat purchase programs are key growth drivers."
+        ],
+        "text": "Unlocking growth requires orchestrating visibility, availability, discoverability, and repeat purchase strategies, not just increasing ad spend."
+      },
+      "data_provenance": {
+        "matrix_axes": "sample",
+        "matrix_items": "sample",
+        "bullets": "sample",
+        "text": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 3,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <!-- Header Band -->\n    <HStack w=\"max\" justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"5\" w=\"max\">\n        <Text fontSize=\"11\" bold=\"true\" color=\"$accent\" letterSpacing=\"2\">GROWTH FRAMEWORK</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$textMain\">Our 4-Phase Framework to Build Category Share</Text>\n        <Text fontSize=\"12\" color=\"$textMuted\" lineHeight=\"1.5\" w=\"max\">\n          Quick Commerce is rapidly becoming the primary channel for impulse beverage consumption. XTSY can unlock outsized growth by leveraging data-driven visibility, automation, and category execution to accelerate share and offtakes.\n        </Text>\n      </VStack>\n    </HStack>\n    <!-- HERO BAND: Process Arrow (Framework) -->\n    <VStack w=\"max\" h=\"290\" padding=\"22\" gap=\"16\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\">\n      <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">4-Phase Category Share Acceleration Framework</Text>\n      <ProcessArrow w=\"max\" h=\"110\" direction=\"horizontal\" fontSize=\"12\" bold=\"true\">\n        <ProcessArrowStep label=\"Foundation &amp; Hygiene\" color=\"BFD3F7\" textColor=\"16202E\" />\n        <ProcessArrowStep label=\"Market Share Capture\" color=\"60A5FA\" textColor=\"FFFFFF\" />\n        <ProcessArrowStep label=\"Consumer Expansion\" color=\"2563EB\" textColor=\"FFFFFF\" />\n        <ProcessArrowStep label=\"Scale &amp; Profitability\" color=\"1E3A8A\" textColor=\"FFFFFF\" />\n      </ProcessArrow>\n      <HStack w=\"max\" gap=\"12\" alignItems=\"start\">\n        <VStack w=\"max\" gap=\"6\">\n          <Text fontSize=\"12\" color=\"$textMain\">\n            <B>Phase 1:</B> Focus on availability tracking, OOS reduction, search audit, visibility benchmarking, and portfolio prioritization to establish a strong base.\n          </Text>\n        </VStack>\n        <VStack w=\"max\" gap=\"6\">\n          <Text fontSize=\"12\" color=\"$textMain\">\n            <B>Phase 2:</B> Drive search dominance, sponsored placements, keyword expansion, competitor conquesting, and category page visibility to win share.\n          </Text>\n        </VStack>\n        <VStack w=\"max\" gap=\"6\">\n          <Text fontSize=\"12\" color=\"$textMain\">\n            <B>Phase 3:</B> Target new-to-brand and new-to-category users, expand across platforms and geographies to broaden the consumer base.\n          </Text>\n        </VStack>\n        <VStack w=\"max\" gap=\"6\">\n          <Text fontSize=\"12\" color=\"$textMain\">\n            <B>Phase 4:</B> Deploy automation-led optimization, focus on incrementality, accelerate repeat purchase, and scale the portfolio for sustained profitability.\n          </Text>\n        </VStack>\n      </HStack>\n    </VStack>\n    <!-- Supporting Band: Impact Progression Flow -->\n    <VStack w=\"max\" h=\"120\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n      <Text fontSize=\"13\" bold=\"true\" color=\"$textMain\">Compounding Impact: From Visibility to Profitability</Text>\n      <Flow direction=\"horizontal\" w=\"max\" h=\"60\" nodeWidth=\"170\" nodeHeight=\"44\" nodeGap=\"44\">\n        <FlowNode id=\"v\" shape=\"flowChartProcess\" text=\"Visibility\" color=\"60A5FA\" textColor=\"FFFFFF\" />\n        <FlowNode id=\"o\" shape=\"flowChartProcess\" text=\"Offtakes\" color=\"2563EB\" textColor=\"FFFFFF\" />\n        <FlowNode id=\"m\" shape=\"flowChartProcess\" text=\"Market Share\" color=\"1E3A8A\" textColor=\"FFFFFF\" />\n        <FlowNode id=\"p\" shape=\"flowChartTerminator\" text=\"Profitability\" color=\"15803D\" textColor=\"FFFFFF\" />\n        <FlowConnection from=\"v\" to=\"o\" />\n        <FlowConnection from=\"o\" to=\"m\" />\n        <FlowConnection from=\"m\" to=\"p\" />\n      </Flow>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-3.png",
+    "slide_plan": {
+      "slide_index": 3,
+      "slide_title": "Our 4-Phase Framework to Build Category Share",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "growth_framework_process",
+          "kind": "process_arrow",
+          "count": 4,
+          "content_summary": "Four-phase sequential process outlining the framework to build category share.",
+          "items": 4,
+          "orientation": "horizontal",
+          "design_hint": "use gradient progression to visually connect the four phases and highlight the sequential nature of the framework",
+          "weight": "hero",
+          "content_data": {
+            "direction": "horizontal",
+            "process_steps": [
+              "Phase 1: Foundation & Hygiene—focus on availability tracking, OOS reduction, search audit, visibility benchmarking, and portfolio prioritization to establish a strong base.",
+              "Phase 2: Market Share Capture—drive search dominance, sponsored placements, keyword expansion, competitor conquesting, and category page visibility to win share.",
+              "Phase 3: Consumer Expansion—target new-to-brand and new-to-category users, expand across platforms and geographies to broaden the consumer base.",
+              "Phase 4: Scale & Profitability—deploy automation-led optimization, focus on incrementality, accelerate repeat purchase, and scale the portfolio for sustained profitability."
+            ]
+          }
+        },
+        {
+          "component_id": "impact_progression_flow",
+          "kind": "flow",
+          "count": 4,
+          "content_summary": "Linear flow showing the progression from Visibility to Offtakes to Market Share to Profitability.",
+          "items": 4,
+          "orientation": "horizontal",
+          "design_hint": "emphasize compounding impact by visually linking each step with increasing prominence",
+          "weight": "supporting",
+          "content_data": {
+            "direction": "horizontal",
+            "flow_steps": [
+              "Visibility",
+              "Offtakes",
+              "Market Share",
+              "Profitability"
+            ]
+          }
+        }
+      ],
+      "density": "dense",
+      "font_tier": "compact",
+      "layout_hint": "growth_framework_process is the primary element, spanning the main band; impact_progression_flow sits below as supporting context to reinforce the compounding progression.",
+      "content_data": {
+        "direction": "horizontal",
+        "process_steps": [
+          "Phase 1: Foundation & Hygiene—focus on availability tracking, OOS reduction, search audit, visibility benchmarking, and portfolio prioritization to establish a strong base.",
+          "Phase 2: Market Share Capture—drive search dominance, sponsored placements, keyword expansion, competitor conquesting, and category page visibility to win share.",
+          "Phase 3: Consumer Expansion—target new-to-brand and new-to-category users, expand across platforms and geographies to broaden the consumer base.",
+          "Phase 4: Scale & Profitability—deploy automation-led optimization, focus on incrementality, accelerate repeat purchase, and scale the portfolio for sustained profitability."
+        ],
+        "flow_steps": [
+          "Visibility",
+          "Offtakes",
+          "Market Share",
+          "Profitability"
+        ]
+      },
+      "data_provenance": {
+        "direction": "sample",
+        "process_steps": "sample",
+        "flow_steps": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 4,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <!-- Header Band -->\n    <HStack w=\"max\" justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"5\">\n        <Text fontSize=\"11\" bold=\"true\" color=\"$accent\" letterSpacing=\"2\">COMMERCE INTELLIGENCE PLATFORM</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$textMain\">How Our Commerce Intelligence Platform Drives Faster Growth</Text>\n        <Text fontSize=\"12\" color=\"$textMuted\">Data-driven visibility, automation, and execution to accelerate share and offtakes in Quick Commerce</Text>\n      </VStack>\n    </HStack>\n    <!-- HERO: Dashboard Metrics Tile Group -->\n    <VStack w=\"max\" h=\"240\" padding=\"22\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n      <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Control Tower: Key Metrics Tracked</Text>\n      <Ul fontSize=\"13\" color=\"$textMain\" lineHeight=\"1.45\">\n        <Li><B>Share of Search</B></Li>\n        <Li><B>Share of Shelf</B></Li>\n        <Li><B>Availability</B></Li>\n        <Li><B>Pricing Intelligence</B></Li>\n        <Li><B>Competitor Monitoring across platforms</B></Li>\n      </Ul>\n      <Text fontSize=\"12\" color=\"$textMuted\" margin.top=\"6\">Unified dashboard for real-time tracking and analytics across all platforms</Text>\n    </VStack>\n    <!-- Peer Narrative Cards Band -->\n    <HStack w=\"max\" h=\"180\" gap=\"16\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"16\" gap=\"8\" backgroundColor=\"EEF2FD\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"bar-chart\" color=\"$accent\" w=\"18\" h=\"18\" />\n          <Text fontSize=\"13\" bold=\"true\" color=\"$textMain\">SKU Performance Insights</Text>\n        </HStack>\n        <Text fontSize=\"12\" color=\"$textMain\" lineHeight=\"1.45\">SKU-level performance analytics reveal top and underperforming products, enabling targeted interventions.</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"8\" backgroundColor=\"F0F9F7\" borderLeft.color=\"0EA5E9\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"map-pin\" color=\"0EA5E9\" w=\"18\" h=\"18\" />\n          <Text fontSize=\"13\" bold=\"true\" color=\"$textMain\">City Opportunity Mapping</Text>\n        </HStack>\n        <Text fontSize=\"12\" color=\"$textMain\" lineHeight=\"1.45\">City-level opportunity mapping identifies high-potential growth pockets for focused activation.</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"8\" backgroundColor=\"F7F6F9\" borderLeft.color=\"2563EB\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"activity\" color=\"2563EB\" w=\"18\" h=\"18\" />\n          <Text fontSize=\"13\" bold=\"true\" color=\"$textMain\">Platform Trends & Insights</Text>\n        </HStack>\n        <Text fontSize=\"12\" color=\"$textMain\" lineHeight=\"1.45\">\n          Platform-wise growth pockets and category trends are surfaced through <Span color=\"2563EB\" bold=\"true\">real-time</Span> data, enabling agile decision-making.\n        </Text>\n      </VStack>\n    </HStack>\n    <!-- Supporting Highlighted Statement -->\n    <VStack w=\"max\" h=\"88\" padding=\"20\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"16\" justifyContent=\"center\">\n      <Text fontSize=\"13\" color=\"$surfaceAlt\" bold=\"true\" textAlign=\"center\">What gets measured gets scaled: continuous intelligence is the foundation for accelerated growth.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-4.png",
+    "slide_plan": {
+      "slide_index": 4,
+      "slide_title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "dashboard_metrics",
+          "kind": "bullet_list",
+          "count": 5,
+          "content_summary": "List of key metrics tracked by the Control Tower dashboard across platforms.",
+          "items": 5,
+          "design_hint": "present as a dashboard tile group; emphasize tracking and analytics as the hero element",
+          "weight": "hero",
+          "content_data": {
+            "bullets": [
+              "Share of Search",
+              "Share of Shelf",
+              "Availability",
+              "Pricing Intelligence",
+              "Competitor Monitoring across platforms"
+            ]
+          }
+        },
+        {
+          "component_id": "sku_performance_insights",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Narrative on SKU-level performance analytics revealing top and underperforming products for targeted interventions.",
+          "design_hint": "highlight actionable analytics with a subtle accent or icon",
+          "weight": "peer",
+          "content_data": {
+            "text": "SKU-level performance analytics reveal top and underperforming products, enabling targeted interventions."
+          }
+        },
+        {
+          "component_id": "city_opportunity_mapping",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Narrative on city-level opportunity mapping for identifying high-potential growth pockets.",
+          "design_hint": "use a map or location icon for context if possible",
+          "weight": "peer",
+          "content_data": {
+            "text": "City-level opportunity mapping identifies high-potential growth pockets for focused activation."
+          }
+        },
+        {
+          "component_id": "platform_trends_insights",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Narrative on platform-wise growth pockets and category trends surfaced through real-time data.",
+          "design_hint": "accentuate 'real-time' with a dynamic visual cue",
+          "weight": "peer",
+          "content_data": {
+            "text": "Platform-wise growth pockets and category trends are surfaced through real-time data, enabling agile decision-making."
+          }
+        },
+        {
+          "component_id": "growth_foundation_statement",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Statement reinforcing continuous intelligence as the foundation for accelerated growth.",
+          "design_hint": "inverted panel or highlight for this foundational statement",
+          "weight": "supporting",
+          "content_data": {
+            "text": "What gets measured gets scaled: continuous intelligence is the foundation for accelerated growth."
+          }
+        }
+      ],
+      "density": "dense",
+      "font_tier": "compact",
+      "layout_hint": "dashboard_metrics is the hero element at the top; below, sku_performance_insights, city_opportunity_mapping, and platform_trends_insights are presented as peer narrative cards; growth_foundation_statement sits at the bottom as a supporting highlighted statement.",
+      "content_data": {
+        "bullets": [
+          "Share of Search",
+          "Share of Shelf",
+          "Availability",
+          "Pricing Intelligence",
+          "Competitor Monitoring across platforms"
+        ],
+        "text": "What gets measured gets scaled: continuous intelligence is the foundation for accelerated growth."
+      },
+      "data_provenance": {
+        "bullets": "sample",
+        "text": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 5,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <!-- Header Band -->\n    <HStack w=\"max\" justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"5\">\n        <Text fontSize=\"11\" bold=\"true\" color=\"$accent\" letterSpacing=\"2\">ADS AUTOMATION ENGINE</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$textMain\">Designed for Quick Commerce</Text>\n        <Text fontSize=\"12\" color=\"$textMuted\">Unlocking outsized growth through data-driven automation and category execution</Text>\n      </VStack>\n    </HStack>\n    <!-- Main Band: Hero Flow + Benefits List -->\n    <HStack w=\"max\" h=\"340\" gap=\"22\" alignItems=\"stretch\">\n      <!-- Automation Workflow Flow (Hero) -->\n      <VStack w=\"62%\" h=\"max\" padding=\"20\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Automation Workflow</Text>\n        <Flow direction=\"horizontal\" w=\"max\" h=\"260\" nodeWidth=\"148\" nodeHeight=\"60\" nodeGap=\"54\">\n          <FlowNode id=\"ingest\" shape=\"flowChartProcess\" text=\"Ingest platform data\" color=\"0EA5E9\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"decision\" shape=\"flowChartDecision\" text=\"Decision engine\" color=\"2563EB\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"bid\" shape=\"flowChartProcess\" text=\"Bid optimization\" color=\"F59E0B\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"budget\" shape=\"flowChartProcess\" text=\"Budget reallocation\" color=\"F59E0B\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"keyword\" shape=\"flowChartProcess\" text=\"Keyword expansion\" color=\"F59E0B\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"placement\" shape=\"flowChartProcess\" text=\"Placement optimization\" color=\"F59E0B\" textColor=\"FFFFFF\" />\n          <FlowConnection from=\"ingest\" to=\"decision\" />\n          <FlowConnection from=\"decision\" to=\"bid\" />\n          <FlowConnection from=\"decision\" to=\"budget\" />\n          <FlowConnection from=\"decision\" to=\"keyword\" />\n          <FlowConnection from=\"decision\" to=\"placement\" />\n        </Flow>\n      </VStack>\n      <!-- Automation Benefits List -->\n      <VStack w=\"38%\" h=\"max\" padding=\"20\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Automation Benefits</Text>\n        <Ul fontSize=\"13\" color=\"$textMain\" lineHeight=\"1.45\">\n          <Li>\n            <Span color=\"$accent\">● </Span>Faster optimization cycles (hours, not weeks)\n          </Li>\n          <Li>\n            <Span color=\"$accent\">● </Span>Reduced manual intervention\n          </Li>\n          <Li>\n            <Span color=\"$accent\">● </Span>Improved ROAS\n          </Li>\n          <Li>\n            <Span color=\"$accent\">● </Span>Increased share of visibility\n          </Li>\n          <Li>\n            <Span color=\"$accent\">● </Span>Higher conversion efficiency\n          </Li>\n        </Ul>\n      </VStack>\n    </HStack>\n    <!-- Supporting Narrative Band -->\n    <VStack w=\"max\" h=\"96\" padding=\"18\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"16\" justifyContent=\"center\">\n      <Text fontSize=\"13\" color=\"$surfaceAlt\" lineHeight=\"1.45\">\n        Automation enables XTSY to react dynamically to market changes, outperforming competitors who rely on manual processes.\n      </Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-5.png",
+    "slide_plan": {
+      "slide_index": 5,
+      "slide_title": "Ads Automation Engine Designed for Quick Commerce",
+      "slide_type": "content",
+      "components": [
+        {
+          "component_id": "automation_workflow_flow",
+          "kind": "flow",
+          "count": 5,
+          "content_summary": "Automation workflow showing ingestion of platform data, decision engine, and four real-time outputs.",
+          "items": 5,
+          "orientation": "horizontal",
+          "design_hint": "highlight the decision engine node and visually distinguish the four output steps as real-time actions",
+          "weight": "hero",
+          "content_data": {
+            "direction": "horizontal",
+            "flow_steps": [
+              "Ingest platform data",
+              "Decision engine",
+              "Bid optimization",
+              "Budget reallocation",
+              "Keyword expansion",
+              "Placement optimization"
+            ]
+          }
+        },
+        {
+          "component_id": "automation_benefits_list",
+          "kind": "bullet_list",
+          "count": 5,
+          "content_summary": "List of automation benefits: faster cycles, less manual work, improved ROAS, more visibility, higher conversion efficiency.",
+          "items": 5,
+          "design_hint": "use accent icons or color to reinforce positive outcomes",
+          "weight": "peer",
+          "content_data": {
+            "bullets": [
+              "Faster optimization cycles (hours, not weeks)",
+              "Reduced manual intervention",
+              "Improved ROAS",
+              "Increased share of visibility",
+              "Higher conversion efficiency"
+            ]
+          }
+        },
+        {
+          "component_id": "competitive_advantage_narrative",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Narrative on XTSY's dynamic automation advantage over manual competitors.",
+          "design_hint": "inverted panel — dark background with light text for this statement",
+          "weight": "supporting",
+          "content_data": {
+            "text": "Automation enables XTSY to react dynamically to market changes, outperforming competitors who rely on manual processes."
+          }
+        }
+      ],
+      "density": "dense",
+      "font_tier": "compact",
+      "layout_hint": "automation_workflow_flow is the hero element, spanning the main region. automation_benefits_list sits beside or below the workflow, with competitive_advantage_narrative as a supporting callout underneath or to the side.",
+      "content_data": {
+        "direction": "horizontal",
+        "flow_steps": [
+          "Ingest platform data",
+          "Decision engine",
+          "Bid optimization",
+          "Budget reallocation",
+          "Keyword expansion",
+          "Placement optimization"
+        ],
+        "bullets": [
+          "Faster optimization cycles (hours, not weeks)",
+          "Reduced manual intervention",
+          "Improved ROAS",
+          "Increased share of visibility",
+          "Higher conversion efficiency"
+        ],
+        "text": "Automation enables XTSY to react dynamically to market changes, outperforming competitors who rely on manual processes."
+      },
+      "data_provenance": {
+        "direction": "sample",
+        "flow_steps": "sample",
+        "bullets": "sample",
+        "text": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 6,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"20\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack w=\"max\" justifyContent=\"start\" alignItems=\"start\">\n      <VStack gap=\"5\" w=\"max\">\n        <Text fontSize=\"11\" bold=\"true\" color=\"$accent\" letterSpacing=\"2\">EXPECTED BUSINESS IMPACT</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$textMain\">Unlocking outsized growth through Quick Commerce acceleration</Text>\n        <Text fontSize=\"12\" color=\"$textMuted\">Data-driven visibility, automation, and category execution drive share and offtakes</Text>\n      </VStack>\n    </HStack>\n    <VStack w=\"max\" h=\"370\" padding=\"26\" gap=\"18\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n      <Ul fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">\n        <Li>\n          <Span color=\"$accent\" fontSize=\"15\">↑ </Span>\n          <B>Category Visibility:</B> Improved presence on search and category pages drives top-of-funnel awareness.\n        </Li>\n        <Li>\n          <Span color=\"$accent\" fontSize=\"15\">↑ </Span>\n          <B>Search Share</B> <Span color=\"$accent\" fontSize=\"15\">↑</Span> <B>and Sponsored Placement Share:</B> Greater discoverability leads to higher conversion rates.\n        </Li>\n        <Li>\n          <Span color=\"$accent\" fontSize=\"15\">↑ </Span>\n          <B>New Consumer Acquisition</B> <Span color=\"$accent\" fontSize=\"15\">↑</Span> <B>and Repeat Purchase Rate:</B> Expanding the consumer base and increasing loyalty fuel sustainable growth.\n        </Li>\n        <Li>\n          <Span color=\"$accent\" fontSize=\"15\">↑ </Span>\n          <B>Market Share</B> <Span color=\"$accent\" fontSize=\"15\">↑</Span> <B>and Sales Velocity:</B> Accelerated offtakes translate directly into market share gains and revenue growth.\n        </Li>\n      </Ul>\n    </VStack>\n    <VStack w=\"max\" h=\"110\" padding=\"20\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"16\" justifyContent=\"center\">\n      <Text fontSize=\"13\" color=\"$surfaceAlt\" textAlign=\"left\" lineHeight=\"1.5\">\n        The integrated approach of category intelligence, automation, and performance execution delivers <B>compounding business impact</B>.\n      </Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-6.png",
+    "slide_plan": {
+      "slide_index": 6,
+      "slide_title": "Expected Business Impact for XTSY",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "impact_areas_bullet_list",
+          "kind": "bullet_list",
+          "count": 4,
+          "content_summary": "Four key impact areas with upward trends: Category Visibility, Search Share & Sponsored Placement Share, New Consumer Acquisition & Repeat Purchase Rate, Market Share & Sales Velocity.",
+          "items": 4,
+          "design_hint": "use upward arrows and accent color to emphasize growth in each impact area",
+          "weight": "hero",
+          "content_data": {
+            "bullets": [
+              "Category Visibility ↑: Improved presence on search and category pages drives top-of-funnel awareness.",
+              "Search Share ↑ and Sponsored Placement Share ↑: Greater discoverability leads to higher conversion rates.",
+              "New Consumer Acquisition ↑ and Repeat Purchase Rate ↑: Expanding the consumer base and increasing loyalty fuel sustainable growth.",
+              "Market Share ↑ and Sales Velocity ↑: Accelerated offtakes translate directly into market share gains and revenue growth."
+            ]
+          }
+        },
+        {
+          "component_id": "impact_framework_narrative",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Narrative reinforcing that the integrated approach delivers compounding business impact.",
+          "design_hint": "inverted panel — dark background with light text for this statement",
+          "weight": "supporting",
+          "content_data": {
+            "text": "The integrated approach of category intelligence, automation, and performance execution delivers compounding business impact."
+          }
+        }
+      ],
+      "density": "dense",
+      "font_tier": "compact",
+      "layout_hint": "impact_areas_bullet_list is the primary element, visually emphasizing upward growth across four impact areas; impact_framework_narrative sits below as supporting context, reinforcing the compounding effect of the integrated approach.",
+      "content_data": {
+        "bullets": [
+          "Category Visibility ↑: Improved presence on search and category pages drives top-of-funnel awareness.",
+          "Search Share ↑ and Sponsored Placement Share ↑: Greater discoverability leads to higher conversion rates.",
+          "New Consumer Acquisition ↑ and Repeat Purchase Rate ↑: Expanding the consumer base and increasing loyalty fuel sustainable growth.",
+          "Market Share ↑ and Sales Velocity ↑: Accelerated offtakes translate directly into market share gains and revenue growth."
+        ],
+        "text": "The integrated approach of category intelligence, automation, and performance execution delivers compounding business impact."
+      },
+      "data_provenance": {
+        "bullets": "sample",
+        "text": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 7,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack w=\"max\" alignItems=\"start\" justifyContent=\"start\">\n      <VStack gap=\"5\" w=\"max\">\n        <Text fontSize=\"11\" bold=\"true\" color=\"$accent\" letterSpacing=\"2\">ROADMAP</Text>\n        <Text fontSize=\"29\" bold=\"true\" color=\"$textMain\">Next 90 Days: Data-Driven Execution Roadmap</Text>\n        <Text fontSize=\"12\" color=\"$textMuted\">Accelerating share and offtakes in Quick Commerce through visibility, automation, and category excellence</Text>\n      </VStack>\n    </HStack>\n    <VStack w=\"max\" h=\"340\" padding=\"22\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n      <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">90-Day Execution Timeline</Text>\n      <Timeline direction=\"horizontal\" w=\"max\" h=\"260\" dateColor=\"$accent\" titleColor=\"$textMain\" descriptionColor=\"$textMuted\" connectorColor=\"$accent\">\n        <TimelineItem date=\"Month 1\" title=\"Audit &amp; Benchmarking\" description=\"Category assessment, search visibility audit, availability review, and platform diagnostics to establish baselines.\" color=\"2563EB\" />\n        <TimelineItem date=\"Month 2\" title=\"Growth Activation\" description=\"Search scaling, placement expansion, competitor conquesting, and portfolio prioritization to drive rapid impact.\" color=\"0EA5E9\" />\n        <TimelineItem date=\"Month 3\" title=\"Optimization &amp; Scale\" description=\"Automation deployment, budget optimization, expansion planning, and growth measurement to sustain and scale gains.\" color=\"15803D\" />\n      </Timeline>\n    </VStack>\n    <VStack w=\"max\" h=\"96\" padding=\"18\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"16\" justifyContent=\"center\">\n      <Text fontSize=\"13\" color=\"$surfaceAlt\" lineHeight=\"1.5\" textAlign=\"center\">\n        Winning Quick Commerce is no longer about spending more. It is about capturing visibility faster, converting demand better, and scaling through intelligence and automation.\n      </Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Downloads\\newfo\\presentation-pipeline\\presentation-pipeline\\output\\runs\\0161c470991a\\screenshots\\slide-7.png",
+    "slide_plan": {
+      "slide_index": 7,
+      "slide_title": "Roadmap for the Next 90 Days",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "roadmap_timeline",
+          "kind": "timeline",
+          "count": 3,
+          "content_summary": "Three-phase 90-day execution roadmap with detailed actions for each month.",
+          "items": 3,
+          "orientation": "horizontal",
+          "design_hint": "use phase callouts with accent color for each month; visually connect phases to emphasize progression",
+          "weight": "hero",
+          "content_data": {
+            "direction": "horizontal",
+            "timeline_items": [
+              {
+                "date": "Month 1",
+                "label": "Audit & Benchmarking—category assessment, search visibility audit, availability review, and platform diagnostics to establish baselines."
+              },
+              {
+                "date": "Month 2",
+                "label": "Growth Activation—search scaling, placement expansion, competitor conquesting, and portfolio prioritization to drive rapid impact."
+              },
+              {
+                "date": "Month 3",
+                "label": "Optimization & Scale—automation deployment, budget optimization, expansion planning, and growth measurement to sustain and scale gains."
+              }
+            ]
+          }
+        },
+        {
+          "component_id": "closing_statement",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Closing statement on the strategic approach to winning Quick Commerce.",
+          "design_hint": "inverted panel — dark background with light text for emphasis",
+          "weight": "supporting",
+          "content_data": {
+            "text": "Winning Quick Commerce is no longer about spending more. It is about capturing visibility faster, converting demand better, and scaling through intelligence and automation."
+          }
+        }
+      ],
+      "density": "dense",
+      "font_tier": "compact",
+      "layout_hint": "roadmap_timeline is the primary visual element spanning the slide; closing_statement sits below as a highlighted conclusion.",
+      "content_data": {
+        "direction": "horizontal",
+        "timeline_items": [
+          {
+            "date": "Month 1",
+            "label": "Audit & Benchmarking—category assessment, search visibility audit, availability review, and platform diagnostics to establish baselines."
+          },
+          {
+            "date": "Month 2",
+            "label": "Growth Activation—search scaling, placement expansion, competitor conquesting, and portfolio prioritization to drive rapid impact."
+          },
+          {
+            "date": "Month 3",
+            "label": "Optimization & Scale—automation deployment, budget optimization, expansion planning, and growth measurement to sustain and scale gains."
+          }
+        ],
+        "text": "Winning Quick Commerce is no longer about spending more. It is about capturing visibility faster, converting demand better, and scaling through intelligence and automation."
+      },
+      "data_provenance": {
+        "direction": "sample",
+        "timeline_items": "sample",
+        "text": "sample"
+      }
+    }
+  }
+]

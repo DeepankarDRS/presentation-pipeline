@@ -1,0 +1,23 @@
+
+<promptused>generate a dashboard analysis of fable 5.1 sale in the market   based intensive 2 slide deck without the cover page</promptused>
+
+<our pipeline>
+<OutlinePlannerOutput>
+{"output":{"core_hook":"Fable 5.1 achieved strong revenue performance last year, but market signals suggest competitive pressure is intensifying.","deck_title":"Fable 5.1 Market Sale Dashboard","slides":[{"data_anchors":["$[estimate]M revenue (last year)"],"key_messages":["Fable 5.1 generated $[estimate]M in revenue last year, reflecting robust market demand."],"layout_intent":"Large headline revenue KPI centered, with a small trend chart or sparkline below to show year-over-year movement.","narrative_role":"Highlights Fable 5.1's revenue results over the last year, establishing the product's market traction and setting up the context for investor assessment.","section":"","slide_index":0,"slide_title":"Fable 5.1 Revenue Performance","slide_type":"data","suggested_components":["kpi_row","chart"]}]}}
+</OutlinePlannerOutput>
+<slide_planneroutput>{"slide_type":"data","components":[{"kind":"title","count":1,"chart_type":"","series_count":0,"columns":0,"rows":0,"items":0,"content_summary":"Slide title: Fable 5.1 Revenue Performance"},{"kind":"kpi_row","count":1,"chart_type":"","series_count":0,"columns":0,"rows":0,"items":0,"content_summary":"Single KPI tile showing last year's revenue"},{"kind":"chart","count":1,"chart_type":"line","series_count":1,"columns":0,"rows":0,"items":0,"content_summary":"Sparkline/mini line chart showing quarterly revenue trend over last year"}],"density":"sparse","font_tier":"display","layout_pattern":"hero_big_number","layout_hint":"VStack centered: Large headline KPI for annual revenue at center top; below, a compact line sparkline showing quarterly revenue trend; generous vertical spacing, minimal text, high visual focus on the big number.","content_data_json":"{\"title\": {\"title\": \"Fable 5.1 Revenue Performance\"}, \"kpi_row\": {\"kpi_labels\": [\"Revenue (2023)\"], \"kpi_values\": [\"$42.8M\"], \"kpi_deltas\": [\"+40% YoY\"], \"kpi_directions\": [\"up\"]}, \"chart\": {\"chart_type\": \"line\", \"chart_title\": \"Quarterly Revenue Trend\", \"chart_labels\": [\"Q1\",\"Q2\",\"Q3\",\"Q4\"], \"chart_values\": [8.7, 9.9, 11.2, 13.0]} }"}</slideplanneroutput>
+<plan reviewer output>{"confidence_score":0.55,"approved":false,"summary":"The plan contains specific and realistic revenue data, but as a single-slide deck, it lacks narrative arc and does not address the core hook's tension about intensifying competitive pressure. The content is dense and appropriate for the data, but the absence of slides covering market signals or competitive context is a significant narrative gap.","issues":[{"severity":"high","slide_index":null,"type":"narrative_gap","description":"The deck only presents Fable 5.1's revenue performance and does not address the core hook's second half: 'market signals suggest competitive pressure is intensifying.' There is no content about competition or market context.","suggestion":"Add at least one slide analyzing competitive pressures or market signals to fully support the core hook."}]}</planreviewverouput>
+
+</our pipeline>
+
+<gamma outline >
+The New Benchmark: Efficiency Over Raw Intelligence
+
+Fable 5.1 delivers roughly 2.5x more capability per dollar than Fable 5 by optimizing cost-per-task rather than flat token pricing.
+
+While base rates remain at $10/$50 per million input/output tokens, a 75% reduction in cache read costs ($1.00 to $0.25) drives significant savings for agentic workloads.
+
+Market adoption reflects a priority shift: teams now route based on success rates in long-horizon reasoning loops rather than single-shot benchmark scores.
+
+Evidence shows Fable 5.1 effectively leads agentic categories, with a 31.4% reliable automation rate for business workflows compared to 17.1% for Fable 5, proving that meaningful business impact now outweighs incremental intelligence gains.
+<gamma outline>
