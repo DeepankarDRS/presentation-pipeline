@@ -93,7 +93,6 @@ def test_critic_high_severity_fails(mock_vc, mock_screenshots):
             "description": "[Visual] Missing KPI tiles",
             "fix": "Add KPI tiles",
             "affected_nodes": ["HStack"],
-            "fix_xml_snippet": "",
             "source": "visual",
         }],
         assessment="needs_tuning",
@@ -120,7 +119,6 @@ def test_critic_medium_only_passes(mock_vc, mock_screenshots):
             "description": "[Visual] Theme mismatch",
             "fix": "Use $accent",
             "affected_nodes": [],
-            "fix_xml_snippet": "",
             "source": "visual",
         }],
         assessment="needs_tuning",
@@ -202,7 +200,6 @@ def test_repair_hints_in_visual_result(mock_vc, mock_screenshots):
             "description": "[Visual] Layout broken",
             "fix": "Rebuild",
             "affected_nodes": ["VStack", "Chart"],
-            "fix_xml_snippet": "",
             "source": "visual",
         }],
         assessment="layout_broken",
@@ -262,7 +259,6 @@ def test_repairer_collect_problems_reads_visual_issues():
                 "description": "Missing KPI tiles",
                 "fix": "Add KPIs",
                 "affected_nodes": ["HStack"],
-                "fix_xml_snippet": '<HStack gap="16">...</HStack>',
                 "source": "visual",
             },
         ],
@@ -270,7 +266,7 @@ def test_repairer_collect_problems_reads_visual_issues():
     problems = _collect_problems(state)
     assert any("VISUAL_HIGH" in p for p in problems)
     assert any("Fix: Add KPIs" in p for p in problems)
-    assert any("Snippet:" in p for p in problems)
+    assert any("Fix: Add KPIs" in p for p in problems)
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────

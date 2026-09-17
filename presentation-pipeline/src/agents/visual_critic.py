@@ -75,8 +75,6 @@ def run_visual_critic(
         slide_type=slide_plan.get("slide_type", ""),
         components=slide_plan.get("components", []),
         theme_element=theme_element,
-        house_style=contract.get("house_style", ""),
-        component_recipes=contract.get("component_recipes", ""),
         density_tier=contract.get("density_tier", ""),
         compile_warnings=compile_warnings or [],
         layout_issues=layout_issues or [],
@@ -124,7 +122,6 @@ def run_visual_critic(
             "description": f"[Visual] {issue.description}",
             "fix": issue.fix,
             "affected_nodes": issue.affected_nodes,
-            "fix_xml_snippet": issue.fix_xml_snippet,
             "source": "visual",
         })
         all_affected_nodes.extend(issue.affected_nodes)

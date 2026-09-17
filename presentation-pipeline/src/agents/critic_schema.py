@@ -61,10 +61,6 @@ class VisualCriticIssue(BaseModel):
         default_factory=list,
         description="POM node names involved (e.g. 'Chart', 'HStack', 'Text')."
     )
-    fix_xml_snippet: str = Field(
-        default="",
-        description="Concrete XML patch suggestion for the repairer."
-    )
 
 
 class VisualCriticOutput(BaseModel):

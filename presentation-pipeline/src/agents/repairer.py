@@ -80,11 +80,8 @@ def _collect_problems(state: PresentationState) -> list[str]:
         if issue.get("source") == "visual":
             line = f"VISUAL_{severity.upper()}: {msg}"
             fix_hint = issue.get("fix", "")
-            snippet = issue.get("fix_xml_snippet", "")
             if fix_hint:
                 line += f" | Fix: {fix_hint}"
-            if snippet:
-                line += f" | Snippet: {snippet}"
             problems.append(line)
         else:
             problems.append(f"CRITIC_{severity.upper()}: {msg}")

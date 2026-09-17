@@ -291,11 +291,8 @@ def _run_visual_check_loop(
         msg = issue.get("description", "")
         line = f"VISUAL_{sev.upper()}: {msg}"
         fix_hint = issue.get("fix", "")
-        snippet = issue.get("fix_xml_snippet", "")
         if fix_hint:
             line += f" | Fix: {fix_hint}"
-        if snippet:
-            line += f" | Snippet: {snippet}"
         problems.append(line)
 
     for v_attempt in range(1, max_visual_repairs + 1):
