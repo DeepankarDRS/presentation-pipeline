@@ -55,6 +55,7 @@ from src.agents.outline_planner import outline_planner_node
 from src.agents.plan_reviewer import plan_reviewer_node
 from src.agents.questionnaire import questionnaire_node
 from src.agents.repairer import repairer_node
+from src.agents.visual_repairer import visual_repairer_node
 from src.agents.slide_component_planner import (
     SERIALIZE_SLIDES,
     slide_component_planner_node,
@@ -197,15 +198,13 @@ def route_after_validator(state: PresentationState) -> str:
 def route_after_critic(state: PresentationState) -> str:
     cr = state.get("critic_result") or {}
     if not cr.get("passed", True):
-        budget = state.get("retry_budget", 3)
-        count = state.get("retry_count", 0)
-        stalled = state.get("stall_detected", False)
-        if count < budget and not stalled:
-            logger.info(f"route: critic failed, retry {count+1}/{budget} → repairer")
-            return "repairer"
-        reason = "stall" if stalled else "budget"
+        v_budget = state.get("visual_repair_budget", 1)
+        v_count = state.get("visual_repair_count", 0)
+        if v_count < v_budget:
+            logger.info(f"route: critic failed, visual repair {v_count+1}/{v_budget} → visual_repairer")
+            return "visual_repairer"
         target = _slide_done_target(state)
-        logger.info(f"route: critic failed but {reason} → {target}")
+        logger.info(f"route: critic failed, visual repair budget exhausted → {target}")
         return target
     target = _slide_done_target(state)
     logger.info(f"route: critic passed → {target}")
@@ -289,6 +288,7 @@ def build_graph() -> StateGraph:
     graph.add_node("validator", validator_node)
     graph.add_node("critic", critic_node)
     graph.add_node("repairer", repairer_node)
+    graph.add_node("visual_repairer", visual_repairer_node)
     graph.add_node("placeholder", placeholder_node)
     graph.add_node("slide_router", slide_router_node)
     graph.add_node("deck_assembler", deck_assembler_node)
@@ -327,9 +327,13 @@ def build_graph() -> StateGraph:
     )
     graph.add_conditional_edges(
         "critic", route_after_critic,
-        ["repairer", "evaluator", "slide_router"],
+        ["visual_repairer", "evaluator", "slide_router"],
     )
     graph.add_conditional_edges("repairer", route_after_repairer, ["validator"])
+    graph.add_conditional_edges(
+        "visual_repairer", lambda s: _slide_done_target(s),
+        ["evaluator", "slide_router"],
+    )
     graph.add_conditional_edges(
         "placeholder", lambda s: _slide_done_target(s),
         ["evaluator", "slide_router"],

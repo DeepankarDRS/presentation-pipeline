@@ -136,3 +136,40 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         "speaker_notes": speaker_notes,
         "layout_issues": layout_issues,
     }
+
+
+def normalize_and_compile(
+    xml: str, theme_element: str = "", output_dir: Path | None = None,
+) -> tuple[bool, dict[str, Any]]:
+    """Normalize + compile check. Returns (ok, compile_result).
+
+    Used by the visual repairer to verify that a repair didn't break
+    compilation. Pass output_dir so the pptx file persists for
+    downstream screenshot/evaluator use.
+    """
+    norm = normalize_xml(xml)
+    cleaned = ensure_single_theme(norm["cleaned_xml"], theme_element)
+
+    if output_dir is None:
+        import tempfile
+        output_dir = Path(tempfile.mkdtemp(prefix="visual_repair_"))
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    val = validate_xml(cleaned, output_dir)
+    if val is not None and not val["ok"]:
+        return False, {
+            "ok": False, "pptx_path": None,
+            "diagnostics": val["diagnostics"],
+            "warnings": [], "retryable": True,
+        }
+
+    try:
+        cr = compile_xml(cleaned, output_dir)
+    except CompilerError:
+        return False, {
+            "ok": False, "pptx_path": None,
+            "diagnostics": [{"type": "HARNESS_ERROR", "message": "compile failed"}],
+            "warnings": [], "retryable": False,
+        }
+
+    return cr.get("ok", False), cr

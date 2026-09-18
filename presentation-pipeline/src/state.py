@@ -190,6 +190,8 @@ class PresentationState(TypedDict, total=False):
     retry_tier: int
     retry_count: int
     retry_budget: int
+    visual_repair_budget: int
+    visual_repair_count: int
     stall_detected: bool
 
     # ── Output ──
@@ -211,6 +213,7 @@ def initial_state(
     deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "off"] = "off",
     retry_budget: int = 3,  # PATCH, REGENERATE (replan+generate), cleanup PATCH
+    visual_repair_budget: int = 1,
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,
@@ -259,6 +262,8 @@ def initial_state(
         retry_tier=0,
         retry_count=0,
         retry_budget=retry_budget,
+        visual_repair_budget=visual_repair_budget,
+        visual_repair_count=0,
         stall_detected=False,
         evaluation=None,
         pptx_path=None,

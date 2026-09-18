@@ -142,15 +142,13 @@ def test_route_after_critic_pass():
 def test_route_after_critic_fail():
     state = initial_state(run_id="r8", raw_request="test")
     state["critic_result"] = {"passed": False, "issues": [{"severity": "high"}]}
-    state["retry_count"] = 0
-    assert route_after_critic(state) == "repairer"
+    assert route_after_critic(state) == "visual_repairer"
 
 
-def test_route_after_critic_fail_stall_breaks_loop():
+def test_route_after_critic_fail_visual_budget_exhausted():
     state = initial_state(run_id="r8s", raw_request="test")
     state["critic_result"] = {"passed": False, "issues": [{"severity": "high"}]}
-    state["retry_count"] = 1
-    state["stall_detected"] = True
+    state["visual_repair_count"] = 1
     assert route_after_critic(state) == "evaluator"
 
 
@@ -302,8 +300,7 @@ def test_route_critic_pass_multi_slide():
 def test_route_critic_fail_budget_exhausted_multi_slide():
     state = _multi_slide_state(
         critic_result={"passed": False, "issues": [{"severity": "high"}]},
-        retry_count=3,
-        retry_budget=3,
+        visual_repair_count=1,
     )
     assert route_after_critic(state) == "slide_router"
 
