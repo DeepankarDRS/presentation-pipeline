@@ -98,6 +98,7 @@ def _call_repair_llm(
     objective: str,
     theme_element: str,
     contract: dict[str, Any],
+    visual_issues: list[dict[str, Any]] | None = None,
 ) -> str:
     """Fix compile errors with the shared tier-1 patch prompt.
 
@@ -113,6 +114,7 @@ def _call_repair_llm(
         objective=objective,
         forbidden_tags=contract.get("forbidden_tags", []),
         theme_element=contract.get("theme_element") or theme_element,
+        visual_issues=visual_issues,
     )
 
     llm = get_llm("slide_editor")
@@ -301,6 +303,7 @@ def _run_visual_check_loop(
             repaired_xml = _call_repair_llm(
                 working_xml, problems, [], [],
                 f"{title} — fix visual issues", theme_element, contract,
+                visual_issues=visual_issues,
             )
         except Exception as e:
             logger.error(f"slide_editor: visual repair LLM call failed: {e}")
