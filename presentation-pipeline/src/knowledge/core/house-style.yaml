@@ -60,25 +60,38 @@ alignment:
 
 # --- composition --------------------------------------------------------
 composition: >
-  Build a slide as 2-4 horizontal BANDS stacked in the root VStack, each
-  <HStack w="max" ...> (or a full-width <VStack w="max"> for a single-element
-  band). Top band is the header. Each lower band is one idea: a split, a row
-  of cards, a chart, a table.
+  VStack/HStack nesting IS composition. Every visual grouping — card, panel,
+  grid, tile, titled section — is a nested stack with styling attributes
+  (backgroundColor, padding, borderRadius, border). No special constructs.
 
-  WITHIN a band, choose the horizontal division:
-    - one element        -> the child is w="max"
-    - equal weight       -> N children each w="max", gap 12-18
-    - one side dominant  -> w="62%" / w="38%" (priority drives which is bigger)
-    - fixed rail + body  -> w="260" sidebar + w="max" body
+  Start with 2-4 top-level BANDS in the root VStack, but each band can
+  contain nested sub-layouts to any depth (max 6 levels). A band is not
+  atomic — it is itself a composition boundary.
 
-  Vary the division band-to-band so the slide has rhythm - don't stack three
-  identical 50/50 splits.
+  NESTING DEPTH: Level 1 = structural partitioning (bands dividing the slide).
+  Level 2 = content regions (columns, card rows). Level 3+ = visual grouping
+  (individual cards, stat clusters, titled sections). Deeper = more local.
 
-  HStack ROOT (full-bleed vertical splits): when the layout calls for full-
-  height columns (hero left + content right, or 50/50 comparison), use an
-  HStack root. Each direct child is a full-height <VStack> column.
-  Divide widths with w="62%"/w="38%" or w="max" for equal columns.
-  Inside each column, stack content bands vertically with their own gaps.
+  DIVISION within any stack (applies at EVERY nesting level):
+    - N children each w="max"         = equal split
+    - grow="2" / grow="1"             = ratio split (2:1, 3:1, etc.)
+    - w="62%" / w="38%"               = explicit asymmetric split
+    - w="260" fixed + w="max" flex    = rail + body
+    - flexWrap="wrap" + fixed/% widths = grid that reflows
+
+  SIZING THROUGH NESTING: parent constrains children. At each level use the
+  same sizing vocabulary (max, %, grow, fixed px). Nested stacks inherit
+  width from their parent; children size within remaining space after padding.
+  Height rules still apply: rigid nodes need explicit h, text-only omit h.
+
+  ALIGNMENT: each nested stack sets its own alignItems/justifyContent
+  independently. Use alignSelf on one child to override the parent's rule.
+
+  HStack ROOT (full-bleed vertical splits): for full-height columns. Each
+  child is a full-height VStack. Divide with w="62%"/w="38%", grow, or max.
+
+  RHYTHM: vary nesting depth across bands — flat band next to a deeply
+  nested card grid creates visual contrast.
 
 header_band: >
   <HStack w="max" justifyContent="spaceBetween" alignItems="start">: left a
@@ -218,7 +231,7 @@ render_gotchas:
 # --- pre-emit checklist ---------------------------------------------
 checklist:
   - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
-  - "2-4 bands, each w=\"max\"; the divisions differ band-to-band."
+  - "2-4 top-level bands, each w=\"max\"; nesting within bands matches content grouping."
   - "Every RIGID band (Chart/Table/Matrix/etc. inside) has explicit h=. Text-only bands and header: NO h (auto-size)."
   - "I ADDED UP header_h + every band h + every gap + 2*padding and the total
      is between ~640 and ~700. If over 720 the slide WILL overlap."
