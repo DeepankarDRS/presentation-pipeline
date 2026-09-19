@@ -198,6 +198,9 @@ color_discipline: >
   slide bg $surface; inverted panel $textMain. chartColors is literal hex,
   copied from the resolved palette - $tokens do NOT resolve inside it.
   Do NOT emit a <Theme> - the pipeline injects exactly one.
+  COVER/HERO slides follow the SAME token rules — never hardcode raw hex
+  for large backgrounds (use $surface, $surfaceAlt, $textMain, $accent).
+  Raw hex is acceptable ONLY for chartColors and small decorative accents.
 
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:
@@ -227,6 +230,14 @@ render_gotchas:
      the label grow=\"1\" and let the value size naturally."
   - "$textMain is the theme INK, light on DARK themes. A dark-filled panel uses
      $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
+
+design_variety: >
+  NEVER repeat the same visual pattern across consecutive slides. Vary the
+  closing band treatment across the deck — use at most ONE inverted panel
+  ($textMain bg) per 3 slides; alternate with accent-stripe callouts,
+  bordered sections, metric strips, or no closing band at all. Vary card
+  treatments too — not every slide needs a card. A deck with five identical
+  dark bottom panels looks templated, not designed.
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:

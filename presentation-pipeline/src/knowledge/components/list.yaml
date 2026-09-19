@@ -66,3 +66,4 @@ pitfalls:
   - "Don't mix a <Ul> and manual bullet characters in <Text>; pick one."
   - "Lowercase <ul>/<li> are HTML tags — POM silently rejects them. Use <Ul>/<Li>."
   - "Inline tags (<Span>, <B>, <I>, <Mark>, etc.) MUST be on the same line as the surrounding text — a newline before or after the tag is treated as a literal line break in the rendered slide. Write <Li>Normal <Span color=\"FF0000\">red</Span> item</Li> all on one line. Never split an inline tag onto its own line."
+  - "<Icon>, <Shape>, <VStack>, <HStack> and other block elements are NOT valid children of <Li> — POM silently strips them. To place an icon next to a bullet item, put the <Ul> and <Icon> side by side inside an <HStack>, or use the icon_bullet_list pattern (VStack of HStack rows with Icon + Text)."

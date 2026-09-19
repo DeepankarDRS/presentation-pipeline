@@ -72,6 +72,7 @@ _KIND_TO_NODES: dict[str, list[str]] = {
     "matrix":        ["Matrix", "MatrixAxes", "MatrixQuadrants", "MatrixItem"],
     "process_arrow": ["ProcessArrow", "ProcessArrowStep"],
     "pyramid":       ["Pyramid", "PyramidLevel"],
+    "badge":         [],
 }
 
 _KIND_TO_COMPONENT_FILE: dict[str, str] = {
@@ -361,6 +362,7 @@ _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("spacing_scale", "SPACING SCALE"),
     ("color_discipline", "COLOR DISCIPLINE"),
     ("render_gotchas", "RENDER GOTCHAS"),
+    ("design_variety", "DESIGN VARIETY"),
     ("checklist", "PRE-EMIT CHECKLIST"),
 ]
 
@@ -407,6 +409,11 @@ _KIND_TO_RECIPE: dict[str, str] = {
     "pyramid":       "pyramid",
     "tree":          "tree",
     "layer":         "layer_diagram",
+    "badge":         "badge",
+}
+
+_EXTRA_RECIPES: dict[str, list[str]] = {
+    "bullet_list": ["icon_bullet_list"],
 }
 
 
@@ -425,6 +432,10 @@ def _render_component_recipes(kinds: list[str]) -> str:
         if key and key not in seen and key in recipes:
             seen.add(key)
             picked.append(f"# {key}\n{str(recipes[key]).strip()}")
+        for extra_key in _EXTRA_RECIPES.get(kind, []):
+            if extra_key not in seen and extra_key in recipes:
+                seen.add(extra_key)
+                picked.append(f"# {extra_key}\n{str(recipes[extra_key]).strip()}")
     if not picked:
         return ""
     return (
