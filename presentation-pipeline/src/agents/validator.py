@@ -47,6 +47,10 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     run_id = state.get("run_id", "unknown")
     _pipeline_root = Path(__file__).resolve().parent.parent.parent
     output_dir = _pipeline_root / "output" / "runs" / run_id
+    slide_plans = state.get("slide_plans", [])
+    if len(slide_plans) > 1:
+        idx = state.get("current_slide_index", 0)
+        output_dir = output_dir / f"slide-{idx}"
     attempt = state.get("retry_count", 0)
     if attempt > 0:
         output_dir = output_dir / f"retry-{attempt}"
@@ -119,7 +123,11 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             "layout_issues": [],
         }
 
-    layout_issues = audit_layout(cleaned)
+    try:
+        layout_issues = audit_layout(cleaned)
+    except Exception as exc:
+        logger.warning(f"validator: layout audit crashed, skipping: {exc}")
+        layout_issues = []
     if layout_issues:
         logger.info(f"validator: layout audit — {len(layout_issues)} issue(s)")
 

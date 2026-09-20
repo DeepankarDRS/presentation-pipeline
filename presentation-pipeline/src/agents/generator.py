@@ -76,6 +76,14 @@ def generator_node(state: PresentationState) -> dict[str, Any]:
     """Generate POM XML via LLM using tiered prompts from the contract."""
     logger.info("generator: rendering prompts and calling LLM")
 
+    try:
+        return _generator_inner(state)
+    except Exception as exc:
+        logger.error(f"generator: LLM call failed: {exc}")
+        return {"current_xml": ""}
+
+
+def _generator_inner(state: PresentationState) -> dict[str, Any]:
     system_prompt, user_prompt = _render_prompts(state)
 
     llm = get_llm("generator")

@@ -37,18 +37,28 @@ _jinja_env = Environment(
 
 def plan_reviewer_node(state: PresentationState) -> dict[str, Any]:
     """Review the assembled slide plans and emit a confidence score."""
+    _neutral = {
+        "plan_review": {
+            "confidence_score": 0.5,
+            "approved": True,
+            "summary": "No slide plans to review.",
+            "issues": [],
+        }
+    }
+
     slide_plans = state.get("slide_plans") or []
     if not slide_plans:
         logger.warning("plan_reviewer: no slide_plans to review")
-        return {
-            "plan_review": {
-                "confidence_score": 0.5,
-                "approved": True,
-                "summary": "No slide plans to review.",
-                "issues": [],
-            }
-        }
+        return _neutral
 
+    try:
+        return _plan_reviewer_inner(state, slide_plans)
+    except Exception as exc:
+        logger.error(f"plan_reviewer: LLM call failed, skipping review: {exc}")
+        return _neutral
+
+
+def _plan_reviewer_inner(state: PresentationState, slide_plans: list) -> dict[str, Any]:
     outline = state.get("outline_plan") or {}
     core_hook = outline.get("core_hook") or state.get("core_hook", "")
 

@@ -102,7 +102,7 @@ def _write_slides_data(state: PresentationState, run_id: str) -> str | None:
             encoding="utf-8",
         )
         return str(slides_path)
-    except OSError as e:
+    except (OSError, TypeError, ValueError) as e:
         logger.warning(f"evaluator: failed to write slides.json: {e}")
         return None
 

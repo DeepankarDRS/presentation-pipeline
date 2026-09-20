@@ -36,6 +36,7 @@ from __future__ import annotations
 import logging
 import uuid
 from html import escape as xml_escape
+from pathlib import Path
 from typing import Any, Literal
 
 from dotenv import load_dotenv
@@ -62,7 +63,7 @@ from src.agents.slide_component_planner import (
     slide_plan_serial_node,
 )
 from src.agents.style_resolver import style_resolver_node
-from src.agents.validator import validator_node
+from src.agents.validator import normalize_and_compile, validator_node
 from src.state import DeckPlan, PresentationState, SlidePlan, initial_state
 
 logger = logging.getLogger(__name__)
@@ -244,6 +245,7 @@ def placeholder_node(state: PresentationState) -> dict[str, Any]:
     plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
     title = xml_escape(plan.get("slide_title", "Slide"))
 
+    theme_el = (state.get("contract") or {}).get("theme_element") or state.get("theme_element", "")
     xml = (
         '<Slide>\n'
         '  <VStack w="1280" h="720" padding="64" gap="16"'
@@ -255,6 +257,17 @@ def placeholder_node(state: PresentationState) -> dict[str, Any]:
     )
 
     logger.info(f"placeholder: inserting fallback slide for index {idx} ({title!r})")
+
+    run_id = state.get("run_id", "unknown")
+    _pipeline_root = Path(__file__).resolve().parent.parent
+    out_dir = _pipeline_root / "output" / "runs" / run_id / f"placeholder-{idx}"
+    compile_ok, cr = normalize_and_compile(xml, theme_el, out_dir)
+
+    if compile_ok:
+        cr["warnings"] = cr.get("warnings", []) + ["placeholder"]
+        return {"current_xml": xml, "compile_result": cr}
+
+    logger.warning("placeholder: compile failed, using synthetic result")
     return {
         "current_xml": xml,
         "compile_result": {

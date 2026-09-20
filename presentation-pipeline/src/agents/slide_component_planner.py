@@ -208,14 +208,26 @@ def slide_plan_serial_node(state: PresentationState) -> dict[str, Any]:
     assembled: list[SlidePlan] = []
     history: list[dict[str, Any]] = []
     for slide in slides:
-        plan, usage = plan_single_slide(
-            slide,
-            outline_plan=outline,
-            deck_settings=deck_settings,
-            supplied_content=supplied_content,
-        )
+        try:
+            plan, usage = plan_single_slide(
+                slide,
+                outline_plan=outline,
+                deck_settings=deck_settings,
+                supplied_content=supplied_content,
+            )
+            history.append({"attempt": 0, "tier": 0, **usage})
+        except Exception as exc:
+            logger.error(
+                f"slide_plan_serial: failed for slide {slide.get('slide_index', 0) + 1}: {exc}"
+            )
+            plan = {
+                "slide_index": slide.get("slide_index", 0),
+                "slide_title": slide.get("slide_title", "Slide"),
+                "slide_type": "content",
+                "components": [],
+                "density": "normal",
+            }
         assembled.append(plan)
-        history.append({"attempt": 0, "tier": 0, **usage})
         logger.info(
             f"slide_plan_serial: slide {slide.get('slide_index', 0) + 1}/{len(slides)} done "
             f"({len(plan.get('components', []))} components)"
@@ -247,12 +259,23 @@ def slide_component_planner_node(state: PresentationState) -> dict[str, Any]:
         f"'{slide.get('slide_title', '')}'"
     )
 
-    plan, usage = plan_single_slide(
-        slide,
-        outline_plan=outline,
-        deck_settings=deck_settings,
-        supplied_content=supplied_content,
-    )
+    try:
+        plan, usage = plan_single_slide(
+            slide,
+            outline_plan=outline,
+            deck_settings=deck_settings,
+            supplied_content=supplied_content,
+        )
+    except Exception as exc:
+        logger.error(f"slide_component_planner: failed for slide {slide.get('slide_index', 0) + 1}: {exc}")
+        plan = {
+            "slide_index": slide.get("slide_index", 0),
+            "slide_title": slide.get("slide_title", "Slide"),
+            "slide_type": "content",
+            "components": [],
+            "density": "normal",
+        }
+        return {"assembled_slide_plans": [plan]}
 
     logger.info(
         f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} done "

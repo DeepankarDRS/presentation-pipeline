@@ -101,6 +101,14 @@ def elicitor_node(state: PresentationState) -> dict[str, Any]:
         logger.info("elicitor: answers already present, skipping")
         return {"elicitation_needed": False}
 
+    try:
+        return _elicitor_inner(state)
+    except Exception as exc:
+        logger.error(f"elicitor: LLM call failed, skipping elicitation: {exc}")
+        return {"elicitation_needed": False}
+
+
+def _elicitor_inner(state: PresentationState) -> dict[str, Any]:
     deck_settings = state.get("deck_settings") or {}
     result, usage = check_and_elicit(
         context=state.get("raw_request", ""),

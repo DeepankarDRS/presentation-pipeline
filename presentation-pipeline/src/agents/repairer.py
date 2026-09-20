@@ -282,6 +282,24 @@ def _call_llm_and_return(
 def repairer_node(state: PresentationState) -> dict[str, Any]:
     """Choose a repair strategy, build the prompt, call the LLM, update state."""
     current_count = state.get("retry_count", 0)
+    try:
+        return _repairer_inner(state, current_count)
+    except Exception as exc:
+        logger.error(f"repairer: unhandled error, burning attempt: {exc}")
+        return {
+            "retry_count": current_count + 1,
+            "retry_tier": PATCH,
+            "stall_detected": True,
+            "generation_history": [AttemptRecord(
+                attempt=current_count + 1, tier=PATCH,
+                errors_in=[], errors_out=[], error_sigs=[],
+                stalled=True, truncated=False, noop=True,
+                tokens_in=0, tokens_out=0, model="error",
+            )],
+        }
+
+
+def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, Any]:
     problems = _collect_problems(state)
     pre_issues = _get_pre_issues(state)
     compile_diags = _get_compile_diags(state)
@@ -464,7 +482,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
         model = usage["model"]
         truncated = response.response_metadata.get("finish_reason") == "length"
         if truncated:
-            logger.warning("repairer: REGENERATE output truncated at max_tokens")
+            logger.warning("repairer: REGENERATE output truncated — discarding")
 
         logger.info(f"repairer: REGENERATE {model} tokens_in={tokens_in} tokens_out={tokens_out}")
 
@@ -476,21 +494,23 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
             error_sigs=sorted(curr_sigs),
             stalled=stalled,
             truncated=truncated,
-            noop=False,
+            noop=truncated,
             tokens_in=tokens_in,
             tokens_out=tokens_out,
             model=model,
         )
 
-        return {
-            "current_xml": regenerated_xml,
+        result = {
             "retry_tier": strategy,
             "retry_count": current_count + 1,
             "stall_detected": stalled,
             "generation_history": [record],
-            "slide_plans": updated_plans,
-            "contract": new_contract,
         }
+        if not truncated:
+            result["current_xml"] = regenerated_xml
+            result["slide_plans"] = updated_plans
+            result["contract"] = new_contract
+        return result
 
     return _call_llm_and_return(
         strategy, current_count, problems, curr_sigs, stalled,

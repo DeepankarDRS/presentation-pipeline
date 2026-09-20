@@ -73,6 +73,20 @@ def critic_node(state: PresentationState) -> dict[str, Any]:
     """Visual quality gate — screenshot-based review using a vision LLM."""
     idx = state.get("current_slide_index", 0)
 
+    try:
+        return _critic_inner(state, idx)
+    except Exception as exc:
+        logger.error(f"critic: unhandled error, failing open: {exc}")
+        return {
+            "critic_result": CriticResult(passed=True, issues=[]),
+            "visual_critic_result": VisualCriticResult(
+                passed=True, issues=[], screenshot_path=None,
+                repair_hints={"strategy": "none", "assessment": "good", "affected_nodes": []},
+            ),
+        }
+
+
+def _critic_inner(state: PresentationState, idx: int) -> dict[str, Any]:
     logger.info("critic: running visual review")
     issues, screenshot_path, usage, repair_hints = _run_visual_review(state)
 

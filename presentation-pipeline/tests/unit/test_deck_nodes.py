@@ -193,69 +193,49 @@ def test_deck_assembler_dedupes_theme_inside_slide(mock_compile):
     assert "Slide 1" in compiled_xml and "Slide 2" in compiled_xml
 
 
-@patch("src.agents.deck_nodes._call_deck_repair_llm")
+@patch("src.agents.deck_nodes.merge_pptx_files")
 @patch("src.agents.deck_nodes.compile_xml")
-def test_deck_assembler_repairs_retryable_compile_failure(mock_compile, mock_repair):
-    good_slide = '<Slide><VStack w="1280" h="720"><Text>Fixed</Text></VStack></Slide>'
-    mock_repair.return_value = (
-        '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />\n' + good_slide,
-        {"tokens_in": 100, "tokens_out": 200, "model": "gpt-4.1"},
-    )
-    mock_compile.side_effect = [
-        {"ok": False, "pptx_path": None,
-         "diagnostics": [{"type": "UNKNOWN_TAG", "message": "div"}],
-         "warnings": [], "retryable": True},
-        {"ok": True, "pptx_path": "/tmp/deck.pptx",
-         "diagnostics": [], "warnings": [], "retryable": False},
-    ]
+def test_deck_assembler_falls_back_to_zip_merge(mock_compile, mock_merge):
+    mock_compile.return_value = {
+        "ok": False, "pptx_path": None,
+        "diagnostics": [{"type": "UNKNOWN_TAG", "message": "div"}],
+        "warnings": [], "retryable": True,
+    }
+    mock_merge.return_value = "/tmp/merged.pptx"
 
-    state = initial_state(run_id="da-repair", raw_request="test")
+    state = initial_state(run_id="da-merge", raw_request="test")
     state["completed_slides"] = [
-        {"slide_index": 0, "xml": _SLIDE_XML_1},
-        {"slide_index": 1, "xml": _SLIDE_XML_2},
+        {"slide_index": 0, "xml": _SLIDE_XML_1, "compile_ok": True, "pptx_path": "/tmp/s0.pptx"},
+        {"slide_index": 1, "xml": _SLIDE_XML_2, "compile_ok": True, "pptx_path": "/tmp/s1.pptx"},
     ]
 
-    result = deck_assembler_node(state)
+    with patch("src.agents.deck_nodes.Path.exists", return_value=True):
+        result = deck_assembler_node(state)
 
-    assert mock_repair.call_count == 1
+    assert mock_merge.call_count == 1
     assert result["compile_result"]["ok"] is True
-    assert result["pptx_path"] == "/tmp/deck.pptx"
-    assert "Fixed" in result["current_xml"]
+    assert result["pptx_path"] == "/tmp/merged.pptx"
 
 
-@patch("src.agents.deck_nodes._call_deck_repair_llm")
+@patch("src.agents.deck_nodes.merge_pptx_files")
 @patch("src.agents.deck_nodes.compile_xml")
-def test_deck_assembler_gives_up_after_two_repairs(mock_compile, mock_repair):
-    mock_repair.return_value = (
-        "<Theme />\n<Slide><VStack w='1280' h='720'/></Slide>",
-        {"tokens_in": 100, "tokens_out": 200, "model": "gpt-4.1"},
-    )
+def test_deck_assembler_zip_merge_also_fails(mock_compile, mock_merge):
     mock_compile.return_value = {
         "ok": False, "pptx_path": None,
         "diagnostics": [{"type": "X", "message": "y"}],
         "warnings": [], "retryable": True,
     }
+    mock_merge.side_effect = Exception("merge failed")
 
     state = initial_state(run_id="da-giveup", raw_request="test")
-    state["completed_slides"] = [{"slide_index": 0, "xml": _SLIDE_XML_1}]
+    state["completed_slides"] = [
+        {"slide_index": 0, "xml": _SLIDE_XML_1, "compile_ok": True, "pptx_path": "/tmp/s0.pptx"},
+    ]
 
-    result = deck_assembler_node(state)
-    assert mock_repair.call_count == 2
+    with patch("src.agents.deck_nodes.Path.exists", return_value=True):
+        result = deck_assembler_node(state)
+
     assert result["compile_result"]["ok"] is False
-
-
-@patch("src.agents.deck_nodes._call_deck_repair_llm")
-@patch("src.agents.deck_nodes.compile_xml")
-def test_deck_assembler_skips_repair_when_not_retryable(mock_compile, mock_repair):
-    mock_compile.return_value = {
-        "ok": False, "pptx_path": None, "diagnostics": [],
-        "warnings": [], "retryable": False,
-    }
-    state = initial_state(run_id="da-noretry", raw_request="test")
-    state["completed_slides"] = [{"slide_index": 0, "xml": _SLIDE_XML_1}]
-
-    deck_assembler_node(state)
-    assert mock_repair.call_count == 0
 
 
 def test_deck_assembler_no_slides():

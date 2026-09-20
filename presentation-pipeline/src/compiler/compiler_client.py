@@ -90,7 +90,10 @@ def compile_xml(xml: str, output_dir: Path, *, timeout: int = 120) -> dict[str, 
             f"exit={proc.returncode}\nstderr:\n{(proc.stderr or '').strip()}"
         )
 
-    data = json.loads(result_path.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(result_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, ValueError) as exc:
+        raise CompilerError(f"corrupt compile-result.json: {exc}") from exc
     return _parse_result(data)
 
 
@@ -131,5 +134,8 @@ def validate_xml(xml: str, output_dir: Path, *, timeout: int = 30) -> dict[str, 
     if not result_path.exists():
         return None
 
-    data = json.loads(result_path.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(result_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, ValueError):
+        return None
     return _parse_result(data)
