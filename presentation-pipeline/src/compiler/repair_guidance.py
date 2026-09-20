@@ -96,7 +96,7 @@ NODE_VALID_ATTRS: dict[str, list[str]] = {
     "Table": ["cellBorder.color", "cellBorder.width"],
     "Td": [
         "backgroundColor", "color", "fontSize", "bold", "textAlign",
-        "colSpan", "rowSpan", "padding",
+        "colspan", "rowspan", "padding",
     ],
     "Ul": ["marker"],
     "Li": ["marker"],

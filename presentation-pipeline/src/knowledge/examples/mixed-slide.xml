@@ -36,8 +36,8 @@
         <Text fontSize="14" color="$textMuted">Top segments</Text>
         <Table defaultRowHeight="48" cellBorder.color="$border" cellBorder.width="1">
           <Col width="252" />
-          <Col width="160" />
-          <Col width="160" />
+          <Col />
+          <Col />
           <Tr>
             <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Segment</Td>
             <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Revenue</Td>

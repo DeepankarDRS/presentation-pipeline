@@ -146,27 +146,44 @@ def _check_nesting(root: ET.Element, issues: list[dict[str, str]]) -> None:
 
 def _check_col_widths(root: ET.Element, root_padding: float,
                       issues: list[dict[str, str]]) -> None:
-    """Flag Col widths that don't sum to usable slide width."""
+    """Flag Col widths that exceed usable slide width.
+
+    Handles three patterns:
+      - All cols have width: sum must be close to usable width.
+      - Mixed (some with, some without): specified total must not exceed usable.
+      - No cols have width: auto-fill, nothing to check.
+    """
     for table in root.iter("Table"):
         cols = table.findall("Col")
         if not cols:
             continue
-        widths: list[float] = []
+        specified: list[float] = []
         for col in cols:
             w = _parse_num(col.get("width"))
             if w is not None:
-                widths.append(w)
-        if not widths or len(widths) != len(cols):
+                specified.append(w)
+        if not specified:
             continue
-        total = sum(widths)
+        total_specified = sum(specified)
         usable = SLIDE_W - 2 * root_padding
-        if abs(total - usable) > 100:
-            issues.append({
-                "severity": "low",
-                "code": "COL_WIDTH_SUM",
-                "message": f"Col widths sum to {total:.0f}, "
-                           f"expected ~{usable:.0f} (1280 - 2×{root_padding:.0f})",
-            })
+        all_specified = len(specified) == len(cols)
+        if all_specified:
+            if abs(total_specified - usable) > 100:
+                issues.append({
+                    "severity": "low",
+                    "code": "COL_WIDTH_SUM",
+                    "message": f"Col widths sum to {total_specified:.0f}, "
+                               f"expected ~{usable:.0f} (1280 - 2×{root_padding:.0f})",
+                })
+        else:
+            if total_specified > usable:
+                issues.append({
+                    "severity": "high",
+                    "code": "COL_WIDTH_SUM",
+                    "message": f"Specified Col widths sum to {total_specified:.0f}, "
+                               f"exceeding usable {usable:.0f} (1280 - 2×{root_padding:.0f}) "
+                               f"— auto-fill columns get zero width",
+                })
 
 
 def _check_band_height_sum(root: ET.Element, root_padding: float,

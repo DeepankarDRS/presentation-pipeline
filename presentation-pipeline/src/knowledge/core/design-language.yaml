@@ -68,8 +68,7 @@ table_styling:
   - "Body rows: backgroundColor=$surface, labels in color=$textMuted, values in color=$textMain"
   - "Use cellBorder.color=$border cellBorder.width=1 on the Table element"
   - "Right-align numeric columns with textAlign=right"
-  - "ALWAYS define <Col width=\"...\"> for every column — without Col widths, columns collapse and text runs together"
-  - "Col widths should sum to roughly the Table's container width (its card / column), not the whole slide"
+  - "Declare one <Col> per column. Omit width on most columns (they auto-fill remaining space equally). Set width only on columns that need more or less room than average. Specified widths must not exceed the table's container width."
 
 bullet_list_styling:
   - "Use <Ul> with <Li> children for bullet lists -- POM's native list nodes"

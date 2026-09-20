@@ -44,11 +44,11 @@ chart_card: |
 
 table_card: |
   # Table card: band h 240-360. Every <Td> sets backgroundColor AND color.
-  # <Col width> per column, summing to roughly the card inner width.
+  # Set width only on columns needing more room; omit for auto-fill.
   <VStack w="max" h="280" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="13" bold="true" color="$textMain">ARR by segment</Text>
     <Table defaultRowHeight="44" cellBorder.color="$border" cellBorder.width="1">
-      <Col width="240" /><Col width="150" /><Col width="150" />
+      <Col width="240" /><Col /><Col />
       <Tr>
         <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Segment</Td>
         <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">ARR</Td>

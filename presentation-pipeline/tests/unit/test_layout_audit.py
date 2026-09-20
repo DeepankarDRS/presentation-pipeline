@@ -169,6 +169,61 @@ def test_band_height_sum_overflow_flagged():
     assert "BAND_HEIGHT_SUM" in codes
 
 
+def test_col_width_mixed_ok():
+    """Mixed-width table: specified cols under budget, auto-fill cols present."""
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="48">
+    <Table w="max" h="300">
+      <Col width="420" />
+      <Col />
+      <Col />
+      <Tr><Td>A</Td><Td>B</Td><Td>C</Td></Tr>
+    </Table>
+  </VStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    codes = [i["code"] for i in issues]
+    assert "COL_WIDTH_SUM" not in codes
+
+
+def test_col_width_mixed_overflow():
+    """Mixed-width table: specified cols exceed usable width."""
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="48">
+    <Table w="max" h="300">
+      <Col width="1000" />
+      <Col width="300" />
+      <Col />
+      <Tr><Td>A</Td><Td>B</Td><Td>C</Td></Tr>
+    </Table>
+  </VStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    codes = [i["code"] for i in issues]
+    assert "COL_WIDTH_SUM" in codes
+    assert any(i["severity"] == "high" for i in issues if i["code"] == "COL_WIDTH_SUM")
+
+
+def test_col_width_all_auto_ok():
+    """All-auto table: no widths specified, nothing to check."""
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="48">
+    <Table w="max" h="300">
+      <Col />
+      <Col />
+      <Col />
+      <Tr><Td>A</Td><Td>B</Td><Td>C</Td></Tr>
+    </Table>
+  </VStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    codes = [i["code"] for i in issues]
+    assert "COL_WIDTH_SUM" not in codes
+
+
 def test_band_height_sum_within_budget_ok():
     xml = """\
 <Slide>
