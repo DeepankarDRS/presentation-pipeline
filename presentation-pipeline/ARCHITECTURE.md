@@ -129,8 +129,8 @@ PresentationState(TypedDict):
     # Validation (validator → routing logic)
     normalize_result, validate_result, compile_result
 
-    # Critique (critic → routing logic)
-    critic_result, critic_mode
+    # Critique (visual critic → routing logic)
+    critic_result, visual_critic_result, critic_mode
 
     # Retry (repairer → generator)
     retry_tier, retry_count, retry_budget, stall_detected
@@ -227,23 +227,16 @@ current_xml → normalize → parseXml (validate) → buildPptx (compile)
 
 `compile_result.retryable` determines if the error is fixable (unknown tags, parse errors = yes; harness crash = no).
 
-### 5. Critic (LLM)
+### 5. Critic — Visual Quality Gate (LLM)
 
-**File**: `src/agents/critic.py`
+**File**: `src/agents/critic.py`, `src/agents/visual_critic.py`
 
-AI quality gate that checks what the compiler cannot — semantic correctness:
+Screenshot-based quality gate using a vision LLM. Takes a screenshot of the compiled PPTX and reviews it against the slide plan, theme, contract, and compile warnings.
 
-| Check | What it catches | Severity |
-|-------|----------------|----------|
-| Component completeness | Plan says "chart" but XML has no `<Chart>` | HIGH |
-| Content fidelity | `supplied_content` says "Revenue: $2.4M" but value missing in XML | MEDIUM |
-| Structural sanity | Root VStack missing `w`/`h`, broken nesting | HIGH |
-| Theme adherence | Hardcoded hex colors instead of `$tokens` | MEDIUM |
-
-- **Dual-mode**: `auto` (LLM check) or `manual` (human checkpoint, Phase 6)
-- **Fail-open**: If LLM call errors, returns `passed=True` (doesn't block the pipeline)
+- **Skipped** when `critic_mode == "off"` (routing in `route_after_validator`)
+- **Fail-open**: If screenshot or LLM call fails, returns `passed=True` (doesn't block the pipeline)
 - **Pass logic**: `passed = not any(issue.severity == "high")`
-- **Output**: Pydantic `CriticOutput` → plain dicts for JSON serializability
+- **Output**: `critic_result` + `visual_critic_result` (includes `repair_hints` for the visual repairer)
 
 ### 6. Repairer (LLM)
 
@@ -395,7 +388,7 @@ src.agents.generator | [3b5c1e89f110] [generator] [gpt-4.1-mini] tokens_in=1200 
 When `LANGCHAIN_TRACING_V2=true` is set, every `graph.invoke()` call sends traces to LangSmith with:
 - `run_name`: `pom-pipeline-{run_id}`
 - `tags`: `["presentation-pipeline"]`
-- `metadata`: `{run_id, theme, critic_mode}`
+- `metadata`: `{run_id, theme}`
 
 ### Run Manifest
 Every run writes `output/runs/{run_id}/run-manifest.json` with full token/cost/retry accounting.

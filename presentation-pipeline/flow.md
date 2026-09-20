@@ -14,7 +14,7 @@ The pipeline takes a natural-language request (e.g. "Create a KPI dashboard slid
 - **Component-based planning** — no archetypes. The planner outputs a free-form component list, not a fixed template.
 - **Tiered prompt assembly** — minimal / standard / dense tiers keep system prompts under 6K tokens.
 - **Two-strategy retry** — PATCH (fix in place) / REGENERATE (rebuild from plan), routed by error class + stall detection.
-- **Dual-mode critic** — auto (AI) runs first; manual (human) is a future checkpoint.
+- **Visual critic** — screenshot-based quality gate using a vision LLM; skippable via `critic_mode=off`.
 - **Single state object** — `PresentationState` TypedDict flows through every node.
 
 ---
@@ -53,9 +53,9 @@ VALIDATOR                                        │
   ├─ compile ok + critic_mode=off → EVALUATOR
   │
   ▼ compile ok + critic_mode≠off
-CRITIC
-  │  LLM structured output → CriticOutput (json_schema)
-  │  Writes: critic_result
+CRITIC (Visual)
+  │  Screenshot + vision LLM review
+  │  Writes: critic_result, visual_critic_result
   │
   ▼ route_after_critic
   ├─ critic failed + budget → REPAIRER ──────────┘
@@ -91,7 +91,7 @@ Defined in `src/state.py`. Every agent reads and writes only its slice. The full
 | Context | `contract`, `theme_element`, `resolved_theme` | context_builder | generator, repairer, validator (fallback) |
 | Generation | `current_xml`, `generation_history` | generator, repairer | validator, critic, evaluator |
 | Validation | `normalize_result`, `validate_result`, `compile_result` | validator | critic, repairer, evaluator |
-| Critique | `critic_result`, `critic_mode` | critic | repairer, evaluator |
+| Critique | `critic_result`, `visual_critic_result`, `critic_mode` | critic (visual) | repairer, visual_repairer, evaluator |
 | Retry | `retry_tier`, `retry_count`, `retry_budget`, `stall_detected` | repairer | validator routing, critic routing |
 | Output | `evaluation`, `pptx_path`, `passed` | evaluator | Caller |
 
@@ -278,29 +278,21 @@ INVALID_VALUE, INVALID_CHILD, THEME_ERROR, DIAGNOSTIC
 | | |
 |-|-|
 | **Status** | ✅ Complete |
-| **File** | `src/agents/critic.py` |
+| **File** | `src/agents/critic.py`, `src/agents/visual_critic.py` |
 | **Schema** | `src/agents/critic_schema.py` |
-| **LLM** | Yes (structured output, json_schema) |
+| **LLM** | Yes (vision LLM, screenshot-based) |
 
-AI quality gate — catches what the compiler can't. Runs after successful compilation.
+Visual quality gate — screenshot-reviews the rendered slide against the plan, theme, contract, and compile warnings.
 
-**Reads:** `current_xml`, `compile_result`, `slide_plans`, `critic_mode`, `supplied_content`, `theme_element`
-**Writes:** `critic_result`
+**Reads:** `current_xml`, `compile_result`, `slide_plans`, `theme_element`, `contract`, `layout_issues`
+**Writes:** `critic_result`, `visual_critic_result`, `slide_screenshots`
 
-### Checklist (4 checks)
+The visual critic takes a screenshot of the compiled PPTX and sends it to a vision LLM along with the full design context. It returns structured issues with repair hints that guide the visual repairer.
 
-| Check | What it catches | Severity |
-|-------|----------------|----------|
-| Component completeness | Plan says 4 KPIs but XML has 2 | HIGH (missing) / MEDIUM (wrong count) |
-| Content fidelity | Supplied values not in XML | MEDIUM |
-| Structural sanity | Missing root VStack, orphaned text | HIGH (broken) / LOW (deep nesting) |
-| Theme adherence | Hardcoded hex instead of $tokens | MEDIUM |
-
-**Pass/fail rule:** any HIGH severity issue → `passed=false` → triggers retry.
+**Pass/fail rule:** any HIGH severity issue → `passed=false` → triggers visual repair or compile repair.
 
 ### Modes
-- **auto** — runs the LLM check (current)
-- **manual** — returns `passed=true` (human checkpoint placeholder)
+- **auto** — runs the visual critic (default when enabled)
 - **off** — skipped entirely via `route_after_validator()`
 
 ---
@@ -369,8 +361,8 @@ All prompts are Jinja2 templates in `src/prompts/`.
 | `generator/user.j2` | generator, repairer | Objective + components + density + layout + data |
 | `repairer/patch.j2` | repairer (PATCH) | Previous XML + errors + targeted fix guidance |
 | `repairer/regenerate.j2` | repairer (REGENERATE) | Original plan + errors + verified skeleton (when one fits) |
-| `critic/system.j2` | critic | 4-point checklist (completeness, fidelity, structure, theme) |
-| `critic/user.j2` | critic | Generated XML + plan + supplied content + theme |
+| `visual_critic/system.j2` | critic (visual) | Screenshot-based review checklist (layout, fidelity, readability, theme) |
+| `visual_critic/user.j2` | critic (visual) | Screenshot + XML + plan + theme + contract + compile warnings |
 
 ### POM-specific rules enforced in prompts
 
@@ -480,8 +472,8 @@ presentation-pipeline/
 │   │   ├── context_builder.py  — knowledge base → contract dict
 │   │   ├── generator.py        — LLM XML generation with tiered prompts
 │   │   ├── validator.py        — normalize → parseXml → buildPptx
-│   │   ├── critic.py           — AI quality gate (4-point checklist)
-│   │   ├── critic_schema.py    — CriticOutput Pydantic model
+│   │   ├── critic.py           — Visual quality gate (screenshot + vision LLM)
+│   │   ├── critic_schema.py    — VisualCriticOutput Pydantic model
 │   │   ├── repairer.py         — PATCH / REGENERATE retry
 │   │   └── evaluator.py        — scoring + run-manifest.json
 │   │
@@ -607,16 +599,16 @@ initial_state(run_id, raw_request, theme_name, ...)
      │
      ▼ compile ok
 ┌─────────────────────────────────────────────────┐
-│ CRITIC                                          │
-│ LLM → CriticOutput (json_schema)                │
-│ 4 checks: completeness, fidelity, structure,    │
-│           theme adherence                       │
-│ → critic_result {passed, issues}                │
+│ CRITIC (Visual)                                 │
+│ Screenshot + vision LLM review                  │
+│ → critic_result, visual_critic_result           │
+│   {passed, issues, repair_hints}                │
 └─────────────────────────────────────────────────┘
      │
      ▼ route_after_critic
      │
-     ├─ critic failed + budget ──▶ REPAIRER ──▶ GENERATOR (loop)
+     ├─ critic failed + visual budget ──▶ VISUAL_REPAIRER
+     ├─ critic failed + compile budget ──▶ REPAIRER ──▶ GENERATOR (loop)
      │
      ▼ critic passed
 ┌─────────────────────────────────────────────────┐

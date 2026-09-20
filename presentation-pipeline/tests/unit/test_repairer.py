@@ -103,6 +103,12 @@ def test_build_error_guidance_empty():
     assert build_error_guidance([], []) == ""
 
 
+def test_build_error_guidance_band_height_sum():
+    layout_issues = [{"code": "BAND_HEIGHT_SUM", "message": "heights ~= 800 > 720"}]
+    guidance = build_error_guidance([], [], layout_issues)
+    assert "LAYOUT OVERFLOW" in guidance
+
+
 def test_build_error_guidance_skips_auto_fixed():
     pre = [{"code": "HASH_COLOR", "message": "Stripped #", "auto_fixed": True}]
     assert build_error_guidance(pre, []) == ""

@@ -159,6 +159,7 @@ def build_patch_prompts(
     forbidden_tags: list[str],
     theme_element: str,
     visual_issues: list[dict[str, Any]] | None = None,
+    layout_issues: list[dict[str, Any]] | None = None,
 ) -> tuple[str, str]:
     """Build the (system, user) prompts for a PATCH (in-place fix) repair.
 
@@ -182,7 +183,7 @@ def build_patch_prompts(
         objective=objective,
         failing_xml=failing_xml,
         problems=problems,
-        guidance=build_error_guidance(pre_issues, compile_diags),
+        guidance=build_error_guidance(pre_issues, compile_diags, layout_issues),
     )
     return system_prompt, user_prompt
 
@@ -353,6 +354,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
             forbidden_tags=contract.get("forbidden_tags", []),
             theme_element=contract.get("theme_element", state.get("theme_element", "")),
             visual_issues=visual_issues,
+            layout_issues=state.get("layout_issues"),
         )
     else:
         # REGENERATE: re-plan the slide with error context, then re-generate.
@@ -385,6 +387,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
                 forbidden_tags=contract.get("forbidden_tags", []),
                 theme_element=contract.get("theme_element", state.get("theme_element", "")),
                 visual_issues=visual_issues,
+                layout_issues=state.get("layout_issues"),
             )
             strategy = PATCH
             return _call_llm_and_return(
@@ -446,6 +449,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
                 forbidden_tags=contract.get("forbidden_tags", []),
                 theme_element=contract.get("theme_element", state.get("theme_element", "")),
                 visual_issues=visual_issues,
+                layout_issues=state.get("layout_issues"),
             )
             return _call_llm_and_return(
                 PATCH, current_count, problems, curr_sigs, stalled,

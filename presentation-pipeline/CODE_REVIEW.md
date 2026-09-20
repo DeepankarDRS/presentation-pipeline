@@ -172,13 +172,12 @@ supports it) or re-inject per slide during assembly.
 
 ## 🟠 Medium
 
-### 6. Critic is fail-open on a fragile path
-`_run_ai_check` returns `[]` on *any* exception ([`critic.py:77-79`](src/agents/critic.py)),
-and it uses `with_structured_output(CriticOutput, method="json_schema")` which
-raises on malformed output. A model that consistently trips the schema parser makes
-the critic a silent no-op — `passed` degrades to "did it compile". At minimum log
-this at `error` with a run-level counter and surface "critic degraded" in the
-manifest.
+### 6. Visual critic is fail-open on a fragile path
+`_run_visual_review` returns `[]` if the screenshot fails or the vision LLM errors
+([`critic.py:34-51`](src/agents/critic.py)). A backend that consistently fails to
+render screenshots makes the critic a silent no-op — `passed` degrades to "did it
+compile". At minimum log this at `error` with a run-level counter and surface
+"critic degraded" in the manifest.
 
 ### 7. Planner's layout-variety work is discarded before generation
 `planner._enforce_layout_variety` swaps `layout_pattern` on adjacent duplicate

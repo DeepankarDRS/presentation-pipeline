@@ -72,6 +72,12 @@ When in doubt between cover and data, choose data.
 
 You MAY combine multiple complex components (e.g. a timeline AND a tree, or a chart AND a table) on a single slide by assigning each a distinct component_id and setting the density to dense or tight_fit. This enables rich dashboard-style slides.
 
+### Component Nesting Boundary
+
+Components are structurally independent — you CANNOT nest one component kind inside another. Each component_id maps to exactly one kind (e.g. you cannot create a kpi_row containing a bullet_list, or a timeline with embedded flow diagrams).
+
+The generator CAN compose rich layouts WITHIN a single component using nested VStack/HStack plus these primitives: Icon (Lucide set), Shape (dots, bars, badges), and Chart with sparkline="true" (compact inline trend). If you want the generator to use these, express it as a design_hint on the host component — describe the visual intent, not the POM structure.
+
 ## Weight Assignment
 
 Every component gets a weight that tells the generator how much vertical space to allocate:
@@ -105,6 +111,7 @@ A short freeform directive for the generator about how to visually treat ONE com
 - Grouping: "cluster the positive metrics together, separate the negative one"
 - Texture: "use shadow to lift this card above the others"
 - Sentiment: "color-code tiles by outcome — positive/negative/neutral"
+- Intra-component enrichment: decorative elements (Icon, Shape dot/bar/badge alongside text), inline trends (sparkline chart within a KPI tile), or visual markers (status dots beside labels)
 
 ### What design_hint must NOT do:
 - Specify pixel dimensions (the generator's job via height budget)

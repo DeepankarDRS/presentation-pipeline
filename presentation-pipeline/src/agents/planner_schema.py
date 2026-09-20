@@ -97,7 +97,9 @@ class PlannerComponent(BaseModel):
         default="",
         description="Optional visual design hint for this specific component. "
                     "E.g. 'emphasize the largest value', 'use gradient progression', "
-                    "'highlight the decision node'. Leave empty when not needed."
+                    "'highlight the decision node'. Also use for intra-component "
+                    "enrichment the generator can compose within a single component "
+                    "(Icon, Shape, sparkline Chart). Leave empty when not needed."
     )
     weight: WeightLiteral = Field(
         default="peer",

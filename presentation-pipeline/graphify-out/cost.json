@@ -5,8 +5,24 @@
       "input_tokens": 0,
       "output_tokens": 0,
       "files": 178
+    },
+    {
+      "date": "2026-09-19T14:13:03.684391+00:00",
+      "input_tokens": 95702,
+      "output_tokens": 0,
+      "files": 44
+    },
+    {
+      "timestamp": "2026-09-19T23:15:36.702238",
+      "type": "incremental_update",
+      "files_changed": 10,
+      "semantic_agents": 1,
+      "nodes": 1439,
+      "edges": 2958,
+      "communities": 104
     }
   ],
-  "total_input_tokens": 0,
-  "total_output_tokens": 0
+  "total_input_tokens": 95702,
+  "total_output_tokens": 0,
+  "total_runs": 3
 }

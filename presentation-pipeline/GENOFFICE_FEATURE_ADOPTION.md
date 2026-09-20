@@ -170,7 +170,7 @@ Add type-specific critic rules:
 - `data` with no data components → issue
 - `closing` without a summary/CTA → warning
 
-**Files to modify:** `planner_schema.py`, `state.py`, `prompts/planner/system.j2`, `prompts/generator/system.j2`, `prompts/critic/system.j2`
+**Files to modify:** `planner_schema.py`, `state.py`, `prompts/planner/system.j2`, `prompts/generator/system.j2`, `prompts/visual_critic/system.j2`
 
 ---
 
@@ -360,9 +360,9 @@ def audit_layout(xml: str) -> list[dict]:
     return issues
 ```
 
-This runs after the compiler succeeds but before the critic. Issues feed into the critic's assessment.
+This runs after the compiler succeeds but before the visual critic. Issues feed into the critic's assessment.
 
-**Files to modify:** New function in `compiler/` or `agents/validator.py`, `prompts/critic/system.j2`
+**Files to modify:** New function in `compiler/` or `agents/validator.py`, `prompts/visual_critic/system.j2`
 
 ---
 

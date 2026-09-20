@@ -114,7 +114,8 @@ height_budget: |
   4. Rigid in card: h = band_h - 2*padding - ~28 title.
   TEXT LIMITS: bullets 1 line each (~55 chars), callout 1 sentence (≤ 80 chars),
   Rigid heights: chart 260-360 | table 240-360 | timeline 200-300 |
-  matrix 260-340 | process arrow 130-180.
+  matrix 260-340 | process arrow 130-180 | flow 200-300 | pyramid 260-360 |
+  tree 240-340.
 worked_example: |
   P=36, G=16: header(auto ~90) + KPI(text,auto ~120) + chart(rigid) + callout(text,auto ~88).
   Rigid budget: 720-72-90-120-88-48(gaps)=302. Chart card h="300", inside h=236.

@@ -229,10 +229,100 @@ def test_band_height_sum_within_budget_ok():
 <Slide>
   <VStack w="1280" h="720" padding="36" gap="16">
     <HStack><Text>Header</Text></HStack>
-    <HStack h="120"><Text>KPI row</Text></HStack>
-    <VStack h="300"><Text>Chart card</Text></VStack>
-    <VStack h="96"><Text>Callout</Text></VStack>
+    <HStack h="100"><Text>KPI row</Text></HStack>
+    <VStack h="280"><Text>Chart card</Text></VStack>
+    <VStack h="80"><Text>Callout</Text></VStack>
   </VStack>
 </Slide>"""
     codes = [i["code"] for i in audit_layout(xml)]
     assert "BAND_HEIGHT_SUM" not in codes
+
+
+def test_li_block_child_flagged():
+    """Icon inside Li is silently stripped by POM — audit must catch it."""
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="40">
+    <Ul fontSize="14" color="$textMain">
+      <Li><Icon name="zap" size="18" color="$accent" /> Fast</Li>
+      <Li><Shape shapeType="ellipse" w="12" h="12" /> Status</Li>
+    </Ul>
+  </VStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    li_issues = [i for i in issues if i["code"] == "LI_INVALID_CHILD"]
+    assert len(li_issues) == 2
+    assert all(i["severity"] == "high" for i in li_issues)
+    tags = {i["message"].split("<")[1].split(">")[0] for i in li_issues}
+    assert tags == {"Icon", "Shape"}
+
+
+def test_li_inline_children_ok():
+    """Valid inline tags inside Li should not trigger LI_INVALID_CHILD."""
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="40">
+    <Ul fontSize="14" color="$textMain">
+      <Li>Normal <B>bold</B> text</Li>
+      <Li><Span color="FF0000">red</Span> item</Li>
+      <Li>With <I>italic</I> and <Mark>highlight</Mark></Li>
+    </Ul>
+  </VStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    codes = [i["code"] for i in issues]
+    assert "LI_INVALID_CHILD" not in codes
+
+
+def test_missing_dims_matrix_and_timeline():
+    """Matrix and Timeline without explicit h should produce MISSING_DIMS."""
+    xml = """\
+<Slide>
+  <VStack w="1280" h="720" padding="40">
+    <Matrix w="max" />
+    <Timeline w="max" />
+  </VStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    dims_issues = [i for i in issues if i["code"] == "MISSING_DIMS"]
+    tags = {i["message"].split("<")[1].split(">")[0] for i in dims_issues}
+    assert "Matrix" in tags
+    assert "Timeline" in tags
+
+
+def test_hstack_root_column_overflow():
+    """HStack-root layout with a VStack column whose heights exceed 720."""
+    xml = """\
+<Slide>
+  <HStack w="1280" h="720" padding="0">
+    <VStack w="640" padding="20" gap="10">
+      <HStack h="200"><Text>Header</Text></HStack>
+      <Chart w="max" h="500" />
+    </VStack>
+    <VStack w="640" padding="20" gap="10">
+      <HStack h="60"><Text>Right header</Text></HStack>
+      <Chart w="max" h="300" />
+    </VStack>
+  </HStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    band_issues = [i for i in issues if i["code"] == "BAND_HEIGHT_SUM"]
+    assert len(band_issues) >= 1
+    overflowing = [i for i in band_issues if "column 0" in i["message"]]
+    assert len(overflowing) == 1
+
+
+def test_hstack_root_column_within_budget_ok():
+    """HStack-root with columns that fit within 720 should not trigger BAND_HEIGHT_SUM."""
+    xml = """\
+<Slide>
+  <HStack w="1280" h="720" padding="0">
+    <VStack w="640" padding="20" gap="10">
+      <HStack h="80"><Text>Header</Text></HStack>
+      <Chart w="max" h="300" />
+    </VStack>
+  </HStack>
+</Slide>"""
+    issues = audit_layout(xml)
+    band_issues = [i for i in issues if i["code"] == "BAND_HEIGHT_SUM"]
+    assert len(band_issues) == 0

@@ -356,7 +356,7 @@ _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("height_budget", "HEIGHT BUDGET (do this arithmetic before setting heights)"),
     ("worked_example", "HEIGHT BUDGET — worked example"),
     ("weight_allocation", "WEIGHT ALLOCATION"),
-    ("rigid_nodes", "RIGID NODES (Chart / Table / Matrix / ProcessArrow)"),
+    ("rigid_nodes", "RIGID NODES (Chart / Table / Matrix / ProcessArrow / Flow / Pyramid / Tree / Timeline)"),
     ("recipes", "RECIPES (parameterised patterns, not slides)"),
     ("type_ramp", "TYPE RAMP (fontSize)"),
     ("spacing_scale", "SPACING SCALE"),

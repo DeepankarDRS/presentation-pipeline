@@ -1,23 +1,28 @@
 # pom-knowledge/core/design-language.yaml
 # Visual design patterns for production-grade presentation output.
 # Loaded by context_builder and injected into the generator system prompt.
+# Ranges here align with house-style.yaml (the runtime authority).
 
 visual_hierarchy:
-  title: "fontSize 32-40, bold, color=$textMain"
-  subtitle: "fontSize 20-24, color=$textMuted"
-  body: "fontSize 14-16, color=$textMain"
-  label: "fontSize 12-14, color=$textMuted"
-  caption: "fontSize 11-13, italic, color=$textMuted"
-  kpi_value: "fontSize 32-46, bold, color=$textMain"
-  kpi_unit: "Span fontSize 18-22 inside the value Text"
+  title: "fontSize 27-32, bold, color=$textMain"
+  subtitle: "fontSize 12, color=$textMuted"
+  body: "fontSize 11-13, color=$textMain, lineHeight 1.4-1.55"
+  label: "fontSize 10-12, color=$textMuted"
+  caption: "fontSize 10-11, italic, color=$textMuted (min 11)"
+  kpi_value: "fontSize 24-34, bold, color=$textMain"
+  kpi_unit: "Span fontSize 14-18 inside the value Text"
   delta_up: "fontSize 13-16, color=$positive"
   delta_down: "fontSize 13-16, color=$negative"
 
 card_recipe:
   description: "Cards are the building block for KPI tiles, info boxes, and feature callouts."
-  pattern: |
-    <VStack padding="20-28" gap="8-12"
-      backgroundColor="$surfaceAlt" borderRadius="12"
+  rounded_card: |
+    <VStack padding="14-22" gap="6-14"
+      backgroundColor="$surfaceAlt" borderRadius="12-16"
+      border.width="1" border.color="$border">
+  accent_stripe_card: |
+    <VStack padding="14-22" gap="6-14"
+      backgroundColor="$surfaceAlt"
       border.width="1" border.color="$border"
       borderTop.width="4" borderTop.color="$accent">
   rules:
@@ -28,27 +33,20 @@ card_recipe:
     - Equal-width sibling cards in an HStack each get w="max"
 
 accent_elements:
-  accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />'
-  status_dot: '<Shape shapeType="ellipse" w="12" h="12" backgroundColor="$positive" />'
-  divider: '<Shape shapeType="rect" w="100%" h="1" backgroundColor="$border" />'
+  accent_bar: '<Shape shapeType="rect" w="120" h="6" fill.color="$accent" />'
+  status_dot: '<Shape shapeType="ellipse" w="12" h="12" fill.color="$positive" />'
+  divider: '<Shape shapeType="rect" w="max" h="1" backgroundColor="$border" />'
   rules:
     - Place an accent bar below the title to separate header from body
     - Use status dots in KPI tiles next to labels (green=$positive, red=$negative, grey=$textMuted)
     - Shape is a LEAF node — never nest children inside it
 
 spacing:
-  standard:
-    root_padding: "48-64"
-    section_gap: "24-36"
-    component_gap: "12-16"
-    card_padding: "20-28"
-    card_internal_gap: "8-12"
-  compact:
-    root_padding: "24-32"
-    section_gap: "16-20"
-    component_gap: "8-12"
-    card_padding: "16-20"
-    card_internal_gap: "4-8"
+  root_padding: "32-40"
+  section_gap: "14-22"
+  component_gap: "8-12"
+  card_padding: "14-22"
+  card_internal_gap: "6-14"
 
 color_usage:
   - "$surface — slide background (root VStack backgroundColor)"
@@ -91,3 +89,11 @@ design_principles:
   - "Use $surfaceAlt cards to group related content — never float raw text on the background"
   - "One idea per slide — if content overflows, simplify rather than shrink fonts below 11"
   - "Card borders: border.color=$border (subtle gray), borderTop.color=$accent (bold stripe). Never accent the full border."
+
+additional_styling:
+  lineHeight: "default 1.3; use 1.4-1.55 for body text readability"
+  shadow: "shadow.blur, shadow.offset, shadow.color, shadow.opacity — for elevated cards"
+  gradients: "backgroundGradient (containers), textGradient (Text) — native PPTX gradient fills"
+  text_effects: "glow.size/color/opacity, outline.size/color — for titles over images"
+  opacity: "0-1 background transparency on any node"
+  fontFamily: "default Noto Sans JP; override per-node (must be installed on viewer's system)"

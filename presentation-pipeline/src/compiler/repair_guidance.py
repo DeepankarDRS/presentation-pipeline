@@ -143,6 +143,7 @@ def _extract_attr_from_error(msg: str) -> tuple[str | None, str | None]:
 def build_error_guidance(
     pre_issues: list[dict[str, Any]],
     compile_diagnostics: list[dict[str, Any]],
+    layout_issues: list[dict[str, Any]] | None = None,
 ) -> str:
     """Build targeted repair guidance from errors. Returns formatted string."""
     sections: list[str] = []
@@ -287,6 +288,13 @@ def build_error_guidance(
                     sections.append(
                         "OVERLAP FIX: Sibling nodes overlap. Remove stray offsets or negative margins."
                     )
+
+    for issue in (layout_issues or []):
+        if issue.get("code") == "BAND_HEIGHT_SUM":
+            key = "layout_band_height"
+            if key not in seen:
+                seen.add(key)
+                sections.append(LAYOUT_SHRINK_GUIDANCE)
 
     return "\n\n".join(sections)
 

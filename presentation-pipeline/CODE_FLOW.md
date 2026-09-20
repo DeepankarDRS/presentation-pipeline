@@ -29,7 +29,7 @@ Everything else is last-write-wins.
 1. `L188-190` import + `setup_logging()`.
 2. `L192` `rid = run_id or uuid.uuid4().hex[:12]` — the run id.
 3. `L193` `set_context(run_id=rid)` — binds run id to the logger.
-4. `L195-205` `state = initial_state(...)` — **builds the full state** from the call args (`raw_request`, `theme_name`, `deck_min_threshold`, `critic_mode`, `supplied_content`, `test_case`, `audience_context`, `interactive`).
+4. `L195-205` `state = initial_state(...)` — **builds the full state** from the call args (`raw_request`, `theme_name`, `deck_min_threshold`, `critic_mode`, `supplied_content`, `test_case`, `audience_context`).
 5. `L207` `app = compile_graph()` → `build_graph().compile()` ([`src/graph.py:131-170`](src/graph.py)).
 6. `L213` `final = app.invoke(state, config=config)` — runs the graph to completion, returns final state.
 
@@ -241,18 +241,20 @@ Reached from `route_after_validator` (compile failed + retryable + budget left) 
 
 ---
 
-### 4.8 `critic_node` — [`src/agents/critic.py:153-181`](src/agents/critic.py)
-**Skipped** when `critic_mode == "off"`. Runs after a **successful** compile.
-- `L155` `mode = critic_mode`, `L156` `interactive`.
-- `L159` `issues = _run_ai_check(state)` (`L63-89`):
-  - `L65` `_render_prompts` (`L38-60`) — `prompts/critic/system.j2` + `user.j2` with `current_xml`, `components`, `density`, `layout_hint`, `supplied_content`, `theme_element`, `slide_type`, `layout_issues`.
-  - `L67-76` **LLM CALL** `.with_structured_output(CriticOutput, method="json_schema")`; on exception → return `[]` (fail-open).
-  - `L81-89` map each issue → `{severity, type, description, fix}`.
-- `L161-163` count high/medium/low.
-- `L165-171` **manual mode**: `_manual_checkpoint(issues, interactive)` (`L104-150`) — non-interactive auto-accepts unless a `high` issue; interactive prompts A/R/E.
-- `L173-174` **auto mode**: `passed = not any(severity=="high")`.
+### 4.8 `critic_node` — [`src/agents/critic.py:72-111`](src/agents/critic.py)
+Visual quality gate — screenshot-based review using a vision LLM. Runs after a **successful** compile.
+- `_run_visual_review(state)` (`L25-69`):
+  - Takes a screenshot of the compiled PPTX via `render_screenshots`.
+  - Calls `run_visual_critic` with the screenshot, current XML, slide plan, theme, contract, compile warnings, and layout issues.
+  - Returns `(issues, screenshot_path, usage, repair_hints)`.
+- `L79` `passed = not any(severity=="high")`.
 
-**State writes** (`L171` / `L181`): **only** `critic_result` = `{passed: bool, issues: list}`.
+**State writes** (`L88-109`):
+| key | value | reducer |
+|---|---|---|
+| `critic_result` | `{passed: bool, issues: list}` | replace |
+| `visual_critic_result` | `{passed, issues, screenshot_path, repair_hints}` | replace |
+| `slide_screenshots` | `{idx: screenshot_path}` | replace |
 
 → `route_after_critic`: not passed + budget → `repairer`; else → `slide_router`/`evaluator`.
 
@@ -329,7 +331,7 @@ context_builder_node           → contract
 generator_node        [LLM]    → current_xml=<xml>, generation_history=[a0]
 validator_node        [node]   → normalize_result, validate_result, compile_result{ok:True,pptx_path}, speaker_notes, layout_issues
 route_after_validator          → critic             (ok, critic_mode=auto)
-critic_node           [LLM]    → critic_result{passed:True}
+critic_node           [LLM]    → critic_result{passed:True}, visual_critic_result
 route_after_critic             → evaluator          (len(slide_plans)==1)
 evaluator_node        [node]   → evaluation, pptx_path, passed=True
 END
@@ -402,7 +404,7 @@ END
 | generator | **yes** (free text) | no | `generator` |
 | validator | no | **yes** — `node compile-pom.js` (validate + compile) | – |
 | repairer | **yes** (free text) | no | `repairer` |
-| critic | **yes** (structured `CriticOutput`) | no | `critic` |
+| critic | **yes** (vision LLM, `VisualCriticOutput`) | no | `visual_critic` |
 | slide_router | no | no | – |
 | deck_assembler | no | **yes** — `node compile-pom.js` (final) | – |
 | evaluator | no | no | – |

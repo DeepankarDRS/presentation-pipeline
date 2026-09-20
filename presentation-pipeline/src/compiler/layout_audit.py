@@ -20,7 +20,8 @@ MIN_FONT_SIZE = 11
 MAX_NESTING = 6
 
 _STACK_TAGS = {"VStack", "HStack"}
-_NEEDS_DIMS = {"Chart", "Table"}
+_NEEDS_DIMS = {"Chart", "Table", "Matrix", "ProcessArrow", "Flow", "Pyramid", "Tree", "Timeline"}
+_LI_VALID_CHILDREN = {"B", "I", "A", "U", "S", "Sub", "Sup", "Span", "Mark"}
 
 
 def _parse_num(value: str | None) -> float | None:
@@ -144,6 +145,22 @@ def _check_nesting(root: ET.Element, issues: list[dict[str, str]]) -> None:
     _walk(root, 0)
 
 
+def _check_li_children(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """Flag block elements inside <Li> — POM silently strips them."""
+    for li in root.iter("Li"):
+        for child in li:
+            if child.tag not in _LI_VALID_CHILDREN:
+                issues.append({
+                    "severity": "high",
+                    "code": "LI_INVALID_CHILD",
+                    "message": (
+                        f"<{child.tag}> inside <Li> will be silently stripped. "
+                        f"Li only supports inline tags: {', '.join(sorted(_LI_VALID_CHILDREN))}. "
+                        f"Use HStack rows with Icon + Text instead of Ul/Li."
+                    ),
+                })
+
+
 def _check_col_widths(root: ET.Element, root_padding: float,
                       issues: list[dict[str, str]]) -> None:
     """Flag Col widths that exceed usable slide width.
@@ -210,10 +227,14 @@ def _check_band_height_sum(root: ET.Element, root_padding: float,
     # need most bands sized to make a meaningful claim
     if len(known) < len(children) - 1 or not known:
         return
-    # unknown bands (usually the header) — assume a modest 90px each
-    est_total = sum(known) + 90.0 * (len(children) - len(known))
+    # unknown bands: first child (header) ~100px, other auto bands ~130px
+    est_unknown = 0.0
+    for i, h in enumerate(explicit):
+        if h is None:
+            est_unknown += 100.0 if i == 0 else 130.0
+    est_total = sum(known) + est_unknown
     est_total += gap * (len(children) - 1) + 2 * root_padding
-    if est_total > 760:
+    if est_total > 720:
         issues.append({
             "severity": "high",
             "code": "BAND_HEIGHT_SUM",
@@ -223,6 +244,52 @@ def _check_band_height_sum(root: ET.Element, root_padding: float,
                 f"Reduce a band height, shrink the chart, or drop content."
             ),
         })
+
+
+def _check_hstack_column_heights(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """Flag columns in an HStack-root layout whose children overflow 720.
+
+    When the slide root is an HStack (full-bleed column split), each VStack
+    column is its own vertical layout that must fit within 720px.
+    """
+    slide = root if root.tag == "Slide" else root.find(".//Slide")
+    if slide is None:
+        return
+    rooth = next((c for c in slide if c.tag == "HStack"), None)
+    if rooth is None:
+        return
+    # Only applies when the root is an HStack (not when a VStack root exists)
+    if any(c.tag == "VStack" for c in slide):
+        return
+    col_padding = _parse_num(rooth.get("padding")) or 0.0
+    for col_idx, col in enumerate(rooth):
+        if col.tag != "VStack":
+            continue
+        padding = _parse_num(col.get("padding")) or 0.0
+        gap = _parse_num(col.get("gap")) or 0.0
+        children = [c for c in col if c.tag in _STACK_TAGS or c.tag == "Chart"]
+        if len(children) < 2:
+            continue
+        explicit = [_parse_num(c.get("h")) for c in children]
+        known = [h for h in explicit if h is not None]
+        if len(known) < len(children) - 1 or not known:
+            continue
+        est_unknown = 0.0
+        for i, h in enumerate(explicit):
+            if h is None:
+                est_unknown += 100.0 if i == 0 else 130.0
+        est_total = sum(known) + est_unknown
+        est_total += gap * (len(children) - 1) + 2 * padding + 2 * col_padding
+        if est_total > 720:
+            issues.append({
+                "severity": "high",
+                "code": "BAND_HEIGHT_SUM",
+                "message": (
+                    f"HStack column {col_idx} children's heights + gaps + padding "
+                    f"~= {est_total:.0f} > 720. POM will shrink and overlap. "
+                    f"Reduce a band height or drop content."
+                ),
+            })
 
 
 def audit_layout(xml: str) -> list[dict[str, str]]:
@@ -244,7 +311,9 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_zero_dims(root, issues)
     _check_missing_dims(root, issues)
     _check_nesting(root, issues)
+    _check_li_children(root, issues)
     _check_col_widths(root, root_padding, issues)
     _check_band_height_sum(root, root_padding, issues)
+    _check_hstack_column_heights(root, issues)
 
     return issues
