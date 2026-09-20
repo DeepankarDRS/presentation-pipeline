@@ -4,10 +4,10 @@
     <Text fontSize="40" bold="true" color="$textMain">Revenue by Segment</Text>
     <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
     <Table defaultRowHeight="56" cellBorder.color="$border" cellBorder.width="1">
-      <Col width="520" />
-      <Col width="220" />
-      <Col width="200" />
-      <Col width="196" />
+      <Col width="420" />
+      <Col />
+      <Col />
+      <Col />
       <Tr>
         <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Segment</Td>
         <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Revenue</Td>

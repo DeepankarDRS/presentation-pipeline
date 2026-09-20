@@ -14,15 +14,18 @@ description: >
 
 structure: |
   <Table defaultRowHeight="56" cellBorder.color="$border" cellBorder.width="1">
-    <Col width="520" />
-    <Col width="220" />
+    <Col width="420" />
+    <Col />
+    <Col />
     <Tr>
-      <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Name</Td>
-      <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Score</Td>
+      <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain">Segment</Td>
+      <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Revenue</Td>
+      <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" textAlign="right">Share</Td>
     </Tr>
     <Tr>
-      <Td backgroundColor="$surface" color="$textMuted">Alice</Td>
-      <Td backgroundColor="$surface" color="$textMain" textAlign="right">95</Td>
+      <Td backgroundColor="$surface" color="$textMuted">Enterprise</Td>
+      <Td backgroundColor="$surface" color="$textMain" textAlign="right">$24.9M</Td>
+      <Td backgroundColor="$surface" color="$textMain" textAlign="right">58%</Td>
     </Tr>
   </Table>
 
@@ -31,7 +34,7 @@ Table_attributes:
   cellBorder:       { type: object, note: 'cellBorder.color="$border" cellBorder.width="1" cellBorder.dashType="solid"' }
 
 Col_attributes:
-  width: { type: number, note: "COLUMN WIDTH USES 'width', NOT 'w'. This is the one place 'width' is correct. Omit all <Col> for equal distribution. Widths should sum to the usable slide width (1280 - 2*padding)." }
+  width: { type: number, note: "COLUMN WIDTH USES 'width', NOT 'w'. This is the one place 'width' is correct. Omit width on most columns — they auto-fill remaining space equally. Set width only on columns that need more or less room than average. Specified widths must not exceed the table's container width (account for all ancestor padding/gap)." }
 
 Tr_attributes:
   height: { type: number, note: "omit to use the table's defaultRowHeight" }
@@ -59,7 +62,7 @@ notes:
   - "No <Th>. Bold + backgroundColor=\"$surfaceAlt\" the first <Tr> to make a header."
   - "Right-align numeric columns with textAlign=\"right\" on every <Td> in that column (header included)."
   - "$tokens work in Td color / backgroundColor and in cellBorder.color — use cellBorder.color=\"$border\"."
-  - "Table auto-sizes its height from rows; it does not take w/h. Control width via <Col>."
+  - "Table auto-sizes its height from rows; it does not take w/h. Control width via <Col>. Best practice: omit width on most columns (auto-fill), set width only on columns with notably more or less content. When ALL columns have explicit width, the table renders at exactly that sum — it will NOT stretch to fill the container."
   - "<Td> may contain inline tags (B, I, Span, Mark)."
 
 pitfalls:

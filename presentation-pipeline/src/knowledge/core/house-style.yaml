@@ -137,7 +137,8 @@ rigid_nodes: >
   All rigid DATA nodes (see height_budget list) do NOT size themselves.
     - width : w="max" WORKS on most. Horizontal Timeline: use explicit pixel w.
     - height: MUST be an explicit pixel h. No h -> renders wrong or tiny.
-    - Table : <Col width="..."> per column, sum ≈ container width. Every <Td>
+    - Table : one <Col> per column. Omit width on most columns (auto-fill);
+      set width only on columns that need more or less room. Every <Td>
       needs backgroundColor + color.
   A rigid node lives inside a <VStack w="max"|"NN%">; the node is
   w="max" h="<computed>" within it.

@@ -10,8 +10,11 @@ Do not invent tags or attributes - use ONLY what is listed in ALLOWED NODES belo
 - FORBIDDEN ATTRS: {{ forbidden_attributes | join(', ') }}
 - Use <VStack>/<HStack> not <div>, <Text> not <p>, <Span> not <span>
 - <Shape> is a LEAF - never nest children inside it. Use text= attribute for text.
-- Tables MUST use <Col width="..."> for every column so cells don't collapse.
-  Column widths should sum to roughly the Table's container width, not the whole slide.
+- Tables: declare one <Col> per column. Omit width on MOST columns (they auto-fill
+  the remaining space equally). Set width="NNN" ONLY on columns whose content is
+  noticeably wider or narrower than average (e.g. a label column that needs more room).
+  Specified widths + auto columns must not exceed the TABLE'S CONTAINER width
+  (account for ALL ancestor padding/gap, not just the root).
 - Bullet lists: use <Ul> with <Li> children - POM's native list nodes.
   Do NOT use separate <Text> elements with manual bullet characters.
 - Root <VStack> or <HStack> MUST use alignItems="stretch" (NEVER "center" or "end").
