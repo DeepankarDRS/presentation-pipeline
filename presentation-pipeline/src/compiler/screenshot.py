@@ -1,7 +1,6 @@
 """PPTX-to-PNG screenshot service.
 
-Primary: Node.js script (screenshot-pom.js) using LibreOffice + ImageMagick.
-Fallback: PowerPoint COM automation via comtypes (Windows only).
+Uses PowerPoint COM automation via comtypes (Windows only).
 
 All public functions return ScreenshotResult — callers never crash.
 """
@@ -10,7 +9,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import subprocess
 import sys
 import time
@@ -20,11 +18,6 @@ from pathlib import Path
 from typing import Literal
 
 logger = logging.getLogger(__name__)
-
-_SRC_DIR = Path(__file__).resolve().parent.parent
-_NODE_DIR = _SRC_DIR / "node"
-_SCREENSHOT_SCRIPT = _NODE_DIR / "screenshot-pom.js"
-_NODE_BIN = os.environ.get("NODE_BIN", "node")
 
 
 @dataclass
@@ -43,31 +36,12 @@ class ScreenshotBatchResult:
     error: str | None = None
 
 
-Backend = Literal["node", "com", None]
+Backend = Literal["com", None]
 
 
 @lru_cache(maxsize=1)
 def _check_screenshot_backend() -> Backend:
-    """Detect which screenshot backend to try first.
-
-    This only checks that the Node runtime is reachable, not that
-    LibreOffice/ImageMagick are actually installed — that is validated
-    for real inside _render_via_node(), which falls back to COM on
-    failure. Doing the LibreOffice/ImageMagick check here would require
-    running screenshot-pom.js with a real PPTX, which is wasteful.
-    """
-    if _SCREENSHOT_SCRIPT.exists():
-        try:
-            proc = subprocess.run(
-                [_NODE_BIN, "--version"],
-                capture_output=True, text=True, timeout=10,
-            )
-            if proc.returncode == 0:
-                logger.info("screenshot: node runtime available, will try node backend")
-                return "node"
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            pass
-
+    """Detect whether the PowerPoint COM backend is available."""
     if sys.platform == "win32":
         try:
             import comtypes.client  # noqa: F401
@@ -78,56 +52,6 @@ def _check_screenshot_backend() -> Backend:
 
     logger.warning("screenshot: no backend available")
     return None
-
-
-def _render_via_node(pptx_path: str, output_dir: str) -> ScreenshotBatchResult:
-    """Call screenshot-pom.js and parse screenshot-result.json."""
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-    result_path = output_path / "screenshot-result.json"
-
-    cmd = [_NODE_BIN, str(_SCREENSHOT_SCRIPT), str(pptx_path), str(output_dir)]
-
-    try:
-        subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=180,
-            cwd=str(_NODE_DIR),
-        )
-    except FileNotFoundError:
-        return ScreenshotBatchResult(
-            ok=False, backend="node",
-            error=f"Could not execute Node ('{_NODE_BIN}')",
-        )
-    except subprocess.TimeoutExpired:
-        return ScreenshotBatchResult(
-            ok=False, backend="node",
-            error="screenshot-pom.js timed out after 180s",
-        )
-
-    if not result_path.exists():
-        return ScreenshotBatchResult(
-            ok=False, backend="node",
-            error="screenshot-pom.js produced no screenshot-result.json",
-        )
-
-    data = json.loads(result_path.read_text(encoding="utf-8"))
-    slides = [
-        ScreenshotResult(ok=True, png_path=s["pngPath"], slide_index=s["index"])
-        for s in data.get("slides", [])
-    ]
-
-    if not data.get("ok", False):
-        return ScreenshotBatchResult(
-            ok=False, slides=slides, backend="node",
-            error=data.get("error", "Unknown screenshot error"),
-        )
-
-    return ScreenshotBatchResult(ok=True, slides=slides, backend="node")
 
 
 def _write_error_artifact(output_dir: str, backend: str, step: str, error: str) -> None:
@@ -261,7 +185,7 @@ def render_screenshots(
     pptx_path: str,
     output_dir: str,
 ) -> ScreenshotBatchResult:
-    """Render each slide in a PPTX to PNG. Tries node first, then COM fallback.
+    """Render each slide in a PPTX to PNG via PowerPoint COM.
 
     Always returns a result — never raises.
     """
@@ -272,16 +196,6 @@ def render_screenshots(
 
     backend = _check_screenshot_backend()
 
-    if backend == "node":
-        result = _render_via_node(pptx_path, output_dir)
-        if result.ok:
-            logger.info(f"screenshot: rendered {len(result.slides)} slide(s) via node")
-            return result
-        logger.warning(f"screenshot: node failed ({result.error}), trying COM fallback")
-        if sys.platform == "win32":
-            return _render_via_com(pptx_path, output_dir)
-        return result
-
     if backend == "com":
         result = _render_via_com(pptx_path, output_dir)
         if result.ok:
@@ -290,5 +204,5 @@ def render_screenshots(
 
     return ScreenshotBatchResult(
         ok=False,
-        error="No screenshot backend available. Install LibreOffice+ImageMagick or comtypes.",
+        error="No screenshot backend available. Install comtypes (pip install comtypes).",
     )
