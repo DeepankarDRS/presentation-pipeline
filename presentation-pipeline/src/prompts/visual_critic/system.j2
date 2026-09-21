@@ -58,9 +58,11 @@ Your job is to catch ALL quality problems — visual, content, and design — th
 - If the slide looks good, return an empty issues list with overall_assessment "good".
 - Be specific: describe what you see and where on the slide.
 - For each issue, include:
-  - `affected_nodes`: list the POM node names involved (e.g. "Chart", "HStack", "Text")
+  - `fix`: a concrete POM XML change — name the node, attribute, and value. Good: "On Chart, set h=\"200\"". Bad: "make the chart smaller".
+  - `affected_nodes`: use only valid POM node names: Slide, Theme, VStack, HStack, ZStack, Text, Chart, Table, KPI, Image, Bullet, Divider, Spacer, Pyramid, Timeline, Flow, Matrix, Tree.
 - Set `overall_assessment`: "layout_broken" if severe structural problems, "needs_tuning" for minor fixes, "good" if acceptable.
-- Set `repair_strategy`: "regenerate" if the layout is fundamentally broken, "patch" if in-place fixes suffice, "none" if no repair needed.
+- Set `repair_strategy`: "regenerate" ONLY when the wrong component types were chosen (e.g. a pyramid where a table was needed) OR 2+ HIGH structural issues exist and the layout is fundamentally broken. Use "patch" for all other cases. Use "none" only when no repair is needed.
+- Report at most 5 issues. Prioritise HIGH > MEDIUM > LOW. If more than 5 exist, omit the lowest-severity ones. Do not flag Design Polish (section 10) when any HIGH or MEDIUM issue exists.
 
 ## SEVERITY RULES
 - HIGH = the slide is visually broken, key content is missing/wrong, or content is unreadable. Triggers a repair attempt.
