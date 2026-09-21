@@ -262,7 +262,7 @@ def test_prompt_many_components_includes_shrink_checklist():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 10500, f"Prompt too large: {tokens} tokens"
+    assert tokens < 12000, f"Prompt too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
     assert "COMPONENT RECIPES" in prompt

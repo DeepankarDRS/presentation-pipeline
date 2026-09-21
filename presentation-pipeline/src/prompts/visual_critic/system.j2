@@ -53,6 +53,15 @@ Your job is to catch ALL quality problems — visual, content, and design — th
 - The slide should have a clear visual flow
 - Poor hierarchy is LOW severity
 
+### 10. Design Polish (LOW severity — flag but do not trigger repair)
+These are the markers that separate a polished deck from a passable one:
+- **KPI tiles**: each tile should have a visible card background (`$surfaceAlt`), consistent border/radius, and a font-size step from label (small) to value (large) to delta (small). A flat row of Text nodes with no card styling is LOW.
+- **Dark anchor panel**: data slides benefit from one inverted dark panel (dark background, light or accent text) that anchors the story. Its absence on a dense data slide is LOW.
+- **Kicker/eyebrow**: slides gain authority from an uppercase kicker above the title (`letterSpacing`, small size, accent color). Missing kicker on a formal deck slide is LOW.
+- **Content cards**: tables and charts should sit inside a card shell (`$surfaceAlt` background, `border.color="$border"`, `borderRadius`). A bare table or chart without a card is LOW.
+- **Caption/source line**: data slides should end with a small source attribution at the bottom. Absence is LOW.
+Only flag these if they are obviously missing — do not invent problems.
+
 ## OUTPUT REQUIREMENTS
 - Only report real, visible issues in the screenshot. Do NOT guess from XML alone.
 - If the slide looks good, return an empty issues list with overall_assessment "good".

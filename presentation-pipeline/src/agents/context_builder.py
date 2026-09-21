@@ -444,6 +444,7 @@ _KIND_TO_RECIPE: dict[str, str] = {
 _EXTRA_RECIPES: dict[str, list[str]] = {
     "bullet_list": ["icon_bullet_list"],
     "pyramid": ["pyramid_with_annotations"],
+    "kpi_row": ["compact_kpi_strip"],
 }
 
 
@@ -466,6 +467,14 @@ def _render_component_recipes(kinds: list[str]) -> str:
             if extra_key not in seen and extra_key in recipes:
                 seen.add(extra_key)
                 picked.append(f"# {extra_key}\n{str(recipes[extra_key]).strip()}")
+    # Inject platform_header + dark_callout_panel for data slides that already
+    # have a kpi_row — these are the GJ-style deep-dives where those patterns
+    # add the most value.
+    if "kpi_row" in kinds:
+        for key in ("platform_header", "dark_callout_panel"):
+            if key not in seen and key in recipes:
+                seen.add(key)
+                picked.append(f"# {key}\n{str(recipes[key]).strip()}")
     if not picked:
         return ""
     return (
