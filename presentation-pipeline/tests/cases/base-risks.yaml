@@ -9,4 +9,4 @@ content_source: LLM invents the risks and mitigations
 expect:
   compiles: true
   planner_should_pick_one_of: [[title, table], [title, bullet_list]]
-  watch: risk<->mitigation pairing stays aligned; readable at this density
+  watch: risk<->mitigation pairing stays aligned; table preferred when risks have structured attributes

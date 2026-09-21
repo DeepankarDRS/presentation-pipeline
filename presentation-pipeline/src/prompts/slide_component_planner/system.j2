@@ -217,6 +217,167 @@ For tree:
 - When key_messages provide data for a chart AND a table on the same slide, the data must be CONSISTENT across both components
 - key_messages are the AUTHORITATIVE source — content_data must reflect them exactly, not editorialize
 
+## Worked Examples
+
+These complete input→output pairs show correct routing for the most-confused patterns. Study them before planning your slide.
+
+---
+
+### Example 1 — Multiple entities × multiple metrics → table (NOT kpi_row or separate charts)
+
+**Input brief:**
+Title: Match Type Performance — Q3 FY26
+Narrative role: Show how three ad match types compare on spend, ROAS, and CPC to identify which is profitable.
+Key messages:
+1. Phrase match: Spend ₹45L, ROAS 0.32x, CPC ₹62
+2. Exact match: Spend ₹21L, ROAS 0.41x, CPC ₹48
+3. Broad match: Spend ₹34L, ROAS 0.19x, CPC ₹38
+4. Exact is the only profitable match type at break-even ROAS of 0.40x; phrase and broad are both loss-making
+Visual emphasis: The profit gap between match types is the story — exact leads; table preserves the per-entity detail
+
+**Correct output:**
+```json
+{
+  "slide_type": "data",
+  "density": "normal",
+  "font_tier": "standard",
+  "components": [
+    {
+      "component_id": "slide_title",
+      "kind": "title",
+      "weight": "minor",
+      "content_data_json": {"title": "Match Type Performance — Q3 FY26"}
+    },
+    {
+      "component_id": "match_table",
+      "kind": "table",
+      "weight": "hero",
+      "design_hint": "highlight the Exact row with accent color to show it is the only profitable type; red tint on Phrase and Broad ROAS cells",
+      "content_data_json": {
+        "table_columns": ["Match Type", "Spend", "ROAS", "CPC"],
+        "table_rows": [
+          ["Phrase", "₹45L", "0.32x", "₹62"],
+          ["Exact", "₹21L", "0.41x", "₹48"],
+          ["Broad", "₹34L", "0.19x", "₹38"]
+        ]
+      }
+    },
+    {
+      "component_id": "profit_note",
+      "kind": "narrative",
+      "weight": "supporting",
+      "content_data_json": {"text": "Exact is the only profitable match type at break-even ROAS of 0.40x; phrase and broad are both loss-making"}
+    }
+  ],
+  "layout_hint": "match_table is the hero — full width; profit_note sits below as supporting context"
+}
+```
+
+**Why table and not kpi_row:** Three distinct entities (match types) each have THREE metrics. kpi_row shows one entity's metrics as tiles — it loses the per-entity breakdown. table preserves the 3×3 grid so the audience can compare across both rows AND columns.
+
+---
+
+### Example 2 — Entity + single metric across 3+ entities → chart (NOT kpi_row)
+
+**Input brief:**
+Title: City-wise ROAS — Q3 FY26
+Narrative role: Show ROAS by city to identify where ad spend is profitable and where it is not.
+Key messages:
+1. Bengaluru ROAS 0.45x
+2. Hyderabad ROAS 0.31x
+3. Chennai ROAS 0.28x
+4. Mumbai ROAS 0.21x
+5. Only Bengaluru is above the break-even threshold of 0.40x
+Visual emphasis: Bengaluru is the clear leader; the other three cities underperform — bar chart shows the gap at a glance
+
+**Correct output:**
+```json
+{
+  "slide_type": "data",
+  "density": "normal",
+  "font_tier": "standard",
+  "components": [
+    {
+      "component_id": "slide_title",
+      "kind": "title",
+      "weight": "minor",
+      "content_data_json": {"title": "City-wise ROAS — Q3 FY26"}
+    },
+    {
+      "component_id": "city_chart",
+      "kind": "chart",
+      "weight": "hero",
+      "design_hint": "add a horizontal reference line at 0.40x labeled break-even; use accent color for the Bengaluru bar, muted color for the rest",
+      "content_data_json": {
+        "chart_type": "bar",
+        "chart_title": "ROAS by City",
+        "chart_labels": ["Bengaluru", "Hyderabad", "Chennai", "Mumbai"],
+        "chart_values": [0.45, 0.31, 0.28, 0.21]
+      }
+    },
+    {
+      "component_id": "threshold_note",
+      "kind": "narrative",
+      "weight": "supporting",
+      "content_data_json": {"text": "Only Bengaluru is above the break-even threshold of 0.40x"}
+    }
+  ],
+  "layout_hint": "city_chart is the hero; threshold_note is a slim supporting band below it"
+}
+```
+
+**Why chart and not kpi_row:** Four cities each with ONE metric is a comparison-across-entities, not a headline-metrics dashboard. A bar chart communicates rank and gap at a glance. kpi_row would render four equal tiles with no visual sense of order or distance.
+
+---
+
+### Example 3 — Categorized list → bullet_list (NOT one component per category)
+
+**Input brief:**
+Title: Campaign Winners and Losers — Q3 FY26
+Narrative role: Summarise which campaign segments are working and which need action.
+Key messages:
+1. Winners: brand exact, paneer (ROAS > 1.0x)
+2. Breakeven: dairy exact, instant food (ROAS 0.40–0.60x)
+3. Losing: butter chicken phrase, ready meals broad (ROAS < 0.40x)
+4. Immediate action: pause butter chicken phrase and reallocate ₹12L to brand exact
+Visual emphasis: The winner/loser split is the headline; action item should stand out
+
+**Correct output:**
+```json
+{
+  "slide_type": "content",
+  "density": "sparse",
+  "font_tier": "display",
+  "components": [
+    {
+      "component_id": "slide_title",
+      "kind": "title",
+      "weight": "minor",
+      "content_data_json": {"title": "Campaign Winners and Losers — Q3 FY26"}
+    },
+    {
+      "component_id": "segment_list",
+      "kind": "bullet_list",
+      "weight": "hero",
+      "design_hint": "color-code by sentiment — green prefix for Winners, amber for Breakeven, red for Losing; bold the action item",
+      "content_data_json": {
+        "bullets": [
+          "Winners (ROAS > 1.0x): brand exact, paneer",
+          "Breakeven (ROAS 0.40–0.60x): dairy exact, instant food",
+          "Losing (ROAS < 0.40x): butter chicken phrase, ready meals broad",
+          "Action: pause butter chicken phrase and reallocate ₹12L to brand exact"
+        ]
+      }
+    }
+  ],
+  "layout_hint": "segment_list is the whole slide — centered, generous line height"
+}
+```
+
+**Why one bullet_list and not three separate components:** Items under different category labels (Winners / Breakeven / Losing) are still a SINGLE list of parallel statements. Splitting into three components would create three separate visual blocks for no reason. bullet_list supports inline formatting to differentiate the categories visually.
+
+---
+
 ## Output
 
 Return one PlannerSlide with all fields populated: slide_type, components (each with component_id, content_data_json, weight, and optionally design_hint), density, font_tier, layout_hint.
