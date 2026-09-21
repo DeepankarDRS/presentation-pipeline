@@ -443,6 +443,7 @@ _KIND_TO_RECIPE: dict[str, str] = {
 
 _EXTRA_RECIPES: dict[str, list[str]] = {
     "bullet_list": ["icon_bullet_list"],
+    "pyramid": ["pyramid_with_annotations"],
 }
 
 
@@ -502,10 +503,9 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
 
     Returns a dict with: allowed_nodes, allowed_attributes, forbidden_tags,
     forbidden_attributes, theme_element, theme_name, theme_mode, chart_colors,
-    notes, house_style, component_recipes, density_tier.
+    notes, house_style, component_recipes, component_count.
     """
     kinds = [c.get("kind", "") for c in slide_plan.get("components", [])]
-    density = slide_plan.get("density", "normal")
 
     nodes_yaml = _load_yaml("core/nodes.yaml")
     validation = _load_yaml("core/validation.yaml")
@@ -525,22 +525,12 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
 
     theme = theme_info
 
-    if density in ("sparse",):
-        tier = "minimal"
-    elif density in ("normal", "dense"):
-        tier = "standard"
-    else:
-        tier = "dense"
-
-    # Always inject the full layout grammar + component recipes regardless of
-    # density tier. The density label in the user prompt steers sparse vs dense
-    # output; withholding the grammar just creates failure modes.
     has_grammar = True
     notes = _select_notes(
         kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
     )
-    house_style = _render_house_style() if has_grammar else ""
-    component_recipes = _render_component_recipes(kinds) if has_grammar else ""
+    house_style = _render_house_style()
+    component_recipes = _render_component_recipes(kinds)
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar else ""
 
@@ -601,7 +591,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "blueprint_structure": blueprint_structure,
         "blueprint_reference_xml": blueprint_reference_xml,
         "blueprint_name": blueprint_name,
-        "density_tier": tier,
+        "component_count": len(kinds),
     }
 
 
@@ -628,20 +618,10 @@ def _build_default_plan(state: PresentationState) -> SlidePlan:
 
     components = [ComponentPlan(kind=k, count=1) for k in kinds]
 
-    n = len(kinds)
-    if n >= 5:
-        density, font_tier = "tight_fit", "compact"
-    elif n >= 3:
-        density, font_tier = "normal", "standard"
-    else:
-        density, font_tier = "sparse", "standard"
-
     logger.info(f"context_builder: built plan from {source}: {kinds}")
     return SlidePlan(
         slide_index=0,
         components=components,
-        density=density,
-        font_tier=font_tier,
         layout_hint=test_case.get("layout_hint", ""),
     )
 
@@ -663,7 +643,7 @@ def context_builder_node(state: PresentationState) -> dict[str, Any]:
 
     logger.info(
         f"context_builder: {len(contract['allowed_nodes'])} nodes, "
-        f"{len(contract['notes'])} notes, tier={contract['density_tier']}"
+        f"{len(contract['notes'])} notes, {contract['component_count']} components"
     )
 
     return {"contract": contract}

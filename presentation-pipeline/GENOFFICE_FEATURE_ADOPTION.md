@@ -84,7 +84,7 @@ Real-time UI feedback during multi-stage generation.
 
 | Feature | Our Implementation |
 |---------|-------------------|
-| Structured planning | `PlannerOutput` with components, density, font_tier, layout_hint |
+| Structured planning | `PlannerOutput` with components and layout_hint |
 | Component vocabulary | 14 component kinds (title, chart, table, kpi_row, timeline, flow, etc.) |
 | Content data generation | `content_data_json` in PlannerSlide — LLM generates realistic values |
 | Multi-slide generation | slide_router + deck_assembler loop in LangGraph |
@@ -141,7 +141,7 @@ Pass `core_hook` to the generator via the contract so each slide's content is fr
 
 **What GenOffice does:** Every page has a `type` field: `cover | content | data | section_break | closing`. The generator applies different layout rules per type — cover slides get centered large text, data slides get dense layouts, section breaks get minimal text.
 
-**Why it matters:** Our planner currently treats all slides identically. A cover slide and a data-heavy slide get the same density/font_tier selection logic. Explicit types let the generator and critic apply type-specific rules.
+**Why it matters:** Explicit types let the generator and critic apply type-specific rules — cover slides get centered large text, data slides get dense layouts.
 
 **Implementation plan:**
 

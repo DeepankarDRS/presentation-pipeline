@@ -172,16 +172,57 @@ flow: |
   </VStack>
 
 pyramid: |
-  # Pyramid in a card: band h 240-340, node h to fit. 3-5 levels, short labels.
-  <VStack w="max" h="300" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+  # Pyramid in a card: band h 300-440, node h to fill. Scale fontSize with level count.
+  # textColor MUST contrast with each level's fill — dark fills get FFFFFF, light fills get 1E293B.
+  # fontSize: 14 (3 levels), 13 (4), 12 (5), 11 (6-7). Use w="max" always.
+  # Sole/hero pyramid: h="400-480" with no card wrapper, just the Pyramid node.
+  <VStack w="max" h="340" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="13" bold="true" color="$textMain">Operating model</Text>
-    <Pyramid direction="up" w="max" h="240" fontSize="13" bold="true">
+    <Pyramid direction="up" w="max" h="280" fontSize="13" bold="true">
       <PyramidLevel label="Strategy" color="1E3A8A" textColor="FFFFFF" />
       <PyramidLevel label="Capabilities" color="2563EB" textColor="FFFFFF" />
-      <PyramidLevel label="Operations" color="60A5FA" textColor="FFFFFF" />
-      <PyramidLevel label="Foundation" color="BFD3F7" textColor="16202E" />
+      <PyramidLevel label="Operations" color="3B82F6" textColor="FFFFFF" />
+      <PyramidLevel label="Foundation" color="1D4ED8" textColor="FFFFFF" />
     </Pyramid>
   </VStack>
+
+pyramid_with_annotations: |
+  # 5+ level pyramid with side annotations. Two-column: pyramid left, descriptions right.
+  # Use when each level needs an explanation beyond the label.
+  # Pyramid gets 55% width, annotations get 45%. fontSize="12" for 5 levels.
+  # Level colors use medium-to-dark hues so text stays legible on both light and dark themes.
+  # Each annotation card has a borderLeft matching its pyramid level color.
+  <HStack w="max" h="480" gap="24" alignItems="center">
+    <Pyramid direction="up" w="55%" h="440" fontSize="12" bold="true">
+      <PyramidLevel label="Vision &amp; Strategy" color="BE185D" textColor="FFFFFF" />
+      <PyramidLevel label="Business Goals" color="C2410C" textColor="FFFFFF" />
+      <PyramidLevel label="Tactical Initiatives" color="A16207" textColor="FFFFFF" />
+      <PyramidLevel label="Operational Workflows" color="15803D" textColor="FFFFFF" />
+      <PyramidLevel label="Infrastructure &amp; Tech" color="0E7490" textColor="FFFFFF" />
+    </Pyramid>
+    <VStack w="45%" gap="8">
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="BE185D" borderLeft.width="4">
+        <Text fontSize="12" bold="true" color="$textMain">Vision &amp; Strategy</Text>
+        <Text fontSize="11" color="$textMuted">Long-term mission and market positioning.</Text>
+      </VStack>
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="C2410C" borderLeft.width="4">
+        <Text fontSize="12" bold="true" color="$textMain">Business Goals</Text>
+        <Text fontSize="11" color="$textMuted">Annual OKRs, financial targets, growth roadmaps.</Text>
+      </VStack>
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="A16207" borderLeft.width="4">
+        <Text fontSize="12" bold="true" color="$textMain">Tactical Initiatives</Text>
+        <Text fontSize="11" color="$textMuted">Cross-functional programs and milestone tracking.</Text>
+      </VStack>
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="15803D" borderLeft.width="4">
+        <Text fontSize="12" bold="true" color="$textMain">Operational Workflows</Text>
+        <Text fontSize="11" color="$textMuted">Sprint deliverables and process management.</Text>
+      </VStack>
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="0E7490" borderLeft.width="4">
+        <Text fontSize="12" bold="true" color="$textMain">Infrastructure &amp; Tech</Text>
+        <Text fontSize="11" color="$textMuted">Data architecture, security, platform tooling.</Text>
+      </VStack>
+    </VStack>
+  </HStack>
 
 layer_diagram: |
   # Layer diagram: NOT a flex container — children use x/y absolute coords

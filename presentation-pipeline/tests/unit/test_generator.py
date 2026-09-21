@@ -18,8 +18,6 @@ def _make_state(**overrides):
             {"kind": "title", "count": 1, "content_summary": "Q3 Results"},
             {"kind": "narrative", "count": 1, "content_summary": "Revenue summary"},
         ],
-        "density": "normal",
-        "font_tier": "standard",
         "layout_hint": "Title at top, narrative below",
     }]
     state["contract"] = {
@@ -32,7 +30,7 @@ def _make_state(**overrides):
         "forbidden_tags": ["div", "p", "span", "br"],
         "forbidden_attributes": ["style", "class", "width", "height"],
         "theme_element": '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />',
-        "density_tier": "standard",
+        "component_count": 2,
         "house_style": "FRAME\nRoot is ALWAYS <VStack w=\"1280\" h=\"720\">.\n\nCOMPOSITION\n2-4 horizontal bands.",
         "notes": ["Use $tokens for colors", "All text in <Text> nodes"],
     }
@@ -67,16 +65,16 @@ def test_render_prompts_includes_attributes_for_standard_tier():
     assert "VStack" in system
 
 
-def test_render_prompts_minimal_tier_omits_attributes():
+def test_render_prompts_always_includes_attributes():
     state = _make_state()
-    state["contract"]["density_tier"] = "minimal"
+    state["contract"]["component_count"] = 1
     system, _ = _render_prompts(state)
-    assert "ALLOWED ATTRIBUTES" not in system
+    assert "ALLOWED ATTRIBUTES" in system
 
 
-def test_render_prompts_dense_tier_includes_shrink_checklist():
+def test_render_prompts_high_component_count_includes_shrink_checklist():
     state = _make_state()
-    state["contract"]["density_tier"] = "dense"
+    state["contract"]["component_count"] = 6
     system, _ = _render_prompts(state)
     assert "SHRINK CHECKLIST" in system
 

@@ -51,15 +51,11 @@ def test_planner_slide_to_state_basic():
             PlannerComponent(component_id="main_title", kind="title", count=1, content_summary="Main title"),
             PlannerComponent(component_id="body_text", kind="narrative", count=1, content_summary="Body"),
         ],
-        density="normal",
-        font_tier="standard",
         layout_hint="Title at top, text below",
     )
     result = _planner_slide_to_state(0, slide)
     assert result["slide_index"] == 0
     assert result["slide_type"] == "content"
-    assert result["density"] == "normal"
-    assert result["font_tier"] == "standard"
     assert len(result["components"]) == 2
     assert result["components"][0]["kind"] == "title"
     assert result["components"][0]["component_id"] == "main_title"
@@ -76,8 +72,6 @@ def test_planner_slide_to_state_chart_fields():
                 series_count=3, content_summary="Revenue by quarter"
             ),
         ],
-        density="normal",
-        font_tier="standard",
         layout_hint="Chart centered",
     )
     result = _planner_slide_to_state(0, slide)
@@ -99,8 +93,6 @@ def test_planner_slide_to_state_table_fields():
                 content_summary="Segment breakdown"
             ),
         ],
-        density="dense",
-        font_tier="compact",
         layout_hint="Table fills width",
     )
     result = _planner_slide_to_state(0, slide)
@@ -115,8 +107,6 @@ def test_planner_slide_to_state_omits_zero_fields():
         components=[
             PlannerComponent(component_id="hero_title", kind="title", count=1),
         ],
-        density="sparse",
-        font_tier="display",
         layout_hint="Centered title",
     )
     result = _planner_slide_to_state(0, slide)
@@ -142,8 +132,6 @@ def test_planner_slide_to_state_per_component_content_data():
                 content_data_json='{"chart_labels": ["Q1", "Q2"], "chart_values": [28.4, 31.2]}',
             ),
         ],
-        density="dense",
-        font_tier="compact",
         layout_hint="KPIs on top, chart below",
     )
     result = _planner_slide_to_state(0, slide)
@@ -169,7 +157,6 @@ def test_planner_slide_to_state_copies_weight():
                 content_summary="Segment breakdown",
             ),
         ],
-        density="normal", font_tier="standard",
         layout_hint="Chart is primary, table is supporting",
     )
     result = _planner_slide_to_state(0, slide)
@@ -183,7 +170,6 @@ def test_planner_slide_to_state_default_weight():
         components=[
             PlannerComponent(component_id="body", kind="narrative", count=1),
         ],
-        density="normal", font_tier="standard",
         layout_hint="Body text",
     )
     result = _planner_slide_to_state(0, slide)
@@ -200,7 +186,6 @@ def test_planner_slide_to_state_copies_design_hint():
                 design_hint="emphasize Q4 value with accent color",
             ),
         ],
-        density="normal", font_tier="standard",
         layout_hint="Chart centered",
     )
     result = _planner_slide_to_state(0, slide)
@@ -303,7 +288,6 @@ def test_planner_slide_to_state_provenance_with_supplied():
             kind="title", count=1,
             content_data_json='{"title": "Q3 Metrics", "chart_data": [1, 2, 3]}',
         )],
-        density="normal", font_tier="standard",
         layout_hint="Title at top",
     )
     result = _planner_slide_to_state(0, slide, supplied_content={"title": "Q3 Metrics"})
@@ -319,7 +303,6 @@ def test_planner_slide_to_state_provenance_no_supplied():
             kind="title", count=1,
             content_data_json='{"title": "Generated Title"}',
         )],
-        density="normal", font_tier="standard",
         layout_hint="Title at top",
     )
     result = _planner_slide_to_state(0, slide)
@@ -331,7 +314,7 @@ def test_planner_slide_to_state_provenance_no_supplied():
 def test_settings_to_constraints_minimal():
     s = DeckSettings(amount_of_text="minimal", text_mode="generate", slide_count="3-5")
     c = settings_to_constraints(s)
-    assert c["density"] == "sparse"
+    assert c["content_level"] == "sparse"
     assert "data only" in c["narrative_guidance"]
     assert c["deck_min_threshold"] == 4
 
@@ -339,7 +322,7 @@ def test_settings_to_constraints_minimal():
 def test_settings_to_constraints_extensive():
     s = DeckSettings(amount_of_text="extensive", text_mode="preserve", slide_count="10-15")
     c = settings_to_constraints(s)
-    assert c["density"] == "tight_fit"
+    assert c["content_level"] == "tight_fit"
     assert "rich narrative" in c["narrative_guidance"]
     assert c["provenance_rule"] == "llm_preserves_verbatim"
     assert c["deck_min_threshold"] == 12

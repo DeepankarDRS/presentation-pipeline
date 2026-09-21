@@ -157,8 +157,6 @@ Determines what components a slide should contain. Uses structured output via Py
 
 Each `SlidePlan` contains:
 - `components[]` — what to generate (title, kpi_row, chart, table, etc.)
-- `density` — sparse | normal | dense | tight_fit
-- `font_tier` — display | standard | compact | micro
 - `layout_hint` — freeform NL description of arrangement
 
 ### 2. Context Builder (mechanical, no LLM)
@@ -181,7 +179,7 @@ The contract contains:
 | `notes` | Component-specific rules, pitfalls, translations |
 | `example` | Compressed verified XML example |
 | `layout_pattern` | Layout structure from YAML |
-| `density_tier` | minimal / standard / dense |
+| `component_count` | number of component kinds |
 
 Node selection is component-driven:
 ```

@@ -154,7 +154,7 @@ Runs **once** per run (multi-slide loop re-enters at `context_builder`, not here
 ### 4.4 `context_builder_node` — [`src/agents/context_builder.py:501-521`](src/agents/context_builder.py)
 Runs once per slide (re-entered per slide in deck mode).
 - `L503-504` `slide_plans`, `idx = current_slide_index`.
-- `L506-507` if `slide_plans` empty → `slide_plans = [_build_default_plan(state)]` (`L460-498`): source priority **test_case.components → keyword intent detection (`_detect_components_from_text`, `L44-53`) → `["title","narrative","bullet_list"]` fallback**; forces `"title"` first; sets `density`/`font_tier` by component count.
+- `L506-507` if `slide_plans` empty → `slide_plans = [_build_default_plan(state)]` (`L460-498`): source priority **test_case.components → keyword intent detection (`_detect_components_from_text`, `L44-53`) → `["title","narrative","bullet_list"]` fallback**; forces `"title"` first; sets `layout_hint` from test case.
 - `L509` `plan = slide_plans[idx]` (or `[0]`).
 - `L511-513` `theme_info = state["resolved_theme"] or resolve_theme(state["theme_name"])`.
 - `L514` `contract = build_contract(plan, theme_info)` (`L400-457`):
@@ -167,17 +167,17 @@ Runs once per slide (re-entered per slide in deck mode).
   - `L430` `notes = _select_notes(...)` (`L247-322`) — translations, semantic rules, pitfalls, KPI numeral note, per-component structure+pitfalls, theme note, **chart literal-hex note**, **dark-theme chart-axis wrapper note**, **table Td styling note**, design-language rules.
   - `L432-433` `example = _select_example(kinds, compress)` (`L369-379`) — ≤1 XML example, compressed unless `density=="tight_fit"`.
   - `L435` `layout_pattern = _select_layout(kinds)` (`L327-350`) — picks a `layouts/*.yaml`, renders to text.
-  - `L437-442` `density_tier`: `sparse→minimal`, `normal|dense→standard`, else `dense`.
+  - `component_count`: number of component kinds on the slide.
 
-**State writes** (`L521`): **only** `contract` (a dict with `allowed_nodes`, `allowed_attributes`, `forbidden_tags`, `forbidden_attributes`, `theme_element`, `theme_name`, `theme_mode`, `chart_colors`, `notes`, `example`, `layout_pattern`, `density_tier`).
+**State writes** (`L521`): **only** `contract` (a dict with `allowed_nodes`, `allowed_attributes`, `forbidden_tags`, `forbidden_attributes`, `theme_element`, `theme_name`, `theme_mode`, `chart_colors`, `notes`, `example`, `layout_pattern`, `component_count`).
 
 ---
 
 ### 4.5 `generator_node` — [`src/agents/generator.py:70-106`](src/agents/generator.py)
 - `L74` `system_prompt, user_prompt = _render_prompts(state)` (`L32-68`):
   - `L36-37` `plan = slide_plans[current_slide_index]`.
-  - `L42-54` **system** = `prompts/generator/system.j2` with `forbidden_*`, `theme_element`, `allowed_nodes`, `allowed_attributes`, `density_tier`, `layout_pattern`, `example`, `notes`, `core_hook`, `slide_type`.
-  - `L57-66` **user** = `prompts/generator/user.j2` with `objective` (=`raw_request`), `components`, `density`, `font_tier`, `layout_hint`, `content_data`, `supplied_content`, `slide_type`.
+  - `L42-54` **system** = `prompts/generator/system.j2` with `forbidden_*`, `theme_element`, `allowed_nodes`, `allowed_attributes`, `component_count`, `layout_pattern`, `example`, `notes`, `core_hook`, `slide_type`.
+  - `L57-66` **user** = `prompts/generator/user.j2` with `objective` (=`raw_request`), `components`, `layout_hint`, `content_data`, `supplied_content`, `slide_type`.
 - `L76` `llm = get_llm("generator")`.
 - `L82-83` **LLM CALL** → `raw_xml = response.content` (plain text, may have ``` fences — cleaned later by normalizer).
 - `L85-88` pull `tokens_in`, `tokens_out`, `model` from `response.response_metadata`.

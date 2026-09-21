@@ -19,14 +19,12 @@ class PlanReviewIssue(BaseModel):
     )
     type: Literal[
         "narrative_gap",
-        "density_low",
         "layout_repeat",
         "component_mismatch",
         "content_weak",
         "missing_data",
     ] = Field(
         description="narrative_gap: slide doesn't support the core_hook. "
-                    "density_low: too few components for the stated density. "
                     "layout_repeat: several adjacent content/data slides whose layout_hint describes the same arrangement. "
                     "component_mismatch: wrong component kind for the data type. "
                     "content_weak: content_data values are generic/placeholder. "

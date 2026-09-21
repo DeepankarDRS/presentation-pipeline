@@ -27,8 +27,6 @@ def _make_state(**overrides):
             {"kind": "title", "count": 1, "content_summary": "Dashboard"},
             {"kind": "kpi_row", "count": 4, "content_summary": "Key metrics"},
         ],
-        "density": "dense",
-        "font_tier": "compact",
         "layout_hint": "Title at top, KPI tiles below",
     }]
     state["contract"] = {
@@ -37,7 +35,7 @@ def _make_state(**overrides):
         "forbidden_tags": ["div", "p", "span", "br"],
         "forbidden_attributes": ["style", "class"],
         "theme_element": '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />',
-        "density_tier": "dense",
+        "component_count": 2,
         "house_style": "",
         "notes": [],
     }
@@ -298,8 +296,6 @@ def _mock_replan(mock_plan, mock_contract):
             "slide_title": "KPI Dashboard",
             "slide_type": "data",
             "components": [{"kind": "table", "count": 1, "content_summary": "Metrics"}],
-            "density": "normal",
-            "font_tier": "standard",
             "layout_hint": "",
             "content_data": {},
         },
@@ -311,7 +307,7 @@ def _mock_replan(mock_plan, mock_contract):
         "forbidden_tags": ["div"],
         "forbidden_attributes": [],
         "theme_element": "",
-        "density_tier": "standard",
+        "component_count": 1,
         "house_style": "",
         "component_recipes": "",
         "notes": [],

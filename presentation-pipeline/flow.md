@@ -97,7 +97,7 @@ Defined in `src/state.py`. Every agent reads and writes only its slice. The full
 
 ### Sub-structures (all TypedDict for JSON serialization)
 - `ComponentPlan` — kind, count, chart_type, series_count, columns, rows, items, content_summary
-- `SlidePlan` — slide_index, components, density, font_tier, layout_hint, content_data
+- `SlidePlan` — slide_index, components, layout_hint, content_data
 - `DeckPlan` — slide_count, theme, slides
 - `AttemptRecord` — attempt, tier, errors_in/out, stalled, tokens_in/out, model
 - `ValidateResult` — ok, diagnostics, warnings
@@ -117,7 +117,7 @@ Defined in `src/state.py`. Every agent reads and writes only its slice. The full
 | **Schema** | `src/agents/planner_schema.py` |
 | **LLM** | Yes (structured output, json_schema) |
 
-Determines **what** a slide needs (components, density, font tier, layout hint) without prescribing **how**. Uses OpenAI structured output for guaranteed-valid JSON.
+Determines **what** a slide needs (components, layout hint) without prescribing **how**. Uses OpenAI structured output for guaranteed-valid JSON.
 
 **Reads:** `raw_request`, `theme_name`, `supplied_content`, `deck_min_threshold`, `test_case`
 **Writes:** `mode`, `deck_plan`, `slide_plans`
@@ -178,7 +178,7 @@ build_contract(slide_plan, theme_name) → {
     notes:              _select_notes(kinds, ...)        # component-relevant rules
     example:            _select_example(kinds)           # 1 compressed XML example
     layout_pattern:     _select_layout(kinds)            # spatial arrangement YAML
-    density_tier:       sparse→minimal, normal/dense→standard, tight_fit→dense
+    component_count:    len(kinds)
 }
 ```
 
@@ -221,7 +221,7 @@ pyramid     → Pyramid, PyramidLevel
 | **File** | `src/agents/generator.py` |
 | **LLM** | Yes |
 
-Produces raw POM XML by rendering Jinja2 templates from the contract and calling the LLM. The system prompt tier is determined by `density_tier` from the contract.
+Produces raw POM XML by rendering Jinja2 templates from the contract and calling the LLM. The shrink checklist is included when `component_count >= 5`.
 
 **Reads:** `contract`, `theme_element`, `slide_plans`, `supplied_content`, `raw_request`, `retry_count`, `retry_tier`
 **Writes:** `current_xml`, `generation_history` (appends AttemptRecord)
@@ -355,10 +355,10 @@ All prompts are Jinja2 templates in `src/prompts/`.
 
 | Template | Used by | Purpose |
 |----------|---------|---------|
-| `planner/system.j2` | planner | Component vocabulary, density/font tier definitions, content rules |
+| `planner/system.j2` | planner | Component vocabulary, content rules |
 | `planner/user.j2` | planner | Raw request + theme + supplied content + components hint |
-| `generator/system.j2` | generator, repairer | Tiered POM rules (critical rules always, attrs/layout/shrink conditional) |
-| `generator/user.j2` | generator, repairer | Objective + components + density + layout + data |
+| `generator/system.j2` | generator, repairer | POM rules (attrs, layout grammar, shrink checklist for 5+ components) |
+| `generator/user.j2` | generator, repairer | Objective + components + layout + data |
 | `repairer/patch.j2` | repairer (PATCH) | Previous XML + errors + targeted fix guidance |
 | `repairer/regenerate.j2` | repairer (REGENERATE) | Original plan + errors + verified skeleton (when one fits) |
 | `visual_critic/system.j2` | critic (visual) | Screenshot-based review checklist (layout, fidelity, readability, theme) |
@@ -557,8 +557,6 @@ initial_state(run_id, raw_request, theme_name, ...)
 │ → slide_plans: [{                               │
 │     components: [{kind:"title"}, {kind:"kpi_row",│
 │                   count:4}],                     │
-│     density: "normal",                           │
-│     font_tier: "standard",                       │
 │     layout_hint: "Title top, KPI tiles in row"   │
 │   }]                                            │
 └─────────────────────────────────────────────────┘

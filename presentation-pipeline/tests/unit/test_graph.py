@@ -232,7 +232,6 @@ def test_full_graph_with_preloaded_plans(mock_gen_llm, mock_compile, mock_valida
                 {"kind": "title", "count": 1, "content_summary": "Dashboard"},
                 {"kind": "kpi_row", "count": 4, "content_summary": "Key metrics"},
             ],
-            "density": "dense", "font_tier": "compact",
             "layout_hint": "Title at top, KPI tiles in row below",
             "content_data": {}, "data_provenance": {},
         }
@@ -243,7 +242,6 @@ def test_full_graph_with_preloaded_plans(mock_gen_llm, mock_compile, mock_valida
 
     assert result["passed"] is True
     assert len(result["slide_plans"]) > 0
-    assert result["slide_plans"][0]["density"] == "dense"
 
 
 def test_route_after_repairer_goes_to_validator():
@@ -257,8 +255,8 @@ def _multi_slide_state(**overrides):
     """Create a state with 2 slide_plans (multi-slide mode)."""
     state = initial_state(run_id="ms1", raw_request="test")
     state["slide_plans"] = [
-        {"slide_index": 0, "components": [{"kind": "title"}], "density": "normal"},
-        {"slide_index": 1, "components": [{"kind": "chart"}], "density": "normal"},
+        {"slide_index": 0, "components": [{"kind": "title"}]},
+        {"slide_index": 1, "components": [{"kind": "chart"}]},
     ]
     state.update(overrides)
     return state
@@ -370,14 +368,12 @@ def test_multi_slide_e2e(
         {
             "slide_index": 0, "slide_type": "cover",
             "components": [{"kind": "title", "count": 1, "content_summary": "Cover"}],
-            "density": "sparse", "font_tier": "display",
             "layout_hint": "centered title",
             "content_data": {}, "data_provenance": {},
         },
         {
             "slide_index": 1, "slide_type": "data",
             "components": [{"kind": "chart", "count": 1, "content_summary": "Revenue"}],
-            "density": "normal", "font_tier": "standard",
             "layout_hint": "chart full width",
             "content_data": {}, "data_provenance": {},
         },
@@ -438,7 +434,6 @@ def test_8_slide_deck_no_recursion_error(
         {
             "slide_index": i, "slide_type": "data",
             "components": [{"kind": "title", "count": 1, "content_summary": f"Slide {i}"}],
-            "density": "normal", "font_tier": "standard",
             "layout_hint": "standard layout",
             "content_data": {}, "data_provenance": {},
         }

@@ -29,8 +29,6 @@ from pydantic import BaseModel, Field
 
 from src.agents.planner_schema import (
     ComponentKindLiteral,
-    DensityLiteral,
-    FontTierLiteral,
     SlideTypeLiteral,
 )
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
@@ -98,8 +96,6 @@ class SlidePlanPayload(BaseModel):
     slide_index: int = 0
     slide_type: str
     components: list[ComponentPlanPayload]
-    density: str = "normal"
-    font_tier: str = "standard"
     layout_pattern: str = ""  # deprecated, ignored - kept so old clients don't 422
     layout_hint: str = ""
 
@@ -434,8 +430,6 @@ async def download_pptx(run_id: str) -> FileResponse:
 
 _VALID_COMPONENT_KINDS = set(ComponentKindLiteral.__args__)
 _VALID_SLIDE_TYPES = set(SlideTypeLiteral.__args__)
-_VALID_DENSITIES = set(DensityLiteral.__args__)
-_VALID_FONT_TIERS = set(FontTierLiteral.__args__)
 
 
 def _validate_plan(slides: list[SlidePlanPayload]) -> list[str]:
@@ -446,10 +440,6 @@ def _validate_plan(slides: list[SlidePlanPayload]) -> list[str]:
     for i, s in enumerate(slides):
         if s.slide_type not in _VALID_SLIDE_TYPES:
             errors.append(f"Slide {i}: invalid slide_type '{s.slide_type}'")
-        if s.density not in _VALID_DENSITIES:
-            errors.append(f"Slide {i}: invalid density '{s.density}'")
-        if s.font_tier not in _VALID_FONT_TIERS:
-            errors.append(f"Slide {i}: invalid font_tier '{s.font_tier}'")
         if not s.components:
             errors.append(f"Slide {i}: must have at least one component")
         for j, c in enumerate(s.components):
@@ -498,8 +488,6 @@ def _payload_to_slide_plans(
             slide_index=i,
             slide_type=s.slide_type,
             components=components,
-            density=s.density,
-            font_tier=s.font_tier,
             layout_hint=s.layout_hint,
             content_data=merged_content_data,
             data_provenance=compute_provenance(merged_content_data, supplied_content or {}),

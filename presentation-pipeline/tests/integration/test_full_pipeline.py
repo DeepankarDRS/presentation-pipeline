@@ -161,7 +161,6 @@ def test_pipeline_with_hierarchical_planner(
                 weight="hero",
             ),
         ],
-        density="normal", font_tier="standard",
         layout_hint="Title at top, 4 KPI tiles in row below",
     )
     mock_slide_planner_llm.return_value = MagicMock()

@@ -62,12 +62,9 @@ def test_slide_plan_structure():
     plan = SlidePlan(
         slide_index=0,
         components=[ComponentPlan(kind="title", count=1)],
-        density="dense",
-        font_tier="compact",
         layout_hint="Title top, KPIs in 2x2 grid below",
         content_data={"title": "Q4 Revenue"},
     )
-    assert plan["density"] == "dense"
     assert len(plan["components"]) == 1
     assert plan["layout_hint"].startswith("Title")
 

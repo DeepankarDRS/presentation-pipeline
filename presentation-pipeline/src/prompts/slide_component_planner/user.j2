@@ -2,7 +2,7 @@ DECK CONTEXT:
 Core hook: {{ core_hook }}
 Other slides in deck: {{ deck_context | join(' | ') }}
 {% if deck_settings %}
-Density target: {{ constraints.get('density', 'normal') }}
+Content level: {{ constraints.get('content_level', 'normal') }}
 Text mode: {{ deck_settings.get('text_mode', 'generate') }}
 Write for: {{ deck_settings.get('write_for') | join(', ') or 'general' }}
 Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}

@@ -20,9 +20,6 @@ ComponentKindLiteral = Literal[
 
 WeightLiteral = Literal["hero", "peer", "supporting", "minor"]
 SlideTypeLiteral = Literal["cover", "content", "data", "section_break", "closing"]
-DensityLiteral = Literal["sparse", "normal", "dense", "tight_fit"]
-FontTierLiteral = Literal["display", "standard", "compact", "micro"]
-
 
 class PlannerComponent(BaseModel):
     """One component the slide should contain, with its own content data."""
@@ -123,20 +120,6 @@ class PlannerSlide(BaseModel):
                     "unique component_id and its own content_data_json. You may "
                     "combine multiple complex components (e.g. a timeline AND a tree) "
                     "on a single slide by assigning each a distinct component_id."
-    )
-    density: DensityLiteral = Field(
-        description="How packed the slide is. "
-                    "sparse=few elements with large fonts. "
-                    "normal=typical business slide. "
-                    "dense=many elements, smaller fonts. "
-                    "tight_fit=maximum packing, micro fonts, minimal gaps."
-    )
-    font_tier: FontTierLiteral = Field(
-        description="Font size tier. "
-                    "display=title 36+, body 22+. "
-                    "standard=title 28-32, body 18-20. "
-                    "compact=title 22-26, body 14-16. "
-                    "micro=title 18-20, body 11-13."
     )
     layout_hint: str = Field(
         description="Freeform layout INTENT: which regions carry the most weight "

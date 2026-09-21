@@ -110,7 +110,7 @@ def settings_to_constraints(settings: DeckSettings) -> dict[str, Any]:
     return {
         "text_mode": settings.text_mode,
         "provenance_rule": TEXT_MODE_TO_PROVENANCE_RULE[settings.text_mode],
-        "density": AMOUNT_TO_DENSITY[settings.amount_of_text],
+        "content_level": AMOUNT_TO_DENSITY[settings.amount_of_text],
         "narrative_guidance": AMOUNT_TO_NARRATIVE_GUIDANCE[settings.amount_of_text],
         "write_for": settings.write_for,
         "tone": settings.tone,

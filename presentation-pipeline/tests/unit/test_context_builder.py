@@ -20,12 +20,10 @@ from src.state import ComponentPlan, SlidePlan, initial_state
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "prompts" / "generator"
 
 
-def _make_plan(kinds: list[str], density: str = "normal") -> SlidePlan:
+def _make_plan(kinds: list[str]) -> SlidePlan:
     return SlidePlan(
         slide_index=0,
         components=[ComponentPlan(kind=k, count=1) for k in kinds],
-        density=density,
-        font_tier="standard",
         layout_hint="test layout",
         content_data={},
     )
@@ -200,27 +198,20 @@ def test_build_contract_text():
     contract = build_contract(plan, DEFAULT_THEME)
     assert "VStack" in contract["allowed_nodes"]
     assert "Text" in contract["allowed_nodes"]
-    assert contract["density_tier"] == "standard"
+    assert contract["component_count"] == 2
     assert len(contract["forbidden_tags"]) > 5
 
 
 def test_build_contract_maximal():
     plan = _make_plan(
         ["title", "kpi_row", "chart", "bullet_list", "table", "caption"],
-        density="tight_fit",
     )
     contract = build_contract(plan, DEFAULT_THEME)
     assert "Chart" in contract["allowed_nodes"]
     assert "Table" in contract["allowed_nodes"]
     assert "Ul" in contract["allowed_nodes"]
-    assert contract["density_tier"] == "dense"
+    assert contract["component_count"] == 6
     assert len(contract["notes"]) > 10
-
-
-def test_build_contract_sparse():
-    plan = _make_plan(["title"], density="sparse")
-    contract = build_contract(plan, DEFAULT_THEME)
-    assert contract["density_tier"] == "minimal"
 
 
 # ── Prompt rendering + token counting ────────────────────────────────────────
@@ -239,22 +230,23 @@ def _estimate_tokens(text: str) -> int:
     return len(text) // 4
 
 
-def test_prompt_minimal_tier():
-    plan = _make_plan(["title", "narrative"], density="sparse")
+def test_prompt_few_components():
+    plan = _make_plan(["title", "narrative"])
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 3500, f"Minimal tier too large: {tokens} tokens"
+    assert tokens < 8000, f"Prompt too large: {tokens} tokens"
     assert "SHRINK CHECKLIST" not in prompt
     assert "LAYOUT FUNDAMENTALS" in prompt
+    assert "ALLOWED ATTRIBUTES PER NODE" in prompt
 
 
-def test_prompt_standard_tier():
-    plan = _make_plan(["title", "chart", "table"], density="normal")
+def test_prompt_standard_components():
+    plan = _make_plan(["title", "chart", "table"])
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 9000, f"Standard tier too large: {tokens} tokens"
+    assert tokens < 9000, f"Prompt too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "LAYOUT GRAMMAR" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -262,16 +254,15 @@ def test_prompt_standard_tier():
     assert "SHRINK CHECKLIST" not in prompt
 
 
-def test_prompt_dense_tier_bounded():
-    """Maximal-density (6 components): grammar + recipes + shrink checklist."""
+def test_prompt_many_components_includes_shrink_checklist():
+    """6 components: grammar + recipes + shrink checklist."""
     plan = _make_plan(
         ["title", "kpi_row", "chart", "bullet_list", "table", "caption"],
-        density="tight_fit",
     )
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 10500, f"Dense tier too large: {tokens} tokens"
+    assert tokens < 10500, f"Prompt too large: {tokens} tokens"
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -280,8 +271,8 @@ def test_prompt_dense_tier_bounded():
 
 
 def test_prompt_always_has_critical_rules():
-    for density in ("sparse", "normal", "tight_fit"):
-        plan = _make_plan(["title"], density=density)
+    for kinds in (["title"], ["title", "chart"], ["title", "kpi_row", "chart", "table", "bullet_list"]):
+        plan = _make_plan(kinds)
         contract = build_contract(plan, DEFAULT_THEME)
         prompt = _render_system_prompt(contract)
         assert "STRICT RULES" in prompt

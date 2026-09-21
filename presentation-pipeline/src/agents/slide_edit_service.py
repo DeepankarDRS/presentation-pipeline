@@ -76,7 +76,6 @@ def _call_edit_llm(
         feedback=feedback,
         slide_type=slide_plan.get("slide_type", ""),
         components=slide_plan.get("components", []),
-        density=slide_plan.get("density", ""),
         layout_hint=slide_plan.get("layout_hint", ""),
     )
 
