@@ -56,6 +56,13 @@ _COL_RE = re.compile(r"<Col\b[^>]*/?>", re.IGNORECASE)
 _BORDER_ACCENT_RE = re.compile(
     r'(?<!\w)(border\.color)\s*=\s*"\$accent(?:Alt)?"'
 )
+_PYRAMID_BLOCK_RE = re.compile(
+    r"(<Pyramid\b[^>]*>)(.*?)(</Pyramid>)", re.DOTALL
+)
+_PYRAMID_LEVEL_RE = re.compile(r"<PyramidLevel\b[^>]*/>")
+_PYRAMID_FONTSIZE_RE = re.compile(r'\bfontSize\s*=\s*"(\d+)"')
+_PYRAMID_TEXTCOLOR_RE = re.compile(r'\btextColor\s*=\s*"([^"]*)"')
+_PYRAMID_COLOR_RE = re.compile(r'\bcolor\s*=\s*"([^"]*)"')
 _NOTES_RE = re.compile(r"<Notes\b[^>]*>(.*?)</Notes>", re.DOTALL)
 _THEME_RE = re.compile(r"<Theme\b[^>]*?/>|<Theme\b[^>]*?>.*?</Theme>", re.DOTALL)
 
@@ -71,6 +78,94 @@ _UNIVERSAL_ATTRS: set[str] = {
 }
 _OPEN_TAG_RE = re.compile(r"<([A-Za-z][A-Za-z0-9]*)\b([^>]*?)/?>")
 _ATTR_NAME_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_.\-]*)\s*=\s*\"")
+
+
+def _perceived_brightness(hex_color: str) -> float:
+    """Compute perceived brightness (0-1) using W3C formula."""
+    h = hex_color.lstrip("#")
+    if len(h) == 3:
+        h = h[0] * 2 + h[1] * 2 + h[2] * 2
+    if len(h) < 6:
+        return 0.5
+    try:
+        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    except ValueError:
+        return 0.5
+    return (r * 299 + g * 587 + b * 114) / 255000
+
+
+_PYRAMID_FONTSIZE_BY_LEVELS = {3: 14, 4: 13, 5: 12, 6: 11, 7: 11}
+
+
+def _fix_pyramid_block(match: re.Match) -> tuple[str, list[dict[str, Any]]]:
+    """Fix fontSize and textColor inside a single <Pyramid>...</Pyramid> block."""
+    opening, body, closing = match.group(1), match.group(2), match.group(3)
+    issues: list[dict[str, Any]] = []
+
+    levels = list(_PYRAMID_LEVEL_RE.finditer(body))
+    n_levels = len(levels)
+
+    # --- Fix fontSize on the Pyramid element ---
+    fs_match = _PYRAMID_FONTSIZE_RE.search(opening)
+    current_fs = int(fs_match.group(1)) if fs_match else 14
+    max_fs = _PYRAMID_FONTSIZE_BY_LEVELS.get(n_levels, 11 if n_levels > 7 else 14)
+    if current_fs > max_fs:
+        if fs_match:
+            opening = opening[:fs_match.start()] + f'fontSize="{max_fs}"' + opening[fs_match.end():]
+        else:
+            opening = opening.replace("<Pyramid", f'<Pyramid fontSize="{max_fs}"', 1)
+        issues.append({
+            "code": "PYRAMID_FONTSIZE_FIX",
+            "message": f"Pyramid has {n_levels} levels: clamped fontSize from {current_fs} to {max_fs}.",
+            "auto_fixed": True,
+        })
+
+    # --- Fix textColor on each PyramidLevel ---
+    def _fix_level(level_match: re.Match) -> str:
+        tag = level_match.group(0)
+        color_m = _PYRAMID_COLOR_RE.search(tag)
+        if not color_m:
+            return tag
+        fill = color_m.group(1)
+        if fill.startswith("$"):
+            return tag
+        brightness = _perceived_brightness(fill)
+        ideal = "FFFFFF" if brightness < 0.55 else "1E293B"
+        tc_m = _PYRAMID_TEXTCOLOR_RE.search(tag)
+        if tc_m:
+            current_tc = tc_m.group(1)
+            if current_tc.startswith("$"):
+                return tag
+            tc_brightness = _perceived_brightness(current_tc)
+            contrast_ok = abs(brightness - tc_brightness) > 0.3
+            if not contrast_ok:
+                tag = tag[:tc_m.start()] + f'textColor="{ideal}"' + tag[tc_m.end():]
+                issues.append({
+                    "code": "PYRAMID_TEXTCOLOR_FIX",
+                    "message": f"PyramidLevel color=\"{fill}\": textColor \"{current_tc}\" low contrast, fixed to \"{ideal}\".",
+                    "auto_fixed": True,
+                })
+        else:
+            if brightness >= 0.55:
+                tag = tag.replace("/>", f' textColor="{ideal}" />')
+                issues.append({
+                    "code": "PYRAMID_TEXTCOLOR_FIX",
+                    "message": f"PyramidLevel color=\"{fill}\": added textColor=\"{ideal}\" (light fill, default white invisible).",
+                    "auto_fixed": True,
+                })
+        return tag
+
+    body = _PYRAMID_LEVEL_RE.sub(_fix_level, body)
+    return opening + body + closing, issues
+
+
+def _fix_pyramids(xml: str, issues: list[dict[str, Any]]) -> str:
+    """Find all Pyramid blocks and fix fontSize + textColor."""
+    def _replacer(m: re.Match) -> str:
+        fixed, new_issues = _fix_pyramid_block(m)
+        issues.extend(new_issues)
+        return fixed
+    return _PYRAMID_BLOCK_RE.sub(_replacer, xml)
 
 
 def _strip_fences(xml: str) -> tuple[str, bool]:
@@ -179,6 +274,9 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
             ),
             "auto_fixed": False,
         })
+
+    if "<Pyramid" in xml:
+        xml = _fix_pyramids(xml, issues)
 
     notes_match = _NOTES_RE.search(xml)
     speaker_notes = notes_match.group(1).strip() if notes_match else ""

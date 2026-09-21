@@ -414,6 +414,7 @@ _KIND_TO_RECIPE: dict[str, str] = {
 
 _EXTRA_RECIPES: dict[str, list[str]] = {
     "bullet_list": ["icon_bullet_list"],
+    "pyramid": ["pyramid_with_annotations"],
 }
 
 

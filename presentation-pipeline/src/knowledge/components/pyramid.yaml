@@ -12,7 +12,7 @@ description: >
   Use for Maslow's hierarchy, strategic priority tiers, or any layered model.
 
 structure: |
-  <Pyramid direction="up" w="600" h="400" fontSize="14" bold="true">
+  <Pyramid direction="up" w="max" h="400" fontSize="12" bold="true">
     <PyramidLevel label="Self-Actualization" color="6D28D9" textColor="FFFFFF" />
     <PyramidLevel label="Esteem" color="7C3AED" textColor="FFFFFF" />
     <PyramidLevel label="Belonging" color="8B5CF6" textColor="FFFFFF" />
@@ -25,22 +25,58 @@ Pyramid_attributes:
   fontSize:   { type: number, default: 14 }
   bold:       { type: bool }
   fontFamily: { type: string, default: "Noto Sans JP" }
-  w:          { type: number, note: "Explicit width — required" }
-  h:          { type: number, note: "Explicit height — required" }
+  w:          { type: number, note: "Explicit width — required. Use w='max' to fill container." }
+  h:          { type: number, note: "Explicit height — required. Use the full band height budget." }
 
 PyramidLevel_attributes:
   label:     { type: string, required: true, note: "Level display label" }
   color:     { type: hex, default: "4472C4", note: "Level fill color" }
-  textColor: { type: hex, default: "FFFFFF", note: "Label text color" }
+  textColor: { type: hex, default: "FFFFFF", note: "Label text color — MUST contrast with color" }
+
+sizing_rules: |
+  The POM renderer divides the total Pyramid height equally among levels. The
+  top level (narrowest in direction="up") gets the least horizontal space. As
+  levels increase, per-level height shrinks and the top narrows further.
+
+  fontSize MUST scale down with level count to prevent text overflow:
+    3 levels:  fontSize="14"   (comfortable)
+    4 levels:  fontSize="13"
+    5 levels:  fontSize="12"
+    6 levels:  fontSize="11"
+    7 levels:  fontSize="11"
+
+  Always use w="max" so the pyramid fills its container width. Give it the
+  largest h the height budget allows (260-440). A sole-component pyramid
+  should get h="440-480" (hero weight) to dominate the slide.
+
+text_color_rules: |
+  textColor on each PyramidLevel MUST contrast with that level's fill color.
+  The default textColor="FFFFFF" (white) is INVISIBLE on light fill colors.
+
+  Rule: compute perceived brightness of the fill color.
+    - Dark fill (brightness < 0.55): textColor="FFFFFF"
+    - Light fill (brightness >= 0.55): textColor="1E293B" (or $textMain equivalent)
+
+  Common failure: a deep-to-light gradient where the bottom/lightest levels
+  keep textColor="FFFFFF" — the text disappears. Always set textColor per
+  level based on each level's own color.
+
+  On LIGHT themes (corporate-slate, sky-minimal, etc.), avoid very pale fill
+  colors for levels — use medium-to-dark fills so white text is legible, or
+  use dark textColor on lighter fills.
 
 notes:
-  - "Pyramid needs explicit w and h."
-  - "3-7 levels work best."
+  - "Pyramid needs explicit w and h. Use w='max' to fill the container."
+  - "3-7 levels work best. Scale fontSize DOWN as levels increase (see sizing_rules)."
   - "Direction 'up': first PyramidLevel = top/narrowest. Direction 'down': first PyramidLevel = top/widest."
   - "Use a gradient of related hues across levels for visual hierarchy."
-  - "For light-colored levels, set textColor to a dark value (e.g. '1E293B')."
+  - "ALWAYS check textColor contrast per level — white text on light fills is invisible."
+  - "Give pyramid generous height: 260-360 normally, 400-480 when it is the sole/hero component."
 
 pitfalls:
   - "label is required on every PyramidLevel."
   - "Missing w/h on Pyramid — will not render correctly."
   - "Direction 'up' vs 'down' controls which end is narrow — verify by reading the level order."
+  - "fontSize='24' (Text node default) causes overflow — Pyramid default is 14, scale DOWN with levels."
+  - "textColor='FFFFFF' on light fills — text is invisible. Set per-level textColor based on fill darkness."
+  - "Small fixed w like w='600' wastes space — use w='max' to fill the parent."
