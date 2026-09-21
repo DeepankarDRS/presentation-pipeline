@@ -199,7 +199,7 @@ def route_after_validator(state: PresentationState) -> str:
 def route_after_critic(state: PresentationState) -> str:
     cr = state.get("critic_result") or {}
     if not cr.get("passed", True):
-        v_budget = state.get("visual_repair_budget", 1)
+        v_budget = state.get("visual_repair_budget", 2)
         v_count = state.get("visual_repair_count", 0)
         if v_count < v_budget:
             logger.info(f"route: critic failed, visual repair {v_count+1}/{v_budget} → visual_repairer")
@@ -210,6 +210,26 @@ def route_after_critic(state: PresentationState) -> str:
     target = _slide_done_target(state)
     logger.info(f"route: critic passed → {target}")
     return target
+
+
+def route_after_visual_repairer(state: PresentationState) -> str:
+    """Route after visual repair: re-critique if budget allows and repair produced new XML."""
+    outcome = state.get("visual_repair_outcome", "noop")
+    v_count = state.get("visual_repair_count", 0)
+    v_budget = state.get("visual_repair_budget", 2)
+
+    if outcome == "improved" and v_count < v_budget:
+        logger.info(
+            f"route: visual repair {outcome}, re-critiquing "
+            f"(round {v_count + 1}/{v_budget}) → critic"
+        )
+        return "critic"
+
+    if outcome != "improved":
+        logger.info(f"route: visual repair {outcome}, skipping re-critique → done")
+    else:
+        logger.info(f"route: visual repair budget exhausted ({v_count}/{v_budget}) → done")
+    return _slide_done_target(state)
 
 
 def route_after_slide_router(state: PresentationState) -> str:
@@ -344,8 +364,8 @@ def build_graph() -> StateGraph:
     )
     graph.add_conditional_edges("repairer", route_after_repairer, ["validator"])
     graph.add_conditional_edges(
-        "visual_repairer", lambda s: _slide_done_target(s),
-        ["evaluator", "slide_router"],
+        "visual_repairer", route_after_visual_repairer,
+        ["critic", "evaluator", "slide_router"],
     )
     graph.add_conditional_edges(
         "placeholder", lambda s: _slide_done_target(s),

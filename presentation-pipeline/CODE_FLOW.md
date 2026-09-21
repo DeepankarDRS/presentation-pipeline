@@ -241,22 +241,31 @@ Reached from `route_after_validator` (compile failed + retryable + budget left) 
 
 ---
 
-### 4.8 `critic_node` — [`src/agents/critic.py:72-111`](src/agents/critic.py)
+### 4.8 `critic_node` — [`src/agents/critic.py`](src/agents/critic.py)
 Visual quality gate — screenshot-based review using a vision LLM. Runs after a **successful** compile.
-- `_run_visual_review(state)` (`L25-69`):
+- `_run_visual_review(state, previous_issues)`:
   - Takes a screenshot of the compiled PPTX via `render_screenshots`.
-  - Calls `run_visual_critic` with the screenshot, current XML, slide plan, theme, contract, compile warnings, and layout issues.
+  - Calls `run_visual_critic` with the screenshot, current XML, slide plan, theme, contract, compile warnings, layout issues, and (on round 2) previous issues from round 1.
+  - On round 2: re-runs `audit_layout` on repaired XML before review.
   - Returns `(issues, screenshot_path, usage, repair_hints)`.
-- `L79` `passed = not any(severity=="high")`.
+- `compute_critic_score(issues, assessment)`: deterministic scoring — `-(10×HIGH + 3×MED + 1×LOW) - assessment_penalty`.
+- Round 1 saves pre-critic snapshot (XML, plans, contract, score) for rollback.
+- Round 2 compares scores: strictly improved → accept repair; equal/worse → rollback to original, force pass.
+- Round 2 constrains strategy: regenerate forced → patch (no double-regenerate).
 
-**State writes** (`L88-109`):
+**State writes**:
 | key | value | reducer |
 |---|---|---|
 | `critic_result` | `{passed: bool, issues: list}` | replace |
 | `visual_critic_result` | `{passed, issues, screenshot_path, repair_hints}` | replace |
 | `slide_screenshots` | `{idx: screenshot_path}` | replace |
+| `pre_critic_xml` | original XML before repair | replace |
+| `pre_critic_slide_plans` | original plans before repair | replace |
+| `pre_critic_contract` | original contract before repair | replace |
+| `pre_critic_score` | original critic score before repair | replace |
 
-→ `route_after_critic`: not passed + budget → `repairer`; else → `slide_router`/`evaluator`.
+→ `route_after_critic`: not passed + visual budget → `visual_repairer`; not passed + compile budget → `repairer`; else → `slide_router`/`evaluator`.
+→ `route_after_visual_repairer`: outcome=improved + budget left → `critic` (re-review); else → `evaluator`/`slide_router`.
 
 ---
 
@@ -331,8 +340,8 @@ context_builder_node           → contract
 generator_node        [LLM]    → current_xml=<xml>, generation_history=[a0]
 validator_node        [node]   → normalize_result, validate_result, compile_result{ok:True,pptx_path}, speaker_notes, layout_issues
 route_after_validator          → critic             (ok, critic_mode=auto)
-critic_node           [LLM]    → critic_result{passed:True}, visual_critic_result
-route_after_critic             → evaluator          (len(slide_plans)==1)
+critic_node (round 1) [LLM]    → critic_result{passed:True}, visual_critic_result, pre_critic_*
+route_after_critic             → evaluator          (passed; len(slide_plans)==1)
 evaluator_node        [node]   → evaluation, pptx_path, passed=True
 END
 ```

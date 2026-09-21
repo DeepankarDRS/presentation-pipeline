@@ -9,7 +9,9 @@ from src.graph import (
     build_graph, compile_graph,
     route_after_start, route_after_validator, route_after_critic,
     route_after_repairer, route_after_slide_router,
+    route_after_visual_repairer,
 )
+from src.agents.critic import compute_critic_score
 from src.state import initial_state
 
 
@@ -148,7 +150,7 @@ def test_route_after_critic_fail():
 def test_route_after_critic_fail_visual_budget_exhausted():
     state = initial_state(run_id="r8s", raw_request="test")
     state["critic_result"] = {"passed": False, "issues": [{"severity": "high"}]}
-    state["visual_repair_count"] = 1
+    state["visual_repair_count"] = 2  # matches default budget=2
     assert route_after_critic(state) == "evaluator"
 
 
@@ -298,7 +300,7 @@ def test_route_critic_pass_multi_slide():
 def test_route_critic_fail_budget_exhausted_multi_slide():
     state = _multi_slide_state(
         critic_result={"passed": False, "issues": [{"severity": "high"}]},
-        visual_repair_count=1,
+        visual_repair_count=2,  # matches default budget=2
     )
     assert route_after_critic(state) == "slide_router"
 
@@ -446,3 +448,188 @@ def test_8_slide_deck_no_recursion_error(
     assert len(result["completed_slides"]) == 8
     for i in range(8):
         assert result["completed_slides"][i]["slide_index"] == i
+
+
+# ── Visual repairer routing (re-screenshot loop) ─────────────────────────
+
+
+def test_route_visual_repairer_improved_routes_to_critic():
+    state = initial_state(run_id="vr1", raw_request="test")
+    state["visual_repair_outcome"] = "improved"
+    state["visual_repair_count"] = 1
+    assert route_after_visual_repairer(state) == "critic"
+
+
+def test_route_visual_repairer_noop_skips_critic():
+    state = initial_state(run_id="vr2", raw_request="test")
+    state["visual_repair_outcome"] = "noop"
+    state["visual_repair_count"] = 1
+    assert route_after_visual_repairer(state) == "evaluator"
+
+
+def test_route_visual_repairer_failed_skips_critic():
+    state = initial_state(run_id="vr3", raw_request="test")
+    state["visual_repair_outcome"] = "failed"
+    state["visual_repair_count"] = 1
+    assert route_after_visual_repairer(state) == "evaluator"
+
+
+def test_route_visual_repairer_budget_exhausted():
+    state = initial_state(run_id="vr4", raw_request="test")
+    state["visual_repair_outcome"] = "improved"
+    state["visual_repair_count"] = 2  # matches budget=2
+    assert route_after_visual_repairer(state) == "evaluator"
+
+
+def test_route_visual_repairer_multi_slide():
+    state = initial_state(run_id="vr5", raw_request="test")
+    state["slide_plans"] = [
+        {"slide_index": 0, "components": []},
+        {"slide_index": 1, "components": []},
+    ]
+    state["visual_repair_outcome"] = "failed"
+    state["visual_repair_count"] = 1
+    assert route_after_visual_repairer(state) == "slide_router"
+
+
+# ── Critic scoring ───────────────────────────────────────────────────────
+
+
+def test_critic_score_good():
+    assert compute_critic_score([], "good") == 0
+
+
+def test_critic_score_high_issues():
+    issues = [{"severity": "high"}, {"severity": "medium"}]
+    assert compute_critic_score(issues, "needs_tuning") == -(10 + 3 + 5)
+
+
+def test_critic_score_layout_broken():
+    issues = [{"severity": "high"}, {"severity": "high"}]
+    assert compute_critic_score(issues, "layout_broken") == -(10 + 10 + 15)
+
+
+def test_critic_score_low_only():
+    issues = [{"severity": "low"}, {"severity": "low"}]
+    assert compute_critic_score(issues, "good") == -2
+
+
+# ── Critic rollback on regression ────────────────────────────────────────
+
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_rollback_when_repair_worsens(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
+    mock_vc.return_value = (
+        [
+            {"severity": "high", "type": "visual", "description": "New issue A",
+             "fix": "fix A", "affected_nodes": [], "source": "visual"},
+            {"severity": "high", "type": "structure", "description": "New issue B",
+             "fix": "fix B", "affected_nodes": [], "source": "visual"},
+        ],
+        {"tokens_in": 100, "tokens_out": 50, "model": "gpt-4.1"},
+        {"strategy": "patch", "assessment": "layout_broken", "affected_nodes": []},
+    )
+
+    state = initial_state(run_id="rb1", raw_request="test", critic_mode="auto")
+    state["current_xml"] = "<Slide><VStack>repaired</VStack></Slide>"
+    state["compile_result"] = {"ok": True, "pptx_path": "/tmp/t.pptx", "diagnostics": [], "warnings": []}
+    state["slide_plans"] = [{"slide_index": 0, "components": []}]
+    state["visual_repair_count"] = 1  # re-review round
+    state["pre_critic_xml"] = "<Slide><VStack>original</VStack></Slide>"
+    state["pre_critic_slide_plans"] = [{"slide_index": 0, "components": []}]
+    state["pre_critic_contract"] = {"theme_element": ""}
+    state["pre_critic_score"] = -13  # original had 1 HIGH + needs_tuning
+    state["visual_critic_result"] = {
+        "issues": [{"severity": "high", "type": "visual", "description": "Old issue",
+                     "fix": "fix", "affected_nodes": [], "source": "visual"}],
+    }
+
+    from src.agents.critic import critic_node
+    result = critic_node(state)
+
+    assert result["critic_result"]["passed"] is True  # rollback forces pass
+    assert result["current_xml"] == "<Slide><VStack>original</VStack></Slide>"
+
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_saves_snapshot_on_first_run(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
+    mock_vc.return_value = (
+        [{"severity": "high", "type": "visual", "description": "Issue",
+          "fix": "fix", "affected_nodes": [], "source": "visual"}],
+        {"tokens_in": 100, "tokens_out": 50, "model": "gpt-4.1"},
+        {"strategy": "patch", "assessment": "needs_tuning", "affected_nodes": []},
+    )
+
+    state = initial_state(run_id="snap1", raw_request="test", critic_mode="auto")
+    state["current_xml"] = "<Slide>original</Slide>"
+    state["compile_result"] = {"ok": True, "pptx_path": "/tmp/t.pptx", "diagnostics": [], "warnings": []}
+    state["slide_plans"] = [{"slide_index": 0, "components": []}]
+
+    from src.agents.critic import critic_node
+    result = critic_node(state)
+
+    assert result["pre_critic_xml"] == "<Slide>original</Slide>"
+    assert result["pre_critic_score"] == -(10 + 5)  # 1 HIGH + needs_tuning
+
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_round2_forces_patch_strategy(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
+    mock_vc.return_value = (
+        [{"severity": "high", "type": "structure", "description": "Broken layout",
+          "fix": "rebuild", "affected_nodes": ["VStack"], "source": "visual"}],
+        {"tokens_in": 100, "tokens_out": 50, "model": "gpt-4.1"},
+        {"strategy": "regenerate", "assessment": "layout_broken", "affected_nodes": []},
+    )
+
+    state = initial_state(run_id="r2strat", raw_request="test", critic_mode="auto")
+    state["current_xml"] = "<Slide>repaired</Slide>"
+    state["compile_result"] = {"ok": True, "pptx_path": "/tmp/t.pptx", "diagnostics": [], "warnings": []}
+    state["slide_plans"] = [{"slide_index": 0, "components": []}]
+    state["visual_repair_count"] = 1  # re-review round
+    state["pre_critic_xml"] = "<Slide>original</Slide>"
+    state["pre_critic_slide_plans"] = [{"slide_index": 0, "components": []}]
+    state["pre_critic_contract"] = None
+    state["pre_critic_score"] = -50  # worse than -25, so score improved → no rollback
+    state["visual_critic_result"] = {"issues": []}
+
+    from src.agents.critic import critic_node
+    result = critic_node(state)
+
+    # Strategy constrained from regenerate to patch on round 2
+    assert result["visual_critic_result"]["repair_hints"]["strategy"] == "patch"
+
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_rollback_on_equal_score(mock_vc, mock_screenshots):
+    """Equal score means repair didn't help — rollback to original."""
+    mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
+    mock_vc.return_value = (
+        [{"severity": "high", "type": "visual", "description": "Different issue",
+          "fix": "fix", "affected_nodes": [], "source": "visual"}],
+        {"tokens_in": 100, "tokens_out": 50, "model": "gpt-4.1"},
+        {"strategy": "patch", "assessment": "needs_tuning", "affected_nodes": []},
+    )
+
+    state = initial_state(run_id="eq1", raw_request="test", critic_mode="auto")
+    state["current_xml"] = "<Slide><VStack>repaired</VStack></Slide>"
+    state["compile_result"] = {"ok": True, "pptx_path": "/tmp/t.pptx", "diagnostics": [], "warnings": []}
+    state["slide_plans"] = [{"slide_index": 0, "components": []}]
+    state["visual_repair_count"] = 1
+    state["pre_critic_xml"] = "<Slide><VStack>original</VStack></Slide>"
+    state["pre_critic_slide_plans"] = [{"slide_index": 0, "components": []}]
+    state["pre_critic_contract"] = {"theme_element": ""}
+    state["pre_critic_score"] = -15  # same: 1 HIGH + needs_tuning = -15
+    state["visual_critic_result"] = {"issues": []}
+
+    from src.agents.critic import critic_node
+    result = critic_node(state)
+
+    assert result["critic_result"]["passed"] is True
+    assert result["current_xml"] == "<Slide><VStack>original</VStack></Slide>"

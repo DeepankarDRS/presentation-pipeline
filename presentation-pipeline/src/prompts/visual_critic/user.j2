@@ -31,5 +31,13 @@
 - {{ note }}
 {% endfor %}
 {% endif %}
+{% if previous_issues %}## PREVIOUS CRITIC ISSUES (prior review — slide was repaired)
+The slide was repaired to address these issues. Check whether each was fixed.
+{% for issue in previous_issues %}
+- [{{ issue.severity }}] {{ issue.description }} → attempted fix: {{ issue.fix }}
+{% endfor %}
+For each previous issue: confirm it is fixed (do not re-report), or re-flag it with updated severity if still present.
+Only report NEW issues not listed above, or previous issues that remain unfixed.
+{% endif %}
 
 Review the screenshot against all 9 checklist items. Report any issues you find.

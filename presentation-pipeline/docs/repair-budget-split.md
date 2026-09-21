@@ -44,7 +44,7 @@ Two independent budgets, run as sequential phases:
 
 ```
 retry_budget: int = 3          # compile repair attempts (unchanged)
-visual_repair_budget: int = 1  # visual critic repair attempts (new)
+visual_repair_budget: int = 2  # visual critic repair attempts (default 2, enables re-screenshot loop)
 ```
 
 ## Full Flow
@@ -76,10 +76,21 @@ generator → validator
               │    │     "regenerate" → REGENERATE (replan + generate, 3 LLM calls)
               │    │
               │    │   compile-checks the result:
-              │    │     compile OK?   → accept repaired XML
-              │    │     compile FAIL? → DISCARD repair, keep original XML
+              │    │     compile OK?   → accept repaired XML, outcome="improved"
+              │    │     compile FAIL? → DISCARD repair, keep original XML, outcome="failed"
+              │    │     identical XML? → outcome="noop"
               │    │
-              │    └─ → evaluator (done — no re-critic, no compile loop)
+              │    └─ route_after_visual_repairer:
+              │         outcome=improved + budget left? → critic (re-screenshot loop)
+              │         outcome=noop/failed? → evaluator/slide_router (skip re-critique)
+              │
+              │    Re-screenshot loop (critic round 2):
+              │      - Re-runs layout audit on repaired XML
+              │      - Passes previous_issues from round 1 for context
+              │      - Constrains strategy: regenerate → patch (no double-regenerate)
+              │      - Score comparison via compute_critic_score:
+              │          strictly improved → accept repair
+              │          equal or worse    → rollback to pre-critic snapshot, force pass
               │
               └─ visual_repair_count >= visual_repair_budget?
                    → evaluator (ships as-is, visual issues are advisory)
@@ -128,35 +139,41 @@ is discarded and the original compiled XML is kept.
    compilation, the original compiled XML is kept. The `pptx_path` from
    the original compile is preserved.
 
-3. **No re-critic.** After a visual repair attempt (success or discard),
-   the critic does not re-run. One shot, take or leave.
+3. **Re-screenshot loop.** After a successful visual repair, the critic
+   re-screenshots and re-reviews with previous issues in context.
+   Deterministic score comparison decides accept vs rollback. Round 2
+   constrains strategy to patch-only (no double-regenerate).
 
 4. **Budgets are independent.** Compile repairs consuming `retry_budget`
    do not affect `visual_repair_budget` and vice versa.
+
+5. **Equal/worse rollback.** If the repaired slide scores equal to or
+   worse than the original, the pre-critic snapshot (XML, plans, contract)
+   is atomically restored and the critic forces a pass.
 
 ## Cost Analysis
 
 | Scenario | LLM Calls |
 |---|---|
 | **Best**: compile OK, critic passes | 1 generator + 1 visual critic = **2** |
-| Compile OK, critic PATCH fix works | 1 gen + 1 vc + 1 patch = **3** |
-| Compile OK, critic REGENERATE fix works | 1 gen + 1 vc + 1 replan + 1 gen = **4** |
+| Compile OK, critic PATCH fix works, round 2 passes | 1 gen + 1 vc + 1 patch + 1 vc₂ = **4** |
+| Compile OK, critic REGEN fix works, round 2 passes | 1 gen + 1 vc + 1 replan + 1 gen + 1 vc₂ = **5** |
+| Round 2 scores worse → rollback | Same as round 1 (rollback discards repair, +1 vc₂ call) |
 | Compile needs 2 fixes, critic passes | 1 gen + 2 repair + 1 vc = **4** |
-| Compile needs 2 fixes, critic PATCH fix | 1 gen + 2 repair + 1 vc + 1 patch = **5** |
-| **Worst**: compile 3 fixes, critic REGEN | 1 gen + 3 repair + 1 vc + 1 replan + 1 gen = **7** |
-| Visual repair breaks compile | Same as without repair (discard) |
+| **Worst**: compile 3 fixes, critic REGEN + re-review | 1 gen + 3 repair + 1 vc + 1 replan + 1 gen + 1 vc₂ = **8** |
+| Visual repair breaks compile | Same as without repair (discard, outcome=failed, no re-critique) |
 | Compile never succeeds | 1 gen + 3 repair → placeholder, **no critic** = **4** |
 
-Hard ceiling: **7 LLM calls** (was 10-13 with shared budget).
+Hard ceiling: **8 LLM calls** (was 7 without re-screenshot loop, 10-13 with old shared budget).
 
 ## Configuration
 
 | Setting | Default | Effect |
 |---|---|---|
 | `retry_budget=3` | 3 | Compile repair attempts (PATCH → REGENERATE → PATCH) |
-| `visual_repair_budget=1` | 1 | Visual critic repair attempts |
+| `visual_repair_budget=2` | 2 | Visual repair attempts with re-screenshot loop |
+| `visual_repair_budget=1` | — | Single repair attempt, no re-screenshot |
 | `visual_repair_budget=0` | — | Critic is advisory only (report, no repair) |
-| `visual_repair_budget=2` | — | Two visual repair attempts (experimental) |
 | `critic_mode="auto"` | `"off"` | Must be `"auto"` to enable visual critic |
 
 Both budgets are set in `initial_state()` and passed through the API.
@@ -165,9 +182,12 @@ Both budgets are set in `initial_state()` and passed through the API.
 
 | File | Change |
 |---|---|
-| `src/state.py` | Added `visual_repair_budget` (default 1) and `visual_repair_count` fields |
-| `src/agents/visual_repairer.py` | **New.** One-shot PATCH or REGENERATE node with compile-check and discard-on-fail |
+| `src/state.py` | Added `visual_repair_budget` (default 2), `visual_repair_count`, `visual_repair_outcome`, `pre_critic_*` snapshot fields |
+| `src/agents/visual_repairer.py` | PATCH or REGENERATE node with compile-check, discard-on-fail, and outcome signaling |
+| `src/agents/critic.py` | Re-screenshot loop: snapshot save, score comparison, rollback, round 2 strategy constraint |
+| `src/agents/visual_critic.py` | Added `previous_issues` parameter for round 2 context |
 | `src/agents/validator.py` | Added `normalize_and_compile()` helper for quick compile verification |
-| `src/graph.py` | Added `visual_repairer_node`, `route_after_critic` routes to it instead of main repairer |
+| `src/graph.py` | Added `route_after_visual_repairer`, updated default budget fallbacks to 2 |
+| `src/agents/deck_nodes.py` | Reset per-slide state including `visual_repair_count` and `pre_critic_*` fields |
 | `src/agents/slide_edit_service.py` | Threaded `visual_issues` through `_call_repair_llm` → `build_patch_prompts` |
 | `tests/unit/test_graph.py` | Updated routing tests for split-budget behavior |

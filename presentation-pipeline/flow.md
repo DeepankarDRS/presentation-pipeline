@@ -53,15 +53,21 @@ VALIDATOR                                        │
   ├─ compile ok + critic_mode=off → EVALUATOR
   │
   ▼ compile ok + critic_mode≠off
-CRITIC (Visual)
+CRITIC₁ (Visual)
   │  Screenshot + vision LLM review
-  │  Writes: critic_result, visual_critic_result
+  │  Writes: critic_result, visual_critic_result, pre_critic_*
   │
   ▼ route_after_critic
-  ├─ critic failed + budget → REPAIRER ──────────┘
-  │
-  ▼ critic passed
-EVALUATOR ────────────────────────────────────────────────────────────
+  ├─ critic failed + budget → VISUAL REPAIRER
+  │    │
+  │    ▼ route_after_visual_repairer
+  │    ├─ improved + budget → CRITIC₂ (re-screenshot, previous issues)
+  │    │    ├─ score improved → VISUAL REPAIRER₂ (patch-only)
+  │    │    └─ score ≤ original → rollback, pass
+  │    └─ noop/failed → done ─────────────────────────────────┐
+  │                                                           │
+  ▼ critic passed                                             │
+EVALUATOR ◄───────────────────────────────────────────────────┘
   │  Mechanical. Scores run, writes manifest.
   │  Writes: evaluation, pptx_path, passed
   ▼
@@ -74,8 +80,9 @@ END → .pptx + run-manifest.json
 |----------|-------|
 | `route_after_start()` | `threshold=0` → skip planner to context_builder |
 | `route_after_validator()` | fail+retryable+budget → repairer; ok+critic≠off → critic; ok+critic=off → evaluator |
-| `route_after_critic()` | failed+budget → repairer; else → evaluator |
-| `route_after_repairer()` | always → generator |
+| `route_after_critic()` | failed+budget → visual_repairer; else → evaluator |
+| `route_after_visual_repairer()` | improved+budget → critic (re-screenshot); noop/failed → done |
+| `route_after_repairer()` | always → validator |
 
 ---
 
@@ -91,8 +98,8 @@ Defined in `src/state.py`. Every agent reads and writes only its slice. The full
 | Context | `contract`, `theme_element`, `resolved_theme` | context_builder | generator, repairer, validator (fallback) |
 | Generation | `current_xml`, `generation_history` | generator, repairer | validator, critic, evaluator |
 | Validation | `normalize_result`, `validate_result`, `compile_result` | validator | critic, repairer, evaluator |
-| Critique | `critic_result`, `visual_critic_result`, `critic_mode` | critic (visual) | repairer, visual_repairer, evaluator |
-| Retry | `retry_tier`, `retry_count`, `retry_budget`, `stall_detected` | repairer | validator routing, critic routing |
+| Critique | `critic_result`, `visual_critic_result`, `critic_mode`, `pre_critic_*` | critic (visual) | visual_repairer, evaluator |
+| Retry | `retry_tier`, `retry_count`, `retry_budget`, `stall_detected`, `visual_repair_budget`, `visual_repair_count`, `visual_repair_outcome` | repairer, visual_repairer | validator routing, critic routing |
 | Output | `evaluation`, `pptx_path`, `passed` | evaluator | Caller |
 
 ### Sub-structures (all TypedDict for JSON serialization)
@@ -284,12 +291,23 @@ INVALID_VALUE, INVALID_CHILD, THEME_ERROR, DIAGNOSTIC
 
 Visual quality gate — screenshot-reviews the rendered slide against the plan, theme, contract, and compile warnings.
 
-**Reads:** `current_xml`, `compile_result`, `slide_plans`, `theme_element`, `contract`, `layout_issues`
-**Writes:** `critic_result`, `visual_critic_result`, `slide_screenshots`
+**Reads:** `current_xml`, `compile_result`, `slide_plans`, `theme_element`, `contract`, `layout_issues`, `visual_repair_count`, `visual_critic_result`
+**Writes:** `critic_result`, `visual_critic_result`, `slide_screenshots`, `pre_critic_xml`, `pre_critic_slide_plans`, `pre_critic_contract`, `pre_critic_score`
 
 The visual critic takes a screenshot of the compiled PPTX and sends it to a vision LLM along with the full design context. It returns structured issues with repair hints that guide the visual repairer.
 
-**Pass/fail rule:** any HIGH severity issue → `passed=false` → triggers visual repair or compile repair.
+**Pass/fail rule:** any HIGH severity issue → `passed=false` → triggers visual repair.
+
+### Re-screenshot loop (budget=2)
+
+After repair₁, the critic re-screenshots and re-reviews with previous issues passed in context. Deterministic scoring (`compute_critic_score`) compares repaired vs original:
+
+| Score comparison | Action |
+|-----------------|--------|
+| Score improved (strictly) | Accept repair, try repair₂ if still failing |
+| Score equal or worse | Rollback to original XML, force pass |
+
+Round 2 constraints: no double-regenerate (forced to patch-only). Layout audit re-runs on repaired XML. The repairer signals its outcome (`improved`/`noop`/`failed`) so the router can skip re-critique when repair produced no new XML.
 
 ### Modes
 - **auto** — runs the visual critic (default when enabled)
@@ -597,8 +615,10 @@ initial_state(run_id, raw_request, theme_name, ...)
      │
      ▼ compile ok
 ┌─────────────────────────────────────────────────┐
-│ CRITIC (Visual)                                 │
+│ CRITIC (Visual) — round 1                       │
 │ Screenshot + vision LLM review                  │
+│ Saves pre-critic snapshot (XML, plans, contract)│
+│ compute_critic_score → pre_critic_score         │
 │ → critic_result, visual_critic_result           │
 │   {passed, issues, repair_hints}                │
 └─────────────────────────────────────────────────┘
@@ -606,9 +626,27 @@ initial_state(run_id, raw_request, theme_name, ...)
      ▼ route_after_critic
      │
      ├─ critic failed + visual budget ──▶ VISUAL_REPAIRER
+     │                                       │
+     │                       ▼ route_after_visual_repairer
+     │                       │
+     │                       ├─ outcome=improved + budget left
+     │                       │    ▼
+     │                  ┌────────────────────────────────────┐
+     │                  │ CRITIC (Visual) — round 2          │
+     │                  │ Re-screenshot + re-review           │
+     │                  │ previous_issues from round 1        │
+     │                  │ Layout audit re-run on repaired XML │
+     │                  │ Round 2: regenerate forced → patch  │
+     │                  │ Score comparison:                   │
+     │                  │   improved → accept repair          │
+     │                  │   equal/worse → rollback to orig    │
+     │                  └────────────────────────────────────┘
+     │                       │
+     │                       ├─ outcome=noop/failed ──▶ skip re-critique
+     │
      ├─ critic failed + compile budget ──▶ REPAIRER ──▶ GENERATOR (loop)
      │
-     ▼ critic passed
+     ▼ critic passed (or rollback forced pass)
 ┌─────────────────────────────────────────────────┐
 │ EVALUATOR                                       │
 │ passed = compile_ok AND critic_ok               │

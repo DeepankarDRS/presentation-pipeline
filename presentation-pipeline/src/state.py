@@ -190,7 +190,14 @@ class PresentationState(TypedDict, total=False):
     retry_budget: int
     visual_repair_budget: int
     visual_repair_count: int
+    visual_repair_outcome: Literal["improved", "noop", "failed"]
     stall_detected: bool
+
+    # ── Visual critic rollback snapshots (critic saves before first repair) ──
+    pre_critic_xml: str
+    pre_critic_slide_plans: list[SlidePlan]
+    pre_critic_contract: dict[str, Any] | None
+    pre_critic_score: int
 
     # ── Output ──
     excluded_slides: list[int]
@@ -211,7 +218,7 @@ def initial_state(
     deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "off"] = "off",
     retry_budget: int = 3,  # PATCH, REGENERATE (replan+generate), cleanup PATCH
-    visual_repair_budget: int = 1,
+    visual_repair_budget: int = 2,
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,
@@ -262,7 +269,12 @@ def initial_state(
         retry_budget=retry_budget,
         visual_repair_budget=visual_repair_budget,
         visual_repair_count=0,
+        visual_repair_outcome="noop",
         stall_detected=False,
+        pre_critic_xml="",
+        pre_critic_slide_plans=[],
+        pre_critic_contract=None,
+        pre_critic_score=0,
         evaluation=None,
         pptx_path=None,
         passed=False,

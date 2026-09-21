@@ -283,3 +283,52 @@ class _MockBatch:
 
 def _mock_batch(png_path, ok=True, error=None):
     return _MockBatch(png_path, ok, error)
+
+
+# ── Re-screenshot loop: previous_issues forwarded ─────────────────────
+
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_passes_previous_issues_on_re_review(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result()
+
+    prev_issues = [{
+        "severity": "high", "type": "completeness",
+        "description": "[Visual] Missing KPI tiles", "fix": "Add KPIs",
+        "affected_nodes": ["HStack"], "source": "visual",
+    }]
+
+    state = _make_state()
+    state["visual_repair_count"] = 1  # re-review round
+    state["visual_critic_result"] = {"issues": prev_issues}
+    state["pre_critic_xml"] = GOOD_XML
+    state["pre_critic_slide_plans"] = list(state["slide_plans"])
+    state["pre_critic_contract"] = state["contract"]
+    state["pre_critic_score"] = -15
+
+    critic_node(state)
+
+    call_kwargs = mock_vc.call_args
+    passed_prev = call_kwargs.kwargs.get("previous_issues") or call_kwargs[1].get("previous_issues")
+    assert passed_prev is not None
+    assert len(passed_prev) == 1
+    assert passed_prev[0]["description"] == "[Visual] Missing KPI tiles"
+
+
+# ── Re-screenshot loop: first run has no previous_issues ──────────────
+
+
+@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.critic.run_visual_critic")
+def test_critic_no_previous_issues_on_first_run(mock_vc, mock_screenshots):
+    mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
+    mock_vc.return_value = _mock_visual_result()
+
+    state = _make_state()
+    critic_node(state)
+
+    call_kwargs = mock_vc.call_args
+    passed_prev = call_kwargs.kwargs.get("previous_issues") or call_kwargs[1].get("previous_issues")
+    assert passed_prev is None

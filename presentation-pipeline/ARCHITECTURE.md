@@ -79,29 +79,41 @@ route_after_start ──┐
        │ retry   │ critic   │ critic=off          │
        ▼         ▼          │                     │
   ┌──────────┐ ┌────────┐   │                     │
-  │ REPAIRER │ │ CRITIC │   │                     │
+  │ REPAIRER │ │ CRITIC₁ │  │                     │
   └────┬─────┘ └───┬────┘   │                     │
        │           │         │                     │
        │     route_after_critic                    │
        │       │         │                         │
        │       │ fail    │ pass                    │
        │       ▼         │                         │
-       │  ┌──────────┐   │                         │
-       │  │ REPAIRER │   │                         │
-       │  └────┬─────┘   │                         │
-       │       │         │                         │
-       └───────┴─────────┼── (loop back) ──────────┘
-                         │
-                         ▼
-                  ┌─────────────┐
-                  │  EVALUATOR  │
-                  └──────┬──────┘
-                         │
-                         ▼
-                        END
+       │  ┌───────────────┐                        │
+       │  │VISUAL REPAIRER│                        │
+       │  └───────┬───────┘                        │
+       │          │                                │
+       │    route_after_visual_repairer            │
+       │       │            │                      │
+       │       │ improved   │ noop/failed          │
+       │       ▼            │                      │
+       │  ┌────────┐        │                      │
+       │  │ CRITIC₂ │       │                      │
+       │  └───┬────┘        │                      │
+       │      │ score ≤ original → rollback        │
+       │      │ score > original → repair₂         │
+       │      │                                    │
+       └──────┴─────────────┼── (loop back) ───────┘
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │  EVALUATOR  │
+                     └──────┬──────┘
+                            │
+                            ▼
+                           END
 ```
 
-**Retry loop**: Generator → Validator → (compile fail) → Repairer → Validator. Up to `retry_budget` times (default: 2 — PATCH then REGENERATE). Stops as soon as the XML compiles.
+**Compile retry loop**: Generator → Validator → (compile fail) → Repairer → Validator. Up to `retry_budget` times (default: 3). Stops as soon as the XML compiles.
+
+**Visual re-screenshot loop**: Critic₁ → Visual Repairer → Critic₂ → (score comparison) → ship best. Up to `visual_repair_budget` times (default: 2). Rollback to original XML if the repair didn't improve the score. Round 2 is patch-only (no double-regenerate).
 
 ---
 
@@ -132,8 +144,12 @@ PresentationState(TypedDict):
     # Critique (visual critic → routing logic)
     critic_result, visual_critic_result, critic_mode
 
+    # Visual critic rollback snapshots
+    pre_critic_xml, pre_critic_slide_plans, pre_critic_contract, pre_critic_score
+
     # Retry (repairer → generator)
     retry_tier, retry_count, retry_budget, stall_detected
+    visual_repair_budget, visual_repair_count, visual_repair_outcome
 
     # Output (evaluator → caller)
     evaluation, pptx_path, passed
@@ -235,6 +251,8 @@ Screenshot-based quality gate using a vision LLM. Takes a screenshot of the comp
 - **Fail-open**: If screenshot or LLM call fails, returns `passed=True` (doesn't block the pipeline)
 - **Pass logic**: `passed = not any(issue.severity == "high")`
 - **Output**: `critic_result` + `visual_critic_result` (includes `repair_hints` for the visual repairer)
+
+**Re-screenshot loop** (budget=2): After repair₁, the critic takes a fresh screenshot and re-reviews with the previous issues passed in context. Scoring (`compute_critic_score`) compares the repaired slide against the original: rollback if score didn't improve, accept if it did. Round 2 forces patch-only (no double-regenerate). Layout audit is re-run on the repaired XML before re-review.
 
 ### 6. Repairer (LLM)
 

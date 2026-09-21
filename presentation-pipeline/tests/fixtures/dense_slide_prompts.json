@@ -1,0 +1,102 @@
+[
+  {
+    "id": "dense-01",
+    "prompt": "Compare Q1-Q4 revenue, gross margin %, operating expenses, net income, and headcount across 5 regional offices (NA, EMEA, APAC, LATAM, MEA) for fiscal year 2025. Include YoY growth percentages for each metric.",
+    "stress": "table with 25+ cells, small font risk, tight columns"
+  },
+  {
+    "id": "dense-02",
+    "prompt": "Show a product roadmap timeline with 12 features across 4 workstreams (Platform, Mobile, AI, Infra) spanning Q1 2025 to Q4 2026. Each feature should have owner initials, status (done/in-progress/planned), and target date.",
+    "stress": "timeline overflow, overlapping labels, horizontal cramming"
+  },
+  {
+    "id": "dense-03",
+    "prompt": "Present our tech stack architecture: React frontend → API Gateway → 3 microservices (Auth, Orders, Payments) → PostgreSQL + Redis + S3. Show request flow, latency at each hop (ms), and error rates. Include a legend for status colors.",
+    "stress": "architecture diagram density, arrow overlap, small annotation text"
+  },
+  {
+    "id": "dense-04",
+    "prompt": "Competitive landscape matrix comparing our product against Notion, Confluence, Coda, and Monday across 8 dimensions: pricing, collaboration, API, mobile, AI features, integrations, security certifications, and customer support. Use checkmarks and ratings.",
+    "stress": "comparison grid with 40+ cells, icon density, tight spacing"
+  },
+  {
+    "id": "dense-05",
+    "prompt": "Customer journey map with 7 stages (Awareness, Consideration, Trial, Purchase, Onboarding, Adoption, Advocacy). For each stage show: touchpoints, emotions (happy/neutral/frustrated), key metrics, and team responsible.",
+    "stress": "multi-row journey layout, stacked content per column"
+  },
+  {
+    "id": "dense-06",
+    "prompt": "Sprint retrospective dashboard: 14 completed stories with story points, 3 bugs found in production, velocity chart for last 6 sprints, team happiness score trend, and top 5 action items with owners and due dates.",
+    "stress": "mixed chart + list + table, everything competing for space"
+  },
+  {
+    "id": "dense-07",
+    "prompt": "SWOT analysis for entering the Japanese market. 4 strengths, 5 weaknesses, 4 opportunities, 3 threats. Each point should be a full sentence explaining the reasoning, not just keywords.",
+    "stress": "4-quadrant layout with long text in each, font shrink risk"
+  },
+  {
+    "id": "dense-08",
+    "prompt": "Sales pipeline breakdown: 47 deals across 5 stages (Prospecting $2.1M, Qualified $4.3M, Proposal $3.8M, Negotiation $2.7M, Closed Won $1.9M). Show deal count, average deal size, conversion rate between stages, and top 3 deals by name in each stage.",
+    "stress": "funnel with embedded data, annotations per stage"
+  },
+  {
+    "id": "dense-09",
+    "prompt": "Year-end financial summary: revenue $42.3M (+18% YoY), EBITDA $8.7M, burn rate $1.2M/month, runway 22 months, ARR $38.1M, NDR 118%, CAC $4,200, LTV $52,000, LTV:CAC 12.4x, gross margin 72%, Rule of 40 score: 46. Show all KPIs with sparkline trends.",
+    "stress": "12+ KPI cards on one slide, number density, sparkline rendering"
+  },
+  {
+    "id": "dense-10",
+    "prompt": "Incident post-mortem timeline: 14 events over 6 hours from first alert (02:14 UTC) to full resolution (08:31 UTC). Include severity escalations, team handoffs, customer impact numbers at each stage, and 5 root causes identified.",
+    "stress": "dense timeline with long annotations, vertical overflow"
+  },
+  {
+    "id": "dense-11",
+    "prompt": "Org chart showing CEO, 6 C-suite reports, and their 22 direct reports with titles. Highlight 4 open headcount positions and 3 recent hires (< 90 days). Include department headcount totals.",
+    "stress": "tree layout with 30+ nodes, connector line density"
+  },
+  {
+    "id": "dense-12",
+    "prompt": "API rate limiting policy table: 8 endpoints (GET /users, POST /orders, PUT /settings, DELETE /account, GET /search, POST /upload, GET /analytics, POST /webhooks) with rate limits for 3 tiers (Free, Pro, Enterprise) showing requests/minute, burst capacity, and cooldown period.",
+    "stress": "table with 24+ data cells plus headers, monospace risk"
+  },
+  {
+    "id": "dense-13",
+    "prompt": "Marketing campaign results: compare 6 campaigns (Email, LinkedIn, Google Ads, Webinar, Content Syndication, Partner Co-sell) on impressions, clicks, CTR, leads generated, MQLs, SQLs, pipeline created, and cost per SQL. Highlight the winner in each metric.",
+    "stress": "performance matrix, 48+ cells, highlight overlays"
+  },
+  {
+    "id": "dense-14",
+    "prompt": "Database migration plan with 9 steps: schema freeze, create read replica, dual-write enable, backfill historical data (2.3TB), validation checksums, traffic cutover (blue-green), rollback trigger conditions, monitoring dashboard links, and cleanup timeline. Show duration, risk level, and rollback plan for each step.",
+    "stress": "process flow with 3 data points per step, dense annotations"
+  },
+  {
+    "id": "dense-15",
+    "prompt": "SaaS pricing page comparison: 4 tiers (Starter $29/mo, Growth $79/mo, Business $199/mo, Enterprise custom) each listing 10 features with included/limited/not-included status. Show annual discount percentages and most popular badge.",
+    "stress": "pricing grid with 40+ feature rows, checkmark/cross density"
+  },
+  {
+    "id": "dense-16",
+    "prompt": "Risk register: 8 project risks with ID, description, probability (1-5), impact (1-5), risk score, mitigation strategy, owner, review date, and current status (open/mitigating/closed). Sort by risk score descending.",
+    "stress": "wide table with 72+ cells, long description text in cells"
+  },
+  {
+    "id": "dense-17",
+    "prompt": "Employee engagement survey results across 6 departments (Engineering, Sales, Marketing, CS, Product, HR) for 8 categories: career growth, compensation, work-life balance, management, team collaboration, company direction, DEI, and tools & resources. Show scores out of 5 with benchmark comparisons and delta arrows.",
+    "stress": "heatmap-style grid with 48 scores, arrows, benchmark overlay"
+  },
+  {
+    "id": "dense-18",
+    "prompt": "CI/CD pipeline visualization: Git push → lint (2s) → unit tests (45s) → integration tests (3min) → security scan (90s) → build Docker image (2min) → push to registry → deploy to staging → smoke tests → manual approval gate → deploy to production → health checks. Show pass rates and p95 duration for each stage.",
+    "stress": "12-stage pipeline with dual metrics per stage, horizontal overflow"
+  },
+  {
+    "id": "dense-19",
+    "prompt": "Board meeting executive summary: 3 strategic priorities with status (on-track, at-risk, behind), 5 financial highlights with charts, 4 key hires made this quarter, 2 regulatory updates, upcoming milestones for next 90 days, and shareholder resolution items.",
+    "stress": "multi-section dashboard, mixed content types on single slide"
+  },
+  {
+    "id": "dense-20",
+    "prompt": "Machine learning model comparison: 5 models (XGBoost, Random Forest, LSTM, Transformer, Linear Regression) evaluated on accuracy, precision, recall, F1, AUC-ROC, inference latency (ms), training time (hrs), model size (MB), and interpretability score. Include the confusion matrix highlights for the top 2 models.",
+    "stress": "evaluation matrix with 45+ cells plus embedded confusion matrices"
+  }
+]

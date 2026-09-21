@@ -90,8 +90,15 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
         "validate_result": None,
         "compile_result": None,
         "critic_result": None,
+        "visual_critic_result": None,
         "retry_tier": 0,
         "retry_count": 0,
+        "visual_repair_count": 0,
+        "visual_repair_outcome": "noop",
+        "pre_critic_xml": "",
+        "pre_critic_slide_plans": [],
+        "pre_critic_contract": None,
+        "pre_critic_score": 0,
         "stall_detected": False,
     }
 
