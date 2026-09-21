@@ -180,6 +180,25 @@ BUDGET so band heights sum to ~720 -> size the rigid nodes -> fill with content.
 - More bands, tighter band heights - but they must still sum to ~720
 {% endif %}
 
+## VISUAL-INTENT TRANSLATION
+
+Components may carry a `visual-intent` directive from the planner. Translate it into POM attributes — do not ignore it or treat it as decoration.
+
+| Intent phrase | POM technique |
+|---|---|
+| "emphasize X" / "highlight X" | Use `$accent` or `$positive` color on that element; bold; or larger fontSize |
+| "dark background" / "inverted panel" | `backgroundColor="$textMain"` on a VStack card, children use `color="$surface"` |
+| "gradient progression" | `backgroundGradient="linear-gradient(90deg, COLOR1 0%, COLOR2 100%)"` across the container |
+| "color-code by sentiment/outcome" | `$positive` for good, `$negative` for bad, `$accent` for neutral |
+| "add icons beside labels" | `<HStack gap="8"><Icon name="ICON" w="20" h="20" /><Text>label</Text></HStack>` per item |
+| "sparkline in KPI tile" | Small `<Chart>` (w="80" h="32") inline beside the KPI value via HStack |
+| "lift / elevate this card" | `shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000"` + `borderRadius="12"` on the VStack |
+| "cluster / group items" | Wrap related items in a VStack with `backgroundColor="$surfaceAlt"` + padding + borderRadius |
+| "use accent border" | `borderLeft.color="$accent" borderLeft.width="4"` on the VStack card |
+| "status dots" | `<Shape shapeType="ellipse" w="10" h="10" fill.color="COLOR" />` beside each label |
+
+When no visual-intent is given, use default rendering — no embellishment needed.
+
 ## NOTES
 {% for note in notes %}
 - {{ note }}
