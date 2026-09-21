@@ -1,0 +1,21 @@
+# EVAL CASE — held-out, never used in prompt examples.
+# Tests: multiple entities × multiple metrics → table (not kpi_row)
+# Domain is intentionally different from the ROAS/ad-campaign worked examples.
+name: eval-table-vs-kpi-disambiguation
+objective: >
+  Test whether the planner picks table over kpi_row when the content is
+  multiple entities each with multiple metrics. Uses an HR / headcount domain
+  (not ad campaigns) to avoid surface-level pattern matching from the examples.
+request: >
+  Show Q3 headcount and attrition across four departments: Engineering (320
+  headcount, 4.2% attrition), Sales (185, 8.7%), Product (62, 2.1%), and
+  Support (140, 11.3%). Highlight that Support attrition is the outlier.
+theme: corporate-slate
+content_source: fully supplied
+expect:
+  compiles: true
+  # Must be table — 4 entities × 2 metrics. kpi_row loses the per-department breakdown.
+  planner_should_pick: [title, table, narrative]
+  watch: >
+    If planner picks kpi_row instead of table, grounding is not generalising
+    beyond the ad-campaign example domain. That is the signal to look for.

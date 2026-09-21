@@ -1,0 +1,25 @@
+# EVAL CASE — held-out, never used in prompt examples.
+# Tests: categorized list → single bullet_list (not one component per category)
+# Domain is intentionally different from the Winners/Losers campaign worked example.
+name: eval-categorized-list-routing
+objective: >
+  Test whether the planner routes a grouped qualitative list to a single
+  bullet_list rather than splitting into separate components per category.
+  Uses a product-feedback domain (not ad campaigns) to avoid surface-level
+  pattern matching from the examples.
+request: >
+  Summarise user feedback from the latest beta. Loved: fast onboarding,
+  clean search UX, mobile notifications. Mixed: pricing page clarity, export
+  formats. Broken: SSO with Google Workspace, CSV import for files over 10MB.
+  Next sprint must fix the two broken items before launch.
+theme: corporate-slate
+content_source: fully supplied
+expect:
+  compiles: true
+  # Single bullet_list — items grouped under Loved/Mixed/Broken are still one
+  # parallel list. Splitting into 3 components creates 3 visual blocks for no reason.
+  planner_should_pick: [title, bullet_list]
+  watch: >
+    If planner creates separate components per category (loved_list, mixed_list,
+    broken_list), grounding is not generalising. One bullet_list with inline
+    formatting is correct.

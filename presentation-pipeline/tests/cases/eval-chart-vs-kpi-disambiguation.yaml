@@ -1,0 +1,22 @@
+# EVAL CASE — held-out, never used in prompt examples.
+# Tests: entity + single metric across 3+ entities → chart (not kpi_row)
+# Domain is intentionally different from the city-ROAS worked example.
+name: eval-chart-vs-kpi-disambiguation
+objective: >
+  Test whether the planner picks chart over kpi_row when the content is
+  one metric across many entities. Uses a store-performance domain (not
+  city-ROAS) to avoid surface-level pattern matching from the examples.
+request: >
+  Show Net Promoter Score for our five retail stores: Connaught Place 71,
+  Bandra 58, Koramangala 82, T Nagar 49, Salt Lake 63. Koramangala is the
+  top performer; T Nagar is below the 55-point threshold we consider at-risk.
+theme: corporate-slate
+content_source: fully supplied
+expect:
+  compiles: true
+  # Must be chart — 5 stores × 1 metric. Bar chart shows rank and gap at a glance.
+  # kpi_row would render 5 equal tiles with no visual sense of order or distance.
+  planner_should_pick: [title, chart, narrative]
+  watch: >
+    If planner picks kpi_row instead of chart, grounding is not generalising.
+    5 entities on one metric is always chart territory.
