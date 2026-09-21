@@ -14,7 +14,7 @@
 {% if theme_element %}## THEME DEFINITION
 {{ theme_element }}
 {% endif %}
-{% if density_tier %}## DENSITY TIER: {{ density_tier }}
+{% if component_count and component_count >= 5 %}## NOTE: Dense slide ({{ component_count }} components) — check for font/spacing overflow
 {% endif %}
 {% if compile_warnings %}## COMPILER WARNINGS (verify visually)
 {% for w in compile_warnings %}

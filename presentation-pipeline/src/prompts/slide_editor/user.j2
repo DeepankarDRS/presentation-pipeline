@@ -1,4 +1,4 @@
-{% if slide_type or components or density or layout_hint %}
+{% if slide_type or components or layout_hint %}
 ## SLIDE INTENT (original plan — for context, not a checklist to re-generate)
 {% if slide_type %}
 Type: {{ slide_type }}
@@ -9,9 +9,6 @@ Components:
 - {{ comp.kind }}{% if comp.count and comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
 
 {% endfor %}
-{% endif %}
-{% if density %}
-Density: {{ density }}
 {% endif %}
 {% if layout_hint %}
 Original layout: {{ layout_hint }}

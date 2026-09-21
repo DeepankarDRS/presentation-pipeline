@@ -75,7 +75,7 @@ def run_visual_critic(
         slide_type=slide_plan.get("slide_type", ""),
         components=slide_plan.get("components", []),
         theme_element=theme_element,
-        density_tier=contract.get("density_tier", ""),
+        component_count=contract.get("component_count", 0),
         compile_warnings=compile_warnings or [],
         layout_issues=layout_issues or [],
         visual_notes=_filter_visual_notes(contract.get("notes", [])),

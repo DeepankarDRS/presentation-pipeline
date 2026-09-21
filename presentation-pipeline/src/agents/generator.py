@@ -1,10 +1,5 @@
 """Generator agent — produces POM XML from the plan + contract + data.
 
-Uses tiered Jinja2 prompt assembly:
-  - minimal (sparse): theme + allowed nodes + critical rules
-  - standard (normal/dense): + per-node attributes + house-style grammar
-  - dense (tight_fit): + shrink checklist
-
 Reads:  contract, theme_element, slide_plans, supplied_content
 Writes: current_xml, generation_history
 """
@@ -48,7 +43,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         allowed_nodes=contract.get("allowed_nodes", []),
         allowed_attributes=contract.get("allowed_attributes", {}),
         node_hierarchy=contract.get("node_hierarchy", ""),
-        density_tier=contract.get("density_tier", "standard"),
+        component_count=contract.get("component_count", 0),
         house_style=contract.get("house_style", ""),
         component_recipes=contract.get("component_recipes", ""),
         notes=contract.get("notes", []),
@@ -62,8 +57,6 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         slide_title=plan.get("slide_title", ""),
         core_hook=state.get("core_hook", ""),
         components=components,
-        density=plan.get("density", "normal"),
-        font_tier=plan.get("font_tier", "standard"),
         layout_hint=plan.get("layout_hint", ""),
         content_data=plan.get("content_data", {}),
         supplied_content=state.get("supplied_content"),

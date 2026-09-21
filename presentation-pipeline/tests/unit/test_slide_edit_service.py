@@ -56,7 +56,7 @@ def test_user_prompt_includes_slide_intent():
     out = tmpl.render(
         current_xml="<Slide></Slide>", theme_element="<Theme />", feedback="move chart left",
         slide_type="data", components=[{"kind": "chart", "count": 1, "content_summary": "Q3"}],
-        density="normal", layout_hint="chart on left",
+        layout_hint="chart on left",
     )
     assert "SLIDE INTENT" in out
     assert "chart" in out

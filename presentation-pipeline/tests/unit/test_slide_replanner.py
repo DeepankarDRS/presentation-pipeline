@@ -16,8 +16,6 @@ def _slide_plan(**overrides):
         "slide_index": 2,
         "slide_type": "content",
         "components": [{"kind": "title", "count": 1}, {"kind": "bullet_list", "count": 1}],
-        "density": "normal",
-        "font_tier": "standard",
         "layout_hint": "title then bullets",
         "content_data": {"bullets": ["Point A", "Point B"]},
         "data_provenance": {"bullets": "user"},
@@ -72,8 +70,6 @@ def test_tier2_new_kind_triggers_replan(mock_plan_single_slide):
         "slide_index": 0,  # plan_single_slide re-enumerates from 0; caller restores real index
         "slide_type": "data",
         "components": [{"kind": "title"}, {"kind": "bullet_list"}, {"kind": "kpi_row", "count": 3}],
-        "density": "normal",
-        "font_tier": "standard",
         "layout_hint": "title, bullets, KPI row",
         "content_data": {"bullets": ["Regenerated bullet"], "kpi_values": [10, 20, 30]},
         "data_provenance": {"bullets": "sample", "kpi_values": "sample"},

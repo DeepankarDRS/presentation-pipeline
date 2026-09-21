@@ -86,7 +86,6 @@ def _make_slide_component_llm():
     out = PlannerSlide(
         slide_type="cover",
         components=[PlannerComponent(component_id="hero_title", kind="title", count=1, content_summary="Title", weight="hero")],
-        density="sparse", font_tier="display",
         layout_hint="Centered title",
     )
     llm = MagicMock()

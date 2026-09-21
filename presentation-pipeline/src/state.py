@@ -59,8 +59,6 @@ class SlidePlan(TypedDict, total=False):
     slide_title: str   # short headline from the outline planner
     slide_type: str    # cover | content | data | section_break | closing
     components: list[ComponentPlan]
-    density: str       # sparse | normal | dense | tight_fit
-    font_tier: str     # display | standard | compact | micro
     layout_hint: str   # freeform layout INTENT (priority/relationships, not pixels)
     content_data: dict[str, Any]
     data_provenance: dict[str, str]  # key → "user" | "sample"

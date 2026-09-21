@@ -11,7 +11,6 @@ content_source: LLM invents every figure, internally consistent
 expect:
   compiles: true
   planner_should_pick: [title, kpi_row, chart, chart, table, bullet_list, caption]
-  density: tight_fit
   watch: >
     overflow -> repairer; does the tier escalate past PATCH (CODE_REVIEW #3/#4)?
     dark theme -> charts wrapped in $chartSurface container

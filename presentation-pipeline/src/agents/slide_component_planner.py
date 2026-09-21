@@ -2,8 +2,7 @@
 
 Called once per slide via LangGraph Send() fan-out. Receives the rich
 OutlineSlide from the outline_planner and produces a full SlidePlan:
-components (each with component_id + content_data), layout_hint, density,
-font_tier.
+components (each with component_id + content_data) and layout_hint.
 
 Each slide gets its own focused LLM call with full attention budget.
 
@@ -105,8 +104,6 @@ def _planner_slide_to_state(
         slide_title=slide_title,
         slide_type=slide.slide_type,
         components=components,
-        density=slide.density,
-        font_tier=slide.font_tier,
         layout_hint=slide.layout_hint,
         content_data=merged_content_data,
         data_provenance=compute_provenance(merged_content_data, supplied_content or {}),
@@ -225,7 +222,6 @@ def slide_plan_serial_node(state: PresentationState) -> dict[str, Any]:
                 "slide_title": slide.get("slide_title", "Slide"),
                 "slide_type": "content",
                 "components": [],
-                "density": "normal",
             }
         assembled.append(plan)
         logger.info(
@@ -273,14 +269,12 @@ def slide_component_planner_node(state: PresentationState) -> dict[str, Any]:
             "slide_title": slide.get("slide_title", "Slide"),
             "slide_type": "content",
             "components": [],
-            "density": "normal",
         }
         return {"assembled_slide_plans": [plan]}
 
     logger.info(
         f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} done "
-        f"({len(plan.get('components', []))} components, "
-        f"density={plan.get('density', '?')})"
+        f"({len(plan.get('components', []))} components)"
     )
 
     return {

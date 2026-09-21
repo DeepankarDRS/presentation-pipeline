@@ -34,8 +34,6 @@ def _make_state(**overrides):
             {"kind": "title", "count": 1, "content_summary": "Q3 Results"},
             {"kind": "kpi_row", "count": 4, "content_summary": "Revenue, Growth, Profit, Clients"},
         ],
-        "density": "normal",
-        "font_tier": "standard",
         "layout_hint": "Title at top, KPI tiles in a row below",
     }]
     state["contract"] = {
