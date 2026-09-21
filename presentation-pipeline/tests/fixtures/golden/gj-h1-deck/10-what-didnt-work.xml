@@ -1,0 +1,59 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="11" color="$negative" bold="true" letterSpacing="2">WHAT DIDN'T WORK · LEAKS TO FIX</Text>
+      <Text fontSize="27" color="$textMain" bold="true">Where efficiency is leaking</Text>
+      <Text fontSize="11" color="$textMuted">Five friction points visible in the June numbers — each with a proposed fix for H2</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="90" h="26" fill.color="FEF2F2" color="$negative" fontSize="10" bold="true" borderRadius="999">H1 GAPS</Shape>
+  </HStack>
+  <VStack w="max" h="490" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Table defaultRowHeight="62" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="120" /><Col width="300" /><Col width="260" /><Col width="300" />
+      <Tr>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">PLATFORM</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">LEAK / ISSUE OBSERVED</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">METRIC EVIDENCE</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">PROPOSED FIX FOR H2</Td>
+      </Tr>
+      <Tr>
+        <Td color="$accent" fontSize="10" bold="true">Blinkit</Td>
+        <Td color="$textMain" fontSize="9">Paneer ACOS is 1.7x category average — high CPM, low conversion rate on generic KWs</Td>
+        <Td color="$textMuted" fontSize="9">CPM ₹470 vs Milk ₹332 · ACOS 23.1% · ROAS 4.33x</Td>
+        <Td color="$textMain" fontSize="9">Cap generic bids on Paneer · shift 20% into Recommendation ads</Td>
+      </Tr>
+      <Tr>
+        <Td color="$accent" fontSize="10" bold="true">Blinkit</Td>
+        <Td color="$textMain" fontSize="9">June GMV dropped -18% MoM — softness after April slot-shift muted top-line</Td>
+        <Td color="$textMuted" fontSize="9">May ₹1.62 Cr → Jun ₹1.32 Cr · lost momentum</Td>
+        <Td color="$textMain" fontSize="9">Maintain top scroll visibility instead of fighting for slot 1 · deploy day-parting</Td>
+      </Tr>
+      <Tr>
+        <Td color="3B82F6" fontSize="10" bold="true">Swiggy</Td>
+        <Td color="$textMain" fontSize="9">Curd on SP search is inefficient vs SILB — spend continues on weaker format</Td>
+        <Td color="$textMuted" fontSize="9">Curd SP ROI 2.68x · ACOS 37.3% (highest single cut)</Td>
+        <Td color="$textMain" fontSize="9">Shift 40% of Curd SP budget into SILB (5.3x) &amp; Browse Boost (12.67x)</Td>
+      </Tr>
+      <Tr>
+        <Td color="3B82F6" fontSize="10" bold="true">Swiggy</Td>
+        <Td color="$textMain" fontSize="9">Budget under-consumed on high-ROI Hyderabad Paneer vs over-consumed on Curd</Td>
+        <Td color="$textMuted" fontSize="9">Curd spend 2.17x of allocation vs Paneer only 1.04x</Td>
+        <Td color="$textMain" fontSize="9">Rebalance monthly budget in favor of Paneer-HYD</Td>
+      </Tr>
+      <Tr>
+        <Td color="B45309" fontSize="10" bold="true">Zepto</Td>
+        <Td color="$textMain" fontSize="9">Bengaluru is the single biggest efficiency leak across all platforms</Td>
+        <Td color="$textMuted" fontSize="9">BLR ROI 2.60x · ACOS 38% · CPC ₹19.3 (Hyd ₹12.7)</Td>
+        <Td color="$textMain" fontSize="9">Cut BLR spend 25% &amp; redeploy to HYD dayparts</Td>
+      </Tr>
+      <Tr>
+        <Td color="B45309" fontSize="10" bold="true">Zepto</Td>
+        <Td color="$textMain" fontSize="9">Generic keywords over-consuming Curd + Milk spend without proportionate return</Td>
+        <Td color="$textMuted" fontSize="9">Generic KWs = 85% of Zepto ad spend · ROI 4.44x</Td>
+        <Td color="$textMain" fontSize="9">Trim generic long-tail · protect SKT + branded · reallocate to Paneer</Td>
+      </Tr>
+    </Table>
+  </VStack>
+  <Text fontSize="9" color="$textMuted">All metrics from June '26 platform reports · ACOS = Spend ÷ Ad Sales · fixes are proposals; expected impact to be validated post-implementation.</Text>
+</VStack></Slide>

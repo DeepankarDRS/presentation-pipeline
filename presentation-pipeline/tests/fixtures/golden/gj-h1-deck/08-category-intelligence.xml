@@ -1,0 +1,66 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">CATEGORY INTELLIGENCE</Text>
+      <Text fontSize="27" color="$textMain" bold="true">Where each category earns its keep</Text>
+      <Text fontSize="11" color="$textMuted">ROI matrix by category x platform (June '26) — showing where to press and where to protect</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="130" h="26" fill.color="E0F2EC" color="$textMain" fontSize="10" bold="true" borderRadius="999">CROSS-PLATFORM</Shape>
+  </HStack>
+  <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Table defaultRowHeight="42" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="120" /><Col width="130" /><Col width="130" /><Col width="130" /><Col width="380" />
+      <Tr>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">CATEGORY</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="center">BLINKIT ROAS</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="center">SWIGGY ROI</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="center">ZEPTO ROI</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">STRATEGIC ROLE</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Milk</Td>
+        <Td color="$positive" fontSize="11" textAlign="center" bold="true">6.89x</Td>
+        <Td color="$textMuted" fontSize="10" textAlign="center">n/a</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center">4.05x</Td>
+        <Td color="$textMuted" fontSize="9">Daily-need anchor · morning day-parting winner (peak 6–9 AM)</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Curd</Td>
+        <Td color="$positive" fontSize="11" textAlign="center" bold="true">8.00x</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center">4.92x</Td>
+        <Td color="$warning" fontSize="10" textAlign="center">3.73x</Td>
+        <Td color="$textMuted" fontSize="9">Volume + margin balance · SILB > SP on Swiggy</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Paneer</Td>
+        <Td color="$warning" fontSize="10" textAlign="center">4.33x</Td>
+        <Td color="$positive" fontSize="11" textAlign="center" bold="true">9.94x</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center">5.94x</Td>
+        <Td color="$textMuted" fontSize="9">Highest efficiency on Swiggy · biggest scale headroom</Td>
+      </Tr>
+    </Table>
+  </VStack>
+  <HStack w="max" justifyContent="spaceBetween"><Text fontSize="12" color="$textMain" bold="true">Category x platform winners — where to double down</Text></HStack>
+  <HStack w="max" h="170" gap="12" alignItems="stretch">
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" borderTop.color="$accent" borderTop.width="4">
+      <Text fontSize="10" color="$accent" bold="true">DEFEND · Blinkit — Milk + Curd</Text>
+      <Text fontSize="22" color="$textMain" bold="true">6.9–8.0x ROAS</Text>
+      <Text fontSize="10" color="$textMuted" bold="true">CATEGORY LEADERS</Text>
+      <Text fontSize="10" color="$textMuted" lineHeight="1.4">Retain top-2 scroll placement · refine Recommendation ads for better NTB · maintain SP on SKT keywords through evening slots.</Text>
+    </VStack>
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" borderTop.color="3B82F6" borderTop.width="4">
+      <Text fontSize="10" color="3B82F6" bold="true">EXPAND · Swiggy — Paneer</Text>
+      <Text fontSize="22" color="$textMain" bold="true">9.94x ROI · 35.8%</Text>
+      <Text fontSize="10" color="$textMuted" bold="true">CATEGORY BEST-IN-CLASS</Text>
+      <Text fontSize="10" color="$textMuted" lineHeight="1.4">Replicate SILB/Browse Boost formats from Curd success · extend Paneer HYD model to BLR + CHE.</Text>
+    </VStack>
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" borderTop.color="$warning" borderTop.width="4">
+      <Text fontSize="10" color="B45309" bold="true">TIGHTEN · Zepto — Curd + Milk</Text>
+      <Text fontSize="22" color="$textMain" bold="true">ACOS 24–27%</Text>
+      <Text fontSize="10" color="$textMuted" bold="true">EFFICIENCY OPPORTUNITY</Text>
+      <Text fontSize="10" color="$textMuted" lineHeight="1.4">Cut generic-KW bleed · Protect only SKT + branded queries · Reallocate freed spend to Paneer.</Text>
+    </VStack>
+  </HStack>
+  <Text fontSize="9" color="$textMuted">ROAS/ROI = Ad Sales ÷ Ad Spend. "n/a" = category-level split not reported at that granularity on that platform.</Text>
+</VStack></Slide>

@@ -1,0 +1,80 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">H1 2026 SNAPSHOT</Text>
+      <Text fontSize="27" color="$textMain" bold="true">H1 at a glance — ₹44 Cr GMV · ₹13.78 Cr Ad Sales · 5.09x blended ROAS</Text>
+      <Text fontSize="11" color="$textMuted">Every platform closed Q2 higher than Q1 · Blinkit leads on efficiency (6.69x) · Zepto delivers volume (₹9.55 Cr ad sales)</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="10" bold="true" borderRadius="999">JAN '26 → JUN '26</Shape>
+  </HStack>
+  <HStack w="max" h="100" gap="12" alignItems="stretch">
+    <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">H1 GMV (JAN–JUN)</Text>
+      <Text fontSize="26" color="$textMain" bold="true">₹44.08 Cr</Text>
+      <Text fontSize="10" color="$textMuted">3 platforms combined</Text>
+    </VStack>
+    <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">H1 AD SPEND</Text>
+      <Text fontSize="26" color="$textMain" bold="true">₹2.71 Cr</Text>
+      <Text fontSize="10" color="$textMuted">6.1% of H1 GMV</Text>
+    </VStack>
+    <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">H1 AD SALES</Text>
+      <Text fontSize="26" color="$textMain" bold="true">₹13.78 Cr</Text>
+      <Text fontSize="10" color="$textMuted">31.3% of H1 GMV</Text>
+    </VStack>
+    <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">H1 BLENDED ROAS</Text>
+      <Text fontSize="26" color="$textMain" bold="true">5.09x</Text>
+      <Text fontSize="10" color="$textMuted">ACOS 19.6% blended</Text>
+    </VStack>
+    <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="10" color="$textMuted">Q2 vs Q1 GMV GROWTH</Text>
+      <Text fontSize="26" color="$positive" bold="true">+22.2%</Text>
+      <Text fontSize="10" color="$textMuted">₹19.83 Cr → ₹24.25 Cr</Text>
+    </VStack>
+  </HStack>
+  <HStack w="max" h="282" gap="14" alignItems="stretch">
+    <VStack w="60%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <Text fontSize="11" color="$textMuted">Monthly total sales (₹ Crores)</Text>
+      <Chart w="max" h="220" chartType="bar" showLegend="true" chartColors='["0D6B4E","3B82F6","F59E0B"]'>
+        <ChartSeries name="Blinkit"><ChartDataPoint label="Jan" value="1.23" /><ChartDataPoint label="Feb" value="1.11" /><ChartDataPoint label="Mar" value="1.54" /><ChartDataPoint label="Apr" value="1.15" /><ChartDataPoint label="May" value="1.62" /><ChartDataPoint label="Jun" value="1.32" /></ChartSeries>
+        <ChartSeries name="Swiggy"><ChartDataPoint label="Jan" value="1.16" /><ChartDataPoint label="Feb" value="1.13" /><ChartDataPoint label="Mar" value="1.18" /><ChartDataPoint label="Apr" value="1.17" /><ChartDataPoint label="May" value="1.46" /><ChartDataPoint label="Jun" value="1.80" /></ChartSeries>
+        <ChartSeries name="Zepto"><ChartDataPoint label="Jan" value="4.59" /><ChartDataPoint label="Feb" value="3.50" /><ChartDataPoint label="Mar" value="4.55" /><ChartDataPoint label="Apr" value="4.69" /><ChartDataPoint label="May" value="5.41" /><ChartDataPoint label="Jun" value="5.17" /></ChartSeries>
+      </Chart>
+    </VStack>
+    <VStack w="40%" gap="10">
+      <VStack w="max" padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
+        <Text fontSize="10" color="$accentAlt" bold="true" letterSpacing="1">BLINKIT · EFFICIENCY LEADER</Text>
+        <Table defaultRowHeight="28" cellBorder.color="3A4A44" cellBorder.width="1">
+          <Tr><Td color="A0B0A8" fontSize="9">H1 GMV</Td><Td color="FFFFFF" fontSize="10" bold="true">₹8.37 Cr</Td><Td color="A0B0A8" fontSize="9">Ad Spend</Td><Td color="FFFFFF" fontSize="10" bold="true">₹41.9 L</Td></Tr>
+          <Tr><Td color="A0B0A8" fontSize="9">Ad Sales</Td><Td color="FFFFFF" fontSize="10" bold="true">₹2.80 Cr</Td><Td color="A0B0A8" fontSize="9">ACOS</Td><Td color="FFFFFF" fontSize="10" bold="true">14.9%</Td></Tr>
+          <Tr><Td color="A0B0A8" fontSize="9">H1 ROAS</Td><Td color="$accentAlt" fontSize="10" bold="true">6.69x</Td><Td color="A0B0A8" fontSize="9">Ad % GMV</Td><Td color="FFFFFF" fontSize="10" bold="true">33.5%</Td></Tr>
+        </Table>
+        <Text fontSize="9" color="A0B0A8">Highest efficiency · Apr peak GMV ₹1.62 Cr</Text>
+      </VStack>
+      <VStack w="max" padding="14" gap="6" backgroundColor="1E3A5F" borderRadius="12">
+        <Text fontSize="10" color="60A5FA" bold="true" letterSpacing="1">SWIGGY · FASTEST EXIT MOMENTUM</Text>
+        <Table defaultRowHeight="28" cellBorder.color="2E4A6F" cellBorder.width="1">
+          <Tr><Td color="A0B0C8" fontSize="9">H1 GMV</Td><Td color="FFFFFF" fontSize="10" bold="true">₹8.25 Cr</Td><Td color="A0B0C8" fontSize="9">Ad Spend</Td><Td color="FFFFFF" fontSize="10" bold="true">₹28.9 L</Td></Tr>
+          <Tr><Td color="A0B0C8" fontSize="9">Ad Sales</Td><Td color="FFFFFF" fontSize="10" bold="true">₹1.42 Cr</Td><Td color="A0B0C8" fontSize="9">ACOS</Td><Td color="FFFFFF" fontSize="10" bold="true">20.3%</Td></Tr>
+          <Tr><Td color="A0B0C8" fontSize="9">H1 ROAS</Td><Td color="60A5FA" fontSize="10" bold="true">4.92x</Td><Td color="A0B0C8" fontSize="9">Ad % GMV</Td><Td color="FFFFFF" fontSize="10" bold="true">17.2%</Td></Tr>
+        </Table>
+        <Text fontSize="9" color="A0B0C8">Jun ROAS 7.37x — H1 best · biggest headroom on Ad-share</Text>
+      </VStack>
+      <VStack w="max" padding="14" gap="6" backgroundColor="4A2D0A" borderRadius="12">
+        <Text fontSize="10" color="FBBF24" bold="true" letterSpacing="1">ZEPTO · VOLUME ENGINE</Text>
+        <Table defaultRowHeight="28" cellBorder.color="5A3D1A" cellBorder.width="1">
+          <Tr><Td color="C8A080" fontSize="9">H1 GMV</Td><Td color="FFFFFF" fontSize="10" bold="true">₹27.45 Cr</Td><Td color="C8A080" fontSize="9">Ad Spend</Td><Td color="FFFFFF" fontSize="10" bold="true">₹2.00 Cr</Td></Tr>
+          <Tr><Td color="C8A080" fontSize="9">Ad Sales</Td><Td color="FFFFFF" fontSize="10" bold="true">₹9.55 Cr</Td><Td color="C8A080" fontSize="9">ACOS</Td><Td color="FFFFFF" fontSize="10" bold="true">20.9%</Td></Tr>
+          <Tr><Td color="C8A080" fontSize="9">H1 ROAS</Td><Td color="FBBF24" fontSize="10" bold="true">4.78x</Td><Td color="C8A080" fontSize="9">Ad % GMV</Td><Td color="FFFFFF" fontSize="10" bold="true">34.8%</Td></Tr>
+        </Table>
+        <Text fontSize="9" color="C8A080">62% of GMV · 69% of Ad Sales · Mar ROAS dip (2.40x) to fix</Text>
+      </VStack>
+    </VStack>
+  </HStack>
+  <VStack w="max" padding="10" backgroundColor="E0F2EC" borderRadius="8">
+    <Text fontSize="10" color="$textMain" lineHeight="1.4"><B>H1 read:</B> ₹2.71 Cr ads returned ₹13.78 Cr sales (5.09x) · Zepto is 74% of spend and 69% of ad sales · Blinkit's 6.69x proves the efficiency ceiling · Swiggy's June ROAS 7.37x signals the H2 opportunity.</Text>
+  </VStack>
+</VStack></Slide>
