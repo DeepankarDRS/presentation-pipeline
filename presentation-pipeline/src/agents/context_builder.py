@@ -340,12 +340,40 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     return notes
 
 
+# ── Golden examples ─────────────────────────────────────────────────────────
+# Few-shot golden XML examples keyed by slide archetype (data, narrative, cover).
+# Selected per slide_type so the LLM sees what "polished" looks like.
+
+_SLIDE_TYPE_TO_EXAMPLE_KEY: dict[str, str] = {
+    "data": "data",
+    "content": "narrative",
+    "cover": "cover",
+    "closing": "cover",
+    "section_break": "narrative",
+}
+
+
+@functools.lru_cache(maxsize=1)
+def _load_golden_examples() -> dict[str, str]:
+    """Load core/golden-examples.yaml (cached)."""
+    return _load_yaml("core/golden-examples.yaml") or {}
+
+
+def _render_golden_examples(slide_type: str) -> str:
+    """Return the golden XML example best matching *slide_type*."""
+    examples = _load_golden_examples()
+    key = _SLIDE_TYPE_TO_EXAMPLE_KEY.get(slide_type, "data")
+    xml = examples.get(key, "")
+    if not xml:
+        return ""
+    return f"### {key.upper()} slide example\n```xml\n{xml.strip()}\n```"
+
+
 # ── House-style grammar ──────────────────────────────────────────────────────
-# The generator learns layout from ONE compositional grammar (core/house-style
-# .yaml), the same for every slide — not from a per-pattern template or an
-# injected example slide. The grammar describes the vocabulary + rules + the
-# height-budget arithmetic; the LLM composes the actual structure from the
-# slide's own content.
+# The generator learns layout from the compositional grammar (core/house-style
+# .yaml) AND from golden XML examples (core/golden-examples.yaml). The grammar
+# describes the vocabulary + rules + the height-budget arithmetic; golden
+# examples show what a finished, polished slide looks like.
 
 _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("frame", "FRAME"),
@@ -512,6 +540,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     )
     house_style = _render_house_style() if has_grammar else ""
     component_recipes = _render_component_recipes(kinds) if has_grammar else ""
+    slide_type = slide_plan.get("slide_type", "content")
+    golden_examples = _render_golden_examples(slide_type) if has_grammar else ""
 
     return {
         "allowed_nodes": allowed_nodes,
@@ -526,6 +556,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "notes": notes,
         "house_style": house_style,
         "component_recipes": component_recipes,
+        "golden_examples": golden_examples,
         "density_tier": tier,
     }
 

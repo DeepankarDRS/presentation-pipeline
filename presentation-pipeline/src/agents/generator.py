@@ -51,6 +51,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         density_tier=contract.get("density_tier", "standard"),
         house_style=contract.get("house_style", ""),
         component_recipes=contract.get("component_recipes", ""),
+        golden_examples=contract.get("golden_examples", ""),
         notes=contract.get("notes", []),
         core_hook=state.get("core_hook", ""),
         slide_type=plan.get("slide_type", ""),

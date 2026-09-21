@@ -170,6 +170,15 @@ BUDGET so band heights sum to ~720 -> size the rigid nodes -> fill with content.
 ## COMPONENT RECIPES
 {{ component_recipes }}
 {% endif %}
+{% if golden_examples %}
+
+## GOLDEN REFERENCE
+Study this finished slide carefully — it shows the level of polish, spacing, and
+design density you must match. Do NOT copy its content or structure; adapt its
+QUALITY (visual hierarchy, tight spacing, accent usage, dark hero panels, card
+rhythm) to the slide you are building.
+{{ golden_examples }}
+{% endif %}
 {% if density_tier == 'dense' %}
 
 ## SHRINK CHECKLIST (tight_fit slides)
