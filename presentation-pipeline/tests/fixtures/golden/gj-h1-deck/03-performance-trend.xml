@@ -1,0 +1,39 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">PERFORMANCE TREND</Text>
+      <Text fontSize="28" color="$textMain" bold="true">Six-Month Sales Trajectory</Text>
+      <Text fontSize="11" color="$textMuted">Monthly Total Sales (₹ Lakhs) across Blinkit, Swiggy Instamart &amp; Zepto — showing the shape of H1</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="10" bold="true" borderRadius="999">Jan '26 → JUN '26</Shape>
+  </HStack>
+  <HStack w="max" h="370" gap="14" alignItems="stretch">
+    <VStack w="62%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <Text fontSize="12" color="$textMain" bold="true">Monthly Total Sales (₹ Lakhs)</Text>
+      <Chart w="max" h="300" chartType="line" showLegend="true" chartColors='["0D6B4E","3B82F6","F59E0B"]'>
+        <ChartSeries name="Blinkit"><ChartDataPoint label="Jan" value="123" /><ChartDataPoint label="Feb" value="111" /><ChartDataPoint label="Mar" value="154" /><ChartDataPoint label="Apr" value="115" /><ChartDataPoint label="May" value="162" /><ChartDataPoint label="Jun" value="132" /></ChartSeries>
+        <ChartSeries name="Swiggy"><ChartDataPoint label="Jan" value="116" /><ChartDataPoint label="Feb" value="113" /><ChartDataPoint label="Mar" value="118" /><ChartDataPoint label="Apr" value="117" /><ChartDataPoint label="May" value="146" /><ChartDataPoint label="Jun" value="180" /></ChartSeries>
+        <ChartSeries name="Zepto"><ChartDataPoint label="Jan" value="459" /><ChartDataPoint label="Feb" value="350" /><ChartDataPoint label="Mar" value="455" /><ChartDataPoint label="Apr" value="469" /><ChartDataPoint label="May" value="541" /><ChartDataPoint label="Jun" value="517" /></ChartSeries>
+      </Chart>
+    </VStack>
+    <VStack w="38%" gap="10">
+      <VStack w="max" padding="16" gap="8" backgroundColor="E0F2EC" borderRadius="12" borderLeft.color="3B82F6" borderLeft.width="5">
+        <Text fontSize="10" color="3B82F6" bold="true" letterSpacing="1">SWIGGY GROWTH</Text>
+        <Text fontSize="28" color="$textMain" bold="true">+50.5%</Text>
+        <Text fontSize="11" color="$textMuted" lineHeight="1.4">Feb '26 (₹1.13 Cr) → Jun '26 (₹1.80 Cr). Compounding since April SILB shift &amp; May day-parting.</Text>
+      </VStack>
+      <VStack w="max" padding="16" gap="8" backgroundColor="FFF7ED" borderRadius="12" borderLeft.color="$warning" borderLeft.width="5">
+        <Text fontSize="10" color="B45309" bold="true" letterSpacing="1">ZEPTO H1 GROWTH</Text>
+        <Text fontSize="28" color="$textMain" bold="true">+12.6%</Text>
+        <Text fontSize="11" color="$textMuted" lineHeight="1.4">Dec '25 (₹4.59 Cr) → Jun '26 (₹5.17 Cr). Peaked in May at ₹5.41 Cr - sequential correction in June.</Text>
+      </VStack>
+      <VStack w="max" padding="16" gap="8" backgroundColor="FEF2F2" borderRadius="12" borderLeft.color="$negative" borderLeft.width="5">
+        <Text fontSize="10" color="$negative" bold="true" letterSpacing="1">BLINKIT MoM (JUN)</Text>
+        <Text fontSize="28" color="$negative" bold="true">-18.4%</Text>
+        <Text fontSize="11" color="$textMuted" lineHeight="1.4">₹1.62 Cr (May) → ₹1.32 Cr (Jun). April slot-shift muted top-line; needs SB reinforcement &amp; day-parting rollout.</Text>
+      </VStack>
+    </VStack>
+  </HStack>
+  <Text fontSize="9" color="$textMuted">Source: SKU-level Sales sheets — Blinkit, Swiggy &amp; Zepto (Dec '25 – Jun '26). All values in ₹ Lakhs. Directional analysis; correlation not causation.</Text>
+</VStack></Slide>

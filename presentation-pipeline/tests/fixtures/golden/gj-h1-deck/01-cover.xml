@@ -1,0 +1,25 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><HStack w="1280" h="720">
+  <VStack w="56%" h="max" padding="56" gap="16" backgroundColor="$surfaceAlt" justifyContent="center">
+    <HStack gap="10" alignItems="center">
+      <Shape shapeType="ellipse" w="10" h="10" fill.color="$accent" line.color="$accent" />
+      <Text fontSize="12" color="$accent" bold="true" letterSpacing="2">GODREJ JERSEY</Text>
+    </HStack>
+    <Text fontSize="11" color="$textMuted" bold="true" letterSpacing="2">Q-COMMERCE PERFORMANCE REVIEW</Text>
+    <VStack gap="6" margin.top="12">
+      <Text fontSize="42" color="$textMain" bold="true" lineHeight="1.15">H1 2026</Text>
+      <Text fontSize="42" color="$textMain" bold="true" lineHeight="1.15">Read-out &amp;</Text>
+      <Text fontSize="42" color="$textMain" bold="true" lineHeight="1.15">H2 Playbook</Text>
+    </VStack>
+    <VStack gap="6" margin.top="16">
+      <Text fontSize="13" color="$textMuted">What worked, what didn't, and where we scale next</Text>
+      <Text fontSize="11" color="$textMuted" lineHeight="1.5">A data-backed walkthrough across Blinkit, Swiggy Instamart &amp; Zepto — built on June '26 platform reports and Jan '26 to Jun '26 trend.</Text>
+    </VStack>
+    <Text fontSize="10" color="$textMuted" bold="true" letterSpacing="1" margin.top="24">PREPARED FOR · BRAND LEADERSHIP | PERIOD · JAN - JUNE '26</Text>
+  </VStack>
+  <VStack w="44%" h="max" backgroundColor="$accent" padding="48" justifyContent="center" alignItems="center" gap="20">
+    <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="2">BLINKIT · SWIGGY · ZEPTO</Text>
+    <Shape shapeType="ellipse" w="280" h="280" fill.color="1A7D5C" line.color="1A7D5C" />
+    <Icon name="bar-chart-2" size="48" color="$accentAlt" />
+  </VStack>
+</HStack></Slide>

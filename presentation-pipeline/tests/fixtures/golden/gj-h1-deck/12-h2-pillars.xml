@@ -1,0 +1,85 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">WAY FORWARD · H2 2026</Text>
+      <Text fontSize="27" color="$textMain" bold="true">Five pillars for H2 scale-up</Text>
+      <Text fontSize="11" color="$textMuted">Concrete moves on format mix, city allocation, day-parting, SKU discipline &amp; measurement</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="140" h="26" fill.color="E0F2EC" color="$textMain" fontSize="10" bold="true" borderRadius="999">STRATEGIC PILLARS</Shape>
+  </HStack>
+  <HStack w="max" h="490" gap="10" alignItems="stretch">
+    <VStack w="20%" padding="14" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderTop.color="$accent" borderTop.width="4">
+      <Text fontSize="28" color="$accent" bold="true">01</Text>
+      <Text fontSize="14" color="$textMain" bold="true" lineHeight="1.2">Format Rebalance</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">GOAL</Text>
+      <Text fontSize="9" color="$textMuted" lineHeight="1.4">Grow SILB / Browse / SB share from ~65% today to ≥80% by Dec.</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">MOVES</Text>
+      <Ul fontSize="9" color="$textMuted" lineHeight="1.3">
+        <Li>Extend April format shift to Blinkit + Zepto Curd</Li>
+        <Li>Scale Swiggy Browse Boost (₹48K → ₹1.5L)</Li>
+        <Li>Retain SP only for branded &amp; deep-funnel intent</Li>
+      </Ul>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">TARGET</Text>
+      <Text fontSize="10" color="$positive" bold="true">+0.6x lift on blended ROAS</Text>
+    </VStack>
+    <VStack w="20%" padding="14" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderTop.color="3B82F6" borderTop.width="4">
+      <Text fontSize="28" color="3B82F6" bold="true">02</Text>
+      <Text fontSize="14" color="$textMain" bold="true" lineHeight="1.2">City Re-allocation</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">GOAL</Text>
+      <Text fontSize="9" color="$textMuted" lineHeight="1.4">Route the next rupee to its most efficient city.</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">MOVES</Text>
+      <Ul fontSize="9" color="$textMuted" lineHeight="1.3">
+        <Li>Bengaluru Zepto spend: -25%</Li>
+        <Li>Chennai (9.1x ROI): scale from ₹0.6L → ₹2L</Li>
+        <Li>Extend Paneer-HYD model on Swiggy to BLR + CHE</Li>
+      </Ul>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">TARGET</Text>
+      <Text fontSize="10" color="$positive" bold="true">Blended ACOS 20% → 17%</Text>
+    </VStack>
+    <VStack w="20%" padding="14" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderTop.color="$warning" borderTop.width="4">
+      <Text fontSize="28" color="B45309" bold="true">03</Text>
+      <Text fontSize="14" color="$textMain" bold="true" lineHeight="1.2">Day-part Rollout</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">GOAL</Text>
+      <Text fontSize="9" color="$textMuted" lineHeight="1.4">Take May's "sweet hours" playbook cross-platform.</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">MOVES</Text>
+      <Ul fontSize="9" color="$textMuted" lineHeight="1.3">
+        <Li>Deploy 6–11 AM slot on Blinkit for Milk/Paneer/Curd</Li>
+        <Li>Build second slot for Ghee (weekend cook prep)</Li>
+        <Li>Split every category into AM/PM sub-campaigns</Li>
+      </Ul>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">TARGET</Text>
+      <Text fontSize="10" color="$positive" bold="true">Recover Blinkit MoM: +15% by Aug</Text>
+    </VStack>
+    <VStack w="20%" padding="14" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderTop.color="8B5CF6" borderTop.width="4">
+      <Text fontSize="28" color="8B5CF6" bold="true">04</Text>
+      <Text fontSize="14" color="$textMain" bold="true" lineHeight="1.2">SKU Discipline</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">GOAL</Text>
+      <Text fontSize="9" color="$textMuted" lineHeight="1.4">A single SKU tiering framework across all 3 platforms.</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">MOVES</Text>
+      <Ul fontSize="9" color="$textMuted" lineHeight="1.3">
+        <Li>A-tier (top 20% by GMV): ROAS floor 5x, protect at all costs</Li>
+        <Li>B-tier: efficiency-testing zone, day-parted</Li>
+        <Li>C-tier: harvest visibility, no paid support</Li>
+      </Ul>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">TARGET</Text>
+      <Text fontSize="10" color="$positive" bold="true">Free up 8–10% of spend</Text>
+    </VStack>
+    <VStack w="20%" padding="14" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderTop.color="$textMain" borderTop.width="4">
+      <Text fontSize="28" color="$textMain" bold="true">05</Text>
+      <Text fontSize="14" color="$textMain" bold="true" lineHeight="1.2">Measurement Uplift</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">GOAL</Text>
+      <Text fontSize="9" color="$textMuted" lineHeight="1.4">Faster feedback loops.</Text>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">MOVES</Text>
+      <Ul fontSize="9" color="$textMuted" lineHeight="1.3">
+        <Li>Weekly ROAS+ACOS scorecard per platform</Li>
+        <Li>Clean AM/PM tagging for every campaign</Li>
+        <Li>Standardize ACOS calc across sheets</Li>
+        <Li>Add NTB % tracking on Swiggy/Zepto</Li>
+      </Ul>
+      <Text fontSize="9" color="$textMuted" bold="true" letterSpacing="1">TARGET</Text>
+      <Text fontSize="10" color="$positive" bold="true">Monthly → weekly cycles</Text>
+    </VStack>
+  </HStack>
+  <Text fontSize="9" color="$textMuted">Targets are directional H2 goals framed from H1 signal · to be re-baselined at end of July after first month of execution.</Text>
+</VStack></Slide>

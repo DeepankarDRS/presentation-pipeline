@@ -1,0 +1,73 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">OPERATIONAL ROADMAP</Text>
+      <Text fontSize="27" color="$textMain" bold="true">H2 Tactical Roadmap</Text>
+      <Text fontSize="11" color="$textMuted">Monthly execution plan — the five pillars translated into calendar-anchored actions</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="10" bold="true" borderRadius="999">JUL '26 → DEC '26</Shape>
+  </HStack>
+  <VStack w="max" h="490" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Table defaultRowHeight="50" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="90" /><Col width="170" /><Col width="420" /><Col width="100" /><Col width="120" />
+      <Tr>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">MONTH</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">THEME</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">KEY EXECUTION ACTIONS</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="center">TARGET ROAS</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">TARGET GMV</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Jul '26</Td>
+        <Td color="$textMain" fontSize="9">Baseline &amp; Fix Blinkit</Td>
+        <Td color="$textMuted" fontSize="9">Roll out 6–11 AM day-parting on Blinkit · Cap Paneer generic bids · weekly scorecard V1</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center" bold="true">4.90x</Td>
+        <Td color="$textMain" fontSize="10" textAlign="right" bold="true">₹8.6 Cr</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Aug '26</Td>
+        <Td color="$textMain" fontSize="9">City Rebalance — Zepto</Td>
+        <Td color="$textMuted" fontSize="9">-25% Bengaluru spend · scale Chennai to ₹1.5L · A-tier SKU protection live</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center" bold="true">5.10x</Td>
+        <Td color="$textMain" fontSize="10" textAlign="right" bold="true">₹9.0 Cr</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Sep '26</Td>
+        <Td color="$textMain" fontSize="9">Swiggy Paneer Expansion</Td>
+        <Td color="$textMuted" fontSize="9">Extend HYD Paneer playbook to new cities · Scale Browse Boost to ₹1.5L</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center" bold="true">5.30x</Td>
+        <Td color="$textMain" fontSize="10" textAlign="right" bold="true">₹9.5 Cr</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Oct '26</Td>
+        <Td color="$warning" fontSize="9" bold="true">Festive Peak — Diwali</Td>
+        <Td color="$textMuted" fontSize="9">Ghee-led hero-SKU push (Diwali) · Curd combo bundles · NTB retargeting from H1 base</Td>
+        <Td color="$positive" fontSize="10" textAlign="center" bold="true">5.50x</Td>
+        <Td color="$positive" fontSize="10" textAlign="right" bold="true">₹11.2 Cr</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Nov '26</Td>
+        <Td color="$textMain" fontSize="9">Post-festive Retention</Td>
+        <Td color="$textMuted" fontSize="9">Retargeting to acquired NTB (Blinkit 10.3K + platform adds) · defend festive share</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center" bold="true">5.60x</Td>
+        <Td color="$textMain" fontSize="10" textAlign="right" bold="true">₹10.5 Cr</Td>
+      </Tr>
+      <Tr>
+        <Td color="$textMain" fontSize="10" bold="true">Dec '26</Td>
+        <Td color="$textMain" fontSize="9">Year-End Consolidation</Td>
+        <Td color="$textMuted" fontSize="9">Full-portfolio Curd + Paneer defense · New-year bundles · finalize H1 '27 plan</Td>
+        <Td color="$textMain" fontSize="10" textAlign="center" bold="true">5.70x</Td>
+        <Td color="$textMain" fontSize="10" textAlign="right" bold="true">₹11.0 Cr</Td>
+      </Tr>
+      <Tr>
+        <Td color="$accent" fontSize="10" bold="true" backgroundColor="E0F2EC">H2 TOTAL</Td>
+        <Td color="$accent" fontSize="9" bold="true" backgroundColor="E0F2EC">Cumulative view</Td>
+        <Td color="$textMain" fontSize="9" backgroundColor="E0F2EC">Blended ROAS trajectory 4.88x → 5.70x · efficiency-first, then scale</Td>
+        <Td color="$accent" fontSize="10" textAlign="center" bold="true" backgroundColor="E0F2EC">5.30x avg</Td>
+        <Td color="$accent" fontSize="10" textAlign="right" bold="true" backgroundColor="E0F2EC">₹59.8 Cr</Td>
+      </Tr>
+    </Table>
+  </VStack>
+  <Text fontSize="9" color="$textMuted">Targets built off H1 run-rate + planned optimization impact. GMV extrapolated from June '26 baseline plus seasonality &amp; efficiency uplift · to be re-forecast after Aug close.</Text>
+</VStack></Slide>

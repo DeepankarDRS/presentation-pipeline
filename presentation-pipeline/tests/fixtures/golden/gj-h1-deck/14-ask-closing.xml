@@ -1,0 +1,73 @@
+<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" accentAlt="34D399" positive="0D6B4E" negative="E54D2E" warning="F59E0B" textMain="141F1C" textMuted="5F706B" border="D5DDD9" />
+<Slide><HStack w="1280" h="720">
+  <VStack w="60%" h="max" padding="36" gap="14" backgroundColor="$surface">
+    <VStack gap="4">
+      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">ASK FROM BRAND · SUPPORT NEEDED</Text>
+      <Text fontSize="27" color="$textMain" bold="true">To execute H2, we need four things</Text>
+      <Text fontSize="11" color="$textMuted">Enablers from Godrej Jersey brand team to unlock the full growth plan</Text>
+    </VStack>
+    <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="$accent" borderLeft.width="5">
+      <HStack gap="12" alignItems="start">
+        <Text fontSize="22" color="$accent" bold="true">01</Text>
+        <VStack gap="4">
+          <Text fontSize="14" color="$textMain" bold="true">Budget flexibility</Text>
+          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Approval to reallocate ~₹8–10 L monthly across platforms &amp; cities without SKU-locked splits — allows Chennai scale-up, Bengaluru pullback, and Swiggy Paneer expansion. Total budget envelope unchanged.</Text>
+        </VStack>
+      </HStack>
+    </VStack>
+    <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="3B82F6" borderLeft.width="5">
+      <HStack gap="12" alignItems="start">
+        <Text fontSize="22" color="3B82F6" bold="true">02</Text>
+        <VStack gap="4">
+          <Text fontSize="14" color="$textMain" bold="true">Creative refresh</Text>
+          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Paneer + Ghee hero creatives need refresh — festive season needs fresh visuals, especially for Diwali homepage banners. 2 new creatives/category by mid-Aug (5 categories = 10 assets).</Text>
+        </VStack>
+      </HStack>
+    </VStack>
+    <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="$warning" borderLeft.width="5">
+      <HStack gap="12" alignItems="start">
+        <Text fontSize="22" color="B45309" bold="true">03</Text>
+        <VStack gap="4">
+          <Text fontSize="14" color="$textMain" bold="true">Metro fill-rate</Text>
+          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Paneer + Curd hero SKUs need ≥95% fill rate in top cities to support Swiggy expansion. Current OOS incidents in metro dark stores waste high-ROI ad clicks.</Text>
+        </VStack>
+      </HStack>
+    </VStack>
+    <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="8B5CF6" borderLeft.width="5">
+      <HStack gap="12" alignItems="start">
+        <Text fontSize="22" color="8B5CF6" bold="true">04</Text>
+        <VStack gap="4">
+          <Text fontSize="14" color="$textMain" bold="true">Pricing parity view</Text>
+          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Weekly pricing benchmark vs Amul, Heritage, Nandini — high-ACOS moments on Curd correlate with competitor discount events.</Text>
+        </VStack>
+      </HStack>
+    </VStack>
+  </VStack>
+  <VStack w="40%" h="max" padding="40" gap="24" backgroundColor="$textMain" justifyContent="center">
+    <Text fontSize="11" color="$accentAlt" bold="true" letterSpacing="2">CLOSING NOTE</Text>
+    <Text fontSize="28" color="$surfaceAlt" bold="true" lineHeight="1.3">From reading the numbers, to shaping them.</Text>
+    <VStack gap="4" margin.top="16">
+      <Text fontSize="10" color="$accentAlt" bold="true" letterSpacing="1">H2 NORTH STAR</Text>
+      <Shape shapeType="rect" w="max" h="1" fill.color="3A4A44" line.color="3A4A44" />
+    </VStack>
+    <VStack gap="10">
+      <VStack gap="2">
+        <Text fontSize="24" color="$surfaceAlt" bold="true">₹59.8 Cr</Text>
+        <Text fontSize="10" color="A0B0A8">projected GMV</Text>
+      </VStack>
+      <VStack gap="2">
+        <Text fontSize="24" color="$surfaceAlt" bold="true">5.30x</Text>
+        <Text fontSize="10" color="A0B0A8">blended ROAS</Text>
+      </VStack>
+      <VStack gap="2">
+        <Text fontSize="24" color="$surfaceAlt" bold="true">-3 ppt</Text>
+        <Text fontSize="10" color="A0B0A8">blended ACOS improvement</Text>
+      </VStack>
+    </VStack>
+    <Text fontSize="11" color="D0DDD8" lineHeight="1.4" margin.top="12">Every H2 lever is a repeat of a proven H1 signal — nothing untested. The ask is speed &amp; support.</Text>
+    <VStack gap="4" margin.top="16">
+      <Text fontSize="11" color="$accentAlt" bold="true">THANK YOU · QUESTIONS WELCOME</Text>
+      <Text fontSize="9" color="A0B0A8">Prepared from June '26 platform reports</Text>
+    </VStack>
+  </VStack>
+</HStack></Slide>
