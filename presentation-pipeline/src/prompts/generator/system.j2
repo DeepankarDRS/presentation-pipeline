@@ -170,7 +170,24 @@ BUDGET so band heights sum to ~720 -> size the rigid nodes -> fill with content.
 ## COMPONENT RECIPES
 {{ component_recipes }}
 {% endif %}
-{% if golden_examples %}
+{% if blueprint_structure %}
+
+## BLUEPRINT (follow this structure — do NOT rearrange)
+A tested layout skeleton is provided below. You MUST follow this band structure:
+do NOT add, remove, or reorder bands. Do NOT change root type, split ratios, or
+flex properties. Your job is to fill content into each band's slots and compute
+rigid band heights using the formula provided.
+
+{{ blueprint_structure }}
+
+### Reference implementation
+This XML shows the exact nesting, flex properties, and spacing for this blueprint.
+Adapt CONTENT (titles, data, labels, colors) but keep the SAME band structure,
+nesting depth, and flex properties (w, h, gap, padding, borderRadius, alignItems).
+```xml
+{{ blueprint_reference_xml }}
+```
+{% elif golden_examples %}
 
 ## GOLDEN REFERENCE
 Study this finished slide carefully — it shows the level of polish, spacing, and

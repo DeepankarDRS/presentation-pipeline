@@ -17,6 +17,7 @@ from typing import Any
 
 import yaml
 
+from src.agents.blueprint_selector import select_blueprint
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
@@ -543,6 +544,46 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar else ""
 
+    blueprint = select_blueprint(slide_plan)
+    blueprint_structure = ""
+    blueprint_reference_xml = ""
+    blueprint_name = ""
+    if blueprint:
+        blueprint_name = blueprint.get("blueprint_name", "")
+        blueprint_reference_xml = (blueprint.get("reference_xml") or "").strip()
+        struct = blueprint.get("structure", {})
+        bands = struct.get("bands", [])
+        lines = [
+            f"Root: <{struct.get('root', 'VStack')}> "
+            f"padding={struct.get('padding', 36)} gap={struct.get('gap', 14)}",
+            f"Bands ({len(bands)}):",
+        ]
+        for i, band in enumerate(bands, 1):
+            role = band.get("role", "band")
+            btype = band.get("type", "auto")
+            line = f"  {i}. {role} [{btype}]"
+            if btype == "rigid":
+                hf = band.get("height_formula", "")
+                line += f" h={hf} (min={band.get('min_h', '?')}, max={band.get('max_h', '?')})"
+            if band.get("split"):
+                line += f" split={band['split']}"
+            if band.get("optional"):
+                line += " (optional)"
+            if band.get("flex"):
+                flex = band["flex"]
+                if flex.get("children_w"):
+                    line += f" children_w={flex['children_w']}"
+                if flex.get("wrap_if_gt"):
+                    line += f" wrap_if_gt={flex['wrap_if_gt']}"
+            children = band.get("children", [])
+            lines.append(line)
+            for j, child in enumerate(children, 1):
+                crole = child.get("role", "child")
+                ctype = child.get("type", "auto")
+                lines.append(f"    {i}.{j} {crole} [{ctype}]")
+        blueprint_structure = "\n".join(lines)
+        logger.info("context_builder: blueprint '%s' selected", blueprint_name)
+
     return {
         "allowed_nodes": allowed_nodes,
         "allowed_attributes": allowed_attributes,
@@ -557,6 +598,9 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "house_style": house_style,
         "component_recipes": component_recipes,
         "golden_examples": golden_examples,
+        "blueprint_structure": blueprint_structure,
+        "blueprint_reference_xml": blueprint_reference_xml,
+        "blueprint_name": blueprint_name,
         "density_tier": tier,
     }
 
