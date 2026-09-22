@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POM Pipeline Flow</title>
+<style>
+  body { margin: 0; padding: 24px; background: #ffffff; display: flex; justify-content: center; }
+  @media (prefers-color-scheme: dark) { body { background: #1a1a1a; } }
+  svg { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 900 1950" xmlns="http://www.w3.org/2000/svg" role="img" style="font-family: system-ui, -apple-system, sans-serif;">
+  <title>POM Presentation Pipeline — Full Flow Diagram</title>
+  <desc>Complete flow diagram showing all nodes, routing decisions, retry loops, and state mutations in the LangGraph presentation pipeline.</desc>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #1a1a1a;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --llm-fill: #dbeafe;
+      --llm-stroke: #3b82f6;
+      --mech-fill: #f0fdf4;
+      --mech-stroke: #22c55e;
+      --route-fill: #fef3c7;
+      --route-stroke: #f59e0b;
+      --loop-stroke: #ef4444;
+      --deck-fill: #f3e8ff;
+      --deck-stroke: #8b5cf6;
+      --start-fill: #1a1a1a;
+      --start-fg: #ffffff;
+      --arrow: #6b7280;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #1a1a1a;
+        --fg: #e5e7eb;
+        --muted: #9ca3af;
+        --border: #374151;
+        --llm-fill: #1e3a5f;
+        --llm-stroke: #60a5fa;
+        --mech-fill: #14332a;
+        --mech-stroke: #4ade80;
+        --route-fill: #422006;
+        --route-stroke: #fbbf24;
+        --loop-stroke: #f87171;
+        --deck-fill: #2e1065;
+        --deck-stroke: #a78bfa;
+        --start-fill: #e5e7eb;
+        --start-fg: #1a1a1a;
+        --arrow: #9ca3af;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #1a1a1a;
+      --fg: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #374151;
+      --llm-fill: #1e3a5f;
+      --llm-stroke: #60a5fa;
+      --mech-fill: #14332a;
+      --mech-stroke: #4ade80;
+      --route-fill: #422006;
+      --route-stroke: #fbbf24;
+      --loop-stroke: #f87171;
+      --deck-fill: #2e1065;
+      --deck-stroke: #a78bfa;
+      --start-fill: #e5e7eb;
+      --start-fg: #1a1a1a;
+      --arrow: #9ca3af;
+    }
+    text { fill: var(--fg); }
+    .muted { fill: var(--muted); font-size: 10px; }
+    .label { font-size: 13px; font-weight: 600; }
+    .sublabel { font-size: 10px; fill: var(--muted); }
+    .state-key { font-size: 9px; fill: var(--muted); font-family: monospace; }
+    .legend-text { font-size: 11px; }
+    .section-title { font-size: 14px; font-weight: 700; fill: var(--muted); letter-spacing: 0.5px; }
+  </style>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--arrow)"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--loop-stroke)"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="var(--deck-stroke)"/>
+    </marker>
+  </defs>
+
+  <!-- Legend -->
+  <rect x="580" y="10" width="310" height="100" rx="6" fill="var(--bg)" stroke="var(--border)" stroke-width="1"/>
+  <rect x="595" y="28" width="16" height="12" rx="3" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="618" y="38" class="legend-text">LLM Node</text>
+  <rect x="595" y="48" width="16" height="12" rx="3" fill="var(--mech-fill)" stroke="var(--mech-stroke)" stroke-width="1.5"/>
+  <text x="618" y="58" class="legend-text">Mechanical Node (no LLM)</text>
+  <rect x="595" y="68" width="16" height="12" rx="3" fill="var(--route-fill)" stroke="var(--route-stroke)" stroke-width="1.5"/>
+  <text x="618" y="78" class="legend-text">Routing Decision</text>
+  <line x1="595" y1="94" x2="620" y2="94" stroke="var(--loop-stroke)" stroke-width="2" stroke-dasharray="4,3"/>
+  <text x="628" y="98" class="legend-text">Retry / Repair Loop</text>
+  <line x1="750" y1="34" x2="775" y2="34" stroke="var(--deck-stroke)" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="783" y="38" class="legend-text">Deck Loop</text>
+
+  <!-- ===== PHASE 1: STARTUP ===== -->
+  <text x="30" y="35" class="section-title">1. STARTUP</text>
+
+  <!-- START -->
+  <rect x="350" y="55" width="120" height="36" rx="18" fill="var(--start-fill)"/>
+  <text x="410" y="78" text-anchor="middle" fill="var(--start-fg)" class="label">START</text>
+  <text x="410" y="105" text-anchor="middle" class="state-key">initial_state() &#x2192; full zero state</text>
+
+  <!-- route_after_start -->
+  <line x1="410" y1="91" x2="410" y2="120" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <rect x="320" y="120" width="180" height="32" rx="4" fill="var(--route-fill)" stroke="var(--route-stroke)" stroke-width="1.5"/>
+  <text x="410" y="140" text-anchor="middle" class="label">route_after_start</text>
+
+  <!-- Three branches from route_after_start -->
+  <!-- Left: questionnaire -->
+  <line x1="350" y1="152" x2="160" y2="180" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="220" y="170" class="sublabel">interactive + no context</text>
+  <rect x="80" y="180" width="160" height="44" rx="6" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="160" y="200" text-anchor="middle" class="label">Questionnaire</text>
+  <text x="160" y="216" text-anchor="middle" class="sublabel">LLM &#x2014; asks user Qs</text>
+  <text x="160" y="238" text-anchor="middle" class="state-key">&#x2192; audience_context, theme_name, deck_min_threshold</text>
+
+  <!-- Center: planner -->
+  <line x1="410" y1="152" x2="410" y2="260" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="420" y="168" class="sublabel">default</text>
+  <!-- questionnaire &#x2192; planner -->
+  <line x1="160" y1="224" x2="160" y2="250" stroke="var(--arrow)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="160" y1="250" x2="350" y2="275" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ===== PHASE 2: PLANNING ===== -->
+  <text x="30" y="275" class="section-title">2. PLANNING</text>
+
+  <!-- Planner -->
+  <rect x="330" y="260" width="160" height="44" rx="6" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="410" y="280" text-anchor="middle" class="label">Planner</text>
+  <text x="410" y="296" text-anchor="middle" class="sublabel">LLM &#x2014; slide_plans, mode, core_hook</text>
+  <text x="410" y="318" text-anchor="middle" class="state-key">&#x2192; mode, core_hook, deck_plan, slide_plans[]</text>
+
+  <!-- Right: skip planner (test_case has components) -->
+  <line x1="470" y1="152" x2="650" y2="180" stroke="var(--arrow)" stroke-width="1.5"/>
+  <text x="580" y="168" class="sublabel">test_case.components</text>
+  <line x1="650" y1="180" x2="650" y2="340" stroke="var(--arrow)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="650" y1="340" x2="480" y2="370" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="660" y="260" class="sublabel">skip planner</text>
+
+  <!-- Planner &#x2192; Style Resolver -->
+  <line x1="410" y1="304" x2="410" y2="350" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ===== PHASE 3: STYLE ===== -->
+  <text x="30" y="370" class="section-title">3. STYLE</text>
+
+  <!-- Style Resolver -->
+  <rect x="330" y="350" width="160" height="44" rx="6" fill="var(--mech-fill)" stroke="var(--mech-stroke)" stroke-width="1.5"/>
+  <text x="410" y="370" text-anchor="middle" class="label">Style Resolver</text>
+  <text x="410" y="386" text-anchor="middle" class="sublabel">Mechanical &#x2014; palettes.yaml</text>
+  <text x="410" y="408" text-anchor="middle" class="state-key">&#x2192; theme_element, resolved_theme</text>
+
+  <line x1="410" y1="394" x2="410" y2="440" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ===== PHASE 4: PER-SLIDE LOOP ===== -->
+  <text x="30" y="460" class="section-title">4. PER-SLIDE LOOP</text>
+  <rect x="50" y="435" width="800" height="790" rx="8" fill="none" stroke="var(--deck-stroke)" stroke-width="2" stroke-dasharray="8,4" opacity="0.5"/>
+  <text x="70" y="455" class="sublabel" fill="var(--deck-stroke)">Repeats for each slide (deck mode: i = 0..N-1)</text>
+
+  <!-- Context Builder -->
+  <rect x="330" y="470" width="160" height="44" rx="6" fill="var(--mech-fill)" stroke="var(--mech-stroke)" stroke-width="1.5"/>
+  <text x="410" y="490" text-anchor="middle" class="label">Context Builder</text>
+  <text x="410" y="506" text-anchor="middle" class="sublabel">Mechanical &#x2014; knowledge YAML</text>
+  <text x="410" y="528" text-anchor="middle" class="state-key">&#x2192; contract (nodes, attrs, notes, layout, example)</text>
+
+  <line x1="410" y1="514" x2="410" y2="555" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Generator -->
+  <rect x="330" y="555" width="160" height="44" rx="6" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="410" y="575" text-anchor="middle" class="label">Generator</text>
+  <text x="410" y="591" text-anchor="middle" class="sublabel">LLM &#x2014; produces POM XML</text>
+  <text x="410" y="613" text-anchor="middle" class="state-key">&#x2192; current_xml, generation_history+=[a0]</text>
+
+  <line x1="410" y1="599" x2="410" y2="640" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Validator -->
+  <rect x="330" y="640" width="160" height="44" rx="6" fill="var(--mech-fill)" stroke="var(--mech-stroke)" stroke-width="1.5"/>
+  <text x="410" y="660" text-anchor="middle" class="label">Validator</text>
+  <text x="410" y="676" text-anchor="middle" class="sublabel">No LLM &#x2014; normalize + compile</text>
+  <text x="410" y="698" text-anchor="middle" class="state-key">&#x2192; normalize/validate/compile_result, layout_issues</text>
+
+  <line x1="410" y1="684" x2="410" y2="720" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- route_after_validator -->
+  <rect x="320" y="720" width="180" height="32" rx="4" fill="var(--route-fill)" stroke="var(--route-stroke)" stroke-width="1.5"/>
+  <text x="410" y="740" text-anchor="middle" class="label">route_after_validator</text>
+
+  <!-- Compile fail &#x2192; Repairer (left branch) -->
+  <line x1="340" y1="752" x2="160" y2="790" stroke="var(--loop-stroke)" stroke-width="2" marker-end="url(#arrow-red)"/>
+  <text x="200" y="775" class="sublabel" fill="var(--loop-stroke)">compile fail + budget left</text>
+
+  <!-- COMPILE RETRY LOOP -->
+  <rect x="65" y="790" width="190" height="120" rx="6" fill="none" stroke="var(--loop-stroke)" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="80" y="808" font-size="10" font-weight="700" fill="var(--loop-stroke)">COMPILE RETRY LOOP (budget=3)</text>
+
+  <rect x="80" y="815" width="160" height="44" rx="6" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="160" y="835" text-anchor="middle" class="label">Repairer</text>
+  <text x="160" y="851" text-anchor="middle" class="sublabel">LLM &#x2014; PATCH or REGENERATE</text>
+  <text x="160" y="873" text-anchor="middle" class="state-key">&#x2192; current_xml, retry_count++, retry_tier</text>
+
+  <!-- Repairer &#x2192; Validator (loop back) -->
+  <path d="M80,837 L55,837 L55,662 L330,662" fill="none" stroke="var(--loop-stroke)" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrow-red)"/>
+  <text x="58" y="750" class="sublabel" fill="var(--loop-stroke)" transform="rotate(-90,58,750)">always &#x2192; validator</text>
+
+  <!-- Compile OK + critic on &#x2192; Critic (right branch) -->
+  <line x1="480" y1="752" x2="640" y2="790" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="550" y="775" class="sublabel">compile OK + critic=auto</text>
+
+  <!-- Budget exhausted &#x2192; slide_router/evaluator -->
+  <text x="420" y="770" class="sublabel">budget exhausted &#x2192; done</text>
+  <line x1="410" y1="752" x2="410" y2="780" stroke="var(--arrow)" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- ===== VISUAL CRITIC SECTION ===== -->
+  <rect x="560" y="790" width="270" height="260" rx="6" fill="none" stroke="var(--llm-stroke)" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="575" y="808" font-size="10" font-weight="700" fill="var(--llm-stroke)">VISUAL QUALITY GATE</text>
+
+  <!-- Critic Round 1 -->
+  <rect x="590" y="815" width="160" height="44" rx="6" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="670" y="835" text-anchor="middle" class="label">Critic (Round 1)</text>
+  <text x="670" y="851" text-anchor="middle" class="sublabel">Vision LLM &#x2014; screenshot review</text>
+
+  <line x1="670" y1="859" x2="670" y2="878" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- route_after_critic -->
+  <rect x="600" y="878" width="140" height="28" rx="4" fill="var(--route-fill)" stroke="var(--route-stroke)" stroke-width="1.5"/>
+  <text x="670" y="896" text-anchor="middle" font-size="11" font-weight="600">route_after_critic</text>
+
+  <!-- Critic fail &#x2192; Visual Repairer -->
+  <line x1="670" y1="906" x2="670" y2="930" stroke="var(--loop-stroke)" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="680" y="922" class="sublabel" fill="var(--loop-stroke)">fail + visual budget</text>
+
+  <rect x="600" y="930" width="140" height="36" rx="6" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="670" y="950" text-anchor="middle" font-size="12" font-weight="600">Visual Repairer</text>
+  <text x="670" y="962" text-anchor="middle" class="sublabel">PATCH only (no regen)</text>
+
+  <!-- Visual Repairer &#x2192; Critic Round 2 -->
+  <line x1="670" y1="966" x2="670" y2="985" stroke="var(--loop-stroke)" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+
+  <rect x="600" y="985" width="140" height="36" rx="6" fill="var(--llm-fill)" stroke="var(--llm-stroke)" stroke-width="1.5"/>
+  <text x="670" y="1005" text-anchor="middle" font-size="12" font-weight="600">Critic (Round 2)</text>
+  <text x="670" y="1017" text-anchor="middle" class="sublabel">score compare &#x2192; keep/rollback</text>
+
+  <!-- Critic pass or budget exhausted &#x2192; route to done -->
+  <line x1="600" y1="900" x2="500" y2="900" stroke="var(--arrow)" stroke-width="1.5"/>
+  <text x="510" y="895" class="sublabel">pass</text>
+
+  <!-- Critic fail + compile budget &#x2192; Repairer -->
+  <path d="M600,896 L550,896 L550,840 L240,840" fill="none" stroke="var(--loop-stroke)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-red)"/>
+  <text x="400" y="835" class="sublabel" fill="var(--loop-stroke)">fail + compile budget</text>
+
+  <!-- ===== PHASE 5: COMPLETION ===== -->
+  <text x="30" y="1090" class="section-title">5. SLIDE COMPLETION</text>
+
+  <!-- Critic result &#x2192; state writes -->
+  <text x="670" y="1045" text-anchor="middle" class="state-key">&#x2192; critic_result, visual_critic_result, slide_screenshots</text>
+
+  <!-- Converge to slide done routing -->
+  <line x1="410" y1="780" x2="410" y2="1070" stroke="var(--arrow)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="500" y1="900" x2="410" y2="1070" stroke="var(--arrow)" stroke-width="1.5"/>
+  <line x1="670" y1="1021" x2="410" y2="1070" stroke="var(--arrow)" stroke-width="1.5"/>
+
+  <!-- _slide_done_target routing -->
+  <rect x="320" y="1070" width="180" height="32" rx="4" fill="var(--route-fill)" stroke="var(--route-stroke)" stroke-width="1.5"/>
+  <text x="410" y="1090" text-anchor="middle" class="label">_slide_done_target</text>
+
+  <!-- Deck mode &#x2192; Slide Router -->
+  <line x1="350" y1="1102" x2="200" y2="1130" stroke="var(--deck-stroke)" stroke-width="2" marker-end="url(#arrow-purple)"/>
+  <text x="230" y="1118" class="sublabel" fill="var(--deck-stroke)">len(slide_plans) &gt; 1</text>
+
+  <rect x="110" y="1130" width="180" height="44" rx="6" fill="var(--deck-fill)" stroke="var(--deck-stroke)" stroke-width="1.5"/>
+  <text x="200" y="1150" text-anchor="middle" class="label">Slide Router</text>
+  <text x="200" y="1166" text-anchor="middle" class="sublabel">Save slide + reset per-slide state</text>
+  <text x="200" y="1188" text-anchor="middle" class="state-key">&#x2192; completed_slides+=[slide], idx++, reset retry/xml/critic</text>
+
+  <!-- Slide Router &#x2192; Context Builder (next slide) -->
+  <path d="M110,1152 L70,1152 L70,490 L330,490" fill="none" stroke="var(--deck-stroke)" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrow-purple)"/>
+  <text x="75" y="820" class="sublabel" fill="var(--deck-stroke)" transform="rotate(-90,75,820)">next slide &#x2192; context_builder</text>
+
+  <!-- Slide Router &#x2192; Deck Assembler (all done) -->
+  <line x1="200" y1="1174" x2="200" y2="1250" stroke="var(--deck-stroke)" stroke-width="2" marker-end="url(#arrow-purple)"/>
+  <text x="210" y="1220" class="sublabel" fill="var(--deck-stroke)">all slides done</text>
+
+  <!-- ===== PHASE 6: DECK ASSEMBLY ===== -->
+  <text x="30" y="1270" class="section-title">6. DECK ASSEMBLY (deck mode only)</text>
+
+  <rect x="120" y="1250" width="160" height="44" rx="6" fill="var(--deck-fill)" stroke="var(--deck-stroke)" stroke-width="1.5"/>
+  <text x="200" y="1270" text-anchor="middle" class="label">Deck Assembler</text>
+  <text x="200" y="1286" text-anchor="middle" class="sublabel">Merge slides + final compile</text>
+  <text x="200" y="1308" text-anchor="middle" class="state-key">&#x2192; current_xml (combined), compile_result, pptx_path</text>
+
+  <line x1="200" y1="1294" x2="410" y2="1340" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Single mode &#x2192; Evaluator directly -->
+  <line x1="450" y1="1102" x2="500" y2="1130" stroke="var(--arrow)" stroke-width="1.5"/>
+  <text x="500" y="1118" class="sublabel">single mode</text>
+  <line x1="500" y1="1130" x2="410" y2="1340" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ===== PHASE 7: EVALUATION ===== -->
+  <text x="30" y="1360" class="section-title">7. EVALUATION</text>
+
+  <rect x="330" y="1340" width="160" height="44" rx="6" fill="var(--mech-fill)" stroke="var(--mech-stroke)" stroke-width="1.5"/>
+  <text x="410" y="1360" text-anchor="middle" class="label">Evaluator</text>
+  <text x="410" y="1376" text-anchor="middle" class="sublabel">No LLM &#x2014; cost, manifest, final</text>
+  <text x="410" y="1398" text-anchor="middle" class="state-key">&#x2192; evaluation, pptx_path, passed</text>
+
+  <line x1="410" y1="1384" x2="410" y2="1420" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- END -->
+  <rect x="350" y="1420" width="120" height="36" rx="18" fill="var(--start-fill)"/>
+  <text x="410" y="1443" text-anchor="middle" fill="var(--start-fg)" class="label">END</text>
+
+  <!-- ===== STATE SCHEMA SIDEBAR ===== -->
+  <rect x="30" y="1480" width="840" height="460" rx="8" fill="var(--bg)" stroke="var(--border)" stroke-width="1"/>
+  <text x="50" y="1510" class="section-title">STATE MUTATIONS BY NODE</text>
+
+  <!-- Table header -->
+  <text x="60" y="1540" font-size="11" font-weight="700">Node</text>
+  <text x="200" y="1540" font-size="11" font-weight="700">Type</text>
+  <text x="290" y="1540" font-size="11" font-weight="700">State Keys Written</text>
+  <text x="700" y="1540" font-size="11" font-weight="700">Reducer</text>
+  <line x1="50" y1="1548" x2="860" y2="1548" stroke="var(--border)" stroke-width="1"/>
+
+  <!-- Rows -->
+  <text x="60" y="1568" font-size="10" font-weight="600">Questionnaire</text>
+  <text x="200" y="1568" font-size="10" fill="var(--llm-stroke)">LLM</text>
+  <text x="290" y="1568" class="state-key">audience_context, theme_name, deck_min_threshold</text>
+  <text x="700" y="1568" class="state-key">replace</text>
+
+  <text x="60" y="1588" font-size="10" font-weight="600">Planner</text>
+  <text x="200" y="1588" font-size="10" fill="var(--llm-stroke)">LLM</text>
+  <text x="290" y="1588" class="state-key">mode, core_hook, deck_plan, slide_plans</text>
+  <text x="700" y="1588" class="state-key">replace</text>
+
+  <text x="60" y="1608" font-size="10" font-weight="600">Style Resolver</text>
+  <text x="200" y="1608" font-size="10" fill="var(--mech-stroke)">Mech</text>
+  <text x="290" y="1608" class="state-key">theme_element, resolved_theme</text>
+  <text x="700" y="1608" class="state-key">replace</text>
+
+  <text x="60" y="1628" font-size="10" font-weight="600">Context Builder</text>
+  <text x="200" y="1628" font-size="10" fill="var(--mech-stroke)">Mech</text>
+  <text x="290" y="1628" class="state-key">contract (nodes, attrs, forbidden, notes, layout, example)</text>
+  <text x="700" y="1628" class="state-key">replace</text>
+
+  <text x="60" y="1648" font-size="10" font-weight="600">Generator</text>
+  <text x="200" y="1648" font-size="10" fill="var(--llm-stroke)">LLM</text>
+  <text x="290" y="1648" class="state-key">current_xml, generation_history</text>
+  <text x="700" y="1648" class="state-key">replace, append</text>
+
+  <text x="60" y="1668" font-size="10" font-weight="600">Validator</text>
+  <text x="200" y="1668" font-size="10" fill="var(--mech-stroke)">Mech</text>
+  <text x="290" y="1668" class="state-key">normalize_result, validate_result, compile_result, speaker_notes, layout_issues</text>
+  <text x="700" y="1668" class="state-key">replace</text>
+
+  <text x="60" y="1688" font-size="10" font-weight="600">Repairer</text>
+  <text x="200" y="1688" font-size="10" fill="var(--llm-stroke)">LLM</text>
+  <text x="290" y="1688" class="state-key">current_xml, retry_tier, retry_count, stall_detected, generation_history</text>
+  <text x="700" y="1688" class="state-key">replace, append</text>
+
+  <text x="60" y="1708" font-size="10" font-weight="600">Critic</text>
+  <text x="200" y="1708" font-size="10" fill="var(--llm-stroke)">LLM</text>
+  <text x="290" y="1708" class="state-key">critic_result, visual_critic_result, slide_screenshots, pre_critic_*</text>
+  <text x="700" y="1708" class="state-key">replace</text>
+
+  <text x="60" y="1728" font-size="10" font-weight="600">Slide Router</text>
+  <text x="200" y="1728" font-size="10" fill="var(--deck-stroke)">Deck</text>
+  <text x="290" y="1728" class="state-key">completed_slides, current_slide_index++, RESET xml/retry/critic</text>
+  <text x="700" y="1728" class="state-key">append, replace</text>
+
+  <text x="60" y="1748" font-size="10" font-weight="600">Deck Assembler</text>
+  <text x="200" y="1748" font-size="10" fill="var(--deck-stroke)">Deck</text>
+  <text x="290" y="1748" class="state-key">current_xml (merged), compile_result (final), pptx_path</text>
+  <text x="700" y="1748" class="state-key">replace</text>
+
+  <text x="60" y="1768" font-size="10" font-weight="600">Evaluator</text>
+  <text x="200" y="1768" font-size="10" fill="var(--mech-stroke)">Mech</text>
+  <text x="290" y="1768" class="state-key">evaluation (manifest), pptx_path, passed</text>
+  <text x="700" y="1768" class="state-key">replace</text>
+
+  <!-- Routing Logic Summary -->
+  <line x1="50" y1="1785" x2="860" y2="1785" stroke="var(--border)" stroke-width="1"/>
+  <text x="50" y="1810" class="section-title">ROUTING LOGIC</text>
+
+  <text x="60" y="1835" font-size="10" font-weight="600">route_after_start</text>
+  <text x="250" y="1835" class="state-key">test_case.components &#x2192; style_resolver | interactive &#x2192; questionnaire | else &#x2192; planner</text>
+
+  <text x="60" y="1855" font-size="10" font-weight="600">route_after_validator</text>
+  <text x="250" y="1855" class="state-key">compile fail + retryable + budget &#x2192; repairer | ok + critic=auto &#x2192; critic | ok + critic=off &#x2192; done</text>
+
+  <text x="60" y="1875" font-size="10" font-weight="600">route_after_critic</text>
+  <text x="250" y="1875" class="state-key">fail + visual budget &#x2192; visual_repairer | fail + compile budget &#x2192; repairer | pass &#x2192; done</text>
+
+  <text x="60" y="1895" font-size="10" font-weight="600">route_after_repairer</text>
+  <text x="250" y="1895" class="state-key">always &#x2192; validator (re-validate the repair)</text>
+
+  <text x="60" y="1915" font-size="10" font-weight="600">route_after_slide_router</text>
+  <text x="250" y="1915" class="state-key">idx &lt; total &#x2192; context_builder (next slide) | else &#x2192; deck_assembler</text>
+
+  <text x="60" y="1935" font-size="10" font-weight="600">_slide_done_target</text>
+  <text x="250" y="1935" class="state-key">len(slide_plans) &gt; 1 &#x2192; slide_router | else &#x2192; evaluator</text>
+</svg>
+</body>
+</html>
