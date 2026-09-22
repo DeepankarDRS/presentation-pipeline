@@ -32,5 +32,14 @@
 {% endfor %}
 {% endif %}
 
+{% if previous_issues %}
+## PREVIOUS CRITIC ISSUES (slide was repaired — confirm what changed)
+{% for issue in previous_issues %}
+- [{{ issue.severity }}] {{ issue.description }} → attempted fix: {{ issue.fix }}
+{% endfor %}
+For each previous issue: confirm it is fixed (do not re-report it), or re-flag it if still visible.
+Only report NEW issues not listed above, or previous issues that remain unfixed.
+
+{% endif %}
 Review the screenshot against all 10 checklist items. Report any issues you find.
 For Section 10 issues use type="visual". Flat KPI tiles and absent dark anchor panel are severity="medium"; all other Section 10 items are severity="low".

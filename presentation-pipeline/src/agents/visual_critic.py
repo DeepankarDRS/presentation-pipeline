@@ -54,6 +54,7 @@ def run_visual_critic(
     contract: dict[str, Any] | None = None,
     compile_warnings: list[dict[str, str]] | None = None,
     layout_issues: list[dict[str, str]] | None = None,
+    previous_issues: list[dict[str, Any]] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     """Run vision LLM on the screenshot and return (issues, usage, repair_hints).
 
@@ -80,6 +81,7 @@ def run_visual_critic(
         compile_warnings=compile_warnings or [],
         layout_issues=layout_issues or [],
         visual_notes=_filter_visual_notes(contract.get("notes", [])),
+        previous_issues=previous_issues or [],
     )
 
     image_b64 = _encode_image(screenshot_path)

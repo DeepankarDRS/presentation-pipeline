@@ -183,6 +183,11 @@ class PresentationState(TypedDict, total=False):
     slide_screenshots: dict[int, str]
     # Per-slide critic verdicts captured by slide_router for the deck path
     slide_critic_results: Annotated[list[dict[str, Any]], operator.add]
+    # Snapshot before first repair — used for score-based rollback
+    pre_critic_xml: str | None
+    pre_critic_slide_plans: list[dict[str, Any]] | None
+    pre_critic_contract: dict[str, Any] | None
+    pre_critic_score: int
 
     # ── Retry (repairer writes) ──
     retry_tier: int
@@ -211,7 +216,7 @@ def initial_state(
     deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "off"] = "off",
     retry_budget: int = 3,  # PATCH, REGENERATE (replan+generate), cleanup PATCH
-    visual_repair_budget: int = 1,
+    visual_repair_budget: int = 2,
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,
@@ -257,6 +262,10 @@ def initial_state(
         visual_critic_result=None,
         slide_screenshots={},
         slide_critic_results=[],
+        pre_critic_xml=None,
+        pre_critic_slide_plans=None,
+        pre_critic_contract=None,
+        pre_critic_score=0,
         retry_tier=0,
         retry_count=0,
         retry_budget=retry_budget,
