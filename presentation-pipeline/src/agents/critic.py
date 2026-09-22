@@ -90,7 +90,12 @@ def _critic_inner(state: PresentationState, idx: int) -> dict[str, Any]:
     logger.info("critic: running visual review")
     issues, screenshot_path, usage, repair_hints = _run_visual_review(state)
 
-    passed = not any(i["severity"] == "high" for i in issues)
+    has_high = any(i["severity"] == "high" for i in issues)
+    needs_design_regen = (
+        repair_hints.get("strategy") == "regenerate"
+        and any(i["severity"] == "medium" for i in issues)
+    )
+    passed = not has_high and not needs_design_regen
 
     visual_result = VisualCriticResult(
         passed=passed,
