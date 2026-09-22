@@ -55,17 +55,21 @@ Your job is to catch ALL quality problems — visual, content, and design — th
 
 ### 10. Design Polish
 These are the markers that separate a polished deck from a passable one. Always check these — they apply alongside sections 1–9, not after them.
+{% if slide_type in ('data', 'deepdive', 'performance', '') %}
+**MEDIUM severity (triggers repair) — data/deepdive slides only:**
+- **Flat KPI tiles**: When KPI tiles are present, each tile must have a visible card background (`$surfaceAlt`), consistent `border.color="$border"` and `borderRadius`, and a three-level font-size step (label small → value large → delta small). A flat row of Text nodes with no card styling is MEDIUM. Set `repair_strategy: "regenerate"` — tile structure requires a layout rebuild.
+- **No dark anchor panel**: On slides with 2+ tables or charts, there should be exactly one inverted panel (`backgroundColor="$textMain"` or similar dark fill, light/accent text) that anchors the key read-out. Its complete absence is MEDIUM. Set `repair_strategy: "regenerate"` — adding a panel requires restructuring the layout.
+- **Inconsistent semantic coloring**: Tables with performance data (ROAS, ACOS, growth %) should color cells using `$positive`/`$negative`/`$warning` consistently across all rows. If some rows are colored and others are not for the same metric, or if numeric columns are uniformly uncolored when clear positive/negative signals exist, that is MEDIUM. Patch: add color attributes to the un-colored cells.
+{% endif %}
 
-**MEDIUM severity (triggers repair):**
-- **Flat KPI tiles**: KPI tiles must have a visible card background (`$surfaceAlt`), consistent `border.color="$border"` and `borderRadius`, and a three-level font-size step (label small → value large → delta small). A flat row of Text nodes with no card styling is MEDIUM. Set `repair_strategy: "regenerate"` — tile structure requires a layout rebuild.
-- **No dark anchor panel**: Dense data slides (2+ tables or charts) should have exactly one inverted panel (`backgroundColor="$textMain"` or similar dark fill, light/accent text) that anchors the key read-out. Its complete absence is MEDIUM. Set `repair_strategy: "regenerate"` — adding a panel requires restructuring the layout.
-
-**LOW severity (flag; patch is sufficient):**
-- **Kicker/eyebrow**: Slides gain authority from an uppercase kicker above the title (`letterSpacing`, small size, accent color). Missing kicker on a formal deck slide is LOW. Patch: add one Text node above the title.
-- **Content cards**: Tables and charts should sit inside a card shell (`$surfaceAlt` background, `border.color="$border"`, `borderRadius`). A bare table or chart without a card is LOW. Patch: wrap the element in a VStack with card attributes.
+**LOW severity (flag; patch is sufficient — all slide types):**
+- **Kicker/eyebrow**: Slides gain authority from an uppercase kicker above the title (`letterSpacing="2"`, small size, accent color). Missing kicker is LOW. Patch: add one Text node above the title.
+- **Content cards**: Tables and charts should sit inside a card shell (`$surfaceAlt` background, `border.color="$border"`, `borderRadius`). A bare table or chart without a card shell is LOW. Patch: wrap the element in a VStack with card attributes.
 - **Caption/source line**: Data slides should end with a small source attribution at the bottom. Absence is LOW. Patch: append one small Text node.
+- **KPI strip height**: A KPI strip occupying more than 200px height is disproportionate — it should be compact (~78px). Oversized KPI strip is LOW. Patch: reduce `h` on the HStack container.
+- **Badge/platform chip**: Header slides identifying a platform (Blinkit, Amazon, etc.) should have a pill badge on the right side of the header. Its absence is LOW. Patch: add a Shape with `shapeType="roundRect"` and platform name.
 
-Only flag these if they are obviously missing — do not invent problems.
+Only flag these if they are obviously present — do not invent problems on clean slides.
 
 ## OUTPUT REQUIREMENTS
 - Only report real, visible issues in the screenshot. Do NOT guess from XML alone.
@@ -75,7 +79,7 @@ Only flag these if they are obviously missing — do not invent problems.
   - `fix`: a concrete POM XML change — name the node, attribute, and value. Good: "On Chart, set h=\"200\"". Bad: "make the chart smaller".
   - `affected_nodes`: use only valid POM node names: Slide, Theme, VStack, HStack, ZStack, Text, Chart, Table, KPI, Image, Bullet, Divider, Spacer, Pyramid, Timeline, Flow, Matrix, Tree.
 - Set `overall_assessment`: "layout_broken" if severe structural problems, "needs_tuning" for minor fixes, "good" if acceptable.
-- Set `repair_strategy`: "regenerate" when: wrong component types were chosen (e.g. a pyramid where a table was needed), OR 2+ HIGH structural issues exist and the layout is fundamentally broken, OR a Section 10 MEDIUM issue is present (flat KPI tiles or absent dark anchor panel — these require layout rebuilds). Use "patch" for all other cases including LOW design polish. Use "none" only when no repair is needed.
+- Set `repair_strategy`: "regenerate" when: wrong component types were chosen, OR 2+ HIGH structural issues and layout is fundamentally broken, OR a Section 10 MEDIUM issue that is structural (flat KPI tiles or absent dark anchor panel). Use "patch" for inconsistent semantic coloring and all LOW items. Use "none" only when no issues require repair.
 - Report at most 5 issues. Prioritise HIGH > MEDIUM > LOW. If more than 5 exist, omit the lowest-severity ones.
 
 ## SEVERITY RULES

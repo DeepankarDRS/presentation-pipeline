@@ -69,10 +69,11 @@ def run_visual_critic(
     system_tmpl = _jinja_env.get_template("system.j2")
     user_tmpl = _jinja_env.get_template("user.j2")
 
-    system_prompt = system_tmpl.render()
+    slide_type = slide_plan.get("slide_type", "")
+    system_prompt = system_tmpl.render(slide_type=slide_type)
     user_text = user_tmpl.render(
         current_xml=current_xml,
-        slide_type=slide_plan.get("slide_type", ""),
+        slide_type=slide_type,
         components=slide_plan.get("components", []),
         theme_element=theme_element,
         component_count=contract.get("component_count", 0),
