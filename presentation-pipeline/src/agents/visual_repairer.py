@@ -158,15 +158,15 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
             )
     except Exception as exc:
         logger.error(f"visual_repairer: {strategy} failed: {exc}")
-        return {"visual_repair_count": count}
+        return {"visual_repair_count": count, "visual_repair_outcome": "error"}
 
     if response.response_metadata.get("finish_reason") == "length":
         logger.warning("visual_repairer: output truncated — discarding")
-        return {"visual_repair_count": count}
+        return {"visual_repair_count": count, "visual_repair_outcome": "error"}
 
     if strategy != "regenerate" and xml.strip() == original_xml.strip():
         logger.warning("visual_repairer: identical XML — no progress")
-        return {"visual_repair_count": count}
+        return {"visual_repair_count": count, "visual_repair_outcome": "noop"}
 
     run_id = state.get("run_id", "unknown")
     _pipeline_root = Path(__file__).resolve().parent.parent.parent
@@ -184,13 +184,14 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
 
     if not compile_ok:
         logger.warning("visual_repairer: repair broke compilation — discarding")
-        return {"visual_repair_count": count, "generation_history": [record]}
+        return {"visual_repair_count": count, "visual_repair_outcome": "error", "generation_history": [record]}
 
     logger.info(f"visual_repairer: compiled OK — accepting ({usage['model']})")
     result = {
         "current_xml": xml,
         "compile_result": new_cr,
         "visual_repair_count": count,
+        "visual_repair_outcome": "improved",
         "generation_history": [record],
     }
     result.update(extra)

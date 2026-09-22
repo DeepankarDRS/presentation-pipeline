@@ -195,6 +195,7 @@ class PresentationState(TypedDict, total=False):
     retry_budget: int
     visual_repair_budget: int
     visual_repair_count: int
+    visual_repair_outcome: str | None
     stall_detected: bool
 
     # ── Output ──
@@ -271,6 +272,7 @@ def initial_state(
         retry_budget=retry_budget,
         visual_repair_budget=visual_repair_budget,
         visual_repair_count=0,
+        visual_repair_outcome=None,
         stall_detected=False,
         evaluation=None,
         pptx_path=None,
