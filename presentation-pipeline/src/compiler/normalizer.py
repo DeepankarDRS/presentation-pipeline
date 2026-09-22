@@ -56,6 +56,9 @@ _COL_RE = re.compile(r"<Col\b[^>]*/?>", re.IGNORECASE)
 _BORDER_ACCENT_RE = re.compile(
     r'(?<!\w)(border\.color)\s*=\s*"\$accent(?:Alt)?"'
 )
+_FONT_FLOOR = 14
+_FONTSIZE_RE = re.compile(r'\bfontSize\s*=\s*"(\d+(?:\.\d+)?)"')
+
 _PYRAMID_BLOCK_RE = re.compile(
     r"(<Pyramid\b[^>]*>)(.*?)(</Pyramid>)", re.DOTALL
 )
@@ -273,6 +276,27 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
                 "POM throws 'must be a finite positive EMU value'. Needs regeneration."
             ),
             "auto_fixed": False,
+        })
+
+    # ---- font-floor: raise any fontSize < 14 to 14 ----
+    def _raise_font(m: re.Match) -> str:
+        val = float(m.group(1))
+        if val < _FONT_FLOOR:
+            return f'fontSize="{_FONT_FLOOR}"'
+        return m.group(0)
+
+    font_before = xml
+    xml = _FONTSIZE_RE.sub(_raise_font, xml)
+    if xml != font_before:
+        count = sum(
+            1
+            for a, b in zip(font_before.split("fontSize="), xml.split("fontSize="))
+            if a != b
+        )
+        issues.append({
+            "code": "FONT_FLOOR",
+            "message": f"Raised {count} fontSize value(s) below {_FONT_FLOOR} to {_FONT_FLOOR}.",
+            "auto_fixed": True,
         })
 
     if "<Pyramid" in xml:

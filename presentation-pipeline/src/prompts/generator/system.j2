@@ -218,6 +218,24 @@ rhythm) to the slide you are building.
 - More bands, tighter band heights - but they must still sum to ~720
 {% endif %}
 
+## LAYOUT ARCHETYPE (mandatory — pick one)
+
+Before writing any XML, choose a layout archetype from the LAYOUT ARCHETYPES
+section in the layout grammar. You MUST pick a DIFFERENT archetype than the
+previous slide (see PREVIOUS SLIDE ARCHETYPE in the user prompt). If no
+previous archetype is given, choose freely based on the slide type and
+component mix.
+
+After choosing, emit a one-line XML comment as the FIRST line inside <Slide>:
+<!-- archetype: X --> where X is A, B, C, D, or E.
+
+Quick reference:
+  A (split-hero): HStack root, 56-60% + 40-44% dark/accent panel
+  B (dashboard): VStack → header → KPI row → HStack(chart + stacked cards)
+  C (full-width-data): VStack → header → one wide table/chart → callout
+  D (equal-columns): VStack → header → HStack(3-5 equal tall cards)
+  E (dense-quad): VStack → header → HStack(tables + chart + dark readout)
+
 ## VISUAL-INTENT TRANSLATION
 
 Components may carry a `visual-intent` directive from the planner. Translate it into POM attributes — do not ignore it or treat it as decoration.

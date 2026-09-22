@@ -164,6 +164,7 @@ class PresentationState(TypedDict, total=False):
     # ── Multi-slide iteration ──
     current_slide_index: int
     completed_slides: Annotated[list[dict[str, Any]], operator.add]
+    previous_slide_archetype: str | None
 
     # ── Generation (generator writes, validator/critic/repairer read) ──
     current_xml: str
@@ -248,6 +249,7 @@ def initial_state(
         refine_feedback="",
         current_slide_index=0,
         completed_slides=[],
+        previous_slide_archetype=None,
         contract=None,
         theme_element="",
         resolved_theme=None,

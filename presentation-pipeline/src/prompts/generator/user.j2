@@ -24,6 +24,11 @@ COMPONENTS (put every one on the slide — each carries its own data):
   {% endfor %}
 {% endif %}
 {% endfor %}
+{% if previous_slide_archetype %}
+
+PREVIOUS SLIDE ARCHETYPE: {{ previous_slide_archetype }}
+You MUST use a DIFFERENT archetype for this slide. Do NOT repeat {{ previous_slide_archetype }}.
+{% endif %}
 {% if layout_hint %}
 
 LAYOUT INTENT - which regions carry weight and how the components relate

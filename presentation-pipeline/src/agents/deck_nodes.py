@@ -72,6 +72,9 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
     compile_ok = bool(compile_result.get("ok"))
     pptx_path = compile_result.get("pptx_path") if compile_ok else None
 
+    archetype_match = re.search(r'<!--\s*archetype:\s*([A-E])\s*-->', xml)
+    detected_archetype = archetype_match.group(1) if archetype_match else None
+
     completed = {
         "slide_index": idx,
         "xml": xml,
@@ -82,6 +85,7 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
 
     return {
         "completed_slides": [completed],
+        "previous_slide_archetype": detected_archetype,
         "slide_critic_results": [state.get("critic_result") or {"passed": True}],
         "current_slide_index": idx + 1,
         "current_xml": "",

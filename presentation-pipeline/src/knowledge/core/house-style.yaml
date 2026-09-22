@@ -249,13 +249,47 @@ render_gotchas:
   - "$textMain is the theme INK, light on DARK themes. A dark-filled panel uses
      $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
 
+layout_archetypes: |
+  Every slide MUST use one of these five archetypes. NEVER repeat the same
+  archetype on consecutive slides — check PREVIOUS SLIDE ARCHETYPE in the
+  user prompt and pick a DIFFERENT one.
+
+  A  SPLIT-HERO — HStack root. 56-60% content left + 40-44% accent/dark
+     panel right (or reversed). For cover, closing, or any slide with a
+     strong statement + supporting detail. The dark panel carries a closing
+     note, KPIs, or a hero number.
+
+  B  DASHBOARD — VStack root. Header → KPI tile row → HStack(60% chart
+     card + 40% stacked insight cards). The stacked cards can be dark
+     readouts, accent-stripe callouts, or metric summaries. Classic
+     data-rich slide.
+
+  C  FULL-WIDTH-DATA — VStack root. Header → optional KPI row → one
+     full-width table or chart card → callout strip. For executive
+     summaries or when one data component dominates. Clean, focused.
+
+  D  EQUAL-COLUMNS — VStack root. Header → HStack of 3-5 equal tall
+     cards, each with accent-stripe top (different color per card),
+     numbered header, and internal structure (bullets, stats). For
+     pillars, what-worked/didn't, options, or any parallel items.
+
+  E  DENSE-QUAD — VStack root. Header → HStack(50% stacked tables +
+     50% chart + dark readout panel). For deep-dives with multiple
+     data views. Most information-dense layout.
+
+  Archetype fitness:
+    cover/closing  → A (split-hero)
+    data (chart+table) → B (dashboard) or E (dense-quad)
+    data (single table or chart) → C (full-width-data)
+    content (pillars, options, phases) → D (equal-columns)
+    content (narrative + data) → B (dashboard)
+
 design_variety: >
-  NEVER repeat the same visual pattern across consecutive slides. Vary the
-  closing band treatment across the deck — use at most ONE inverted panel
-  ($textMain bg) per 3 slides; alternate with accent-stripe callouts,
-  bordered sections, metric strips, or no closing band at all. Vary card
-  treatments too — not every slide needs a card. A deck with five identical
-  dark bottom panels looks templated, not designed.
+  NEVER repeat the same layout archetype on consecutive slides. Check the
+  PREVIOUS SLIDE ARCHETYPE signal and pick a different one. A deck with
+  five identical VStack-bands slides looks templated, not designed. Also
+  vary card treatments — not every slide needs the same borderRadius/
+  border.color style. Use at most ONE dark panel ($textMain bg) per 3 slides.
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:
