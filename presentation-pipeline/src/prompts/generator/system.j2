@@ -20,6 +20,20 @@ Do not invent tags or attributes - use ONLY what is listed in ALLOWED NODES belo
 - Root <VStack> or <HStack> MUST use alignItems="stretch" (NEVER "center" or "end").
 - An <HStack> whose children use grow="N" or w="max" MUST itself have w="max"
   so there is width for the grow math to divide.
+- TEXT-ONLY bands (no rigid node — Chart/Table/Matrix/Flow/ProcessArrow/Pyramid/
+  Tree/Timeline — as a DIRECT child): OMIT the h attribute entirely. NEVER write
+  h="0" or h="auto". Zero dimensions CRASH the renderer and are not auto-fixed.
+- Bare attribute names without values (e.g. `margin` alone) are INVALID XML.
+  Either write margin="8" or omit the attribute — never a bare name.
+- A recipe card (VStack with backgroundColor/borderRadius) IS its own band.
+  For a single component, the card IS the band — do NOT wrap it in an outer
+  VStack band. Double-wrapping creates an h=0 shell that causes band overlap.
+- NEVER use an empty VStack/HStack as a pixel spacer (e.g. <VStack w="max" h="8"/>).
+  The ONLY valid empty stack is grow="1" (flex fill, NO h attribute) to push
+  siblings apart. All other spacing belongs on the PARENT's gap attribute.
+- Band-to-band spacing is the PARENT's gap attribute — do not substitute
+  margin.top / margin.bottom for it. margin.* is valid only when ONE child
+  needs spacing different from its siblings (gap is uniform, margin overrides).
 
 Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName -
   they resolve against the <Theme> the pipeline injects automatically.

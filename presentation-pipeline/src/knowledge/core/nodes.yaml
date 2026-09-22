@@ -39,12 +39,12 @@ layout:
     description: "Vertical stack. Children flow top-to-bottom."
     node_attributes: [gap, alignItems, justifyContent, flexWrap]
     children: "any content/layout node"
-    empty_ok: true   # <VStack grow=\"1\" /> is a valid transparent spacer
+    empty_ok: false  # empty VStack is almost always a bug; the ONE valid exception is grow="1" flex-fill with NO h attribute
   HStack:
     description: "Horizontal stack. Children flow left-to-right."
     node_attributes: [gap, alignItems, justifyContent, flexWrap]
     children: "any content/layout node"
-    empty_ok: true
+    empty_ok: false  # same rule — grow="1" only, no h
 
 # ── Content nodes ────────────────────────────────────────────────────────────
 content:
