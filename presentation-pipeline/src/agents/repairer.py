@@ -124,9 +124,29 @@ def _build_repair_context(
     plan: dict[str, Any],
     problems: list[str],
     visual_failure: bool = False,
+    has_compile_errors: bool = False,
 ) -> dict[str, Any]:
     """Build error context for the slide component planner during REGENERATE."""
     failed_kinds = [c.get("kind", "") for c in plan.get("components", [])]
+
+    if visual_failure and not has_compile_errors:
+        # Visual-only failure: component types are fine, styling is wrong.
+        # Tell the planner to keep the same components and add design treatments.
+        directive = (
+            f"The previous plan used components [{', '.join(failed_kinds)}] which "
+            f"had visual design quality issues. Keep the same component types — "
+            f"the problem is styling, not component choice. Apply design treatments: "
+            f"a dark callout panel ($textMain background with $accentAlt header) for "
+            f"key read-outs, semantic coloring ($positive/$negative/$warning) on metric "
+            f"cells and KPI deltas, card containers ($surfaceAlt + borderRadius + border) "
+            f"around charts and tables, and eyebrow kicker labels in the header."
+        )
+        return {
+            "failed_kinds": failed_kinds,
+            "errors": problems[:5],
+            "directive": directive,
+        }
+
     failed_set = set(failed_kinds)
     risky_failed = failed_set & _RISKY_COMPONENTS
 
@@ -187,12 +207,18 @@ def build_patch_prompts(
     theme_element: str,
     visual_issues: list[dict[str, Any]] | None = None,
     layout_issues: list[dict[str, Any]] | None = None,
+    house_style: str = "",
+    component_recipes: str = "",
+    visual_only: bool = False,
 ) -> tuple[str, str]:
     """Build the (system, user) prompts for a PATCH (in-place fix) repair.
 
     Shared by repairer_node's PATCH branch and the slide edit service's mini
     repair loop, so both get the same error-scoped node reference (attribute
     docs, pitfalls, a verified syntax example) injected into the system prompt.
+    When visual_only=True (no compile errors, only visual critic issues), design
+    context (house_style, recipes) is injected and the instruction changes from
+    "fix only errors" to "apply visual improvements".
     """
     failing_xml = _cap_xml(failing_xml)
 
@@ -205,12 +231,15 @@ def build_patch_prompts(
         theme_element=theme_element,
         knowledge_text=knowledge.get("knowledge_text", ""),
         reference_example=knowledge.get("example", ""),
+        house_style=house_style if visual_only else "",
+        component_recipes=component_recipes if visual_only else "",
     )
     user_prompt = _repair_env.get_template("patch.j2").render(
         objective=objective,
         failing_xml=failing_xml,
         problems=problems,
         guidance=build_error_guidance(pre_issues, compile_diags, layout_issues),
+        visual_only=visual_only,
     )
     return system_prompt, user_prompt
 
@@ -225,6 +254,7 @@ def _choose_strategy(
     stalled: bool,
     compile_ok: bool,
     visual_layout_broken: bool = False,
+    visual_only_failure: bool = False,
 ) -> int:
     """Pick PATCH or REGENERATE for this attempt.
 
@@ -235,16 +265,19 @@ def _choose_strategy(
     number only applies while the slide still doesn't compile — rebuilding a slide
     that compiles (only the critic is unhappy) risks losing a working result.
     Visual critic can recommend regenerate for layout-broken slides.
+    visual_only_failure=True means the slide compiled but the visual critic found
+    design quality issues with no compile errors — go straight to REGENERATE so the
+    full generator context (house_style, recipes) is available for the fresh build.
     """
     if attempt == 1:
-        if visual_layout_broken:
+        if visual_layout_broken or visual_only_failure:
             return REGENERATE
         return PATCH
     if prev_strategy == REGENERATE:
         return PATCH
     if prev_noop or prev_truncated or regen_error or stalled:
         return REGENERATE
-    if visual_layout_broken:
+    if visual_layout_broken or visual_only_failure:
         return REGENERATE
     if attempt >= 2 and not compile_ok:
         return REGENERATE
@@ -351,12 +384,22 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
     stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)
     regen_error = needs_regeneration(pre_issues, compile_diags)
     compile_ok = bool((state.get("compile_result") or {}).get("ok"))
+    has_compile_errors = bool(pre_issues or compile_diags)
 
     visual_cr = state.get("visual_critic_result") or {}
     hints = visual_cr.get("repair_hints") or {}
     visual_layout_broken = (
         hints.get("strategy") == "regenerate"
         and hints.get("assessment") == "layout_broken"
+    )
+    # Visual-only: slide compiled clean, critic found design issues, no structural errors.
+    # Route straight to REGENERATE so the full generator context (house_style, recipes)
+    # is available for the rebuild rather than a context-free PATCH.
+    visual_only_failure = (
+        bool(visual_issues)
+        and not has_compile_errors
+        and compile_ok
+        and not visual_layout_broken
     )
 
     strategy = _choose_strategy(
@@ -368,12 +411,14 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
         stalled=stalled,
         compile_ok=compile_ok,
         visual_layout_broken=visual_layout_broken,
+        visual_only_failure=visual_only_failure,
     )
 
     reasons = [r for r, on in
                (("stall", stalled), ("structural", regen_error),
                 ("prev-noop", prev_noop), ("prev-truncated", prev_truncated),
-                ("visual-layout-broken", visual_layout_broken)) if on]
+                ("visual-layout-broken", visual_layout_broken),
+                ("visual-only", visual_only_failure)) if on]
     logger.info(
         f"repairer: attempt {current_count + 1}, {_STRATEGY_NAME[strategy]}"
         + (f" ({', '.join(reasons)})" if reasons else "")
@@ -401,10 +446,17 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             theme_element=contract.get("theme_element", state.get("theme_element", "")),
             visual_issues=visual_issues,
             layout_issues=state.get("layout_issues"),
+            house_style=contract.get("house_style", ""),
+            component_recipes=contract.get("component_recipes", ""),
+            visual_only=visual_only_failure,
         )
     else:
         # REGENERATE: re-plan the slide with error context, then re-generate.
-        repair_ctx = _build_repair_context(plan, problems, visual_failure=visual_layout_broken)
+        repair_ctx = _build_repair_context(
+            plan, problems,
+            visual_failure=visual_layout_broken or visual_only_failure,
+            has_compile_errors=has_compile_errors,
+        )
         # Prefer the original outline slide (rich key_messages + narrative context)
         # over reconstructing from the failed plan's vague content_summary strings.
         # The repair_context separately tells the planner which components to avoid.

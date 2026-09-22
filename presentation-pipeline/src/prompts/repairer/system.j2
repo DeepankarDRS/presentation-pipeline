@@ -39,3 +39,13 @@ Do NOT emit a <Theme> element — the pipeline injects it. Use $tokens for color
 ## CORRECT SYNTAX EXAMPLE
 {{ reference_example }}
 {% endif %}
+{% if house_style %}
+
+## DESIGN CONTEXT (apply when fixing visual quality issues)
+{{ house_style }}
+{% endif %}
+{% if component_recipes %}
+
+## COMPONENT RECIPES (use these patterns to add missing design elements)
+{{ component_recipes }}
+{% endif %}

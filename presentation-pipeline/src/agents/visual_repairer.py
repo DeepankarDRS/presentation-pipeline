@@ -61,6 +61,9 @@ def _do_patch(state, plan, problems, visual_issues, contract, theme_el, original
         pre_issues=[], compile_diags=[], objective=objective,
         forbidden_tags=contract.get("forbidden_tags", []),
         theme_element=theme_el, visual_issues=visual_issues,
+        house_style=contract.get("house_style", ""),
+        component_recipes=contract.get("component_recipes", ""),
+        visual_only=True,
     )
     response = get_llm("repairer").invoke([
         {"role": "system", "content": system_prompt},
@@ -71,7 +74,7 @@ def _do_patch(state, plan, problems, visual_issues, contract, theme_el, original
 
 def _do_regenerate(state, plan, problems, contract, theme_el, idx):
     """REGENERATE: replan the slide + generate fresh XML."""
-    repair_ctx = _build_repair_context(plan, problems)
+    repair_ctx = _build_repair_context(plan, problems, visual_failure=True, has_compile_errors=False)
     outline_slide = _plan_to_outline_slide(plan)
     outline_plan = {"core_hook": state.get("core_hook", ""), "slides": [outline_slide]}
 
