@@ -139,11 +139,8 @@ def _critic_inner(state: PresentationState, idx: int) -> dict[str, Any]:
     )
 
     has_high = any(i["severity"] == "high" for i in issues)
-    needs_design_regen = (
-        repair_hints.get("strategy") == "regenerate"
-        and any(i["severity"] == "medium" for i in issues)
-    )
-    passed = not has_high and not needs_design_regen
+    has_medium = any(i["severity"] == "medium" for i in issues)
+    passed = not has_high and not has_medium
 
     assessment = repair_hints.get("assessment", "good")
     current_score = compute_critic_score(issues, assessment)

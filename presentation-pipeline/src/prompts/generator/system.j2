@@ -104,6 +104,20 @@ Display or standard fonts.
 {% endif %}
 {% endif %}
 
+## MANDATORY DESIGN ELEMENTS (apply to every slide except cover and section_break)
+{% if slide_type not in ('cover', 'section_break') %}
+1. **Kicker/eyebrow**: the FIRST element inside the header band must be an uppercase kicker:
+   `<Text fontSize="14" color="$accent" bold="true" letterSpacing="2">KICKER TEXT</Text>`
+   Derive the kicker from the slide's section or topic (e.g. "PERFORMANCE OVERVIEW", "KEY METRICS").
+2. **Card shells**: every Table, Chart, and data component must be wrapped in a card VStack:
+   `<VStack backgroundColor="$surfaceAlt" padding="16" borderRadius="14" border.color="$border">`
+   Never render a bare Table or Chart directly in the root layout.
+3. **Source line**: the LAST element before the closing `</VStack>` of the root must be a source attribution:
+   `<Text fontSize="14" color="$textMuted">Source: [relevant source context]</Text>`
+{% else %}
+Cover and section_break slides: skip kicker, card shells, and source line.
+{% endif %}
+
 ## THEME (reference only - do NOT emit this element)
 The pipeline injects the single top-level <Theme> automatically. Use the token
 names below as $tokenName references in color attributes; never output <Theme>.
@@ -136,8 +150,8 @@ Common properties (all nodes including VStack/HStack):
 
 Visual hierarchy (apply to every slide):
   Title: fontSize 32-40, bold, color="$textMain"
-  Labels: fontSize 12-14, color="$textMuted"
-  Body: fontSize 14-16, color="$textMain"
+  Labels: fontSize 14, color="$textMuted" (NEVER below 14)
+  Body: fontSize 14-16, color="$textMain" (NEVER below 14)
   KPI values: fontSize 32-46, bold, with unit in <Span fontSize="18-22">
   Deltas: color="$positive" for up, color="$negative" for down
 
@@ -196,10 +210,11 @@ rhythm) to the slide you are building.
 {% if component_count >= 5 %}
 
 ## SHRINK CHECKLIST (5+ components)
-- Smaller fonts: title 20-24, card title 12, body/label 11 (never below 11)
+- Tighter fonts: title 20-24, card title 14, body/label 14 (NEVER below 14)
 - gap="8-12" between bands, gap="4-8" within a card
 - root padding="24-30"
 - KPI / stat values 24-30 (not 40+)
+- CUT CONTENT to fit — fewer bullets, shorter text — never shrink font below 14
 - More bands, tighter band heights - but they must still sum to ~720
 {% endif %}
 

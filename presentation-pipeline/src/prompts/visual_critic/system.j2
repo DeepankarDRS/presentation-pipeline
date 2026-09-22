@@ -62,10 +62,12 @@ These are the markers that separate a polished deck from a passable one. Always 
 - **Inconsistent semantic coloring**: Tables with performance data (ROAS, ACOS, growth %) should color cells using `$positive`/`$negative`/`$warning` consistently across all rows. If some rows are colored and others are not for the same metric, or if numeric columns are uniformly uncolored when clear positive/negative signals exist, that is MEDIUM. Patch: add color attributes to the un-colored cells.
 {% endif %}
 
-**LOW severity (flag; patch is sufficient — all slide types):**
-- **Kicker/eyebrow**: Slides gain authority from an uppercase kicker above the title (`letterSpacing="2"`, small size, accent color). Missing kicker is LOW. Patch: add one Text node above the title.
-- **Content cards**: Tables and charts should sit inside a card shell (`$surfaceAlt` background, `border.color="$border"`, `borderRadius`). A bare table or chart without a card shell is LOW. Patch: wrap the element in a VStack with card attributes.
-- **Caption/source line**: Data slides should end with a small source attribution at the bottom. Absence is LOW. Patch: append one small Text node.
+**MEDIUM severity (triggers PATCH repair — all slide types):**
+- **Kicker/eyebrow missing**: Every slide except cover and section_break must have an uppercase kicker above the title (`fontSize="14"`, `letterSpacing="2"`, `color="$accent"`, `bold="true"`). Missing kicker is MEDIUM. Patch: insert one Text node above the title.
+- **Bare table or chart (no card shell)**: Tables and charts must sit inside a card shell (`backgroundColor="$surfaceAlt"`, `border.color="$border"`, `borderRadius="14"`). A bare table or chart rendered directly in the root layout is MEDIUM. Patch: wrap the element in a VStack with card attributes.
+- **Missing source/caption line**: Data, deepdive, and performance slides must end with a source attribution at the bottom (`fontSize="14"`, `color="$textMuted"`). Absence is MEDIUM. Patch: append one Text node.
+
+**LOW severity (flag only — all slide types):**
 - **KPI strip height**: A KPI strip occupying more than 200px height is disproportionate — it should be compact (~78px). Oversized KPI strip is LOW. Patch: reduce `h` on the HStack container.
 - **Badge/platform chip**: Header slides identifying a platform (Blinkit, Amazon, etc.) should have a pill badge on the right side of the header. Its absence is LOW. Patch: add a Shape with `shapeType="roundRect"` and platform name.
 
@@ -79,7 +81,7 @@ Only flag these if they are obviously present — do not invent problems on clea
   - `fix`: a concrete POM XML change — name the node, attribute, and value. Good: "On Chart, set h=\"200\"". Bad: "make the chart smaller".
   - `affected_nodes`: use only valid POM node names: Slide, Theme, VStack, HStack, ZStack, Text, Chart, Table, KPI, Image, Bullet, Divider, Spacer, Pyramid, Timeline, Flow, Matrix, Tree.
 - Set `overall_assessment`: "layout_broken" if severe structural problems, "needs_tuning" for minor fixes, "good" if acceptable.
-- Set `repair_strategy`: "regenerate" when: wrong component types were chosen, OR 2+ HIGH structural issues and layout is fundamentally broken, OR a Section 10 MEDIUM issue that is structural (flat KPI tiles or absent dark anchor panel). Use "patch" for inconsistent semantic coloring and all LOW items. Use "none" only when no issues require repair.
+- Set `repair_strategy`: "regenerate" when: wrong component types were chosen, OR 2+ HIGH structural issues and layout is fundamentally broken, OR flat KPI tiles or absent dark anchor panel (structural rebuild needed). Use "patch" for: missing kicker, bare table/chart, missing source line, inconsistent semantic coloring, and all LOW items. Use "none" only when no issues require repair.
 - Report at most 5 issues. Prioritise HIGH > MEDIUM > LOW. If more than 5 exist, omit the lowest-severity ones.
 
 ## SEVERITY RULES
