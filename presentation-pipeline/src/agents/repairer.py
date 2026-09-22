@@ -116,18 +116,45 @@ def _get_compile_diags(state: PresentationState) -> list[dict[str, Any]]:
     return cr.get("diagnostics", [])
 
 
-def _build_repair_context(plan: dict[str, Any], problems: list[str]) -> dict[str, Any]:
+_RELIABLE_COMPONENTS = ["title", "narrative", "caption", "bullet_list", "table", "kpi_row"]
+_RISKY_COMPONENTS = {"timeline", "flow", "matrix", "tree", "pyramid", "process_arrow", "layer"}
+
+
+def _build_repair_context(
+    plan: dict[str, Any],
+    problems: list[str],
+    visual_failure: bool = False,
+) -> dict[str, Any]:
     """Build error context for the slide component planner during REGENERATE."""
     failed_kinds = [c.get("kind", "") for c in plan.get("components", [])]
+    failed_set = set(failed_kinds)
+    risky_failed = failed_set & _RISKY_COMPONENTS
+
+    if risky_failed:
+        # A risky component is the likely culprit — reliable components on the
+        # same slide are collateral damage and can still be recommended.
+        safe_recommendations = list(_RELIABLE_COMPONENTS)
+        to_avoid = _RISKY_COMPONENTS
+    else:
+        # No risky component to blame — the reliable ones specifically failed,
+        # so exclude them from recommendations.
+        safe_recommendations = [k for k in _RELIABLE_COMPONENTS if k not in failed_set]
+        to_avoid = _RISKY_COMPONENTS | failed_set
+
+    avoid_list = sorted(to_avoid - set(safe_recommendations))
+    failure_reason = "visual layout problems" if visual_failure else "compilation errors"
+    directive = (
+        f"The previous plan used components [{', '.join(failed_kinds)}] which "
+        f"caused {failure_reason}. Choose simpler, more reliable component types."
+    )
+    if safe_recommendations:
+        directive += f" Prefer {', '.join(safe_recommendations)}."
+    if avoid_list:
+        directive += f" Avoid {', '.join(avoid_list)}."
     return {
         "failed_kinds": failed_kinds,
         "errors": problems[:5],
-        "directive": (
-            f"The previous plan used components [{', '.join(failed_kinds)}] which "
-            f"caused compilation errors. Choose simpler, more reliable component "
-            f"types. Prefer text, bullet_list, table over timeline, flow, matrix, "
-            f"tree, pyramid."
-        ),
+        "directive": directive,
     }
 
 
@@ -345,7 +372,8 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
 
     reasons = [r for r, on in
                (("stall", stalled), ("structural", regen_error),
-                ("prev-noop", prev_noop), ("prev-truncated", prev_truncated)) if on]
+                ("prev-noop", prev_noop), ("prev-truncated", prev_truncated),
+                ("visual-layout-broken", visual_layout_broken)) if on]
     logger.info(
         f"repairer: attempt {current_count + 1}, {_STRATEGY_NAME[strategy]}"
         + (f" ({', '.join(reasons)})" if reasons else "")
@@ -376,9 +404,19 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
         )
     else:
         # REGENERATE: re-plan the slide with error context, then re-generate.
-        repair_ctx = _build_repair_context(plan, problems)
-        outline_slide = _plan_to_outline_slide(plan)
-        outline_plan = {
+        repair_ctx = _build_repair_context(plan, problems, visual_failure=visual_layout_broken)
+        # Prefer the original outline slide (rich key_messages + narrative context)
+        # over reconstructing from the failed plan's vague content_summary strings.
+        # The repair_context separately tells the planner which components to avoid.
+        state_outline_plan = state.get("outline_plan") or {}
+        state_outline_slides = state_outline_plan.get("slides", [])
+        outline_slide = next(
+            (dict(s) for s in state_outline_slides if s.get("slide_index") == idx),
+            None,
+        ) or _plan_to_outline_slide(plan)
+        # Pass the full outline_plan so the planner has correct deck context
+        # (all slide titles, total_slides count, core_hook).
+        outline_plan = state_outline_plan if state_outline_plan else {
             "core_hook": state.get("core_hook", ""),
             "slides": [outline_slide],
         }
