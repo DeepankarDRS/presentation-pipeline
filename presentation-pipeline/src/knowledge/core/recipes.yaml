@@ -157,7 +157,7 @@ matrix: |
 process_arrow: |
   # ProcessArrow in a card: band h 150-200, node h 72-100. Step labels are
   # 1-2 SHORT words only (longer text clips inside the chevron). 3-5 steps.
-  # fontSize MUST be >= 12. Use h="150"+ to give room. NEVER go below 11.
+  # fontSize MUST be >= 14. Use h="150"+ to give room. NEVER go below 14.
   <VStack w="max" h="160" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Delivery process</Text>
     <ProcessArrow w="max" h="82" direction="horizontal" fontSize="14" bold="true">
@@ -189,7 +189,7 @@ flow: |
 pyramid: |
   # Pyramid in a card: band h 300-440, node h to fill. Scale fontSize with level count.
   # textColor MUST contrast with each level's fill — dark fills get FFFFFF, light fills get 1E293B.
-  # fontSize: 14 (3 levels), 13 (4), 12 (5), 11 (6-7). Use w="max" always.
+  # fontSize: 16 (3 levels), 15 (4), 14 (5+). Use w="max" always. NEVER below 14.
   # Sole/hero pyramid: h="400-480" with no card wrapper, just the Pyramid node.
   <VStack w="max" h="340" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Operating model</Text>
@@ -276,7 +276,7 @@ tree: |
 compact_kpi_strip: |
   # Compact KPI strip for dense data slides: 3-4 tiles above a content area.
   # ALL fonts >= 14. Labels=14, values=24-28, deltas=14. No fixed h — auto-sizes.
-  # Max 4 tiles. If 5+ metrics, use TWO rows — never shrink fonts below 11.
+  # Max 4 tiles. If 5+ metrics, use TWO rows — never shrink fonts below 14.
   <HStack w="max" gap="10" alignItems="stretch">
     <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">METRIC A</Text>

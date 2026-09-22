@@ -94,7 +94,7 @@ def _perceived_brightness(hex_color: str) -> float:
     return (r * 299 + g * 587 + b * 114) / 255000
 
 
-_PYRAMID_FONTSIZE_BY_LEVELS = {3: 14, 4: 13, 5: 12, 6: 11, 7: 11}
+_PYRAMID_FONTSIZE_BY_LEVELS = {3: 16, 4: 15, 5: 14, 6: 14, 7: 14}
 
 
 def _fix_pyramid_block(match: re.Match) -> tuple[str, list[dict[str, Any]]]:
@@ -108,7 +108,7 @@ def _fix_pyramid_block(match: re.Match) -> tuple[str, list[dict[str, Any]]]:
     # --- Fix fontSize on the Pyramid element ---
     fs_match = _PYRAMID_FONTSIZE_RE.search(opening)
     current_fs = int(fs_match.group(1)) if fs_match else 14
-    max_fs = _PYRAMID_FONTSIZE_BY_LEVELS.get(n_levels, 11 if n_levels > 7 else 14)
+    max_fs = _PYRAMID_FONTSIZE_BY_LEVELS.get(n_levels, 14)
     if current_fs > max_fs:
         if fs_match:
             opening = opening[:fs_match.start()] + f'fontSize="{max_fs}"' + opening[fs_match.end():]

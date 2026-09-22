@@ -5,10 +5,10 @@
 
 visual_hierarchy:
   title: "fontSize 27-32, bold, color=$textMain"
-  subtitle: "fontSize 12, color=$textMuted"
-  body: "fontSize 11-13, color=$textMain, lineHeight 1.4-1.55"
-  label: "fontSize 10-12, color=$textMuted"
-  caption: "fontSize 10-11, italic, color=$textMuted (min 11)"
+  subtitle: "fontSize 14-16, color=$textMuted"
+  body: "fontSize 14-16, color=$textMain, lineHeight 1.4-1.55"
+  label: "fontSize 14, color=$textMuted"
+  caption: "fontSize 14, italic, color=$textMuted"
   kpi_value: "fontSize 24-34, bold, color=$textMain"
   kpi_unit: "Span fontSize 14-18 inside the value Text"
   delta_up: "fontSize 13-16, color=$positive"
@@ -87,7 +87,7 @@ content_invention:
 
 design_principles:
   - "Use $surfaceAlt cards to group related content — never float raw text on the background"
-  - "One idea per slide — if content overflows, simplify rather than shrink fonts below 11"
+  - "One idea per slide — if content overflows, CUT content rather than shrink fonts below 14"
   - "Card borders: border.color=$border (subtle gray), borderTop.color=$accent (bold stripe). Never accent the full border."
 
 additional_styling:
