@@ -12,7 +12,7 @@ description: >
   Use for Maslow's hierarchy, strategic priority tiers, or any layered model.
 
 structure: |
-  <Pyramid direction="up" w="max" h="400" fontSize="12" bold="true">
+  <Pyramid direction="up" w="max" h="400" fontSize="14" bold="true">
     <PyramidLevel label="Self-Actualization" color="6D28D9" textColor="FFFFFF" />
     <PyramidLevel label="Esteem" color="7C3AED" textColor="FFFFFF" />
     <PyramidLevel label="Belonging" color="8B5CF6" textColor="FFFFFF" />
@@ -39,11 +39,11 @@ sizing_rules: |
   levels increase, per-level height shrinks and the top narrows further.
 
   fontSize MUST scale down with level count to prevent text overflow:
-    3 levels:  fontSize="14"   (comfortable)
-    4 levels:  fontSize="13"
-    5 levels:  fontSize="12"
-    6 levels:  fontSize="11"
-    7 levels:  fontSize="11"
+    3 levels:  fontSize="16"   (comfortable)
+    4 levels:  fontSize="15"
+    5 levels:  fontSize="14"
+    6 levels:  fontSize="14"
+    7 levels:  fontSize="14"   (NEVER below 14)
 
   Always use w="max" so the pyramid fills its container width. Give it the
   largest h the height budget allows (260-440). A sole-component pyramid

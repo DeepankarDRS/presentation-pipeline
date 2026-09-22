@@ -5,25 +5,34 @@
 # compiles on POM v10.3.0 and fits inside a multi-component slide - note the
 # modest band heights. Copy the STRUCTURE and the SIZING; swap the content,
 # the $token colours and the item count.
+#
+# ── GLOBAL RULE ──────────────────────────────────────────────────────────
+# EVERY fontSize in EVERY recipe is >= 14. No exceptions. If content doesn't
+# fit at 11pt, CUT the content (shorter words, fewer items) — NEVER shrink
+# the font. This is the #1 quality rule. The generator MUST preserve these
+# font sizes when adapting a recipe — copying the structure but lowering
+# fonts defeats the purpose.
 
 kpi_row: |
   # KPI row: NO h on the band — auto-sizes to tile content. Inside each tile
   # justifyContent="center" (NOT spaceBetween). Unit in a <Span> inside the value <Text>.
+  # EVERY font in the tile must be >= 14. Labels=14, values=28-34, deltas=14.
+  # Max 3-4 tiles per row. More than 4? Use two rows, NOT smaller fonts.
   <HStack w="max" gap="14" alignItems="stretch">
     <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
-      <Text fontSize="11" color="$textMuted">Annual recurring revenue</Text>
+      <Text fontSize="14" color="$textMuted">Annual recurring revenue</Text>
       <Text fontSize="30" bold="true" color="$textMain">$42.8<Span fontSize="16" color="$textMuted">M</Span></Text>
-      <Text fontSize="11" bold="true" color="$positive">+18% QoQ</Text>
+      <Text fontSize="14" bold="true" color="$positive">+18% QoQ</Text>
     </VStack>
     <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
-      <Text fontSize="11" color="$textMuted">Net revenue retention</Text>
+      <Text fontSize="14" color="$textMuted">Net revenue retention</Text>
       <Text fontSize="30" bold="true" color="$textMain">114<Span fontSize="16" color="$textMuted">%</Span></Text>
-      <Text fontSize="11" bold="true" color="$positive">+2 pts</Text>
+      <Text fontSize="14" bold="true" color="$positive">+2 pts</Text>
     </VStack>
     <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
-      <Text fontSize="11" color="$textMuted">Gross margin</Text>
+      <Text fontSize="14" color="$textMuted">Gross margin</Text>
       <Text fontSize="30" bold="true" color="$textMain">72.1<Span fontSize="16" color="$textMuted">%</Span></Text>
-      <Text fontSize="11" bold="true" color="$negative">-1.4 pts</Text>
+      <Text fontSize="14" bold="true" color="$negative">-1.4 pts</Text>
     </VStack>
   </HStack>
 
@@ -31,7 +40,7 @@ chart_card: |
   # Chart card: band h 260-360. Chart is w="max" + an EXPLICIT h = band h minus
   # 2*padding minus the ~28 title. Never omit chart h.
   <VStack w="max" h="300" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
+    <Text fontSize="14" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
     <Chart w="max" h="236" chartType="bar" showLegend="false" chartColors='["2563EB","0EA5E9","10B981","F59E0B"]'>
       <ChartSeries name="Revenue">
         <ChartDataPoint label="Q1" value="36.1" />
@@ -46,7 +55,7 @@ table_card: |
   # Table card: band h 240-360. Every <Td> sets backgroundColor AND color.
   # Set width only on columns needing more room; omit for auto-fill.
   <VStack w="max" h="280" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">ARR by segment</Text>
+    <Text fontSize="14" bold="true" color="$textMain">ARR by segment</Text>
     <Table defaultRowHeight="44" cellBorder.color="$border" cellBorder.width="1">
       <Col width="240" /><Col /><Col />
       <Tr>
@@ -68,10 +77,12 @@ table_card: |
   </VStack>
 
 bullet_list: |
-  # Bullets: <Ul>/<Li>. NO h — auto-sizes. Each bullet = ONE line (~55 chars).
+  # Bullets: <Ul>/<Li>. NO h — auto-sizes. Each bullet = ONE line (~55 chars max).
   # Multi-line paragraphs blow the height budget and cause overlap.
+  # fontSize 14-16, NEVER below 14. Max 3-4 bullets. If more, split across cards.
+  # REWRITE long bullets shorter — never shrink the font to fit more text.
   <VStack w="max" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
-    <Ul fontSize="13" color="$textMain" lineHeight="1.4">
+    <Ul fontSize="14" color="$textMain" lineHeight="1.4">
       <Li>Close 3 enterprise logos worth $4M+ combined ARR</Li>
       <Li>Launch self-serve onboarding, cut CAC payback to 10 mo</Li>
       <Li>Ship analytics v2 dashboard before board meeting</Li>
@@ -84,15 +95,15 @@ icon_bullet_list: |
   <VStack w="max" padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
     <HStack w="max" gap="10" alignItems="center">
       <Icon name="zap" size="18" color="$accent" />
-      <Text fontSize="13" color="$textMain">Instant delivery under 10 minutes</Text>
+      <Text fontSize="14" color="$textMain">Instant delivery under 10 minutes</Text>
     </HStack>
     <HStack w="max" gap="10" alignItems="center">
       <Icon name="clock" size="18" color="$accent" />
-      <Text fontSize="13" color="$textMain">24/7 availability across all zones</Text>
+      <Text fontSize="14" color="$textMain">24/7 availability across all zones</Text>
     </HStack>
     <HStack w="max" gap="10" alignItems="center">
       <Icon name="target" size="18" color="$accent" />
-      <Text fontSize="13" color="$textMain">Targeted visibility during peak moments</Text>
+      <Text fontSize="14" color="$textMain">Targeted visibility during peak moments</Text>
     </HStack>
   </VStack>
 
@@ -100,14 +111,16 @@ badge: |
   # Badge: status pill / category tag. Inline accent, NOT a band.
   # Variants: success=pale green, warning=pale amber, danger=pale red,
   # info=pale blue, neutral=pale gray, accent=$accent tint.
-  <Shape shapeType="roundRect" w="120" h="26" fill.color="DCFCE7" color="15803D" fontSize="10" bold="true" borderRadius="999">ON TRACK</Shape>
+  # fontSize 14 minimum. Keep label SHORT (1-2 words).
+  <Shape shapeType="roundRect" w="120" h="28" fill.color="DCFCE7" color="15803D" fontSize="14" bold="true" borderRadius="999">ON TRACK</Shape>
 
 callout: |
   # Callout / narrative strip: NO h — auto-sizes to text content.
   # STRICT: body text = 1 sentence, ≤ 80 chars. Longer text pushes total > 720.
+  # ALL fonts >= 14. Header=14 bold, body=14-16.
   <VStack w="max" padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
-    <Text fontSize="11" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
-    <Text fontSize="13" color="$textMain" lineHeight="1.45">A large, measurable problem that targeted enforcement could meaningfully reduce.</Text>
+    <Text fontSize="14" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
+    <Text fontSize="14" color="$textMain" lineHeight="1.45">A large, measurable problem that targeted enforcement could meaningfully reduce.</Text>
   </VStack>
 
 timeline: |
@@ -116,7 +129,7 @@ timeline: |
   # STRICT: date = 1-2 words, title = 1-2 words ONLY.
   # Full sentences WILL collide — each column is only w/N px wide.
   <VStack w="max" h="240" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">Rollout timeline</Text>
+    <Text fontSize="14" bold="true" color="$textMain">Rollout timeline</Text>
     <Timeline direction="horizontal" w="1160" h="180" dateColor="$textMuted" titleColor="$textMain" connectorColor="$accent">
       <TimelineItem date="Q1 2026" title="Alpha" color="2563EB" />
       <TimelineItem date="Q2 2026" title="Beta" color="0EA5E9" />
@@ -130,7 +143,7 @@ matrix: |
   # node h >= 200. 4 items max, ONE-word labels, spread the x/y (no two within
   # 0.18 on both axes). Never textColor="FFFFFF" on a light card.
   <VStack w="max" h="320" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <HStack justifyContent="spaceBetween"><Text fontSize="13" bold="true" color="$textMain">Prioritisation</Text><Text fontSize="10" color="$textMuted">Impact x Effort</Text></HStack>
+    <HStack justifyContent="spaceBetween"><Text fontSize="14" bold="true" color="$textMain">Prioritisation</Text><Text fontSize="14" color="$textMuted">Impact x Effort</Text></HStack>
     <Matrix w="max" h="252" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
       <MatrixAxes x="Effort" y="Impact" />
       <MatrixQuadrants topLeft="Plan" topRight="Do first" bottomLeft="Skip" bottomRight="Quick wins" />
@@ -142,11 +155,12 @@ matrix: |
   </VStack>
 
 process_arrow: |
-  # ProcessArrow in a card: band h 130-180, node h 66-90. Step labels are
+  # ProcessArrow in a card: band h 150-200, node h 72-100. Step labels are
   # 1-2 SHORT words only (longer text clips inside the chevron). 3-5 steps.
-  <VStack w="max" h="150" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">Delivery process</Text>
-    <ProcessArrow w="max" h="72" direction="horizontal" fontSize="12" bold="true">
+  # fontSize MUST be >= 12. Use h="150"+ to give room. NEVER go below 11.
+  <VStack w="max" h="160" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+    <Text fontSize="14" bold="true" color="$textMain">Delivery process</Text>
+    <ProcessArrow w="max" h="82" direction="horizontal" fontSize="14" bold="true">
       <ProcessArrowStep label="Discover" color="BFD3F7" textColor="16202E" />
       <ProcessArrowStep label="Design" color="60A5FA" textColor="FFFFFF" />
       <ProcessArrowStep label="Build" color="2563EB" textColor="FFFFFF" />
@@ -157,8 +171,9 @@ process_arrow: |
 flow: |
   # Flow in a card: band h 260-380, node h to fit. Keep to 4-5 nodes; short
   # node text (6+ overflows at default nodeWidth). Use ProcessArrow for a simple line.
+  # FlowNode text MUST be >= 14pt. 1-2 word labels only.
   <VStack w="max" h="320" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">Approval flow</Text>
+    <Text fontSize="14" bold="true" color="$textMain">Approval flow</Text>
     <Flow direction="horizontal" w="max" h="260" nodeWidth="150" nodeHeight="56" nodeGap="64">
       <FlowNode id="a" shape="flowChartTerminator" text="Request" color="2563EB" textColor="FFFFFF" />
       <FlowNode id="b" shape="flowChartProcess" text="Review" color="0EA5E9" textColor="FFFFFF" />
@@ -177,8 +192,8 @@ pyramid: |
   # fontSize: 14 (3 levels), 13 (4), 12 (5), 11 (6-7). Use w="max" always.
   # Sole/hero pyramid: h="400-480" with no card wrapper, just the Pyramid node.
   <VStack w="max" h="340" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">Operating model</Text>
-    <Pyramid direction="up" w="max" h="280" fontSize="13" bold="true">
+    <Text fontSize="14" bold="true" color="$textMain">Operating model</Text>
+    <Pyramid direction="up" w="max" h="280" fontSize="14" bold="true">
       <PyramidLevel label="Strategy" color="1E3A8A" textColor="FFFFFF" />
       <PyramidLevel label="Capabilities" color="2563EB" textColor="FFFFFF" />
       <PyramidLevel label="Operations" color="3B82F6" textColor="FFFFFF" />
@@ -189,11 +204,11 @@ pyramid: |
 pyramid_with_annotations: |
   # 5+ level pyramid with side annotations. Two-column: pyramid left, descriptions right.
   # Use when each level needs an explanation beyond the label.
-  # Pyramid gets 55% width, annotations get 45%. fontSize="12" for 5 levels.
+  # Pyramid gets 55% width, annotations get 45%. fontSize="14" for 5 levels.
   # Level colors use medium-to-dark hues so text stays legible on both light and dark themes.
   # Each annotation card has a borderLeft matching its pyramid level color.
   <HStack w="max" h="480" gap="24" alignItems="center">
-    <Pyramid direction="up" w="55%" h="440" fontSize="12" bold="true">
+    <Pyramid direction="up" w="55%" h="440" fontSize="14" bold="true">
       <PyramidLevel label="Vision &amp; Strategy" color="BE185D" textColor="FFFFFF" />
       <PyramidLevel label="Business Goals" color="C2410C" textColor="FFFFFF" />
       <PyramidLevel label="Tactical Initiatives" color="A16207" textColor="FFFFFF" />
@@ -202,24 +217,24 @@ pyramid_with_annotations: |
     </Pyramid>
     <VStack w="45%" gap="8">
       <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="BE185D" borderLeft.width="4">
-        <Text fontSize="12" bold="true" color="$textMain">Vision &amp; Strategy</Text>
-        <Text fontSize="11" color="$textMuted">Long-term mission and market positioning.</Text>
+        <Text fontSize="14" bold="true" color="$textMain">Vision &amp; Strategy</Text>
+        <Text fontSize="14" color="$textMuted">Long-term mission and market positioning.</Text>
       </VStack>
       <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="C2410C" borderLeft.width="4">
-        <Text fontSize="12" bold="true" color="$textMain">Business Goals</Text>
-        <Text fontSize="11" color="$textMuted">Annual OKRs, financial targets, growth roadmaps.</Text>
+        <Text fontSize="14" bold="true" color="$textMain">Business Goals</Text>
+        <Text fontSize="14" color="$textMuted">Annual OKRs, financial targets, growth roadmaps.</Text>
       </VStack>
       <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="A16207" borderLeft.width="4">
-        <Text fontSize="12" bold="true" color="$textMain">Tactical Initiatives</Text>
-        <Text fontSize="11" color="$textMuted">Cross-functional programs and milestone tracking.</Text>
+        <Text fontSize="14" bold="true" color="$textMain">Tactical Initiatives</Text>
+        <Text fontSize="14" color="$textMuted">Cross-functional programs and milestone tracking.</Text>
       </VStack>
       <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="15803D" borderLeft.width="4">
-        <Text fontSize="12" bold="true" color="$textMain">Operational Workflows</Text>
-        <Text fontSize="11" color="$textMuted">Sprint deliverables and process management.</Text>
+        <Text fontSize="14" bold="true" color="$textMain">Operational Workflows</Text>
+        <Text fontSize="14" color="$textMuted">Sprint deliverables and process management.</Text>
       </VStack>
       <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="0E7490" borderLeft.width="4">
-        <Text fontSize="12" bold="true" color="$textMain">Infrastructure &amp; Tech</Text>
-        <Text fontSize="11" color="$textMuted">Data architecture, security, platform tooling.</Text>
+        <Text fontSize="14" bold="true" color="$textMain">Infrastructure &amp; Tech</Text>
+        <Text fontSize="14" color="$textMuted">Data architecture, security, platform tooling.</Text>
       </VStack>
     </VStack>
   </HStack>
@@ -232,9 +247,9 @@ layer_diagram: |
   # Arrow connects shapes by id; targets must be Shape(rect/roundRect/ellipse) or Text.
   <Layer w="560" h="296" backgroundColor="$surfaceAlt" borderRadius="14">
     <Shape id="hub" shapeType="ellipse" x="206" y="74" w="148" h="148" backgroundColor="$accent" color="$surfaceAlt" fontSize="14" bold="true" textAlign="center" text="Core Platform" />
-    <Shape id="svc-a" shapeType="roundRect" x="0" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="12" bold="true" textAlign="center" text="Service A" border.color="$border" border.width="1" borderRadius="10" />
-    <Shape id="svc-b" shapeType="roundRect" x="440" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="12" bold="true" textAlign="center" text="Service B" border.color="$border" border.width="1" borderRadius="10" />
-    <Shape id="svc-c" shapeType="roundRect" x="220" y="244" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="12" bold="true" textAlign="center" text="Service C" border.color="$border" border.width="1" borderRadius="10" />
+    <Shape id="svc-a" shapeType="roundRect" x="0" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="14" bold="true" textAlign="center" text="Service A" border.color="$border" border.width="1" borderRadius="10" />
+    <Shape id="svc-b" shapeType="roundRect" x="440" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="14" bold="true" textAlign="center" text="Service B" border.color="$border" border.width="1" borderRadius="10" />
+    <Shape id="svc-c" shapeType="roundRect" x="220" y="244" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="14" bold="true" textAlign="center" text="Service C" border.color="$border" border.width="1" borderRadius="10" />
     <Arrow from="hub" to="svc-a" color="$accent" lineWidth="2" endArrow="true" />
     <Arrow from="hub" to="svc-b" color="$accent" lineWidth="2" endArrow="true" />
     <Arrow from="hub" to="svc-c" color="$accent" lineWidth="2" endArrow="true" />
@@ -244,7 +259,7 @@ tree: |
   # Tree in a card: band h 260-380. One root. Keep depth <= 3 and total nodes
   # <= ~10; short labels.
   <VStack w="max" h="320" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">Org structure</Text>
+    <Text fontSize="14" bold="true" color="$textMain">Org structure</Text>
     <Tree layout="vertical" w="max" h="260" nodeShape="roundRect" textColor="FFFFFF" nodeWidth="130" nodeHeight="46" levelGap="52" siblingGap="22" connectorStyle.color="94A3B8" connectorStyle.width="2">
       <TreeItem label="CEO" color="1E3A8A">
         <TreeItem label="CTO" color="2563EB">
@@ -259,24 +274,24 @@ tree: |
   </VStack>
 
 compact_kpi_strip: |
-  # Compact KPI strip for dense data slides: 5 tiles at h~78, padding="12" gap="2".
-  # Use when 4-5 metrics must fit in a narrow band above a content area.
-  # fontSize="9" for labels, fontSize="20" for values, fontSize="9" for deltas.
-  <HStack w="max" h="78" gap="10" alignItems="stretch">
-    <VStack w="max" padding="12" gap="2" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
-      <Text fontSize="9" color="$textMuted">METRIC A</Text>
-      <Text fontSize="20" color="$textMain" bold="true">₹X.XX Cr</Text>
-      <Text fontSize="9" color="$negative">▼ X.X% vs prior</Text>
+  # Compact KPI strip for dense data slides: 3-4 tiles above a content area.
+  # ALL fonts >= 14. Labels=14, values=24-28, deltas=14. No fixed h — auto-sizes.
+  # Max 4 tiles. If 5+ metrics, use TWO rows — never shrink fonts below 11.
+  <HStack w="max" gap="10" alignItems="stretch">
+    <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">METRIC A</Text>
+      <Text fontSize="24" color="$textMain" bold="true">₹X.XX<Span fontSize="14" color="$textMuted"> Cr</Span></Text>
+      <Text fontSize="14" color="$negative" bold="true">▼ X.X% vs prior</Text>
     </VStack>
-    <VStack w="max" padding="12" gap="2" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
-      <Text fontSize="9" color="$textMuted">METRIC B</Text>
-      <Text fontSize="20" color="$textMain" bold="true">₹X.XX L</Text>
-      <Text fontSize="9" color="$textMuted">Sub-note X.Xx</Text>
+    <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">METRIC B</Text>
+      <Text fontSize="24" color="$textMain" bold="true">₹X.XX<Span fontSize="14" color="$textMuted"> L</Span></Text>
+      <Text fontSize="14" color="$textMuted">Sub-note X.Xx</Text>
     </VStack>
-    <VStack w="max" padding="12" gap="2" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
-      <Text fontSize="9" color="$textMuted">KEY RATIO</Text>
-      <Text fontSize="20" color="$positive" bold="true">X.Xxx</Text>
-      <Text fontSize="9" color="$positive">Best of cohort</Text>
+    <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">KEY RATIO</Text>
+      <Text fontSize="24" color="$positive" bold="true">X.Xxx</Text>
+      <Text fontSize="14" color="$positive">Best of cohort</Text>
     </VStack>
   </HStack>
 
@@ -285,9 +300,10 @@ dark_callout_panel: |
   # backgroundColor="$textMain", header in $accentAlt (letterSpacing="1"),
   # list items in a light muted color (D0DDD8 on dark backgrounds).
   # Use at bottom-right of a 2-col layout or as a full-width closing band.
+  # ALL fonts >= 14. Max 3-4 bullet items, each ≤ 50 chars.
   <VStack w="max" padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
-    <Text fontSize="10" color="$accentAlt" bold="true" letterSpacing="1">KEY READ-OUTS</Text>
-    <Ul fontSize="10" color="D0DDD8" lineHeight="1.4">
+    <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">KEY READ-OUTS</Text>
+    <Ul fontSize="14" color="D0DDD8" lineHeight="1.45">
       <Li>Insight 1 — lead with the number, name the mechanism</Li>
       <Li>Insight 2 — contrast two segments with specific delta</Li>
       <Li>Insight 3 — flag the outlier or risk with the metric</Li>
@@ -301,9 +317,9 @@ platform_header: |
   # letterSpacing="2" on the kicker is the detail that makes it look professional.
   <HStack w="max" justifyContent="spaceBetween" alignItems="start">
     <VStack gap="4">
-      <Text fontSize="11" color="$accent" bold="true" letterSpacing="2">SECTION LABEL · NN</Text>
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">SECTION LABEL · NN</Text>
       <Text fontSize="26" color="$textMain" bold="true">Headline — one clause naming the tension</Text>
-      <Text fontSize="11" color="$textMuted">[Period] · [Subject] — [scope]</Text>
+      <Text fontSize="14" color="$textMuted">[Period] · [Subject] — [scope]</Text>
     </VStack>
-    <Shape shapeType="roundRect" w="90" h="26" fill.color="$surfaceAlt" color="$accent" fontSize="10" bold="true" borderRadius="999">ENTITY</Shape>
+    <Shape shapeType="roundRect" w="90" h="26" fill.color="$surfaceAlt" color="$accent" fontSize="14" bold="true" borderRadius="999">ENTITY</Shape>
   </HStack>

@@ -7,17 +7,17 @@
       <VStack grow="1" h="132" padding="20" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.width="1" border.color="$border" borderTop.width="4" borderTop.color="$accent" justifyContent="center">
         <Text fontSize="14" color="$textMuted">ARR</Text>
         <Text fontSize="34" bold="true" color="$textMain">$42.8<Span fontSize="18">M</Span></Text>
-        <Text fontSize="13" color="$positive">+18% QoQ</Text>
+        <Text fontSize="14" color="$positive">+18% QoQ</Text>
       </VStack>
       <VStack grow="1" h="132" padding="20" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.width="1" border.color="$border" borderTop.width="4" borderTop.color="$accent" justifyContent="center">
         <Text fontSize="14" color="$textMuted">NRR</Text>
         <Text fontSize="34" bold="true" color="$textMain">114<Span fontSize="18">%</Span></Text>
-        <Text fontSize="13" color="$positive">+3 pts QoQ</Text>
+        <Text fontSize="14" color="$positive">+3 pts QoQ</Text>
       </VStack>
       <VStack grow="1" h="132" padding="20" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.width="1" border.color="$border" borderTop.width="4" borderTop.color="$accent" justifyContent="center">
         <Text fontSize="14" color="$textMuted">Gross Margin</Text>
         <Text fontSize="34" bold="true" color="$textMain">78<Span fontSize="18">%</Span></Text>
-        <Text fontSize="13" color="$textMuted">Flat QoQ</Text>
+        <Text fontSize="14" color="$textMuted">Flat QoQ</Text>
       </VStack>
     </HStack>
     <HStack w="1168" h="336" gap="24" alignItems="start">

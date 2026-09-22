@@ -27,16 +27,16 @@
         <Table w="480">
           <Col width="240" /><Col width="240" />
           <Tr>
-            <Td bold="true" backgroundColor="2563EB" color="FFFFFF" fontSize="13">Feature</Td>
-            <Td bold="true" backgroundColor="2563EB" color="FFFFFF" fontSize="13">Status</Td>
+            <Td bold="true" backgroundColor="2563EB" color="FFFFFF" fontSize="14">Feature</Td>
+            <Td bold="true" backgroundColor="2563EB" color="FFFFFF" fontSize="14">Status</Td>
           </Tr>
           <Tr>
-            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="13"><A href="https://example.com/docs">Hyperlinks</A></Td>
-            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="13"><Mark color="DCFCE7">Shipped</Mark></Td>
+            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="14"><A href="https://example.com/docs">Hyperlinks</A></Td>
+            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="14"><Mark color="DCFCE7">Shipped</Mark></Td>
           </Tr>
           <Tr>
-            <Td backgroundColor="F8FAFC" color="$textMain" fontSize="13">H<Sub>2</Sub>O notation</Td>
-            <Td backgroundColor="F8FAFC" color="$textMain" fontSize="13"><S>Planned</S> Done</Td>
+            <Td backgroundColor="F8FAFC" color="$textMain" fontSize="14">H<Sub>2</Sub>O notation</Td>
+            <Td backgroundColor="F8FAFC" color="$textMain" fontSize="14"><S>Planned</S> Done</Td>
           </Tr>
         </Table>
       </VStack>

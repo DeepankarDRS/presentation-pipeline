@@ -39,7 +39,7 @@
     <Line x1="48" y1="660" x2="1232" y2="660" color="E2E8F0" lineWidth="1" dashType="dash" />
 
     <!-- Caption -->
-    <Text x="48" y="670" fontSize="11" color="$textMuted">Simplified architecture overview — not all services shown</Text>
+    <Text x="48" y="670" fontSize="14" color="$textMuted">Simplified architecture overview — not all services shown</Text>
 
     <!-- SVG icon -->
     <Svg x="1180" y="40" w="40" h="40" color="2563EB">

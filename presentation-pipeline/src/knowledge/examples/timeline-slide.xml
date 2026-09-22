@@ -20,6 +20,6 @@
     </VStack>
 
     <!-- Footer -->
-    <Text fontSize="11" color="$textMuted" textAlign="right">Confidential — for internal use only</Text>
+    <Text fontSize="14" color="$textMuted" textAlign="right">Confidential — for internal use only</Text>
   </VStack>
 </Slide>

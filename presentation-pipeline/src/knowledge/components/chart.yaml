@@ -14,7 +14,7 @@ description: >
 
 structure: |
   <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-    <Text fontSize="13" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
+    <Text fontSize="14" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
     <Chart chartType="bar" w="max" h="196" showLegend="false" chartColors='["2563EB", "0EA5E9", "14B8A6"]'>
       <ChartSeries name="Revenue">
         <ChartDataPoint label="Q1" value="100" />

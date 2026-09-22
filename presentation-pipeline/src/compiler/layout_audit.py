@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 SLIDE_W = 1280
 SLIDE_H = 720
-MIN_FONT_SIZE = 11
+MIN_FONT_SIZE = 14
 MAX_NESTING = 6
 
 _STACK_TAGS = {"VStack", "HStack"}
@@ -85,10 +85,11 @@ def _check_font_sizes(root: ET.Element, issues: list[dict[str, str]]) -> None:
             tag = elem.tag
             text = (elem.text or "")[:30]
             issues.append({
-                "severity": "medium",
+                "severity": "high",
                 "code": "FONT_TOO_SMALL",
                 "message": f"<{tag}> has fontSize=\"{fs_str}\" "
-                           f"(min {MIN_FONT_SIZE}): \"{text}...\"",
+                           f"(min {MIN_FONT_SIZE}): \"{text}...\". "
+                           f"Fix: raise to {MIN_FONT_SIZE} or cut content.",
             })
 
 

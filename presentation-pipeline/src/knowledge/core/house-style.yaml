@@ -10,7 +10,7 @@
 
 meta:
   slide: { w: 1280, h: 720 }        # fixed frame, always
-  min_font: 11                       # layout_audit rejects anything smaller
+  min_font: 14                       # layout_audit rejects anything smaller
   max_stack_nesting: 6
 
 # --- the frame -------------------------------------------------------------
@@ -112,11 +112,14 @@ height_budget: |
      text estimates; remainder = rigid budget.
   3. Sanity: all heights + gaps + 2*padding ≈ 640-700. Over 720 → overlap.
   4. Rigid in card: h = band_h - 2*padding - ~28 title.
-  TEXT LIMITS: bullets 1 line each (~55 chars), callout 1 sentence (≤ 80 chars),
+  TEXT LIMITS: bullets 1 line each (~55 chars max), callout 1 sentence (≤ 80 chars).
+  HARD RULE: if bullet text exceeds ~55 chars, REWRITE shorter — never shrink font.
+  If a callout exceeds 80 chars, REWRITE — never shrink font. Max 4 bullets per list.
   Rigid heights: chart 260-360 | table 240-360 | timeline 200-300 |
-  matrix 260-340 | process arrow 130-180 | flow 200-300 |
+  matrix 260-340 | process arrow 150-200 | flow 200-300 |
   pyramid 300-440 (sole/hero: 400-480) | tree 240-340.
-  Pyramid fontSize: 14 (3 levels), 13 (4), 12 (5), 11 (6-7). Always w="max".
+  Pyramid fontSize: 16 (3 levels), 15 (4), 14 (5), 14 (6-7). Always w="max".
+  ProcessArrow fontSize: min 14. FlowNode fontSize: min 14. Timeline: min 14.
 worked_example: |
   P=36, G=16: header(auto ~90) + KPI(text,auto ~120) + chart(rigid) + callout(text,auto ~88).
   Rigid budget: 720-72-90-120-88-48(gaps)=302. Chart card h="300", inside h=236.
@@ -177,20 +180,27 @@ recipes:
     justifyContent of a vertical card.
   accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" /> under a title.'
   badge: >
-    <Shape shapeType="roundRect" w="100-160" h="24-30" fill.color="a pale tint"
-    color="$textMain" fontSize="10" bold="true" borderRadius="999">SHORT LABEL</Shape>
+    <Shape shapeType="roundRect" w="100-160" h="26-30" fill.color="a pale tint"
+    color="$textMain" fontSize="14" bold="true" borderRadius="999">SHORT LABEL</Shape>
 
 # --- type ramp (fontSize) --------------------------------------------
 type_ramp:
-  eyebrow: "10-11 bold, letterSpacing 2, $accent"
+  eyebrow: "14 bold, letterSpacing 2, $accent. NEVER below 14."
   slide_title: "27-32 bold, $textMain"
-  subtitle: "12 $textMuted"
-  card_title: "12-14 bold, $textMain"
-  label: "10-12 $textMuted"
-  body: "11-13, $textMain or $textMuted, lineHeight 1.4-1.55"
-  stat_value: "24-34 bold"
-  hero_number: "34-64 bold ($accent or $surface on a hero_panel)"
-  caption: "10-11 $textMuted (min 11)"
+  subtitle: "14-16 $textMuted. NEVER below 14."
+  card_title: "14-16 bold, $textMain"
+  label: "14 $textMuted. NEVER below 14."
+  body: "14-16, $textMain or $textMuted, lineHeight 1.4-1.55. NEVER below 14."
+  stat_value: "26-36 bold"
+  hero_number: "36-64 bold ($accent or $surface on a hero_panel)"
+  caption: "14 $textMuted. NEVER below 14."
+
+font_floor: >
+  ABSOLUTE RULE: no fontSize on ANY element may be below 14. This applies to
+  Text, Ul, Li, Span, Shape labels, ProcessArrowStep, TimelineItem, PyramidLevel,
+  FlowNode, TreeItem, MatrixItem, and every other node that renders text. If the
+  content does not fit at fontSize 14, CUT THE CONTENT — never shrink the font.
+  The layout_audit flags FONT_TOO_SMALL as a hard failure, not a suggestion.
 
 spacing_scale: "use 2, 4, 6, 8, 10, 12, 14, 16, 18, 22 - nothing in between."
 
@@ -207,6 +217,11 @@ color_discipline: >
 
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:
+  - "FONT SHRINK (the #1 quality killer): the generator tends to shrink fonts
+     to fit more content. This produces 8-12pt text that is illegible when
+     projected. NEVER emit fontSize below 14 on any element. If content does
+     not fit, CUT the content (fewer bullets, shorter text, fewer KPI tiles).
+     All recipes now use 14pt minimum. Copy those sizes exactly."
   - "FLEX SHRINK (the big one): VStack/HStack children default to flexShrink=1.
      If the band heights sum to more than 720 the compiler does NOT error - it
      shrinks every band, text overflows its squashed card, and bands overlap
@@ -244,16 +259,20 @@ design_variety: >
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:
+  - "FONT FLOOR: EVERY fontSize on EVERY element is >= 14. Scan every Text,
+     Ul, Shape, ProcessArrowStep, FlowNode, PyramidLevel, TreeItem, TimelineItem.
+     If ANY is below 14, FIX IT before anything else. This is the #1 rule."
   - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
   - "2-4 top-level bands, each w=\"max\"; nesting within bands matches content grouping."
   - "Every RIGID band (Chart/Table/Matrix/etc. inside) has explicit h=. Text-only bands and header: NO h (auto-size)."
   - "I ADDED UP header_h + every band h + every gap + 2*padding and the total
      is between ~640 and ~700. If over 720 the slide WILL overlap."
-  - "KPI row: no h (auto-sizes). Tiles: justifyContent=\"center\"."
+  - "KPI row: no h (auto-sizes). Tiles: justifyContent=\"center\". Labels 14pt, values 26-36pt."
   - "Every Chart/Matrix/ProcessArrow has w=\"max\" AND an explicit computed h."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
   - "Every <HStack> whose children use grow or w=\"max\" itself has w=\"max\"."
-  - "No fontSize < 11. No fixed-px width on a text or chart column."
+  - "No fixed-px width on a text or chart column."
+  - "Bullet lists: max 3-4 items, each ≤ 50 chars, fontSize 14-16."
   - "At most one hero_panel. Accent used as a highlight, not a fill."
   - "If the total is well under ~640, ADD a band (stat row / callout / second
      visual) - don't inflate one band's h to fill the gap."
