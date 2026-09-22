@@ -1,0 +1,12 @@
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\ARCHITECTURE.md
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\CODE_FLOW.md
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\GENOFFICE_FEATURE_ADOPTION.md
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\docs\repair-budget-split.md
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\flow.md
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\nodes.md
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\session-2026-09-21.md
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\src\knowledge\components\pyramid.yaml
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\src\knowledge\core\house-style.yaml
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\src\knowledge\core\nodes.yaml
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\src\knowledge\core\recipes.yaml
+C:\Users\deepa\OneDrive\Documents\New folder\presentation-pipeline\tests\cases\base-overstuffed.yaml
