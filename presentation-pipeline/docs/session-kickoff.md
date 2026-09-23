@@ -26,10 +26,12 @@ git pull
 git checkout <branch>
 uv sync
 npm install --prefix src/node
-python -m scripts.eval_run --label <label> --bundle      # built in Phase 0
+uv pip install comtypes                                  # optional, after uv sync: PowerPoint PNGs in the bundle
+python -m scripts.eval_run --label <label> --bundle      # built in Phase 0; default = the gate cases
 ```
 
-Email back the single file it prints: `output/eval/<label>-<timestamp>.zip` (summary.md, results.json, per-slide XML + compile-result.json, review PNGs; built to stay small enough to email).
+Email back the single file it prints: `output/eval/<label>-<timestamp>.zip` (summary.md, results.json, per-slide XML + compile-result.json + .pptx, PowerPoint PNGs when available; ~10 KB per slide + ~100 KB per PNG).
+On the build device: `python -m scripts.eval_import <zip>` → `docs/eval/<label>/` (LibreOffice renders), then `python -m scripts.eval_compare docs/eval/baseline docs/eval/<label>`.
 Only if the build session asks: a LangSmith run export (JSON) for specific cases, or a specific `.pptx`.
 
 Until Phase 0 exists, the test device can run `python -m src.runner <cases> --json > runner.json` and email `runner.json` plus the `output/runs/<run_id>/` folders requested.

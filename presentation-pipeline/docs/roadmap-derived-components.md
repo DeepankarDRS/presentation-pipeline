@@ -81,6 +81,16 @@ Already in place and reused: `hint-capabilities.yaml`, `content_model.py`, `icon
 - A real generated slide (`llm_test/f7cb357c1472.pptx`, 2026-09-22) shows the gap: a 1-row table (1 entity × 2 metrics) in a tall card, a card holding one bullet, a dead band under the header → routing (Phase 2), sizing (Phase 1), thin content (planner/data, not covered by this roadmap).
 **DECIDE:** acceptance-gate case subset (suggest: all `eval-*`, `maximal-density`, `single-table`, `kpi-row`, `chart-and-table`, `mixed-executive-slide`, 3 `deck-*`) vs full 48 for milestones.
 
+**Status: built 2026-09-23 (branch `phase-0-eval`), awaiting eval.**
+Decisions (2026-09-23, user):
+- Gate = the user's 3 deck prompts (6 / 8 / 6 slides; case files pending) + `eval-*` (3), `maximal-density`, `single-table`, `kpi-row`, `chart-and-table`, `mixed-executive-slide`, `gj-h1-regen` (`GATE_CASES` in `scripts/eval_run.py`); full 48 at milestones. Runs per case via `--repeat N`.
+- gj-h1 case derived from the golden XML (`scripts/make_gj_h1_case.py` → `tests/cases/gj-h1-regen.yaml`, content only, no layout); user confirmed its data may travel in eval bundles.
+- Renders: test PC exports PowerPoint COM PNGs into the bundle; build PC renders every slide with LibreOffice on import (same renderer for every label). Committed summaries live in `docs/eval/<label>/` (supersedes `baseline-<date>.md` above).
+
+Built: `scripts/eval_run.py` (streams the unchanged graph — deck state resets per slide, so per-slide numbers come from each validator step), `eval_metrics.py`, `eval_compare.py`, `eval_import.py`, `tests/unit/test_eval.py` (mocked stream, real graph with mocked LLM, real compiles).
+Fill ratio = card content span ÷ (card height − 2·padding), padding ≤ 24 px; table rows count only their text height (≥ the 32 px default row), so centred content in a bloated card (F1) and stretched rows (F5) both read as dead space — checked against LibreOffice renders.
+LLM-free numbers (`--fixtures`, fit-grow off → on): gj-h1 golden mean fill 0.761 → 0.866, low-fill cards 35.1% → 14.9%; editorial golden 0.826 → 0.875; fit_grow fixtures 0.715 → 0.801. Target for the regenerated deck: `docs/eval/golden-gj-h1/` (74 cards: KPI tile 36, table 13, text 13, dark panel 6, chart 6).
+
 ---
 
 ## Phase 1 — Sizing grammar: let POM allocate (sizing plan Step 1)
