@@ -45,8 +45,11 @@ from scripts.eval_metrics import LOW_FILL, card_metrics, pattern_match  # noqa: 
 from src.compiler.layout_audit import audit_layout  # noqa: E402
 from src.utils.case_loader import load_case  # noqa: E402
 
-# Acceptance gate (DECIDE 2026-09-23): the user's deck prompts + single-slide cases.
+# Acceptance gate (DECIDE 2026-09-23): the user's deck prompts + single-slide cases, 2 runs each.
 GATE_CASES = [
+    "gate-deck-cheffin-audit",
+    "gate-deck-xtsy-qcomm",
+    "gate-deck-agency-takeover",
     "eval-categorized-list-routing",
     "eval-chart-vs-kpi-disambiguation",
     "eval-table-vs-kpi-disambiguation",
@@ -309,7 +312,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Score pipeline quality per slide")
     parser.add_argument("cases", nargs="*", help=f"case names (default: the gate, {len(GATE_CASES)} cases)")
     parser.add_argument("--label", required=True)
-    parser.add_argument("--repeat", type=int, default=1, help="runs per case (LLM variance)")
+    parser.add_argument("--repeat", type=int, default=2, help="runs per case (LLM variance; gate = 2)")
     parser.add_argument("--fixtures", type=Path, help="LLM-free: score a folder of POM XML instead of cases")
     parser.add_argument("--bundle", action="store_true", help="also write <out>.zip for email")
     parser.add_argument("--out", type=Path, default=_PIPELINE_ROOT / "output" / "eval")

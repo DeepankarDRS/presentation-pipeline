@@ -83,7 +83,7 @@ Already in place and reused: `hint-capabilities.yaml`, `content_model.py`, `icon
 
 **Status: built 2026-09-23 (branch `phase-0-eval`), awaiting eval.**
 Decisions (2026-09-23, user):
-- Gate = the user's 3 deck prompts (6 / 8 / 6 slides; case files pending) + `eval-*` (3), `maximal-density`, `single-table`, `kpi-row`, `chart-and-table`, `mixed-executive-slide`, `gj-h1-regen` (`GATE_CASES` in `scripts/eval_run.py`); full 48 at milestones. Runs per case via `--repeat N`.
+- Gate = the user's 3 deck prompts `gate-deck-cheffin-audit` (6 slides), `gate-deck-xtsy-qcomm` (8), `gate-deck-agency-takeover` (6) + `eval-*` (3), `maximal-density`, `single-table`, `kpi-row`, `chart-and-table`, `mixed-executive-slide`, `gj-h1-regen` (`GATE_CASES` in `scripts/eval_run.py`); all cases at milestones. **2 runs per case** (`--repeat` default). CHEFFIN prompt: pasted text stopped after slide 1 of an "18-slide structure" → target changed to 6, chat timestamp removed, agency name anonymised (user, 2026-09-23); the other two verbatim.
 - gj-h1 case derived from the golden XML (`scripts/make_gj_h1_case.py` → `tests/cases/gj-h1-regen.yaml`, content only, no layout); user confirmed its data may travel in eval bundles.
 - Renders: test PC exports PowerPoint COM PNGs into the bundle; build PC renders every slide with LibreOffice on import (same renderer for every label). Committed summaries live in `docs/eval/<label>/` (supersedes `baseline-<date>.md` above).
 

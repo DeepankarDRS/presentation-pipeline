@@ -27,7 +27,7 @@ git checkout <branch>
 uv sync
 npm install --prefix src/node
 uv pip install comtypes                                  # optional, after uv sync: PowerPoint PNGs in the bundle
-python -m scripts.eval_run --label <label> --bundle      # built in Phase 0; default = the gate cases
+python -m scripts.eval_run --label <label> --bundle      # built in Phase 0; default = gate cases x 2 runs
 ```
 
 Email back the single file it prints: `output/eval/<label>-<timestamp>.zip` (summary.md, results.json, per-slide XML + compile-result.json + .pptx, PowerPoint PNGs when available; ~10 KB per slide + ~100 KB per PNG).

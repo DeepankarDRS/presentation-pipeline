@@ -183,6 +183,16 @@ def test_pick_reviews_failed_first_then_lowest_fill():
     assert eval_import.pick_reviews(results, limit=2) == [("a__r1", 1), ("a__r1", 2)]
 
 
+def test_every_gate_case_loads_with_a_request():
+    from src.utils.case_loader import load_case
+
+    for name in eval_run.GATE_CASES:
+        case = load_case(name)
+        assert case["name"] == name and case.get("request"), name
+    decks = {n: load_case(n)["expect"]["slide_count"] for n in eval_run.GATE_CASES if n.startswith("gate-deck-")}
+    assert decks == {"gate-deck-cheffin-audit": 6, "gate-deck-xtsy-qcomm": 8, "gate-deck-agency-takeover": 6}
+
+
 def test_gj_h1_case_matches_golden_deck():
     assert CASE.read_text(encoding="utf-8") == build_case(), "run: python -m scripts.make_gj_h1_case"
     assert "gj-h1-regen" in eval_run.GATE_CASES
