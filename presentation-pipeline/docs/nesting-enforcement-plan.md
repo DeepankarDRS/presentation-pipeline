@@ -514,12 +514,12 @@ def test_invalid_child_guidance_and_signature():
 - `python -m scripts.verify_li_nesting`: 4/4.
 - `validator_node` on the original bug slide: `TEXT_CONTAINER_FLATTENED`, then **compiles OK**. The `<!-- archetype: C -->` comment is preserved.
 
-Commands:
+Commands (run BEFORE starting to record a baseline, and again after):
 
 ```bash
-pytest tests/unit -q --ignore=tests/unit/test_api.py --ignore=tests/unit/test_deck_nodes.py --ignore=tests/unit/test_graph.py
+pytest tests/unit -q
 ```
-Expect exactly the 8 pre-existing failures listed above and nothing else.
+Expect the same failures as your baseline and nothing new. On a clean `uv sync` the baseline is 4 failures (see AGENTS.md); the 8 listed above were from an older local `.venv` missing `lxml`.
 
 ```bash
 python -m scripts.verify_li_nesting

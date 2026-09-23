@@ -12,7 +12,12 @@ Prompt → LangGraph pipeline → LLM writes POM XML → Node.js compiler (`@hir
 Needs Python ≥3.11, Node.js, and (optional) LibreOffice for rendering slides to images.
 The git repo root is the folder ABOVE this one; open `presentation-pipeline/` itself in Cursor.
 
+**Windows:** the repo tracks `graphify-out/cache/` files with very long names — clone into a short path (e.g. `C:\dev`) and enable long paths first, or checkout fails with "Filename too long":
+
 ```bash
+git config --global core.longpaths true
+git clone -b feat/golden-reference-grounding https://github.com/DeepankarDRS/presentation-pipeline.git
+cd presentation-pipeline/presentation-pipeline
 uv sync                               # installs deps + dev group (pytest etc.); or: pip install -e ".[dev]" lxml
 cp .env.example .env                  # then put your real OPENAI_API_KEY in .env
 npm install --prefix src/node         # POM compiler
@@ -34,7 +39,9 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Re-render XML without the API | `python -m scripts.render_check --in <dir-of-xml> --out output/render_check` (compile + layout audit + summary.md) |
 | Unit tests (LLM + compiler mocked, no key) | `pytest tests/unit -q` |
 
-Known pre-existing unit-test failures (not regressions): 6 cost tests in `test_evaluator.py`, `test_critic.py::test_critic_medium_only_passes`, `test_layout_audit.py::test_font_at_minimum_ok`.
+Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-09-23: 315 pass, 4 fail — not regressions):
+`test_critic.py::test_critic_medium_only_passes`, `test_layout_audit.py::test_font_at_minimum_ok`, and two routing tests in `test_graph.py` (`*_budget_exhausted*`: expect `evaluator`/`slide_router`, code now routes to `visual_repairer` — tests or routing are stale).
+Always record your own baseline (`pytest tests/unit -q`) before a change and compare against it.
 
 When judging slide quality, open the `.pptx` (or render via LibreOffice, see `.cursor/rules/offline-render-loop.mdc`) — don't trust pass/fail alone.
 
