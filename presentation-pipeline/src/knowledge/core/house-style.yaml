@@ -157,11 +157,10 @@ recipes:
   accent_card: >
     a card with ONE accent edge: borderTop.color="$accent" borderTop.width="4"
     (top stripe) or borderLeft.color="$accent" borderLeft.width="5" (list item).
-    VERIFIED: a one-edge accent stripe renders cleanly ONLY on a SQUARE card -
-    do NOT combine borderTop/borderLeft accent with borderRadius (the stripe
-    wraps the rounded corner and looks like a bracket). Rounded cards
-    (borderRadius 12-16) use just the border.color="$border" hairline; put the
-    accent in the value text color or a small <Shape> bar instead.
+    VERIFIED (render 2026-09-23): borderLeft + borderRadius is a clean straight
+    bar with neutral rounded corners - fine on rounded cards. borderTop +
+    borderRadius paints both upper corners and looks like a bracket - use
+    borderTop only on a SQUARE card.
   hero_panel: >
     <VStack w="max"|"NN%" padding="18-24" gap="10-16" borderRadius="14-18"
       justifyContent="center">

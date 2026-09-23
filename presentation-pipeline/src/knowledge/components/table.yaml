@@ -1,6 +1,6 @@
 # pom-knowledge/components/table.yaml
 # <Table> + <Col> + <Tr> + <Td>. Phase C.
-# Source: llm.txt "Table" section. Verified against @hirokisakabe/pom v10.3.0
+# Source: llm.md "Table" section. Verified against @hirokisakabe/pom v10.3.0
 # (see pom-knowledge/examples/table-slide.xml and mixed-slide.xml).
 
 meta:

@@ -50,6 +50,13 @@ _ZERO_DIM_RE = re.compile(
     r"\b(?P<attr>w|h|minW|maxW|minH|maxH|fontSize)\s*=\s*\"(?P<val>0|-\d+(?:\.\d+)?|0*\.0+)\""
 )
 _ZERO_SPACING_RE = re.compile(r"\s+(?P<attr>gap|padding|margin)\s*=\s*\"0+\"")
+# A zero stroke (line/outline/border width 0) fails buildPptx ("outline.width must
+# be a finite positive EMU value"). Omitting the stroke is how POM says "none".
+_ZERO_STROKE_RE = re.compile(
+    r'\b(?P<prefix>line|outline|border|borderTop|borderRight|borderBottom|borderLeft)'
+    r'\.(?:width|size)\s*=\s*"(?:0+(?:\.0+)?|\.0+)"'
+)
+_ELEMENT_TAG_RE = re.compile(r"<[A-Za-z][^<>]*>")
 _BR_RE = re.compile(r"<\s*/?\s*br\s*/?\s*>", re.IGNORECASE)
 _HR_RE = re.compile(r"<\s*/?\s*hr\s*/?\s*>", re.IGNORECASE)
 _SPACING_RE = re.compile(r'\bspacing\s*=\s*"([^"]*)"')
@@ -174,6 +181,24 @@ def _fix_pyramids(xml: str, issues: list[dict[str, Any]]) -> str:
     return _PYRAMID_BLOCK_RE.sub(_replacer, xml)
 
 
+def _strip_zero_strokes(xml: str) -> tuple[str, list[str]]:
+    """Drop every zero-width stroke group (e.g. border.width="0" + border.color) per element.
+
+    The whole group goes, not just the width: a leftover border.color could get a
+    default width and draw the border the zero was meant to hide.
+    """
+    removed: list[str] = []
+
+    def _fix(m: re.Match) -> str:
+        tag = m.group(0)
+        for prefix in sorted({z.group("prefix") for z in _ZERO_STROKE_RE.finditer(tag)}):
+            tag = re.sub(rf'\s+{prefix}(?:\.[A-Za-z]+)?\s*=\s*"[^"]*"', "", tag)
+            removed.append(prefix)
+        return tag
+
+    return _ELEMENT_TAG_RE.sub(_fix, xml), removed
+
+
 def _strip_fences(xml: str) -> tuple[str, bool]:
     stripped = xml.strip()
     if "```" not in stripped:
@@ -270,6 +295,16 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
             "code": "ZERO_SPACING",
             "message": "Removed {} (omit rather than 0).".format(
                 ", ".join(f'{a}="0"' for a in attrs)
+            ),
+            "auto_fixed": True,
+        })
+
+    xml, zero_strokes = _strip_zero_strokes(xml)
+    if zero_strokes:
+        issues.append({
+            "code": "ZERO_STROKE_REMOVED",
+            "message": "Removed zero-width stroke(s): {} (omit the stroke instead of width 0).".format(
+                ", ".join(sorted(set(zero_strokes)))
             ),
             "auto_fixed": True,
         })

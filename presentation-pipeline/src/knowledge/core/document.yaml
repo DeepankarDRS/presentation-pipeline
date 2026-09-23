@@ -1,6 +1,6 @@
 # pom-knowledge/core/document.yaml
 # Top-level document structure and hard rules for a pom XML slide.
-# Source: llm.txt "Basics" + "Top-Level Structure" + "Theme (Design Tokens)",
+# Source: llm.md "Basics" + "Top-Level Structure" + "Theme (Design Tokens)",
 # cross-checked against @hirokisakabe/pom v10.3.0 (parseXml).
 
 meta:

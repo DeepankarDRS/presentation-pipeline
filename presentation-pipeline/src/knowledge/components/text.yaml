@@ -1,6 +1,6 @@
 # pom-knowledge/components/text.yaml
 # The <Text> node + its inline-formatting children (Phase A subset: B, I, Span, Mark).
-# Source: llm.txt "Text" section + "Child Element Tag Reference".
+# Source: llm.md "Text" section + "Child Element Tag Reference".
 # Verified against v10.3.0: attribute set from NODE_COERCION_MAP.text,
 # inline tags from INLINE_FORMAT_TAG_LIST, Span attrs from CHILD_ELEMENT_COERCION_MAP.Span.
 

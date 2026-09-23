@@ -1,6 +1,6 @@
 # pom-knowledge/components/list.yaml
 # <Ul> / <Ol> / <Li>. Phase B.
-# Source: llm.txt "Ul (Bullet List)" + "Ol (Numbered List)".
+# Source: llm.md "Ul (Bullet List)" + "Ol (Numbered List)".
 
 meta:
   phase: B

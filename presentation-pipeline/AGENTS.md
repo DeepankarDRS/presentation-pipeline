@@ -5,7 +5,7 @@ Prompt → LangGraph pipeline → LLM writes POM XML → Node.js compiler (`@hir
 ## Read first
 - `ARCHITECTURE.md` — system overview, graph nodes, compiler bridge
 - `CODE_FLOW.md` — which function runs when, which `PresentationState` keys change
-- `llm.txt` — POM XML reference
+- `llm.md` — POM's own XML reference (upstream). Audit source for our knowledge YAML, NOT a prompt: pasting it in lost to selective context (2026-09-02). `tests/unit/test_upstream_reference.py` compiles every example in it.
 - `.cursor/rules/` — project memory carried over from Claude Code (working style is always applied; the rest load when relevant)
 
 ## Setup on a new machine
@@ -39,7 +39,7 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Re-render XML without the API | `python -m scripts.render_check --in <dir-of-xml> --out output/render_check` (compile + layout audit + summary.md) |
 | Unit tests (LLM + compiler mocked, no key) | `pytest tests/unit -q` |
 
-Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-09-23: 362 pass, 4 fail — not regressions):
+Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-09-23: 370 pass, 4 fail — not regressions):
 `test_critic.py::test_critic_medium_only_passes`, `test_layout_audit.py::test_font_at_minimum_ok`, and two routing tests in `test_graph.py` (`*_budget_exhausted*`: expect `evaluator`/`slide_router`, code now routes to `visual_repairer` — tests or routing are stale).
 Always record your own baseline (`pytest tests/unit -q`) before a change and compare against it.
 
@@ -52,7 +52,8 @@ To check it live (needs OPENAI_API_KEY): generate a table-heavy slide, e.g.
 `python -m src.graph "One data slide: ROAS by platform for Flipkart 0.34x and Zomato 0.32x, highlight the worst performer"`
 then check the run's XML in `output/runs/<run_id>/`: no HStack/Icon inside `<Td>`, planner hint drawn from table treatments (color, shading, header icon), and normalize issues in the log (`TEXT_CONTAINER_FLATTENED`, `UNKNOWN_ICON_REMOVED`) should be rare.
 
-Possible follow-ups (not planned): hints that clash with weight or describe data not in key_messages can only be judged by an LLM (plan_reviewer); the two stale `test_graph` routing tests.
+## Next work: `docs/roadmap-derived-components.md`
+Phase 0 quality baseline (needs OPENAI_API_KEY) -> Phase 1 deterministic data-shape routing + planner prompt fixes -> Phase 2 derived nodes (KpiTile/TableCard/IconList) -> Phase 3 remaining derived nodes -> Phase 4 visual critic loop. Each phase lists its files, tests, acceptance criteria and the decisions (marked DECIDE) to confirm with the user first.
 
 ## Where work stands (2026-09-23)
 - Branch `feat/golden-reference-grounding`. Recent: design-hint/nesting/icon enforcement, fit-grow pass (`dd5c152`), layout archetype system (`d2b75b6`), 14pt minimum font, Cursor handoff docs.

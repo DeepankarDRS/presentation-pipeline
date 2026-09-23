@@ -2,7 +2,7 @@
 # The <Shape> node. Phase A already allows Shape; this file is the fuller
 # reference pulled in when a slide leans on shapes (accent bars, KPI dots,
 # plates, simple badges).
-# Source: llm.txt "Shape" section. Verified against @hirokisakabe/pom v10.3.0.
+# Source: llm.md "Shape" section. Verified against @hirokisakabe/pom v10.3.0.
 
 meta:
   phase: A
@@ -17,7 +17,7 @@ attributes:
   shapeType:   { type: enum, required: true, note: "See phase_ab_subset below. 178 exist; stay in the subset." }
   text:        { type: string, note: "Centred text inside the shape." }
   fill:        { type: object, note: 'fill.color="1D4ED8"  fill.transparency="0.5"' }
-  line:        { type: object, note: 'line.color="hex"  line.width="2"  line.dashType="dash". line.width="0" removes the outline.' }
+  line:        { type: object, note: 'line.color="hex"  line.width="2"  line.dashType="dash". Width must be > 0 - for no outline, omit line entirely (the default).' }
   outline:     { type: object, note: 'Text-style alias for line: outline.size / outline.color.' }
   glow:        { type: object, note: 'glow.size="10" glow.opacity="0.7" glow.color="3B82F6" (defaults 8 / 0.75 / FFFFFF). Use for a dot that pops on dark surfaces.' }
   rotate:      { type: number, note: "degrees clockwise, render-only" }
@@ -37,7 +37,7 @@ examples:
   accent_rule: |
     <Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" />
   kpi_dot: |
-    <Shape shapeType="ellipse" w="10" h="10" fill.color="$positive" line.width="0" />
+    <Shape shapeType="ellipse" w="10" h="10" fill.color="$positive" />
   glowing_dot_on_dark: |
     <Shape shapeType="ellipse" w="10" h="10" fill.color="$accent" glow.size="10" glow.opacity="0.7" glow.color="$accent" />
 

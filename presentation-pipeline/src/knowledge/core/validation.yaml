@@ -124,7 +124,7 @@ value_constraints:
   enum_attributes:
     rule: "A wrong enum value (e.g. textAlign=\"start\") throws a clean ParseXmlError: 'Invalid value for attribute \"X\". Expected: ...'. Follow the allowed value lists in components/*.yaml exactly."
 
-# ── Semantic rules from llm.txt "Notes" ─────────────────────────────────────
+# ── Semantic rules from llm.md "Notes" ─────────────────────────────────────
 semantic_rules:
   - "alignItems / justifyContent use start / center / end (NOT left / right)."
   - "textAlign uses left / center / right (NOT start / end)."

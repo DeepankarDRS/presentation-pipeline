@@ -28,7 +28,7 @@ card_recipe:
   rules:
     - Always use backgroundColor="$surfaceAlt" (never leave it transparent)
     - "border.color=\"$border\" — a SUBTLE gray hairline, NEVER the accent color"
-    - "Rounded card (borderRadius 12-16): use ONLY the border.color hairline. Do NOT add a borderTop/borderLeft accent stripe on a rounded card — the stripe wraps the corner and looks broken. Put the accent in the value text or a small Shape bar."
+    - "Rounded card (borderRadius 12-16): a borderLeft accent is fine (clean straight bar). Do NOT add a borderTop accent on a rounded card — it wraps both upper corners and looks broken."
     - "Accent-stripe card (borderTop.color=\"$accent\" borderTop.width=\"4\"): SQUARE only, no borderRadius."
     - Equal-width sibling cards in an HStack each get w="max"
 

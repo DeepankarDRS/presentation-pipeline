@@ -1,6 +1,6 @@
 # pom-knowledge/core/attributes.yaml
 # Attributes common to (nearly) every node — the layout / box model.
-# Source: llm.txt "Common Attributes (All Nodes)" + "Leaf Rotation".
+# Source: llm.md "Common Attributes (All Nodes)" + "Leaf Rotation".
 # Verified against v10.3.0 NODE_COERCION_MAP for vstack/hstack/text/shape
 # (identical common-attr set on all four).
 
