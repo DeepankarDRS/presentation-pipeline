@@ -1,0 +1,28 @@
+<Theme surface="F3F4F6" surfaceAlt="FFFFFF" accent="C2410C" accentAlt="1E3A5F" positive="15803D" negative="B91C1C" warning="B45309" textMain="1F2937" textMuted="6B7280" border="E5E7EB" />
+<Slide><VStack w="1280" h="720" padding="36" gap="18" alignItems="stretch" backgroundColor="$surface">
+  <VStack gap="5">
+    <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PERFORMANCE OVERVIEW</Text>
+    <Text fontSize="30" color="$textMain" bold="true">Account Is Spending at Scale, But Not Buying Profitable Demand</Text>
+    <Text fontSize="14" color="$textMuted">Last 90 days · FLIPCART &amp; ZAROMA</Text>
+  </VStack>
+  <HStack w="max" h="150" gap="16" alignItems="stretch">
+    <VStack w="max" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="14" color="$textMuted">Ad Spend (90d)</Text><Text fontSize="30" color="$textMain" bold="true">₹114.9L</Text></VStack>
+    <VStack w="max" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="14" color="$textMuted">Revenue (90d)</Text><Text fontSize="30" color="$textMain" bold="true">₹37.4L</Text></VStack>
+    <VStack w="max" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="14" color="$textMuted">Combined ROAS</Text><Text fontSize="30" color="$negative" bold="true">0.33x</Text></VStack>
+  </HStack>
+  <HStack w="max" h="max" gap="16" alignItems="stretch">
+    <VStack w="42%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+      <Text fontSize="15" color="$textMain" bold="true">Platform ROAS &amp; Structural Issues</Text>
+      <Table w="max" h="120">
+        <Col /><Col /><Col />
+        <Tr><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">Platform</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">ROAS</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">Structural Issue</Td></Tr>
+        <Tr><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">FLIPCART</Td><Td backgroundColor="FFFFFF" color="$negative" fontSize="14">0.34x</Td><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">CPC 3x allowable</Td></Tr>
+        <Tr><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">ZAROMA</Td><Td backgroundColor="FFFFFF" color="$negative" fontSize="14">0.32x</Td><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">Low CVR</Td></Tr>
+      </Table>
+    </VStack>
+    <VStack w="58%" padding="24" gap="10" backgroundColor="$accentAlt" borderRadius="14" justifyContent="center">
+      <Text fontSize="14" color="FDBA74" bold="true" letterSpacing="1">CORE DIAGNOSIS</Text>
+      <Text fontSize="16" color="FFFFFF">This is a media economics problem, not just a campaign hygiene problem.</Text>
+    </VStack>
+  </HStack>
+</VStack></Slide>

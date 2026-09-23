@@ -1,0 +1,33 @@
+<Theme surface="F3F4F6" surfaceAlt="FFFFFF" accent="2F6FB3" accentAlt="1E3A5F" positive="15803D" negative="B91C1C" warning="B45309" textMain="1F2937" textMuted="6B7280" border="E5E7EB" />
+<Slide><VStack w="1280" h="720" padding="36" gap="18" alignItems="stretch" backgroundColor="$surface">
+  <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="5">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">AUTOMATION ADVANTAGE</Text>
+      <Text fontSize="30" color="$textMain" bold="true">Ads Automation Engine Designed for Quick Commerce</Text>
+      <Text fontSize="14" color="$textMuted">Unlocking real-time, data-driven campaign performance</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="150" h="40" fill.color="E0ECF8" color="$textMain" fontSize="14" bold="true" borderRadius="999">FOR SPEED</Shape>
+  </HStack>
+  <HStack w="max" h="max" gap="18" alignItems="stretch">
+    <VStack w="62%" padding="20" gap="14" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="1">AUTOMATION WORKFLOW</Text>
+      <Flow direction="horizontal" w="max" h="260" nodeWidth="150" nodeHeight="56" nodeGap="64">
+        <FlowNode id="a" shape="flowChartProcess" text="Platform Data" color="E5E7EB" textColor="1F2937" />
+        <FlowNode id="b" shape="flowChartDecision" text="Decision Engine" color="2F6FB3" textColor="FFFFFF" />
+        <FlowNode id="c" shape="flowChartProcess" text="Bid Optimization" color="3B8FD9" textColor="FFFFFF" />
+        <FlowNode id="d" shape="flowChartProcess" text="Budget Reallocation" color="3B8FD9" textColor="FFFFFF" />
+        <FlowNode id="e" shape="flowChartProcess" text="Keyword &amp; Placement" color="3B8FD9" textColor="FFFFFF" />
+        <FlowConnection from="a" to="b" /><FlowConnection from="b" to="c" /><FlowConnection from="c" to="d" /><FlowConnection from="d" to="e" />
+      </Flow>
+      <VStack w="max" padding="14" gap="4" backgroundColor="EEF2F7" borderLeft.color="$accent" borderLeft.width="5">
+        <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">IMPACT</Text>
+        <Text fontSize="14" color="$textMain">Automation empowers XTSY to react to market dynamics in real time, outperforming manual campaign management.</Text>
+      </VStack>
+    </VStack>
+    <VStack w="38%" padding="20" gap="12" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="1">AUTOMATION BENEFITS</Text>
+      <Ul fontSize="14" color="$textMain"><Li>Faster optimization cycles (weeks to hours)</Li><Li>Reduced manual intervention</Li><Li>Improved ROAS</Li><Li>Higher share of visibility</Li><Li>Increased conversion efficiency</Li></Ul>
+    </VStack>
+  </HStack>
+  <Text fontSize="14" color="$textMuted">Source: XTSY Automation Engine product documentation, internal analysis</Text>
+</VStack></Slide>

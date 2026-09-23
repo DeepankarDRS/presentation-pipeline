@@ -1,0 +1,21 @@
+<Theme surface="F3F4F6" surfaceAlt="FFFFFF" accent="C2410C" accentAlt="1E3A5F" positive="15803D" negative="B91C1C" warning="B45309" textMain="1F2937" textMuted="6B7280" border="E5E7EB" />
+<Slide><VStack w="1280" h="720" padding="36" gap="18" alignItems="stretch" backgroundColor="$surface">
+  <VStack gap="5">
+    <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PERFORMANCE OVERVIEW</Text>
+    <Text fontSize="30" color="$textMain" bold="true">FLIPCART Is Generating Traffic, But Revenue Efficiency Is Weak</Text>
+  </VStack>
+  <VStack w="max" h="300" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+    <Text fontSize="15" color="$textMain" bold="true">FLIPCART KPI Scorecard</Text>
+    <Table w="max" h="90">
+      <Col /><Col /><Col /><Col /><Col /><Col /><Col />
+      <Tr><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">Spend</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">Ad sales</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">ROAS</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">CPC</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">CVR</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">AOV</Td><Td backgroundColor="F9FAFB" color="$textMain" bold="true" fontSize="14">Allowable CPC</Td></Tr>
+      <Tr><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">₹29.4L</Td><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">₹10.1L</Td><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">0.34x</Td><Td backgroundColor="FFFFFF" color="$negative" fontSize="14">₹31.1</Td><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">5.5%</Td><Td backgroundColor="FFFFFF" color="$textMain" fontSize="14">₹195</Td><Td backgroundColor="FFFFFF" color="$accent" fontSize="14">₹10.7</Td></Tr>
+    </Table>
+    <Ul fontSize="14" color="$textMain"><Li>CPC is nearly 3x above allowable</Li></Ul>
+  </VStack>
+  <VStack w="max" h="max" padding="18" gap="6" backgroundColor="FEF2F2" borderLeft.color="$negative" borderLeft.width="5">
+    <Text fontSize="14" color="$negative" bold="true" letterSpacing="1">RISK</Text>
+    <Text fontSize="14" color="$textMain">FLIPCART CPC is almost 3x higher than what current AOV and CVR can support, making profitable scaling impossible under current conditions.</Text>
+  </VStack>
+  <Text fontSize="14" color="$textMuted">Source: CHEFFIN campaign data, May 2024</Text>
+</VStack></Slide>

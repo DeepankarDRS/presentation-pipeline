@@ -214,6 +214,22 @@ async function compile() {
     return;
   }
 
+  // Grow content into spare space (POM's autoFit only shrinks). Never fatal:
+  // any failure compiles the original XML. Set POM_FIT_GROW=0 to disable.
+  if (process.env.POM_FIT_GROW !== "0") {
+    try {
+      const { fitGrow } = await import("./fit-grow.js");
+      const fitted = await fitGrow(xml);
+      result.fitGrow = fitted.report;
+      if (fitted.report.length > 0) {
+        xml = fitted.xml;
+        await writeFile(path.join(outputDir, "fitted.xml"), xml, "utf8");
+      }
+    } catch (error) {
+      result.fitGrow = [`skipped: ${error && error.message ? error.message : String(error)}`];
+    }
+  }
+
   try {
     const { pptx, diagnostics } = await buildPptx(xml, SLIDE_SIZE);
 

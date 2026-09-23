@@ -9,6 +9,6 @@
     "compile": "node compile-pom.js"
   },
   "dependencies": {
-    "@hirokisakabe/pom": "^10.3.0"
+    "@hirokisakabe/pom": "10.3.0"
   }
 }
