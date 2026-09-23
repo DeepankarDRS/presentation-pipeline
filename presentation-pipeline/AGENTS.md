@@ -53,6 +53,7 @@ To check it live (needs OPENAI_API_KEY): generate a table-heavy slide, e.g.
 then check the run's XML in `output/runs/<run_id>/`: no HStack/Icon inside `<Td>`, planner hint drawn from table treatments (color, shading, header icon), and normalize issues in the log (`TEXT_CONTAINER_FLATTENED`, `UNKNOWN_ICON_REMOVED`) should be rare.
 
 ## Next work: `docs/roadmap-derived-components.md`
+How to run it across two devices (build without a key here, eval with the key elsewhere), with copy-paste session prompts: `docs/session-kickoff.md`.
 Phase 0 quality baseline (needs OPENAI_API_KEY) -> 1 sizing grammar (grow/minH instead of pixel budgets; from docs/layout-sizing-plan.md) -> 2 deterministic data-shape routing + planner prompt fixes -> 3 real font metrics -> 4 derived nodes (KpiTile/TableCard/IconList) -> 5 remaining derived nodes + computed table/diagram sizing -> 6 measured critic loop. Each phase lists its files, tests, acceptance criteria and the decisions (marked DECIDE) to confirm with the user first.
 
 ## Where work stands (2026-09-23)
