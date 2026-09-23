@@ -92,12 +92,16 @@ function tagNodes(xml) {
 
 const untag = (xml) => xml.replace(new RegExp(` id="${ID_PREFIX}\\d+[ab]*"`, "g"), "");
 
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 /** Locate the element with this id: [start, openEnd, end) offsets. */
 function findElement(xml, id) {
+  // generator ids may hold regex characters ("kpi(1)", "kpi.1") or single quotes
+  const idRe = new RegExp(`\\sid\\s*=\\s*("${escapeRe(id)}"|'${escapeRe(id)}')`);
   TAG_RE.lastIndex = 0;
   let m;
   while ((m = TAG_RE.exec(xml))) {
-    if (m[1] || !new RegExp(`\\sid="${id}"`).test(m[3])) continue;
+    if (m[1] || !idRe.test(m[3])) continue;
     const start = m.index, openEnd = TAG_RE.lastIndex;
     if (m[4]) return { start, openEnd, end: openEnd, name: m[2] };
     let depth = 1, t;
@@ -490,6 +494,7 @@ async function growText(xml, report) {
     const applyFont = (src, s) => c.targets.reduce((x, t) => setAttrs(x, t.id, { fontSize: scaled(t, s) }), src);
     const headings = c.targets.filter((t) => t.heading).map((t) => t.id);
     const font = await search(xml, c.ids, applyFont, MAX_SCALE, headings);
+    if (!c.targets.some((t) => scaled(t, font.best) !== t.f)) font.best = 1; // all already at their caps
     if (font.best > 1) xml = applyFont(xml, font.best);
 
     // stage 2: once fonts hit their caps, spread the rest into line height + gaps
@@ -619,10 +624,15 @@ export async function fitGrow(inputXml) {
     if (Date.now() - started > BUDGET_MS) {
       report.push(`slide ${index}: skipped (time budget ${BUDGET_MS}ms used)`);
     } else {
-      const slideReport = [];
-      const out = await fitSlide(prefix + slide, slideReport);
-      slide = out.slice(out.search(/<Slide\b/));
-      report.push(...slideReport.map((r) => `slide ${index}: ${r}`));
+      // one slide failing must not cost the other slides their fitting
+      try {
+        const slideReport = [];
+        const out = await fitSlide(prefix + slide, slideReport);
+        slide = out.slice(out.search(/<Slide\b/));
+        report.push(...slideReport.map((r) => `slide ${index}: ${r}`));
+      } catch (error) {
+        report.push(`slide ${index}: skipped (${error && error.message ? error.message : String(error)})`);
+      }
     }
     parts.push(slide);
     last = start + m[0].length;
