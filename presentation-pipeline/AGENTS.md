@@ -23,6 +23,9 @@ npm install --prefix frontend         # Angular UI
 - Tests: `pytest` (LLM and compiler are mocked — no key or Node needed)
 - See a slide without an API key: `python scripts/render_check.py` (needs LibreOffice) — details in `.cursor/rules/offline-render-loop.mdc`
 
+## Next task (ready to implement)
+**`docs/nesting-enforcement-plan.md`**: make invalid node nesting (e.g. HStack/Icon inside `<Td>`/`<Li>`) impossible. It has step-by-step, pre-tested code. Implement it in order and verify with its "Verify" section. The permanent rule is `.cursor/rules/pom-nesting-content-model.mdc`.
+
 ## Where work stands (2026-09-23)
 - Branch `feat/golden-reference-grounding`. Latest commits: fit-grow pass (`dd5c152`), layout archetype system (`d2b75b6`), 14pt minimum font.
 - Uncommitted when handed off: edits to `src/knowledge/core/house-style.yaml` and `src/prompts/generator/system.j2`, plus `llm_test/` churn.

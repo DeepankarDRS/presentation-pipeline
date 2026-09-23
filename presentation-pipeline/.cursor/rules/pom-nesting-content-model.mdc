@@ -1,0 +1,27 @@
+---
+description: POM nesting rules — which node may contain which. Apply when editing prompts, knowledge YAML, normalizer/validator/audit/repair code, or any POM XML.
+globs: src/prompts/**,src/knowledge/**,src/compiler/**,src/agents/validator.py,src/agents/repairer.py,tests/**
+alwaysApply: false
+---
+
+# POM content model — the one rule for nesting
+
+**Single source of truth:** the `children:` field of each node in `src/knowledge/core/nodes.yaml`.
+**Single enforcer:** `src/compiler/content_model.py` (`content_model()`, `find_violations()`, `flatten_text_containers()`).
+If that module doesn't exist yet, build it first: see `docs/nesting-enforcement-plan.md`.
+
+## Hard rules (the POM v10.3.0 compiler breaks when these are violated)
+- `<Text>`, `<Td>`, `<Li>` hold **text + inline tags only**: B, I, A, U, S, Sub, Sup, Span, Mark.
+  Never HStack, VStack, Icon, Shape, Chart, Image or Text inside them.
+  - HStack/Icon inside `<Td>` → the whole table fails with a misleading `<Table>: Missing required attribute "rows"`.
+  - Icon/Shape inside `<Li>` → silently stripped (no error, icon just disappears).
+- `Tr` → only `Td`. `Table` → only `Col`, `Tr`. `Chart` → only `ChartSeries`. `Ul`/`Ol` → only `Li`.
+- Leaf nodes (Icon, Shape, Image, Line, Arrow, Col, ChartDataPoint, …) never have children.
+- Only VStack, HStack, Layer and Slide accept arbitrary layout/content children.
+
+## When working in this repo
+- **Never hardcode a parent/child rule** in Python, prompts or tests. Add or modify `children:` in `nodes.yaml` and let `content_model()` pick it up.
+- **Never write a prompt recipe that nests layout inside a text-only container.** Any recipe that uses HStack/Icon/Shape/Chart ("icons beside labels", "status dots", "sparkline") must say it applies to layout containers only.
+- **A design hint (visual-intent) never overrides a nesting rule.** For `table` / `bullet_list` components, express intent with color, bold or highlight. If icons per row are essential, render the rows as `VStack` of `HStack` (Icon + Text + value) instead of `<Table>`/`<Ul>`.
+- Nesting violations must be caught **before** `validate_xml`/parseXml (compiler errors for these are misleading or silent). They are blocking and retryable, with code `INVALID_CHILD`.
+- Every new node or nesting fix needs a case in `tests/unit/test_content_model.py`.
