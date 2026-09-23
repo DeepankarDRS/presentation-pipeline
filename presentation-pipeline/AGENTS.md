@@ -53,7 +53,7 @@ To check it live (needs OPENAI_API_KEY): generate a table-heavy slide, e.g.
 then check the run's XML in `output/runs/<run_id>/`: no HStack/Icon inside `<Td>`, planner hint drawn from table treatments (color, shading, header icon), and normalize issues in the log (`TEXT_CONTAINER_FLATTENED`, `UNKNOWN_ICON_REMOVED`) should be rare.
 
 ## Next work: `docs/roadmap-derived-components.md`
-Phase 0 quality baseline (needs OPENAI_API_KEY) -> Phase 1 deterministic data-shape routing + planner prompt fixes -> Phase 2 derived nodes (KpiTile/TableCard/IconList) -> Phase 3 remaining derived nodes -> Phase 4 visual critic loop. Each phase lists its files, tests, acceptance criteria and the decisions (marked DECIDE) to confirm with the user first.
+Phase 0 quality baseline (needs OPENAI_API_KEY) -> 1 sizing grammar (grow/minH instead of pixel budgets; from docs/layout-sizing-plan.md) -> 2 deterministic data-shape routing + planner prompt fixes -> 3 real font metrics -> 4 derived nodes (KpiTile/TableCard/IconList) -> 5 remaining derived nodes + computed table/diagram sizing -> 6 measured critic loop. Each phase lists its files, tests, acceptance criteria and the decisions (marked DECIDE) to confirm with the user first.
 
 ## Where work stands (2026-09-23)
 - Branch `feat/golden-reference-grounding`. Recent: design-hint/nesting/icon enforcement, fit-grow pass (`dd5c152`), layout archetype system (`d2b75b6`), 14pt minimum font, Cursor handoff docs.
