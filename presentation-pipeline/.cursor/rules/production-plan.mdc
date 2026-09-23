@@ -1,0 +1,32 @@
+---
+description: Production readiness plan — LangGraph pivot, all decisions locked 2026-09-03, component-based planning (NO archetypes), dual-mode critic, flattened phases
+alwaysApply: false
+---
+
+Production readiness plan documented in `presentation-mvp/PRODUCTION-READINESS.md` (v3).
+
+## Completed
+- **Retry loop (Phase 3)**: 3-tier escalation (patch → simplify → template), stall detection, error-specific repair guidance
+- **parseXml validation**: `compile-pom.js --validate-only`, 3-step pipeline: normalize → parseXml → buildPptx
+- **Bug fixes**: retry condition uses compile result only; POM_TAGS expanded; id/src removed from FORBIDDEN_ATTRS
+- **Theme system + knowledge base**: complete and verified
+
+## Architecture Decisions Locked (2026-09-03)
+- **Component-based planning** — NO archetypes. Planner outputs component list + density + freeform layout_hint. LLM has full creative freedom.
+- **Dual-mode critic**: auto mode (AI evaluates) first, manual mode (human reviews) later
+- **Single-step generation** — LLM sees data + structure together. No separate data_injector agent. LLM needs data dimensions to size elements.
+- **Flattened phases** — no A/B/C/D gating. All POM nodes available, planner selects per slide.
+- **deck_min_threshold** — configurable variable (0=no deck plan, default=3 in production)
+- **Margin/padding format** — POM uses single number OR dot notation (margin.top="48"), NOT CSS shorthand (margin="48 0 0 40"). Must be in prompts.
+- Sequential now, architect for map-reduce parallel slide gen later
+
+## Key Problems Remaining
+- **Prompt bloat**: ~10K tokens for maximal-density → target ≤6K. Tiered Jinja2 assembly.
+- **No AI planning yet**: SlideIR is regex. Need LangGraph planner agent.
+- **Margin format in prompts**: LLM doesn't know POM margin syntax. Causes "Invalid input" on retry.
+
+**Why:** Flat script can't scale. Enterprise delivery target.
+
+**How to apply:** All new work builds on LangGraph graph.py. Read PRODUCTION-READINESS.md v3 at session start. Maximal-density test case is the acceptance gate.
+
+Related: [[pom-mvp-v10-constraints]]

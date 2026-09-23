@@ -1,0 +1,14 @@
+---
+description: How to compile + visually render POM XML locally with no API key — the feedback loop for slide-quality work
+alwaysApply: false
+---
+
+Offline loop to *see* a POM slide (no OpenAI key needed), in `presentation-pipeline/`:
+
+1. Compile: `node src/node/compile-pom.js <input.xml> <outdir>` → `<outdir>/presentation.pptx` + `compile-result.json`. Add `--validate-only` for fast parse-only checks. POM v10.3.0. `buildPptx` also emits `DiagnosticsError` (type `DIAGNOSTIC`) for layout-stage overlap / out-of-bounds.
+2. Screenshot: PowerPoint COM via `render_screenshots()` in `src/compiler/screenshot.py` (requires `comtypes` + PowerPoint installed). LibreOffice/ImageMagick node backend was removed 2026-09-20.
+3. View: Read the resulting PNG with the Read tool — it shows the rendered slide image.
+
+Wrapper script: `python -m scripts.render_check --in <dir-of-xml> --out <dir>` — compiles + runs `src.compiler.layout_audit` on every `*.xml`, writes `summary.md`. PDF conversion via LibreOffice was removed. Use for golden-reference locking and before/after generator scoring.
+
+Verified 2026-09-10: the user's 4 target "editorial house style" example slides (dense multi-band dashboards, custom `<Theme>` tokens, Chart/Matrix/ProcessArrow) all compile + render at target quality on v10.3.0. Render-observed component limits to encode in the KB: **ProcessArrowStep** labels clip if >~2 words at `h=66`; **Matrix** items collide when x/y coords are within ~0.15 of each other. See [[pom-mvp-v10-constraints]] and [[slide-quality-rework-plan]].

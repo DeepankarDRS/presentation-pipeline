@@ -252,37 +252,41 @@ render_gotchas:
 layout_archetypes: |
   Every slide MUST use one of these five archetypes. NEVER repeat the same
   archetype on consecutive slides — check PREVIOUS SLIDE ARCHETYPE in the
-  user prompt and pick a DIFFERENT one.
+  user prompt and pick a DIFFERENT one. Interpret each archetype as a
+  FEEL and INTENT — vary the exact proportions, number of children, and
+  card treatments each time you use one. Two slides using archetype B
+  should still look distinct from each other.
 
-  A  SPLIT-HERO — HStack root. 56-60% content left + 40-44% accent/dark
-     panel right (or reversed). For cover, closing, or any slide with a
-     strong statement + supporting detail. The dark panel carries a closing
-     note, KPIs, or a hero number.
+  A  SPLIT-HERO — Two-panel layout (HStack root). One side carries the
+     main content, the other is a contrasting accent or dark panel with
+     a bold statement, hero number, or supporting KPIs. Vary the split
+     ratio and which side is dark. Feel: dramatic, high-contrast.
 
-  B  DASHBOARD — VStack root. Header → KPI tile row → HStack(60% chart
-     card + 40% stacked insight cards). The stacked cards can be dark
-     readouts, accent-stripe callouts, or metric summaries. Classic
-     data-rich slide.
+  B  DASHBOARD — Data-rich overview (VStack root). Combines a headline
+     metric row with a primary visualization and supporting context
+     cards. Vary how many metric tiles, what fills the supporting zone
+     (cards, callouts, bullets), and the split between chart and context.
+     Feel: analytical, information-dense but organized.
 
-  C  FULL-WIDTH-DATA — VStack root. Header → optional KPI row → one
-     full-width table or chart card → callout strip. For executive
-     summaries or when one data component dominates. Clean, focused.
+  C  FULL-WIDTH-DATA — Single focal point (VStack root). One dominant
+     data component (table or chart) gets the full width, framed by a
+     header and an optional callout. Feel: clean, focused, executive.
 
-  D  EQUAL-COLUMNS — VStack root. Header → HStack of 3-5 equal tall
-     cards, each with accent-stripe top (different color per card),
-     numbered header, and internal structure (bullets, stats). For
-     pillars, what-worked/didn't, options, or any parallel items.
+  D  EQUAL-COLUMNS — Parallel items (VStack root). A row of equally
+     weighted cards for pillars, options, phases, or comparisons. Vary
+     the number of columns (3-5), card styling, and internal structure.
+     Feel: balanced, structured, easy to scan.
 
-  E  DENSE-QUAD — VStack root. Header → HStack(50% stacked tables +
-     50% chart + dark readout panel). For deep-dives with multiple
-     data views. Most information-dense layout.
+  E  DENSE-QUAD — Multi-view deep dive (VStack root). Multiple data
+     components packed together — tables beside charts, readout panels,
+     stacked visualizations. Feel: comprehensive, analytical, detailed.
 
-  Archetype fitness:
-    cover/closing  → A (split-hero)
-    data (chart+table) → B (dashboard) or E (dense-quad)
-    data (single table or chart) → C (full-width-data)
-    content (pillars, options, phases) → D (equal-columns)
-    content (narrative + data) → B (dashboard)
+  Archetype suggestions (not rules — any archetype CAN work for any
+  slide type when it serves the content):
+    cover/closing  → often A, but D or C also work
+    data-heavy     → often B or E, but C works for a single focal chart
+    content/narrative → often D or B, but A works for a bold statement
+    executive summary → often C, but B adds metric context
 
 design_variety: >
   NEVER repeat the same layout archetype on consecutive slides. Check the

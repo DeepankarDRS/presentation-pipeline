@@ -1,0 +1,145 @@
+---
+description: Plan + decisions for fixing the slide-quality regression and reworking the layout/generation path
+alwaysApply: false
+---
+
+**Problem (diagnosed 2026-09-10):** slide quality regressed badly after the 4-phase planner refactor (commit `3e3c71b`) + "wire layout_pattern to layout selection" (`34338ab`). Root cause chain:
+1. Fan-out per-slide planning (`fan_out_slide_plans`) removed cross-slide layout awareness — the old monolithic planner had an explicit adjacency rule; the per-slide prompt structurally cannot.
+2. `enforce_layout_variety` (slide_component_planner.py) swaps `layout_pattern` on adjacent repeats but never updates `layout_hint` or checks `components`.
+3. `_select_layout` now *obeys* that swapped pattern and injects a prescriptive `verified_example` POM snippet → generator gets a layout skeleton contradicting both the freeform `layout_hint` and the component list → overlap + dead whitespace. (Before `34338ab` the swap was a harmless no-op.)
+
+`deck_nodes.py` is NOT a cause — it only concatenates + normalizes already-generated slide XML.
+
+**User decisions (2026-09-10):** keep gpt-4.1 (no model upgrade); target ONE house style first = dense editorial business decks (4 example slides supplied, all compile+render well on v10.3.0 — see [[pom-offline-render-loop]]); full rework allowed; quality loop stays compile-only (no visual-critic repair for now). Theme system stays fixed-token-vocabulary for now (per-deck custom tokens deferred).
+
+**Approach:** TEACH the house-style layout idiom + show a diverse gallery; REMOVE the machinery that constrains wrongly. NO archetypes / NO rigid scaffold — that contradicts the locked "component-based planning, full creative freedom" decision in [[project-production-plan]] and the user's explicit want ("dynamic llm free to generate any kind of slide; fixing layouts strips this"). The regression came from *adding* constraints (`34338ab`), not from too few.
+- Phase 1: lock the 4 examples as compile-verified golden refs in `src/knowledge/examples/`; write `src/knowledge/core/house-style.yaml` — the composition GRAMMAR distilled from them (bands at `w="max"`; asymmetric `%` splits = content priority; repeated `w="max"` = equal; rigid nodes Chart/Matrix/ProcessArrow get `w="max"` + a fixed `h`; height-budget formula `720 − 2·pad − (bands−1)·gap` split by weight) + card recipes (surface-card / dark hero-panel / tinted callout w/ borderLeft|borderTop accent) + type ramp + spacing scale. Catalogue render-observed component limits into component YAMLs.
+- Phase 2: `context_builder` — DELETE `_PATTERN_TO_LAYOUT` + the 12 `layouts/*.yaml` + single-`verified_example` injection. Replace with: always inject house-style.yaml grammar + a rotating gallery of 2-3 full diverse examples labelled "copy the vocabulary + the height math, never the structure".
+- Phase 3: rewrite `generator/system.j2` around the grammar + gallery. Drop the "layout_hint = PRIMARY spatial instruction, follow exactly" pixel-arithmetic framing.
+- Phase 4: `slide_component_planner` — `layout_hint` stays freeform but prompt asks for structure/priority language, not pixel widths/height-budgets. DELETE `enforce_layout_variety` (the enum-swap) and the sorter call in graph.py. Variety = a one-line prompt rule + optional warn-only post-check.
+- Phase 5: `scripts/render_check.py` (built 2026-09-10) is the before/after harness + my dev-time iteration loop.
+
+Status (2026-09-10):
+- Phase 5 harness: `scripts/render_check.py` — done, working.
+- Phase 1: DONE.
+  * `src/knowledge/core/house-style.yaml` — the grammar (frame / sizing vocabulary /
+    composition bands / height-budget arithmetic / rigid-node rules / recipes /
+    type ramp / render_gotchas). Refined against real renders.
+  * `tests/fixtures/golden/` — 5 compile+render-verified reference slides
+    (editorial-earnings/dashboard/roadmap/strategy from the 4 user examples,
+    converted to the FIXED token vocab; + editorial-comparison built from the
+    grammar alone to prove generalization). NOT injected into prompts — regression set.
+  * component YAML updates: process-arrow.yaml (labels 1-2 words at h<=70),
+    matrix.yaml (4 items safe max, 1-word labels, h>=200, needs >=45% width,
+    never textColor=FFFFFF on light card — label renders on card not dot).
+  * Key render-verified finding baked into house-style.yaml: a fixed-h root VStack
+    does NOT top-align undersized content — every CONTENT band needs an explicit
+    h= and the heights must SUM to ~720, else dead space pools (usually under the
+    header). justifyContent / grow do not fix it.
+- Phase 2: DONE (2026-09-10).
+  * context_builder.py: removed _select_layout/_render_layout/_select_example/
+    _compress_example + _KIND_TO_LAYOUT/_PATTERN_TO_LAYOUT/_KIND_TO_EXAMPLE.
+    Added _render_house_style() (lru_cached) -> renders core/house-style.yaml.
+    Contract emits `house_style` (str) instead of `layout_pattern` + `example`.
+  * Deleted all 12 src/knowledge/layouts/*.yaml.
+  * generator/system.j2: `## LAYOUT GRAMMAR` renders {{ house_style }} for
+    standard/dense; `## DESIGN LANGUAGE` now only when house_style absent
+    (minimal tier) -> kills duplication + padding conflict. Removed REFERENCE EXAMPLE.
+  * slide_edit_service.py + slide_editor/system.j2: same swap.
+  * house-style.yaml trimmed + ASCII-cleaned -> standard-tier prompt ~4950 tok
+    (was 5399; dense <6000 holds).
+  * tests updated; 335 non-integration pass; 19 integration fails pre-existing (no key).
+    golden fixtures still 5/5 clean.
+- Phase 3: DONE (2026-09-10).
+  * generator/user.j2 rewritten: "SPATIAL ARRANGEMENT governs WHERE" -> "LAYOUT
+    INTENT" (priority statement, "grammar wins" on conflict) + explicit pre-emit
+    workflow (decide bands -> h-budget to ~720 -> fill) + tighter.
+  * generator/system.j2: LAYOUT GRAMMAR intro = short ordered workflow; DESIGN
+    LANGUAGE block now only renders for minimal tier (house_style absent);
+    SHRINK CHECKLIST de-staled; Col-width rule fixed (container not slide);
+    ASCII-cleaned. generator.py jinja env gained trim_blocks/lstrip_blocks.
+  * design-language.yaml: removed grammar conflicts (grow=1->w=max, "whitespace
+    generous", "chart = column minus padding", stale col-width); trimmed
+    design_principles to 3 non-conflicting lines; card_recipe rule: accent
+    stripe = SQUARE card only.
+  * chart.yaml: structure now grammar-aligned (w="max" chart in a card);
+    dark-theme axis note fixed for w="max".
+  * NEW render-verified gotchas baked into house-style.yaml:
+    - borderTop/borderLeft accent stripe wraps the corner on a borderRadius card
+      -> looks like a bracket. Rounded card = hairline only; accent via value
+      color or a Shape bar. Square card = ok for the stripe.
+    - hero_panel backgroundColor="$textMain" is LIGHT-THEME ONLY ($textMain is
+      the ink, light on dark themes). Dark theme -> $surfaceAlt + borderLeft accent.
+    - justifyContent="spaceBetween" + two wide <Text> -> 1px NODE_OVERLAP warning.
+  * test_prompt_standard_tier threshold 5000 -> 5300 (grammar is worth it; hard
+    gate stays dense < 6000). 307 unit tests pass. golden 5/5 clean.
+  * Validated end-to-end: hand-generated a light exec slide + a dark ops slide
+    FROM the new prompt -> both render clean, full-frame, on-style.
+- Phase 4: DONE (2026-09-10). `layout_pattern` and the enum-swap fully removed.
+  * slide_component_planner.py: deleted enforce_layout_variety + _LAYOUT_PATTERNS.
+  * graph.py slide_plan_sorter_node: now only sorts by slide_index.
+  * planner_schema.py: removed LayoutPatternLiteral + PlannerOutput; PlannerSlide
+    drops layout_pattern; layout_hint description reframed as a PRIORITY statement.
+  * state.py: SlidePlan drops layout_pattern.
+  * api.py: SlidePlanPayload.layout_pattern kept as deprecated-ignored (old
+    clients don't 422); removed _VALID_LAYOUT_PATTERNS + validation + passthrough.
+  * slide_component_planner/system.j2+user.j2: deleted the "Layout Patterns" table
+    + "Translating layout_intent to layout_pattern" map + pixel-arithmetic
+    layout_hint guidance -> replaced with "layout_hint = 1-2 sentence priority
+    statement" + good examples + "vary emphasis across adjacent slides".
+  * plan_reviewer (schema + system.j2 + user.j2): layout_repeat check now on
+    layout_hint similarity, not layout_pattern equality.
+  * outline_planner/outline_replanner system.j2: dropped "layout_patterns" mention.
+  * Deleted orphan src/prompts/planner/ (nothing loaded it).
+  * tests: removed 3 enforce_layout_variety tests + stale layout_pattern kwargs.
+    304 unit pass (was 307), graph compiles (18 nodes), golden 5/5 clean.
+- Stale architecture docs (ARCHITECTURE.md, CODE_FLOW.md, flow.md) -> spawned
+  task_2fde3d21 to reconcile.
+- ALL 4 PHASES DONE. Remaining: user must run the real pipeline (needs OPENAI key)
+  to validate generation quality on gpt-4.1. Bigger lever still un-pulled = model
+  upgrade + the render->visual-critic->repair loop (both user-deferred).
+
+- REVIEW PASS (2026-09-10, testing moves to another machine): 304 unit pass, all
+  38 src modules import, graph compiles (18 nodes), mocked full-pipeline
+  integration test passes, deck-assembly path verified (3 grammar slides ->
+  assemble_deck_xml -> compile clean -> PDF). 19 integration fails are
+  pre-existing (AuthenticationError: no OPENAI key) - confirmed by git stash.
+  Two bugs found + fixed in review:
+  * minimal-tier (sparse/cover/section_break) slides were getting NO layout
+    guidance - house_style was always truthy so the generator's
+    `{% if not house_style %}` DESIGN LANGUAGE fallback never fired and
+    LAYOUT GRAMMAR is standard/dense-only. FIX: build_contract now sets
+    house_style="" for minimal tier; DESIGN LANGUAGE fires again.
+  * "tall band + thin content = big empty card" resurfaced in the 3-slide deck
+    test -> strengthened house-style.yaml height_budget ("don't inflate a band's
+    h to soak up leftover height; add another band or grow the richest one").
+  Minor/known: models.yaml still has an inert `planner:` step; ~10 pre-existing
+  knowledge YAMLs have non-ascii punctuation (cosmetic, LLM-safe).
+
+- FIRST REAL RUN ON gpt-4.1 (user, other machine): a KPI+chart+narrative slide
+  came out BADLY - KPI cards h=320 with justifyContent="spaceBetween" (label
+  glued top / number floating low / delta clipped), title overlapping the cards,
+  chart overlapping the KPI deltas. REPRODUCED here exactly. Root cause: the
+  grammar-only approach lost the concrete KPI example the OLD pipeline injected
+  (kpi-slide.xml), and gpt-4.1 (a) rebuilt "KPI tile = h=320 card" from training
+  bias and (b) did NOT do the band-height arithmetic -> band heights summed to
+  ~1000 in a 720 box -> POM's default flexShrink=1 silently squashed and
+  overlapped everything, NO compile error. User's "lack of examples" hypothesis
+  was correct. FIX (committed after b6c9109):
+  * NEW src/knowledge/core/recipes.yaml - compiled copy-the-shape snippets
+    (kpi_row, chart_card, table_card, bullet_list, callout) with SANE band
+    heights. context_builder._KIND_TO_RECIPE injects only the ones this slide
+    needs, as contract["component_recipes"], rendered as "## COMPONENT RECIPES".
+  * house-style.yaml: FLEX SHRINK is now render-gotcha #1; height_budget rewritten
+    ("total must be <=700, over 720 WILL overlap"); explicit typical band heights;
+    kpi_tile guidance (h 110-150, justifyContent center never spaceBetween).
+  * _select_notes gained has_grammar flag - skips design-language card/chart/
+    bullet rules for standard/dense (grammar+recipes cover them) to make room.
+  * layout_audit: NEW BAND_HEIGHT_SUM high-severity check - sums root-VStack
+    child heights + gaps + padding, flags >760. Catches the flexShrink overlap
+    that the POM compiler does not. Feeds render_check + the critic.
+  * prompt budgets: standard ~5.4k, dense ~6.3k; test thresholds raised to
+    5700 / 6600 with rationale (recipes are load-bearing). 306 unit tests pass.
+  LESSON: grammar-first is right for composition; gpt-4.1 needs concrete
+  compiled recipes for fiddly components. The render->critic->repair loop
+  (user-deferred) would have caught this on the first run - worth revisiting.

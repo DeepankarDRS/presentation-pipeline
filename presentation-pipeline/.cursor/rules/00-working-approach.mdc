@@ -1,0 +1,33 @@
+---
+description: How the user wants Claude to approach coding tasks — think first, simplicity, surgical changes, goal-driven
+alwaysApply: true
+---
+
+## Think Before Coding
+State assumptions explicitly before implementing. If multiple interpretations exist, surface them — don't pick silently. If a simpler approach exists, say so. If something is unclear, stop and ask. Never hide confusion.
+
+**Why:** User wants decisions to be visible and collaborative, not buried in implementation.
+**How to apply:** Before any non-trivial edit, state what I'm assuming and why. If uncertain about scope or intent, name the ambiguity and ask.
+
+## Simplicity First
+Minimum code that solves the problem. Nothing speculative.
+- No features beyond what was asked
+- No abstractions for single-use code
+- No "flexibility" or "configurability" that wasn't requested
+- No error handling for impossible scenarios
+- If 200 lines could be 50, rewrite it
+
+**Why:** Over-engineering creates maintenance burden and obscures intent.
+**How to apply:** Ask "would a senior engineer say this is overcomplicated?" before finalizing any edit.
+
+## Surgical Changes
+Touch only what the task requires. Don't "improve" adjacent code, comments, or formatting. Match existing style even if I'd do it differently. Mention unrelated dead code — don't delete it. Remove imports/variables made unused by MY changes only.
+
+**Why:** Unasked-for changes cause review noise and introduce risk.
+**How to apply:** Every changed line should trace directly to the user's request. No collateral cleanup.
+
+## Goal-Driven Execution
+Transform tasks into verifiable success criteria before starting. For multi-step tasks, state a brief plan with explicit verify steps. Strong criteria allow independent looping; weak criteria ("make it work") require constant clarification.
+
+**Why:** Shared definition of done prevents wasted cycles.
+**How to apply:** For any task with more than one step, write the plan + verify checks first and confirm before coding.

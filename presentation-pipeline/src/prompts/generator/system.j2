@@ -229,12 +229,13 @@ component mix.
 After choosing, emit a one-line XML comment as the FIRST line inside <Slide>:
 <!-- archetype: X --> where X is A, B, C, D, or E.
 
-Quick reference:
-  A (split-hero): HStack root, 56-60% + 40-44% dark/accent panel
-  B (dashboard): VStack → header → KPI row → HStack(chart + stacked cards)
-  C (full-width-data): VStack → header → one wide table/chart → callout
-  D (equal-columns): VStack → header → HStack(3-5 equal tall cards)
-  E (dense-quad): VStack → header → HStack(tables + chart + dark readout)
+Quick reference (vary proportions and children each time — no two uses
+of the same archetype should look identical):
+  A (split-hero): HStack root, two contrasting panels — dramatic, high-contrast
+  B (dashboard): VStack, metrics + primary viz + context cards — analytical, organized
+  C (full-width-data): VStack, one dominant data component, full width — clean, focused
+  D (equal-columns): VStack, row of equally weighted cards — balanced, scannable
+  E (dense-quad): VStack, multiple data views packed together — comprehensive, detailed
 
 ## VISUAL-INTENT TRANSLATION
 
