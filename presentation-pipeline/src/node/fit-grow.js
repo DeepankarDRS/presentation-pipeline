@@ -9,9 +9,12 @@
 //                     at 150 when a flexible sibling can take the space (POM's
 //                     w="max" in a VStack otherwise stretches its height).
 //   1. split lists  — a Ul/Ol of 4+ short items using < 45% of its width is
-//                     split into two side-by-side lists.
+//                     split into two side-by-side lists (an Ol's second column
+//                     continues the numbering; lists with their own id or box
+//                     styling are never split).
 //   2. tables       — rows grow a little with their text; the box is clamped to
 //                     the rows (cells cannot vertically centre, extra box = dead).
+//                     Cell text grows only if every cell still fits its row.
 //   3. diagrams     — a Chart/Flow/Tree/ProcessArrow absorbs the spare height of
 //                     its card, then Flow/Tree/ProcessArrow nodes are enlarged
 //                     to fill their box.
@@ -19,7 +22,8 @@
 //                     by s, headings/labels by sqrt(s); titles and each box's
 //                     stat/hero number untouched) until ~88% full; past the size
 //                     caps the rest goes into line height and gaps. Peer cards
-//                     in a row scale as one group; headings never gain a line.
+//                     in a row scale as one group; headings never gain a line;
+//                     text with an inline <Span fontSize> keeps its size.
 //
 // It edits the ORIGINAL XML text (only size attributes change), and measures
 // with POM's own layout engine so its numbers match what buildPptx will do.
@@ -46,7 +50,7 @@ if (installed !== VERIFIED_POM) {
 
 const [{ parseXml }, { calcYogaLayout }, { createBuildContext }, { freeYogaTree },
   { measureText }, { measureFontLineHeightRatio }, { getNodeMetadataByTag },
-  { measureTree }, { ARROW_DEPTH_RATIO }] = await Promise.all([
+  { measureTree }, { ARROW_DEPTH_RATIO }, { resolveColumnWidths }] = await Promise.all([
   internal("parseXml/parseXml.js"),
   internal("calcYogaLayout/calcYogaLayout.js"),
   internal("buildContext.js"),
@@ -56,6 +60,7 @@ const [{ parseXml }, { calcYogaLayout }, { createBuildContext }, { freeYogaTree 
   internal("registry/nodeMetadata.js"),
   internal("calcYogaLayout/measureCompositeNodes.js"),
   internal("shared/processArrowConstants.js"),
+  internal("shared/tableUtils.js"),
 ]);
 
 const SLIDE = { w: 1280, h: 720 };
@@ -185,13 +190,21 @@ function fill(n, L) {
 
 // --- phase 1: split short lists into two columns -------------------------------
 
+const hasBoxStyle = (n) => Object.keys(n).some((k) =>
+  k === "backgroundColor" || k === "backgroundGradient" || k === "padding" || k === "shadow" || k.startsWith("border"));
+
 async function splitLists(xml, report) {
   const L = await layout(xml);
   const targets = [];
   try {
     for (const root of L.slides) walk(root, (n, parent) => {
       if ((n.type !== "ul" && n.type !== "ol") || n.items.length < 4 || !n.id) return;
-      if (!parent || parent.type !== "vstack") return;
+      // the new row gets its width from the parent's stretch (no w="max": in a
+      // VStack that is flexGrow on the HEIGHT and would balloon the row)
+      if (!parent || parent.type !== "vstack" || (parent.alignItems ?? "stretch") !== "stretch") return;
+      // a list with its own id (Arrow/connector target) or its own box styling
+      // cannot become two lists without breaking the reference or the box
+      if (!n.id.startsWith(ID_PREFIX) || hasBoxStyle(n)) return;
       const w = L.box(n).w;
       const widest = Math.max(...n.items.map((i) => measureText(i.text, Infinity,
         { fontFamily: n.fontFamily ?? "Noto Sans JP", fontSizePx: i.fontSize ?? n.fontSize ?? 24,
@@ -206,10 +219,19 @@ async function splitLists(xml, report) {
     const open = xml.slice(el.start, el.openEnd).replace(/\s(w|h|grow)\s*=\s*("[^"]*"|'[^']*')/g, "");
     const lis = xml.slice(el.openEnd, el.end).match(/<Li\b[^>]*?(?:\/>|>[\s\S]*?<\/Li>)/g) ?? [];
     const half = Math.ceil(lis.length / 2);
-    const col = (items, suffix) => open.replace(`id="${id}"`, `id="${id}${suffix}" w="max"`)
-      + items.join("") + `</${el.name}>`;
-    const row = `<HStack w="max" gap="28" alignItems="start">${col(lis.slice(0, half), "a")}`
-      + `${col(lis.slice(half), "b")}</HStack>`;
+    const col = (items, suffix, attrs = {}) => {
+      let head = open.replace(`id="${id}"`, `id="${id}${suffix}" w="max"`);
+      for (const [k, v] of Object.entries(attrs)) {
+        const re = new RegExp(`\\s${k}\\s*=\\s*("[^"]*"|'[^']*')`);
+        head = re.test(head) ? head.replace(re, ` ${k}="${v}"`) : head.replace(/^<(\w+)/, `<$1 ${k}="${v}"`);
+      }
+      return head + items.join("") + `</${el.name}>`;
+    };
+    // an ordered list's second column continues the numbering
+    const start = Number((open.match(/\snumberStartAt\s*=\s*["']?(\d+)/) ?? [])[1] ?? 1);
+    const second = el.name === "Ol" ? { numberStartAt: start + half } : {};
+    const row = `<HStack gap="28" alignItems="start">${col(lis.slice(0, half), "a")}`
+      + `${col(lis.slice(half), "b", second)}</HStack>`;
     xml = xml.slice(0, el.start) + row + xml.slice(el.end);
     report.push(`split ${el.name} (${lis.length} items) into 2 columns`);
   }
@@ -292,6 +314,33 @@ async function respectHeights(xml, report) {
 // taller than its rows is dead space. Rows grow a little (with the cell text),
 // then the box is clamped to the rows so the spare height goes to its siblings.
 
+/**
+ * Does every cell still fit its row if its font grows by k? Column widths do
+ * not change and rows are fixed height, so a cell that gains a line — or was
+ * already wrapping — must still fit inside rowH at the larger size.
+ */
+function tableTextFits(n, tableW, k, rowH, ctx) {
+  if (n.rows.some((r) => r.cells.some((c) => (c.rowspan ?? 1) > 1))) return false; // column positions uncertain
+  const colW = resolveColumnWidths(n, tableW);
+  return n.rows.every((r) => {
+    let col = 0;
+    return r.cells.every((c) => {
+      const span = c.colspan ?? 1;
+      const w = colW.slice(col, col + span).reduce((a, b) => a + b, 0) * 0.85;
+      col += span;
+      const f = c.fontSize ?? 14;
+      const lines = (fs) => {
+        const { heightPx } = measureText(c.text ?? "", w, { fontFamily: c.fontFamily ?? "Noto Sans JP",
+          fontSizePx: fs, lineHeight: 1.3, fontWeight: c.bold ? "bold" : "normal" },
+        ctx.textMeasurementMode, ctx.fontRegistry);
+        return Math.round(heightPx / (fs * 1.3));
+      };
+      const f1 = Math.min(Math.round(f * k), Math.max(f, 18));
+      return lines(f1) <= lines(f) && lines(f1) * f1 * 1.3 <= rowH * 0.9;
+    });
+  });
+}
+
 async function fitTables(xml, report) {
   const L = await layout(xml);
   const edits = [];
@@ -303,8 +352,12 @@ async function fitTables(xml, report) {
       const boxH = L.box(n).h;
       if (boxH <= rows * rowH0 + 8) return;
       const f0 = Math.max(14, ...n.rows.flatMap((r) => r.cells.map((c) => c.fontSize ?? 14)));
-      const k = Math.min(Math.sqrt(Math.min(boxH / rows, 64) / rowH0), Math.max(1, 18 / f0));
-      const rowH = Math.max(rowH0, Math.min(Math.floor(boxH / rows), Math.round(f0 * k * 2.6)));
+      let k = Math.min(Math.sqrt(Math.min(boxH / rows, 64) / rowH0), Math.max(1, 18 / f0));
+      const rowFor = (kk) => Math.max(rowH0, Math.min(Math.floor(boxH / rows), Math.round(f0 * kk * 2.6)));
+      // columns do not widen and rows are fixed height: if any cell would not
+      // fit its row at the larger size, grow the rows only
+      if (k > 1 && !tableTextFits(n, L.box(n).w, k, rowFor(k), L.ctx)) k = 1;
+      const rowH = rowFor(k);
       edits.push([n.id, k, rowH0, rowH, rows * rowH]);
     });
   } finally { L.free(); }
@@ -366,6 +419,11 @@ function textTargets(stack) {
     if (!n.id || !["text", "ul", "ol"].includes(n.type)) return;
     const f = n.fontSize ?? 24;
     if (f >= FIXED_FONT) { smallestFixed = Math.min(smallestFixed, f); return; }
+    // inline <Span fontSize> / <Li fontSize> keep their own size: growing only
+    // the outer size would break the proportion, so leave these nodes alone
+    const sized = (runs) => (runs ?? []).some((r) => r.fontSize !== undefined);
+    if (n.type === "text" && sized(n.runs)) return;
+    if (n.type !== "text" && n.items.some((i) => i.fontSize !== undefined || sized(i.runs))) return;
     const text = n.text ?? "";
     const label = /[A-Z]/.test(text) && text === text.toUpperCase();
     out.push({ id: n.id, f, heading: n.type === "text" && (n.bold || n.letterSpacing !== undefined || label) });
