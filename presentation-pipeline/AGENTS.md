@@ -9,25 +9,43 @@ Prompt → LangGraph pipeline → LLM writes POM XML → Node.js compiler (`@hir
 - `.cursor/rules/` — project memory carried over from Claude Code (working style is always applied; the rest load when relevant)
 
 ## Setup on a new machine
+Needs Python ≥3.11, Node.js, and (optional) LibreOffice for rendering slides to images.
+The git repo root is the folder ABOVE this one; open `presentation-pipeline/` itself in Cursor.
+
 ```bash
-uv sync                               # or: pip install -e ".[dev]"
-cp .env.example .env                  # set OPENAI_API_KEY
+uv sync                               # installs deps + dev group (pytest etc.); or: pip install -e ".[dev]" lxml
+cp .env.example .env                  # then put your real OPENAI_API_KEY in .env
 npm install --prefix src/node         # POM compiler
-npm install --prefix frontend         # Angular UI
+npm install --prefix frontend         # Angular UI (only if you use the web UI)
 ```
 
-## Run
-- API: `python -m src.api` (uvicorn, port 8000)
-- CLI: `python -m src.graph`
-- Frontend: `npm run start --prefix frontend` (port 4200, proxies to API)
-- Tests: `pytest` (LLM and compiler are mocked — no key or Node needed)
-- See a slide without an API key: `python scripts/render_check.py` (needs LibreOffice) — details in `.cursor/rules/offline-render-loop.mdc`
+`.env` is gitignored — it never travels with the repo; create it on every machine.
+Models per pipeline step (all OpenAI, mostly `gpt-4.1`) are set in `models.yaml`.
+
+## Testing outputs (with OPENAI_API_KEY)
+All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>/` (input XML, `compile-result.json`, `presentation.pptx`; multi-slide runs use `slide-N/` and `retry-N/` subfolders). `output/` is gitignored.
+
+| Goal | Command |
+|---|---|
+| One prompt, end to end | `python -m src.graph "Create a 3-slide Q2 performance deck for ..."` — prints `pptx_path`, pass/fail, retries, evaluation |
+| Regression cases (fixed prompts in `tests/cases/*.yaml`) | `python -m src.runner` (all) or `python -m src.runner base-revenue-trend base-risks` — prints pass/retries/tokens/cost table |
+| Cases with a theme / critic on | `python -m src.runner --theme corporate-slate --critic-mode auto` |
+| Web UI | `python -m src.api` (port 8000) + `npm run start --prefix frontend` (port 4200) |
+| Re-render XML without the API | `python -m scripts.render_check --in <dir-of-xml> --out output/render_check` (compile + layout audit + summary.md) |
+| Unit tests (LLM + compiler mocked, no key) | `pytest tests/unit -q` |
+
+Known pre-existing unit-test failures (not regressions): 6 cost tests in `test_evaluator.py`, `test_critic.py::test_critic_medium_only_passes`, `test_layout_audit.py::test_font_at_minimum_ok`.
+
+When judging slide quality, open the `.pptx` (or render via LibreOffice, see `.cursor/rules/offline-render-loop.mdc`) — don't trust pass/fail alone.
 
 ## Next task (ready to implement)
 **`docs/nesting-enforcement-plan.md`**: make invalid node nesting (e.g. HStack/Icon inside `<Td>`/`<Li>`) impossible. It has step-by-step, pre-tested code. Implement it in order and verify with its "Verify" section. The permanent rule is `.cursor/rules/pom-nesting-content-model.mdc`.
 
+Possible follow-ups discussed but NOT planned yet: validate `Icon name=` against POM's icon set (bad names fail silently today); design_hint is passed planner → generator unchecked (`src/agents/slide_component_planner.py:84`), so hints can still ask for unsupported styling, overflow, or content not in the data.
+
 ## Where work stands (2026-09-23)
-- Branch `feat/golden-reference-grounding`. Latest commits: fit-grow pass (`dd5c152`), layout archetype system (`d2b75b6`), 14pt minimum font.
-- Uncommitted when handed off: edits to `src/knowledge/core/house-style.yaml` and `src/prompts/generator/system.j2`, plus `llm_test/` churn.
+- Branch `feat/golden-reference-grounding`. Recent: fit-grow pass (`dd5c152`), layout archetype system (`d2b75b6`), 14pt minimum font, Cursor handoff docs.
+- `house-style.yaml` and `generator/system.j2` WIP edits are committed. `lxml` (used by `src/compiler/pptx_merge.py`) is now a declared dependency.
+- Not synced: local scratch outputs in `llm_test/` (generated .pptx / slide dumps).
 - Note: `production-plan.mdc` says "no archetypes" (2026-09-03) but `d2b75b6` later added a layout archetype system — the newer commit reflects the current direction; confirm with the user if it matters.
 - Memory rules mentioning `presentation-mvp/` refer to the older sibling MVP folder, not this repo.
