@@ -8,37 +8,37 @@
     </VStack>
     <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="$accent" borderLeft.width="5">
       <HStack gap="12" alignItems="start">
-        <Text fontSize="22" color="$accent" bold="true">01</Text>
-        <VStack gap="4">
-          <Text fontSize="14" color="$textMain" bold="true">Budget flexibility</Text>
-          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Approval to reallocate ~₹8–10 L monthly across platforms &amp; cities without SKU-locked splits — allows Chennai scale-up, Bengaluru pullback, and Swiggy Paneer expansion. Total budget envelope unchanged.</Text>
+        <Text w="44" fontSize="22" color="$accent" bold="true">01</Text>
+        <VStack w="max" gap="4">
+          <Text fontSize="17" color="$textMain" bold="true">Budget flexibility</Text>
+          <Text fontSize="14" color="$textMuted" lineHeight="1.4">Approval to reallocate ~₹8–10 L monthly across platforms &amp; cities without SKU-locked splits — allows Chennai scale-up, Bengaluru pullback, and Swiggy Paneer expansion. Total budget envelope unchanged.</Text>
         </VStack>
       </HStack>
     </VStack>
     <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="3B82F6" borderLeft.width="5">
       <HStack gap="12" alignItems="start">
-        <Text fontSize="22" color="3B82F6" bold="true">02</Text>
-        <VStack gap="4">
-          <Text fontSize="14" color="$textMain" bold="true">Creative refresh</Text>
-          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Paneer + Ghee hero creatives need refresh — festive season needs fresh visuals, especially for Diwali homepage banners. 2 new creatives/category by mid-Aug (5 categories = 10 assets).</Text>
+        <Text w="44" fontSize="22" color="3B82F6" bold="true">02</Text>
+        <VStack w="max" gap="4">
+          <Text fontSize="17" color="$textMain" bold="true">Creative refresh</Text>
+          <Text fontSize="14" color="$textMuted" lineHeight="1.4">Paneer + Ghee hero creatives need refresh — festive season needs fresh visuals, especially for Diwali homepage banners. 2 new creatives/category by mid-Aug (5 categories = 10 assets).</Text>
         </VStack>
       </HStack>
     </VStack>
     <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="$warning" borderLeft.width="5">
       <HStack gap="12" alignItems="start">
-        <Text fontSize="22" color="B45309" bold="true">03</Text>
-        <VStack gap="4">
-          <Text fontSize="14" color="$textMain" bold="true">Metro fill-rate</Text>
-          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Paneer + Curd hero SKUs need ≥95% fill rate in top cities to support Swiggy expansion. Current OOS incidents in metro dark stores waste high-ROI ad clicks.</Text>
+        <Text w="44" fontSize="22" color="B45309" bold="true">03</Text>
+        <VStack w="max" gap="4">
+          <Text fontSize="17" color="$textMain" bold="true">Metro fill-rate</Text>
+          <Text fontSize="14" color="$textMuted" lineHeight="1.4">Paneer + Curd hero SKUs need ≥95% fill rate in top cities to support Swiggy expansion. Current OOS incidents in metro dark stores waste high-ROI ad clicks.</Text>
         </VStack>
       </HStack>
     </VStack>
     <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="8B5CF6" borderLeft.width="5">
       <HStack gap="12" alignItems="start">
-        <Text fontSize="22" color="8B5CF6" bold="true">04</Text>
-        <VStack gap="4">
-          <Text fontSize="14" color="$textMain" bold="true">Pricing parity view</Text>
-          <Text fontSize="10" color="$textMuted" lineHeight="1.4">Weekly pricing benchmark vs Amul, Heritage, Nandini — high-ACOS moments on Curd correlate with competitor discount events.</Text>
+        <Text w="44" fontSize="22" color="8B5CF6" bold="true">04</Text>
+        <VStack w="max" gap="4">
+          <Text fontSize="17" color="$textMain" bold="true">Pricing parity view</Text>
+          <Text fontSize="14" color="$textMuted" lineHeight="1.4">Weekly pricing benchmark vs Amul, Heritage, Nandini — high-ACOS moments on Curd correlate with competitor discount events.</Text>
         </VStack>
       </HStack>
     </VStack>

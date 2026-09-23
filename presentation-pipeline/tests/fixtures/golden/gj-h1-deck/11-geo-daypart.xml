@@ -13,55 +13,55 @@
       <VStack w="max" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
         <Text fontSize="12" color="$textMain" bold="true">City-level ROI — June '26</Text>
         <Table defaultRowHeight="30" cellBorder.color="$border" cellBorder.width="1">
-          <Col width="90" /><Col width="140" /><Col width="75" /><Col width="60" /><Col width="60" />
+          <Col width="90" /><Col /><Col /><Col /><Col />
           <Tr>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9">CITY</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9">PLATFORM</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">SPEND</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ROI</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ACOS</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13">CITY</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13">PLATFORM</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">SPEND</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ROI</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ACOS</Td>
           </Tr>
           <Tr>
-            <Td color="$positive" fontSize="9" bold="true">Chennai</Td>
-            <Td color="$textMain" fontSize="9">Zepto (Ghee-led)</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹0.59 L</Td>
-            <Td color="$positive" fontSize="9" textAlign="right" bold="true">9.13x</Td>
-            <Td color="$positive" fontSize="9" textAlign="right">11.0%</Td>
+            <Td color="$positive" fontSize="13" bold="true">Chennai</Td>
+            <Td color="$textMain" fontSize="13">Zepto (Ghee-led)</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹0.59 L</Td>
+            <Td color="$positive" fontSize="13" textAlign="right" bold="true">9.13x</Td>
+            <Td color="$positive" fontSize="13" textAlign="right">11.0%</Td>
           </Tr>
           <Tr>
-            <Td color="$positive" fontSize="9" bold="true">Hyderabad</Td>
-            <Td color="$textMain" fontSize="9">Swiggy (Paneer)</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹1.26 L</Td>
-            <Td color="$positive" fontSize="9" textAlign="right" bold="true">11.52x</Td>
-            <Td color="$positive" fontSize="9" textAlign="right">8.7%</Td>
+            <Td color="$positive" fontSize="13" bold="true">Hyderabad</Td>
+            <Td color="$textMain" fontSize="13">Swiggy (Paneer)</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹1.26 L</Td>
+            <Td color="$positive" fontSize="13" textAlign="right" bold="true">11.52x</Td>
+            <Td color="$positive" fontSize="13" textAlign="right">8.7%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Hyderabad</Td>
-            <Td color="$textMain" fontSize="9">Zepto (all)</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹23.24 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">5.16x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">19.4%</Td>
+            <Td color="$textMain" fontSize="13">Hyderabad</Td>
+            <Td color="$textMain" fontSize="13">Zepto (all)</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹23.24 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">5.16x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">19.4%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Bengaluru</Td>
-            <Td color="$textMain" fontSize="9">Swiggy (Paneer)</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹0.82 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">7.53x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">13.3%</Td>
+            <Td color="$textMain" fontSize="13">Bengaluru</Td>
+            <Td color="$textMain" fontSize="13">Swiggy (Paneer)</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹0.82 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">7.53x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">13.3%</Td>
           </Tr>
           <Tr>
-            <Td color="$negative" fontSize="9" bold="true">Bengaluru</Td>
-            <Td color="$textMain" fontSize="9">Zepto (all)</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹10.74 L</Td>
-            <Td color="$negative" fontSize="9" textAlign="right" bold="true">2.60x</Td>
-            <Td color="$negative" fontSize="9" textAlign="right">38.4%</Td>
+            <Td color="$negative" fontSize="13" bold="true">Bengaluru</Td>
+            <Td color="$textMain" fontSize="13">Zepto (all)</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹10.74 L</Td>
+            <Td color="$negative" fontSize="13" textAlign="right" bold="true">2.60x</Td>
+            <Td color="$negative" fontSize="13" textAlign="right">38.4%</Td>
           </Tr>
           <Tr>
-            <Td color="$negative" fontSize="9">Bengaluru</Td>
-            <Td color="$textMain" fontSize="9">Swiggy (Curd)</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹0.34 L</Td>
-            <Td color="$negative" fontSize="9" textAlign="right">2.38x</Td>
-            <Td color="$negative" fontSize="9" textAlign="right">41.9%</Td>
+            <Td color="$negative" fontSize="13">Bengaluru</Td>
+            <Td color="$textMain" fontSize="13">Swiggy (Curd)</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹0.34 L</Td>
+            <Td color="$negative" fontSize="13" textAlign="right">2.38x</Td>
+            <Td color="$negative" fontSize="13" textAlign="right">41.9%</Td>
           </Tr>
         </Table>
       </VStack>

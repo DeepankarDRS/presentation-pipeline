@@ -43,27 +43,27 @@
           <ChartSeries name="Split"><ChartDataPoint label="SB (90%)" value="33.3" /><ChartDataPoint label="SP (10%)" value="3.6" /></ChartSeries>
         </Chart>
         <Table defaultRowHeight="26" cellBorder.color="$border" cellBorder.width="1">
-          <Col width="60" /><Col width="75" /><Col width="80" /><Col width="55" /><Col width="55" />
+          <Col width="60" /><Col /><Col /><Col /><Col />
           <Tr>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9">TYPE</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">SPEND</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">AD SALES</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ROI</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ACOS</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13">TYPE</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">SPEND</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD SALES</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ROI</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ACOS</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9" bold="true">SB</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹33.3 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹1.47 Cr</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">4.40x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">22.7%</Td>
+            <Td color="$textMain" fontSize="13" bold="true">SB</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹33.3 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹1.47 Cr</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">4.40x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">22.7%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9" bold="true">SP</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹3.60 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹12.5 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">3.46x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">28.9%</Td>
+            <Td color="$textMain" fontSize="13" bold="true">SP</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹3.60 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹12.5 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">3.46x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">28.9%</Td>
           </Tr>
         </Table>
       </VStack>
@@ -71,39 +71,39 @@
     <VStack w="50%" gap="10">
       <VStack w="max" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
         <Text fontSize="11" color="$textMain" bold="true">City-level performance</Text>
-        <Table defaultRowHeight="28" cellBorder.color="$border" cellBorder.width="1">
-          <Col width="90" /><Col width="75" /><Col width="80" /><Col width="55" /><Col width="55" /><Col width="65" />
+        <Table defaultRowHeight="38" cellBorder.color="$border" cellBorder.width="1">
+          <Col width="90" /><Col /><Col /><Col /><Col /><Col />
           <Tr>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9">CITY</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">SPEND</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">AD SALES</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ROI</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ACOS</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">SPEND %</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13">CITY</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">SPEND</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD SALES</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ROI</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ACOS</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">SPEND %</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Hyderabad</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹23.2 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹1.20 Cr</Td>
-            <Td color="$positive" fontSize="9" textAlign="right" bold="true">5.16x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">19.4%</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">67%</Td>
+            <Td color="$textMain" fontSize="13">Hyderabad</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹23.2 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹1.20 Cr</Td>
+            <Td color="$positive" fontSize="13" textAlign="right" bold="true">5.16x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">19.4%</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">67%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Bengaluru</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹10.7 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹27.9 L</Td>
-            <Td color="$negative" fontSize="9" textAlign="right" bold="true">2.60x</Td>
-            <Td color="$negative" fontSize="9" textAlign="right">38.4%</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">31%</Td>
+            <Td color="$textMain" fontSize="13">Bengaluru</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹10.7 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹27.9 L</Td>
+            <Td color="$negative" fontSize="13" textAlign="right" bold="true">2.60x</Td>
+            <Td color="$negative" fontSize="13" textAlign="right">38.4%</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">31%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Chennai</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹0.59 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹5.39 L</Td>
-            <Td color="$positive" fontSize="9" textAlign="right" bold="true">9.13x</Td>
-            <Td color="$positive" fontSize="9" textAlign="right">11.0%</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">2%</Td>
+            <Td color="$textMain" fontSize="13">Chennai</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹0.59 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹5.39 L</Td>
+            <Td color="$positive" fontSize="13" textAlign="right" bold="true">9.13x</Td>
+            <Td color="$positive" fontSize="13" textAlign="right">11.0%</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">2%</Td>
           </Tr>
         </Table>
         <Text fontSize="9" color="$negative" bold="true">Bengaluru is 2.0x less efficient than Hyderabad — biggest leak on Zepto</Text>

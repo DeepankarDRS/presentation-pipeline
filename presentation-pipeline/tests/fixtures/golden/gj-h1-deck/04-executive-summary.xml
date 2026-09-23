@@ -32,62 +32,62 @@
   </HStack>
   <VStack w="max" h="310" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="12" color="$textMain" bold="true">Platform snapshot — June '26</Text>
-    <Table defaultRowHeight="38" cellBorder.color="$border" cellBorder.width="1">
-      <Col width="150" /><Col width="110" /><Col width="100" /><Col width="110" /><Col width="80" /><Col width="80" /><Col width="100" /><Col width="100" />
-      <Tr>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10">PLATFORM</Td>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">TOTAL SALES</Td>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">AD SPEND</Td>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">AD SALES</Td>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">ROAS</Td>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">ACOS</Td>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">AD-SALES %</Td>
-        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="10" textAlign="right">MoM (GMV)</Td>
+    <Table defaultRowHeight="55" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="190" /><Col /><Col /><Col /><Col /><Col /><Col /><Col />
+      <Tr height="40">
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13">PLATFORM</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">TOTAL SALES</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD SPEND</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD SALES</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ROAS</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ACOS</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD-SALES %</Td>
+        <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">MoM (GMV)</Td>
       </Tr>
       <Tr>
-        <Td color="$textMain" fontSize="10" bold="true">Blinkit</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹1.32 Cr</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹7.31 L</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹46.5 L</Td>
-        <Td color="$positive" fontSize="10" textAlign="right" bold="true">6.35x</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">15.7%</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">35.2%</Td>
-        <Td color="$negative" fontSize="10" textAlign="right" bold="true">-18.4%</Td>
+        <Td color="$textMain" fontSize="18" bold="true">Blinkit</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹1.32 Cr</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹7.31 L</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹46.5 L</Td>
+        <Td color="$positive" fontSize="18" textAlign="right" bold="true">6.35x</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">15.7%</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">35.2%</Td>
+        <Td color="$negative" fontSize="18" textAlign="right" bold="true">-18.4%</Td>
       </Tr>
       <Tr>
-        <Td color="$textMain" fontSize="10" bold="true">Swiggy Instamart</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹1.80 Cr</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹4.25 L</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹31.3 L</Td>
-        <Td color="$positive" fontSize="10" textAlign="right" bold="true">7.37x</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">13.6%</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">17.4%</Td>
-        <Td color="$positive" fontSize="10" textAlign="right" bold="true">+23.2%</Td>
+        <Td color="$textMain" fontSize="18" bold="true">Swiggy Instamart</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹1.80 Cr</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹4.25 L</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹31.3 L</Td>
+        <Td color="$positive" fontSize="18" textAlign="right" bold="true">7.37x</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">13.6%</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">17.4%</Td>
+        <Td color="$positive" fontSize="18" textAlign="right" bold="true">+23.2%</Td>
       </Tr>
       <Tr>
-        <Td color="$textMain" fontSize="10" bold="true">Zepto</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹5.17 Cr</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹36.9 L</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">₹1.59 Cr</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">4.31x</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">23.2%</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right">30.7%</Td>
-        <Td color="$negative" fontSize="10" textAlign="right">-4.4%</Td>
+        <Td color="$textMain" fontSize="18" bold="true">Zepto</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹5.17 Cr</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹36.9 L</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">₹1.59 Cr</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">4.31x</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">23.2%</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right">30.7%</Td>
+        <Td color="$negative" fontSize="18" textAlign="right">-4.4%</Td>
       </Tr>
       <Tr>
-        <Td color="$textMain" fontSize="10" bold="true" backgroundColor="E0F2EC">TOTAL</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right" bold="true" backgroundColor="E0F2EC">₹8.29 Cr</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right" bold="true" backgroundColor="E0F2EC">₹48.5 L</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right" bold="true" backgroundColor="E0F2EC">₹2.37 Cr</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right" bold="true" backgroundColor="E0F2EC">4.88x</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right" bold="true" backgroundColor="E0F2EC">20.5%</Td>
-        <Td color="$textMain" fontSize="10" textAlign="right" bold="true" backgroundColor="E0F2EC">28.6%</Td>
-        <Td color="$textMuted" fontSize="10" textAlign="right" backgroundColor="E0F2EC">Mixed</Td>
+        <Td color="$textMain" fontSize="18" bold="true" backgroundColor="E0F2EC">TOTAL</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right" bold="true" backgroundColor="E0F2EC">₹8.29 Cr</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right" bold="true" backgroundColor="E0F2EC">₹48.5 L</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right" bold="true" backgroundColor="E0F2EC">₹2.37 Cr</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right" bold="true" backgroundColor="E0F2EC">4.88x</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right" bold="true" backgroundColor="E0F2EC">20.5%</Td>
+        <Td color="$textMain" fontSize="18" textAlign="right" bold="true" backgroundColor="E0F2EC">28.6%</Td>
+        <Td color="$textMuted" fontSize="18" textAlign="right" backgroundColor="E0F2EC">Mixed</Td>
       </Tr>
     </Table>
   </VStack>
   <VStack w="max" padding="10" backgroundColor="E0F2EC" borderRadius="8">
-    <Text fontSize="10" color="$textMain" lineHeight="1.4"><B>Read-out:</B> Swiggy is our efficiency engine (ROAS 7.4x, +23% MoM). Zepto is our volume engine (62% of GMV) but leaks efficiency at ACOS 23%. Blinkit dipped in June — recoverable via SILB/day-parting playbook already piloted in May.</Text>
+    <Text fontSize="14" color="$textMain" lineHeight="1.4"><B>Read-out:</B> Swiggy is our efficiency engine (ROAS 7.4x, +23% MoM). Zepto is our volume engine (62% of GMV) but leaks efficiency at ACOS 23%. Blinkit dipped in June — recoverable via SILB/day-parting playbook already piloted in May.</Text>
   </VStack>
   <Text fontSize="9" color="$textMuted">Source: Blinkit, Swiggy Instamart &amp; Zepto June '26 platform reports · ROAS = Ad Sales ÷ Ad Spend · Blinkit ACOS calculated from Spend ÷ Ad Sales.</Text>
 </VStack></Slide>

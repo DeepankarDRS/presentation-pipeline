@@ -39,65 +39,65 @@
     <VStack w="50%" gap="10">
       <VStack w="max" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
         <Text fontSize="11" color="$textMain" bold="true">Campaign format performance</Text>
-        <Table defaultRowHeight="30" cellBorder.color="$border" cellBorder.width="1">
-          <Col width="130" /><Col width="80" /><Col width="90" /><Col width="65" /><Col width="65" />
+        <Table defaultRowHeight="37" cellBorder.color="$border" cellBorder.width="1">
+          <Col width="130" /><Col /><Col /><Col /><Col />
           <Tr>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9">FORMAT</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">SPEND</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">AD SALES</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ROI</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ACOS</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13">FORMAT</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">SPEND</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD SALES</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ROI</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ACOS</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">SP - Search</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹2.81 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹20.1 L</Td>
-            <Td color="$positive" fontSize="9" textAlign="right" bold="true">7.16x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">14.0%</Td>
+            <Td color="$textMain" fontSize="13">SP - Search</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹2.81 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹20.1 L</Td>
+            <Td color="$positive" fontSize="13" textAlign="right" bold="true">7.16x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">14.0%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">SILB - Browse (Curd)</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹94.9 K</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹5.04 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">5.31x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">18.8%</Td>
+            <Td color="$textMain" fontSize="13">SILB - Browse (Curd)</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹94.9 K</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹5.04 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">5.31x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">18.8%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Browse Boost</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹48.4 K</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹6.14 L</Td>
-            <Td color="$positive" fontSize="9" textAlign="right" bold="true">12.67x</Td>
-            <Td color="$positive" fontSize="9" textAlign="right">7.9%</Td>
+            <Td color="$textMain" fontSize="13">Browse Boost</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹48.4 K</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹6.14 L</Td>
+            <Td color="$positive" fontSize="13" textAlign="right" bold="true">12.67x</Td>
+            <Td color="$positive" fontSize="13" textAlign="right">7.9%</Td>
           </Tr>
         </Table>
       </VStack>
       <VStack w="max" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
         <Text fontSize="11" color="$textMain" bold="true">Category cut — Paneer is the workhorse</Text>
-        <Table defaultRowHeight="28" cellBorder.color="$border" cellBorder.width="1">
-          <Col width="100" /><Col width="75" /><Col width="80" /><Col width="60" /><Col width="70" /><Col width="55" />
+        <Table defaultRowHeight="37" cellBorder.color="$border" cellBorder.width="1">
+          <Col width="100" /><Col /><Col /><Col /><Col /><Col />
           <Tr>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9">CATEGORY</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">SPEND</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">AD SALES</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">ROI</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">GMV</Td>
-            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="9" textAlign="right">AD %</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13">CATEGORY</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">SPEND</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD SALES</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">ROI</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">GMV</Td>
+            <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="13" textAlign="right">AD %</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Paneer</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹2.08 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹20.6 L</Td>
-            <Td color="$positive" fontSize="9" textAlign="right" bold="true">9.94x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹57.6 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">35.8%</Td>
+            <Td color="$textMain" fontSize="13">Paneer</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹2.08 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹20.6 L</Td>
+            <Td color="$positive" fontSize="13" textAlign="right" bold="true">9.94x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹57.6 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">35.8%</Td>
           </Tr>
           <Tr>
-            <Td color="$textMain" fontSize="9">Curd</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹2.17 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹10.7 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">4.92x</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">₹46.7 L</Td>
-            <Td color="$textMain" fontSize="9" textAlign="right">22.8%</Td>
+            <Td color="$textMain" fontSize="13">Curd</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹2.17 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹10.7 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">4.92x</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">₹46.7 L</Td>
+            <Td color="$textMain" fontSize="13" textAlign="right">22.8%</Td>
           </Tr>
         </Table>
       </VStack>

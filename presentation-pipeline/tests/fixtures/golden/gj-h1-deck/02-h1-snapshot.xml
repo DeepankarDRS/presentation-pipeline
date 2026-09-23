@@ -75,6 +75,6 @@
     </VStack>
   </HStack>
   <VStack w="max" padding="10" backgroundColor="E0F2EC" borderRadius="8">
-    <Text fontSize="10" color="$textMain" lineHeight="1.4"><B>H1 read:</B> ₹2.71 Cr ads returned ₹13.78 Cr sales (5.09x) · Zepto is 74% of spend and 69% of ad sales · Blinkit's 6.69x proves the efficiency ceiling · Swiggy's June ROAS 7.37x signals the H2 opportunity.</Text>
+    <Text fontSize="14" color="$textMain" lineHeight="1.4"><B>H1 read:</B> ₹2.71 Cr ads returned ₹13.78 Cr sales (5.09x) · Zepto is 74% of spend and 69% of ad sales · Blinkit's 6.69x proves the efficiency ceiling · Swiggy's June ROAS 7.37x signals the H2 opportunity.</Text>
   </VStack>
 </VStack></Slide>

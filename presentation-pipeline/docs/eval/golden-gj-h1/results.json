@@ -1,7 +1,7 @@
 {
   "label": "golden-gj-h1",
-  "created": "2026-09-23T23:14:15",
-  "git_commit": "0c7807b",
+  "created": "2026-09-23T23:27:39",
+  "git_commit": "6b29c94",
   "models_sha": "1f984f77",
   "fit_grow": "1",
   "aggregate": {
@@ -13,11 +13,11 @@
     "first_pass_pct": 100.0,
     "mean_retries": 0.0,
     "cards": 74,
-    "mean_fill": 0.866,
-    "low_fill_pct": 14.9,
+    "mean_fill": 0.896,
+    "low_fill_pct": 8.1,
     "auto_fixes_per_slide": 0.0,
-    "layout_issues_per_slide": 39.93,
-    "fit_grow_changes_per_slide": 1.29,
+    "layout_issues_per_slide": 28.64,
+    "fit_grow_changes_per_slide": 0.93,
     "tokens_in": 0,
     "tokens_out": 0,
     "cost_usd": 0.0,
@@ -25,9 +25,8 @@
     "auto_fix_codes": {},
     "blocking_codes": {},
     "layout_codes": {
-      "FONT_TOO_SMALL": 534,
-      "MISSING_DIMS": 14,
-      "COL_WIDTH_SUM": 11
+      "FONT_TOO_SMALL": 387,
+      "MISSING_DIMS": 14
     },
     "card_patterns": {
       "kpi_tile": 36,
@@ -100,112 +99,110 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 57,
+            "FONT_TOO_SMALL": 56,
             "MISSING_DIMS": 3
           },
-          "fit_grow": [
-            "slide 1: text x1.99 (e.g. 10 -> 16pt), fill 65% -> 80%"
-          ],
+          "fit_grow": [],
           "components": [],
           "cards": [
             {
               "pattern": "kpi_tile",
-              "fill": 0.976,
+              "fill": 0.88,
               "frame": [
                 36,
-                151,
-                248,
-                130
+                145,
+                246,
+                123
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.976,
+              "fill": 0.88,
               "frame": [
-                296,
-                151,
-                200,
-                130
+                294,
+                145,
+                230,
+                123
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.976,
+              "fill": 0.88,
               "frame": [
-                508,
-                151,
-                214,
-                130
+                536,
+                145,
+                246,
+                123
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.976,
+              "fill": 0.88,
               "frame": [
-                734,
-                151,
-                239,
-                130
+                794,
+                145,
+                213,
+                123
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.993,
+              "fill": 0.88,
               "frame": [
-                985,
-                151,
-                259,
-                130
+                1019,
+                145,
+                225,
+                123
               ]
             },
             {
               "pattern": "chart_card",
-              "fill": 0.999,
+              "fill": 0.997,
               "frame": [
                 36,
-                295,
+                282,
                 716,
-                311
+                306
               ]
             },
             {
               "pattern": "table_card",
-              "fill": 0.988,
+              "fill": 1.0,
               "frame": [
                 766,
-                295,
+                282,
                 478,
-                97
+                95
               ]
             },
             {
               "pattern": "table_card",
-              "fill": 0.988,
+              "fill": 1.0,
               "frame": [
                 766,
-                402,
+                387,
                 478,
-                97
+                95
               ]
             },
             {
               "pattern": "table_card",
-              "fill": 0.988,
+              "fill": 0.998,
               "frame": [
                 766,
-                509,
+                492,
                 478,
-                97
+                96
               ]
             },
             {
               "pattern": "text_card",
-              "fill": 0.314,
+              "fill": 0.636,
               "frame": [
                 36,
-                620,
+                602,
                 1208,
-                64
+                82
               ]
             }
           ]
@@ -279,71 +276,70 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 54,
-            "MISSING_DIMS": 1,
-            "COL_WIDTH_SUM": 1
+            "FONT_TOO_SMALL": 21,
+            "MISSING_DIMS": 1
           },
           "fit_grow": [],
           "components": [],
           "cards": [
             {
               "pattern": "kpi_tile",
-              "fill": 0.984,
+              "fill": 0.99,
               "frame": [
                 36,
-                140,
+                134,
                 274,
-                112
+                106
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.984,
+              "fill": 0.99,
               "frame": [
                 322,
-                140,
+                134,
                 293,
-                112
+                106
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.984,
+              "fill": 0.99,
               "frame": [
                 627,
-                140,
+                134,
                 323,
-                112
+                106
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.984,
+              "fill": 0.99,
               "frame": [
                 962,
-                140,
+                134,
                 282,
-                112
+                106
               ]
             },
             {
               "pattern": "table_card",
-              "fill": 0.621,
+              "fill": 0.636,
               "frame": [
                 36,
-                266,
+                254,
                 1208,
-                327
+                320
               ]
             },
             {
               "pattern": "text_card",
-              "fill": 0.442,
+              "fill": 0.786,
               "frame": [
                 36,
-                607,
+                588,
                 1208,
-                51
+                70
               ]
             }
           ]
@@ -359,8 +355,7 @@
           "blocking": {},
           "layout_issues": {
             "FONT_TOO_SMALL": 62,
-            "MISSING_DIMS": 2,
-            "COL_WIDTH_SUM": 2
+            "MISSING_DIMS": 2
           },
           "fit_grow": [
             "slide 1: text x1.99 (e.g. 11 -> 16pt), fill 65% -> 72%",
@@ -471,8 +466,7 @@
           "blocking": {},
           "layout_issues": {
             "FONT_TOO_SMALL": 57,
-            "MISSING_DIMS": 2,
-            "COL_WIDTH_SUM": 2
+            "MISSING_DIMS": 2
           },
           "fit_grow": [
             "slide 1: text x1.99 (e.g. 11 -> 16pt), fill 65% -> 72%",
@@ -532,7 +526,7 @@
             },
             {
               "pattern": "table_card",
-              "fill": 0.815,
+              "fill": 0.861,
               "frame": [
                 36,
                 287,
@@ -542,10 +536,10 @@
             },
             {
               "pattern": "table_card",
-              "fill": 0.771,
+              "fill": 0.86,
               "frame": [
                 36,
-                496,
+                497,
                 598,
                 163
               ]
@@ -583,8 +577,7 @@
           "blocking": {},
           "layout_issues": {
             "FONT_TOO_SMALL": 58,
-            "MISSING_DIMS": 2,
-            "COL_WIDTH_SUM": 2
+            "MISSING_DIMS": 2
           },
           "fit_grow": [
             "slide 1: text x1.99 (e.g. 11 -> 16pt), fill 65% -> 72%",
@@ -654,22 +647,22 @@
             },
             {
               "pattern": "table_card",
-              "fill": 0.845,
+              "fill": 0.962,
               "frame": [
                 646,
                 287,
                 598,
-                207
+                227
               ]
             },
             {
               "pattern": "dark_panel",
-              "fill": 0.79,
+              "fill": 0.937,
               "frame": [
                 646,
-                503,
+                523,
                 598,
-                156
+                136
               ]
             }
           ]
@@ -684,54 +677,52 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 34,
-            "MISSING_DIMS": 1,
-            "COL_WIDTH_SUM": 1
+            "FONT_TOO_SMALL": 11,
+            "MISSING_DIMS": 1
           },
           "fit_grow": [
-            "slide 1: text x1.99 (e.g. 12 -> 17pt), spacing x1.40, fill 33% -> 49%",
-            "slide 1: text x1.99 (e.g. 10 -> 13pt), fill 67% -> 75%"
+            "slide 1: text x1.00 (e.g. 10 -> 10pt), spacing x1.40, fill 66% -> 82%"
           ],
           "components": [],
           "cards": [
             {
               "pattern": "table_card",
-              "fill": 0.656,
+              "fill": 0.672,
               "frame": [
                 36,
-                150,
+                122,
                 1208,
-                227
+                232
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.709,
+              "fill": 0.808,
               "frame": [
                 36,
-                460,
-                471,
-                198
+                397,
+                472,
+                261
               ]
             },
             {
               "pattern": "text_card",
-              "fill": 0.709,
+              "fill": 0.808,
               "frame": [
-                519,
-                460,
-                361,
-                198
+                520,
+                397,
+                360,
+                261
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.709,
+              "fill": 0.808,
               "frame": [
                 892,
-                460,
+                397,
                 352,
-                198
+                261
               ]
             }
           ]
@@ -746,16 +737,14 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 25
+            "FONT_TOO_SMALL": 22
           },
-          "fit_grow": [
-            "slide 1: text x1.99 (e.g. 10 -> 13pt), fill 66% -> 84%"
-          ],
+          "fit_grow": [],
           "components": [],
           "cards": [
             {
               "pattern": "text_card",
-              "fill": 0.826,
+              "fill": 0.834,
               "frame": [
                 36,
                 150,
@@ -765,7 +754,7 @@
             },
             {
               "pattern": "text_card",
-              "fill": 0.785,
+              "fill": 0.796,
               "frame": [
                 439,
                 150,
@@ -775,7 +764,7 @@
             },
             {
               "pattern": "text_card",
-              "fill": 0.768,
+              "fill": 0.834,
               "frame": [
                 843,
                 150,
@@ -795,16 +784,15 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 32,
-            "MISSING_DIMS": 1,
-            "COL_WIDTH_SUM": 1
+            "FONT_TOO_SMALL": 4,
+            "MISSING_DIMS": 1
           },
           "fit_grow": [],
           "components": [],
           "cards": [
             {
               "pattern": "table_card",
-              "fill": 0.466,
+              "fill": 0.788,
               "frame": [
                 36,
                 145,
@@ -825,8 +813,7 @@
           "blocking": {},
           "layout_issues": {
             "FONT_TOO_SMALL": 47,
-            "MISSING_DIMS": 1,
-            "COL_WIDTH_SUM": 1
+            "MISSING_DIMS": 1
           },
           "fit_grow": [
             "slide 1: hstack kept at h=90 (w=\"max\" was stretching it)",
@@ -906,60 +893,58 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 34
+            "FONT_TOO_SMALL": 19
           },
-          "fit_grow": [
-            "slide 1: text x1.00 (e.g. 9 -> 9pt), spacing x1.40, fill 61% -> 78%"
-          ],
+          "fit_grow": [],
           "components": [],
           "cards": [
             {
               "pattern": "text_card",
-              "fill": 0.758,
+              "fill": 0.863,
               "frame": [
                 36,
                 145,
-                229,
+                234,
                 513
               ]
             },
             {
               "pattern": "text_card",
-              "fill": 0.687,
+              "fill": 0.822,
               "frame": [
-                281,
+                280,
                 145,
-                229,
+                233,
                 513
               ]
             },
             {
               "pattern": "text_card",
-              "fill": 0.758,
+              "fill": 0.915,
               "frame": [
-                526,
+                523,
                 145,
-                228,
+                234,
                 513
               ]
             },
             {
               "pattern": "text_card",
-              "fill": 0.758,
+              "fill": 0.822,
               "frame": [
-                770,
+                767,
                 145,
-                229,
+                233,
                 513
               ]
             },
             {
               "pattern": "text_card",
-              "fill": 0.728,
+              "fill": 0.836,
               "frame": [
-                1015,
+                1010,
                 145,
-                229,
+                234,
                 513
               ]
             }
@@ -975,16 +960,15 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 44,
-            "MISSING_DIMS": 1,
-            "COL_WIDTH_SUM": 1
+            "FONT_TOO_SMALL": 4,
+            "MISSING_DIMS": 1
           },
           "fit_grow": [],
           "components": [],
           "cards": [
             {
               "pattern": "table_card",
-              "fill": 0.532,
+              "fill": 0.66,
               "frame": [
                 36,
                 145,
@@ -1004,10 +988,9 @@
           "auto_fixes": {},
           "blocking": {},
           "layout_issues": {
-            "FONT_TOO_SMALL": 14
+            "FONT_TOO_SMALL": 10
           },
           "fit_grow": [
-            "slide 1: text x1.99 (e.g. 10 -> 13pt), fill 70% -> 77%",
             "slide 1: text x1.99 (e.g. 10 -> 14pt), fill 69% -> 76%"
           ],
           "components": [],
@@ -1024,42 +1007,42 @@
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.772,
+              "fill": 0.765,
               "frame": [
                 36,
                 122,
                 696,
-                156
+                144
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.678,
+              "fill": 0.699,
               "frame": [
                 36,
-                292,
+                280,
                 696,
                 126
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.678,
+              "fill": 0.706,
               "frame": [
                 36,
-                432,
+                420,
                 696,
-                126
+                125
               ]
             },
             {
               "pattern": "kpi_tile",
-              "fill": 0.622,
+              "fill": 0.717,
               "frame": [
                 36,
-                572,
+                559,
                 696,
-                112
+                125
               ]
             },
             {
