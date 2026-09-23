@@ -74,6 +74,11 @@ Already in place and reused: `hint-capabilities.yaml`, `content_model.py`, `icon
 - Also run the sizing plan's LLM-free regression (§7 of `docs/layout-sizing-plan.md`: fit-grow + golden fixtures with and without `POM_FIT_GROW`).
 
 **Acceptance:** baseline committed as `docs/eval/baseline-<date>.md` (summary only); human review of ~10 renders listing the top 3 visual failure types.
+
+**Quality target = `tests/fixtures/golden/gj-h1-deck/`.** Add an eval case that regenerates those 14 slides from the same source data and scores them against the golden deck: per-slide card-pattern match, fill ratio, audit issues, side-by-side renders. Facts measured 2026-09-23 that make this the right target:
+- 63 of its 70 cards are five patterns (KPI tile 31, table card 13, callout 8, dark panel 6, chart card 5); 12 of 14 slides share one header + badge pattern; it uses 1 icon in total — polish comes from density, semantic colour and read-out panels, not decoration.
+- It is sized by hand (95 `w="max"`, tuned band heights 78+340, 100+282, …). Compiled by today's pipeline, slide 05 already shows the F1/F5 defects (KPI tiles ≈2× their declared 78 px, tables not filling their cards, stretched rows with top-aligned text) — Phase 1/5 improve even the golden reference.
+- A real generated slide (`llm_test/f7cb357c1472.pptx`, 2026-09-22) shows the gap: a 1-row table (1 entity × 2 metrics) in a tall card, a card holding one bullet, a dead band under the header → routing (Phase 2), sizing (Phase 1), thin content (planner/data, not covered by this roadmap).
 **DECIDE:** acceptance-gate case subset (suggest: all `eval-*`, `maximal-density`, `single-table`, `kpi-row`, `chart-and-table`, `mixed-executive-slide`, 3 `deck-*`) vs full 48 for milestones.
 
 ---
