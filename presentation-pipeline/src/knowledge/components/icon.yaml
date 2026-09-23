@@ -44,6 +44,16 @@ attributes:
     type: number
     note: Degrees clockwise (render-only).
 
+# Curated business vocabulary shown to the generator. Every name must exist in
+# core/icon-names.txt (the full POM set, enforced by tests). Any other name is
+# removed by the normalizer before compile. Lucide has no brand logos.
+recommended_names:
+  growth_finance: [trending-up, trending-down, chart-column, chart-line, chart-pie, target, dollar-sign, indian-rupee, wallet, percent]
+  commerce: [shopping-bag, shopping-cart, store, package, truck]
+  people_org: [users, user-check, handshake, building-2, briefcase]
+  status: [circle-check, circle-x, triangle-alert, clock, calendar, star, award]
+  ops_tech: [zap, settings, shield-check, globe, map-pin, lightbulb, rocket, megaphone, smartphone]
+
 pitfalls:
   - Icon is self-closing — never nest children or text content inside it.
   - name is required. Omitting it crashes the renderer.

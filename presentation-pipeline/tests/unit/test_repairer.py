@@ -677,3 +677,11 @@ def test_cap_xml_applied_in_build_patch_prompts():
     )
     assert len(user_prompt) < len(huge_xml)
     assert "truncated" in user_prompt
+
+
+def test_invalid_child_guidance_and_signature():
+    from src.compiler.repair_guidance import build_error_guidance, error_signatures
+    issue = {"code": "INVALID_CHILD", "message": "<HStack> is not allowed inside <Td>. ...",
+             "auto_fixed": False, "parent": "Td", "child": "HStack"}
+    assert "NESTING FIX" in build_error_guidance([issue], [])
+    assert "INVALID_CHILD:Td>HStack" in error_signatures([issue], [])

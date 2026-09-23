@@ -44,7 +44,6 @@ alignItems="stretch" backgroundColor="$surface"> (horizontal bands, top-to-botto
 OR <HStack w="1280" h="720" padding="P" gap="G"
 alignItems="stretch" backgroundColor="$surface"> (full-height vertical splits, left-to-right).
 Default to VStack. Use HStack root for full-bleed 50/50 or 60/40 column layouts.
-The pipeline injects the <Theme> automatically - do NOT emit one.
 
 NODE CATEGORIES:
   LAYOUT nodes: <VStack> (vertical), <HStack> (horizontal) - the skeleton.
@@ -58,7 +57,6 @@ NODE CATEGORIES:
                <Span fontSize="20">M</Span>
              </Text>  (newlines = extra rendered line breaks)
     Same rule applies inside <Li> and <Td>.
-    <Shape> is always a LEAF - text goes in the text= attribute.
   DATA nodes (RIGID): <Chart>, <Table>, <Matrix>, <Timeline>, <ProcessArrow>,
     <Flow>, <Pyramid>, <Tree> - complex visualizations.
     These do NOT auto-size height. Every one MUST have w="max" + explicit pixel h.
@@ -71,9 +69,6 @@ SIZING:
   w="62%" = explicit percentage of parent. Siblings should sum to ~100%.
   grow="2" = ratio split with siblings (grow="2" + grow="1" = 2:1).
   Fixed px (w="320") = only for elements that must not flex (icon, sidebar rail).
-
-THEME TOKENS: Reference as $tokenName in color attributes (e.g. color="$textMain",
-backgroundColor="$surfaceAlt"). Colors are 6-digit hex, NO # prefix.
 
 {% if core_hook %}
 ## NARRATIVE ANCHOR
@@ -125,6 +120,9 @@ names below as $tokenName references in color attributes; never output <Theme>.
 
 ## ALLOWED NODES
 {{ allowed_nodes | join(', ') }}
+{% if icon_names %}
+Icon names (unknown names are removed; no brand logos): {{ icon_names }}
+{% endif %}
 {% if node_hierarchy %}
 
 ## NODE HIERARCHY (valid parent -> children)
@@ -218,41 +216,18 @@ rhythm) to the slide you are building.
 - More bands, tighter band heights - but they must still sum to ~720
 {% endif %}
 
-## LAYOUT ARCHETYPE (mandatory — pick one)
-
-Before writing any XML, choose a layout archetype from the LAYOUT ARCHETYPES
-section in the layout grammar. You MUST pick a DIFFERENT archetype than the
-previous slide (see PREVIOUS SLIDE ARCHETYPE in the user prompt). If no
-previous archetype is given, choose freely based on the slide type and
-component mix.
-
-After choosing, emit a one-line XML comment as the FIRST line inside <Slide>:
+## LAYOUT ARCHETYPE (mandatory)
+Pick one of the LAYOUT ARCHETYPES in the layout grammar, different from PREVIOUS SLIDE
+ARCHETYPE (user prompt) when one is given. Emit it as the FIRST line inside <Slide>:
 <!-- archetype: X --> where X is A, B, C, D, or E.
-
-Quick reference (vary proportions and children each time — no two uses
-of the same archetype should look identical):
-  A (split-hero): HStack root, two contrasting panels — dramatic, high-contrast
-  B (dashboard): VStack, metrics + primary viz + context cards — analytical, organized
-  C (full-width-data): VStack, one dominant data component, full width — clean, focused
-  D (equal-columns): VStack, row of equally weighted cards — balanced, scannable
-  E (dense-quad): VStack, multiple data views packed together — comprehensive, detailed
 
 ## VISUAL-INTENT TRANSLATION
 
-Components may carry a `visual-intent` directive from the planner. Translate it into POM attributes — do not ignore it or treat it as decoration.
+A component may carry a `visual-intent` and a `scope` (its allowed treatments). Build each intent with the technique below. Core nodes keep fixed syntax: <Text>/<Td>/<Li> hold text + inline tags only; data-node items take no child nodes. Icons, dots, sparklines go AROUND them in VStack/HStack. Intent outside scope: use the closest allowed treatment or skip it.
+{% if visual_intent_techniques %}
 
-| Intent phrase | POM technique |
-|---|---|
-| "emphasize X" / "highlight X" | Use `$accent` or `$positive` color on that element; bold; or larger fontSize |
-| "dark background" / "inverted panel" | `backgroundColor="$textMain"` on a VStack card, children use `color="$surface"` |
-| "gradient progression" | `backgroundGradient="linear-gradient(90deg, COLOR1 0%, COLOR2 100%)"` across the container |
-| "color-code by sentiment/outcome" | `$positive` for good, `$negative` for bad, `$accent` for neutral |
-| "add icons beside labels" | `<HStack gap="8"><Icon name="ICON" w="20" h="20" /><Text>label</Text></HStack>` per item |
-| "sparkline in KPI tile" | Small `<Chart>` (w="80" h="32") inline beside the KPI value via HStack |
-| "lift / elevate this card" | `shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000"` + `borderRadius="12"` on the VStack |
-| "cluster / group items" | Wrap related items in a VStack with `backgroundColor="$surfaceAlt"` + padding + borderRadius |
-| "use accent border" | `borderLeft.color="$accent" borderLeft.width="4"` on the VStack card |
-| "status dots" | `<Shape shapeType="ellipse" w="10" h="10" fill.color="COLOR" />` beside each label |
+{{ visual_intent_techniques }}
+{% endif %}
 
 When no visual-intent is given, use default rendering — no embellishment needed.
 

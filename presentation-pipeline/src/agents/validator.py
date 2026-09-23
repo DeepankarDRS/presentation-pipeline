@@ -5,6 +5,7 @@ is based solely on compile_result.ok and compile_result.retryable.
 
 Pipeline:
   1. normalize_xml() — strip fences, fix colors, remove br/hr, flag zero dims
+  1b. INVALID_CHILD from normalize (nodes.yaml content model) blocks before parseXml
   2. validate_xml() — parseXml structural check (fast, no PPTX gen)
   3. compile_xml() — buildPptx (only if validation passed)
 
@@ -21,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 from src.compiler.compiler_client import CompilerError, compile_xml, validate_xml
+from src.compiler.content_model import nesting_compile_failure
 from src.compiler.layout_audit import audit_layout
 from src.compiler.normalizer import ensure_single_theme, normalize_xml, pre_validate
 from src.state import PresentationState
@@ -65,6 +67,18 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         total = len(norm["issues"])
         logger.info(f"validator: normalize {total} issue(s), {auto} auto-fixed"
                      + (" [BLOCKING]" if norm["blocking"] else ""))
+
+    nesting_fail = nesting_compile_failure(norm["issues"])
+    if nesting_fail:
+        logger.info(f"validator: {len(nesting_fail['diagnostics'])} nesting violation(s) — blocking before parseXml")
+        for d in nesting_fail["diagnostics"]:
+            logger.info(f"  ! {d['type']}: {d['message']}")
+        return {
+            "normalize_result": norm,
+            "validate_result": {"ok": False, "diagnostics": nesting_fail["diagnostics"], "warnings": []},
+            "compile_result": nesting_fail,
+            "layout_issues": [],
+        }
 
     val_result = validate_xml(cleaned, output_dir)
 
@@ -162,6 +176,10 @@ def normalize_and_compile(
         import tempfile
         output_dir = Path(tempfile.mkdtemp(prefix="visual_repair_"))
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    nesting_fail = nesting_compile_failure(norm["issues"])
+    if nesting_fail:
+        return False, nesting_fail
 
     val = validate_xml(cleaned, output_dir)
     if val is not None and not val["ok"]:

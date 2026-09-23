@@ -9,6 +9,9 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from src.compiler.content_model import find_violations, flatten_text_containers
+from src.compiler.icons import fix_icon_names
+
 
 FORBIDDEN_TAGS: set[str] = {
     "br", "div", "p", "span", "hr", "section", "header", "footer", "article",
@@ -203,6 +206,9 @@ def ensure_single_theme(xml: str, theme_element: str) -> str:
 def normalize_xml(raw_xml: str) -> dict[str, Any]:
     """Normalize raw LLM XML output: strip fences, fix colors, remove br/hr.
 
+    Also auto-fixes safe nesting slips (Td/Li bodies) and unknown icon names, and
+    reports remaining nodes.yaml content-model violations as INVALID_CHILD.
+
     Returns dict with keys: cleaned_xml, issues (list of {code, message, auto_fixed}),
     blocking (bool — True if any non-auto-fixed issue found).
     """
@@ -278,6 +284,33 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
             "auto_fixed": False,
         })
 
+    xml, flattened = flatten_text_containers(xml)
+    if flattened:
+        issues.append({
+            "code": "TEXT_CONTAINER_FLATTENED",
+            "message": (
+                f"Flattened {flattened} <Td>/<Li> that contained layout nodes (e.g. HStack + Icon) "
+                "to plain text — Td/Li hold text + inline tags only."
+            ),
+            "auto_fixed": True,
+        })
+
+    xml, icons_renamed, icons_removed = fix_icon_names(xml)
+    if icons_renamed:
+        issues.append({
+            "code": "ICON_NAME_NORMALIZED",
+            "message": "Rewrote icon name(s) to POM spelling: "
+                       + ", ".join(f"{a} -> {b}" for a, b in icons_renamed) + ".",
+            "auto_fixed": True,
+        })
+    if icons_removed:
+        issues.append({
+            "code": "UNKNOWN_ICON_REMOVED",
+            "message": "Removed <Icon> with name(s) not in POM's icon set: "
+                       + ", ".join(icons_removed) + ".",
+            "auto_fixed": True,
+        })
+
     # ---- font-floor: raise any fontSize < 14 to 14 ----
     def _raise_font(m: re.Match) -> str:
         val = float(m.group(1))
@@ -301,6 +334,9 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
 
     if "<Pyramid" in xml:
         xml = _fix_pyramids(xml, issues)
+
+    # Content model last, on the fully fixed XML: whatever is still mis-nested blocks.
+    issues.extend(find_violations(xml))
 
     notes_match = _NOTES_RE.search(xml)
     speaker_notes = notes_match.group(1).strip() if notes_match else ""

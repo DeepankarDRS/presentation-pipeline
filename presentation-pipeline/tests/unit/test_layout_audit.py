@@ -238,40 +238,8 @@ def test_band_height_sum_within_budget_ok():
     assert "BAND_HEIGHT_SUM" not in codes
 
 
-def test_li_block_child_flagged():
-    """Icon inside Li is silently stripped by POM — audit must catch it."""
-    xml = """\
-<Slide>
-  <VStack w="1280" h="720" padding="40">
-    <Ul fontSize="14" color="$textMain">
-      <Li><Icon name="zap" size="18" color="$accent" /> Fast</Li>
-      <Li><Shape shapeType="ellipse" w="12" h="12" /> Status</Li>
-    </Ul>
-  </VStack>
-</Slide>"""
-    issues = audit_layout(xml)
-    li_issues = [i for i in issues if i["code"] == "LI_INVALID_CHILD"]
-    assert len(li_issues) == 2
-    assert all(i["severity"] == "high" for i in li_issues)
-    tags = {i["message"].split("<")[1].split(">")[0] for i in li_issues}
-    assert tags == {"Icon", "Shape"}
 
 
-def test_li_inline_children_ok():
-    """Valid inline tags inside Li should not trigger LI_INVALID_CHILD."""
-    xml = """\
-<Slide>
-  <VStack w="1280" h="720" padding="40">
-    <Ul fontSize="14" color="$textMain">
-      <Li>Normal <B>bold</B> text</Li>
-      <Li><Span color="FF0000">red</Span> item</Li>
-      <Li>With <I>italic</I> and <Mark>highlight</Mark></Li>
-    </Ul>
-  </VStack>
-</Slide>"""
-    issues = audit_layout(xml)
-    codes = [i["code"] for i in issues]
-    assert "LI_INVALID_CHILD" not in codes
 
 
 def test_missing_dims_matrix_and_timeline():

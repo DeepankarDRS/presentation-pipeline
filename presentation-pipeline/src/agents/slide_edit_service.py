@@ -18,6 +18,7 @@ from src.agents.repairer import build_patch_prompts
 from src.agents.visual_critic import run_visual_critic
 from src.compiler.compiler_client import CompilerError, compile_xml
 from src.compiler.normalizer import ensure_single_theme, normalize_xml
+from src.compiler.content_model import nesting_compile_failure
 from src.compiler.repair_guidance import error_signatures, is_stalled
 from src.compiler.screenshot import render_screenshots
 from src.utils.llm_client import get_llm
@@ -154,11 +155,13 @@ def edit_slide_xml(
     norm = normalize_xml(edited_xml)
     working_xml = ensure_single_theme(norm.get("cleaned_xml", edited_xml), theme_element)
 
-    # Compile
-    try:
-        cr = compile_xml(working_xml, output_dir)
-    except CompilerError as e:
-        return SlideEditResult(ok=False, xml=current_xml, error=f"Compiler error: {e}")
+    # Compile (bad nesting skips the compiler — its error there is misleading)
+    cr = nesting_compile_failure(norm.get("issues", []))
+    if cr is None:
+        try:
+            cr = compile_xml(working_xml, output_dir)
+        except CompilerError as e:
+            return SlideEditResult(ok=False, xml=current_xml, error=f"Compiler error: {e}")
 
     if cr.get("ok", False):
         screenshot_path = _try_screenshot(cr.get("pptx_path"), str(output_dir / "screenshots"))
@@ -213,10 +216,12 @@ def edit_slide_xml(
         working_xml = ensure_single_theme(norm.get("cleaned_xml", repaired_xml), theme_element)
 
         repair_dir = output_dir / f"repair-{attempt}"
-        try:
-            cr = compile_xml(working_xml, repair_dir)
-        except CompilerError:
-            break
+        cr = nesting_compile_failure(norm.get("issues", []))
+        if cr is None:
+            try:
+                cr = compile_xml(working_xml, repair_dir)
+            except CompilerError:
+                break
 
         if cr.get("ok", False):
             screenshot_path = _try_screenshot(cr.get("pptx_path"), str(repair_dir / "screenshots"))
@@ -310,6 +315,9 @@ def _run_visual_check_loop(
 
         norm = normalize_xml(repaired_xml)
         repaired_xml = ensure_single_theme(norm.get("cleaned_xml", repaired_xml), theme_element)
+
+        if nesting_compile_failure(norm.get("issues", [])):
+            break  # repair broke the content model — keep the last good slide
 
         vr_dir = output_dir / f"visual-repair-{v_attempt}"
         try:

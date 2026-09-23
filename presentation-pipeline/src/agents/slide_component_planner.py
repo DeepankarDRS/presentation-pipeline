@@ -28,6 +28,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.state import ComponentPlan, PresentationState, SlidePlan
@@ -164,7 +165,9 @@ def plan_single_slide(
         supplied_content_for_slide=supplied_for_slide if supplied_for_slide else None,
         repair_context=repair_context,
     )
-    system_msg = _jinja_env.get_template("system.j2").render()
+    system_msg = _jinja_env.get_template("system.j2").render(
+        hint_capabilities=planner_capabilities_section(),
+    )
 
     llm = get_llm("slide_component_planner")
     structured_llm = llm.with_structured_output(

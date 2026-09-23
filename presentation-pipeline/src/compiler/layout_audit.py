@@ -21,7 +21,6 @@ MAX_NESTING = 6
 
 _STACK_TAGS = {"VStack", "HStack"}
 _NEEDS_DIMS = {"Chart", "Table", "Matrix", "ProcessArrow", "Flow", "Pyramid", "Tree", "Timeline"}
-_LI_VALID_CHILDREN = {"B", "I", "A", "U", "S", "Sub", "Sup", "Span", "Mark"}
 
 
 def _parse_num(value: str | None) -> float | None:
@@ -144,22 +143,6 @@ def _check_nesting(root: ET.Element, issues: list[dict[str, str]]) -> None:
             _walk(child, depth)
 
     _walk(root, 0)
-
-
-def _check_li_children(root: ET.Element, issues: list[dict[str, str]]) -> None:
-    """Flag block elements inside <Li> — POM silently strips them."""
-    for li in root.iter("Li"):
-        for child in li:
-            if child.tag not in _LI_VALID_CHILDREN:
-                issues.append({
-                    "severity": "high",
-                    "code": "LI_INVALID_CHILD",
-                    "message": (
-                        f"<{child.tag}> inside <Li> will be silently stripped. "
-                        f"Li only supports inline tags: {', '.join(sorted(_LI_VALID_CHILDREN))}. "
-                        f"Use HStack rows with Icon + Text instead of Ul/Li."
-                    ),
-                })
 
 
 def _check_col_widths(root: ET.Element, root_padding: float,
@@ -312,7 +295,6 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_zero_dims(root, issues)
     _check_missing_dims(root, issues)
     _check_nesting(root, issues)
-    _check_li_children(root, issues)
     _check_col_widths(root, root_padding, issues)
     _check_band_height_sum(root, root_padding, issues)
     _check_hstack_column_heights(root, issues)

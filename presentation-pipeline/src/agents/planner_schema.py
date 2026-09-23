@@ -92,11 +92,12 @@ class PlannerComponent(BaseModel):
     )
     design_hint: str = Field(
         default="",
-        description="Optional visual design hint for this specific component. "
-                    "E.g. 'emphasize the largest value', 'use gradient progression', "
-                    "'highlight the decision node'. Also use for intra-component "
-                    "enrichment the generator can compose within a single component "
-                    "(Icon, Shape, sparkline Chart). Leave empty when not needed."
+        description="Visual treatment for this component, chosen from the treatments "
+                    "its kind supports (listed in the system prompt) and naming the "
+                    "target, e.g. 'color ROAS below 1x in negative', 'shade the header "
+                    "row', 'icon beside each point' (bullet_list only). Never icons, "
+                    "logos, shapes or charts inside table cells or list items; no "
+                    "brand logos exist."
     )
     weight: WeightLiteral = Field(
         default="peer",

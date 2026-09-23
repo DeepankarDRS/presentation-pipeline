@@ -18,6 +18,7 @@ from typing import Any
 import yaml
 
 from src.agents.blueprint_selector import select_blueprint
+from src.agents.hint_capabilities import hint_scopes, visual_intent_techniques
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
@@ -485,6 +486,12 @@ def _render_component_recipes(kinds: list[str]) -> str:
     )
 
 
+def _render_icon_names() -> str:
+    """Curated icon vocabulary (components/icon.yaml recommended_names), comma-joined."""
+    groups = _load_yaml("components/icon.yaml").get("recommended_names") or {}
+    return ", ".join(name for names in groups.values() for name in names)
+
+
 # ── Forbidden lists ──────────────────────────────────────────────────────────
 
 def _clean_list(values: Any) -> list[str]:
@@ -512,7 +519,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
 
     Returns a dict with: allowed_nodes, allowed_attributes, forbidden_tags,
     forbidden_attributes, theme_element, theme_name, theme_mode, chart_colors,
-    notes, house_style, component_recipes, component_count.
+    notes, house_style, component_recipes, component_count, visual_intent_techniques,
+    hint_scopes, icon_names.
     """
     kinds = [c.get("kind", "") for c in slide_plan.get("components", [])]
 
@@ -601,6 +609,9 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "blueprint_reference_xml": blueprint_reference_xml,
         "blueprint_name": blueprint_name,
         "component_count": len(kinds),
+        "visual_intent_techniques": visual_intent_techniques(kinds),
+        "hint_scopes": hint_scopes(kinds),
+        "icon_names": _render_icon_names(),
     }
 
 

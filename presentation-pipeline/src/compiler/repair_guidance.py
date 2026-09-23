@@ -210,6 +210,12 @@ def build_error_guidance(
                     "VALUE FIX: w, h, fontSize must be > 0. Never use 0 or negative values."
                 )
 
+        elif code == "INVALID_CHILD":
+            key = f"invalid_child_{issue.get('parent')}_{issue.get('child')}"
+            if key not in seen:
+                seen.add(key)
+                sections.append(f"NESTING FIX: {message}")
+
     for diag in compile_diagnostics:
         dtype = diag.get("type", "")
         dmsg = diag.get("message", "")
@@ -318,6 +324,8 @@ def error_signatures(
             sigs.add(f"{code}:{node or '?'}:{attr}")
         elif code == "ZERO_DIM":
             sigs.add("ZERO_DIM")
+        elif code == "INVALID_CHILD":
+            sigs.add(f"INVALID_CHILD:{issue.get('parent')}>{issue.get('child')}")
         else:
             sigs.add(f"{code}:{issue.get('message', '')[:40]}")
 

@@ -50,6 +50,8 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         blueprint_structure=contract.get("blueprint_structure", ""),
         blueprint_reference_xml=contract.get("blueprint_reference_xml", ""),
         notes=contract.get("notes", []),
+        visual_intent_techniques=contract.get("visual_intent_techniques", ""),
+        icon_names=contract.get("icon_names", ""),
         core_hook=state.get("core_hook", ""),
         slide_type=plan.get("slide_type", ""),
     )
@@ -60,6 +62,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         slide_title=plan.get("slide_title", ""),
         core_hook=state.get("core_hook", ""),
         components=components,
+        hint_scopes=contract.get("hint_scopes", {}),
         layout_hint=plan.get("layout_hint", ""),
         content_data=plan.get("content_data", {}),
         supplied_content=state.get("supplied_content"),

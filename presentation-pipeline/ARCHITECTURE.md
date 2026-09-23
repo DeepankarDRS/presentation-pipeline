@@ -332,8 +332,12 @@ Before the compiler sees the XML, the normalizer (`src/compiler/normalizer.py`) 
 - Removes HTML tags (`<br>`, `<hr>`, `<div>`, etc.)
 - Flags zero/negative dimensions
 - Detects forbidden CSS-style attributes (`style`, `class`, `font-size`)
+- Flattens `<Td>`/`<Li>` bodies that contain HStack/Icon/Text to plain text (`src/compiler/content_model.py`)
+- Rewrites icon names to POM spelling or removes unknown `<Icon>`s (`src/compiler/icons.py`, list in `knowledge/core/icon-names.txt`)
+- Reports every remaining parent/child pair that breaks `nodes.yaml` `children:` as blocking `INVALID_CHILD`; all compile paths skip the compiler for these (its own error is misleading or silent)
 
 Issues are classified as auto-fixable or blocking. Auto-fixed issues are silently corrected; blocking issues trigger a retry.
+Design-hint scoping (which visual treatments each component kind may receive) is described in `docs/design-hint-architecture.md`.
 
 ---
 

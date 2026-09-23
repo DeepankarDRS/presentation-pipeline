@@ -12,10 +12,12 @@ SLIDE TYPE: {{ slide_type }}
 
 COMPONENTS (put every one on the slide — each carries its own data):
 {% for comp in components %}
-- {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif %}
+- {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif +%}
 {% if comp.weight and comp.weight != "peer" %}  height-weight: {{ comp.weight }} (see WEIGHT ALLOCATION in layout grammar)
 {% endif %}
 {% if comp.design_hint %}  visual-intent: {{ comp.design_hint }}
+{% endif %}
+{% if hint_scopes and hint_scopes.get(comp.kind) %}  scope: {{ hint_scopes[comp.kind] }}
 {% endif %}
 {% if comp.content_data %}
   Data for {{ comp.component_id or comp.kind }}:

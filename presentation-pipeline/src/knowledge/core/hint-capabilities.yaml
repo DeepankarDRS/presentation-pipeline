@@ -1,0 +1,99 @@
+# pom-knowledge/core/hint-capabilities.yaml
+# What a design_hint (visual-intent) may ask for, per component kind.
+#
+# Single source of truth for BOTH sides of the hint:
+#   - slide_component_planner: may only write hints from its kind's treatments
+#   - generator: VISUAL-INTENT TRANSLATION rows (only the treatments of kinds on
+#     the slide) + a one-line scope under each component in the user prompt
+#
+# Composition rule: core nodes (Table/Td, Ul/Li, Chart, Text, Timeline, Flow,
+# Tree, Matrix, ProcessArrow, Pyramid and their items) keep their fixed syntax.
+# Enrichment (Icon, Shape, sparkline Chart) is COMPOSED AROUND a core node with
+# VStack/HStack — card header, tile, row — NEVER nested inside it. Nesting is
+# enforced separately by src/compiler/content_model.py (nodes.yaml children).
+#
+# Every kind in planner_schema.ComponentKindLiteral must appear under kinds
+# (enforced by tests/unit/test_hint_capabilities.py).
+
+treatments:
+  emphasis:
+    intent: emphasize one value, row or item
+    technique: '$accent/$positive/$negative + bold on that element (Text/Td/Li color, or the item''s color=)'
+  sentiment:
+    intent: color-code by outcome
+    technique: '$positive good, $negative bad, $accent neutral (same attributes as emphasis)'
+  cell_fill:
+    intent: shade a table row or column
+    technique: 'backgroundColor on that row''s/column''s <Td>s'
+  highlight_text:
+    intent: marker-highlight a key phrase
+    technique: '<Mark color="HEX">phrase</Mark> on the same line as its text'
+  series_color:
+    intent: highlight one chart series
+    technique: 'chartColors: accent hex for the focus series, muted hex for the rest (literal hex, no $tokens)'
+  inverted_panel:
+    intent: dark / inverted panel
+    technique: 'card VStack backgroundColor="$textMain", its Text color="$surface"'
+  gradient:
+    intent: gradient progression
+    technique: 'card VStack backgroundGradient="linear-gradient(90deg, C1 0%, C2 100%)"'
+  lift:
+    intent: lift / elevate the card
+    technique: 'card VStack shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000" borderRadius="12"'
+  accent_border:
+    intent: accent border on the card
+    technique: 'card VStack borderLeft.color="$accent" borderLeft.width="4"'
+  header_icon:
+    intent: icon in the card header
+    technique: 'card''s first child <HStack gap="8" alignItems="center"><Icon name="N" size="20" color="$accent" /><Text>title</Text></HStack>'
+  icon_rows:
+    intent: icon beside each point
+    technique: 'VStack of <HStack gap="10" alignItems="center"><Icon name="N" size="18" color="$accent" /><Text>point</Text></HStack> rows instead of Ul/Li'
+  icon_tiles:
+    intent: icon in each tile
+    technique: '<Icon name="N" size="24" color="$accent" /> as each tile''s first child'
+  sparkline:
+    intent: sparkline trend in a KPI tile
+    technique: '<Chart chartType="line" sparkline="true" w="80" h="32"> beside the tile value'
+  status_dots:
+    intent: status dot beside each label
+    technique: '<HStack gap="8" alignItems="center"><Shape shapeType="ellipse" w="10" h="10" fill.color="C" /><Text>label</Text></HStack>'
+
+kinds:
+  title:
+    treatments: [emphasis, highlight_text]
+  narrative:
+    treatments: [emphasis, highlight_text, inverted_panel, gradient, accent_border, lift, header_icon]
+  caption:
+    treatments: [emphasis]
+  kpi_row:
+    treatments: [emphasis, sentiment, icon_tiles, sparkline, status_dots, gradient, inverted_panel, accent_border, lift]
+  bullet_list:
+    treatments: [emphasis, sentiment, highlight_text, icon_rows, accent_border, lift, header_icon]
+    never: "icons, shapes or stacks inside <Li> (for per-point icons use icon rows)"
+  table:
+    treatments: [emphasis, sentiment, cell_fill, highlight_text, accent_border, lift, header_icon]
+    never: "icons, logos, shapes, charts or stacks inside <Td> (cells hold text + inline tags only)"
+  chart:
+    treatments: [series_color, accent_border, lift, header_icon]
+    never: "anything inside <Chart> except its series"
+  timeline:
+    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    never: "extra nodes inside items (use the item's own color)"
+  flow:
+    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    never: "extra nodes inside items (use the item's own color)"
+  tree:
+    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    never: "extra nodes inside items (use the item's own color)"
+  matrix:
+    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    never: "extra nodes inside items (use the item's own color)"
+  process_arrow:
+    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    never: "extra nodes inside steps (use the step's own color)"
+  pyramid:
+    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    never: "extra nodes inside levels (use the level's own color)"
+  layer:
+    treatments: [emphasis, sentiment, accent_border, lift]

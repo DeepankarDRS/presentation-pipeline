@@ -122,7 +122,7 @@ When content has both structure AND detail, use TWO or more components that comp
 
 Component kinds cannot nest inside each other (each component_id maps to exactly one kind), but the generator arranges them in spatial relationship. Your job is to split content so each component plays its visual strength.
 
-The generator CAN enrich individual components with decorative elements (Icon, Shape, sparkline Chart) using nested VStack/HStack. Express this as a design_hint — describe the visual intent, not the POM structure.
+The generator places each component in a card and can enrich it only with the treatments its kind supports (see design_hint below). Express this as a design_hint — describe the visual intent, not the POM structure.
 
 ## Weight Assignment
 
@@ -147,26 +147,19 @@ Every component gets a weight that tells the generator how much vertical space t
 
 ## design_hint (mandatory)
 
-A short freeform directive for the generator about how to visually treat ONE component. Every component MUST have a design_hint — even if the treatment is simple. Describe the specific visual intent: color emphasis, contrast, layout feel, enrichment. Generic hints like "clean layout" or "standard chart" are NOT acceptable — be specific about what makes this component's rendering distinctive.
+A short directive for the generator about how to visually treat ONE component. Every component MUST have a design_hint, chosen from the treatments its kind supports (list below). Name the target so it is specific: "color ROAS below 1x in negative", "shade the Flipkart row", "accent border on the risk card". Generic hints like "clean layout" or "standard chart" are NOT acceptable.
 
-### What design_hint CAN express:
-- Emphasis: "emphasize the largest value with accent color"
-- Contrast: "inverted panel — dark background with light text for this statement"
-- Progression: "use gradient background to show progression"
-- Highlight: "highlight the decision node in the flow"
-- Grouping: "cluster the positive metrics together, separate the negative one"
-- Texture: "use shadow to lift this card above the others"
-- Sentiment: "color-code tiles by outcome — positive/negative/neutral"
-- Enrichment: "add status dot icons beside each label" or "include sparkline trend in each KPI tile"
+Core components keep their fixed structure. Enrichment (icons, status dots, sparklines) is composed AROUND a component — in its card header, its tiles or its rows — never inside table cells or list items. Icons are generic symbols (store, users, trending-up): there are NO brand or company logos. If per-item icons are essential to the message, choose a kind that supports them (bullet_list → icon beside each point, kpi_row → icon in each tile) instead of a table.
+
+### Treatments each component kind supports
+{{ hint_capabilities }}
 
 ### What design_hint must NOT do:
+- Ask for a treatment not listed for that component's kind (e.g. icons or logos in a table)
 - Specify pixel dimensions (the generator's job via height budget)
 - Name specific POM attributes (say "dark background", not "backgroundColor=$textMain")
 - Contradict the weight assignment
 - Describe content not present in key_messages
-
-### Visual capabilities the generator can use:
-backgroundGradient (linear/radial), shadow, glow, opacity, borderRadius, per-side border accents, flexWrap for card grids, highlight on text, Shape nodes (roundRect, ellipse, chevron, etc.), Icon (Lucide set). The generator decides which to apply — your hint signals intent only.
 
 ## layout_hint
 

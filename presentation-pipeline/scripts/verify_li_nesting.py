@@ -1,8 +1,8 @@
-"""Verify that LI_INVALID_CHILD audit catches silently-stripped block elements.
+"""Verify that the content model (INVALID_CHILD) catches silently-stripped block elements.
 
 Compiles two XMLs — bad (Icon inside Li) and good (Icon+Text in HStack rows) —
 then inspects the PPTX internals to prove the Icon is stripped in the bad case
-and present in the good case. Also confirms the audit catches the bad one.
+and present in the good case. Also confirms find_violations catches the bad one.
 
     python -m scripts.verify_li_nesting
 """
@@ -19,7 +19,7 @@ from pathlib import Path
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PIPELINE_ROOT))
 
-from src.compiler.layout_audit import audit_layout  # noqa: E402
+from src.compiler.content_model import find_violations  # noqa: E402
 
 _NODE_BIN = "node"
 _COMPILE_SCRIPT = _PIPELINE_ROOT / "src" / "node" / "compile-pom.js"
@@ -138,35 +138,34 @@ def main() -> int:
             print(f"  INFO — bad={bad_icons}, good={good_icons}")
             passed += 1
 
-        # --- Check 3: Audit catches bad, passes good ---
+        # --- Check 3: content model catches bad, passes good ---
         print()
         print("=" * 60)
-        print("CHECK 3: layout_audit LI_INVALID_CHILD detection")
+        print("CHECK 3: content_model INVALID_CHILD detection")
         print("-" * 60)
-        bad_audit = audit_layout(BAD_XML)
-        good_audit = audit_layout(GOOD_XML)
-        bad_li = [i for i in bad_audit if i["code"] == "LI_INVALID_CHILD"]
-        good_li = [i for i in good_audit if i["code"] == "LI_INVALID_CHILD"]
-        print(f"  bad  audit LI_INVALID_CHILD issues: {len(bad_li)}")
+        bad_li = [i for i in find_violations(BAD_XML) if i["code"] == "INVALID_CHILD"]
+        good_li = [i for i in find_violations(GOOD_XML) if i["code"] == "INVALID_CHILD"]
+        print(f"  bad  INVALID_CHILD issues: {len(bad_li)}")
         for i in bad_li:
-            print(f"    [{i['severity']}] {i['message']}")
-        print(f"  good audit LI_INVALID_CHILD issues: {len(good_li)}")
-        if len(bad_li) == 3 and len(good_li) == 0:
-            print("  PASS — audit catches all 3 bad Icons, clean on good pattern")
+            print(f"    {i['message']}")
+        print(f"  good INVALID_CHILD issues: {len(good_li)}")
+        # One issue per distinct parent/child pair: 3 Icons in Li -> 1 (Li, Icon) issue.
+        if [(i["parent"], i["child"]) for i in bad_li] == [("Li", "Icon")] and not good_li:
+            print("  PASS — Icon-in-Li caught, clean on good pattern")
             passed += 1
         else:
-            print(f"  FAIL — expected bad=3 good=0, got bad={len(bad_li)} good={len(good_li)}")
+            print(f"  FAIL — expected [(Li, Icon)] / [], got {[(i['parent'], i['child']) for i in bad_li]} / {len(good_li)}")
             failed += 1
 
-        # --- Check 4: Bad audit issues are all high severity ---
+        # --- Check 4: Bad issues are blocking (validator stops before parseXml) ---
         print()
         print("=" * 60)
-        print("CHECK 4: Severity is high (feeds critic repair loop)")
+        print("CHECK 4: Issues are blocking (feed the repair loop, never reach compile)")
         print("-" * 60)
-        all_high = all(i["severity"] == "high" for i in bad_li)
-        print(f"  all high severity: {all_high}")
-        if all_high and bad_li:
-            print("  PASS — high severity ensures critic flags for repair")
+        all_blocking = all(i["auto_fixed"] is False for i in bad_li)
+        print(f"  all blocking: {all_blocking}")
+        if all_blocking and bad_li:
+            print("  PASS — validator blocks before parseXml and routes to repair")
             passed += 1
         else:
             print("  FAIL")
