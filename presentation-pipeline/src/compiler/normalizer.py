@@ -86,7 +86,7 @@ _OBJECT_ATTR_BASES: set[str] = {
     "rotate", "rotation",
 }
 _UNIVERSAL_ATTRS: set[str] = {
-    "w", "h", "grow", "padding", "margin", "gap",
+    "w", "h", "grow", "minW", "maxW", "minH", "maxH", "padding", "margin", "gap",
     "alignItems", "justifyContent", "alignSelf", "flexWrap",
 }
 _OPEN_TAG_RE = re.compile(r"<([A-Za-z][A-Za-z0-9]*)\b([^>]*?)/?>")

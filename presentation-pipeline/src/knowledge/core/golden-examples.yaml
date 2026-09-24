@@ -15,7 +15,7 @@ data: |
        Study the font-size hierarchy, tile card styling, and dark panel pattern.
        All content is placeholder — copy the STRUCTURE, not the data. -->
   <Slide><VStack w="1280" h="720" padding="36" gap="12" backgroundColor="$surface">
-    <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <HStack justifyContent="spaceBetween" alignItems="start">
       <VStack gap="4">
         <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PLATFORM DEEP-DIVE · 01</Text>
         <Text fontSize="26" color="$textMain" bold="true">Headline insight — one clause that names the tension</Text>
@@ -23,7 +23,7 @@ data: |
       </VStack>
       <Shape shapeType="roundRect" w="90" h="26" fill.color="$surfaceAlt" color="$accent" fontSize="14" bold="true" borderRadius="999">PLATFORM A</Shape>
     </HStack>
-    <HStack w="max" h="78" gap="10" alignItems="stretch">
+    <HStack gap="10" alignItems="stretch">
       <VStack w="max" padding="12" gap="2" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
         <Text fontSize="14" color="$textMuted">METRIC LABEL A</Text>
         <Text fontSize="20" color="$textMain" bold="true">₹X.XX Cr</Text>
@@ -50,12 +50,12 @@ data: |
         <Text fontSize="14" color="$textMuted">Context note (XX.X%)</Text>
       </VStack>
     </HStack>
-    <HStack w="max" h="340" gap="12" alignItems="stretch">
+    <HStack grow="1" gap="12" alignItems="stretch">
       <VStack w="50%" gap="10">
-        <VStack w="max" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <VStack padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Breakdown table — [dimension] × [metrics]</Text>
           <Table defaultRowHeight="32" cellBorder.color="$border" cellBorder.width="1">
-            <Col width="110" /><Col width="90" /><Col width="90" /><Col width="70" /><Col width="70" />
+            <Col width="110" /><Col /><Col /><Col /><Col />
             <Tr>
               <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14">DIMENSION</Td>
               <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">METRIC 1</Td>
@@ -93,10 +93,10 @@ data: |
             </Tr>
           </Table>
         </VStack>
-        <VStack w="max" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <VStack padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Sub-split table — [type A] vs [type B]</Text>
           <Table defaultRowHeight="30" cellBorder.color="$border" cellBorder.width="1">
-            <Col width="130" /><Col width="80" /><Col width="85" /><Col width="65" /><Col width="60" /><Col width="60" />
+            <Col width="130" /><Col /><Col /><Col /><Col /><Col />
             <Tr>
               <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14">TYPE</Td>
               <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">SPEND</Td>
@@ -125,9 +125,9 @@ data: |
         </VStack>
       </VStack>
       <VStack w="50%" gap="10">
-        <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <VStack grow="1" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Top items by [metric] — [period]</Text>
-          <Chart w="max" h="140" chartType="bar" showLegend="false">
+          <Chart h="max" minH="180" chartType="bar" showLegend="false">
             <ChartSeries name="[Metric]">
               <ChartDataPoint label="SKU 1" value="12.4" />
               <ChartDataPoint label="SKU 2" value="9.8" />
@@ -137,7 +137,7 @@ data: |
             </ChartSeries>
           </Chart>
         </VStack>
-        <VStack w="max" padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
+        <VStack padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
           <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">KEY READ-OUTS</Text>
           <Ul fontSize="14" color="D0DDD8" lineHeight="1.4">
             <Li>Insight 1 — lead with the number, name the mechanism that drove it</Li>
@@ -156,7 +156,7 @@ narrative: |
        a matrix for evidence, value-case metrics, and 4 action cards with
        color-coded top borders. Shows how to mix editorial + data. -->
   <Slide><VStack w="1280" h="720" padding="38" gap="18" backgroundColor="$surface">
-    <HStack w="max" justifyContent="spaceBetween" alignItems="end">
+    <HStack justifyContent="spaceBetween" alignItems="end">
       <VStack gap="5">
         <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">FY2027 STRATEGY / ONE-PAGE CHOICE</Text>
         <Text fontSize="31" color="$textMain" bold="true">Win deep, not wide</Text>
@@ -164,7 +164,7 @@ narrative: |
       </VStack>
       <Text fontSize="14" color="$textMuted">Strategy Office | July 2026</Text>
     </HStack>
-    <HStack w="max" h="356" gap="16" alignItems="stretch">
+    <HStack grow="1" gap="16" alignItems="stretch">
       <VStack w="33%" padding="22" gap="14" backgroundColor="$textMain" borderRadius="16" justifyContent="center">
         <Text fontSize="14" color="F1C7D2" bold="true" letterSpacing="1">THE CHOICE</Text>
         <Text fontSize="22" color="$surfaceAlt" bold="true" lineHeight="1.35">Own mid-size manufacturing</Text>
@@ -177,7 +177,7 @@ narrative: |
       </VStack>
       <VStack w="67%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1">
         <HStack justifyContent="spaceBetween"><Text fontSize="14" color="$textMain" bold="true">Strategic option assessment</Text><Text fontSize="14" color="$textMuted">Impact x Right to win</Text></HStack>
-        <Matrix w="max" h="262" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
+        <Matrix h="max" minH="260" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
           <MatrixAxes x="Right to win" y="Economic impact" />
           <MatrixQuadrants topLeft="Partner" topRight="Invest" bottomLeft="Pass" bottomRight="Optimize" />
           <MatrixItem label="Mid-size mfg" x="0.8" y="0.85" color="$accent" />
@@ -188,7 +188,7 @@ narrative: |
         <Text fontSize="14" color="$accent" bold="true">Mid-size manufacturing is the only cell high on both axes</Text>
       </VStack>
     </HStack>
-    <HStack w="max" h="96" gap="12" alignItems="stretch">
+    <HStack gap="12" alignItems="stretch">
       <VStack w="max" padding="14" gap="4" backgroundColor="$surfaceAlt" borderTop.color="$accent" borderTop.width="4" justifyContent="center"><Text fontSize="14" color="$accent" bold="true">01 / PRODUCT</Text><Text fontSize="14" color="$textMain" bold="true">Shop-floor data at the core</Text><Text fontSize="14" color="$textMuted">Equipment, quality and cost in one view</Text></VStack>
       <VStack w="max" padding="14" gap="4" backgroundColor="$surfaceAlt" borderTop.color="$accentAlt" borderTop.width="4" justifyContent="center"><Text fontSize="14" color="936E27" bold="true">02 / GO-TO-MARKET</Text><Text fontSize="14" color="$textMain" bold="true">Template the industry play</Text><Text fontSize="14" color="$textMuted">Three verticals, packaged rollouts</Text></VStack>
       <VStack w="max" padding="14" gap="4" backgroundColor="$surfaceAlt" borderTop.color="$positive" borderTop.width="4" justifyContent="center"><Text fontSize="14" color="5E775D" bold="true">03 / DELIVERY</Text><Text fontSize="14" color="$textMain" bold="true">Make adoption the product</Text><Text fontSize="14" color="$textMuted">90-day guided program to expand usage</Text></VStack>
@@ -201,7 +201,7 @@ cover: |
        message, KPI card row, quarterly bar chart, and 3 accent callouts
        (growth / watch / outlook). Shows editorial density at its best. -->
   <Slide><VStack w="1280" h="720" padding="40" gap="20" backgroundColor="$surface">
-    <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+    <HStack justifyContent="spaceBetween" alignItems="start">
       <VStack gap="5">
         <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">FY2026 / Q3 EARNINGS</Text>
         <Text fontSize="30" color="$textMain" bold="true">Record profit while sustaining growth investment</Text>
@@ -213,7 +213,7 @@ cover: |
         <Shape shapeType="roundRect" w="128" h="24" fill.color="$accentAlt" color="$textMain" fontSize="14" bold="true" borderRadius="999">+2.8pt vs plan</Shape>
       </VStack>
     </HStack>
-    <HStack w="max" h="360" gap="18" alignItems="stretch">
+    <HStack grow="1" gap="18" alignItems="stretch">
       <VStack w="31%" padding="22" gap="14" backgroundColor="$textMain" borderRadius="18" justifyContent="center">
         <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">KEY MESSAGE</Text>
         <Text fontSize="23" color="$surfaceAlt" bold="true" lineHeight="1.35">Profit grew faster than revenue.</Text>
@@ -224,21 +224,21 @@ cover: |
         </HStack>
       </VStack>
       <VStack w="69%" gap="14">
-        <HStack w="max" h="118" gap="12" alignItems="stretch">
+        <HStack gap="12" alignItems="stretch">
           <VStack w="max" padding="15" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="14" color="$textMuted">Revenue</Text><Text fontSize="26" color="$textMain" bold="true">$42.8B</Text><Text fontSize="14" color="$positive" bold="true">+12.4% YoY</Text></VStack>
           <VStack w="max" padding="15" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="14" color="$textMuted">Operating income</Text><Text fontSize="26" color="$textMain" bold="true">$7.96B</Text><Text fontSize="14" color="$positive" bold="true">+27.1% YoY</Text></VStack>
           <VStack w="max" padding="15" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="14" color="$textMuted">Free cash flow</Text><Text fontSize="26" color="$textMain" bold="true">$5.31B</Text><Text fontSize="14" color="$positive" bold="true">+18.8% YoY</Text></VStack>
         </HStack>
-        <VStack w="max" h="228" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+        <VStack grow="1" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <HStack justifyContent="spaceBetween" alignItems="center"><Text fontSize="14" color="$textMain" bold="true">Quarterly revenue and operating profit</Text><Text fontSize="14" color="$textMuted">$B</Text></HStack>
-          <Chart w="max" h="168" chartType="bar" showLegend="true" chartColors='["1F6B4F","B9E769"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["1F6B4F","B9E769"]'>
             <ChartSeries name="Revenue"><ChartDataPoint label="Q1" value="12.4" /><ChartDataPoint label="Q2" value="13.7" /><ChartDataPoint label="Q3" value="16.7" /></ChartSeries>
             <ChartSeries name="Operating profit"><ChartDataPoint label="Q1" value="2.1" /><ChartDataPoint label="Q2" value="2.5" /><ChartDataPoint label="Q3" value="3.36" /></ChartSeries>
           </Chart>
         </VStack>
       </VStack>
     </HStack>
-    <HStack w="max" h="92" gap="12" alignItems="stretch">
+    <HStack gap="12" alignItems="stretch">
       <VStack w="max" padding="13" gap="4" backgroundColor="E4F0E9" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center"><Text fontSize="14" color="$accent" bold="true">GROWTH</Text><Text fontSize="14" color="$textMain" bold="true">Enterprise ARR +31%</Text><Text fontSize="14" color="$textMuted">Top-20 account expansions led the quarter</Text></VStack>
       <VStack w="max" padding="13" gap="4" backgroundColor="FFF1EC" borderLeft.color="$negative" borderLeft.width="5" justifyContent="center"><Text fontSize="14" color="$negative" bold="true">WATCH</Text><Text fontSize="14" color="$textMain" bold="true">APAC acquisition cost +8%</Text><Text fontSize="14" color="$textMuted">One-time channel stand-up spend</Text></VStack>
       <VStack w="max" padding="13" gap="4" backgroundColor="EEF2D8" borderLeft.color="$accentAlt" borderLeft.width="5" justifyContent="center"><Text fontSize="14" color="$accent" bold="true">OUTLOOK</Text><Text fontSize="14" color="$textMain" bold="true">Full-year guidance raised</Text><Text fontSize="14" color="$textMuted">Operating income $10.2B to $10.8B</Text></VStack>

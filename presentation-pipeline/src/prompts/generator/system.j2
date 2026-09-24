@@ -18,8 +18,8 @@ Do not invent tags or attributes - use ONLY what is listed in ALLOWED NODES belo
 - Bullet lists: use <Ul> with <Li> children - POM's native list nodes.
   Do NOT use separate <Text> elements with manual bullet characters.
 - Root <VStack> or <HStack> MUST use alignItems="stretch" (NEVER "center" or "end").
-- An <HStack> whose children use grow="N" or w="max" MUST itself have w="max"
-  so there is width for the grow math to divide.
+- NEVER w="max" on a child of a <VStack>: it grows the HEIGHT, not the width
+  (width already stretches). w="max" / w="NN%" are width shares inside an <HStack>.
 
 Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName -
   they resolve against the <Theme> the pipeline injects automatically.
@@ -57,18 +57,16 @@ NODE CATEGORIES:
                <Span fontSize="20">M</Span>
              </Text>  (newlines = extra rendered line breaks)
     Same rule applies inside <Li> and <Td>.
-  DATA nodes (RIGID): <Chart>, <Table>, <Matrix>, <Timeline>, <ProcessArrow>,
-    <Flow>, <Pyramid>, <Tree> - complex visualizations.
-    These do NOT auto-size height. Every one MUST have w="max" + explicit pixel h.
+  DATA nodes: <Chart>, <Table>, <Matrix>, <Timeline>, <ProcessArrow>,
+    <Flow>, <Pyramid>, <Tree> - complex visualizations. Size each one by DATA
+    NODE SIZING: h="max" minH to fill its card; a Table sizes to its rows.
   TEXT bands (AUTO-SIZE): A band containing ONLY Text, Ul/Li, Span, Shape
-    — no rigid node inside. Do NOT set h; they auto-size to content.
+    — no data node inside. Do NOT set h; they auto-size to content.
   LIST nodes: <Ul>/<Li> (bullets), <Ol>/<Li> (numbered) - POM's native lists.
 
-SIZING:
-  w="max" / h="max" = flexGrow:1, fill remaining space along parent's main axis.
-  w="62%" = explicit percentage of parent. Siblings should sum to ~100%.
-  grow="2" = ratio split with siblings (grow="2" + grow="1" = 2:1).
-  Fixed px (w="320") = only for elements that must not flex (icon, sidebar rail).
+SIZING: POM's flexbox allocates - never add up pixel heights. VStack child: full
+  width by stretch, grow="N" = share of the spare height, else content height.
+  HStack child: w="max" / w="62%" / grow="2" = width share. h="max" minH fills a card.
 
 {% if core_hook %}
 ## NARRATIVE ANCHOR
@@ -87,7 +85,7 @@ Content slide - narrative focus with title + body text or bullets.
 Readable fonts. Tell the story, don't overwhelm with data.
 {% elif slide_type == "data" %}
 Data slide - charts, tables, KPIs are the star. Title frames the data.
-Can be dense. Ensure charts have explicit dimensions and axis labels are readable.
+Can be dense. Charts fill their card (h="max" minH) and axis labels stay readable.
 {% elif slide_type == "section_break" %}
 Section break - minimal divider page. One short phrase, large centered text.
 Use accent color prominently. Very sparse - almost empty slide.
@@ -170,8 +168,9 @@ Color tokens:
 
 ## LAYOUT GRAMMAR
 A GRAMMAR, not a template - no fixed shape to copy. Order of work: read the
-LAYOUT INTENT -> choose 2-4 bands and each band's division -> run the HEIGHT
-BUDGET so band heights sum to ~720 -> size the rigid nodes -> fill with content.
+LAYOUT INTENT -> choose 2-4 bands and each band's division -> give grow to the
+band(s) that should fill (SIZING BY WEIGHT) -> size the data nodes (DATA NODE
+SIZING) -> fill with content.
 {{ house_style }}
 {% endif %}
 {% if component_recipes %}
@@ -184,15 +183,15 @@ BUDGET so band heights sum to ~720 -> size the rigid nodes -> fill with content.
 ## BLUEPRINT (follow this structure — do NOT rearrange)
 A tested layout skeleton is provided below. You MUST follow this band structure:
 do NOT add, remove, or reorder bands. Do NOT change root type, split ratios, or
-flex properties. Your job is to fill content into each band's slots and compute
-rigid band heights using the formula provided.
+flex properties. Your job is to fill content into each band's slots; bands marked
+[grow=N] share the spare height, the others size to their content.
 
 {{ blueprint_structure }}
 
 ### Reference implementation
 This XML shows the exact nesting, flex properties, and spacing for this blueprint.
 Adapt CONTENT (titles, data, labels, colors) but keep the SAME band structure,
-nesting depth, and flex properties (w, h, gap, padding, borderRadius, alignItems).
+nesting depth, and flex properties (w, grow, minH, gap, padding, borderRadius, alignItems).
 ```xml
 {{ blueprint_reference_xml }}
 ```
@@ -213,7 +212,7 @@ rhythm) to the slide you are building.
 - root padding="24-30"
 - KPI / stat values 24-30 (not 40+)
 - CUT CONTENT to fit — fewer bullets, shorter text — never shrink font below 14
-- More bands, tighter band heights - but they must still sum to ~720
+- More bands, each sized to its content - fewer growing bands
 {% endif %}
 
 ## LAYOUT ARCHETYPE (mandatory)

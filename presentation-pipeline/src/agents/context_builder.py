@@ -95,7 +95,7 @@ _BASE_NODES = ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Icon"]
 _INLINE_NODES = ["B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"]
 
 _COMMON_BOX_ATTRS = [
-    "w", "h", "grow", "padding", "margin", "backgroundColor",
+    "w", "h", "grow", "minH", "padding", "margin", "backgroundColor",
     "backgroundGradient", "borderRadius", "border.color", "border.width",
     "alignSelf", "shadow",
 ]
@@ -245,7 +245,7 @@ def _select_attributes(allowed_nodes: list[str], nodes_yaml: dict) -> dict[str, 
             attrs = base
         elif node in _SIZE_ONLY_NODES:
             extra = _ICON_ATTRS if node == "Icon" else []
-            attrs = base + extra + ["w", "h", "grow", "padding", "margin"]
+            attrs = base + extra + ["w", "h", "grow", "minH", "padding", "margin"]
         else:
             attrs = base + _COMMON_BOX_ATTRS
         seen: set[str] = set()
@@ -374,7 +374,7 @@ def _render_golden_examples(slide_type: str) -> str:
 # ── House-style grammar ──────────────────────────────────────────────────────
 # The generator learns layout from the compositional grammar (core/house-style
 # .yaml) AND from golden XML examples (core/golden-examples.yaml). The grammar
-# describes the vocabulary + rules + the height-budget arithmetic; golden
+# describes the vocabulary + rules + sizing by weight (grow/minH); golden
 # examples show what a finished, polished slide looks like.
 
 _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
@@ -383,10 +383,8 @@ _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("alignment", "ALIGNMENT"),
     ("composition", "COMPOSITION"),
     ("header_band", "HEADER BAND"),
-    ("height_budget", "HEIGHT BUDGET (do this arithmetic before setting heights)"),
-    ("worked_example", "HEIGHT BUDGET — worked example"),
-    ("weight_allocation", "WEIGHT ALLOCATION"),
-    ("rigid_nodes", "RIGID NODES (Chart / Table / Matrix / ProcessArrow / Flow / Pyramid / Tree / Timeline)"),
+    ("sizing", "SIZING BY WEIGHT (POM allocates the height; no pixel budgets)"),
+    ("data_nodes", "DATA NODE SIZING (Chart / Table / Matrix / ProcessArrow / Flow / Pyramid / Tree / Timeline)"),
     ("recipes", "RECIPES (parameterised patterns, not slides)"),
     ("type_ramp", "TYPE RAMP (fontSize)"),
     ("spacing_scale", "SPACING SCALE"),
@@ -480,9 +478,10 @@ def _render_component_recipes(kinds: list[str]) -> str:
         return ""
     return (
         "Compiled recipes for THIS slide's components. Copy the structure and "
-        "the sizing (heights, fontSizes, justifyContent); change the content, "
+        "the sizing (grow/minH, fontSizes, justifyContent); change the content, "
         "the token colours and the item count. These are single regions, not "
-        "whole slides.\n\n" + "\n\n".join(picked)
+        "whole slides: set grow from the component's weight, and add w=\"max\"/% "
+        "only when the region sits in an HStack.\n\n" + "\n\n".join(picked)
     )
 
 
@@ -568,10 +567,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         for i, band in enumerate(bands, 1):
             role = band.get("role", "band")
             btype = band.get("type", "auto")
-            line = f"  {i}. {role} [{btype}]"
-            if btype == "rigid":
-                hf = band.get("height_formula", "")
-                line += f" h={hf} (min={band.get('min_h', '?')}, max={band.get('max_h', '?')})"
+            line = f"  {i}. {role} [grow={band.get('grow', 1)}]" if btype == "grow" else f"  {i}. {role} [{btype}]"
             if band.get("split"):
                 line += f" split={band['split']}"
             if band.get("optional"):

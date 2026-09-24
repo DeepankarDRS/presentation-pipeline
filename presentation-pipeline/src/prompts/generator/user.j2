@@ -13,7 +13,7 @@ SLIDE TYPE: {{ slide_type }}
 COMPONENTS (put every one on the slide — each carries its own data):
 {% for comp in components %}
 - {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif +%}
-{% if comp.weight and comp.weight != "peer" %}  height-weight: {{ comp.weight }} (see WEIGHT ALLOCATION in layout grammar)
+{% if comp.weight and comp.weight != "peer" %}  height-weight: {{ comp.weight }} (see SIZING BY WEIGHT in layout grammar)
 {% endif %}
 {% if comp.design_hint %}  visual-intent: {{ comp.design_hint }}
 {% endif %}
@@ -63,14 +63,13 @@ Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1". Every value should
 look like it came from a real business report.
 {% endif %}
 
-HEIGHT BUDGET — follow the HEIGHT BUDGET section in the layout grammar.
-RIGID bands (containing Chart/Table/Matrix/ProcessArrow/Flow/Pyramid/Tree/
-Timeline) get explicit pixel h from the budget. TEXT-ONLY bands (callout,
-narrative, bullet_list, kpi_row) get NO h — they auto-size to content.
-KEEP TEXT SHORT so auto-sized bands stay ≤ ~150px each:
+SIZING — follow SIZING BY WEIGHT and DATA NODE SIZING in the layout grammar.
+No pixel h on bands or cards: grow (from the height-weight) on the band(s) that
+should fill, h="max" minH on charts and diagrams, tables sized by their rows.
+Header, KPI rows and text-only bands (callout, narrative, bullet_list) size to content.
+KEEP TEXT SHORT so content-sized bands stay compact:
   Bullets: 1 line each (~50-60 chars). Callout body: 1 sentence (≤ 80 chars).
   Timeline description: 1-3 words ONLY — sentences collide in columns.
-Weight tags apply to rigid bands' share of available_h only.
 If the content is thin, add substance rather than leaving the slide half-empty.
 
 Output the POM XML for this slide - a single <Slide> element, no <Theme>, no

@@ -46,11 +46,40 @@ def test_chart_with_dimensions_ok():
     assert "MISSING_DIMS" not in codes
 
 
-def test_table_missing_dimensions():
+def test_table_needs_no_dimensions():
+    # A Table with no h/w sizes to its rows at full width (sizing plan F4).
     xml = '<Slide><VStack w="1280" h="720"><Table><Tr><Td>A</Td></Tr></Table></VStack></Slide>'
     issues = audit_layout(xml)
     codes = [i["code"] for i in issues]
-    assert "MISSING_DIMS" in codes
+    assert "MISSING_DIMS" not in codes
+
+
+def test_fill_node_h_max_needs_min_h():
+    xml = '<Slide><VStack w="1280" h="720"><Chart h="max" chartType="bar" /><Flow grow="1" /></VStack></Slide>'
+    messages = [i["message"] for i in audit_layout(xml) if i["code"] == "MISSING_DIMS"]
+    assert len(messages) == 2 and all("minH" in m for m in messages)
+
+
+def test_fill_node_h_max_with_min_h_ok():
+    xml = ('<Slide><VStack w="1280" h="720"><Chart h="max" minH="180" chartType="bar" />'
+           '<Matrix h="max" minH="260" /><ProcessArrow h="120" /></VStack></Slide>')
+    assert "MISSING_DIMS" not in [i["code"] for i in audit_layout(xml)]
+
+
+def test_timeline_and_pyramid_need_pixel_h():
+    xml = '<Slide><VStack w="1280" h="720"><Timeline h="max" minH="150" /><Pyramid h="176" /></VStack></Slide>'
+    messages = [i["message"] for i in audit_layout(xml) if i["code"] == "MISSING_DIMS"]
+    assert len(messages) == 1 and messages[0].startswith("<Timeline>")
+
+
+def test_vstack_child_w_max_flagged():
+    # In a VStack, w="max" grows the height (F1); in an HStack it is the width share.
+    xml = ('<Slide><VStack w="1280" h="720"><HStack w="max" h="150"><VStack w="max"><Text fontSize="14">a</Text>'
+           '</VStack><VStack w="max"><Text fontSize="14">b</Text></VStack></HStack></VStack></Slide>')
+    issues = [i for i in audit_layout(xml) if i["code"] == "VSTACK_W_MAX"]
+    assert len(issues) == 1
+    assert issues[0]["severity"] == "low"
+    assert issues[0]["message"].startswith("1 child")
 
 
 def test_root_size_missing():

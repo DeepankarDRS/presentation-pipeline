@@ -8,10 +8,10 @@
 #   padding, gap: root-level spacing
 #   bands: ordered list of layout bands
 #     role: semantic name (header, kpi_row, chart, table, cards, callout, etc.)
-#     type: auto (no h, yoga auto-sizes) | rigid (needs explicit h) | fill (grow=1)
-#     height_formula: arithmetic for rigid bands (all values in px)
-#     min_h / max_h: bounds for the rigid band
-#     flex: special flex instructions (wrap thresholds, w="max" etc.)
+#     type: auto (no h, sizes to content) | grow (shares the spare height;
+#           weight in grow: N, hero 3 / peer 2 / supporting 1) | fill (an HStack
+#           child: its split width, stretched to the band height)
+#     flex: special flex instructions (wrap thresholds, children_w etc.)
 #     split: for HStack bands — child width ratios
 #     optional: true if band can be omitted
 #     children: nested band descriptions for complex layouts
@@ -47,7 +47,7 @@ cover:
         flex: { w: "44%", padding: 48, justifyContent: center, alignItems: center, backgroundColor: "$accent" }
   reference_xml: |
     <Slide><HStack w="1280" h="720">
-      <VStack w="56%" h="max" padding="56" gap="16" backgroundColor="$surfaceAlt" justifyContent="center">
+      <VStack w="56%" padding="56" gap="16" backgroundColor="$surfaceAlt" justifyContent="center">
         <HStack gap="10" alignItems="center">
           <Shape shapeType="ellipse" w="10" h="10" fill.color="$accent" line.color="$accent" />
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">BRAND NAME</Text>
@@ -63,7 +63,7 @@ cover:
         </VStack>
         <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1" margin.top="24">PREPARED FOR · AUDIENCE | PERIOD · DATE RANGE</Text>
       </VStack>
-      <VStack w="44%" h="max" backgroundColor="$accent" padding="48" justifyContent="center" alignItems="center" gap="20">
+      <VStack w="44%" backgroundColor="$accent" padding="48" justifyContent="center" alignItems="center" gap="20">
         <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="2">SUBTITLE</Text>
         <Shape shapeType="ellipse" w="280" h="280" fill.color="1A7D5C" line.color="1A7D5C" />
         <Icon name="bar-chart-2" size="48" color="$accentAlt" />
@@ -108,15 +108,11 @@ kpi_snapshot:
       - role: header
         type: auto
       - role: kpi_row
-        type: rigid
-        height_formula: "100"
-        min_h: 78
-        max_h: 110
+        type: auto
         flex: { children_w: max, gap: 12 }
       - role: main_content
-        type: rigid
-        height_formula: "720 - 72 - 90 - 100 - 40 - 42"
-        min_h: 260
+        type: grow
+        grow: 1
         split: ["60%", "40%"]
         children:
           - role: chart_card
@@ -128,7 +124,7 @@ kpi_snapshot:
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW LABEL</Text>
           <Text fontSize="27" color="$textMain" bold="true">Headline with key metrics inline</Text>
@@ -136,28 +132,28 @@ kpi_snapshot:
         </VStack>
         <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
-      <HStack w="max" h="100" gap="12" alignItems="stretch">
+      <HStack gap="12" alignItems="stretch">
         <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
           <Text fontSize="14" color="$textMuted">METRIC LABEL</Text>
           <Text fontSize="26" color="$textMain" bold="true">$VALUE</Text>
           <Text fontSize="14" color="$textMuted">Context note</Text>
         </VStack>
       </HStack>
-      <HStack w="max" h="282" gap="14" alignItems="stretch">
+      <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="60%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMuted">Chart title</Text>
-          <Chart w="max" h="220" chartType="bar" showLegend="true" chartColors='["0D6B4E","3B82F6","F59E0B"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["0D6B4E","3B82F6","F59E0B"]'>
             <ChartSeries name="Series"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
         <VStack w="40%" gap="10">
-          <VStack w="max" padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
+          <VStack padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
             <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">CARD TITLE</Text>
             <Text fontSize="14" color="D0DDD8">Card content</Text>
           </VStack>
         </VStack>
       </HStack>
-      <VStack w="max" padding="10" backgroundColor="E0F2EC" borderRadius="8">
+      <VStack padding="10" backgroundColor="E0F2EC" borderRadius="8">
         <Text fontSize="14" color="$textMain" lineHeight="1.4"><B>Read:</B> Summary callout text.</Text>
       </VStack>
     </VStack></Slide>
@@ -178,7 +174,8 @@ chart_hero__sidebar_cards:
       - role: header
         type: auto
       - role: main_content
-        type: fill
+        type: grow
+        grow: 1
         split: ["62%", "38%"]
         children:
           - role: chart_card
@@ -191,7 +188,7 @@ chart_hero__sidebar_cards:
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="28" color="$textMain" bold="true">Headline</Text>
@@ -199,15 +196,15 @@ chart_hero__sidebar_cards:
         </VStack>
         <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
-      <HStack w="max" h="370" gap="14" alignItems="stretch">
+      <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="62%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart w="max" h="300" chartType="line" showLegend="true" chartColors='["0D6B4E","3B82F6","F59E0B"]'>
+          <Chart h="max" minH="180" chartType="line" showLegend="true" chartColors='["0D6B4E","3B82F6","F59E0B"]'>
             <ChartSeries name="Series"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
         <VStack w="38%" gap="10">
-          <VStack w="max" padding="16" gap="8" backgroundColor="E0F2EC" borderRadius="12" borderLeft.color="3B82F6" borderLeft.width="5">
+          <VStack padding="16" gap="8" backgroundColor="E0F2EC" borderRadius="12" borderLeft.color="3B82F6" borderLeft.width="5">
             <Text fontSize="14" color="3B82F6" bold="true" letterSpacing="1">INSIGHT LABEL</Text>
             <Text fontSize="28" color="$textMain" bold="true">+50.5%</Text>
             <Text fontSize="14" color="$textMuted" lineHeight="1.4">Explanation text with context.</Text>
@@ -232,15 +229,10 @@ kpi_top__table_full:
       - role: header
         type: auto
       - role: kpi_row
-        type: rigid
-        height_formula: "95"
-        min_h: 78
-        max_h: 110
+        type: auto
         flex: { children_w: max, gap: 12 }
       - role: table_card
-        type: rigid
-        height_formula: "720 - 72 - 90 - 95 - 40 - 28 - 70"
-        min_h: 220
+        type: auto
       - role: callout
         type: auto
         optional: true
@@ -249,7 +241,7 @@ kpi_top__table_full:
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">SUMMARY · H1</Text>
           <Text fontSize="28" color="$textMain" bold="true">Headline reads here</Text>
@@ -257,7 +249,7 @@ kpi_top__table_full:
         </VStack>
         <Shape shapeType="roundRect" w="135" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
-      <HStack w="max" h="95" gap="12" alignItems="stretch">
+      <HStack gap="12" alignItems="stretch">
         <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
           <Text fontSize="14" color="$textMuted">TOTAL SALES</Text>
           <Text fontSize="24" color="$textMain" bold="true">₹4.2 Cr</Text>
@@ -274,10 +266,10 @@ kpi_top__table_full:
           <Text fontSize="14" color="$textMuted">Utilised 96%</Text>
         </VStack>
       </HStack>
-      <VStack w="max" h="310" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <VStack padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
         <Text fontSize="14" color="$textMain" bold="true">Platform performance</Text>
         <Table defaultRowHeight="38" cellBorder.color="$border" cellBorder.width="1">
-          <Col width="140" /><Col width="100" /><Col width="100" /><Col width="80" /><Col width="80" />
+          <Col width="140" /><Col /><Col /><Col /><Col />
           <Tr>
             <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14">PLATFORM</Td>
             <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">SALES</Td>
@@ -308,7 +300,7 @@ kpi_top__table_full:
           </Tr>
         </Table>
       </VStack>
-      <VStack w="max" padding="10" backgroundColor="E0F2EC" borderRadius="8">
+      <VStack padding="10" backgroundColor="E0F2EC" borderRadius="8">
         <Text fontSize="14" color="$textMain" lineHeight="1.4"><B>Read:</B> Platform A leads on absolute sales; ACOS is healthy blended at 17%.</Text>
       </VStack>
     </VStack></Slide>
@@ -328,15 +320,11 @@ dense_deepdive:
       - role: header
         type: auto
       - role: kpi_row
-        type: rigid
-        height_formula: "78"
-        min_h: 70
-        max_h: 90
+        type: auto
         flex: { children_w: max, gap: 10 }
       - role: main_content
-        type: rigid
-        height_formula: "720 - 72 - 80 - 78 - 28 - 48"
-        min_h: 300
+        type: grow
+        grow: 1
         split: ["50%", "50%"]
         children:
           - role: tables_stack
@@ -350,7 +338,7 @@ dense_deepdive:
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="12" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PLATFORM · 01</Text>
           <Text fontSize="26" color="$textMain" bold="true">Headline reads here</Text>
@@ -358,7 +346,7 @@ dense_deepdive:
         </VStack>
         <Shape shapeType="roundRect" w="90" h="26" fill.color="E0F2EC" color="$accent" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
-      <HStack w="max" h="78" gap="10" alignItems="stretch">
+      <HStack gap="10" alignItems="stretch">
         <VStack w="max" padding="12" gap="2" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
           <Text fontSize="14" color="$textMuted">TOTAL SALES</Text>
           <Text fontSize="20" color="$textMain" bold="true">₹1.32 Cr</Text>
@@ -375,12 +363,12 @@ dense_deepdive:
           <Text fontSize="14" color="$textMuted">CPM ₹366</Text>
         </VStack>
       </HStack>
-      <HStack w="max" h="340" gap="12" alignItems="stretch">
+      <HStack grow="1" gap="12" alignItems="stretch">
         <VStack w="50%" gap="10">
-          <VStack w="max" padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+          <VStack padding="14" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
             <Text fontSize="14" color="$textMain" bold="true">Category performance</Text>
             <Table defaultRowHeight="32" cellBorder.color="$border" cellBorder.width="1">
-              <Col width="110" /><Col width="90" /><Col width="70" /><Col width="70" />
+              <Col width="110" /><Col /><Col /><Col />
               <Tr>
                 <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14">CATEGORY</Td>
                 <Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">SALES</Td>
@@ -409,16 +397,16 @@ dense_deepdive:
           </VStack>
         </VStack>
         <VStack w="50%" gap="10">
-          <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+          <VStack grow="1" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
             <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-            <Chart w="max" h="140" chartType="bar" showLegend="false" chartColors='["0D6B4E"]'>
+            <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["0D6B4E"]'>
               <ChartSeries name="Sales">
                 <ChartDataPoint label="A" value="20" />
                 <ChartDataPoint label="B" value="10" />
               </ChartSeries>
             </Chart>
           </VStack>
-          <VStack w="max" padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
+          <VStack padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
             <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">KEY READ-OUTS</Text>
             <Ul fontSize="14" color="D0DDD8" lineHeight="1.4">
               <Li>Category A leads on ROAS (6.9x) at healthy ACOS 14.5%</Li>
@@ -446,22 +434,20 @@ table_with_action_cards:
       - role: header
         type: auto
       - role: table_card
-        type: rigid
-        height_formula: "280"
-        min_h: 200
-        max_h: 320
+        type: auto
       - role: divider_text
         type: auto
         optional: true
       - role: action_cards
-        type: fill
+        type: grow
+        grow: 1
         flex: { children_w: max, gap: 12 }
       - role: source
         type: auto
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
@@ -469,14 +455,14 @@ table_with_action_cards:
         </VStack>
         <Shape shapeType="roundRect" w="130" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
-      <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <VStack padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
         <Table defaultRowHeight="42" cellBorder.color="$border" cellBorder.width="1">
           <Col /><Col /><Col />
           <Tr><Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14">COL</Td></Tr>
         </Table>
       </VStack>
-      <HStack w="max" justifyContent="spaceBetween"><Text fontSize="14" color="$textMain" bold="true">Insight heading</Text></HStack>
-      <HStack w="max" h="170" gap="12" alignItems="stretch">
+      <HStack justifyContent="spaceBetween"><Text fontSize="14" color="$textMain" bold="true">Insight heading</Text></HStack>
+      <HStack grow="1" gap="12" alignItems="stretch">
         <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" borderTop.color="$accent" borderTop.width="4">
           <Text fontSize="14" color="$accent" bold="true">CARD LABEL</Text>
           <Text fontSize="22" color="$textMain" bold="true">Metric</Text>
@@ -502,14 +488,15 @@ pillar_cards:
       - role: header
         type: auto
       - role: cards_row
-        type: fill
+        type: grow
+        grow: 1
         flex: { children_w: max, gap: 14, alignItems: stretch }
       - role: source
         type: auto
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
@@ -517,7 +504,7 @@ pillar_cards:
         </VStack>
         <Shape shapeType="roundRect" w="110" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
-      <HStack w="max" h="480" gap="14" alignItems="stretch">
+      <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="33%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderTop.color="$accent" borderTop.width="4">
           <Text fontSize="14" color="$accent" bold="true">CARD LABEL</Text>
           <Text fontSize="15" color="$textMain" bold="true" lineHeight="1.3">Card heading</Text>
@@ -553,14 +540,14 @@ table_roadmap:
       - role: header
         type: auto
       - role: table_card
-        type: fill
+        type: auto
         flex: { padding: 16, gap: 8 }
       - role: source
         type: auto
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
@@ -568,7 +555,7 @@ table_roadmap:
         </VStack>
         <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
-      <VStack w="max" h="490" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <VStack padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
         <Table defaultRowHeight="50" cellBorder.color="$border" cellBorder.width="1">
           <Col /><Col /><Col />
           <Tr><Td bold="true" backgroundColor="$surface" color="$textMain" fontSize="14">COL</Td></Tr>
@@ -596,20 +583,20 @@ closing_cta:
           - role: header
             type: auto
           - role: numbered_items
-            type: fill
+            type: auto
             flex: { gap: 10 }
       - role: accent_panel
         type: fill
         flex: { w: "40%", padding: 40, gap: 24, backgroundColor: "$textMain", justifyContent: center }
   reference_xml: |
     <Slide><HStack w="1280" h="720">
-      <VStack w="60%" h="max" padding="36" gap="14" backgroundColor="$surface">
+      <VStack w="60%" padding="36" gap="14" backgroundColor="$surface">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">SECTION LABEL</Text>
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context</Text>
         </VStack>
-        <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="$accent" borderLeft.width="5">
+        <VStack padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderLeft.color="$accent" borderLeft.width="5">
           <HStack gap="12" alignItems="start">
             <Text fontSize="22" color="$accent" bold="true">01</Text>
             <VStack gap="4">
@@ -619,7 +606,7 @@ closing_cta:
           </HStack>
         </VStack>
       </VStack>
-      <VStack w="40%" h="max" padding="40" gap="24" backgroundColor="$textMain" justifyContent="center">
+      <VStack w="40%" padding="40" gap="24" backgroundColor="$textMain" justifyContent="center">
         <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="2">CLOSING NOTE</Text>
         <Text fontSize="28" color="$surfaceAlt" bold="true" lineHeight="1.3">Closing statement.</Text>
         <VStack gap="10">
@@ -647,53 +634,49 @@ dashboard_3band:
       - role: header
         type: auto
       - role: primary_row
-        type: rigid
-        height_formula: "300"
-        min_h: 260
-        max_h: 340
+        type: grow
+        grow: 3
         split: ["62%", "38%"]
       - role: secondary_row
-        type: rigid
-        height_formula: "200"
-        min_h: 170
-        max_h: 220
+        type: grow
+        grow: 2
         split: ["34%", "34%", "32%"]
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="32" gap="16" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="center">
+      <HStack justifyContent="spaceBetween" alignItems="center">
         <VStack gap="3">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
         </VStack>
         <HStack gap="8" alignItems="center"><Shape shapeType="ellipse" w="8" h="8" fill.color="$accentAlt" line.color="$accentAlt" /><Text fontSize="14" color="$textMuted">Timestamp</Text></HStack>
       </HStack>
-      <HStack w="max" h="300" gap="14" alignItems="stretch">
+      <HStack grow="3" gap="14" alignItems="stretch">
         <VStack w="62%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1">
           <HStack justifyContent="spaceBetween" alignItems="start">
             <VStack gap="2"><Text fontSize="14" color="$textMuted">METRIC</Text><Text fontSize="28" color="$textMain" bold="true">$VALUE</Text></VStack>
             <Shape shapeType="roundRect" w="108" h="26" fill.color="DFF5EC" color="$accent" fontSize="14" bold="true" borderRadius="999">DELTA</Shape>
           </HStack>
-          <Chart w="max" h="180" chartType="area" showLegend="true" chartColors='["184D43","72D6B5"]'>
+          <Chart h="max" minH="180" chartType="area" showLegend="true" chartColors='["184D43","72D6B5"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
         <VStack w="38%" padding="18" gap="10" backgroundColor="$textMain" borderRadius="16" justifyContent="center">
           <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">SECONDARY CHART</Text>
-          <Chart w="max" h="160" chartType="doughnut" showLegend="true" chartColors='["72D6B5","F2C14E","E66B5B","9FB0AC"]'>
+          <Chart h="max" minH="180" chartType="doughnut" showLegend="true" chartColors='["72D6B5","F2C14E","E66B5B","9FB0AC"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
       </HStack>
-      <HStack w="max" h="200" gap="14" alignItems="stretch">
+      <HStack grow="2" gap="14" alignItems="stretch">
         <VStack w="34%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart w="max" h="140" chartType="bar" showLegend="false" chartColors='["184D43"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["184D43"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
         <VStack w="34%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart w="max" h="140" chartType="radar" showLegend="false" chartColors='["72D6B5"]'>
+          <Chart h="max" minH="180" chartType="radar" showLegend="false" chartColors='["72D6B5"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
@@ -720,13 +703,11 @@ kpi_only:
       - role: header
         type: auto
       - role: kpi_row
-        type: rigid
-        height_formula: "140"
-        min_h: 100
-        max_h: 160
+        type: auto
         flex: { children_w: max, gap: 14 }
       - role: detail_cards
-        type: fill
+        type: grow
+        grow: 1
         flex: { children_w: max, gap: 14 }
         optional: true
       - role: callout
@@ -734,21 +715,21 @@ kpi_only:
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="28" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context</Text>
         </VStack>
       </HStack>
-      <HStack w="max" h="140" gap="14" alignItems="stretch">
+      <HStack gap="14" alignItems="stretch">
         <VStack w="max" padding="18" gap="4" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
           <Text fontSize="14" color="$textMuted">METRIC</Text>
           <Text fontSize="32" color="$textMain" bold="true">$VALUE</Text>
           <Text fontSize="14" color="$textMuted">Context</Text>
         </VStack>
       </HStack>
-      <HStack w="max" h="300" gap="14" alignItems="stretch">
+      <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="max" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Detail heading</Text>
           <Text fontSize="14" color="$textMuted" lineHeight="1.5">Detail content with supporting narrative.</Text>
@@ -771,7 +752,8 @@ chart_and_table:
       - role: header
         type: auto
       - role: main_content
-        type: fill
+        type: grow
+        grow: 1
         split: ["50%", "50%"]
         children:
           - role: chart_card
@@ -783,17 +765,17 @@ chart_and_table:
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="28" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context</Text>
         </VStack>
       </HStack>
-      <HStack w="max" h="440" gap="14" alignItems="stretch">
+      <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="50%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart w="max" h="360" chartType="bar" showLegend="true" chartColors='["0D6B4E","3B82F6"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["0D6B4E","3B82F6"]'>
             <ChartSeries name="Series"><ChartDataPoint label="Q1" value="10" /></ChartSeries>
           </Chart>
         </VStack>
@@ -824,7 +806,8 @@ chart_left__narrative_right:
       - role: header
         type: auto
       - role: main_content
-        type: fill
+        type: grow
+        grow: 1
         split: ["60%", "40%"]
         children:
           - role: chart_card
@@ -836,17 +819,17 @@ chart_left__narrative_right:
         optional: true
   reference_xml: |
     <Slide><VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
-      <HStack w="max" justifyContent="spaceBetween" alignItems="start">
+      <HStack justifyContent="spaceBetween" alignItems="start">
         <VStack gap="4">
           <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EYEBROW</Text>
           <Text fontSize="28" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context</Text>
         </VStack>
       </HStack>
-      <HStack w="max" h="440" gap="14" alignItems="stretch">
+      <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="60%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart w="max" h="350" chartType="bar" showLegend="true" chartColors='["0D6B4E","3B82F6"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["0D6B4E","3B82F6"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>

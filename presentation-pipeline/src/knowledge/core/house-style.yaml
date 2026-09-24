@@ -26,24 +26,19 @@ frame: >
   unless the layout intent calls for full-height vertical columns.
 
 # --- sizing vocabulary ---------------------------------------------------
-# How to size any box. Pick by INTENT, not habit.
+# How to size any box. POM's flexbox allocates; nothing is pixel arithmetic.
+# Verified on v10.3.0: docs/layout-sizing-plan.md facts F1-F6.
 vocabulary:
   'w="1280" h="720"': 'the root VStack or HStack only. Never on a child.'
-  'w="max"': >
-    flexGrow:1 - take an equal share of the parent's remaining main-axis space.
-    The DEFAULT for anything that should stretch: content bands, equal-weight
-    sibling cards, a Chart/Table/Matrix filling its column. N siblings split evenly.
-  'w="62%" (any %)': >
-    an explicit share of the parent, for an ASYMMETRIC split - bigger % = the
-    side with more content / the primary element. Typical 60/40, 65/35. Sum to 100.
-  'grow="2" / grow="1"': 'ratio split (2:1) instead of computing percentages.'
-  'w="320" (fixed px)': >
-    only for things that must not flex: icon, accent bar, divider, sidebar rail,
-    badge. Never fixed-px a column holding flowing text or a chart.
-  'h="188" (fixed px)': >
-    REQUIRED on rigid nodes (Chart/Table/Matrix/ProcessArrow/Flow/Pyramid/
-    Tree/Timeline) and bands containing one. NEVER on text-only bands —
-    they auto-size. Forcing h on text causes overflow.
+  'width in a VStack': >
+    stretch (the default) - omit w. NEVER w="max" on a VStack child: it grows
+    the HEIGHT and overrides h (a KPI row with h="150" renders 495px).
+  'width in an HStack': 'w="max" = equal share, w="62%" = explicit share (sum 100), grow="2" = ratio.'
+  'grow="N" in a VStack': 'share of the spare height (SIZING BY WEIGHT); no grow = content height.'
+  'h="max" minH="180"': 'a chart/diagram fills its card; minH = readability floor.'
+  'fixed px': >
+    only icon, accent bar, divider, badge, sidebar rail, Timeline/Pyramid h,
+    table row height. Never a pixel h on a band or card.
   'minW / maxW / minH / maxH': 'clamp a flexible box so it cannot collapse or run away.'
 
 alignment:
@@ -72,17 +67,18 @@ composition: >
   Level 2 = content regions (columns, card rows). Level 3+ = visual grouping
   (individual cards, stat clusters, titled sections). Deeper = more local.
 
-  DIVISION within any stack (applies at EVERY nesting level):
+  DIVISION within an HStack (widths, at EVERY nesting level):
     - N children each w="max"         = equal split
     - grow="2" / grow="1"             = ratio split (2:1, 3:1, etc.)
     - w="62%" / w="38%"               = explicit asymmetric split
     - w="260" fixed + w="max" flex    = rail + body
     - flexWrap="wrap" + fixed/% widths = grid that reflows
+  DIVISION within a VStack (heights): children stretch to full width (no w);
+  grow="N" shares the spare height; no grow = content height.
 
-  SIZING THROUGH NESTING: parent constrains children. At each level use the
-  same sizing vocabulary (max, %, grow, fixed px). Nested stacks inherit
+  SIZING THROUGH NESTING: parent constrains children. Nested stacks inherit
   width from their parent; children size within remaining space after padding.
-  Height rules still apply: rigid nodes need explicit h, text-only omit h.
+  Heights: see SIZING BY WEIGHT and DATA NODE SIZING.
 
   ALIGNMENT: each nested stack sets its own alignItems/justifyContent
   independently. Use alignSelf on one child to override the parent's rule.
@@ -94,66 +90,48 @@ composition: >
   nested card grid creates visual contrast.
 
 header_band: >
-  <HStack w="max" justifyContent="spaceBetween" alignItems="start">: left a
+  <HStack justifyContent="spaceBetween" alignItems="start"> (no h, no grow): left a
   <VStack gap="4-5"> of eyebrow + title + optional subtitle (see type ramp);
   right optional - a badge or one headline KPI.
 
-# --- height budget -----------------------------------------------------
-# THE #1 FAILURE: VStack/HStack children default to flexShrink=1. If your
-# band heights sum to MORE than the root's 720, nothing errors - POM silently
-# shrinks every band to fit, text overflows its squashed card, and bands
-# overlap (the chart slides up over the KPI deltas, the title sits on the
-# cards). It compiles clean. So the budget must come in UNDER 720, not over.
-height_budget: |
-  1. Classify: RIGID (Chart/Table/Matrix/ProcessArrow/Flow/Pyramid/Tree/
-     Timeline) → explicit pixel h. TEXT (no rigid child) → NO h, auto-sizes.
-  2. available_h = 720 - 2*padding - ~90 header - (N-1)*gap.
-     Text bands must stay ≤ ~150px each — cut text if longer. Subtract
-     text estimates; remainder = rigid budget.
-  3. Sanity: all heights + gaps + 2*padding ≈ 640-700. Over 720 → overlap.
-  4. Rigid in card: h = band_h - 2*padding - ~28 title.
-  TEXT LIMITS: bullets 1 line each (~55 chars max), callout 1 sentence (≤ 80 chars).
-  HARD RULE: if bullet text exceeds ~55 chars, REWRITE shorter — never shrink font.
-  If a callout exceeds 80 chars, REWRITE — never shrink font. Max 4 bullets per list.
-  Rigid heights: chart 260-360 | table 240-360 | timeline 200-300 |
-  matrix 260-340 | process arrow 150-200 | flow 200-300 |
-  pyramid 300-440 (sole/hero: 400-480) | tree 240-340.
-  Pyramid fontSize: 16 (3 levels), 15 (4), 14 (5), 14 (6-7). Always w="max".
-  ProcessArrow fontSize: min 14. FlowNode fontSize: min 14. Timeline: min 14.
-worked_example: |
-  P=36, G=16: header(auto ~90) + KPI(text,auto ~120) + chart(rigid) + callout(text,auto ~88).
-  Rigid budget: 720-72-90-120-88-48(gaps)=302. Chart card h="300", inside h=236.
-  KPI + callout: NO h — auto-size.
+# --- sizing by weight (verified v10.3.0, docs/layout-sizing-plan.md) -----
+# POM's flexbox shares the height. Never add up pixel heights: the generator's
+# arithmetic was the main source of half-empty and overflowing cards.
+sizing: |
+  - Header, KPI rows, callouts, bullet and table cards: NO h, NO grow (content height).
+  - grow from height-weight on the band/card that should fill: hero 3 | peer 2 |
+    supporting 1 | minor none. In a side-by-side HStack the weight is the width
+    share (% or grow); heights stretch to the tallest.
+  - At least one band grows. It must hold something that fills: a chart/diagram
+    with h="max", or a text panel (fonts are enlarged after generation) - never
+    a Table, Timeline or Pyramid alone.
+  - Content bands + minHs + gaps + 2*padding must fit 720 (past it, bands shrink
+    and overlap silently). Too much: CUT content, never fonts below 14. Too
+    little (nothing can grow): ADD a band, don't stretch a card.
+  height-weight and visual-intent are NOT POM attributes - never put them in XML.
+  TEXT LIMITS: bullets 1 line (~55 chars), max 4; callout 1 sentence (<= 80 chars).
+  REWRITE shorter - never shrink the font.
 
-weight_allocation: |
-  Components may carry a height-weight tag (hero/peer/supporting/minor).
-  Use it to divide available_h (after header, padding, gaps are subtracted):
-    hero:       50-60% of available_h. Max one per slide. THE thing to see.
-    peer:       equal share of what remains after hero/supporting/minor.
-    supporting: 25-35%. Secondary context beside a hero.
-    minor:      10-15%. Accent, caption, footnote.
-  When no hero exists, peers split evenly: available_h / N.
-  height-weight is NOT a POM attribute — never put it in XML tags.
-  visual-intent per component guides look-and-feel WITHIN the band (emphasis,
-  gradient, highlight) — not the band's height. It is also NOT a POM attribute.
-
-# --- rigid nodes (verified v10.3.0 render behaviour) -------------------
-rigid_nodes: >
-  All rigid DATA nodes (see height_budget list) do NOT size themselves.
-    - width : w="max" WORKS on most. Horizontal Timeline: use explicit pixel w.
-    - height: MUST be an explicit pixel h. No h -> renders wrong or tiny.
-    - Table : one <Col> per column. Omit width on most columns (auto-fill);
-      set width only on columns that need more or less room. Every <Td>
-      needs backgroundColor + color.
-  A rigid node lives inside a <VStack w="max"|"NN%">; the node is
-  w="max" h="<computed>" within it.
+data_nodes: |
+  Chart / Matrix / Flow / Tree / ProcessArrow: h="max" minH (Chart 180, Matrix 260,
+    Flow/Tree 200, ProcessArrow 90), no w; the card takes the weight's grow.
+    Diagram nodes are enlarged to fill after generation. A horizontal Flow or
+    ProcessArrow is one row: give it full width, not a tall narrow card.
+  Table: no h, no w (sizes to its rows); its card: no h, no grow. Set
+    defaultRowHeight = 16 + 24 x wrapped lines of the longest cell (40 / 64 / 88)
+    and header <Tr height="40"> - POM never grows rows; short rows spill text.
+    One <Col> per column, width only where needed. Every <Td> sets backgroundColor + color.
+  Timeline (horizontal): h="150", no w, no grow; max 5 items, 1-3 word labels.
+  Pyramid: h = 52 x levels + 20, no w, no grow; fontSize 16 (3 levels), 15 (4), 14 (5+).
+  Layer: pixel w and h. ProcessArrow / FlowNode / Timeline fontSize >= 14.
 
 # --- recipes (parameterised, not slides) ------------------------------
 recipes:
   surface_card: >
-    <VStack w="max" padding="14-22" gap="6-14" backgroundColor="$surfaceAlt"
+    <VStack padding="14-22" gap="6-14" backgroundColor="$surfaceAlt"
       borderRadius="12-16" border.color="$border" border.width="1">
-    The default container for a chart, a stat cluster, a table.
+    The default container for a chart, a stat cluster, a table. Add grow only
+    per SIZING BY WEIGHT; w="max"/% only when its parent is an HStack.
   accent_card: >
     a card with ONE accent edge: borderTop.color="$accent" borderTop.width="4"
     (top stripe) or borderLeft.color="$accent" borderLeft.width="5" (list item).
@@ -162,8 +140,8 @@ recipes:
     borderRadius paints both upper corners and looks like a bracket - use
     borderTop only on a SQUARE card.
   hero_panel: >
-    <VStack w="max"|"NN%" padding="18-24" gap="10-16" borderRadius="14-18"
-      justifyContent="center">
+    <VStack padding="18-24" gap="10-16" borderRadius="14-18"
+      justifyContent="center"> (+ w="NN%" when it sits in an HStack)
     A high-contrast panel for THE message / key choice. On a LIGHT theme:
     backgroundColor="$textMain" with heading color="$surfaceAlt". On a DARK
     theme $textMain is the light ink - use backgroundColor="$surfaceAlt" with a
@@ -221,14 +199,9 @@ render_gotchas:
      projected. NEVER emit fontSize below 14 on any element. If content does
      not fit, CUT the content (fewer bullets, shorter text, fewer KPI tiles).
      All recipes now use 14pt minimum. Copy those sizes exactly."
-  - "FLEX SHRINK (the big one): VStack/HStack children default to flexShrink=1.
-     If the band heights sum to more than 720 the compiler does NOT error - it
-     shrinks every band, text overflows its squashed card, and bands overlap
-     (chart over the KPI deltas, title over the cards). Budget must land <=700.
-     Text-only bands should OMIT h (auto-size); forcing h causes overflow."
-  - "A KPI tile with justifyContent=\"spaceBetween\" and h=300+ is the classic
+  - "A KPI tile with justifyContent=\"spaceBetween\" in a tall row is the classic
      bad KPI card: label glued to the top, number floating low, delta clipped
-     at the bottom. Use justifyContent=\"center\" and h=110-150."
+     at the bottom. Use justifyContent=\"center\" and NO h on the row."
   - "Text wrapping: POM measures text with its own font; the renderer may wrap
      one line more than POM expected, pushing siblings down. Keep headings on
      hero panels and cards SHORT and give panels/cards a little height slack.
@@ -237,8 +210,8 @@ render_gotchas:
      the dot. Do NOT set textColor=\"FFFFFF\" on a light card - the label
      vanishes. Leave textColor unset (inherits itemLabelColor)."
   - "ProcessArrowStep label: 1-2 short words only at h<=70; longer text clips."
-  - "Horizontal Timeline: max 5 items, 1-3 word labels. Sentences collide. Explicit pixel w."
-  - "A rigid node (Chart/Matrix/Table) placed in a column narrower than ~45% of
+  - "Horizontal Timeline: max 5 items, 1-3 word labels. Sentences collide."
+  - "A data node (Chart/Matrix/Table) placed in a column narrower than ~45% of
      the slide gets cramped - axis labels and legends collide. Give it room."
   - "roundRect <Shape> with text: keep the label short; it does not wrap
      gracefully inside the pill."
@@ -300,16 +273,14 @@ checklist:
      Ul, Shape, ProcessArrowStep, FlowNode, PyramidLevel, TreeItem, TimelineItem.
      If ANY is below 14, FIX IT before anything else. This is the #1 rule."
   - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
-  - "2-4 top-level bands, each w=\"max\"; nesting within bands matches content grouping."
-  - "Every RIGID band (Chart/Table/Matrix/etc. inside) has explicit h=. Text-only bands and header: NO h (auto-size)."
-  - "I ADDED UP header_h + every band h + every gap + 2*padding and the total
-     is between ~640 and ~700. If over 720 the slide WILL overlap."
-  - "KPI row: no h (auto-sizes). Tiles: justifyContent=\"center\". Labels 14pt, values 26-36pt."
-  - "Every Chart/Matrix/ProcessArrow has w=\"max\" AND an explicit computed h."
+  - "2-4 top-level bands, none with w=\"max\" (width stretches); nesting within bands matches content grouping."
+  - "No pixel h on a band or card; grow by weight only where the slide should fill
+     (at least one). Data nodes sized per DATA NODE SIZING."
+  - "KPI row: no h, no grow (auto-sizes). Tiles: w=\"max\", justifyContent=\"center\". Labels 14pt, values 26-36pt."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
-  - "Every <HStack> whose children use grow or w=\"max\" itself has w=\"max\"."
+  - "An HStack inside a VStack gets its width by stretch (no w); inside an HStack, w=\"max\" or %."
   - "No fixed-px width on a text or chart column."
   - "Bullet lists: max 3-4 items, each ≤ 50 chars, fontSize 14-16."
   - "At most one hero_panel. Accent used as a highlight, not a fill."
-  - "If the total is well under ~640, ADD a band (stat row / callout / second
-     visual) - don't inflate one band's h to fill the gap."
+  - "If nothing on the slide can use the spare height, ADD a band (stat row /
+     callout / second visual) - don't stretch a table or text card to fill it."

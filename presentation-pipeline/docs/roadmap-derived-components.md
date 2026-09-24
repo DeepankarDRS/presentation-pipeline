@@ -116,6 +116,25 @@ Also: `hint-capabilities.yaml` techniques and the Phase 2 derived-node templates
 **DECIDE:** `blueprints.yaml` (57 `w="max"`) and `golden-examples.yaml` (33) — rewrite to the new grammar, or keep as old-style compatibility references and stop injecting them? (Mixed signals in one prompt would undo the phase.)
 **Acceptance:** fill ratio and dead-space findings improve vs baseline; first-pass compile not worse; generator prompt shrinks (pixel arithmetic removed).
 
+**Status: built 2026-09-24 (branch `phase-1-sizing`), awaiting eval** (`eval_run gj-h1-regen --repeat 1 --label phase-1`).
+Decisions (user, 2026-09-24): (1) **rewrite** blueprints + golden examples to the new grammar — they matter most: a blueprint matched ~10 of the 14 baseline slides and the prompt says "keep the SAME flex properties"; (2) weight → grow **hero 3 / peer 2 / supporting 1 / minor none**, minH Chart 180, Matrix 260, Flow/Tree 200, ProcessArrow 90; (3) `w="max"` on a VStack child: **audit only** (`VSTACK_W_MAX`, low) — decide an auto-fix later from eval data; (4) eval = **`gj-h1-regen` × 1** (same as baseline).
+Built:
+- Grammar: `house-style.yaml` — `height_budget`, `worked_example`, `weight_allocation`, `rigid_nodes` replaced by `sizing` (SIZING BY WEIGHT) + `data_nodes` (DATA NODE SIZING); vocabulary, composition, header band, checklist, gotchas rewritten. `system.j2` / `user.j2` sizing lines, blueprint band rendering (`[grow=N]` instead of `h=<formula>`), recipe preamble, `recipes.yaml` (all 20 recipes), `pyramid.yaml`, `nodes.yaml` Chart.
+- `minH` was a **blocking `UNKNOWN_ATTR`** (not in the generator's attribute list nor the normalizer's `_UNIVERSAL_ATTRS`) — the new grammar would have cost a retry per chart. `minW/maxW/minH/maxH` now allowed (POM `BASE_RULES` accept them on every node).
+- `layout_audit`: `MISSING_DIMS` = Chart/Matrix/Flow/Tree/ProcessArrow need an h (`h="max"` needs `minH`), Timeline/Pyramid a pixel h, Table nothing; new `VSTACK_W_MAX` (low).
+- Blueprints + golden examples rewritten by a parent-aware transform (VStack child `w="max"` dropped, HStack child `h="max"` dropped, pixel band/card h → content or `grow`, data nodes per DATA NODE SIZING), then by hand: text panels that take the spare height (`pillar_cards`, `kpi_only`, `table_with_action_cards`), `dashboard_3band` 300:200 px → grow 3:2, fixed `<Col>` widths → label column only. Structure bands: `rigid`/`height_formula`/`min_h`/`max_h` → `auto` | `grow` (+ `grow: N`).
+- Fixtures `tests/fixtures/layout_sizing/` (dashboard from gj-h1 02, table from gj-h1 10, flow from fit_grow s3); `tests/unit/test_layout_sizing.py`: fixtures, all recipes, all blueprint/golden references compile + are audit-clean, blueprint structure ↔ reference grow agree. Unit tests 413 pass (+17), same 4 pre-existing failures.
+LLM-free results:
+- Blueprint + golden references (17 slides, 60 cards), fit-grow off → mean fill **0.764 → 0.852**, low-fill cards **19 → 11**; fit-grow on **0.804 → 0.874**, **15 → 10**; `VSTACK_W_MAX` 34 → 0, `COL_WIDTH_SUM` 4 → 0.
+- Dashboard fixture with fit-grow off: KPI tiles 83 px, fill 0.97 (the old-style fit_grow s1 tiles: 246 px, 0.32); chart card 0.998; mean 0.906 (on 0.949).
+- Generator system prompt **−3.0%** (−117 … −330 tokens per slide over 7 representative plans; e.g. standard 8785 → 8533).
+- Baseline deck against the new rules (for the eval comparison): `VSTACK_W_MAX` on 10/14 slides (24×), 30 stacks with a pixel h, 0 `minH`, 0 `grow`.
+Findings (render-verified, not fixed here):
+- **Wrapped table cells need row height.** A Table with no h at the default 40 px row and 2–3-line cells: POM lays out 312 px, PowerPoint/LibreOffice grow the rows → the table spills out of its card over the next band, and the bottom 40% of the slide stays empty. fit-grow's table pass grows rows only to ~47 px. The grammar therefore sets `defaultRowHeight = 16 + 24 × lines` (+ header 40); computing it is Phase 5 (sizing plan Step 3). The fill metric cannot see this (it reads declared frames) — nor empty slide space below content-sized bands.
+- **fit-grow scales peer cards as one group**: a text card beside a card whose chart/diagram now fills stays unenlarged (fixture s3, first layout). The grammar avoids it (hero diagram full width, text band content-sized); worth a look by the fit-grow owner.
+- A horizontal Flow of 5 nodes is width-limited: a tall `h="max"` box leaves space above/below the node row (F6) — the grammar gives such flows full width.
+- Thin table-only slides now end early instead of stretching the table card (by design, F5); more rows / Phase 5 row sizing fill them.
+
 ---
 
 ## Phase 2 — Deterministic routing + planner prompt fixes
@@ -211,6 +230,8 @@ Risks and mitigations:
 - `graphify-out/cache/` tracked in git breaks Windows checkouts without `core.longpaths` — consider `.gitignore`.
 - `outline_planner`: `DeckSettings` default (`slide_count="6-10"` → 8) wins over `state["deck_min_threshold"]`, so `python -m src.graph` / `src.runner` / any call without `deck_settings` plans 8 slides (found 2026-09-24; the eval sidesteps it via `test_case["slide_count"]`).
 - Bare `&` in generated text compiles in POM but `layout_audit` (ElementTree) fails the whole slide with `XML_PARSE_ERROR`; the normalizer does not escape it (found 2026-09-24).
+- `house-style.yaml` `layout_archetypes` (A–E) is never rendered into the prompt (`_HOUSE_STYLE_SECTIONS` omits it), yet `system.j2` makes "pick one of the LAYOUT ARCHETYPES" mandatory (found 2026-09-24).
+- `repair_guidance.LAYOUT_SHRINK_GUIDANCE` step 1 tells the repairer "reduce body fontSize by 2 (14->12)", against the 14 pt floor (found 2026-09-24).
 
 ## Done before this roadmap (2026-09-23)
 

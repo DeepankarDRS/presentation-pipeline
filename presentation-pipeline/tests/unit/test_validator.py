@@ -187,6 +187,20 @@ def test_pre_validate_with_contract_checks_attrs():
     assert "UNKNOWN_ATTR" in codes
 
 
+def test_pre_validate_allows_min_max_sizes():
+    # POM BASE_RULES accept minW/maxW/minH/maxH on every node; the sizing
+    # grammar (<Chart h="max" minH="180">) must not cost a retry.
+    xml = ('<Theme />\n<Slide><VStack w="1280" h="720" minW="100"><Chart chartType="bar" h="max" minH="180" maxH="400" maxW="900">'
+           '<ChartSeries name="a"><ChartDataPoint label="x" value="1" /></ChartSeries></Chart></VStack></Slide>')
+    contract = {
+        "allowed_nodes": ["Slide", "Theme", "VStack", "Chart", "ChartSeries", "ChartDataPoint"],
+        "allowed_attributes": {"VStack": ["gap"], "Chart": ["chartType"], "ChartSeries": ["name"],
+                               "ChartDataPoint": ["label", "value"]},
+    }
+    result = pre_validate(xml, contract)
+    assert [i for i in result["issues"] if i["code"] == "UNKNOWN_ATTR"] == []
+
+
 # ── Validator node tests (mocked compiler) ────────────────────────────────
 
 def test_validator_empty_xml():
