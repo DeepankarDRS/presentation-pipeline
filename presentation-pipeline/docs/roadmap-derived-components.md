@@ -262,6 +262,21 @@ PowerPoint screenshots of the fixed slides 1, 5, 6 (user, 2026-09-24) — remain
 4. Table text in a different font than the body → Phase 3. 5. Slide 5 KPI tile "₹1. / 80 Cr" (sparkline squeezes the value) → Phase 4 `KpiTile`.
 Metrics added: `empty_cells` (blank table cells, from the pptx, merged cells excluded) and `tables_overfull_slides` (slides whose fit-grow report says a table could not fit) in `eval_run` aggregate/summary and `eval_compare`; `docs/eval/phase-1` and `phase-5-tables` re-imported so they carry them (`tables_overfull_slides` is not comparable across the two: phase-1's fit-grow could not report it). Unit tests 424 pass, same 4 pre-existing failures.
 Open (not decided): table cell margins — POM hard-codes 0; options are an upstream issue (`hirokisakabe/pom`, Td padding) or a deterministic pptx post-process setting `marL/marR` on table cells with fit-grow measuring width minus the margins.
+
+**Eval `tables-check` (2026-09-24, commit `77000c3`, $1.21) → `docs/eval/tables-check/`** — user chose table-focused cases instead of the full gate: `gj-h1-regen` × 1 + `single-table`, `chart-and-table`, `eval-table-vs-kpi-disambiguation`, `mixed-executive-slide`, `maximal-density`. `eval_run` crashed after the paid gj-h1 run (slide 8 had `title="<B>…</B>"` inside a TimelineItem attribute: POM accepts it, ElementTree does not) — fixed in `invented_numbers` (`2378a5a` + colour-code false positives); gj-h1 was re-scored LLM-free from the emailed run folder (`max_tier` / auto-fix counts not recoverable).
+
+| gj-h1-regen | phase-1 | phase-5-tables | tables-check |
+|---|---|---|---|
+| first-pass | 92.9% | 85.7% | 92.9% (1 retry: `<Td borderLeft>`, as in phase-1) |
+| mean fill / low-fill cards | 0.891 / 10.9% | 0.947 / 2.7% | 0.897 / 13.0% |
+| table spill (slides / px) | 3 / 187 | 3 / 326 | **2 / 77** |
+| tables over-full (reported) / empty cells | – / 0 | 3 / 4 | 3 / **0** |
+| golden card-pattern match | 0.475 | 0.495 | **0.547** |
+| text overflows / invented numbers | 0 / 0 | 0 / 5 | 3 (slide 8 timeline) / 2 |
+
+Single-slide cases: all first-pass, table spill 1 slide / 11 px (`maximal-density`, over-full, reported), empty cells 0; invented numbers not meaningful (4 of the 5 cases ask the generator to invent figures). PowerPoint renders (`docs/eval/tables-check/renders/`): tables readable at 14–18 px, no mid-word breaks, no table running off a card except the over-full slides.
+Findings (table): (1) **gj 10** — over-full slide, the last row sits under the next band (Phase 2, option B). (2) **gj 5** — the main table grew to 18 px while the smaller table on the same slide stayed 14 px: two type sizes on one slide (the dominance rule lets the main table grow alone). (3) **chart-and-table, mixed-executive** — a table in a card stretched to its chart neighbour's height fills the top half; the rest of the card is empty (row cap 64 px / 1.5× text, decision (c)). (4) **maximal-density** — "+22%Expansion": neighbouring cells touch (0 cell margins, open). (5) single-table — the slide ends ⅓ early (6 short rows, same row cap).
+Findings (not table): **gj 8** — the generator wrote HTML-style `<B>…</B>` inside TimelineItem `title` attributes; PowerPoint shows the tags literally and the long labels overflow (3 text overflows). A deterministic normalizer fix (strip markup inside attribute values) would remove it; not done here.
 Verify LLM-free: the three fixtures above + `tests/fixtures/layout_sizing/s2-table-text.xml`; gj-h1 golden tables must not regress (fill 0.896 with fit-grow on; `python -m scripts.eval_run --fixtures tests/fixtures/golden/gj-h1-deck --label golden`); `pytest tests/unit` (414 pass, 4 known failures); LibreOffice renders. Replay the phase-1 run for free: `llm_test/gj-h1-regen-7293ef.zip` (local only, untracked) `deck/input.xml` → recompile all 14 slides and compare slides 3, 6, 10, 11 with `docs/eval/phase-1/renders/`. Consider a metric for failure 1/2: rows exceeding their table frame (Σ `<a:tr h>` > the graphicFrame `cy` in the pptx) — the fill metric reads declared frames and cannot see it.
 
 ## Phase 6 — Measured critic loop (sizing plan Step 5)

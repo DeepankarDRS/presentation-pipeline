@@ -259,6 +259,9 @@ def test_invented_numbers_survives_xml_a_strict_parser_rejects():
     """eval 2026-09-24 crashed on a slide POM compiled but ElementTree rejects (a bare '<' in text)."""
     xml = '<Slide><Text fontSize="14">ACOS <20% target, ROAS 4.33x</Text><Chart><ChartDataPoint label="Q1" value="12.5" /></Chart></Slide>'
     assert invented_numbers(xml, "ROAS 4.33x, Q1 12.5") == ["20"]
+    # the real case: markup inside an attribute; colour codes after it must not read as numbers
+    xml = '<Slide><Timeline><TimelineItem date="Feb" title="<B>Scroll winners</B> +38% GMV" color="2563EB" /></Timeline></Slide>'
+    assert invented_numbers(xml, "+38% GMV") == []
 
 
 def test_pick_reviews_failed_first_then_lowest_fill():
