@@ -131,9 +131,9 @@ inline:
 # Full reference: components/chart.yaml, components/list.yaml.
 phase_b:
   Chart:
-    description: "Native PowerPoint chart. Wraps >=1 ChartSeries. Needs explicit w AND h."
+    description: "Native PowerPoint chart. Wraps >=1 ChartSeries. Needs an h: h=\"max\" minH=\"180\" fills its card (width stretches)."
     node_attributes: [chartType, showLegend, showTitle, title, chartColors, radarStyle, sparkline]
-    required: [chartType, w, h]
+    required: [chartType, h]
     children: [ChartSeries]
     chartType_values: [bar, line, pie, area, doughnut, radar]
   ChartSeries:

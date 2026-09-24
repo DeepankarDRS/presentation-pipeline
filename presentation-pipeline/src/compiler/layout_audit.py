@@ -20,7 +20,12 @@ MIN_FONT_SIZE = 14
 MAX_NESTING = 6
 
 _STACK_TAGS = {"VStack", "HStack"}
-_NEEDS_DIMS = {"Chart", "Table", "Matrix", "ProcessArrow", "Flow", "Pyramid", "Tree", "Timeline"}
+# Sizing grammar (docs/layout-sizing-plan.md Step 1). Table needs no dims: it
+# sizes to its rows at full width. These fill their box, so they need an h —
+# pixel, or h="max" with a minH readability floor:
+_FILL_NODES = {"Chart", "Matrix", "ProcessArrow", "Flow", "Tree"}
+# These never scale up (F6), so the box is sized to the diagram — a pixel h:
+_FIXED_NODES = {"Timeline", "Pyramid"}
 
 
 def _parse_num(value: str | None) -> float | None:
@@ -109,22 +114,38 @@ def _check_zero_dims(root: ET.Element, issues: list[dict[str, str]]) -> None:
 
 
 def _check_missing_dims(root: ET.Element, issues: list[dict[str, str]]) -> None:
-    """Flag Chart/Table without explicit w and h."""
+    """Flag data nodes whose height the sizing grammar cannot resolve."""
     for elem in root.iter():
-        if elem.tag in _NEEDS_DIMS:
-            w = elem.get("w")
-            h = elem.get("h")
-            if w is None or h is None:
-                missing = []
-                if w is None:
-                    missing.append("w")
-                if h is None:
-                    missing.append("h")
-                issues.append({
-                    "severity": "medium",
-                    "code": "MISSING_DIMS",
-                    "message": f"<{elem.tag}> missing explicit {', '.join(missing)}",
-                })
+        h = elem.get("h")
+        if elem.tag in _FILL_NODES:
+            if h is None:
+                message = f'<{elem.tag}> missing h: use h="max" minH="..." to fill its card'
+            elif (h == "max" or elem.get("grow")) and elem.get("minH") is None:
+                message = f'<{elem.tag}> h="max" without minH: add a readability floor (e.g. minH="180")'
+            else:
+                continue
+        elif elem.tag in _FIXED_NODES and _parse_num(h) is None:
+            message = f"<{elem.tag}> needs a pixel h (it never scales up; size the box to the diagram)"
+        else:
+            continue
+        issues.append({"severity": "medium", "code": "MISSING_DIMS", "message": message})
+
+
+def _check_vstack_w_max(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """Flag w="max" on a VStack child: it grows the HEIGHT (flexGrow on the main
+    axis) and overrides a numeric h (F1) — the bloated-KPI-row failure."""
+    for stack in root.iter("VStack"):
+        count = sum(1 for c in stack if c.get("w") == "max")
+        if count:
+            issues.append({
+                "severity": "low",
+                "code": "VSTACK_W_MAX",
+                "message": (
+                    f'{count} child(ren) of a VStack with w="max": that grows the height, '
+                    'not the width (width already stretches). Drop it; use grow="N" '
+                    'only if the box should take spare height.'
+                ),
+            })
 
 
 def _check_nesting(root: ET.Element, issues: list[dict[str, str]]) -> None:
@@ -294,6 +315,7 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_font_sizes(root, issues)
     _check_zero_dims(root, issues)
     _check_missing_dims(root, issues)
+    _check_vstack_w_max(root, issues)
     _check_nesting(root, issues)
     _check_col_widths(root, root_padding, issues)
     _check_band_height_sum(root, root_padding, issues)

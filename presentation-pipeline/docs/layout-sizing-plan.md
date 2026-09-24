@@ -1,6 +1,7 @@
 # Layout Sizing Plan: let POM allocate, compute only what POM can't
 
 Status: proposed (2026-09-23). Branch `feat/golden-reference-grounding`.
+Step 1 built 2026-09-24 on `phase-1-sizing` — results and findings in `docs/roadmap-derived-components.md` Phase 1.
 Scope: how bands, cards and pixel-based nodes (Chart, Table, Flow, Tree,
 ProcessArrow, Timeline, Matrix, Pyramid) get their size — and why slides end
 up half empty or overflowing.

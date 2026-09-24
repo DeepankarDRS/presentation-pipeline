@@ -12,7 +12,7 @@ description: >
   Use for Maslow's hierarchy, strategic priority tiers, or any layered model.
 
 structure: |
-  <Pyramid direction="up" w="max" h="400" fontSize="14" bold="true">
+  <Pyramid direction="up" h="280" fontSize="14" bold="true">
     <PyramidLevel label="Self-Actualization" color="6D28D9" textColor="FFFFFF" />
     <PyramidLevel label="Esteem" color="7C3AED" textColor="FFFFFF" />
     <PyramidLevel label="Belonging" color="8B5CF6" textColor="FFFFFF" />
@@ -25,8 +25,8 @@ Pyramid_attributes:
   fontSize:   { type: number, default: 14 }
   bold:       { type: bool }
   fontFamily: { type: string, default: "Noto Sans JP" }
-  w:          { type: number, note: "Explicit width — required. Use w='max' to fill container." }
-  h:          { type: number, note: "Explicit height — required. Use the full band height budget." }
+  w:          { type: number, note: "Omit — the pyramid takes its card's width (never scales up)." }
+  h:          { type: number, note: "Pixel height — required: 52 x levels + 20." }
 
 PyramidLevel_attributes:
   label:     { type: string, required: true, note: "Level display label" }
@@ -45,9 +45,8 @@ sizing_rules: |
     6 levels:  fontSize="14"
     7 levels:  fontSize="14"   (NEVER below 14)
 
-  Always use w="max" so the pyramid fills its container width. Give it the
-  largest h the height budget allows (260-440). A sole-component pyramid
-  should get h="440-480" (hero weight) to dominate the slide.
+  The pyramid never scales up (sizing plan F6): size the box to the diagram,
+  h = 52 x levels + 20, no w, and no grow on its card.
 
 text_color_rules: |
   textColor on each PyramidLevel MUST contrast with that level's fill color.
@@ -66,17 +65,16 @@ text_color_rules: |
   use dark textColor on lighter fills.
 
 notes:
-  - "Pyramid needs explicit w and h. Use w='max' to fill the container."
+  - "Pyramid needs a pixel h (52 x levels + 20); omit w."
   - "3-7 levels work best. Scale fontSize DOWN as levels increase (see sizing_rules)."
   - "Direction 'up': first PyramidLevel = top/narrowest. Direction 'down': first PyramidLevel = top/widest."
   - "Use a gradient of related hues across levels for visual hierarchy."
   - "ALWAYS check textColor contrast per level — white text on light fills is invisible."
-  - "Give pyramid generous height: 260-360 normally, 400-480 when it is the sole/hero component."
 
 pitfalls:
   - "label is required on every PyramidLevel."
-  - "Missing w/h on Pyramid — will not render correctly."
+  - "Missing h on Pyramid — it needs a pixel h (52 x levels + 20); the width stretches."
   - "Direction 'up' vs 'down' controls which end is narrow — verify by reading the level order."
   - "fontSize='24' (Text node default) causes overflow — Pyramid default is 14, scale DOWN with levels."
   - "textColor='FFFFFF' on light fills — text is invisible. Set per-level textColor based on fill darkness."
-  - "Small fixed w like w='600' wastes space — use w='max' to fill the parent."
+  - "w='max' on a Pyramid in a VStack grows its HEIGHT, not its width — omit w."

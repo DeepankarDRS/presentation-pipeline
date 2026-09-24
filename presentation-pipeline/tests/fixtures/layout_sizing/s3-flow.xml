@@ -1,0 +1,36 @@
+<Theme surface="F3F4F6" surfaceAlt="FFFFFF" accent="2F6FB3" accentAlt="1E3A5F" positive="15803D" negative="B91C1C" warning="B45309" textMain="1F2937" textMuted="6B7280" border="E5E7EB" />
+<!-- Sizing grammar: the Flow card is the hero and takes the rest of the slide (grow); the Flow fills
+     it (h="max" minH; fit-grow enlarges the nodes). The text band below sizes to its content.
+     No pixel h, no w="max" in a VStack. Source: tests/fixtures/fit_grow/s3 (old-style). -->
+<Slide><VStack w="1280" h="720" padding="36" gap="18" alignItems="stretch" backgroundColor="$surface">
+  <HStack justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="5">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">AUTOMATION ADVANTAGE</Text>
+      <Text fontSize="30" color="$textMain" bold="true">Ads Automation Engine Designed for Quick Commerce</Text>
+      <Text fontSize="14" color="$textMuted">Unlocking real-time, data-driven campaign performance</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="150" h="40" fill.color="E0ECF8" color="$textMain" fontSize="14" bold="true" borderRadius="999">FOR SPEED</Shape>
+  </HStack>
+  <VStack grow="3" padding="20" gap="14" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+    <Text fontSize="14" color="$accent" bold="true" letterSpacing="1">AUTOMATION WORKFLOW</Text>
+    <Flow direction="horizontal" h="max" minH="200" nodeWidth="150" nodeHeight="56" nodeGap="64">
+      <FlowNode id="a" shape="flowChartProcess" text="Platform Data" color="E5E7EB" textColor="1F2937" />
+      <FlowNode id="b" shape="flowChartDecision" text="Decision Engine" color="2F6FB3" textColor="FFFFFF" />
+      <FlowNode id="c" shape="flowChartProcess" text="Bid Optimization" color="3B8FD9" textColor="FFFFFF" />
+      <FlowNode id="d" shape="flowChartProcess" text="Budget Reallocation" color="3B8FD9" textColor="FFFFFF" />
+      <FlowNode id="e" shape="flowChartProcess" text="Keyword &amp; Placement" color="3B8FD9" textColor="FFFFFF" />
+      <FlowConnection from="a" to="b" /><FlowConnection from="b" to="c" /><FlowConnection from="c" to="d" /><FlowConnection from="d" to="e" />
+    </Flow>
+  </VStack>
+  <HStack gap="18" alignItems="stretch">
+    <VStack w="55%" padding="16" gap="4" backgroundColor="EEF2F7" borderLeft.color="$accent" borderLeft.width="5">
+      <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">IMPACT</Text>
+      <Text fontSize="16" color="$textMain" lineHeight="1.4">Automation lets XTSY react to market dynamics in real time, outperforming manual campaign management.</Text>
+    </VStack>
+    <VStack w="45%" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="1">AUTOMATION BENEFITS</Text>
+      <Ul fontSize="14" color="$textMain"><Li>Optimization cycles: weeks to hours</Li><Li>Less manual intervention, higher ROAS</Li><Li>Higher share of visibility</Li></Ul>
+    </VStack>
+  </HStack>
+  <Text fontSize="14" color="$textMuted">Source: XTSY Automation Engine product documentation, internal analysis</Text>
+</VStack></Slide>
