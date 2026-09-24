@@ -188,6 +188,22 @@ def text_overflows(pptx_path: str | Path, slide: int = 1) -> int:
     return count
 
 
+def table_spill(pptx_path: str | Path, slide: int = 1) -> int:
+    """Px of table rows past their frame, summed over the slide's tables: POM flex-shrinks a table box on
+    an over-full slide but still writes every row, so the rows spill over the next band. The fill metric
+    reads declared frames and cannot see it."""
+    with zipfile.ZipFile(pptx_path) as z:
+        root = ET.fromstring(z.read(f"ppt/slides/slide{slide}.xml"))
+    spill = 0.0
+    for frame in root.iter(f"{{{_NS['p']}}}graphicFrame"):
+        tbl, ext = frame.find(".//a:tbl", _NS), frame.find(".//a:ext", _NS)
+        if tbl is None or ext is None:
+            continue
+        rows = sum(int(tr.get("h")) for tr in tbl.findall("a:tr", _NS))
+        spill += max(0, rows - int(ext.get("cy"))) / _EMU_PER_PX
+    return round(spill)
+
+
 _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
 _CONTENT_ATTRS = ("value", "label", "title", "description", "date", "text", "name")
 

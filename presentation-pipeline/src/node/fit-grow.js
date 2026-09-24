@@ -12,9 +12,14 @@
 //                     split into two side-by-side lists (an Ol's second column
 //                     continues the numbering; lists with their own id or box
 //                     styling are never split).
-//   2. tables       — rows grow a little with their text; the box is clamped to
-//                     the rows (cells cannot vertically centre, extra box = dead).
-//                     Cell text grows only if every cell still fits its row.
+//   2. tables       — a Table h taller than its rows: rows grow a little with
+//                     their text; the box is clamped to the rows (cells cannot
+//                     vertically centre, extra box = dead). Cell text grows only
+//                     if every cell still fits its row.
+//                     A Table without h (sized by its rows): column widths that
+//                     wrap the fewest lines, rows as tall as their text, a
+//                     squeezed box protected (or reported), and the slide's main
+//                     table grows its text + rows into empty space.
 //   3. diagrams     — a Chart/Flow/Tree/ProcessArrow absorbs the spare height of
 //                     its card, then Flow/Tree/ProcessArrow nodes are enlarged
 //                     to fill their box.
@@ -50,7 +55,7 @@ if (installed !== VERIFIED_POM) {
 
 const [{ parseXml }, { calcYogaLayout }, { createBuildContext }, { freeYogaTree },
   { measureText }, { measureFontLineHeightRatio }, { getNodeMetadataByTag },
-  { measureTree }, { ARROW_DEPTH_RATIO }, { resolveColumnWidths }] = await Promise.all([
+  { measureTree }, { ARROW_DEPTH_RATIO }, { resolveColumnWidths, resolveRowHeights }] = await Promise.all([
   internal("parseXml/parseXml.js"),
   internal("calcYogaLayout/calcYogaLayout.js"),
   internal("buildContext.js"),
@@ -140,7 +145,7 @@ async function layout(xml) {
   const yogaOf = (n) => { for (const m of maps) if (m.has(n)) return m.get(n); };
   const box = (n) => {
     const y = yogaOf(n);
-    return { w: y.getComputedWidth(), h: y.getComputedHeight(),
+    return { w: y.getComputedWidth(), h: y.getComputedHeight(), top: y.getComputedTop(),
       pl: y.getComputedPadding(0), pt: y.getComputedPadding(1),
       pr: y.getComputedPadding(2), pb: y.getComputedPadding(3) };
   };
@@ -174,8 +179,11 @@ function natural(n, L) {
   }
   if (!STACKS.has(n.type)) return b.h;
   const kids = n.children ?? [];
-  // rigid nodes render at their box size; other explicit-h children at their h
-  const outer = kids.map((c) => (RIGID.has(c.type) ? L.box(c).h
+  // rigid nodes render at their box size (a table at least its rows: POM may
+  // flex-shrink its box, the pptx still writes every row); other explicit-h
+  // children at their h
+  const outer = kids.map((c) => (c.type === "table" ? Math.max(L.box(c).h, rowsSum(c))
+    : RIGID.has(c.type) ? L.box(c).h
     : typeof c.h === "number" ? Math.min(c.h, c.maxH ?? Infinity) : natural(c, L)));
   const gap = typeof n.gap === "number" ? n.gap : 0;
   const content = n.type === "vstack"
@@ -374,6 +382,313 @@ async function fitTables(xml, report) {
     report.push(`table rows ${rowH0} -> ${rowH}px, cell text x${k.toFixed(2)}, box clamped to rows (${total}px)`);
   }
   return xml;
+}
+
+// --- tables sized from their text (Table without h: it sizes to its rows) -----
+// POM never grows a row with its text and splits unset columns equally (F5); on
+// an over-full slide it flex-shrinks the table box while the pptx still writes
+// every row, so the table spills over the next band. For each such table:
+//   columns — of the generator's widths, "keep the set widths, content-size the
+//             rest" and "content-size every column" (HTML auto layout), take the
+//             one whose rows come out shortest; the generator's are replaced only
+//             to save at least one text line, and never by a column narrower than
+//             one of its words.
+//   rows    — every row at least as tall as its wrapped text.
+//   squeeze — rows tighten toward their text and minH = rows protects the box, so
+//             a flexible band gives instead; if the slide still overflows, no minH
+//             (POM's autoFit would shrink fonts) and the squeeze is reported.
+//   spare   — the slide's main table (>= 2x any other: peer tables keep one type
+//             size) grows its cell text (<= 18 px), then its
+//             rows (<= 64 px, <= 1.5x their text), into empty slide space or dead
+//             space in its own card: only the table and its ancestors change size
+//             (a peer card stretched by a taller row would just gain dead space).
+
+const TD_FONT = 18;  // POM's <Td> default fontSize
+const ROW_PAD = 8;   // px around a cell's lines (POM writes Td margins of 0)
+const ROW_CAP = 64;
+const TD_FONT_CAP = 18;
+
+const rowsSum = (n) => resolveRowHeights(n).reduce((a, b) => a + b, 0);
+// a row that holds its lines keeps its height (ROW_PAD is margin, not a line)
+const rowFor = (row, need) => (need - ROW_PAD <= row ? row : need);
+const sum = (a) => a.reduce((s, x) => s + x, 0);
+const cellText = (c) => c.text ?? (c.runs ?? []).map((r) => r.text).join("");
+
+/** Cells with their first column; null when a rowspan makes positions uncertain. */
+function cellGrid(n) {
+  if (n.rows.some((r) => r.cells.some((c) => (c.rowspan ?? 1) > 1))) return null;
+  return n.rows.map((r) => {
+    let col = 0;
+    return r.cells.map((c) => {
+      const at = { c, col, span: c.colspan ?? 1 };
+      col += at.span;
+      return at;
+    });
+  });
+}
+
+function measureCell(c, text, w, fs, ctx) {
+  return measureText(text, w, { fontFamily: c.fontFamily ?? "Noto Sans JP", fontSizePx: fs,
+    lineHeight: 1.3, fontWeight: c.bold ? "bold" : "normal" }, ctx.textMeasurementMode, ctx.fontRegistry);
+}
+
+/** Integer widths summing to floor(W); the rounding rest goes to the widest. */
+function intWidths(ws, W) {
+  const out = ws.map(Math.floor);
+  const widest = out.indexOf(Math.max(...out));
+  out[widest] += Math.floor(W) - sum(out);
+  return out;
+}
+
+/**
+ * Column widths + the row heights their text needs, at the cell fonts given by
+ * fontOf. Widths are measured at 85% like tableTextFits (the renderer's font runs
+ * wider than POM's). A width choice is scored by the rows it would really get,
+ * never below `floor` (fewer lines inside rows that stay tall gains nothing), and
+ * replaces the generator's widths only when it saves at least one text line.
+ * A choice with a column narrower than one of its words is invalid (measureText
+ * keeps such a word on one line; the renderer breaks it mid-word), so `valid`
+ * is false only when no choice avoids that. `widths` is null when the
+ * generator's widths are kept.
+ */
+function planTable(n, grid, W, fontOf, ctx, floor) {
+  const cols = n.columns.length;
+  const min = Array(cols).fill(20), pref = Array(cols).fill(20), word = Array(cols).fill(0);
+  for (const row of grid) for (const { c, col, span } of row) {
+    if (span !== 1) continue;
+    const fs = fontOf(c), text = cellText(c);
+    for (const w of text.split(/\s+/).filter(Boolean)) {
+      word[col] = Math.max(word[col], measureCell(c, w, Infinity, fs, ctx).widthPx);
+      min[col] = Math.max(min[col], word[col] / 0.85);
+    }
+    pref[col] = Math.max(pref[col], min[col], measureCell(c, text, Infinity, fs, ctx).widthPx / 0.85);
+  }
+  // HTML auto layout: pref widths if they fit, else min + the rest by (pref - min)
+  const auto = (idx, room) => {
+    const m = idx.map((i) => min[i]), p = idx.map((i) => pref[i]);
+    if (sum(p) <= room) return p.map((x) => x * room / sum(p));
+    if (sum(m) >= room) return m.map((x) => x * room / sum(m));
+    const d = p.map((x, k) => x - m[k]);
+    return m.map((x, k) => x + (room - sum(m)) * d[k] / sum(d));
+  };
+  const need = (widths) => grid.map((row) => Math.ceil(ROW_PAD + Math.max(0, ...row.map(({ c, col, span }) => {
+    const fs = fontOf(c);
+    const w = sum(widths.slice(col, col + span)) * 0.85;
+    return Math.max(1, Math.round(measureCell(c, cellText(c), w, fs, ctx).heightPx / (fs * 1.3))) * fs * 1.3;
+  }))));
+
+  const candidates = [resolveColumnWidths(n, W)];
+  const unset = n.columns.map((c, i) => (c.width === undefined ? i : -1)).filter((i) => i >= 0);
+  const setTotal = sum(n.columns.map((c) => c.width ?? 0));
+  if (unset.length && unset.length < cols && setTotal < W) {
+    const w = auto(unset, W - setTotal);
+    const keep = n.columns.map((c) => c.width ?? 0);
+    unset.forEach((i, k) => { keep[i] = w[k]; });
+    candidates.push(intWidths(keep, W));
+  }
+  candidates.push(intWidths(auto([...Array(cols).keys()], W), W));
+  const line = Math.min(...grid.flat().map(({ c }) => fontOf(c))) * 1.3;
+  let best = null;
+  candidates.forEach((widths, i) => {
+    const rows = need(widths);
+    const cost = sum(rows.map((r, j) => rowFor(floor[j], r)));
+    const valid = widths.every((w, j) => w >= word[j]);
+    if (!best || (valid && !best.valid)
+      || (valid === best.valid && cost < best.cost - (best.i === 0 ? line : 1))) best = { i, widths, rows, cost, valid };
+  });
+  return { widths: best.i === 0 ? null : best.widths, need: best.rows, valid: best.valid };
+}
+
+/** Rewrite a table's column widths, row heights, cell fonts and/or minH in the XML text. */
+function writeTable(xml, id, { widths, rows, fontOf, minH }) {
+  if (minH !== undefined) xml = setAttrs(xml, id, { minH });
+  const el = findElement(xml, id);
+  let body = xml.slice(el.openEnd, el.end);
+  const put = (tag, k, v) => tag.replace(new RegExp(`\\s${k}\\s*=\\s*("[^"]*"|'[^']*')`), "")
+    .replace(/^<(\w+)/, `<$1 ${k}="${v}"`);
+  if (widths) {
+    let i = 0;
+    body = /<Col\b/.test(body)
+      ? body.replace(/<Col\b[^>]*?(?:\/>|>\s*<\/Col>)/g, (m) => put(m, "width", widths[i++]))
+      : widths.map((w) => `<Col width="${w}" />`).join("") + body;
+  }
+  if (rows) {
+    let i = 0;
+    body = body.replace(/<Tr\b[^>]*>/g, (m) => put(m, "height", rows[i++]));
+  }
+  if (fontOf) {
+    body = body.replace(/<Td\b[^>]*?>/g, (m) => {
+      const f = Number((m.match(/\sfontSize\s*=\s*["'](\d+(?:\.\d+)?)/) ?? [])[1] ?? TD_FONT);
+      return put(m, "fontSize", fontOf({ fontSize: f }));
+    });
+  }
+  return xml.slice(0, el.openEnd) + body + xml.slice(el.end);
+}
+
+/** Height of the slide's content as POM's autoFit measures it: furthest bottom + root padding. */
+function contentHeight(root, L) {
+  const bottom = (n, top) => {
+    const t = top + L.box(n).top;
+    let m = t + L.box(n).h;
+    if (n.type !== "layer") for (const c of n.children ?? []) m = Math.max(m, bottom(c, t));
+    return m;
+  };
+  return Math.max(0, ...(root.children ?? []).map((c) => bottom(c, 0))) + L.box(root).pb;
+}
+
+/** How far each stack's content, and each text/list, overruns its box. */
+function squeezes(L) {
+  const out = overflows(L);
+  for (const root of L.slides) walk(root, (n) => {
+    if (n.id && ["text", "ul", "ol"].includes(n.type)) out.set(n.id, natural(n, L) - L.box(n).h);
+  });
+  return out;
+}
+
+/**
+ * The table is not squeezed, the slide stays within POM's autoFit tolerance, no
+ * stack or text overruns its box more than it did (`before` = squeezes()), and
+ * every `keep` ([id, h]) kept its height.
+ */
+async function tableFits(xml, id, before, keep = []) {
+  const T = await layout(xml);
+  try {
+    const t = T.byId.get(id);
+    if (rowsSum(t) > T.box(t).h + 1) return false;
+    if (T.slides.some((r) => contentHeight(r, T) > SLIDE.h * 1.005)) return false;
+    for (const [k, o] of squeezes(T)) if (o > Math.max(before.get(k) ?? 0, 0) + 1) return false;
+    return keep.every(([k, h]) => Math.abs(T.box(T.byId.get(k)).h - h) <= 1);
+  } finally { T.free(); }
+}
+
+/** Largest x in [lo, hi] with test(x) true (test(lo) assumed true). */
+async function bisect(lo, hi, test) {
+  let best = lo;
+  for (let i = 0; i < 7; i++) {
+    const x = (lo + hi) / 2;
+    if (await test(x)) { best = x; lo = x; } else hi = x;
+  }
+  return best;
+}
+
+async function sizeTables(xml, report) {
+  let L = await layout(xml);
+  const ids = [];
+  const sizes = [];
+  try {
+    for (const root of L.slides) walk(root, (n) => {
+      if (n.type !== "table") return;
+      sizes.push({ id: n.id, size: rowsSum(n) * L.box(n).w });
+      if (!n.id || n.h !== undefined || !n.rows.length || !cellGrid(n)) return;
+      ids.push(n.id);
+    });
+  } finally { L.free(); }
+  sizes.sort((a, b) => b.size - a.size);
+  const main = sizes.length && ids.includes(sizes[0].id)
+    && (sizes.length === 1 || sizes[0].size >= 2 * sizes[1].size) ? sizes[0] : null;
+
+  const protectedIds = new Set();
+  for (const id of ids) {
+    // columns + rows at least as tall as their text
+    L = await layout(xml);
+    let declared, plan;
+    try {
+      const n = L.byId.get(id);
+      declared = resolveRowHeights(n);
+      plan = planTable(n, cellGrid(n), L.box(n).w, (c) => c.fontSize ?? TD_FONT, L.ctx, declared);
+    } finally { L.free(); }
+    const base = declared.map((d, i) => rowFor(d, plan.need[i]));
+    const grown = sum(base) - sum(declared);
+    if (plan.widths || grown > 0) {
+      xml = writeTable(xml, id, { widths: plan.widths, rows: grown > 0 ? base : null });
+      if (plan.widths) report.push(`table columns -> [${plan.widths.join(", ")}] (fewest wrapped lines)`);
+      if (grown > 0) report.push(`table rows +${grown}px to fit their wrapped text`);
+    }
+
+    // squeezed: tighten toward the text, protect with minH if the slide then fits
+    L = await layout(xml);
+    let short, before, tight;
+    try {
+      const n = L.byId.get(id);
+      short = sum(base) - L.box(n).h;
+      before = squeezes(L);
+      if (short > 1) tight = planTable(n, cellGrid(n), L.box(n).w, (c) => c.fontSize ?? TD_FONT, L.ctx, base.map(() => 0));
+    } finally { L.free(); }
+    if (short <= 1) continue;
+    const loose = declared.map((d, i) => rowFor(d, tight.need[i]));
+    const rowsAt = (s) => loose.map((b, i) => Math.round(tight.need[i] + s * Math.max(0, b - tight.need[i])));
+    const protect = (s) => writeTable(xml, id, { widths: tight.widths, rows: rowsAt(s), minH: sum(rowsAt(s)) });
+    if (await tableFits(protect(0), id, before)) {
+      const s = await bisect(0, 1, (x) => tableFits(protect(x), id, before));
+      xml = protect(s);
+      protectedIds.add(id);
+      report.push(`table squeezed ${Math.round(short)}px: rows ${sum(declared)} -> ${sum(rowsAt(s))}px, box protected (minH)`
+        + (tight.widths ? `, columns -> [${tight.widths.join(", ")}]` : ""));
+    } else {
+      xml = writeTable(xml, id, { widths: tight.widths, rows: tight.need });
+      L = await layout(xml);
+      let still;
+      try { const n = L.byId.get(id); still = rowsSum(n) - L.box(n).h; } finally { L.free(); }
+      report.push(`table squeezed ${Math.round(short)}px on an over-full slide: rows tightened to their text`
+        + ` (${sum(base)} -> ${sum(tight.need)}px), still ${Math.max(0, Math.round(still))}px short`
+        + (tight.widths ? `, columns -> [${tight.widths.join(", ")}]` : ""));
+    }
+  }
+  if (main && !protectedIds.has(main.id)) xml = await growMainTable(xml, main.id, report);
+  return xml;
+}
+
+/** Spare height -> the main table's cell text (<= 18 px), then its rows (capped). */
+async function growMainTable(xml, id, report) {
+  const L = await layout(xml);
+  let n, W, grid, before, keep, declared;
+  try {
+    n = L.byId.get(id);
+    W = L.box(n).w;
+    grid = cellGrid(n);
+    declared = resolveRowHeights(n);
+    if (sum(declared) > L.box(n).h + 1) return xml; // still squeezed
+    before = squeezes(L);
+    const parents = new Map();
+    for (const root of L.slides) walk(root, (m, parent) => parents.set(m, parent));
+    const resizable = new Set();
+    for (let m = n; m; m = parents.get(m)) resizable.add(m);
+    keep = [];
+    for (const root of L.slides) walk(root, (m) => {
+      if (m.id && !resizable.has(m) && (STACKS.has(m.type) || RIGID.has(m.type))) keep.push([m.id, L.box(m).h]);
+    });
+  } finally { L.free(); }
+
+  // cell text first: every cell by k, capped at max(own size, 18); proportions kept
+  const cells = grid.flat().map(({ c }) => c);
+  const f0 = Math.max(...cells.map((c) => c.fontSize ?? TD_FONT));
+  const sized = cells.some((c) => (c.runs ?? []).some((r) => r.fontSize !== undefined));
+  const fontFor = (k) => (c) => Math.min(Math.round((c.fontSize ?? TD_FONT) * k), Math.max(c.fontSize ?? TD_FONT, TD_FONT_CAP));
+  const atFont = (k) => {
+    const plan = planTable(n, grid, W, fontFor(k), L.ctx, declared);
+    const rows = declared.map((d, i) => rowFor(d, plan.need[i]));
+    return { plan, rows, xml: writeTable(xml, id, { widths: plan.widths, rows, fontOf: k > 1 ? fontFor(k) : null }) };
+  };
+  const kMax = sized ? 1 : Math.max(1, TD_FONT_CAP / f0);
+  const k = kMax > 1 ? await bisect(1, kMax, (x) => {
+    const a = atFont(x);
+    return a.plan.valid && tableFits(a.xml, id, before, keep);
+  }) : 1;
+  const grownFont = cells.some((c) => fontFor(k)(c) !== (c.fontSize ?? TD_FONT));
+  const K = atFont(grownFont ? k : 1);
+
+  // then rows, each up to min(64 px, 1.5x its text) (never below where it is)
+  const cap = K.rows.map((r, i) => Math.max(r, Math.min(ROW_CAP, Math.round(1.5 * K.plan.need[i]))));
+  const rowsAt = (t) => K.rows.map((r, i) => Math.round(r + t * (cap[i] - r)));
+  const rowXml = (t) => writeTable(K.xml, id, { rows: rowsAt(t) });
+  const t = sum(cap) > sum(K.rows) && await tableFits(rowXml(0), id, before, keep)
+    ? await bisect(0, 1, (x) => tableFits(rowXml(x), id, before, keep)) : 0;
+  const rows = rowsAt(t);
+  if (!grownFont && sum(rows) - sum(declared) < 8) return xml;
+  report.push(`main table into spare height: `
+    + (grownFont ? `cell text x${k.toFixed(2)} (${f0} -> ${fontFor(k)({ fontSize: f0 })}px), ` : "")
+    + `rows ${sum(declared)} -> ${sum(rows)}px`);
+  return writeTable(K.xml, id, { rows });
 }
 
 function diagramEdit(n, W, H) {
@@ -591,6 +906,7 @@ async function fitSlide(inputXml, report) {
   xml = await respectHeights(xml, report);
   xml = await splitLists(xml, report);
   xml = await fitTables(xml, report);
+  xml = await sizeTables(xml, report);
   xml = await growDiagrams(xml, report);
   xml = await growText(xml, report);
   return report.length ? untag(xml) : inputXml;
