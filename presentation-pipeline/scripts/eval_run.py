@@ -41,7 +41,7 @@ from typing import Any
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PIPELINE_ROOT))
 
-from scripts.eval_metrics import LOW_FILL, card_metrics, pattern_match  # noqa: E402
+from scripts.eval_metrics import LOW_FILL, card_metrics, pattern_match, word_breaks  # noqa: E402
 from src.compiler.layout_audit import audit_layout  # noqa: E402
 from src.utils.case_loader import load_case  # noqa: E402
 
@@ -65,6 +65,12 @@ _COMPILE_SCRIPT = _PIPELINE_ROOT / "src" / "node" / "compile-pom.js"
 
 # ── running ─────────────────────────────────────────────────────────────────
 
+def _slide_target(case: dict[str, Any]) -> int:
+    """Exact slide count for the planner. deck_min_threshold alone is overridden by the DeckSettings
+    default (8 slides), but outline_planner honours test_case["slide_count"]; non-deck cases get 1."""
+    return case.get("slide_count") or (case.get("expect") or {}).get("slide_count") or 1
+
+
 def _stream_case(case: dict[str, Any], run_id: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Run one case; return (final_state, validator attempts tagged with slide/retry)."""
     from src.graph import compile_graph
@@ -77,10 +83,10 @@ def _stream_case(case: dict[str, Any], run_id: str) -> tuple[dict[str, Any], lis
         run_id=run_id,
         raw_request=case.get("request", case.get("objective", "")),
         theme_name=case.get("theme", ""),
-        deck_min_threshold=(case.get("expect") or {}).get("slide_count", 0),
+        deck_min_threshold=_slide_target(case),
         critic_mode="off",
         supplied_content=supplied if isinstance(supplied, dict) else None,
-        test_case=case,
+        test_case={**case, "slide_count": _slide_target(case)},
     )
     config = {
         "run_name": f"pom-eval-{run_id}",
@@ -109,14 +115,18 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
+def _messages(diags: list[dict[str, Any]], limit: int = 3) -> list[str]:
+    """First distinct diagnostic messages, shortened — the codes alone do not explain a failure."""
+    msgs = dict.fromkeys(f"{d.get('type', '?')}: {str(d.get('message', ''))[:200]}" for d in diags)
+    return list(msgs)[:limit]
+
+
 def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any]) -> dict[str, Any]:
     first, last = tries[0], tries[-1]
     ok = bool((last.get("compile_result") or {}).get("ok"))
     pptx = (last.get("compile_result") or {}).get("pptx_path") if ok else None
-    blocking = Counter(
-        d.get("type", "?") for t in tries if not (t.get("compile_result") or {}).get("ok")
-        for d in (t.get("compile_result") or {}).get("diagnostics", [])
-    )
+    diags = [d for t in tries if not (t.get("compile_result") or {}).get("ok")
+             for d in (t.get("compile_result") or {}).get("diagnostics", [])]
     auto = Counter(i["code"] for i in (first.get("normalize_result") or {}).get("issues", []) if i.get("auto_fixed"))
     return {
         "index": index,
@@ -125,12 +135,14 @@ def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any]) ->
         "retries": max(t["retry"] for t in tries),
         "max_tier": max(t["tier"] for t in tries),
         "auto_fixes": dict(auto),
-        "blocking": dict(blocking),
+        "blocking": dict(Counter(d.get("type", "?") for d in diags)),
+        "blocking_msgs": _messages(diags),
         "layout_issues": dict(Counter(i.get("code", "?") for i in last.get("layout_issues") or [])),
         "fit_grow": _read_json(Path(pptx).parent / "compile-result.json").get("fitGrow", []) if pptx else [],
         "components": [{k: c.get(k, "") for k in ("kind", "weight", "design_hint")}
                        for c in plan.get("components", [])],
         "cards": card_metrics(pptx) if pptx else [],
+        "word_breaks": word_breaks(pptx) if pptx else 0,
         "_dir": str(Path(pptx).parent) if pptx else None,
     }
 
@@ -161,6 +173,7 @@ def evaluate_case(case: dict[str, Any], repeat: int) -> dict[str, Any]:
         "tokens_out": (evaluation.get("tokens") or {}).get("total_out", 0),
         "cost": (evaluation.get("cost") or {}).get("total_usd", 0.0),
         "elapsed": round(time.time() - t0, 1),
+        "expected_slides": _slide_target(case),
         "slides": [_slide_row(i, by_slide[i], plans[i] if i < len(plans) else {}) for i in sorted(by_slide)],
         "_deck_pptx": final.get("pptx_path"),
     }
@@ -181,13 +194,15 @@ def evaluate_fixtures(xml_dir: Path, out_dir: Path) -> dict[str, Any]:
             "index": i, "source": xml_path.name, "compiled": ok, "first_pass_ok": ok,
             "retries": 0, "max_tier": 0, "auto_fixes": {},
             "blocking": dict(Counter(x.get("type", "?") for x in result.get("diagnostics", []))) if not ok else {},
+            "blocking_msgs": _messages(result.get("diagnostics", [])) if not ok else [],
             "layout_issues": dict(Counter(i.get("code", "?") for i in audit_layout(xml_path.read_text(encoding="utf-8")))),
             "fit_grow": result.get("fitGrow", []), "components": [],
-            "cards": card_metrics(pptx) if ok else [], "_dir": str(d),
+            "cards": card_metrics(pptx) if ok else [], "word_breaks": word_breaks(pptx) if ok else 0,
+            "_dir": str(d),
         })
     return {"name": xml_dir.name, "repeat": 1, "run_id": "fixtures", "passed": all(s["compiled"] for s in slides),
             "error": None, "tokens_in": 0, "tokens_out": 0, "cost": 0.0, "elapsed": 0.0,
-            "slides": slides, "_deck_pptx": None}
+            "expected_slides": len(slides), "slides": slides, "_deck_pptx": None}
 
 
 def score_against_golden(result: dict[str, Any], golden: dict[str, Any]) -> None:
@@ -210,6 +225,7 @@ def aggregate(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "runs_passed": sum(c["passed"] for c in cases),
         "runs_errored": sum(bool(c["error"]) for c in cases),
         "slides": len(slides),
+        "slide_count_off": sum(len(c["slides"]) != c.get("expected_slides", len(c["slides"])) for c in cases),
         "compiled_pct": round(100 * sum(s["compiled"] for s in slides) / n, 1),
         "first_pass_pct": round(100 * sum(s["first_pass_ok"] for s in slides) / n, 1),
         "mean_retries": round(sum(s["retries"] for s in slides) / n, 2),
@@ -219,12 +235,14 @@ def aggregate(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "auto_fixes_per_slide": round(sum(sum(s["auto_fixes"].values()) for s in slides) / n, 2),
         "layout_issues_per_slide": round(sum(sum(s["layout_issues"].values()) for s in slides) / n, 2),
         "fit_grow_changes_per_slide": round(sum(len(s["fit_grow"]) for s in slides) / n, 2),
+        "word_breaks_per_slide": round(sum(s.get("word_breaks", 0) for s in slides) / n, 2),
         "tokens_in": sum(c["tokens_in"] for c in cases),
         "tokens_out": sum(c["tokens_out"] for c in cases),
         "cost_usd": round(sum(c["cost"] for c in cases), 4),
         "elapsed_s": round(sum(c["elapsed"] for c in cases), 1),
         "auto_fix_codes": dict(sum((Counter(s["auto_fixes"]) for s in slides), Counter()).most_common()),
         "blocking_codes": dict(sum((Counter(s["blocking"]) for s in slides), Counter()).most_common()),
+        "blocking_messages": dict(Counter(m for s in slides for m in s.get("blocking_msgs", [])).most_common(10)),
         "layout_codes": dict(sum((Counter(s["layout_issues"]) for s in slides), Counter()).most_common()),
         "card_patterns": dict(Counter(c["pattern"] for s in slides for c in s["cards"]).most_common()),
         "component_kinds": dict(Counter(k["kind"] for s in slides for k in s["components"]).most_common()),
@@ -245,28 +263,35 @@ def write_summary(results: dict[str, Any], path: Path) -> None:
         "",
         "| metric | value |", "|---|---|",
     ]
-    for key in ("runs_passed", "runs_errored", "compiled_pct", "first_pass_pct", "mean_retries", "cards",
-                "mean_fill", "low_fill_pct", "auto_fixes_per_slide", "layout_issues_per_slide",
-                "fit_grow_changes_per_slide", "tokens_in", "tokens_out", "cost_usd", "elapsed_s"):
-        lines.append(f"| {key} | {agg[key]} |")
-    lines += ["", f"Fill = card content height ÷ inner height (1.0 = no dead space); low fill < {LOW_FILL}.", "",
+    for key in ("runs_passed", "runs_errored", "slide_count_off", "compiled_pct", "first_pass_pct", "mean_retries",
+                "cards", "mean_fill", "low_fill_pct", "word_breaks_per_slide", "auto_fixes_per_slide",
+                "layout_issues_per_slide", "fit_grow_changes_per_slide", "tokens_in", "tokens_out", "cost_usd",
+                "elapsed_s"):
+        lines.append(f"| {key} | {agg.get(key, '-')} |")
+    lines += ["", f"Fill = card content height ÷ inner height (1.0 = no dead space); low fill < {LOW_FILL}. "
+              "Word breaks = text boxes narrower than their longest word; slide_count_off = runs whose slide "
+              "count differs from the case target.", "",
               "## Cases", "",
-              "| case | run | pass | slides | first-pass | retries | mean fill | low-fill cards | layout issues | golden match |",
-              "|---|---|---|---|---|---|---|---|---|---|"]
+              "| case | run | pass | slides (target) | first-pass | retries | mean fill | low-fill cards | word breaks "
+              "| layout issues | golden match |",
+              "|---|---|---|---|---|---|---|---|---|---|---|"]
     for c in results["cases"]:
         fills = [card["fill"] for s in c["slides"] for card in s["cards"]]
         lines.append(
             f"| {c['name']} | {c['repeat']} | {'ERROR' if c['error'] else 'PASS' if c['passed'] else 'FAIL'} "
-            f"| {len(c['slides'])} | {sum(s['first_pass_ok'] for s in c['slides'])}/{len(c['slides'])} "
+            f"| {len(c['slides'])} ({c.get('expected_slides', '-')}) "
+            f"| {sum(s['first_pass_ok'] for s in c['slides'])}/{len(c['slides'])} "
             f"| {sum(s['retries'] for s in c['slides'])} | {round(mean(fills), 2) if fills else '-'} "
-            f"| {sum(f < LOW_FILL for f in fills)} | {sum(sum(s['layout_issues'].values()) for s in c['slides'])} "
+            f"| {sum(f < LOW_FILL for f in fills)} | {sum(s.get('word_breaks', 0) for s in c['slides'])} "
+            f"| {sum(sum(s['layout_issues'].values()) for s in c['slides'])} "
             f"| {c.get('golden_match', '-')} |")
     for title, key in (("Auto-fix codes (first attempt)", "auto_fix_codes"),
                        ("Blocking codes during retries", "blocking_codes"),
+                       ("Blocking messages (first 3 per slide)", "blocking_messages"),
                        ("Layout-audit codes (final attempt)", "layout_codes"),
                        ("Card patterns", "card_patterns"), ("Planner component kinds", "component_kinds")):
         lines += ["", f"## {title}", ""]
-        lines += [f"- `{k}`: {v}" for k, v in agg[key].items()] or ["- none"]
+        lines += [f"- `{k}`: {v}" for k, v in agg.get(key, {}).items()] or ["- none"]
     worst = sorted(((c, s) for c in results["cases"] for s in c["slides"] if s["cards"]),
                    key=lambda cs: _slide_fill(cs[1]))[:10]
     lines += ["", "## Lowest-fill slides", ""]

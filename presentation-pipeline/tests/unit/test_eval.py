@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from scripts import eval_compare, eval_import, eval_run
-from scripts.eval_metrics import card_metrics, pattern_match
+from scripts.eval_metrics import card_metrics, pattern_match, word_breaks
 from scripts.make_gj_h1_case import CASE, build_case
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -62,7 +62,7 @@ def _attempt(slide, retry, tier, pptx, *, ok=True, issues=(), diags=(), layout=(
         "slide": slide, "retry": retry, "tier": tier,
         "normalize_result": {"issues": [{"code": c, "auto_fixed": True} for c in issues]},
         "compile_result": {"ok": ok, "pptx_path": str(pptx) if ok else None,
-                           "diagnostics": [{"type": d, "message": ""} for d in diags]},
+                           "diagnostics": [{"type": d, "message": f"{d} at line 3"} for d in diags]},
         "layout_issues": [{"code": c} for c in layout],
     }
 
@@ -89,6 +89,8 @@ def test_per_slide_metrics_from_stream(deck_result):
     s0, s1 = deck_result["slides"]
     assert (s0["first_pass_ok"], s0["retries"], s0["max_tier"], s0["compiled"]) == (False, 1, 1, True)
     assert s0["blocking"] == {"INVALID_CHILD": 1}
+    assert s0["blocking_msgs"] == ["INVALID_CHILD: INVALID_CHILD at line 3"]
+    assert (s0["word_breaks"], deck_result["expected_slides"]) == (0, 1)
     assert s0["auto_fixes"] == {"ICON_NAME_NORMALIZED": 1}  # first attempt only
     assert s0["layout_issues"] == {"FONT_TOO_SMALL": 1}  # final attempt
     assert s0["components"] == [{"kind": "kpi_row", "weight": "hero", "design_hint": "accent"}]
@@ -116,7 +118,22 @@ def test_aggregate_summary_bundle_import_compare(deck_result, tmp_path, monkeypa
     dest = eval_import.import_bundle(zip_path, tmp_path / "docs", tmp_path / "imported")
     assert dest.name == "base"
     assert json.loads((dest / "results.json").read_text(encoding="utf-8"))["label"] == "base"
-    assert "## Review renders" in (dest / "summary.md").read_text(encoding="utf-8")
+    summary = (dest / "summary.md").read_text(encoding="utf-8")
+    assert "## Review renders" in summary and "| slide_count_off | 1 |" in summary  # 2 slides, target 1
+
+    # a second bundle with the same label merges; re-running a case replaces its earlier runs
+    other = json.loads(json.dumps(results))
+    for c in other["cases"]:
+        c["name"] = "deck-y"
+    out2 = tmp_path / "eval" / "base-20260924-000000"
+    shutil.copytree(out_dir / "slides" / "deck-x__r1", out2 / "slides" / "deck-y__r1")
+    (out2 / "results.json").write_text(json.dumps(other), encoding="utf-8")
+    eval_run.write_summary(other, out2 / "summary.md")
+    eval_import.import_bundle(eval_run.make_bundle(out2), tmp_path / "docs", tmp_path / "imported")
+    eval_import.import_bundle(zip_path, tmp_path / "docs", tmp_path / "imported")
+    merged = json.loads((dest / "results.json").read_text(encoding="utf-8"))
+    assert sorted(c["name"] for c in merged["cases"]) == ["deck-x", "deck-y"]
+    assert merged["aggregate"]["slides"] == 4
 
     better = json.loads(json.dumps(results))
     better["label"] = "phase-1"
@@ -150,6 +167,7 @@ def test_stream_case_tags_validator_attempts_on_real_graph():
         return resp
 
     def with_plans(**kwargs):
+        seen.update(kwargs)
         state = real_initial_state(**kwargs)
         state["slide_plans"] = [
             {"slide_index": i, "slide_type": "data", "layout_hint": "", "content_data": {}, "data_provenance": {},
@@ -158,7 +176,7 @@ def test_stream_case_tags_validator_attempts_on_real_graph():
         ]
         return state
 
-    real_initial_state = src.state.initial_state
+    real_initial_state, seen = src.state.initial_state, {}
     ok = {"ok": True, "pptx_path": "/tmp/x.pptx", "diagnostics": [], "warnings": [], "retryable": False}
     with patch("src.agents.generator.get_llm") as get_llm, \
          patch("src.agents.validator.validate_xml", return_value={"ok": True, "diagnostics": [], "warnings": []}), \
@@ -169,9 +187,29 @@ def test_stream_case_tags_validator_attempts_on_real_graph():
         final, attempts = eval_run._stream_case({"name": "t", "request": "two slides"}, "eval-test")
 
     assert final["passed"] is True
+    assert seen["test_case"]["slide_count"] == seen["deck_min_threshold"] == 1  # exact target reaches the planner
     assert [(a["slide"], a["retry"]) for a in attempts] == [(0, 0), (1, 0)]
     codes = [{i["code"] for i in a["normalize_result"]["issues"]} for a in attempts]
     assert "UNKNOWN_ICON_REMOVED" not in codes[0] and "UNKNOWN_ICON_REMOVED" in codes[1]
+
+
+def test_slide_target_beats_deck_settings_default():
+    """DeckSettings defaults to 8 slides; the eval must pass each case's own target."""
+    assert eval_run._slide_target({"expect": {"slide_count": 6}}) == 6
+    assert eval_run._slide_target({"slide_count": 14, "expect": {"slide_count": 6}}) == 14
+    assert eval_run._slide_target({"name": "kpi-row"}) == 1
+
+
+def test_word_breaks_on_a_crushed_tile(tmp_path, blinkit_pptx):
+    if not shutil.which("node"):
+        pytest.skip("node not installed")
+    xml = tmp_path / "crushed.xml"
+    xml.write_text('<Slide><HStack w="1280" h="720" gap="8"><VStack w="40" backgroundColor="FFFFFF">'
+                   '<Text fontSize="22">Winner</Text></VStack><VStack w="max"><Text>ok</Text></VStack>'
+                   '</HStack></Slide>', encoding="utf-8")
+    subprocess.run(["node", str(_COMPILER), str(xml), str(tmp_path)], check=True, capture_output=True, timeout=120)
+    assert word_breaks(tmp_path / "presentation.pptx") == 1
+    assert word_breaks(blinkit_pptx) == 0
 
 
 def test_pick_reviews_failed_first_then_lowest_fill():

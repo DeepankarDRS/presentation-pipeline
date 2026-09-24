@@ -151,6 +151,17 @@ def card_metrics(pptx_path: str | Path, slide: int = 1) -> list[dict]:
     return cards
 
 
+def word_breaks(pptx_path: str | Path, slide: int = 1) -> int:
+    """Text boxes whose longest word is wider than the box (~0.55 em per character): the word is
+    split mid-word ("Wi / nn / er"). Crushed cards still read as 'full', so fill cannot see this."""
+    with zipfile.ZipFile(pptx_path) as z:
+        shapes = _shapes(z.read(f"ppt/slides/slide{slide}.xml"))
+    return sum(
+        max(len(w) for w in s["text"].split()) * 0.55 * s["max_font"] * 4 / 3 > s["w"] + 1
+        for s in shapes if s["kind"] == "sp" and s["text"] and s["max_font"]
+    )
+
+
 def pattern_match(generated: list[str], golden: list[str]) -> float:
     """Multiset overlap of card patterns: sum(min) / sum(max). 1.0 = same mix."""
     a, b = Counter(generated), Counter(golden)
