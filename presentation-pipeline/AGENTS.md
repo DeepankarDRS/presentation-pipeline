@@ -39,7 +39,7 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Re-render XML without the API | `python -m scripts.render_check --in <dir-of-xml> --out output/render_check` (compile + layout audit + summary.md) |
 | Unit tests (LLM + compiler mocked, no key) | `pytest tests/unit -q` |
 
-Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-09-23: 370 pass, 4 fail — not regressions):
+Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-09-24: 396 pass, 4 fail — not regressions):
 `test_critic.py::test_critic_medium_only_passes`, `test_layout_audit.py::test_font_at_minimum_ok`, and two routing tests in `test_graph.py` (`*_budget_exhausted*`: expect `evaluator`/`slide_router`, code now routes to `visual_repairer` — tests or routing are stale).
 Always record your own baseline (`pytest tests/unit -q`) before a change and compare against it.
 
@@ -56,7 +56,8 @@ then check the run's XML in `output/runs/<run_id>/`: no HStack/Icon inside `<Td>
 How to run it across two devices (ALL building + commits on this PC; the company test PC only runs evals and results come back by email), with copy-paste session prompts: `docs/session-kickoff.md`.
 Phase 0 quality baseline (needs OPENAI_API_KEY) -> 1 sizing grammar (grow/minH instead of pixel budgets; from docs/layout-sizing-plan.md) -> 2 deterministic data-shape routing + planner prompt fixes -> 3 real font metrics -> 4 derived nodes (KpiTile/TableCard/IconList) -> 5 remaining derived nodes + computed table/diagram sizing -> 6 measured critic loop. Each phase lists its files, tests, acceptance criteria and the decisions (marked DECIDE) to confirm with the user first.
 
-## Where work stands (2026-09-23)
+## Where work stands (2026-09-24)
+- **Phase 0 done**: eval harness (`scripts/eval_run.py`, `eval_import.py`, `eval_compare.py`, `eval_metrics.py`), baseline in `docs/eval/baseline/` (tag `eval-baseline`: `gj-h1-regen` × 1 — first-pass 50%, 2 lost slides, golden match 0.38), golden target in `docs/eval/golden-gj-h1/`. Deterministic normalizer fixes merged (replay: first-pass 7/14 → 14/14). Next: Phase 1 on branch `phase-1-sizing`. Details + findings: roadmap Phase 0 section.
 - Branch `feat/golden-reference-grounding`. Recent: design-hint/nesting/icon enforcement, fit-grow pass (`dd5c152`), layout archetype system (`d2b75b6`), 14pt minimum font, Cursor handoff docs.
 - `house-style.yaml` and `generator/system.j2` WIP edits are committed. `lxml` (used by `src/compiler/pptx_merge.py`) is now a declared dependency.
 - Not synced: local scratch outputs in `llm_test/` (generated .pptx / slide dumps).

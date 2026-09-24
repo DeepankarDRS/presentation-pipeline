@@ -13,7 +13,7 @@
 >
 > Before coding:
 > 1. `git pull`, then create/checkout the phase branch named in docs/session-kickoff.md §3.
-> 2. Record the unit-test baseline: `uv run pytest tests/unit -q` (known on 2026-09-23: 370 pass, 4 pre-existing failures).
+> 2. Record the unit-test baseline: `uv run pytest tests/unit -q` (known on 2026-09-24: 396 pass, 4 pre-existing failures).
 > 3. If the phase depends on eval results, import them first (`docs/eval/<label>/summary.md`); if missing, ask me for the bundle.
 > 4. Summarise the phase, list its DECIDE points with your recommendation, and ask me. Do not code until I answer.
 >
