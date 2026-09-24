@@ -21,6 +21,10 @@
     "fit_grow_changes_per_slide": 0.29,
     "word_breaks_per_slide": 0.07,
     "text_overflows_per_slide": 0.0,
+    "table_spill_slides": 3,
+    "table_spill_px": 187,
+    "tables_overfull_slides": 0,
+    "empty_cells": 0,
     "invented_numbers": 0,
     "tokens_in": 324928,
     "tokens_out": 49707,
@@ -130,7 +134,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.25
+          "golden_match": 0.25,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 1,
@@ -204,7 +210,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.083
+          "golden_match": 0.083,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 2,
@@ -294,7 +302,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.143
+          "golden_match": 0.143,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 3,
@@ -397,7 +407,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 1.0
+          "golden_match": 1.0,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 4,
@@ -550,7 +562,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.583
+          "golden_match": 0.583,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 5,
@@ -715,7 +729,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.667
+          "golden_match": 0.667,
+          "table_spill": 68,
+          "empty_cells": 0
         },
         {
           "index": 6,
@@ -841,7 +857,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.455
+          "golden_match": 0.455,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 7,
@@ -899,7 +917,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.5
+          "golden_match": 0.5,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 8,
@@ -957,7 +977,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.667
+          "golden_match": 0.667,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 9,
@@ -998,7 +1020,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 1.0
+          "golden_match": 1.0,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 10,
@@ -1084,7 +1108,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.25
+          "golden_match": 0.25,
+          "table_spill": 105,
+          "empty_cells": 0
         },
         {
           "index": 11,
@@ -1125,7 +1151,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.0
+          "golden_match": 0.0,
+          "table_spill": 0,
+          "empty_cells": 0
         },
         {
           "index": 12,
@@ -1198,7 +1226,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.333
+          "golden_match": 0.333,
+          "table_spill": 14,
+          "empty_cells": 0
         },
         {
           "index": 13,
@@ -1304,7 +1334,9 @@
           "text_overflows": 0,
           "invented_numbers": 0,
           "invented_examples": [],
-          "golden_match": 0.714
+          "golden_match": 0.714,
+          "table_spill": 0,
+          "empty_cells": 0
         }
       ],
       "golden_match": 0.475,

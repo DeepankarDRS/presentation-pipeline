@@ -204,6 +204,17 @@ def table_spill(pptx_path: str | Path, slide: int = 1) -> int:
     return round(spill)
 
 
+def empty_cells(pptx_path: str | Path, slide: int = 1) -> int:
+    """Table cells with no text (merged continuation cells excluded): data the generator dropped
+    (e.g. an H1 GMV column left blank). invented_numbers only sees numbers added, not missing."""
+    with zipfile.ZipFile(pptx_path) as z:
+        root = ET.fromstring(z.read(f"ppt/slides/slide{slide}.xml"))
+    return sum(
+        not "".join(t.text or "" for t in tc.iter(f"{{{_NS['a']}}}t")).strip()
+        for tc in root.iter(f"{{{_NS['a']}}}tc") if not (tc.get("hMerge") or tc.get("vMerge"))
+    )
+
+
 _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
 _CONTENT_ATTRS = ("value", "label", "title", "description", "date", "text", "name")
 

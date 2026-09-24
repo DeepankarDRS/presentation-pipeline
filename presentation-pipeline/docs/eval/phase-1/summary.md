@@ -15,6 +15,10 @@
 | low_fill_pct | 10.9 |
 | word_breaks_per_slide | 0.07 |
 | text_overflows_per_slide | 0.0 |
+| table_spill_slides | 3 |
+| table_spill_px | 187 |
+| tables_overfull_slides | 0 |
+| empty_cells | 0 |
 | invented_numbers | 0 |
 | auto_fixes_per_slide | 0.71 |
 | layout_issues_per_slide | 0.0 |
@@ -24,7 +28,7 @@
 | cost_usd | 1.0475 |
 | elapsed_s | 328.9 |
 
-Fill = card content height ÷ inner height (1.0 = no dead space); low fill < 0.7. Word breaks = text boxes narrower than their longest word; text overflows = text needing 2+ lines more than its box; invented numbers = numbers on slides that are not in the brief; slide_count_off = runs whose slide count differs from the case target.
+Fill = card content height ÷ inner height (1.0 = no dead space); low fill < 0.7. Word breaks = text boxes narrower than their longest word; text overflows = text needing 2+ lines more than its box; table spill = table rows past their frame (slides, px); tables over-full = slides where fit-grow could not fit a table (the slide holds more than 720 px); empty cells = blank table cells (dropped data); invented numbers = numbers on slides that are not in the brief; slide_count_off = runs whose slide count differs from the case target.
 
 ## Cases
 

@@ -15,7 +15,7 @@ from statistics import mean
 
 _HEADLINE = ("runs_passed", "slide_count_off", "compiled_pct", "first_pass_pct", "mean_retries", "mean_fill",
              "low_fill_pct", "word_breaks_per_slide", "text_overflows_per_slide", "table_spill_slides",
-             "table_spill_px", "invented_numbers",
+             "table_spill_px", "tables_overfull_slides", "empty_cells", "invented_numbers",
              "auto_fixes_per_slide", "layout_issues_per_slide", "fit_grow_changes_per_slide",
              "tokens_in", "tokens_out", "cost_usd")
 

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.eval_metrics import table_spill
+from scripts.eval_metrics import empty_cells, table_spill
 
 _ROOT = Path(__file__).resolve().parents[2]
 _FIT = _ROOT / "tests" / "fixtures" / "fit_grow"
@@ -111,3 +111,15 @@ def test_cells_without_font_get_body_size(tmp_path):
     assert any("without fontSize -> 14px" in r for r in on["fitGrow"])
     fonts = _td_fonts(on["xml"])
     assert len(fonts) == 12 and all(14 <= f <= 18 for f in fonts)
+
+
+def test_empty_cells_counts_dropped_data(tmp_path):
+    """A blank cell (the normalizer fills empty <Td> with a space) is counted; filled cells are not."""
+    xml = tmp_path / "t.xml"
+    xml.write_text(
+        '<Slide><VStack w="1280" h="720" padding="36"><Table><Col /><Col /><Col />'
+        '<Tr><Td fontSize="14">Blinkit</Td><Td fontSize="14"> </Td><Td fontSize="14">6.69x</Td></Tr>'
+        '<Tr><Td fontSize="14">Swiggy</Td><Td fontSize="14"> </Td><Td fontSize="14"> </Td></Tr>'
+        '</Table></VStack></Slide>', encoding="utf-8")
+    _compile(xml, tmp_path / "on")
+    assert empty_cells(tmp_path / "on" / "presentation.pptx") == 3
