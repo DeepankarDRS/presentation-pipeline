@@ -108,6 +108,7 @@ def test_aggregate_summary_bundle_import_compare(deck_result, tmp_path, monkeypa
     agg = results["aggregate"]
     assert (agg["slides"], agg["first_pass_pct"], agg["mean_retries"], agg["cards"]) == (2, 50.0, 0.5, 18)
     assert agg["blocking_codes"] == {"INVALID_CHILD": 1}
+    assert (agg["tables_overfull_slides"], agg["empty_cells"]) == (0, 0)
     (out_dir / "results.json").write_text(json.dumps(results), encoding="utf-8")
     eval_run.write_summary(results, out_dir / "summary.md")
     assert "| first_pass_pct | 50.0 |" in (out_dir / "summary.md").read_text(encoding="utf-8")

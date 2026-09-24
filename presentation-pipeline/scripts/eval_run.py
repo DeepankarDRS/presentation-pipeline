@@ -42,7 +42,7 @@ _PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PIPELINE_ROOT))
 
 from scripts.eval_metrics import (  # noqa: E402
-    LOW_FILL, card_metrics, invented_numbers, pattern_match, text_overflows, word_breaks,
+    LOW_FILL, card_metrics, empty_cells, invented_numbers, pattern_match, table_spill, text_overflows, word_breaks,
 )
 from src.compiler.layout_audit import audit_layout  # noqa: E402
 from src.utils.case_loader import load_case  # noqa: E402
@@ -136,7 +136,8 @@ def text_metrics(slide_dir: Path, brief: str | None) -> dict[str, Any]:
     """Crushed/overflowing text and invented numbers for one compiled slide folder."""
     pptx, xml = slide_dir / "presentation.pptx", slide_dir / "input.xml"
     invented = invented_numbers(xml.read_text(encoding="utf-8"), brief) if brief is not None and xml.exists() else []
-    return {"word_breaks": word_breaks(pptx), "text_overflows": text_overflows(pptx),
+    return {"word_breaks": word_breaks(pptx), "text_overflows": text_overflows(pptx), "table_spill": table_spill(pptx),
+            "empty_cells": empty_cells(pptx),
             "invented_numbers": len(invented), "invented_examples": invented[:8]}
 
 
@@ -257,6 +258,10 @@ def aggregate(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "fit_grow_changes_per_slide": round(sum(len(s["fit_grow"]) for s in slides) / n, 2),
         "word_breaks_per_slide": round(sum(s.get("word_breaks", 0) for s in slides) / n, 2),
         "text_overflows_per_slide": round(sum(s.get("text_overflows", 0) for s in slides) / n, 2),
+        "table_spill_slides": sum(s.get("table_spill", 0) > 1 for s in slides),
+        "table_spill_px": sum(s.get("table_spill", 0) for s in slides),
+        "tables_overfull_slides": sum(any("over-full slide" in r for r in s["fit_grow"]) for s in slides),
+        "empty_cells": sum(s.get("empty_cells", 0) for s in slides),
         "invented_numbers": sum(s.get("invented_numbers", 0) for s in slides),
         "tokens_in": sum(c["tokens_in"] for c in cases),
         "tokens_out": sum(c["tokens_out"] for c in cases),
@@ -287,13 +292,14 @@ def write_summary(results: dict[str, Any], path: Path) -> None:
     ]
     for key in ("runs_passed", "runs_errored", "slide_count_off", "compiled_pct", "first_pass_pct", "mean_retries",
                 "cards", "mean_fill", "low_fill_pct", "word_breaks_per_slide", "text_overflows_per_slide",
-                "invented_numbers", "auto_fixes_per_slide",
+                "table_spill_slides", "table_spill_px", "tables_overfull_slides", "empty_cells", "invented_numbers",
+                "auto_fixes_per_slide",
                 "layout_issues_per_slide", "fit_grow_changes_per_slide", "tokens_in", "tokens_out", "cost_usd",
                 "elapsed_s"):
         lines.append(f"| {key} | {agg.get(key, '-')} |")
     lines += ["", f"Fill = card content height ÷ inner height (1.0 = no dead space); low fill < {LOW_FILL}. "
               "Word breaks = text boxes narrower than their longest word; text overflows = text needing 2+ "
-              "lines more than its box; invented numbers = numbers on slides that are not in the brief; "
+              "lines more than its box; table spill = table rows past their frame (slides, px); tables over-full = slides where fit-grow could not fit a table (the slide holds more than 720 px); empty cells = blank table cells (dropped data); invented numbers = numbers on slides that are not in the brief; "
               "slide_count_off = runs whose slide count differs from the case target.", "",
               "## Cases", "",
               "| case | run | pass | slides (target) | first-pass | retries | mean fill | low-fill cards | word breaks "

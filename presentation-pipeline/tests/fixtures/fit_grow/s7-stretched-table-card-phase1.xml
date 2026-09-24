@@ -1,0 +1,56 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" chartSurface="FFFFFF" chartInk="334155" />
+<!-- Real Phase 1 output (eval phase-1, gj-h1-regen slide 11, 2026-09-24): a hero table whose card got
+     grow (against the grammar) -> dead space under the rows; the generator's equal column split wraps
+     Key Actions to 3 lines while Goal/Move has room. Phase 5 Step 3: widths with the fewest wrapped
+     lines, then the main table grows its text (<= 18) and rows into the card's dead space. -->
+<Slide><VStack w="1280" h="720" padding="36" gap="14" alignItems="stretch" backgroundColor="$surface">
+  <HStack justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">WAY FORWARD</Text>
+      <Text fontSize="29" color="$textMain" bold="true"><Mark color="E0F2EC">Way Forward</Mark> · H2 2026</Text>
+      <Text fontSize="14" color="$textMuted">Five strategic pillars to unlock scale and efficiency in H2</Text>
+    </VStack>
+  </HStack>
+  <VStack padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" borderLeft.color="$accent" borderLeft.width="4" border.color="$border" border.width="1" grow="1">
+    <Table defaultRowHeight="64" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="160" /><Col /><Col /><Col width="160" />
+      <Tr height="40">
+        <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="15">Pillar</Td>
+        <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="15">Goal / Move</Td>
+        <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="15">Key Actions</Td>
+        <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="15" textAlign="right">Metric Target</Td>
+      </Tr>
+      <Tr>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Format Rebalance</Td>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Grow SILB/Browse/SB share from ~65% to ≥80% by Dec</Td>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Extend April format shift to Blinkit + Zepto Curd; scale Swiggy Browse Boost (₹48K → ₹1.5L); retain SP only for branded/deep-funnel</Td>
+        <Td backgroundColor="F1F5FD" color="$accent" fontSize="14" bold="true" textAlign="right">+0.6x lift on blended ROAS</Td>
+      </Tr>
+      <Tr>
+        <Td backgroundColor="F7F9FC" color="$textMain" fontSize="14">City Re-allocation</Td>
+        <Td backgroundColor="F7F9FC" color="$textMain" fontSize="14">Route next rupee to most efficient city</Td>
+        <Td backgroundColor="F7F9FC" color="$textMain" fontSize="14">-25% Bengaluru Zepto spend; scale Chennai (9.1x ROI) from ₹0.6L → ₹2L; extend Paneer-HYD model to BLR + CHE</Td>
+        <Td backgroundColor="F7F9FC" color="$accent" fontSize="14" bold="true" textAlign="right">Blended ACOS 20% → 17%</Td>
+      </Tr>
+      <Tr>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Day-part Rollout</Td>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Deploy 6–11 AM slot on Blinkit for Milk/Paneer/Curd</Td>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Build second slot for Ghee (weekend cook prep); split every category into AM/PM sub-campaigns</Td>
+        <Td backgroundColor="F1F5FD" color="$accent" fontSize="14" bold="true" textAlign="right">Blinkit MoM recovery +15% by Aug</Td>
+      </Tr>
+      <Tr>
+        <Td backgroundColor="F7F9FC" color="$textMain" fontSize="14">SKU Discipline</Td>
+        <Td backgroundColor="F7F9FC" color="$textMain" fontSize="14">Single SKU tiering framework across all platforms</Td>
+        <Td backgroundColor="F7F9FC" color="$textMain" fontSize="14">A-tier (top 20% by GMV): ROAS floor 5x, protect at all costs; B-tier: efficiency-testing, day-parted; C-tier: harvest visibility, no paid support</Td>
+        <Td backgroundColor="F7F9FC" color="$accent" fontSize="14" bold="true" textAlign="right">8–10% spend freed up</Td>
+      </Tr>
+      <Tr>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Measurement Uplift</Td>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">Weekly ROAS+ACOS scorecard per platform</Td>
+        <Td backgroundColor="F1F5FD" color="$textMain" fontSize="14">AM/PM tagging for every campaign; standardize ACOS calc; add NTB % tracking on Swiggy/Zepto</Td>
+        <Td backgroundColor="F1F5FD" color="$accent" fontSize="14" bold="true" textAlign="right">Monthly → weekly cycles</Td>
+      </Tr>
+    </Table>
+  </VStack>
+  <Text fontSize="14" color="$textMuted">Source: Q-commerce H1 2026 performance review, internal strategy team</Text>
+</VStack></Slide>

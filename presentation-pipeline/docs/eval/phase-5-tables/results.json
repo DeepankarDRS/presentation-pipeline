@@ -1,0 +1,1484 @@
+{
+  "label": "phase-5-tables",
+  "created": "2026-09-24T12:53:49",
+  "git_commit": "566fc64",
+  "models_sha": "919e01fa",
+  "fit_grow": "1",
+  "aggregate": {
+    "runs": 1,
+    "runs_passed": 1,
+    "runs_errored": 0,
+    "slides": 14,
+    "slide_count_off": 0,
+    "compiled_pct": 100.0,
+    "first_pass_pct": 85.7,
+    "mean_retries": 0.21,
+    "cards": 73,
+    "mean_fill": 0.947,
+    "low_fill_pct": 2.7,
+    "auto_fixes_per_slide": 1.0,
+    "layout_issues_per_slide": 0.07,
+    "fit_grow_changes_per_slide": 1.29,
+    "word_breaks_per_slide": 0.21,
+    "text_overflows_per_slide": 0.0,
+    "table_spill_slides": 3,
+    "table_spill_px": 326,
+    "tables_overfull_slides": 3,
+    "empty_cells": 4,
+    "invented_numbers": 5,
+    "tokens_in": 329965,
+    "tokens_out": 51259,
+    "cost_usd": 1.07,
+    "elapsed_s": 354.3,
+    "auto_fix_codes": {
+      "AMPERSAND_ESCAPED": 6,
+      "EMPTY_TEXT_REMOVED": 3,
+      "ATTR_CONFLICT_FIXED": 2,
+      "UNKNOWN_ICON_REMOVED": 2,
+      "EMPTY_CELL_FILLED": 1
+    },
+    "blocking_codes": {
+      "INVALID_VALUE": 3
+    },
+    "blocking_messages": {
+      "INVALID_VALUE: addTextBox: width must be a finite positive EMU value": 1,
+      "INVALID_VALUE: addTextBox: height must be a finite positive EMU value": 1
+    },
+    "layout_codes": {
+      "COL_WIDTH_SUM": 1
+    },
+    "card_patterns": {
+      "text_card": 29,
+      "kpi_tile": 28,
+      "table_card": 8,
+      "chart_card": 6,
+      "dark_panel": 2
+    },
+    "component_kinds": {
+      "title": 13,
+      "table": 9,
+      "kpi_row": 8,
+      "bullet_list": 8,
+      "narrative": 7,
+      "chart": 5,
+      "caption": 3,
+      "timeline": 2
+    }
+  },
+  "cases": [
+    {
+      "name": "gj-h1-regen",
+      "repeat": 1,
+      "run_id": "gj-h1-regen-5a9e2d",
+      "passed": true,
+      "error": null,
+      "tokens_in": 329965,
+      "tokens_out": 51259,
+      "cost": 1.070002,
+      "elapsed": 354.3,
+      "expected_slides": 14,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 14 -> 20pt), spacing x1.40, fill 62% -> 68%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "hero",
+              "design_hint": "marker-highlight 'H1 2026' in the title for emphasis"
+            },
+            {
+              "kind": "narrative",
+              "weight": "peer",
+              "design_hint": "accent border on the card to set it apart as the opening context"
+            },
+            {
+              "kind": "narrative",
+              "weight": "peer",
+              "design_hint": "marker-highlight the phrase 'what worked, what didn't, and where to scale next'"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.865,
+              "frame": [
+                0,
+                0,
+                717,
+                720
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.993,
+              "frame": [
+                56,
+                352,
+                605,
+                124
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.981,
+              "frame": [
+                56,
+                488,
+                605,
+                100
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.635,
+              "frame": [
+                717,
+                0,
+                563,
+                720
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.2,
+          "empty_cells": 0
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "EMPTY_CELL_FILLED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table columns -> [89, 73, 59, 62, 62, 105] (fewest wrapped lines)",
+            "slide 1: table rows +319px to fit their wrapped text",
+            "slide 1: table squeezed 157px on an over-full slide: rows tightened to their text (479 -> 479px), still 157px short"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'H1 2026' in the title to anchor the period"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "peer",
+              "design_hint": "icon in each tile: store for GMV, megaphone for Ad Spend, shopping-cart for Ad Sales, trending-up for ROAS; accent border on the card"
+            },
+            {
+              "kind": "table",
+              "weight": "peer",
+              "design_hint": "shade the Blinkit row to highlight efficiency, marker-highlight Swiggy's Jun ROAS 7.37x cell, accent border on the card"
+            },
+            {
+              "kind": "chart",
+              "weight": "hero",
+              "design_hint": "highlight Zepto series in accent color, Blinkit and Swiggy in muted tones; add marker on Blinkit Apr bar for peak GMV; accent border on the card"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "marker-highlight '6.69x' and '7.37x' in the text to emphasize efficiency and opportunity"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.922,
+              "frame": [
+                36,
+                105,
+                223,
+                79
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.902,
+              "frame": [
+                271,
+                105,
+                381,
+                79
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.922,
+              "frame": [
+                664,
+                105,
+                416,
+                79
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.873,
+              "frame": [
+                1092,
+                105,
+                152,
+                79
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.999,
+              "frame": [
+                36,
+                198,
+                716,
+                459
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 1.0,
+              "frame": [
+                766,
+                198,
+                478,
+                371
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.991,
+              "frame": [
+                766,
+                578,
+                478,
+                78
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 157,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.417,
+          "empty_cells": 4
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Trend' in the title to reinforce the focus on trajectory"
+            },
+            {
+              "kind": "chart",
+              "weight": "hero",
+              "design_hint": "highlight Swiggy and Zepto series with accent colors; annotate May and June points for Zepto and Blinkit with callout dots; muted gridlines"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point: upward arrow for Swiggy and Zepto growth, downward arrow for Blinkit correction; marker-highlight percentage values"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize 'directional analysis, not causation' in the caption"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "chart_card",
+              "fill": 1.0,
+              "frame": [
+                36,
+                111,
+                1208,
+                412
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.997,
+              "frame": [
+                36,
+                537,
+                1208,
+                115
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.2,
+          "empty_cells": 0
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "EMPTY_TEXT_REMOVED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 160 -> 172px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'June Snapshot' in the title to emphasize recency"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "accent border on the card; use icon in each tile (store for GMV, spend for Ad Spend, trending-up for ROAS, pie for Ad-Sales %); highlight Zepto share in GMV and Blinkit share in Ad-Sales %"
+            },
+            {
+              "kind": "table",
+              "weight": "peer",
+              "design_hint": "shade the Zepto row to emphasize volume leadership; highlight Swiggy's ROAS and MoM GMV cells in accent color; marker-highlight Blinkit's Ad-Sales % cell"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point: trending-up for Swiggy, store for Zepto, warning for Blinkit; bold the key phrase in each bullet"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.99,
+              "frame": [
+                36,
+                131,
+                260,
+                149
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.926,
+              "frame": [
+                308,
+                131,
+                245,
+                149
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.99,
+              "frame": [
+                565,
+                131,
+                353,
+                149
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.99,
+              "frame": [
+                930,
+                131,
+                314,
+                149
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.78,
+              "frame": [
+                36,
+                294,
+                1208,
+                232
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.997,
+              "frame": [
+                36,
+                540,
+                1208,
+                111
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 1.0,
+          "empty_cells": 0
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": false,
+          "retries": 1,
+          "max_tier": 1,
+          "auto_fixes": {
+            "EMPTY_TEXT_REMOVED": 1
+          },
+          "blocking": {
+            "INVALID_VALUE": 1
+          },
+          "blocking_msgs": [
+            "INVALID_VALUE: addTextBox: width must be a finite positive EMU value"
+          ],
+          "layout_issues": {
+            "COL_WIDTH_SUM": 1
+          },
+          "fit_grow": [
+            "slide 1: table rows +69px to fit their wrapped text"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Blinkit' in the title"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "peer",
+              "design_hint": "accent border on the ROAS tile to show 'best of 3 platforms'; status dot beside each KPI; CPM as sub-label in Ad Spend tile"
+            },
+            {
+              "kind": "table",
+              "weight": "peer",
+              "design_hint": "highlight the Curd row with accent color as 'star'; shade the Paneer row to indicate drag; bold the highest ROAS cell"
+            },
+            {
+              "kind": "table",
+              "weight": "peer",
+              "design_hint": "highlight the Recommendation row for ROAS; bold the NTB% in Search row; shade the Ad Spend column to show 1/3rd spend for Recommendation"
+            },
+            {
+              "kind": "chart",
+              "weight": "peer",
+              "design_hint": "accent border on the chart; use category colors for each bar; bold the highest bar (Milk 500ml)"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point: trophy for Curd, warning for Paneer, upward arrow for Recommendation, user-plus for NTB; marker-highlight 'retain' in last point"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.994,
+              "frame": [
+                36,
+                130,
+                180,
+                134
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.994,
+              "frame": [
+                228,
+                130,
+                180,
+                134
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.994,
+              "frame": [
+                420,
+                130,
+                180,
+                134
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.736,
+              "frame": [
+                612,
+                130,
+                180,
+                134
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.995,
+              "frame": [
+                804,
+                130,
+                180,
+                134
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.784,
+              "frame": [
+                36,
+                280,
+                340,
+                233
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.995,
+              "frame": [
+                390,
+                280,
+                340,
+                233
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.997,
+              "frame": [
+                36,
+                529,
+                1208,
+                121
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.7,
+          "empty_cells": 0
+        },
+        {
+          "index": 5,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1,
+            "EMPTY_TEXT_REMOVED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table columns -> [141, 87, 75, 75, 72] (fewest wrapped lines)",
+            "slide 1: table rows +60px to fit their wrapped text",
+            "slide 1: table squeezed 71px on an over-full slide: rows tightened to their text (220 -> 220px), still 71px short",
+            "slide 1: table rows +45px to fit their wrapped text",
+            "slide 1: table squeezed 62px on an over-full slide: rows tightened to their text (165 -> 165px), still 62px short"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Swiggy Instamart' in the title"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "peer",
+              "design_hint": "accent border on the ROAS tile to show 'highest'; status dot on Ad-Sales Share tile to indicate 'lowest of 3'; sparkline trend in Sales tile"
+            },
+            {
+              "kind": "table",
+              "weight": "peer",
+              "design_hint": "highlight the Browse Boost row to show under-funded efficiency; accent border on the table card"
+            },
+            {
+              "kind": "table",
+              "weight": "peer",
+              "design_hint": "shade the Paneer row to emphasize over-delivery; accent border on the table card"
+            },
+            {
+              "kind": "chart",
+              "weight": "hero",
+              "design_hint": "use accent color for Hyderabad bars; muted for Bengaluru; annotate the Hyderabad bars with 1.5–2.3x efficiency callout"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point for emphasis; marker-highlight 'budget re-weighting overdue' and 'under-funded'"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "chart_card",
+              "fill": 0.974,
+              "frame": [
+                36,
+                104,
+                163,
+                99
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.972,
+              "frame": [
+                211,
+                104,
+                185,
+                99
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.972,
+              "frame": [
+                408,
+                104,
+                153,
+                99
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.972,
+              "frame": [
+                573,
+                104,
+                162,
+                99
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.98,
+              "frame": [
+                747,
+                104,
+                150,
+                99
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.972,
+              "frame": [
+                909,
+                104,
+                162,
+                99
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.993,
+              "frame": [
+                1083,
+                104,
+                161,
+                99
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.999,
+              "frame": [
+                36,
+                217,
+                716,
+                341
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.959,
+              "frame": [
+                766,
+                217,
+                478,
+                184
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.991,
+              "frame": [
+                766,
+                411,
+                478,
+                147
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.996,
+              "frame": [
+                36,
+                572,
+                1208,
+                86
+              ]
+            }
+          ],
+          "word_breaks": 1,
+          "text_overflows": 0,
+          "table_spill": 142,
+          "invented_numbers": 4,
+          "invented_examples": [
+            "1.21",
+            "1.34",
+            "1.52",
+            "1.68"
+          ],
+          "golden_match": 0.667,
+          "empty_cells": 0
+        },
+        {
+          "index": 6,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "UNKNOWN_ICON_REMOVED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table rows +60px to fit their wrapped text",
+            "slide 1: table squeezed 27px on an over-full slide: rows tightened to their text (220 -> 220px), still 27px short"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Zepto' in the title to distinguish platform focus"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "peer",
+              "design_hint": "color-code the lowest ROI and highest ACOS tiles in negative; add icon in each tile for metric type"
+            },
+            {
+              "kind": "chart",
+              "weight": "hero",
+              "design_hint": "accent border on the card; SB segment in primary color, SP in muted; show percent labels inside segments"
+            },
+            {
+              "kind": "table",
+              "weight": "peer",
+              "design_hint": "highlight Chennai row for efficiency (green), Bengaluru row for drag (red); bold ROI and ACOS columns"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point: star for Chennai, warning for Bengaluru, minus for Curd, refresh for Milk; marker-highlight '9.1x ROI', '38%', '26.8% ACOS'"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                36,
+                121,
+                218,
+                132
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                266,
+                121,
+                278,
+                132
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                556,
+                121,
+                165,
+                132
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                733,
+                121,
+                178,
+                132
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                923,
+                121,
+                321,
+                132
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.974,
+              "frame": [
+                36,
+                267,
+                716,
+                249
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.957,
+              "frame": [
+                766,
+                267,
+                478,
+                249
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.997,
+              "frame": [
+                36,
+                530,
+                1208,
+                124
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 27,
+          "invented_numbers": 1,
+          "invented_examples": [
+            "90.2"
+          ],
+          "golden_match": 0.778,
+          "empty_cells": 0
+        },
+        {
+          "index": 7,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.32 (e.g. 14 -> 18pt), fill 62% -> 84%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Category Intelligence' to anchor the section"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "accent border on the card; shade Blinkit Milk and Curd cells to highlight defend, Swiggy Paneer cell for expand, Zepto Curd and Milk cells for tighten; use muted fill for 'n/a'"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "peer",
+              "design_hint": "icon beside each point: shield for Defend, arrow-up for Expand, wrench for Tighten; marker-highlight key phrases (platform + category) in each bullet"
+            },
+            {
+              "kind": "narrative",
+              "weight": "minor",
+              "design_hint": "accent border on the card; emphasize the formula ROAS/ROI = Ad Sales \\u00f7 Ad Spend"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.779,
+              "frame": [
+                36,
+                110,
+                1208,
+                235
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.885,
+              "frame": [
+                36,
+                391,
+                1208,
+                178
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.988,
+              "frame": [
+                36,
+                583,
+                1208,
+                69
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.4,
+          "empty_cells": 0
+        },
+        {
+          "index": 8,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'What Worked' to set the positive tone"
+            },
+            {
+              "kind": "timeline",
+              "weight": "hero",
+              "design_hint": "accent border on the card; use a progression gradient along the timeline to reinforce momentum across months"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the card; marker-highlight 'not guaranteed causality'"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.807,
+              "frame": [
+                36,
+                110,
+                1208,
+                457
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.987,
+              "frame": [
+                36,
+                581,
+                1208,
+                71
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.667,
+          "empty_cells": 0
+        },
+        {
+          "index": 9,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table rows +13px to fit their wrapped text",
+            "slide 1: main table into spare height: cell text x1.20 (15 -> 18px), rows 353 -> 432px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Leaks to Fix' in the title to reinforce the problem-focus"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "accent border on the card; color-code the 'Leak & Metric Evidence' column in red to highlight problems, and the 'H2 Fix' column in green to highlight solutions"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.641,
+              "frame": [
+                36,
+                110,
+                1208,
+                468
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 1.0,
+          "empty_cells": 0
+        },
+        {
+          "index": 10,
+          "compiled": true,
+          "first_pass_ok": false,
+          "retries": 2,
+          "max_tier": 2,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "UNKNOWN_ICON_REMOVED": 1
+          },
+          "blocking": {
+            "INVALID_VALUE": 2
+          },
+          "blocking_msgs": [
+            "INVALID_VALUE: addTextBox: height must be a finite positive EMU value"
+          ],
+          "layout_issues": {},
+          "fit_grow": [],
+          "components": [
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "color-code tiles by ROI: green for ROI >7x, amber for 5-7x, red for <3x; bold spend in each value"
+            },
+            {
+              "kind": "caption",
+              "weight": "supporting",
+              "design_hint": "marker-highlight 'most efficient', 'under-funded', and '2.0x more efficient' phrases"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "peer",
+              "design_hint": "accent border on the card; use upward arrow icon for GMV lift KPI"
+            },
+            {
+              "kind": "caption",
+              "weight": "supporting",
+              "design_hint": "emphasize '-25% BLR spend' and 'redeploy to CHE + HYD' in bold"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.999,
+              "frame": [
+                40,
+                118,
+                187,
+                183
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.988,
+              "frame": [
+                239,
+                118,
+                187,
+                183
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.999,
+              "frame": [
+                438,
+                118,
+                196,
+                183
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.988,
+              "frame": [
+                646,
+                118,
+                187,
+                183
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.999,
+              "frame": [
+                845,
+                118,
+                196,
+                183
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.988,
+              "frame": [
+                1053,
+                118,
+                187,
+                183
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 1.0,
+              "frame": [
+                40,
+                311,
+                1200,
+                126
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.987,
+              "frame": [
+                40,
+                455,
+                277,
+                74
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.987,
+              "frame": [
+                327,
+                455,
+                256,
+                74
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.968,
+              "frame": [
+                593,
+                455,
+                254,
+                74
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.987,
+              "frame": [
+                857,
+                455,
+                383,
+                74
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 1.0,
+              "frame": [
+                40,
+                539,
+                1200,
+                106
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.2,
+          "empty_cells": 0
+        },
+        {
+          "index": 11,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.23 (e.g. 15 -> 18pt), fill 67% -> 88%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'H2 2026' in the title"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "hero",
+              "design_hint": "accent border on the card; bold each pillar label; marker-highlight all quantified targets (percentages, rupee values, timeframes) within bullets"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.895,
+              "frame": [
+                38,
+                120,
+                1204,
+                526
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.2,
+          "empty_cells": 0
+        },
+        {
+          "index": 12,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight the word 'Roadmap' in the title"
+            },
+            {
+              "kind": "timeline",
+              "weight": "hero",
+              "design_hint": "accent border on the timeline card; color-code each month node by theme (e.g. festive, expansion, retention); emphasize Oct '26 as festive peak"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "marker-highlight the ROAS trajectory (4.88x → 5.70x) in the text"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.809,
+              "frame": [
+                38,
+                118,
+                1204,
+                430
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.986,
+              "frame": [
+                38,
+                566,
+                1204,
+                80
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.0,
+          "empty_cells": 0
+        },
+        {
+          "index": 13,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.10 (e.g. 14 -> 15pt), fill 82% -> 86%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Support Needed' in the title to draw attention to the call to action"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "peer",
+              "design_hint": "icon beside each point to visually distinguish each enabler; marker-highlight key phrases like 'Budget flexibility', 'Creative refresh', 'Metro fill-rate', 'Pricing parity view'"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "accent border on the card; color-code GMV and ROAS in positive (green/blue), ACOS improvement in positive (green); lift the card to hero prominence"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "marker-highlight 'speed & support' in the text; accent border on the card to draw attention to the call to action"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.88,
+              "frame": [
+                36,
+                132,
+                784,
+                428
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.995,
+              "frame": [
+                834,
+                207,
+                410,
+                278
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.996,
+              "frame": [
+                852,
+                257,
+                97,
+                211
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.922,
+              "frame": [
+                959,
+                257,
+                93,
+                211
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.818,
+              "frame": [
+                1062,
+                257,
+                164,
+                211
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.987,
+              "frame": [
+                36,
+                574,
+                1208,
+                78
+              ]
+            }
+          ],
+          "word_breaks": 2,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "invented_numbers": 0,
+          "invented_examples": [],
+          "golden_match": 0.5,
+          "empty_cells": 0
+        }
+      ],
+      "golden_match": 0.495,
+      "bundle": "phase-5-tables-20260924-124706"
+    }
+  ]
+}

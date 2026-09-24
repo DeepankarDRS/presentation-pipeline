@@ -1,0 +1,32 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+<!-- Synthetic (Phase 5 Step 3): single-line cells at a generator-guessed defaultRowHeight="60" make the
+     slide over-full, so POM flex-shrinks the table box below its rows (the pptx still writes 8 x 60 px).
+     Tightening the rows toward their text makes the slide fit; fit-grow then protects the box with
+     minH = rows and the chart band (h="max" minH) gives. -->
+<Slide>
+<VStack w="1280" h="720" padding="36" gap="14" backgroundColor="$surface">
+  <Text fontSize="28" bold="true" color="$textMain">Regional sales and conversion</Text>
+  <VStack padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+    <Text fontSize="14" bold="true" color="$textMain">Sales by region (Rs Cr)</Text>
+    <Table defaultRowHeight="60" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="160" /><Col /><Col /><Col />
+      <Tr height="40"><Td fontSize="14" bold="true">Region</Td><Td fontSize="14" bold="true">Channel</Td><Td fontSize="14" bold="true" textAlign="right">Sales</Td><Td fontSize="14" bold="true" textAlign="right">ROAS</Td></Tr>
+        <Tr><Td fontSize="14">Region 1</Td><Td fontSize="14">Online grocery</Td><Td fontSize="14" textAlign="right">11.4</Td><Td fontSize="14" textAlign="right">4.1x</Td></Tr>
+        <Tr><Td fontSize="14">Region 2</Td><Td fontSize="14">Online grocery</Td><Td fontSize="14" textAlign="right">12.4</Td><Td fontSize="14" textAlign="right">5.1x</Td></Tr>
+        <Tr><Td fontSize="14">Region 3</Td><Td fontSize="14">Online grocery</Td><Td fontSize="14" textAlign="right">13.4</Td><Td fontSize="14" textAlign="right">3.1x</Td></Tr>
+        <Tr><Td fontSize="14">Region 4</Td><Td fontSize="14">Online grocery</Td><Td fontSize="14" textAlign="right">14.4</Td><Td fontSize="14" textAlign="right">4.1x</Td></Tr>
+        <Tr><Td fontSize="14">Region 5</Td><Td fontSize="14">Online grocery</Td><Td fontSize="14" textAlign="right">15.4</Td><Td fontSize="14" textAlign="right">5.1x</Td></Tr>
+        <Tr><Td fontSize="14">Region 6</Td><Td fontSize="14">Online grocery</Td><Td fontSize="14" textAlign="right">16.4</Td><Td fontSize="14" textAlign="right">3.1x</Td></Tr>
+        <Tr><Td fontSize="14">Region 7</Td><Td fontSize="14">Online grocery</Td><Td fontSize="14" textAlign="right">17.4</Td><Td fontSize="14" textAlign="right">4.1x</Td></Tr>
+    </Table>
+  </VStack>
+  <VStack grow="1" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+    <Text fontSize="14" bold="true" color="$textMain">Weekly trend</Text>
+    <Chart h="max" minH="90" chartType="bar" chartColors='["2563EB"]'>
+      <ChartSeries name="Sales">
+        <ChartDataPoint label="W1" value="12" /><ChartDataPoint label="W2" value="14" /><ChartDataPoint label="W3" value="13" />
+      </ChartSeries>
+    </Chart>
+  </VStack>
+</VStack>
+</Slide>
