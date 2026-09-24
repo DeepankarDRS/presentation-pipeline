@@ -603,7 +603,7 @@ These can be fixed independently of the plan above.
 | Date | Session | What happened | Changes to this document |
 |---|---|---|---|
 | 2026-09-24 | Architecture review | Traced the flow (graphify map + code); rendered real generator prompts; audited the four saved gj-h1 runs + CHEFFIN against the golden; revised the recommendation to keep LLM-authored XML; defined Tests 1–3 | Created |
-| 2026-09-24 | Follow-up | `AGENTS.md` "Next work" now points here and marks the roadmap halted (not committed yet); added `scripts/eval_lineage.py` (not committed yet), which reproduces §3.2 exactly; planned the `src/state.py` changes | §3.1, §7.11, §9, §14, Appendix C |
+| 2026-09-24 | Follow-up | `AGENTS.md` "Next work" now points here and marks the roadmap halted; added `scripts/eval_lineage.py`, which reproduces §3.2 exactly; planned the `src/state.py` changes. Next: Test 1 in a new session | §3.1, §7.11, §9, §14, Appendix C |
 
 ---
 
