@@ -91,6 +91,16 @@ def test_generator_user_prompt_shows_scope_under_component():
     assert "never: icons, logos" in prompt
 
 
+def test_generator_user_prompt_hero_table_never_grows_its_card():
+    # eval phase-1: the planner marked tables hero and the generator put grow on the table card.
+    env = Environment(loader=FileSystemLoader("src/prompts/generator"), trim_blocks=True, lstrip_blocks=True)
+    table = {"kind": "table", "component_id": "t", "count": 1, "weight": "hero", "content_data": {}}
+    chart = {"kind": "chart", "component_id": "c", "count": 1, "weight": "hero", "content_data": {}}
+    prompt = env.get_template("user.j2").render(components=[table, chart])
+    assert prompt.count("never grow on its card") == 1
+    assert "- table [t]\n  height-weight: hero (see SIZING BY WEIGHT in layout grammar); a table's weight is rows" in prompt
+
+
 def test_generator_system_prompt_has_icon_vocabulary_and_scoped_translation():
     env = Environment(loader=FileSystemLoader("src/prompts/generator"), trim_blocks=True, lstrip_blocks=True)
     contract = build_contract({"components": [{"kind": "table"}], "slide_type": "data"}, DEFAULT_THEME)

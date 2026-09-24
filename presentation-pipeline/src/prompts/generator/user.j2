@@ -13,7 +13,7 @@ SLIDE TYPE: {{ slide_type }}
 COMPONENTS (put every one on the slide — each carries its own data):
 {% for comp in components %}
 - {{ comp.kind }}{% if comp.component_id %} [{{ comp.component_id }}]{% endif %}{% if comp.count > 1 %} (x{{ comp.count }}){% endif %}{% if comp.chart_type %} [{{ comp.chart_type }}]{% endif %}{% if comp.content_summary %}: {{ comp.content_summary }}{% endif +%}
-{% if comp.weight and comp.weight != "peer" %}  height-weight: {{ comp.weight }} (see SIZING BY WEIGHT in layout grammar)
+{% if comp.weight and comp.weight != "peer" %}  height-weight: {{ comp.weight }} (see SIZING BY WEIGHT in layout grammar){% if comp.kind == "table" %}; a table's weight is rows, never grow on its card{% endif %}
 {% endif %}
 {% if comp.design_hint %}  visual-intent: {{ comp.design_hint }}
 {% endif %}

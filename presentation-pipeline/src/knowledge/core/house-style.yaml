@@ -99,6 +99,7 @@ header_band: >
 # arithmetic was the main source of half-empty and overflowing cards.
 sizing: |
   - Header, KPI rows, callouts, bullet and table cards: NO h, NO grow (content height).
+    A HERO table too: its weight means more / taller rows, never grow on its card.
   - grow from height-weight on the band/card that should fill: hero 3 | peer 2 |
     supporting 1 | minor none. In a side-by-side HStack the weight is the width
     share (% or grow); heights stretch to the tallest.

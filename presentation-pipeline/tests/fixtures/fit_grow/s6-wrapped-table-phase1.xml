@@ -1,0 +1,144 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" chartSurface="FFFFFF" chartInk="334155" />
+<!-- Real Phase 1 output (eval phase-1, gj-h1-regen slide 10, 2026-09-24): the table has no h
+     (sizing grammar) and 40 px rows, but its cells wrap -> PowerPoint/LibreOffice grow the rows
+     and the table spills over the chart card below. fit-grow's table pass skips it today
+     (box == rows, and a <Tr height> is present). Target of roadmap Phase 5 Step 3. -->
+<Slide>
+<VStack w="1280" h="720" padding="36" gap="14" alignItems="stretch" backgroundColor="$surface">
+  <HStack justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PERFORMANCE INTELLIGENCE</Text>
+      <Text fontSize="28" color="$textMain" bold="true">
+        <Mark color="FDE68A">Geo</Mark> &amp; <Mark color="BAE6FD">Day-Part</Mark> Intelligence
+      </Text>
+      <Text fontSize="14" color="$textMuted">Pinpointing city and day-part efficiency to guide H2 scale decisions</Text>
+    </VStack>
+  </HStack>
+  <VStack grow="1" gap="14" alignItems="stretch">
+    <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000">
+      <HStack gap="8" alignItems="center">
+        <Icon name="map-pin" size="20" color="$accent" />
+        <Text fontSize="14" bold="true" color="$textMain">City-Platform-Category ROI (June '26)</Text>
+      </HStack>
+      <Table defaultRowHeight="40" cellBorder.color="$border" cellBorder.width="1">
+        <Col width="120" />
+        <Col width="160" />
+        <Col />
+        <Col />
+        <Col />
+        <Tr height="40">
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14">City</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14">Platform/Category</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14" textAlign="right">Spend (₹L)</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14" textAlign="right">ROI</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14" textAlign="right">ACOS (%)</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted" fontSize="14">Chennai</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true">Zepto, Ghee-led</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">0.59</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true" textAlign="right">9.13x</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true" textAlign="right">11.0%</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true">Hyderabad</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true">Swiggy, Paneer</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">1.26</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true" textAlign="right">11.52x</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true" textAlign="right">8.7%</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" bold="true">Hyderabad</Td>
+          <Td backgroundColor="$surface" color="$textMuted" fontSize="14">Zepto, all</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">23.24</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">5.16x</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">19.4%</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="F3F4F6" color="$textMuted" fontSize="14">Bengaluru</Td>
+          <Td backgroundColor="F3F4F6" color="$textMuted" fontSize="14">Swiggy, Paneer</Td>
+          <Td backgroundColor="F3F4F6" color="$textMain" fontSize="14" textAlign="right">0.82</Td>
+          <Td backgroundColor="F3F4F6" color="$negative" fontSize="14" bold="true" textAlign="right">7.53x</Td>
+          <Td backgroundColor="F3F4F6" color="$negative" fontSize="14" bold="true" textAlign="right">13.3%</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="F3F4F6" color="$textMuted" fontSize="14">Bengaluru</Td>
+          <Td backgroundColor="F3F4F6" color="$textMuted" fontSize="14">Zepto, all</Td>
+          <Td backgroundColor="F3F4F6" color="$textMain" fontSize="14" textAlign="right">10.74</Td>
+          <Td backgroundColor="F3F4F6" color="$negative" fontSize="14" bold="true" textAlign="right">2.60x</Td>
+          <Td backgroundColor="F3F4F6" color="$negative" fontSize="14" bold="true" textAlign="right">38.4%</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="F3F4F6" color="$textMuted" fontSize="14">Bengaluru</Td>
+          <Td backgroundColor="F3F4F6" color="$textMuted" fontSize="14">Swiggy, Curd</Td>
+          <Td backgroundColor="F3F4F6" color="$textMain" fontSize="14" textAlign="right">0.34</Td>
+          <Td backgroundColor="F3F4F6" color="$negative" fontSize="14" bold="true" textAlign="right">2.38x</Td>
+          <Td backgroundColor="F3F4F6" color="$negative" fontSize="14" bold="true" textAlign="right">41.9%</Td>
+        </Tr>
+      </Table>
+    </VStack>
+    <HStack grow="1" gap="14" alignItems="stretch">
+      <VStack w="50%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" borderLeft.color="$accent" borderLeft.width="4" border.color="$border" border.width="1" shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000">
+        <HStack gap="8" alignItems="center">
+          <Icon name="clock" size="20" color="$accent" />
+          <Text fontSize="14" bold="true" color="$textMain">Day-Part Impressions &amp; CPM Index (May)</Text>
+        </HStack>
+        <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["0EA5E9","2563EB"]'>
+          <ChartSeries name="Impressions">
+            <ChartDataPoint label="6AM" value="85" />
+            <ChartDataPoint label="8AM" value="100" />
+            <ChartDataPoint label="10AM" value="92" />
+          </ChartSeries>
+          <ChartSeries name="CPM Index">
+            <ChartDataPoint label="6AM" value="60" />
+            <ChartDataPoint label="8AM" value="75" />
+            <ChartDataPoint label="10AM" value="0" />
+          </ChartSeries>
+        </Chart>
+        <VStack gap="4" margin.top="4">
+          <HStack gap="6" alignItems="center">
+            <Icon name="trending-up" size="16" color="$accent" />
+            <Text fontSize="14" color="$textMain">8AM peak impressions</Text>
+          </HStack>
+          <HStack gap="6" alignItems="center">
+            <Icon name="dollar-sign" size="16" color="$accent" />
+            <Text fontSize="14" color="$textMain">6AM lowest CPM</Text>
+          </HStack>
+        </VStack>
+      </VStack>
+      <VStack w="50%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" borderLeft.color="$accent" borderLeft.width="4" border.color="$border" border.width="1" shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000" justifyContent="center">
+        <HStack gap="8" alignItems="center">
+          <Icon name="target" size="20" color="$accent" />
+          <Text fontSize="14" bold="true" color="$textMain">Efficiency Insights &amp; Actions</Text>
+        </HStack>
+        <VStack gap="10">
+          <HStack gap="10" alignItems="center">
+            <Icon name="trending-up" size="18" color="$positive" />
+            <Text fontSize="14" color="$textMain">Chennai + Hyderabad-Paneer are most efficient but under-funded</Text>
+          </HStack>
+          <HStack gap="10" alignItems="center">
+            <Icon name="trending-up" size="18" color="$accent" />
+            <Text fontSize="14" color="$textMain">Hyderabad is anchor (67% Zepto spend, 2x more efficient than Bengaluru)</Text>
+          </HStack>
+          <HStack gap="10" alignItems="center">
+            <Icon name="triangle-alert" size="18" color="$negative" />
+            <Text fontSize="14" color="$textMain">Bengaluru is consistently inefficient — recommend -25% BLR spend, redeploy to CHE + HYD dayparts in H2</Text>
+          </HStack>
+          <HStack gap="10" alignItems="center">
+            <Icon name="zap" size="18" color="$accent" />
+            <Text fontSize="14" color="$textMain">Zepto GMV lift +15.5% in May post day-parting; sweet-hour bids ~15–20% below auction average</Text>
+          </HStack>
+        </VStack>
+      </VStack>
+    </HStack>
+    <VStack padding="16" gap="4" backgroundColor="$surfaceAlt" borderRadius="14" borderLeft.color="$accent" borderLeft.width="4" border.color="$border" border.width="1">
+      <HStack gap="8" alignItems="center">
+        <Icon name="lightbulb" size="18" color="$accent" />
+        <Text fontSize="14" bold="true" color="$textMain">Attribution Note</Text>
+      </HStack>
+      <Text fontSize="14" color="$textMain" lineHeight="1.45">AM/PM split enabled attribution clarity and lower CPMs; day-part curves are illustrative from May learning.</Text>
+    </VStack>
+  </VStack>
+  <Text fontSize="14" color="$textMuted">Source: Internal platform data, May–June 2026</Text>
+</VStack>
+</Slide>

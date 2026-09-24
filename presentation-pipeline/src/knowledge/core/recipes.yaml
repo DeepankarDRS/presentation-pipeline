@@ -55,7 +55,8 @@ chart_card: |
   </VStack>
 
 table_card: |
-  # Table card: NO h, NO grow — the Table (no h/w) sizes to its rows. Row height =
+  # Table card: NO h, NO grow, even for a hero table (its weight = more/taller rows)
+  # — the Table (no h/w) sizes to its rows. Row height =
   # 16 + 24 x lines of the longest cell (one line 40, two 64); header <Tr height="40">.
   # Every <Td> sets backgroundColor AND color. Set width only on columns needing
   # more room; omit for auto-fill.
