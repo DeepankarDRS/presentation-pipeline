@@ -135,6 +135,21 @@ Findings (render-verified, not fixed here):
 - A horizontal Flow of 5 nodes is width-limited: a tall `h="max"` box leaves space above/below the node row (F6) — the grammar gives such flows full width.
 - Thin table-only slides now end early instead of stretching the table card (by design, F5); more rows / Phase 5 row sizing fill them.
 
+**Eval `phase-1` (2026-09-24, commit `4ab1fc2`, `gj-h1-regen` × 1, $1.05) → `docs/eval/phase-1/`.** Note: this run also carries the normalizer fixes (merged after the baseline), so first-pass is judged against the replay (14/14), fill and layout against the baseline.
+
+| metric | baseline | phase-1 |
+|---|---|---|
+| compiled / first-pass | 85.7% / 50% | 100% / 92.9% (13/14; retries: `<Td borderLeft>`, zero-height text box) |
+| mean fill (eval, fit-grow on) / low-fill cards | 0.884 / 13.0% | 0.891 / 10.9% |
+| 12 common slides, re-compiled with today's normalizer: fill fit-grow off → on | 0.850 → 0.884 (low 22% → 13%) | 0.875 → 0.889 (low 16% → 12%) |
+| text overflows / layout issues per slide | 0.21 / 0.79 | 0 / 0 |
+| fit-grow changes per slide | 0.86 | 0.29 (the grammar now does that work) |
+| golden card-pattern match | 0.38 | 0.475 |
+| grammar: VStack-child `w="max"` / Chart pixel h / `grow` / `minH` | 30 / 5 / 0 / 0 | **0 / 0 / 10 / 3** |
+| tokens in / cost | 345k / $1.16 | 325k / $1.05 |
+
+Acceptance: first-pass not worse ✔, prompt smaller ✔, generator follows the grammar ✔; **fill Δ +0.007 (+0.025 without fit-grow) is below the 0.05 noise bar** — the fill metric does not see slide-level empty space or table rows spilling out. Visual review (baseline vs phase-1, all 14): better — slide 8 timeline (baseline labels ran off the card, top half empty; now compact with the detail below), slide 2 chart fills its card, slides 4–5 generated (placeholders in the baseline; fixed by the normalizer, sized well here), slide 12 roadmap fits. Weak — **tables**: the planner marks tables `hero` and the generator turns that weight into `grow` on the table card (slides 10, 11) against the rule → stretched card (11); slide 10 keeps 40 px rows with wrapped cells → rows spill over the chart card below; slides 3 and 6 (table-only content) end ~⅓ early. Not sizing: slide 1 planned as 3 `bullet_list`s (no chart/KPIs — planner variance, Phase 2); invented numbers 15 → 0 and first-pass mostly from the normalizer.
+
 ---
 
 ## Phase 2 — Deterministic routing + planner prompt fixes
