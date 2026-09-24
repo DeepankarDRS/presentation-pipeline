@@ -18,6 +18,14 @@ SLIDE_W = 1280
 SLIDE_H = 720
 MIN_FONT_SIZE = 14
 MAX_NESTING = 6
+# TABLE_TOO_WIDE_FOR_CARD: a table in a card narrower than this share of the
+# slide whose longest cell would wrap to this many lines (at an equal column
+# split, ~7.7 px per char at the 14 px body size). Many short numeric columns in
+# a half-width card are fine (the gj-h1 golden deep-dives); long text is not.
+TABLE_NARROW_SHARE = 0.6
+TABLE_WRAP_LINES = 4
+_CHAR_PX = 7.7
+_CONTENT_W = SLIDE_W - 2 * 48
 
 _STACK_TAGS = {"VStack", "HStack"}
 # Sizing grammar (docs/layout-sizing-plan.md Step 1). Table needs no dims: it
@@ -297,6 +305,57 @@ def _check_hstack_column_heights(root: ET.Element, issues: list[dict[str, str]])
             })
 
 
+def _width_share(child: ET.Element, hstack: ET.Element) -> float:
+    """Approximate share of an HStack's width one child gets: its own w (% or
+    px of the slide), else an equal split of what the sized children leave."""
+    kids = list(hstack)
+    sized: dict[int, float] = {}
+    for i, c in enumerate(kids):
+        w = c.get("w") or ""
+        num = _parse_num(w)
+        if num is not None:
+            sized[i] = num / 100 if w.endswith("%") else num / SLIDE_W
+    idx = kids.index(child)
+    if idx in sized:
+        return min(1.0, sized[idx])
+    rest = max(0.0, 1.0 - sum(sized.values()))
+    return rest / max(1, len(kids) - len(sized))
+
+
+def _check_table_width(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """Flag a wide table placed in a narrow card (option B, roadmap Phase 2.4).
+
+    A table with many columns or long cell text in a card that shares its row
+    with other cards wraps into tall rows; on a full slide those rows run under
+    the next band. Warn-only until Phase 2 settles the threshold.
+    """
+    parents = {c: p for p in root.iter() for c in p}
+    for table in root.iter("Table"):
+        share, node = 1.0, table
+        while node in parents:
+            parent = parents[node]
+            if parent.tag == "HStack" and len(parent) > 1:
+                share *= _width_share(node, parent)
+            node = parent
+        if share >= TABLE_NARROW_SHARE:
+            continue
+        cols = max(len(table.findall("Col")), max(
+            (len(tr.findall("Td")) for tr in table.iter("Tr")), default=0), 1)
+        longest = max((len("".join(td.itertext()).strip()) for td in table.iter("Td")), default=0)
+        lines = longest * _CHAR_PX / (share * _CONTENT_W / cols)
+        if lines >= TABLE_WRAP_LINES:
+            issues.append({
+                "severity": "low",
+                "code": "TABLE_TOO_WIDE_FOR_CARD",
+                "message": (
+                    f"Table with {cols} columns in a card ~{share:.0%} of the slide wide: its "
+                    f"longest cell ({longest} chars) wraps to ~{lines:.0f} lines, so rows grow tall "
+                    "and can run under the next band. Give it a full-width band, or move the "
+                    "long-text column into a list beside the table."
+                ),
+            })
+
+
 def audit_layout(xml: str) -> list[dict[str, str]]:
     """Parse POM XML and check spatial/layout constraints.
 
@@ -320,5 +379,6 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_col_widths(root, root_padding, issues)
     _check_band_height_sum(root, root_padding, issues)
     _check_hstack_column_heights(root, issues)
+    _check_table_width(root, issues)
 
     return issues
