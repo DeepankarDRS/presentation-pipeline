@@ -41,7 +41,9 @@ from typing import Any
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PIPELINE_ROOT))
 
-from scripts.eval_metrics import LOW_FILL, card_metrics, pattern_match, word_breaks  # noqa: E402
+from scripts.eval_metrics import (  # noqa: E402
+    LOW_FILL, card_metrics, invented_numbers, pattern_match, text_overflows, word_breaks,
+)
 from src.compiler.layout_audit import audit_layout  # noqa: E402
 from src.utils.case_loader import load_case  # noqa: E402
 
@@ -125,7 +127,20 @@ def _messages(diags: list[dict[str, Any]], limit: int = 3) -> list[str]:
     return list(msgs)[:limit]
 
 
-def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any]) -> dict[str, Any]:
+def brief_of(case: dict[str, Any]) -> str:
+    """Everything the case supplies: numbers on a slide that are not in here were invented."""
+    return case.get("request", "") + json.dumps(case.get("supplied_content") or {}, ensure_ascii=False)
+
+
+def text_metrics(slide_dir: Path, brief: str | None) -> dict[str, Any]:
+    """Crushed/overflowing text and invented numbers for one compiled slide folder."""
+    pptx, xml = slide_dir / "presentation.pptx", slide_dir / "input.xml"
+    invented = invented_numbers(xml.read_text(encoding="utf-8"), brief) if brief is not None and xml.exists() else []
+    return {"word_breaks": word_breaks(pptx), "text_overflows": text_overflows(pptx),
+            "invented_numbers": len(invented), "invented_examples": invented[:8]}
+
+
+def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any], brief: str) -> dict[str, Any]:
     first, last = tries[0], tries[-1]
     ok = bool((last.get("compile_result") or {}).get("ok"))
     pptx = (last.get("compile_result") or {}).get("pptx_path") if ok else None
@@ -146,7 +161,7 @@ def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any]) ->
         "components": [{k: c.get(k, "") for k in ("kind", "weight", "design_hint")}
                        for c in plan.get("components", [])],
         "cards": card_metrics(pptx) if pptx else [],
-        "word_breaks": word_breaks(pptx) if pptx else 0,
+        **(text_metrics(Path(pptx).parent, brief) if pptx else {}),
         "_dir": str(Path(pptx).parent) if pptx else None,
     }
 
@@ -178,7 +193,8 @@ def evaluate_case(case: dict[str, Any], repeat: int) -> dict[str, Any]:
         "cost": (evaluation.get("cost") or {}).get("total_usd", 0.0),
         "elapsed": round(time.time() - t0, 1),
         "expected_slides": _slide_target(case),
-        "slides": [_slide_row(i, by_slide[i], plans[i] if i < len(plans) else {}) for i in sorted(by_slide)],
+        "slides": [_slide_row(i, by_slide[i], plans[i] if i < len(plans) else {}, brief_of(case))
+                   for i in sorted(by_slide)],
         "_deck_pptx": final.get("pptx_path"),
     }
 
@@ -201,7 +217,7 @@ def evaluate_fixtures(xml_dir: Path, out_dir: Path) -> dict[str, Any]:
             "blocking_msgs": _messages(result.get("diagnostics", [])) if not ok else [],
             "layout_issues": dict(Counter(i.get("code", "?") for i in audit_layout(xml_path.read_text(encoding="utf-8")))),
             "fit_grow": result.get("fitGrow", []), "components": [],
-            "cards": card_metrics(pptx) if ok else [], "word_breaks": word_breaks(pptx) if ok else 0,
+            "cards": card_metrics(pptx) if ok else [], **(text_metrics(d, None) if ok else {}),
             "_dir": str(d),
         })
     return {"name": xml_dir.name, "repeat": 1, "run_id": "fixtures", "passed": all(s["compiled"] for s in slides),
@@ -240,6 +256,8 @@ def aggregate(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "layout_issues_per_slide": round(sum(sum(s["layout_issues"].values()) for s in slides) / n, 2),
         "fit_grow_changes_per_slide": round(sum(len(s["fit_grow"]) for s in slides) / n, 2),
         "word_breaks_per_slide": round(sum(s.get("word_breaks", 0) for s in slides) / n, 2),
+        "text_overflows_per_slide": round(sum(s.get("text_overflows", 0) for s in slides) / n, 2),
+        "invented_numbers": sum(s.get("invented_numbers", 0) for s in slides),
         "tokens_in": sum(c["tokens_in"] for c in cases),
         "tokens_out": sum(c["tokens_out"] for c in cases),
         "cost_usd": round(sum(c["cost"] for c in cases), 4),
@@ -268,17 +286,19 @@ def write_summary(results: dict[str, Any], path: Path) -> None:
         "| metric | value |", "|---|---|",
     ]
     for key in ("runs_passed", "runs_errored", "slide_count_off", "compiled_pct", "first_pass_pct", "mean_retries",
-                "cards", "mean_fill", "low_fill_pct", "word_breaks_per_slide", "auto_fixes_per_slide",
+                "cards", "mean_fill", "low_fill_pct", "word_breaks_per_slide", "text_overflows_per_slide",
+                "invented_numbers", "auto_fixes_per_slide",
                 "layout_issues_per_slide", "fit_grow_changes_per_slide", "tokens_in", "tokens_out", "cost_usd",
                 "elapsed_s"):
         lines.append(f"| {key} | {agg.get(key, '-')} |")
     lines += ["", f"Fill = card content height ÷ inner height (1.0 = no dead space); low fill < {LOW_FILL}. "
-              "Word breaks = text boxes narrower than their longest word; slide_count_off = runs whose slide "
-              "count differs from the case target.", "",
+              "Word breaks = text boxes narrower than their longest word; text overflows = text needing 2+ "
+              "lines more than its box; invented numbers = numbers on slides that are not in the brief; "
+              "slide_count_off = runs whose slide count differs from the case target.", "",
               "## Cases", "",
               "| case | run | pass | slides (target) | first-pass | retries | mean fill | low-fill cards | word breaks "
-              "| layout issues | golden match |",
-              "|---|---|---|---|---|---|---|---|---|---|---|"]
+              "| overflows | invented numbers | layout issues | golden match |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for c in results["cases"]:
         fills = [card["fill"] for s in c["slides"] for card in s["cards"]]
         lines.append(
@@ -287,6 +307,8 @@ def write_summary(results: dict[str, Any], path: Path) -> None:
             f"| {sum(s['first_pass_ok'] for s in c['slides'])}/{len(c['slides'])} "
             f"| {sum(s['retries'] for s in c['slides'])} | {round(mean(fills), 2) if fills else '-'} "
             f"| {sum(f < LOW_FILL for f in fills)} | {sum(s.get('word_breaks', 0) for s in c['slides'])} "
+            f"| {sum(s.get('text_overflows', 0) for s in c['slides'])} "
+            f"| {sum(s.get('invented_numbers', 0) for s in c['slides'])} "
             f"| {sum(sum(s['layout_issues'].values()) for s in c['slides'])} "
             f"| {c.get('golden_match', '-')} |")
     for title, key in (("Auto-fix codes (first attempt)", "auto_fix_codes"),

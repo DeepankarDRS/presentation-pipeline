@@ -22,6 +22,7 @@ kpi_tile, text_card.
 
 from __future__ import annotations
 
+import re
 import zipfile
 from collections import Counter
 from pathlib import Path
@@ -160,6 +161,52 @@ def word_breaks(pptx_path: str | Path, slide: int = 1) -> int:
         max(len(w) for w in s["text"].split()) * 0.55 * s["max_font"] * 4 / 3 > s["w"] + 1
         for s in shapes if s["kind"] == "sp" and s["text"] and s["max_font"]
     )
+
+
+def text_overflows(pptx_path: str | Path, slide: int = 1) -> int:
+    """Text boxes whose wrapped text (~0.5 em per character, 1.2 line height) needs at least two lines
+    more than the box holds: the text spills out of its box / card / slide (e.g. long Timeline
+    labels). The margin keeps one-line estimate errors from counting."""
+    with zipfile.ZipFile(pptx_path) as z:
+        root = ET.fromstring(z.read(f"ppt/slides/slide{slide}.xml"))
+    count = 0
+    for sp in root.iter(f"{{{_NS['p']}}}sp"):
+        ext = sp.find(".//a:ext", _NS)
+        if ext is None or sp.find(".//p:txBody", _NS) is None:
+            continue
+        w, h = int(ext.get("cx")) / _EMU_PER_PX, int(ext.get("cy")) / _EMU_PER_PX
+        need, line = 0.0, 0.0
+        for p in sp.iter(f"{{{_NS['a']}}}p"):
+            text = "".join(t.text or "" for t in p.iter(f"{{{_NS['a']}}}t"))
+            sizes = [int(r.get("sz")) for r in p.iter(f"{{{_NS['a']}}}rPr") if r.get("sz")]
+            if not text.strip() or not sizes or w <= 0:
+                continue
+            px = max(sizes) / 100 * 4 / 3
+            need += -(-len(text) * 0.5 * px // w) * px * 1.2
+            line = max(line, px * 1.2)
+        count += need > h + 2 * line
+    return count
+
+
+_NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
+_CONTENT_ATTRS = ("value", "label", "title", "description", "date", "text", "name")
+
+
+def _numbers(text: str) -> list[str]:
+    """Numbers with ≥2 digits, thousands separators dropped ("10,332" → "10332")."""
+    return [n.replace(",", "") for n in _NUMBER.findall(text) if len(re.sub(r"\D", "", n)) >= 2]
+
+
+def invented_numbers(slide_xml: str, brief: str) -> list[str]:
+    """Numbers shown on the slide (text, chart values, diagram labels) that appear nowhere in the
+    brief — invented or mangled data. Formatting variants ("4.40" vs "4.4") are not counted."""
+    known = {n.rstrip("0").rstrip(".") if "." in n else n for n in _numbers(brief)}
+    xml = re.sub(r"&(?![a-zA-Z]+;|#\d+;)", "&amp;", re.sub(r"<Theme\b[^>]*/>", "", slide_xml))
+    shown = []
+    for el in ET.fromstring(f"<r>{xml}</r>").iter():
+        shown += _numbers(el.text or "")
+        shown += [n for a in _CONTENT_ATTRS if el.get(a) for n in _numbers(el.get(a))]
+    return [n for n in shown if (n.rstrip("0").rstrip(".") if "." in n else n) not in known]
 
 
 def pattern_match(generated: list[str], golden: list[str]) -> float:

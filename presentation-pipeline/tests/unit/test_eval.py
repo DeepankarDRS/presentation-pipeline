@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from scripts import eval_compare, eval_import, eval_run
-from scripts.eval_metrics import card_metrics, pattern_match, word_breaks
+from scripts.eval_metrics import card_metrics, invented_numbers, pattern_match, text_overflows, word_breaks
 from scripts.make_gj_h1_case import CASE, build_case
 
 _ROOT = Path(__file__).resolve().parents[2]
@@ -225,6 +225,33 @@ def test_word_breaks_on_a_crushed_tile(tmp_path, blinkit_pptx):
     subprocess.run(["node", str(_COMPILER), str(xml), str(tmp_path)], check=True, capture_output=True, timeout=120)
     assert word_breaks(tmp_path / "presentation.pptx") == 1
     assert word_breaks(blinkit_pptx) == 0
+
+
+def test_text_overflow_needs_two_extra_lines(tmp_path, blinkit_pptx):
+    def slide(w_px, h_px, text, pt=12):
+        emu = lambda px: str(int(px * 9525))  # noqa: E731
+        xml = ('<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+               'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><p:cSld><p:spTree><p:sp>'
+               f'<p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="{emu(w_px)}" cy="{emu(h_px)}"/></a:xfrm></p:spPr>'
+               f'<p:txBody><a:p><a:r><a:rPr sz="{pt * 100}"/><a:t>{text}</a:t></a:r></a:p></p:txBody>'
+               '</p:sp></p:spTree></p:cSld></p:sld>')
+        path = tmp_path / f"s{w_px}x{h_px}.pptx"
+        with __import__("zipfile").ZipFile(path, "w") as z:
+            z.writestr("ppt/slides/slide1.xml", xml)
+        return path
+
+    long_label = "Day-parting 6-11 AM for Milk, Paneer and Curd; +15.5% Zepto GMV May vs Apr (4.69 to 5.41 Cr)"
+    assert text_overflows(slide(100, 40, long_label)) == 1   # timeline label in a small fixed box
+    assert text_overflows(slide(320, 20, "Restructure by intent, SKU, city, objective", 11)) == 0  # one-line estimate slack
+    assert text_overflows(blinkit_pptx) == 0
+
+
+def test_invented_numbers_ignores_formatting_variants():
+    brief = "Blinkit ROAS 6.35x, NTB customers 10,332, ACOS 4.40%"
+    xml = ('<Slide><VStack><Text>ROAS 6.35x · 10332 NTB · ACOS 4.4%</Text>'
+           '<Chart><ChartSeries name="Zepto"><ChartDataPoint label="Jan" value="3.12" /></ChartSeries></Chart>'
+           '<Text>Source: Q2 2024 & internal</Text></VStack></Slide>')
+    assert invented_numbers(xml, brief) == ["3.12", "2024"]
 
 
 def test_pick_reviews_failed_first_then_lowest_fill():

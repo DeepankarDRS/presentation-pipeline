@@ -1,17 +1,21 @@
 # Eval `golden-gj-h1`
 
-2026-09-23T23:27:39 · commit `6b29c94` · models.yaml `1f984f77` · 1 runs, 14 slides
+2026-09-24T08:25:26 · commit `ea80267` · models.yaml `919e01fa` · 1 runs, 14 slides
 
 | metric | value |
 |---|---|
 | runs_passed | 1 |
 | runs_errored | 0 |
+| slide_count_off | 0 |
 | compiled_pct | 100.0 |
 | first_pass_pct | 100.0 |
 | mean_retries | 0.0 |
 | cards | 74 |
 | mean_fill | 0.896 |
 | low_fill_pct | 8.1 |
+| word_breaks_per_slide | 0.0 |
+| text_overflows_per_slide | 0.0 |
+| invented_numbers | 0 |
 | auto_fixes_per_slide | 0.0 |
 | layout_issues_per_slide | 28.64 |
 | fit_grow_changes_per_slide | 0.93 |
@@ -20,19 +24,23 @@
 | cost_usd | 0.0 |
 | elapsed_s | 0.0 |
 
-Fill = card content height ÷ inner height (1.0 = no dead space); low fill < 0.7.
+Fill = card content height ÷ inner height (1.0 = no dead space); low fill < 0.7. Word breaks = text boxes narrower than their longest word; text overflows = text needing 2+ lines more than its box; invented numbers = numbers on slides that are not in the brief; slide_count_off = runs whose slide count differs from the case target.
 
 ## Cases
 
-| case | run | pass | slides | first-pass | retries | mean fill | low-fill cards | layout issues | golden match |
-|---|---|---|---|---|---|---|---|---|---|
-| gj-h1-deck | 1 | PASS | 14 | 14/14 | 0 | 0.9 | 6 | 401 | - |
+| case | run | pass | slides (target) | first-pass | retries | mean fill | low-fill cards | word breaks | overflows | invented numbers | layout issues | golden match |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| gj-h1-deck | 1 | PASS | 14 (14) | 14/14 | 0 | 0.9 | 6 | 0 | 0 | 0 | 401 | - |
 
 ## Auto-fix codes (first attempt)
 
 - none
 
 ## Blocking codes during retries
+
+- none
+
+## Blocking messages (first 3 per slide)
 
 - none
 

@@ -5,7 +5,8 @@
 1. extracts it to output/eval/<label>-<ts>/ (gitignored)
 2. renders every slide .pptx with LibreOffice → renders_lo/ (same renderer for every
    label, so renders are comparable; skipped if soffice is not found)
-3. re-measures card fill / patterns / word breaks from the bundle's .pptx files
+3. re-measures card fill / patterns / word breaks / overflows / invented numbers from the
+   bundle's .pptx + input.xml (deterministic, so metric fixes also apply to earlier bundles)
 4. merges into docs/eval/<label>/ (earlier bundles' cases kept, re-run cases replaced):
    summary.md, results.json and ≤15 review PNGs
    (failed slides first, then lowest card fill; PowerPoint render preferred)
@@ -25,8 +26,9 @@ from pathlib import Path
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PIPELINE_ROOT))
 
-from scripts.eval_metrics import card_metrics, word_breaks  # noqa: E402
-from scripts.eval_run import _slide_fill, aggregate, write_summary  # noqa: E402
+from scripts.eval_metrics import card_metrics  # noqa: E402
+from scripts.eval_run import _slide_fill, aggregate, brief_of, text_metrics, write_summary  # noqa: E402
+from src.utils.case_loader import load_case  # noqa: E402
 
 _SOFFICE_DEFAULT = Path("C:/Program Files/LibreOffice/program/soffice.exe")
 
@@ -67,10 +69,15 @@ def remeasure(results: dict, eval_dir: Path) -> None:
     """Recompute the pptx-based metrics with the current eval_metrics (deterministic from the .pptx),
     so metric fixes also apply to bundles emailed earlier."""
     for c in results["cases"]:
+        try:
+            brief = brief_of(load_case(c["name"]))
+        except FileNotFoundError:  # fixture runs have no case / brief
+            brief = None
         for s in c["slides"]:
-            pptx = eval_dir / "slides" / f"{c['name']}__r{c['repeat']}" / f"slide-{s['index']}" / "presentation.pptx"
-            if pptx.exists():
-                s["cards"], s["word_breaks"] = card_metrics(pptx), word_breaks(pptx)
+            slide_dir = eval_dir / "slides" / f"{c['name']}__r{c['repeat']}" / f"slide-{s['index']}"
+            if (slide_dir / "presentation.pptx").exists():
+                s["cards"] = card_metrics(slide_dir / "presentation.pptx")
+                s.update(text_metrics(slide_dir, brief))
 
 
 def import_bundle(zip_path: Path, docs_root: Path, out_root: Path) -> Path:
