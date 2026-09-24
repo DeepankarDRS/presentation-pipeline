@@ -58,7 +58,7 @@ Phase 0 quality baseline (needs OPENAI_API_KEY) -> 1 sizing grammar (grow/minH i
 
 ## Where work stands (2026-09-24)
 - **Phase 0 done**: eval harness (`scripts/eval_run.py`, `eval_import.py`, `eval_compare.py`, `eval_metrics.py`), baseline in `docs/eval/baseline/` (tag `eval-baseline`: `gj-h1-regen` × 1 — first-pass 50%, 2 lost slides, golden match 0.38), golden target in `docs/eval/golden-gj-h1/`. Deterministic normalizer fixes merged (replay: first-pass 7/14 → 14/14). Details + findings: roadmap Phase 0 section.
-- **Phase 1 built** 2026-09-24 on `phase-1-sizing` (grow/minH grammar, blueprints + golden examples rewritten, audit rule, `tests/fixtures/layout_sizing/`); awaiting eval `phase-1`. On that branch: 413 unit tests pass, same 4 pre-existing failures.
+- **Phase 1 merged** 2026-09-24 (grow/minH grammar, blueprints + golden examples rewritten, audit rule, `tests/fixtures/layout_sizing/`). Eval `docs/eval/phase-1/`: first-pass 92.9%, overflows 0, golden match 0.475, fill flat (+0.007); weak spot = tables (hero tables grow their card; 40 px rows spill wrapped text). Unit tests: 413 pass, same 4 pre-existing failures. Next: table row sizing (Phase 5 Step 3, fit-grow — coordinate with that session) and Phase 2.
 - Branch `feat/golden-reference-grounding`. Recent: design-hint/nesting/icon enforcement, fit-grow pass (`dd5c152`), layout archetype system (`d2b75b6`), 14pt minimum font, Cursor handoff docs.
 - `house-style.yaml` and `generator/system.j2` WIP edits are committed. `lxml` (used by `src/compiler/pptx_merge.py`) is now a declared dependency.
 - Not synced: local scratch outputs in `llm_test/` (generated .pptx / slide dumps).

@@ -149,6 +149,7 @@ Findings (render-verified, not fixed here):
 | tokens in / cost | 345k / $1.16 | 325k / $1.05 |
 
 Acceptance: first-pass not worse ✔, prompt smaller ✔, generator follows the grammar ✔; **fill Δ +0.007 (+0.025 without fit-grow) is below the 0.05 noise bar** — the fill metric does not see slide-level empty space or table rows spilling out. Visual review (baseline vs phase-1, all 14): better — slide 8 timeline (baseline labels ran off the card, top half empty; now compact with the detail below), slide 2 chart fills its card, slides 4–5 generated (placeholders in the baseline; fixed by the normalizer, sized well here), slide 12 roadmap fits. Weak — **tables**: the planner marks tables `hero` and the generator turns that weight into `grow` on the table card (slides 10, 11) against the rule → stretched card (11); slide 10 keeps 40 px rows with wrapped cells → rows spill over the chart card below; slides 3 and 6 (table-only content) end ~⅓ early. Not sizing: slide 1 planned as 3 `bullet_list`s (no chart/KPIs — planner variance, Phase 2); invented numbers 15 → 0 and first-pass mostly from the normalizer.
+**DECIDE (user, 2026-09-24): merged into `feat/golden-reference-grounding`** (not worse than the baseline on any gate metric). Next for tables: pull Phase 5 Step 3 (row heights + column widths from the cell text, in `fit-grow.js`) forward, coordinated with the fit-grow session; fold "a `hero` table never grows its card — it gets rows" into Phase 2's planner/table work.
 
 ---
 
