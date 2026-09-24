@@ -123,3 +123,19 @@ def test_empty_cells_counts_dropped_data(tmp_path):
         '</Table></VStack></Slide>', encoding="utf-8")
     _compile(xml, tmp_path / "on")
     assert empty_cells(tmp_path / "on" / "presentation.pptx") == 3
+
+
+def test_main_table_keeps_the_type_size_of_other_tables(tmp_path):
+    """eval tables-check gj slide 5: the dominant table grew to 18 px next to a 14 px table.
+    With another table on the slide, spare height may grow its rows but never its text."""
+    row = '<Tr><Td fontSize="14">Region {i}</Td><Td fontSize="14">12.{i}</Td><Td fontSize="14">4.{i}x</Td></Tr>'
+    big = "".join(row.format(i=i) for i in range(6))
+    xml = tmp_path / "t.xml"
+    xml.write_text(
+        '<Slide><VStack w="1280" h="720" padding="36" gap="14">'
+        f'<VStack padding="16"><Table defaultRowHeight="32"><Col /><Col /><Col />{big}</Table></VStack>'
+        f'<VStack padding="16"><Table defaultRowHeight="32"><Col /><Col /><Col />{row.format(i=9)}</Table></VStack>'
+        '</VStack></Slide>', encoding="utf-8")
+    on = _compile(xml, tmp_path / "on")
+    assert not any("cell text" in r for r in on["fitGrow"])
+    assert set(_td_fonts(on["xml"])) == {14}

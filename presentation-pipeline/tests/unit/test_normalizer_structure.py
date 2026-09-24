@@ -38,6 +38,9 @@ CASES = [
      "TABLE_COLS_PADDED", "each row must contain one cell per grid column"),
     ("bare_amp", "<Table><Tr><Td><Text>R &amp; D</Text></Td><Td>Reporting & Governance</Td></Tr></Table>",
      "AMPERSAND_ESCAPED", "(compiles, but layout_audit's XML parser rejected the slide)"),
+    ("attr_markup", '<Timeline h="150"><TimelineItem date="Feb" title="<B>Scroll winners</B> +38% GMV" />'
+     '<TimelineItem date="Apr" title="ACOS <20%" /></Timeline>',
+     "ATTR_MARKUP_STRIPPED", "(compiles, but PowerPoint shows <B> as text; eval_run crashed on it)"),
 ]
 
 
@@ -74,3 +77,13 @@ def test_every_fixed_case_compiles(tmp_path):
                    capture_output=True, encoding="utf-8", errors="replace")
     result = json.loads((tmp_path / "out" / "compile-result.json").read_text(encoding="utf-8"))
     assert result["status"] == "success", result["diagnostics"][:3]
+
+
+def test_attr_markup_is_stripped_and_bare_lt_escaped():
+    out = normalize_xml(_slide('<Timeline h="150"><TimelineItem date="Feb" title="<B>Scroll winners</B> +38% GMV" '
+                               'color="2563EB" /><TimelineItem date="Apr" title="ACOS <20% (x > y)" /></Timeline>'))
+    xml = out["cleaned_xml"]
+    assert 'title="Scroll winners +38% GMV" color="2563EB"' in xml
+    assert 'title="ACOS &lt;20% (x > y)"' in xml
+    # inline markup in element text stays: <B> is a real POM node there
+    assert normalize_xml(_slide("<Text>a <B>bold</B> word</Text>"))["issues"] == []

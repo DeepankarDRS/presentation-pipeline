@@ -402,7 +402,8 @@ async function fitTables(xml, report) {
 //             generator's (taller rows only make POM squeeze the rest of the
 //             slide; the renderer grows them anyway) and the squeeze is reported.
 //   spare   — the slide's main table (>= 2x any other: peer tables keep one type
-//             size) grows its cell text (<= 18 px), then its
+//             size) grows its cell text (<= 18 px; only when it is the slide's
+//             only table, so two tables never show two type sizes), then its
 //             rows (<= 64 px, <= 1.5x their text), into empty slide space or dead
 //             space in its own card: only the table and its ancestors change size
 //             (a peer card stretched by a taller row would just gain dead space).
@@ -645,12 +646,12 @@ async function sizeTables(xml, report) {
         + (tight.widths ? `, columns -> [${tight.widths.join(", ")}]` : ""));
     }
   }
-  if (main && !settled.has(main.id)) xml = await growMainTable(xml, main.id, report);
+  if (main && !settled.has(main.id)) xml = await growMainTable(xml, main.id, report, sizes.length === 1);
   return xml;
 }
 
 /** Spare height -> the main table's cell text (<= 18 px), then its rows (capped). */
-async function growMainTable(xml, id, report) {
+async function growMainTable(xml, id, report, onlyTable) {
   const L = await layout(xml);
   let n, W, grid, before, keep, declared;
   try {
@@ -680,7 +681,7 @@ async function growMainTable(xml, id, report) {
     const rows = declared.map((d, i) => rowFor(d, plan.need[i]));
     return { plan, rows, xml: writeTable(xml, id, { widths: plan.widths, rows, fontOf: k > 1 ? fontFor(k) : null }) };
   };
-  const kMax = sized ? 1 : Math.max(1, TD_FONT_CAP / f0);
+  const kMax = sized || !onlyTable ? 1 : Math.max(1, TD_FONT_CAP / f0);
   const k = kMax > 1 ? await bisect(1, kMax, (x) => {
     const a = atFont(x);
     return a.plan.valid && tableFits(a.xml, id, before, keep);

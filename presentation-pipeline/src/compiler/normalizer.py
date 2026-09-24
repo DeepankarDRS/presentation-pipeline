@@ -203,6 +203,25 @@ def _strip_zero_strokes(xml: str) -> tuple[str, list[str]]:
 # Every one of these cost a repair retry (or a lost slide) in the Phase 0 baseline.
 
 _BARE_AMP_RE = re.compile(r"&(?!(?:[A-Za-z]+|#\d+|#x[0-9A-Fa-f]+);)")
+# An opening tag whose attribute values may hold "<" / ">": the generator writes
+# title="<B>Doubled down</B> ..." — POM accepts it and PowerPoint shows the tags as text.
+_QUOTED_TAG_RE = re.compile(r'<[A-Za-z][\w.]*(?:\s+[\w.:-]+\s*=\s*"[^"]*")*\s*/?>')
+_ATTR_VALUE_RE = re.compile(r'(=\s*")([^"]*)(")')
+_MARKUP_RE = re.compile(r"</?[A-Za-z][^<>]*>")
+
+
+def _strip_attr_markup(xml: str) -> tuple[str, int]:
+    """Drop markup tags inside attribute values and escape any other bare '<' (strict XML)."""
+    count = 0
+
+    def _value(m: re.Match) -> str:
+        nonlocal count
+        if "<" not in m.group(2):
+            return m.group(0)
+        count += 1
+        return m.group(1) + _MARKUP_RE.sub("", m.group(2)).replace("<", "&lt;") + m.group(3)
+
+    return _QUOTED_TAG_RE.sub(lambda m: _ATTR_VALUE_RE.sub(_value, m.group(0)), xml), count
 _BORDER_SHORTHAND_RE = re.compile(r'\sborder\.width\s*=\s*"((?:\s*\d+(?:\.\d+)?(?:px)?){2,4})\s*"')
 _BORDER_COLOR_RE = re.compile(r'\sborder\.color\s*=\s*"([^"]*)"')
 # Truly empty only: whitespace-only Td/Text/Li compile, and "<Td> </Td>" must stay a fixed point
@@ -297,6 +316,10 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
         xml, n = _BARE_AMP_RE.subn("&amp;", xml)
         if n:
             note("AMPERSAND_ESCAPED", f"Escaped {n} bare '&' as '&amp;' (strict XML parsers reject it).")
+        xml, n = _strip_attr_markup(xml)
+        if n:
+            note("ATTR_MARKUP_STRIPPED", f"Removed markup such as <B> from {n} attribute value(s) "
+                 "(shown as literal text on the slide).")
         xml, dropped = _drop_attr_conflicts(xml)
         if dropped:
             note("ATTR_CONFLICT_FIXED", "Dropped bare attribute(s) that conflict with their dot-notation "
