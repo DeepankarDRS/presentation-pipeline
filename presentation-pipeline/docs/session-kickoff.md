@@ -17,7 +17,7 @@
 > 3. If the phase depends on eval results, import them first (`docs/eval/<label>/summary.md`); if missing, ask me for the bundle.
 > 4. Summarise the phase, list its DECIDE points with your recommendation, and ask me. Do not code until I answer.
 >
-> While working: follow `.cursor/rules/00-working-approach.mdc`. Do not edit `src/node/fit-grow.js` unless the phase says so (another session owns it). End the phase with: tests green vs baseline, a note in the roadmap's phase section ("built <date>, awaiting eval"), commit, push, and give me the exact test-device commands plus the list of files to email back.
+> While working: follow `.cursor/rules/00-working-approach.mdc` and the cost rule in §5 (free verification first; one paid run per phase; ask before any paid run). Do not edit `src/node/fit-grow.js` unless the phase says so (another session owns it). End the phase with: tests green vs baseline, a note in the roadmap's phase section ("built <date>, awaiting eval"), commit, push, and give me the exact test-device commands plus the list of files to email back.
 
 ## 2. What to run on the TEST device (copy-paste, no session needed)
 
@@ -56,3 +56,17 @@ Phases 1 and 2 are independent; each is merged into `feat/golden-reference-groun
 - **Commit summaries, not raw output.** `eval_import` writes `docs/eval/<label>/summary.md` + ≤15 review PNGs; raw bundles stay in `output/` (gitignored).
 - **Baseline before change**, same case set, same `models.yaml`.
 - **Record every DECIDE answer** in the roadmap phase section with the date.
+
+## 5. Cost rule (paid LLM runs — user, 2026-09-24)
+
+Paid runs are budget-limited (2026-09-24: four eval runs cost $4.49). Measured costs: a 14-slide deck (`gj-h1-regen`) ≈ **$1.0–1.2** (gpt-4.1, ~22k tokens per slide, mostly the generator prompt); a single-slide case ≈ **$0.03–0.06**.
+
+1. **Free first.** Anything that acts after the LLM (fit-grow, normalizer, compiler, fonts, eval metrics) is verified by re-compiling saved XML — `python -m scripts.eval_run --fixtures <dir>` on a previous run's slide XMLs (`output/runs/<run_id>/slide-N/[retry-N/]input.xml`, or an imported bundle) — plus unit tests and LibreOffice renders. No paid run for these.
+2. **Planner / routing changes** are tested first on saved plans (`output/runs/<run_id>/slides.json` holds each slide's `slide_plan`) before any paid run.
+3. **One paid run per phase**, only when the phase is ready for acceptance — never one per fix. Batch fixes; the next phase's run measures them.
+4. **Smallest case set that answers the question.** Single-slide cases (cents) for targeted checks; the gj-h1 deck only for phase acceptance; decks from the gate only when the phase changes behaviour for all slide types.
+5. **Never re-run a case whose result is already usable.** Check `docs/eval/*/` first. A crashed eval is re-scored LLM-free from its run folder (ask the user to zip `output/runs/<run_id>/`), not re-run.
+6. **Ask before every paid run** with the case list and an estimated cost; state which cases are already covered.
+7. Keep `models.yaml` fixed for comparable evals (a cheaper model is fine for smoke tests, never for acceptance).
+
+Per phase (estimates): Phase 2 one run (routing cases + gj-h1, ≈ $1.2) plus the 6 never-run gate cases once as its baseline (≈ $2.6); Phase 3 needs no LLM (compile saved slides, check in PowerPoint); Phases 4 and 5 one run each (≈ $1.2); Phase 6 more (the critic adds calls per slide).
