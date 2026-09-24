@@ -1,0 +1,85 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" chartSurface="FFFFFF" chartInk="334155" />
+<Slide>
+<!-- archetype: B -->
+<VStack w="1280" h="720" padding="36" gap="16" alignItems="stretch" backgroundColor="$surface">
+  <HStack justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">OPERATIONAL ROADMAP</Text>
+      <Text fontSize="29" color="$textMain" bold="true">Operational <Mark color="E0E7FF">Roadmap</Mark></Text>
+      <Text fontSize="14" color="$textMuted">Month-by-month plan to close efficiency gaps and scale up H2.</Text>
+    </VStack>
+    <Shape shapeType="roundRect" w="140" h="28" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">H2 2026 PLAN</Shape>
+  </HStack>
+  <VStack padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="16" borderLeft.color="$accent" borderLeft.width="4" shadow.blur="6" shadow.offset="2" shadow.color="000">
+    <HStack gap="8" alignItems="center">
+      <Icon name="calendar" size="20" color="$accent" />
+      <Text fontSize="16" bold="true" color="$textMain">H2 2026 Timeline</Text>
+    </HStack>
+    <Timeline direction="horizontal" h="150" dateColor="$textMuted" titleColor="$textMain" connectorColor="$accent">
+      <TimelineItem date="Jul '26" title="Baseline &amp; Fix" color="2563EB" />
+      <TimelineItem date="Aug '26" title="City Rebalance" color="0EA5E9" />
+      <TimelineItem date="Sep '26" title="Paneer Expansion" color="15803D" />
+      <TimelineItem date="Oct '26" title="Festive Peak" color="B45309" />
+      <TimelineItem date="Nov '26" title="Retention" color="DC2626" />
+      <TimelineItem date="Dec '26" title="Consolidation" color="7C3AED" />
+    </Timeline>
+  </VStack>
+  <HStack justifyContent="spaceBetween">
+    <Text fontSize="14" color="$textMain" bold="true">Targets &amp; Milestones</Text>
+  </HStack>
+  <HStack grow="1" gap="14" alignItems="stretch">
+    <VStack w="max" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" shadow.blur="6" shadow.offset="2" shadow.color="000">
+      <HStack gap="8" alignItems="center">
+        <Icon name="target" size="18" color="$accent" />
+        <Text fontSize="15" bold="true" color="$textMain">Monthly KPI Targets</Text>
+      </HStack>
+      <Table defaultRowHeight="42" cellBorder.color="$border" cellBorder.width="1">
+        <Col width="90" /><Col width="110" /><Col />
+        <Tr height="40">
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14">Month</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$accent" fontSize="14" textAlign="right">Target ROAS</Td>
+          <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14" textAlign="right">Target GMV</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted" fontSize="14">Jul '26</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" textAlign="right">4.90x</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">₹8.6 Cr</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted" fontSize="14">Aug '26</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" textAlign="right">5.10x</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">₹9.0 Cr</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted" fontSize="14">Sep '26</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" textAlign="right">5.30x</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">₹9.5 Cr</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted" fontSize="14">Oct '26</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" textAlign="right">5.50x</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">₹11.2 Cr</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="$surface" color="$textMuted" fontSize="14">Nov '26</Td>
+          <Td backgroundColor="$surface" color="$accent" fontSize="14" textAlign="right">5.60x</Td>
+          <Td backgroundColor="$surface" color="$textMain" fontSize="14" textAlign="right">₹10.5 Cr</Td>
+        </Tr>
+        <Tr>
+          <Td backgroundColor="E0E7FF" color="$textMuted" fontSize="14">Dec '26</Td>
+          <Td backgroundColor="E0E7FF" color="$accent" fontSize="14" textAlign="right"><B>5.70x</B></Td>
+          <Td backgroundColor="E0E7FF" color="$textMain" fontSize="14" textAlign="right"><B>₹11.0 Cr</B></Td>
+        </Tr>
+      </Table>
+    </VStack>
+    <VStack w="max" padding="18" gap="8" backgroundColor="$textMain" borderRadius="14" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
+      <HStack gap="8" alignItems="center">
+        <Icon name="zap" size="18" color="$surfaceAlt" />
+        <Text fontSize="15" bold="true" color="$surfaceAlt">H2 Summary</Text>
+      </HStack>
+      <Text fontSize="15" color="$surfaceAlt" lineHeight="1.45">H2 Total: Blended ROAS trajectory <Mark color="FDE68A">4.88x → 5.70x</Mark>, efficiency-first then scale, cumulative GMV target <Mark color="A7F3D0">₹59.8 Cr.</Mark></Text>
+    </VStack>
+  </HStack>
+  <Text fontSize="14" color="$textMuted">Source: Godrej Jersey Q-commerce H2 2026 operational plan, internal targets</Text>
+</VStack>
+</Slide>

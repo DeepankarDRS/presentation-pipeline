@@ -87,3 +87,42 @@ def test_attr_markup_is_stripped_and_bare_lt_escaped():
     assert 'title="ACOS &lt;20% (x > y)"' in xml
     # inline markup in element text stays: <B> is a real POM node there
     assert normalize_xml(_slide("<Text>a <B>bold</B> word</Text>"))["issues"] == []
+
+
+# ── <Mark> / highlight= → <Span color>, and text whitespace (CHEFFIN gate deck, 2026-09-24) ──
+
+@pytest.mark.parametrize("body,code", [
+    ('<Text>CHEFFIN <Mark color="2563EB">FLIPCART</Mark> Audit</Text>', "MARK_TO_SPAN"),
+    ('<Text highlight="FFFF00">x</Text><Ul><Li highlight="FDE68A">y</Li></Ul>', "HIGHLIGHT_REMOVED"),
+    ('<Text fontSize="46">\n          CHEFFIN <B>Ads</B> Audit\n        </Text>', "TEXT_WHITESPACE_TRIMMED"),
+])
+def test_text_style_fix_is_reported_and_idempotent(body, code):
+    first = normalize_xml(_slide(body))
+    assert code in {i["code"] for i in first["issues"]}
+    again = normalize_xml(first["cleaned_xml"])
+    assert again["cleaned_xml"] == first["cleaned_xml"]
+    assert again["issues"] == []
+
+
+def test_mark_becomes_readable_span_color():
+    xml = normalize_xml(_slide(
+        '<Text color="16202E">A <Mark color="2563EB">blue</Mark> B <Mark color="F59E0B">amber</Mark> '
+        'C <Mark color="FDE68A">pastel</Mark> D <Mark color="$accentAlt">token</Mark> E <Mark>bare</Mark></Text>'
+        '<Td color="FFFFFF"><Mark color="1D4ED8">dark panel</Mark></Td>'))["cleaned_xml"]
+    assert "Mark" not in xml
+    assert 'A <Span color="2563EB">blue</Span> B' in xml          # already 4.5:1 on white: unchanged
+    assert '<Span color="9E6506">amber</Span>' in xml               # same hue, darkened to 4.5:1
+    assert 'C <Span color="$accent">pastel</Span> D' in xml        # highlighter pastel -> theme accent
+    assert '<Span color="$accentAlt">token</Span>' in xml
+    assert '<Span color="$accent">bare</Span>' in xml
+    span = xml.split("dark panel")[0].rsplit('color="', 1)[1][:6]  # light text = dark panel: lightened
+    from src.compiler.normalizer import _contrast, _DARK_BG
+    assert _contrast(tuple(int(span[i:i + 2], 16) for i in (0, 2, 4)), _DARK_BG) >= 4.5
+
+
+def test_text_whitespace_keeps_inline_spacing():
+    xml = normalize_xml(_slide(
+        '<Text>\n    Audit covers <Span color="2563EB">FLIPCART</Span> Targeting,\n    and more.\n  </Text>'
+        '<Table><Col /><Tr><Td> </Td></Tr></Table>'))["cleaned_xml"]
+    assert '<Text>Audit covers <Span color="2563EB">FLIPCART</Span> Targeting, and more.</Text>' in xml
+    assert "<Td> </Td>" in xml  # a blank cell stays a fixed point

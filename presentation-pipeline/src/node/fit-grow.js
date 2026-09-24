@@ -340,7 +340,7 @@ function tableTextFits(n, tableW, k, rowH, ctx) {
       const span = c.colspan ?? 1;
       const w = colW.slice(col, col + span).reduce((a, b) => a + b, 0) * 0.85;
       col += span;
-      const f = c.fontSize ?? 14;
+      const f = c.fontSize ?? TD_FONT; // POM draws a <Td> without fontSize at 18 px
       const lines = (fs) => {
         const { heightPx } = measureText(c.text ?? "", w, { fontFamily: c.fontFamily ?? "Noto Sans JP",
           fontSizePx: fs, lineHeight: 1.3, fontWeight: c.bold ? "bold" : "normal" },
@@ -363,7 +363,7 @@ async function fitTables(xml, report) {
       const rowH0 = n.defaultRowHeight ?? 32;
       const boxH = L.box(n).h;
       if (boxH <= rows * rowH0 + 8) return;
-      const f0 = Math.max(14, ...n.rows.flatMap((r) => r.cells.map((c) => c.fontSize ?? 14)));
+      const f0 = Math.max(14, ...n.rows.flatMap((r) => r.cells.map((c) => c.fontSize ?? TD_FONT)));
       let k = Math.min(Math.sqrt(Math.min(boxH / rows, 64) / rowH0), Math.max(1, 18 / f0));
       const rowFor = (kk) => Math.max(rowH0, Math.min(Math.floor(boxH / rows), Math.round(f0 * kk * 2.6)));
       // columns do not widen and rows are fixed height: if any cell would not
@@ -882,19 +882,35 @@ function lineCount(n, L) {
   return Math.round(heightPx / (fs * lh));
 }
 
+/** Width of every node outside the candidate stacks (their own content may reflow). */
+function outsideWidths(L, ids) {
+  const inside = new Set();
+  for (const id of ids) walk(L.byId.get(id), (n) => n.id && inside.add(n.id));
+  const out = new Map();
+  for (const root of L.slides) walk(root, (n) => { if (n.id && !inside.has(n.id)) out.set(n.id, L.box(n).w); });
+  return out;
+}
+
 /**
  * Binary-search the largest factor in [1, max] for `apply` such that the
  * fullest candidate stays <= TARGET_FILL, no stack on the slide overflows more than it
- * already did (flex boxes may resize; nothing may overrun), and no heading in
- * `keepLines` wraps onto an extra line.
+ * already did (flex boxes may resize; nothing may overrun), no heading in
+ * `keepLines` wraps onto an extra line, and nothing outside the candidates changes
+ * width (a w="max" card whose text grows takes width from its neighbour: gj-h1
+ * slide 12's summary panel squeezed the KPI table beside it until its rows spilled).
  */
 async function search(xml, ids, apply, max, keepLines = []) {
   const fullest = (L) => Math.max(...ids.map((id) => fill(L.byId.get(id), L).ratio));
   const B = await layout(xml);
-  let before, ratio, lines0;
+  let before, ratio, lines0, slideMax, widths;
   try {
     before = overflows(B);
+    widths = outsideWidths(B, ids);
     ratio = fullest(B);
+    // a slide already past 720 (a squeezed table elsewhere) may not grow, but a sparse
+    // card on it may still fill its own box (CHEFFIN slide 4 "Traffic Mix Impact",
+    // 35% full on a 728px slide, was left at 14px)
+    slideMax = B.slides.map((r) => Math.max(natural(r, B), SLIDE.h) + 1);
     // a heading only 1 line in POM counts as 1 even if the 85% margin wraps it
     lines0 = new Map(keepLines.map((k) => [k, lineCount(B.byId.get(k), B)]));
   } finally { B.free(); }
@@ -904,9 +920,10 @@ async function search(xml, ids, apply, max, keepLines = []) {
     const T = await layout(apply(xml, s));
     try {
       const r = fullest(T);
-      let ok = r <= TARGET_FILL && T.slides.every((r) => natural(r, T) <= SLIDE.h + 1);
+      let ok = r <= TARGET_FILL && T.slides.every((r, j) => natural(r, T) <= slideMax[j]);
       for (const [k, o] of overflows(T)) if (o > Math.max(before.get(k) ?? 0, 0) + 1) ok = false;
       for (const [k, l0] of lines0) if (lineCount(T.byId.get(k), T) > Math.max(l0, 1)) ok = false;
+      for (const [k, w] of widths) if (Math.abs(T.box(T.byId.get(k)).w - w) > 1) ok = false;
       if (ok) { best = s; ratio = r; lo = s; } else hi = s;
     } finally { T.free(); }
   }

@@ -6,6 +6,7 @@ JSON-serializable.
 
 from __future__ import annotations
 
+import colorsys
 import re
 from typing import Any
 
@@ -305,6 +306,104 @@ def _pad_table_columns(xml: str) -> tuple[str, int]:
     return _TABLE_RE.sub(_fix, xml), count
 
 
+# <Mark> and highlight= paint a box behind the text (PowerPoint text highlight) — the CHEFFIN gate
+# deck (2026-09-24) drew dark titles on saturated blue boxes. A key phrase is coloured with
+# <Span color> instead; the marker colour keeps its hue and is darkened (or, inside light text on
+# a dark panel, lightened) until it reads at 4.5:1.
+_TEXT_BODY_RE = re.compile(r"(<(Text|Li|Td)\b([^>]*?)(?<!/)>)(.*?)(</\2>)", re.DOTALL)
+_MARK_OPEN_RE = re.compile(r"<Mark\b([^>]*?)(/?)>")
+_MARK_CLOSE_RE = re.compile(r"</Mark\s*>")
+_HIGHLIGHT_ATTR_RE = re.compile(r'\s+highlight\s*=\s*"[^"]*"')
+_COLOR_ATTR_RE = re.compile(r'(?<![\w.])color\s*=\s*"([^"]*)"')
+_HEX6_RE = re.compile(r"#?([0-9A-Fa-f]{6})")
+_MIN_CONTRAST = 4.5
+_PASTEL_BRIGHTNESS = 0.75
+_LIGHT_BG, _DARK_BG = (255, 255, 255), (22, 32, 46)
+
+
+def _luminance(rgb: tuple[float, float, float]) -> float:
+    def lin(c: float) -> float:
+        c /= 255
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (lin(c) for c in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def _contrast(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
+    la, lb = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
+def _readable_text_color(color: str, on_dark: bool) -> str:
+    """The marker colour as a text colour: same hue, lightness moved until it reads on the background."""
+    m = _HEX6_RE.fullmatch(color.strip())
+    if not m:  # $token (a theme colour) or anything unparseable: keep a token, else the accent
+        return color if color.startswith("$") else "$accent"
+    h = m.group(1)
+    if not on_dark and _perceived_brightness(h) > _PASTEL_BRIGHTNESS:
+        return "$accent"  # a pastel marker (FDE68A) only meant "look here"; darkened it turns olive
+    rgb = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    bg = _DARK_BG if on_dark else _LIGHT_BG
+    hue, light, sat = colorsys.rgb_to_hls(*(c / 255 for c in rgb))
+    step = 0.02 if on_dark else -0.02
+    while _contrast(rgb, bg) < _MIN_CONTRAST and 0 < light < 1:
+        light = min(1.0, max(0.0, light + step))
+        rgb = tuple(round(c * 255) for c in colorsys.hls_to_rgb(hue, light, sat))
+    return "".join(f"{c:02X}" for c in rgb)
+
+
+def _on_dark(container_attrs: str) -> bool:
+    """A light text colour on its Text/Li/Td means the phrase sits on a dark panel."""
+    m = _COLOR_ATTR_RE.search(container_attrs)
+    if not m:
+        return False
+    value = m.group(1)
+    if value.startswith("$"):
+        return value.startswith("$surface")
+    return _perceived_brightness(value) > 0.6
+
+
+def _mark_to_span(xml: str) -> tuple[str, int]:
+    count = 0
+
+    def _spans(body: str, on_dark: bool) -> str:
+        nonlocal count
+
+        def _open(m: re.Match) -> str:
+            nonlocal count
+            count += 1
+            if m.group(2):  # <Mark /> holds no text
+                return ""
+            color = _COLOR_ATTR_RE.search(m.group(1))
+            return f'<Span color="{_readable_text_color(color.group(1) if color else "", on_dark)}">'
+
+        return _MARK_CLOSE_RE.sub("</Span>", _MARK_OPEN_RE.sub(_open, body))
+
+    xml = _TEXT_BODY_RE.sub(lambda m: m.group(1) + _spans(m.group(4), _on_dark(m.group(3))) + m.group(5), xml)
+    return _spans(xml, False), count  # a <Mark> outside Text/Li/Td
+
+
+def _tidy_text_whitespace(xml: str) -> tuple[str, int]:
+    """Text written over several indented lines keeps its newline + indent as characters: the
+    CHEFFIN cover title started with '\\n          CHEFFIN…' and rendered pushed right. Collapse
+    each line break (and the indent around it) to one space and trim the ends — never inside
+    the text itself, and a whitespace-only body ("<Td> </Td>") stays as it is."""
+    count = 0
+
+    def _fix(m: re.Match) -> str:
+        nonlocal count
+        body = m.group(4)
+        if not body.strip():
+            return m.group(0)
+        tidy = re.sub(r"[ \t]*\r?\n\s*", " ", body).strip()
+        if tidy == body:
+            return m.group(0)
+        count += 1
+        return m.group(1) + tidy + m.group(5)
+
+    return _TEXT_BODY_RE.sub(_fix, xml), count
+
+
 def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
     """Deterministic fixes for inputs POM rejects. stage="early" runs before the Td/Li
     flattener (which needs parseable text), stage="late" after it (it can leave empty cells)."""
@@ -327,6 +426,21 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
         xml, n = _expand_border_shorthand(xml)
         if n:
             note("BORDER_SHORTHAND_EXPANDED", f'Rewrote {n} CSS-style border.width="t r b l" as per-side borders.')
+        xml, n = _mark_to_span(xml)
+        if n:
+            note("MARK_TO_SPAN", f"Rewrote {n} <Mark> highlight(s) as <Span color> (a box behind the "
+                 "text reads as a colored block).")
+        n = 0
+
+        def _drop_highlight(m: re.Match) -> str:
+            nonlocal n
+            tag, hits = _HIGHLIGHT_ATTR_RE.subn("", m.group(0))
+            n += hits
+            return tag
+
+        xml = _ELEMENT_TAG_RE.sub(_drop_highlight, xml)
+        if n:
+            note("HIGHLIGHT_REMOVED", f"Removed {n} highlight= attribute(s) (a box behind the text).")
         return xml
 
     xml, n = _EMPTY_TD_RE.subn(r"<Td\1> </Td>", xml)
@@ -342,6 +456,10 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
     xml, n = _pad_table_columns(xml)
     if n:
         note("TABLE_COLS_PADDED", f"Added <Col /> to {n} table(s) whose rows had more cells than columns.")
+    xml, n = _tidy_text_whitespace(xml)
+    if n:
+        note("TEXT_WHITESPACE_TRIMMED", f"Trimmed line breaks + indentation inside {n} Text/Li/Td "
+             "(rendered as leading space).")
     return xml
 
 

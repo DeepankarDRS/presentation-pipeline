@@ -11,7 +11,7 @@ meta:
   phase: A
   pom_version: "10.3.0"
 
-phase_a_allowlist: [Slide, Theme, VStack, HStack, Text, B, I, Span, Mark, Shape]
+phase_a_allowlist: [Slide, Theme, VStack, HStack, Text, B, I, Span, Shape]
 phase_b_allowlist: [Chart, ChartSeries, ChartDataPoint, Ul, Ol, Li, Icon]   # + Phase A
 phase_c_allowlist: [Table, Col, Tr, Td]                               # + Phase A + B
 phase_d_allowlist: [Layer, Line, Arrow, Svg, A, U, S, Sub, Sup, Timeline, TimelineItem, Flow, FlowNode, FlowConnection]   # + Phase A + B + C
@@ -60,7 +60,6 @@ content:
       - strike          # true | false
       - subscript       # true | false
       - superscript     # true | false
-      - highlight       # hex
       - fontFamily      # string, default "Noto Sans JP"
       - lineHeight      # number, default 1.3
       - letterSpacing   # number (px)
@@ -68,7 +67,7 @@ content:
       - glow            # glow.size / glow.opacity / glow.color
       - outline         # outline.size / outline.color
       - rotate          # degrees clockwise (render-only)
-    children: [B, I, A, U, S, Sub, Sup, Span, Mark]   # Phase D adds A, U, S, Sub, Sup
+    children: [B, I, A, U, S, Sub, Sup, Span]   # Phase D adds A, U, S, Sub, Sup
     font_size_guide: "Title 28-40 / Heading 18-24 / Body 13-16 / Caption 10-12"
   Shape:
     description: "A PowerPoint shape with optional centered text. Use for KPI dot indicators, accent bars, plates."
@@ -90,7 +89,6 @@ content:
       - strike
       - subscript
       - superscript
-      - highlight
       - fontFamily
       - lineHeight
     children: none
@@ -101,14 +99,10 @@ content:
 # CRITICAL: every inline tag and its surrounding text MUST be on the same line.
 # A newline before or after the opening/closing tag is treated as a literal line
 # break at render time. Always write <Text>value<Span fontSize="20">unit</Span></Text>
-# on one line — never split the <Span> (or <B>, <I>, <Mark>, etc.) to a new line.
+# on one line — never split the <Span> (or <B>, <I>, etc.) to a new line.
 inline:
   B:  { property: bold,   attributes: none, example: "Plain <B>bold</B> text" }
   I:  { property: italic, attributes: none, example: "Plain <I>italic</I> text" }
-  Mark:
-    property: highlight
-    attributes: [color]         # hex; default FFFF00
-    example: '<Mark color="FDE047">highlighted</Mark>'
   Span:
     description: "Style a single run without a semantic meaning. Key MVP use: big-number + small-unit KPI numerals."
     attributes:
@@ -145,9 +139,9 @@ phase_b:
     node_attributes: [label, value]
     required: [label, value]
     children: none
-  Ul: { description: "Bullet list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight], children: [Li] }
-  Ol: { description: "Numbered list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, highlight, fontFamily, lineHeight, numberType, numberStartAt], children: [Li] }
-  Li: { description: "List item. May contain inline tags.", node_attributes: [bold, italic, strike, subscript, superscript, underline, highlight, color, fontSize, fontFamily], children: [B, I, A, U, S, Sub, Sup, Span, Mark] }
+  Ul: { description: "Bullet list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, fontFamily, lineHeight], children: [Li] }
+  Ol: { description: "Numbered list.", node_attributes: [fontSize, color, textAlign, bold, italic, strike, subscript, superscript, underline, fontFamily, lineHeight, numberType, numberStartAt], children: [Li] }
+  Li: { description: "List item. May contain inline tags.", node_attributes: [bold, italic, strike, subscript, superscript, underline, color, fontSize, fontFamily], children: [B, I, A, U, S, Sub, Sup, Span] }
   Icon: { children: none }
 
 # ── Phase C nodes (table) ───────────────────────────────────────────────────
@@ -164,8 +158,8 @@ phase_c:
   Tr: { description: "Table row.", node_attributes: [height], children: [Td] }
   Td:
     description: "Table cell. Text body + inline tags."
-    node_attributes: [fontSize, color, textAlign, bold, italic, underline, strike, subscript, superscript, highlight, fontFamily, backgroundColor, colspan, rowspan]
-    children: [B, I, A, U, S, Sub, Sup, Span, Mark]   # Phase D adds A, U, S, Sub, Sup
+    node_attributes: [fontSize, color, textAlign, bold, italic, underline, strike, subscript, superscript, fontFamily, backgroundColor, colspan, rowspan]
+    children: [B, I, A, U, S, Sub, Sup, Span]   # Phase D adds A, U, S, Sub, Sup
 
 # ── Phase D nodes (drawing + compound viz) ───────────────────────────────
 # Full reference: components/drawing.yaml, components/timeline.yaml, components/flow.yaml.
@@ -264,7 +258,7 @@ post_mvp:
     note: "The one self-referencing node type — TreeItem nests inside TreeItem."
   ProcessArrow:
     description: "Chevron-style sequential process visualization."
-    node_attributes: [direction, itemWidth, itemHeight, gap, fontSize, bold, italic, strike, underline, highlight, fontFamily, w, h]
+    node_attributes: [direction, itemWidth, itemHeight, gap, fontSize, bold, italic, strike, underline, fontFamily, w, h]
     children: [ProcessArrowStep]
     direction_values: [horizontal, vertical]
     defaults: { itemWidth: 150, itemHeight: 80, fontSize: 14 }

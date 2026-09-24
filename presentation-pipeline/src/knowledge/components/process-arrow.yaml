@@ -30,7 +30,6 @@ ProcessArrow_attributes:
   italic:     { type: bool }
   strike:     { type: bool }
   underline:  { type: bool }
-  highlight:  { type: hex }
   fontFamily: { type: string, default: "Noto Sans JP" }
   w:          { type: number, note: "Explicit width — required" }
   h:          { type: number, note: "Explicit height — required" }

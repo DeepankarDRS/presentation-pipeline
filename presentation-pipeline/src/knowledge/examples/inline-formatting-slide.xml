@@ -11,7 +11,7 @@
       <VStack grow="1" gap="16" padding="24" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
         <Text fontSize="18" bold="true" color="$textMain">Text Formatting</Text>
         <Text fontSize="14" color="$textMuted" lineHeight="1.6" w="500">Revenue grew <B>18% QoQ</B><Sup>1</Sup>, driven by <U>enterprise expansion</U> and reduced CO<Sub>2</Sub> costs.</Text>
-        <Text fontSize="14" color="$textMuted" lineHeight="1.6" w="500">The legacy plan was <S>$99/month</S> — now <Mark color="DCFCE7">$79/month</Mark> after restructuring.</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.6" w="500">The legacy plan was <S>$99/month</S> — now <Span color="$positive">$79/month</Span> after restructuring.</Text>
         <Text fontSize="14" color="$textMuted" lineHeight="1.6" w="500">See <A href="https://example.com/q3-report">the full Q3 report</A> for detailed breakdowns.</Text>
       </VStack>
 
@@ -32,7 +32,7 @@
           </Tr>
           <Tr>
             <Td backgroundColor="FFFFFF" color="$textMain" fontSize="14"><A href="https://example.com/docs">Hyperlinks</A></Td>
-            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="14"><Mark color="DCFCE7">Shipped</Mark></Td>
+            <Td backgroundColor="FFFFFF" color="$textMain" fontSize="14"><Span color="$positive">Shipped</Span></Td>
           </Tr>
           <Tr>
             <Td backgroundColor="F8FAFC" color="$textMain" fontSize="14">H<Sub>2</Sub>O notation</Td>

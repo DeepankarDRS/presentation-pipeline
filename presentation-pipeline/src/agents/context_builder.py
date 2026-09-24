@@ -92,7 +92,7 @@ _KIND_TO_COMPONENT_FILE: dict[str, str] = {
 }
 
 _BASE_NODES = ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Icon"]
-_INLINE_NODES = ["B", "I", "Span", "Mark", "A", "U", "S", "Sub", "Sup"]
+_INLINE_NODES = ["B", "I", "Span", "A", "U", "S", "Sub", "Sup"]
 
 _COMMON_BOX_ATTRS = [
     "w", "h", "grow", "minH", "padding", "margin", "backgroundColor",

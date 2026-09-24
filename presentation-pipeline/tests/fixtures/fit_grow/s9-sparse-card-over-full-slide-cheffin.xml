@@ -1,0 +1,89 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" chartSurface="FFFFFF" chartInk="334155" />
+<!-- archetype: A -->
+<Slide><VStack w="1280" h="720" padding="36" gap="14" alignItems="stretch" backgroundColor="$surface">
+  <HStack justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">TRAFFIC ECONOMICS</Text>
+      <Text fontSize="30" color="$textMain" bold="true">Traffic Quality and Conversion Are <Span color="9E6506">Not Aligned</Span></Text>
+      <Text fontSize="14" color="$textMuted">Heavy spend on FLIPCART and ZAROMA is not translating into profitable conversions.</Text>
+    </VStack>
+  </HStack>
+  <VStack grow="1" gap="14" alignItems="stretch">
+    <HStack gap="14" alignItems="stretch">
+      <VStack w="50%" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" shadow.blur="6" shadow.offset="2" shadow.color="000" borderLeft.color="$accent" borderLeft.width="4">
+        <HStack gap="8" alignItems="center">
+          <Icon name="chart-column" size="20" color="$accent" />
+          <Text fontSize="14" color="$textMain" bold="true">CVR and AOV by Platform</Text>
+        </HStack>
+        <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["2563EB","F59E0B"]'>
+          <ChartSeries name="CVR (%)">
+            <ChartDataPoint label="FLIPCART" value="5.5" />
+            <ChartDataPoint label="ZAROMA" value="6.4" />
+          </ChartSeries>
+          <ChartSeries name="AOV (₹)">
+            <ChartDataPoint label="FLIPCART" value="195" />
+            <ChartDataPoint label="ZAROMA" value="230" />
+          </ChartSeries>
+        </Chart>
+        <Text fontSize="14" color="$textMuted">Both platforms underperform on conversion and value per order.</Text>
+      </VStack>
+      <VStack w="50%" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" shadow.blur="6" shadow.offset="2" shadow.color="000" borderLeft.color="$accent" borderLeft.width="4">
+        <HStack gap="8" alignItems="center">
+          <Icon name="dollar-sign" size="20" color="$accent" />
+          <Text fontSize="14" color="$textMain" bold="true">Allowable vs Actual CPC (1.0x ROAS)</Text>
+        </HStack>
+        <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["2563EB","E2E8F0"]'>
+          <ChartSeries name="Allowable CPC (₹)">
+            <ChartDataPoint label="FLIPCART" value="10.7" />
+            <ChartDataPoint label="ZAROMA" value="14.8" />
+          </ChartSeries>
+          <ChartSeries name="Actual CPC (₹)">
+            <ChartDataPoint label="FLIPCART" value="13.5" />
+            <ChartDataPoint label="ZAROMA" value="17.2" />
+          </ChartSeries>
+        </Chart>
+        <Text fontSize="14" color="$textMuted">Actual CPCs exceed allowable on both platforms, eroding margin.</Text>
+      </VStack>
+    </HStack>
+    <HStack gap="14" alignItems="stretch">
+      <VStack w="50%" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" shadow.blur="6" shadow.offset="2" shadow.color="000">
+        <HStack gap="8" alignItems="center">
+          <Icon name="target" size="20" color="$accent" />
+          <Text fontSize="14" color="$textMain" bold="true">ZAROMA Segment Performance</Text>
+        </HStack>
+        <Table defaultRowHeight="40" cellBorder.color="$border" cellBorder.width="1">
+          <Col width="180" /><Col /><Col />
+          <Tr height="40">
+            <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14">Segment</Td>
+            <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14" textAlign="right">CVR (%)</Td>
+            <Td bold="true" backgroundColor="$surfaceAlt" color="$textMain" fontSize="14" textAlign="right">AOV (₹)</Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="E6F4FF" color="$textMain" fontSize="14">City/Keyword 1</Td>
+            <Td backgroundColor="E6F4FF" color="$positive" fontSize="14" textAlign="right">high</Td>
+            <Td backgroundColor="E6F4FF" color="$positive" fontSize="14" textAlign="right">high</Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="$surface" color="$textMuted" fontSize="14">City/Keyword 2</Td>
+            <Td backgroundColor="$surface" color="$negative" fontSize="14" textAlign="right">low</Td>
+            <Td backgroundColor="$surface" color="$negative" fontSize="14" textAlign="right">low</Td>
+          </Tr>
+          <Tr>
+            <Td backgroundColor="$surface" color="$textMuted" fontSize="14">City/Keyword 3</Td>
+            <Td backgroundColor="$surface" color="$accent" fontSize="14" textAlign="right">varied</Td>
+            <Td backgroundColor="$surface" color="$accent" fontSize="14" textAlign="right">varied</Td>
+          </Tr>
+        </Table>
+        <Text fontSize="14" color="$textMuted">Budget is not optimized toward high-performing segments.</Text>
+      </VStack>
+      <VStack w="50%" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="4" shadow.blur="6" shadow.offset="2" shadow.color="000">
+        <HStack gap="8" alignItems="center">
+          <Icon name="triangle-alert" size="20" color="$accent" />
+          <Text fontSize="14" color="$textMain" bold="true">Traffic Mix Impact</Text>
+        </HStack>
+        <Text fontSize="15" color="$textMain" lineHeight="1.45">Current traffic mix is skewed toward low-intent, low-converting queries and cities, driving up CPA and ACOS (<Span color="9E6506">FLIPCART ACOS: 290%</Span>).</Text>
+      </VStack>
+    </HStack>
+  </VStack>
+  <Text fontSize="14" color="$textMuted">Source: CHEFFIN performance data, May 2024</Text>
+</VStack></Slide>

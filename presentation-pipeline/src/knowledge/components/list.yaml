@@ -27,7 +27,6 @@ Ul_attributes:
   subscript:   { type: bool }
   superscript: { type: bool }
   underline:   { type: "bool or underline options" }
-  highlight:   { type: hex, note: "highlight color behind text" }
   fontFamily:  { type: string, default: "Noto Sans JP" }
   lineHeight:  { type: number, default: 1.3 }
 
@@ -44,19 +43,18 @@ Li_attributes:
   subscript:   { type: bool }
   superscript: { type: bool }
   underline:   { type: "bool or underline options" }
-  highlight:   { type: hex, note: "highlight color" }
   fontFamily:  { type: string }
 
 Li_inline_children: >
-  <Li> supports inline formatting tags: <B>, <I>, <A>, <U>, <S>, <Sub>, <Sup>,
-  <Mark>, and <Span>. Examples: <Li>Normal <B>bold</B> item</Li>,
+  <Li> supports inline formatting tags: <B>, <I>, <A>, <U>, <S>, <Sub>, <Sup>
+  and <Span>. Examples: <Li>Normal <B>bold</B> item</Li>,
   <Li>See <A href="https://example.com">link</A></Li>,
   <Li>x<Sup>2</Sup> + y<Sup>2</Sup></Li>, <Li>H<Sub>2</Sub>O</Li>,
   <Li><Span color="FF0000">red</Span> item</Li>
 
 notes:
   - "Lowercase <ul>/<ol>/<li> are HTML. Use <Ul>/<Ol>/<Li>."
-  - "<Li> may contain inline tags (B, I, A, U, S, Sub, Sup, Span, Mark)."
+  - "<Li> may contain inline tags (B, I, A, U, S, Sub, Sup, Span)."
   - "Give the list an explicit w on its parent (or the list) so long items wrap."
   - "For a title + bullets slide, the <Ul> is the body of a content band below the header band."
   - "Line spacing: Ul/Ol use a different line-spacing rule than Text. Row height = measureFontLineHeightRatio * lineHeight * fontSize (bundled-font ratio). Text uses lineHeight * fontSize directly (PowerPoint spcPts). Use the same lineHeight value for visual consistency; absolute pixel values may differ slightly."
@@ -65,5 +63,5 @@ pitfalls:
   - "No nested <Ul> inside <Li> in the MVP — keep lists flat."
   - "Don't mix a <Ul> and manual bullet characters in <Text>; pick one."
   - "Lowercase <ul>/<li> are HTML tags — POM silently rejects them. Use <Ul>/<Li>."
-  - "Inline tags (<Span>, <B>, <I>, <Mark>, etc.) MUST be on the same line as the surrounding text — a newline before or after the tag is treated as a literal line break in the rendered slide. Write <Li>Normal <Span color=\"FF0000\">red</Span> item</Li> all on one line. Never split an inline tag onto its own line."
+  - "Inline tags (<Span>, <B>, <I>, etc.) MUST be on the same line as the surrounding text — a newline before or after the tag is treated as a literal line break in the rendered slide. Write <Li>Normal <Span color=\"FF0000\">red</Span> item</Li> all on one line. Never split an inline tag onto its own line."
   - "<Icon>, <Shape>, <VStack>, <HStack> and other block elements are NOT valid children of <Li> — POM silently strips them. To place an icon next to a bullet item, put the <Ul> and <Icon> side by side inside an <HStack>, or use the icon_bullet_list pattern (VStack of HStack rows with Icon + Text)."

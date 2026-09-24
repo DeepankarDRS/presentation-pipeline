@@ -78,7 +78,7 @@ ATTR_TRANSLATIONS: dict[str, str] = {
 NODE_VALID_ATTRS: dict[str, list[str]] = {
     "Text": [
         "fontSize", "color", "textAlign", "bold", "italic", "underline",
-        "strike", "fontFamily", "lineHeight", "letterSpacing", "highlight",
+        "strike", "fontFamily", "lineHeight", "letterSpacing",
         "textGradient", "glow.size", "glow.color", "rotate",
     ],
     "Shape": [

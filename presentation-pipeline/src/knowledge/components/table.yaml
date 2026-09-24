@@ -50,7 +50,6 @@ Td_attributes:
   strike:         { type: bool }
   subscript:      { type: bool }
   superscript:    { type: bool }
-  highlight:      { type: hex }
   fontFamily:     { type: string }
   backgroundColor: { type: hex }
   colspan:        { type: number }
@@ -63,7 +62,7 @@ notes:
   - "Right-align numeric columns with textAlign=\"right\" on every <Td> in that column (header included)."
   - "$tokens work in Td color / backgroundColor and in cellBorder.color — use cellBorder.color=\"$border\"."
   - "Table auto-sizes its height from rows; it does not take w/h. Control width via <Col>. Best practice: omit width on most columns (auto-fill), set width only on columns with notably more or less content. When ALL columns have explicit width, the table renders at exactly that sum — it will NOT stretch to fill the container."
-  - "<Td> may contain inline tags (B, I, Span, Mark)."
+  - "<Td> may contain inline tags (B, I, Span)."
 
 pitfalls:
   - "Unstyled body <Td> -> PowerPoint default table style (white fill + black text). Always set backgroundColor + color on every cell, not just the header."

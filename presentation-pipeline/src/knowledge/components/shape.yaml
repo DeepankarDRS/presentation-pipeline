@@ -22,7 +22,7 @@ attributes:
   glow:        { type: object, note: 'glow.size="10" glow.opacity="0.7" glow.color="3B82F6" (defaults 8 / 0.75 / FFFFFF). Use for a dot that pops on dark surfaces.' }
   rotate:      { type: number, note: "degrees clockwise, render-only" }
   # inner-text styling: fontSize, color, textAlign, bold, italic, underline,
-  # strike, subscript, superscript, highlight, fontFamily, lineHeight
+  # strike, subscript, superscript, fontFamily, lineHeight
   # plus all common box attributes (w, h, grow, padding, margin, backgroundColor,
   # border*, borderRadius, opacity, alignSelf, shadow) from core/attributes.yaml
 

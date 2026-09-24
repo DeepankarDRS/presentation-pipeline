@@ -61,7 +61,7 @@ def test_invalid_child_detected(body, parent, child):
 
 @pytest.mark.parametrize("body", [
     '<Table><Col /><Tr><Td>Plain <B>bold</B> <Span color="$accent">x</Span></Td></Tr></Table>',
-    '<Ul><Li>Item <Mark>hot</Mark></Li></Ul>',
+    '<Ul><Li>Item <Span color="$accent">hot</Span></Li></Ul>',
     '<Text>$84<B><Span fontSize="20">M</Span></B></Text>',
     '<HStack gap="8"><Icon name="zap" size="20" /><Text>label</Text></HStack>',
     '<Svg w="40" h="40"><svg viewBox="0 0 10 10"><rect width="10" height="10" /></svg></Svg>',

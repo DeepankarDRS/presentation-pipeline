@@ -26,8 +26,8 @@ treatments:
     intent: shade a table row or column
     technique: 'backgroundColor on that row''s/column''s <Td>s'
   highlight_text:
-    intent: marker-highlight a key phrase
-    technique: '<Mark color="HEX">phrase</Mark> on the same line as its text'
+    intent: color a key phrase
+    technique: '<Span color="$accent">phrase</Span> inside its Text on the same line, no newline or extra space around it (never <Mark> or highlight=: they paint a box behind the text)'
   series_color:
     intent: highlight one chart series
     technique: 'chartColors: accent hex for the focus series, muted hex for the rest (literal hex, no $tokens)'
