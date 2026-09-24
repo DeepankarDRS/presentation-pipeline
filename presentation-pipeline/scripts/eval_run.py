@@ -97,17 +97,21 @@ def _stream_case(case: dict[str, Any], run_id: str) -> tuple[dict[str, Any], lis
     final: dict[str, Any] = {}
     attempts: list[dict[str, Any]] = []
     cur = {"current_slide_index": 0, "retry_count": 0, "retry_tier": 0}
-    for mode, chunk in compile_graph().stream(state, config=config, stream_mode=["updates", "values"]):
-        if mode == "values":
-            final = chunk
-            continue
-        for node, update in chunk.items():
-            if not isinstance(update, dict):
+    try:
+        for mode, chunk in compile_graph().stream(state, config=config, stream_mode=["updates", "values"]):
+            if mode == "values":
+                final = chunk
                 continue
-            if node == "validator":
-                attempts.append({"slide": cur["current_slide_index"], "retry": cur["retry_count"],
-                                 "tier": cur["retry_tier"], **update})
-            cur.update({k: update[k] for k in cur if k in update})
+            for node, update in chunk.items():
+                if not isinstance(update, dict):
+                    continue
+                if node == "validator":
+                    attempts.append({"slide": cur["current_slide_index"], "retry": cur["retry_count"],
+                                     "tier": cur["retry_tier"], **update})
+                cur.update({k: update[k] for k in cur if k in update})
+    except Exception as e:
+        e.partial = (final, attempts)  # a crash on slide 12 must not discard slides 0-11 (paid for)
+        raise
     return final, attempts
 
 
@@ -156,7 +160,7 @@ def evaluate_case(case: dict[str, Any], repeat: int) -> dict[str, Any]:
         final, attempts = _stream_case(case, run_id)
         error = None
     except Exception as e:  # one broken case must not lose the whole eval
-        final, attempts, error = {}, [], f"{type(e).__name__}: {e}"
+        (final, attempts), error = getattr(e, "partial", ({}, [])), f"{type(e).__name__}: {e}"
         print(f"   ERROR: {error}")
     by_slide: dict[int, list[dict[str, Any]]] = {}
     for a in attempts:

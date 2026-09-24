@@ -193,6 +193,21 @@ def test_stream_case_tags_validator_attempts_on_real_graph():
     assert "UNKNOWN_ICON_REMOVED" not in codes[0] and "UNKNOWN_ICON_REMOVED" in codes[1]
 
 
+def test_crash_mid_deck_keeps_slides_already_run(monkeypatch, blinkit_pptx):
+    import src.graph
+
+    class Graph:
+        def stream(self, state, config, stream_mode):
+            yield "updates", {"validator": _attempt(0, 0, 0, blinkit_pptx)}
+            yield "updates", {"slide_router": {"current_slide_index": 1, "retry_count": 0}}
+            raise RuntimeError("API timeout on slide 1")
+
+    monkeypatch.setattr(src.graph, "compile_graph", Graph)
+    result = eval_run.evaluate_case({"name": "deck-z", "expect": {"slide_count": 2}}, 1)
+    assert result["error"] == "RuntimeError: API timeout on slide 1"
+    assert [s["index"] for s in result["slides"]] == [0] and result["slides"][0]["compiled"]
+
+
 def test_slide_target_beats_deck_settings_default():
     """DeckSettings defaults to 8 slides; the eval must pass each case's own target."""
     assert eval_run._slide_target({"expect": {"slide_count": 6}}) == 6
