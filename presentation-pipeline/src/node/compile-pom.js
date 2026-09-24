@@ -253,7 +253,17 @@ async function compile() {
 
     const pptxPath = path.join(outputDir, "presentation.pptx");
     // table cells vertically centred (POM writes them top-anchored; see pptx-post.js)
-    await writeFile(pptxPath, await postProcessPptx(await pptx.write({ outputType: "nodebuffer" })));
+    let buffer = await pptx.write({ outputType: "nodebuffer" });
+    try {
+      buffer = await postProcessPptx(buffer);
+    } catch (error) {
+      // a post-process bug must not cost a retry: keep POM's own pptx
+      result.warnings = [...(result.warnings ?? []), {
+        code: "PPTX_POST_SKIPPED",
+        message: `pptx post-process failed (${error && error.message ? error.message : String(error)}); wrote the unprocessed pptx`,
+      }];
+    }
+    await writeFile(pptxPath, buffer);
 
     result.status = "success";
     result.pptxPath = path.resolve(pptxPath);
