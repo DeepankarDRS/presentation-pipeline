@@ -9,6 +9,7 @@ import json
 import os
 import re
 import shutil
+import zipfile
 import subprocess
 from pathlib import Path
 
@@ -139,3 +140,53 @@ def test_main_table_keeps_the_type_size_of_other_tables(tmp_path):
     on = _compile(xml, tmp_path / "on")
     assert not any("cell text" in r for r in on["fitGrow"])
     assert set(_td_fonts(on["xml"])) == {14}
+
+
+def _cell_anchors(pptx: Path) -> list[str]:
+    with zipfile.ZipFile(pptx) as z:
+        xml = z.read("ppt/slides/slide1.xml").decode("utf-8")
+    return re.findall(r'<a:tcPr\b[^>]*?\sanchor="(\w+)"', xml) + ["-"] * len(re.findall(r'<a:tcPr\b(?![^>]*\sanchor=)', xml))
+
+
+def test_table_cells_are_vertically_centred(tmp_path):
+    """POM writes every cell top-anchored; compile-pom's post-process centres them (pptx-post.js)."""
+    _compile(_ROOT / "tests" / "fixtures" / "layout_sizing" / "s2-table-text.xml", tmp_path / "on")
+    anchors = _cell_anchors(tmp_path / "on" / "presentation.pptx")
+    assert anchors and set(anchors) == {"ctr"}
+
+
+def test_centring_is_idempotent(tmp_path):
+    """centreCells leaves an already-anchored cell alone, so running it twice changes nothing."""
+    if not shutil.which("node"):
+        pytest.skip("node not installed")
+    script = (
+        "import { centreCells } from './src/node/pptx-post.js';"
+        "const x = '<a:tc><a:txBody><a:bodyPr anchor=\"t\"/></a:txBody><a:tcPr marL=\"0\"></a:tcPr></a:tc>"
+        "<a:tc><a:txBody><a:bodyPr/></a:txBody><a:tcPr anchor=\"b\"></a:tcPr></a:tc>';"
+        "const once = centreCells(x); console.log(JSON.stringify([once, centreCells(once)]));"
+    )
+    out = subprocess.run(["node", "--input-type=module", "-e", script], cwd=_ROOT, check=True,
+                         capture_output=True, text=True, timeout=60).stdout
+    once, twice = json.loads(out)
+    assert once == twice
+    assert '<a:tcPr anchor="ctr" marL="0">' in once and '<a:bodyPr anchor="ctr"/>' in once
+    assert '<a:tcPr anchor="b">' in once  # an explicit anchor is kept
+
+
+def test_main_table_rows_fill_a_table_only_card(tmp_path):
+    """tables-check single-table ended ~1/3 early under the old 64 px / 1.5x row cap; with centred
+    cells rows may grow to 96 px / 2x their text into the card's spare height (one-line 18 px rows:
+    1.5x = 48 px before, 2x = 64 px now)."""
+    rows = "".join(f'<Tr><Td fontSize="14">Segment {i}</Td><Td fontSize="14">$1{i}.2M</Td><Td fontSize="14">+{i}%</Td></Tr>'
+                   for i in range(5))
+    xml = tmp_path / "t.xml"
+    xml.write_text(
+        '<Slide><VStack w="1280" h="720" padding="48" gap="16">'
+        '<Text fontSize="28" bold="true">Revenue by segment</Text>'
+        f'<VStack grow="1" padding="16"><Table defaultRowHeight="32"><Col /><Col /><Col />{rows}</Table></VStack>'
+        '</VStack></Slide>', encoding="utf-8")
+    on = _compile(xml, tmp_path / "on")
+    heights = [int(h) for h in re.findall(r'<Tr\b[^>]*\sheight="(\d+)"', on["xml"])]
+    assert heights and min(heights) > 48  # past the old 1.5x-text limit
+    assert max(heights) <= 96
+    assert table_spill(tmp_path / "on" / "presentation.pptx") == 0

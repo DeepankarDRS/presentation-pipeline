@@ -404,14 +404,17 @@ async function fitTables(xml, report) {
 //   spare   — the slide's main table (>= 2x any other: peer tables keep one type
 //             size) grows its cell text (<= 18 px; only when it is the slide's
 //             only table, so two tables never show two type sizes), then its
-//             rows (<= 64 px, <= 1.5x their text), into empty slide space or dead
+//             rows (<= ROW_CAP, <= ROW_GROW x their text; compile-pom centres
+//             cell text vertically, so a taller row reads as air, not a gap),
+//             into empty slide space or dead
 //             space in its own card: only the table and its ancestors change size
 //             (a peer card stretched by a taller row would just gain dead space).
 
 const TD_FONT = 18;  // POM's <Td> default fontSize
 const TD_BODY = 14;  // written into cells without fontSize
 const ROW_PAD = 8;   // px around a cell's lines (POM writes Td margins of 0)
-const ROW_CAP = 64;
+const ROW_CAP = 96;  // px — spare-height growth of the main table's rows
+const ROW_GROW = 2;  // x a row's text height
 const TD_FONT_CAP = 18;
 
 const rowsSum = (n) => resolveRowHeights(n).reduce((a, b) => a + b, 0);
@@ -689,8 +692,8 @@ async function growMainTable(xml, id, report, onlyTable) {
   const grownFont = cells.some((c) => fontFor(k)(c) !== (c.fontSize ?? TD_FONT));
   const K = atFont(grownFont ? k : 1);
 
-  // then rows, each up to min(64 px, 1.5x its text) (never below where it is)
-  const cap = K.rows.map((r, i) => Math.max(r, Math.min(ROW_CAP, Math.round(1.5 * K.plan.need[i]))));
+  // then rows, each up to min(ROW_CAP, ROW_GROW x its text) (never below where it is)
+  const cap = K.rows.map((r, i) => Math.max(r, Math.min(ROW_CAP, Math.round(ROW_GROW * K.plan.need[i]))));
   const rowsAt = (t) => K.rows.map((r, i) => Math.round(r + t * (cap[i] - r)));
   const rowXml = (t) => writeTable(K.xml, id, { rows: rowsAt(t) });
   const t = sum(cap) > sum(K.rows) && await tableFits(rowXml(0), id, before, keep)

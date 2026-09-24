@@ -17,6 +17,7 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { buildPptx, parseXml, ParseXmlError } from "@hirokisakabe/pom";
+import { postProcessPptx } from "./pptx-post.js";
 
 const SLIDE_SIZE = { w: 1280, h: 720 };
 const POM_VERSION = "10.3.0";
@@ -251,7 +252,8 @@ async function compile() {
     }
 
     const pptxPath = path.join(outputDir, "presentation.pptx");
-    await pptx.writeFile({ fileName: pptxPath });
+    // table cells vertically centred (POM writes them top-anchored; see pptx-post.js)
+    await writeFile(pptxPath, await postProcessPptx(await pptx.write({ outputType: "nodebuffer" })));
 
     result.status = "success";
     result.pptxPath = path.resolve(pptxPath);

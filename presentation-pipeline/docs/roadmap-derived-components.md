@@ -29,13 +29,14 @@ The pipeline works, but it is not production-grade yet:
 ## Target architecture
 
 ```
-content_data ──(code)──► data shape ──(code, routing.yaml)──► candidate cards
-                                                                   │
-            narrative + visual_emphasis ──(LLM chooses among candidates only)
-                                                                   ▼
+brief ──(planner LLM: kinds, weights, content_data)──► plan
+                                                        │
+              plan facts (code: counts, text lengths) ──┤  annotate, never remap (Phase 2, revised)
+              table placement rule (code)             ──┤  the one enforced rule
+                                                        ▼
    slide = VStack/HStack composition with grow/minH (LLM, free)
          + derived cards (expanded by code into core POM)
-                                                                   ▼
+                                                        ▼
           normalizer + content model + fit-grow (code) ──► compiler ──► .pptx
 ```
 
@@ -53,7 +54,7 @@ Already in place and reused: `hint-capabilities.yaml`, `content_model.py`, `icon
 |---|---|---|---|---|
 | 0 | Quality baseline | roadmap | yes | — |
 | 1 | Sizing grammar (grow/minH, no pixel budgets) | sizing plan Step 1 | for acceptance | 0 |
-| 2 | Deterministic routing + planner prompt fixes | roadmap | for acceptance | 0 (independent of 1; can swap) |
+| 2 | Planner fixes + measured routing + table placement (revised 2026-09-24) | roadmap | planner-only evals (cents) + one gate run | 0 (independent of 1; can swap) |
 | 3 | Real font metrics | sizing plan Step 2 | no (visual check) | 1 |
 | 4 | Derived nodes: KpiTile, TableCard, IconList | roadmap | for acceptance | 1, 2 |
 | 5 | Remaining derived nodes + computed table/diagram sizing | roadmap + sizing plan Steps 3–4 | for acceptance | 4 |
@@ -153,25 +154,44 @@ Acceptance: first-pass not worse ✔, prompt smaller ✔, generator follows the 
 
 ---
 
-## Phase 2 — Deterministic routing + planner prompt fixes
+## Phase 2 — Planner fixes, measured routing, table placement
+
+**Revised 2026-09-24 (user decision).** The original design (`data_shape.py` → `routing.yaml` candidate kinds → 2A deterministic remap or 2B two-step planning) is **dropped**. Principle instead: **code annotates, the LLM decides; code enforces only what cannot corrupt data.**
+Why it was dropped:
+- Data shape can route only table / kpi_row / chart (3 of 14 kinds). The rest — bullet_list, narrative, process_arrow, flow, tree, pyramid, matrix, layer, mostly timeline — depend on meaning (does order matter, is there branching / hierarchy / ranking), which counting cannot see. The product must handle any slide type, not only gj-h1-style data decks.
+- 2A needs a data converter per kind pair that parses business strings (`₹10.7 L`, `0.34x`, `12%`, `N/A`, `Q2 FY25`, two metrics in one cell). A converter bug puts **wrong numbers on a slide** — worse for business use than a less pretty kind. A swap also leaves the planner's `design_hint` / `layout_hint` describing the old kind.
+- 2A reads `content_data` the planner already shaped for its chosen kind, so a mis-shaped plan cannot be recovered; 2B fixes that but costs ≈ +$0.15–0.20 per 14-slide deck (+15%) and adds an LLM step.
+- Evidence for wrong-kind routing is thin (one real 2×1 thin table, one all-`bullet_list` plan); `eval-table-vs-kpi-disambiguation` routed correctly in `tables-check` (`title, table, narrative`). The only routing failure with strong evidence is **placement**: wide / long-text tables in half-width cards (4 over-full slides in `tables-check`, option B).
+- Kind choice is the smallest quality lever; sizing/fit, hierarchy/density and consistent card internals matter more (Phases 1, 3, 4, 5).
 
 ### 2.1 Planner prompt fixes (small, do first)
 In `src/prompts/slide_component_planner/system.j2`:
-- Worked Example 2 hint asks for "a horizontal reference line at 0.40x" — POM charts cannot draw one; not a chart treatment. Replace with "accent color for the Bengaluru bar, muted for the rest; accent border on the chart card".
+- Worked Example 2 hint asks for "a horizontal reference line at 0.40x" — POM charts cannot draw one. Replace with "accent color for the Bengaluru bar, muted for the rest; accent border on the chart card".
 - Contradiction: line 1 "optional design_hint", line 148 "mandatory", line 9 "distinctive rendering" without scope; example title/narrative components lack hints. One rule: every component gets a hint from its kind's treatments.
-- Worked Example 4: two platforms × one metric (Flipkart ROAS 0.34x, Zomato 0.32x) showing the 2.2 routing outcome and a scoped hint.
+- **Diversify the worked examples (example bias).** All three are one domain (ad campaigns / ROAS in ₹ — the gj-h1 domain) and cover only table, chart and bullet_list; the routing table (lines 18–48) uses ROAS examples too. Replace with 4–5 short examples from different domains (HR, product, operations, finance, strategy) covering table, kpi_row, a process/timeline, a diagram (tree or matrix) and a qualitative list, labelled "illustrate format and reasoning — domain and kinds are examples, not defaults". Keep examples (they teach the `content_data_json` schema, hint specificity and `layout_hint` style — removing concrete examples broke the generator on 2026-09-10). Optional: inject only the 2–3 examples closest to the slide's likely kinds.
 - Test: worked-example hints only use their kind's treatments (lexical forbidden-word check per kind).
+- Not in this phase (deferred by the user): archetype A–E removal, weight wording (`hero=50-60%` → relative grow), planner rule 8.
 
-### 2.2 Shape classifier + routing rules
-- `src/agents/data_shape.py`: `shape_of(kind, content_data) -> DataShape(entities, metrics, points, series, items, has_time_axis, max_text_len)` — pure.
-- `src/knowledge/core/routing.yaml`: ordered `shape predicate → candidate kinds`, e.g. 2 entities × 1 metric → `[kpi_row, table]`; ≥3 entities × 1 metric → `[chart, table]`; ≥2 entities × ≥2 metrics → `[table]`; time axis ≥3 points → `[chart]`; <3 points → `[kpi_row]`; **guard: brief explicitly asks for a table → table** (user rule).
-- Table-driven unit tests, including every `eval-*` case.
+### 2.2 Measure routing (before changing it)
+- **Scorer:** `eval_run` compares each planned slide's kinds (already recorded in `results.json` → `slides[].components`) with the case's `expect.planner_should_pick` (declared in the `eval-*` cases, read by nothing today). New metric `routing_match` (share of cases whose planned kinds match) in aggregate / summary / `eval_compare`.
+- **Planner-only mode:** `eval_run --planner-only` stops the stream after `slide_component_planner` (no generation, no compile) — a few cents per case, so routing can be sampled with repeats (~10 per case) to see variance, not one draw.
+- **Case set:** the 3 `eval-*` cases + 3–4 non-ROAS diagram cases already in `tests/cases/` (`flowchart`, `tree-org-chart`, `timeline-roadmap`, `matrix-prioritization`, `process-arrow-onboarding`, `pyramid-strategy`) — add `planner_should_pick` to those that lack it.
 
-### 2.3 Enforce candidates — **DECIDE (recommend 2A first)**
-- **2A post-plan check + deterministic remap** (no extra LLM call): non-candidate kind → first candidate, content_data transformed (`table_rows` → `kpi_labels/kpi_values`), logged `ROUTING_REMAP`.
-- **2B two-step planning**: extract typed facts → code proposes → LLM chooses (enum per slide). +1 LLM call/slide.
+### 2.3 Plan facts (annotations, no enforcement)
+- `src/agents/plan_facts.py`: pure `facts_of(component) -> dict` from the planner's `content_data_json` — table: columns, rows, longest cell (chars), long-text column; kpi_row: tiles, longest label/value; chart: points, series; lists / diagrams: items, longest item.
+- Rendered into `generator/user.j2` as one `facts:` line per component, so the generator composes with real counts instead of guessing.
+- Advisory checks logged as `PLAN_ADVISORY` in the run (e.g. kpi_row > 5 tiles, chart < 3 points, 1-row table, diagram labels longer than the kind's capacity from the Visual Fitness Guide). **The plan is never changed.** A check is promoted only if eval data shows it right every time — first to a stronger prompt line, to enforcement only if enforcing never touches data.
 
-**Acceptance:** `eval-*` routing matches expectations; no gate regression; 2×1 → tiles unless a table was asked for.
+### 2.4 Table placement rule (option B — the one enforced rule)
+- A table whose facts say it cannot fit a half-width card gets a full-width band: stated in its generator `facts:` line and in the grammar (`house-style.yaml` data-node sizing / `table_card` recipe).
+- `layout_audit` rule `TABLE_TOO_WIDE_FOR_CARD` on the generated XML (wide table inside an HStack child) → repair / retry per the severity decided below. Checked after the fact by fit-grow's existing over-full report (`tables_overfull_slides`).
+- It moves a table, never its data.
+
+**DECIDE (ask before coding):** (1) option B form — wide table → full width, or the long-text column → a bullet list beside a narrower table; (2) the "wide" threshold (e.g. ≥ 5 columns, or a longest cell that cannot sit in half width at 14 px — measured with fit-grow's `measureText`, or a char-count proxy); (3) `TABLE_TOO_WIDE_FOR_CARD` severity (warn vs retry); (4) which diagram cases join the routing set.
+**Tests (LLM-free):** `plan_facts` table-driven (incl. `₹`/`x`/`%`/`N/A` strings — it only counts, never converts); `routing_match` scorer on a mocked stream; hint lexical test; audit rule on the over-full fixtures (`tests/fixtures/fit_grow/s6-wrapped-table-phase1.xml`, tables-check gj slide 1 / 10 XML).
+**Acceptance:** `routing_match` not below its measured pre-change value (planner-only, repeats); `tables_overfull_slides` → 0 on gj-h1 + the table cases; no gate regression (first-pass, fill, golden match, overflows); net prompt size not larger.
+**Cost:** runtime $0 (no new LLM call). Evals: planner-only routing samples ≈ cents; one paid run before merge = the 6 deferred gate cases with `--label tables-check` (≈ $2.6, ≈ $1.4 without the 18-slide cheffin deck) + the chosen diagram cases (≈ $0.03 each).
+**Dropped, revisit only on data:** `data_shape.py`, `routing.yaml`, 2A remap + converters, 2B. If `routing_match` shows one specific misroute recurring across repeats, add that single rule as a `PLAN_ADVISORY` / prompt line first.
 
 ---
 
@@ -261,7 +281,7 @@ PowerPoint screenshots of the fixed slides 1, 5, 6 (user, 2026-09-24) — remain
 3. **Blank cells** (slide 1: H1 GMV for Blinkit/Swiggy, ACOS for Swiggy/Zepto — the source data has them): generator drops data; new metric `empty_cells` (phase-1 0 → phase-5-tables 4).
 4. Table text in a different font than the body → Phase 3. 5. Slide 5 KPI tile "₹1. / 80 Cr" (sparkline squeezes the value) → Phase 4 `KpiTile`.
 Metrics added: `empty_cells` (blank table cells, from the pptx, merged cells excluded) and `tables_overfull_slides` (slides whose fit-grow report says a table could not fit) in `eval_run` aggregate/summary and `eval_compare`; `docs/eval/phase-1` and `phase-5-tables` re-imported so they carry them (`tables_overfull_slides` is not comparable across the two: phase-1's fit-grow could not report it). Unit tests 424 pass, same 4 pre-existing failures.
-Open (not decided): table cell margins — POM hard-codes 0; options are an upstream issue (`hirokisakabe/pom`, Td padding) or a deterministic pptx post-process setting `marL/marR` on table cells with fit-grow measuring width minus the margins.
+Table cell margins — POM hard-codes 0; options were an upstream issue (`hirokisakabe/pom`, Td padding) or a deterministic pptx post-process setting `marL/marR` with fit-grow measuring width minus the margins. **Decided 2026-09-24 (user): no margins for now** (see "Tables finished" below).
 
 **Eval `tables-check` (2026-09-24, commit `77000c3`, $1.21) → `docs/eval/tables-check/`** — user chose table-focused cases instead of the full gate: `gj-h1-regen` × 1 + `single-table`, `chart-and-table`, `eval-table-vs-kpi-disambiguation`, `mixed-executive-slide`, `maximal-density`. `eval_run` crashed after the paid gj-h1 run (slide 8 had `title="<B>…</B>"` inside a TimelineItem attribute: POM accepts it, ElementTree does not) — fixed in `invented_numbers` (`2378a5a` + colour-code false positives); gj-h1 was re-scored LLM-free from the emailed run folder (`max_tier` / auto-fix counts not recoverable).
 
@@ -278,6 +298,12 @@ Single-slide cases: all first-pass, table spill 1 slide / 11 px (`maximal-densit
 Findings (table): (1) **gj 10** — over-full slide, the last row sits under the next band (Phase 2, option B). (2) **gj 5** — the main table grew to 18 px while the smaller table on the same slide stayed 14 px: two type sizes on one slide (the dominance rule lets the main table grow alone). (3) **chart-and-table, mixed-executive** — a table in a card stretched to its chart neighbour's height fills the top half; the rest of the card is empty (row cap 64 px / 1.5× text, decision (c)). (4) **maximal-density** — "+22%Expansion": neighbouring cells touch (0 cell margins, open). (5) single-table — the slide ends ⅓ early (6 short rows, same row cap).
 Findings (not table): **gj 8** — the generator wrote HTML-style `<B>…</B>` inside TimelineItem `title` attributes; PowerPoint shows the tags literally and the long labels overflow (3 text overflows). A deterministic normalizer fix (strip markup inside attribute values) would remove it; not done here.
 **Fixed after `tables-check` (user, 2026-09-24), LLM-free:** (2) `sizeTables` grows the main table's cell text only when it is the slide's only table — with another table on the slide only its rows may grow (replays: only phase-1 slide 4 and tables-check gj slide 5 change, both now one type size; golden and all other numbers unchanged). (5) normalizer `ATTR_MARKUP_STRIPPED`: markup such as `<B>…</B>` inside attribute values is removed and any other bare `<` escaped (tables-check gj slide 8 now shows plain labels; over 72 fixture/replay slides it fires only there). Its labels still overflow — paragraph-length TimelineItem titles in ~128 px (generator / Phase 4). Unit tests 428 pass, same 4 pre-existing failures.
+**Tables finished (user decisions, 2026-09-24, branch `tables-finish`), LLM-free:**
+- **Cells vertically centred:** new `src/node/pptx-post.js`, run by `compile-pom.js` on every built pptx, sets `anchor="ctr"` on table cells (POM's `<Td>` has no valign and writes them top-anchored). Idempotent; an explicit anchor is kept. `jszip` (already POM's dependency) declared in `src/node/package.json`.
+- **Spare-height row cap relaxed:** the main table's rows may grow to min(96 px, 2× their text), up from min(64 px, 1.5×) (decision (c)). With centred text a taller row reads as air, not a gap. Replays: tables-check single-table rows 240 → 384 px, chart-and-table 200 → 320, mixed-executive 160 → 256, phase-1 slide 12 360 → 479, gj slides 3 / 10 fill their cards. Table spill, over-full reports, overflows and word breaks unchanged on all sets (golden, layout_sizing, tables-check, three gj-h1 replays). Fill dips 0–0.013: the metric counts row height above the text as dead space. The card heading next to a grown table is no longer inflated by growText, so it now matches its neighbour's heading.
+- **`TABLE_TOO_WIDE_FOR_CARD` audit (low, warn-only; option B):** a table in a card < 60% of the slide wide whose longest cell would wrap to ≥ 4 lines at an equal column split (~7.7 px per char). Calibrated on every saved slide: 0 flags on the gj-h1 golden (its 5–6 short numeric columns in half-width cards are fine, so column count alone is not the criterion); it fires on phase-5-tables slide 2 (text needs 279 px, card allows 160 — the one over-full slide that really hides rows) and warns on tables-check gj slide 3 (a 106-char detail column, tall rows but not over-full). Every other over-full report has rows that fit their text: whole-slide content volume, not table placement. Threshold + prompt rule still Phase 2.4.
+- **Decided, not changed:** no cell margins (user; cells still touch, e.g. "H1 ROASACOS"); table cells keep no font, so PowerPoint draws them in the theme font Aptos while fit-grow measures Noto Sans JP (user: fine for now; Phase 3).
+- Tests: `test_fit_grow_tables.py` (+3: cells centred, centring idempotent, rows past the old 1.5× limit), `test_layout_audit.py` (+3). Unit tests 434 pass, same 4 pre-existing failures.
 Verify LLM-free: the three fixtures above + `tests/fixtures/layout_sizing/s2-table-text.xml`; gj-h1 golden tables must not regress (fill 0.896 with fit-grow on; `python -m scripts.eval_run --fixtures tests/fixtures/golden/gj-h1-deck --label golden`); `pytest tests/unit` (414 pass, 4 known failures); LibreOffice renders. Replay the phase-1 run for free: `llm_test/gj-h1-regen-7293ef.zip` (local only, untracked) `deck/input.xml` → recompile all 14 slides and compare slides 3, 6, 10, 11 with `docs/eval/phase-1/renders/`. Consider a metric for failure 1/2: rows exceeding their table frame (Σ `<a:tr h>` > the graphicFrame `cy` in the pptx) — the fill metric reads declared frames and cannot see it.
 
 ## Phase 6 — Measured critic loop (sizing plan Step 5)

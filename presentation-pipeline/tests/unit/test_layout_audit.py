@@ -323,3 +323,33 @@ def test_hstack_root_column_within_budget_ok():
     issues = audit_layout(xml)
     band_issues = [i for i in issues if i["code"] == "BAND_HEIGHT_SUM"]
     assert len(band_issues) == 0
+
+
+def _table(cols: int, cell: str) -> str:
+    row = "<Tr>" + "".join(f"<Td>{cell}</Td>" for _ in range(cols)) + "</Tr>"
+    return "<Table>" + "<Col />" * cols + row * 3 + "</Table>"
+
+
+def _half_width(table: str) -> str:
+    return ('<Slide><VStack w="1280" h="720" padding="48"><HStack gap="16">'
+            f'<VStack w="50%">{table}</VStack><VStack w="50%"><Text>Notes</Text></VStack>'
+            '</HStack></VStack></Slide>')
+
+
+def test_long_text_table_in_half_width_card_flagged():
+    """Option B (roadmap Phase 2.4): a long-text column in a half-width card wraps into tall rows."""
+    xml = _half_width(_table(6, "Shift 40% of Curd SP budget into SILB and Browse Boost for Q3 rollout"))
+    issues = [i for i in audit_layout(xml) if i["code"] == "TABLE_TOO_WIDE_FOR_CARD"]
+    assert len(issues) == 1 and issues[0]["severity"] == "low"
+
+
+def test_many_short_columns_in_half_width_card_ok():
+    """gj-h1 golden deep-dives: 5-6 short numeric columns in a half-width card are fine."""
+    assert "TABLE_TOO_WIDE_FOR_CARD" not in [i["code"] for i in audit_layout(_half_width(_table(6, "12.67x")))]
+
+
+def test_long_text_table_full_width_ok():
+    xml = ('<Slide><VStack w="1280" h="720" padding="48">'
+           + _table(4, "Shift 40% of Curd SP budget into SILB and Browse Boost for Q3 rollout")
+           + "</VStack></Slide>")
+    assert "TABLE_TOO_WIDE_FOR_CARD" not in [i["code"] for i in audit_layout(xml)]
