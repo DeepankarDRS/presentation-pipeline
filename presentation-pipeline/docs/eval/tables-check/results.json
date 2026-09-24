@@ -1,37 +1,40 @@
 {
   "label": "tables-check",
-  "created": "2026-09-24T14:49:47",
-  "git_commit": "77000c3",
+  "created": "2026-09-24T20:51:15",
+  "git_commit": "9b668e1",
   "models_sha": "919e01fa",
   "fit_grow": "1",
   "aggregate": {
-    "runs": 6,
-    "runs_passed": 6,
+    "runs": 7,
+    "runs_passed": 7,
     "runs_errored": 0,
-    "slides": 19,
+    "slides": 25,
     "slide_count_off": 0,
     "compiled_pct": 100.0,
-    "first_pass_pct": 94.7,
-    "mean_retries": 0.05,
-    "cards": 89,
-    "mean_fill": 0.892,
-    "low_fill_pct": 14.6,
-    "auto_fixes_per_slide": 0.05,
-    "layout_issues_per_slide": 0.11,
-    "fit_grow_changes_per_slide": 2.11,
-    "word_breaks_per_slide": 0.05,
-    "text_overflows_per_slide": 0.16,
-    "table_spill_slides": 3,
-    "table_spill_px": 88,
-    "tables_overfull_slides": 4,
+    "first_pass_pct": 96.0,
+    "mean_retries": 0.04,
+    "cards": 112,
+    "mean_fill": 0.883,
+    "low_fill_pct": 16.1,
+    "auto_fixes_per_slide": 0.28,
+    "layout_issues_per_slide": 0.08,
+    "fit_grow_changes_per_slide": 2.08,
+    "word_breaks_per_slide": 0.04,
+    "text_overflows_per_slide": 0.12,
+    "table_spill_slides": 4,
+    "table_spill_px": 109,
+    "tables_overfull_slides": 5,
     "empty_cells": 0,
-    "invented_numbers": 79,
-    "tokens_in": 383005,
-    "tokens_out": 55136,
-    "cost_usd": 1.2071,
-    "elapsed_s": 109.2,
+    "invented_numbers": 88,
+    "tokens_in": 508700,
+    "tokens_out": 68959,
+    "cost_usd": 1.569,
+    "elapsed_s": 243.8,
     "auto_fix_codes": {
-      "AMPERSAND_ESCAPED": 1
+      "AMPERSAND_ESCAPED": 3,
+      "ATTR_CONFLICT_FIXED": 2,
+      "BORDER_ACCENT_FIX": 1,
+      "ZERO_SPACING": 1
     },
     "blocking_codes": {
       "UNKNOWN_ATTRIBUTE": 6
@@ -44,478 +47,24 @@
       "XML_PARSE_ERROR": 1
     },
     "card_patterns": {
-      "kpi_tile": 30,
-      "text_card": 22,
-      "table_card": 17,
-      "chart_card": 12,
-      "dark_panel": 8
+      "text_card": 33,
+      "kpi_tile": 33,
+      "table_card": 23,
+      "chart_card": 14,
+      "dark_panel": 9
     },
     "component_kinds": {
-      "title": 15,
-      "table": 13,
-      "bullet_list": 10,
-      "narrative": 7,
-      "kpi_row": 7,
-      "chart": 6,
-      "timeline": 2
+      "title": 21,
+      "table": 18,
+      "bullet_list": 13,
+      "narrative": 12,
+      "kpi_row": 8,
+      "chart": 8,
+      "timeline": 2,
+      "process_arrow": 1
     }
   },
   "cases": [
-    {
-      "name": "single-table",
-      "repeat": 1,
-      "run_id": "single-table-f418af",
-      "passed": true,
-      "error": null,
-      "tokens_in": 9001,
-      "tokens_out": 1043,
-      "cost": 0.026346,
-      "elapsed": 26.0,
-      "expected_slides": 1,
-      "slides": [
-        {
-          "index": 0,
-          "compiled": true,
-          "first_pass_ok": true,
-          "retries": 0,
-          "max_tier": 0,
-          "auto_fixes": {},
-          "blocking": {},
-          "blocking_msgs": [],
-          "layout_issues": {},
-          "fit_grow": [
-            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 240 -> 288px"
-          ],
-          "components": [],
-          "cards": [
-            {
-              "pattern": "table_card",
-              "fill": 0.667,
-              "frame": [
-                36,
-                133,
-                1208,
-                320
-              ]
-            }
-          ],
-          "word_breaks": 0,
-          "text_overflows": 0,
-          "table_spill": 0,
-          "empty_cells": 0,
-          "invented_numbers": 16,
-          "invented_examples": [
-            "2024",
-            "28.1",
-            "22",
-            "41",
-            "14.4",
-            "14",
-            "21",
-            "11.2"
-          ]
-        }
-      ],
-      "bundle": "tables-check-20260924-144722"
-    },
-    {
-      "name": "chart-and-table",
-      "repeat": 1,
-      "run_id": "chart-and-table-817948",
-      "passed": true,
-      "error": null,
-      "tokens_in": 9762,
-      "tokens_out": 1018,
-      "cost": 0.027668,
-      "elapsed": 18.1,
-      "expected_slides": 1,
-      "slides": [
-        {
-          "index": 0,
-          "compiled": true,
-          "first_pass_ok": true,
-          "retries": 0,
-          "max_tier": 0,
-          "auto_fixes": {},
-          "blocking": {},
-          "blocking_msgs": [],
-          "layout_issues": {},
-          "fit_grow": [
-            "slide 1: table cells without fontSize -> 14px (POM default 18)",
-            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 200 -> 240px",
-            "slide 1: text x1.99 (e.g. 14 -> 20pt), spacing x1.40, fill 55% -> 59%"
-          ],
-          "components": [],
-          "cards": [
-            {
-              "pattern": "chart_card",
-              "fill": 0.998,
-              "frame": [
-                36,
-                133,
-                597,
-                519
-              ]
-            },
-            {
-              "pattern": "table_card",
-              "fill": 0.425,
-              "frame": [
-                647,
-                133,
-                597,
-                519
-              ]
-            }
-          ],
-          "word_breaks": 0,
-          "text_overflows": 0,
-          "table_spill": 0,
-          "empty_cells": 0,
-          "invented_numbers": 16,
-          "invented_examples": [
-            "14.2",
-            "16.8",
-            "18.3",
-            "21.0",
-            "14.2",
-            "41",
-            "62",
-            "16.8"
-          ]
-        }
-      ],
-      "bundle": "tables-check-20260924-144722"
-    },
-    {
-      "name": "eval-table-vs-kpi-disambiguation",
-      "repeat": 1,
-      "run_id": "eval-table-vs-kpi-disambiguation-73a111",
-      "passed": true,
-      "error": null,
-      "tokens_in": 22992,
-      "tokens_out": 1913,
-      "cost": 0.061288,
-      "elapsed": 26.5,
-      "expected_slides": 1,
-      "slides": [
-        {
-          "index": 0,
-          "compiled": true,
-          "first_pass_ok": true,
-          "retries": 0,
-          "max_tier": 0,
-          "auto_fixes": {
-            "AMPERSAND_ESCAPED": 1
-          },
-          "blocking": {},
-          "blocking_msgs": [],
-          "layout_issues": {},
-          "fit_grow": [
-            "slide 1: table cells without fontSize -> 14px (POM default 18)",
-            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 208 -> 209px",
-            "slide 1: text x1.99 (e.g. 15 -> 22pt), spacing x1.40, fill 35% -> 49%",
-            "slide 1: text x1.99 (e.g. 22 -> 22pt), spacing x1.40, fill 40% -> 46%"
-          ],
-          "components": [
-            {
-              "kind": "title",
-              "weight": "minor",
-              "design_hint": "marker-highlight the phrase 'Attrition' in the title"
-            },
-            {
-              "kind": "table",
-              "weight": "hero",
-              "design_hint": "highlight the Support row with accent color to emphasize its outlier attrition rate; bold the 11.3% cell"
-            },
-            {
-              "kind": "narrative",
-              "weight": "supporting",
-              "design_hint": "marker-highlight the phrase 'outlier' in the narrative"
-            }
-          ],
-          "cards": [
-            {
-              "pattern": "table_card",
-              "fill": 0.792,
-              "frame": [
-                36,
-                110,
-                1208,
-                271
-              ]
-            },
-            {
-              "pattern": "text_card",
-              "fill": 0.51,
-              "frame": [
-                36,
-                427,
-                1208,
-                225
-              ]
-            }
-          ],
-          "word_breaks": 0,
-          "text_overflows": 0,
-          "table_spill": 0,
-          "empty_cells": 0,
-          "invented_numbers": 2,
-          "invented_examples": [
-            "2024",
-            "2024"
-          ]
-        }
-      ],
-      "bundle": "tables-check-20260924-144722"
-    },
-    {
-      "name": "mixed-executive-slide",
-      "repeat": 1,
-      "run_id": "mixed-executive-slide-e47499",
-      "passed": true,
-      "error": null,
-      "tokens_in": 12224,
-      "tokens_out": 1197,
-      "cost": 0.034024,
-      "elapsed": 16.0,
-      "expected_slides": 1,
-      "slides": [
-        {
-          "index": 0,
-          "compiled": true,
-          "first_pass_ok": true,
-          "retries": 0,
-          "max_tier": 0,
-          "auto_fixes": {},
-          "blocking": {},
-          "blocking_msgs": [],
-          "layout_issues": {},
-          "fit_grow": [
-            "slide 1: table cells without fontSize -> 14px (POM default 18)",
-            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 160 -> 192px",
-            "slide 1: text x1.99 (e.g. 14 -> 20pt), spacing x1.40, fill 66% -> 71%"
-          ],
-          "components": [],
-          "cards": [
-            {
-              "pattern": "kpi_tile",
-              "fill": 0.994,
-              "frame": [
-                38,
-                139,
-                405,
-                120
-              ]
-            },
-            {
-              "pattern": "kpi_tile",
-              "fill": 0.994,
-              "frame": [
-                457,
-                139,
-                381,
-                120
-              ]
-            },
-            {
-              "pattern": "kpi_tile",
-              "fill": 0.994,
-              "frame": [
-                852,
-                139,
-                390,
-                120
-              ]
-            },
-            {
-              "pattern": "chart_card",
-              "fill": 0.999,
-              "frame": [
-                38,
-                277,
-                498,
-                369
-              ]
-            },
-            {
-              "pattern": "table_card",
-              "fill": 0.519,
-              "frame": [
-                554,
-                277,
-                688,
-                369
-              ]
-            }
-          ],
-          "word_breaks": 0,
-          "text_overflows": 0,
-          "table_spill": 0,
-          "empty_cells": 0,
-          "invented_numbers": 14,
-          "invented_examples": [
-            "42.8",
-            "18",
-            "114",
-            "72.1",
-            "1.4",
-            "36.1",
-            "39.1",
-            "42.3"
-          ]
-        }
-      ],
-      "bundle": "tables-check-20260924-144722"
-    },
-    {
-      "name": "maximal-density",
-      "repeat": 1,
-      "run_id": "maximal-density-cc02e6",
-      "passed": true,
-      "error": null,
-      "tokens_in": 13570,
-      "tokens_out": 2061,
-      "cost": 0.043628,
-      "elapsed": 22.6,
-      "expected_slides": 1,
-      "slides": [
-        {
-          "index": 0,
-          "compiled": true,
-          "first_pass_ok": true,
-          "retries": 0,
-          "max_tier": 0,
-          "auto_fixes": {},
-          "blocking": {},
-          "blocking_msgs": [],
-          "layout_issues": {},
-          "fit_grow": [
-            "slide 1: table cells without fontSize -> 14px (POM default 18)",
-            "slide 1: table squeezed 36px on an over-full slide: rows 200 -> 135px (no taller than the generator's; the text needs 135px)"
-          ],
-          "components": [],
-          "cards": [
-            {
-              "pattern": "dark_panel",
-              "fill": 0.979,
-              "frame": [
-                30,
-                103,
-                304,
-                94
-              ]
-            },
-            {
-              "pattern": "dark_panel",
-              "fill": 0.979,
-              "frame": [
-                344,
-                103,
-                282,
-                94
-              ]
-            },
-            {
-              "pattern": "dark_panel",
-              "fill": 0.979,
-              "frame": [
-                636,
-                103,
-                297,
-                94
-              ]
-            },
-            {
-              "pattern": "dark_panel",
-              "fill": 0.979,
-              "frame": [
-                943,
-                103,
-                307,
-                94
-              ]
-            },
-            {
-              "pattern": "chart_card",
-              "fill": 0.967,
-              "frame": [
-                30,
-                209,
-                336,
-                234
-              ]
-            },
-            {
-              "pattern": "chart_card",
-              "fill": 0.984,
-              "frame": [
-                44,
-                246,
-                308,
-                183
-              ]
-            },
-            {
-              "pattern": "chart_card",
-              "fill": 0.967,
-              "frame": [
-                378,
-                209,
-                359,
-                234
-              ]
-            },
-            {
-              "pattern": "chart_card",
-              "fill": 0.984,
-              "frame": [
-                392,
-                246,
-                331,
-                183
-              ]
-            },
-            {
-              "pattern": "dark_panel",
-              "fill": 0.902,
-              "frame": [
-                749,
-                209,
-                501,
-                234
-              ]
-            },
-            {
-              "pattern": "table_card",
-              "fill": 0.928,
-              "frame": [
-                30,
-                455,
-                1220,
-                173
-              ]
-            }
-          ],
-          "word_breaks": 0,
-          "text_overflows": 0,
-          "table_spill": 11,
-          "empty_cells": 0,
-          "invented_numbers": 29,
-          "invented_examples": [
-            "42.8",
-            "18",
-            "114",
-            "72.1",
-            "1.4",
-            "10.2",
-            "2.1",
-            "36.1"
-          ]
-        }
-      ],
-      "bundle": "tables-check-20260924-144722"
-    },
     {
       "name": "gj-h1-regen",
       "repeat": 1,
@@ -1878,6 +1427,994 @@
       ],
       "golden_match": 0.547,
       "note": "scored LLM-free from the run folder (eval_run crashed after the paid run: invented_numbers, fixed 2378a5a); max_tier/auto_fixes not recoverable"
+    },
+    {
+      "name": "single-table",
+      "repeat": 1,
+      "run_id": "single-table-f418af",
+      "passed": true,
+      "error": null,
+      "tokens_in": 9001,
+      "tokens_out": 1043,
+      "cost": 0.026346,
+      "elapsed": 26.0,
+      "expected_slides": 1,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 240 -> 288px"
+          ],
+          "components": [],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.667,
+              "frame": [
+                36,
+                133,
+                1208,
+                320
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 16,
+          "invented_examples": [
+            "2024",
+            "28.1",
+            "22",
+            "41",
+            "14.4",
+            "14",
+            "21",
+            "11.2"
+          ]
+        }
+      ],
+      "bundle": "tables-check-20260924-144722"
+    },
+    {
+      "name": "chart-and-table",
+      "repeat": 1,
+      "run_id": "chart-and-table-817948",
+      "passed": true,
+      "error": null,
+      "tokens_in": 9762,
+      "tokens_out": 1018,
+      "cost": 0.027668,
+      "elapsed": 18.1,
+      "expected_slides": 1,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 200 -> 240px",
+            "slide 1: text x1.99 (e.g. 14 -> 20pt), spacing x1.40, fill 55% -> 59%"
+          ],
+          "components": [],
+          "cards": [
+            {
+              "pattern": "chart_card",
+              "fill": 0.998,
+              "frame": [
+                36,
+                133,
+                597,
+                519
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.425,
+              "frame": [
+                647,
+                133,
+                597,
+                519
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 16,
+          "invented_examples": [
+            "14.2",
+            "16.8",
+            "18.3",
+            "21.0",
+            "14.2",
+            "41",
+            "62",
+            "16.8"
+          ]
+        }
+      ],
+      "bundle": "tables-check-20260924-144722"
+    },
+    {
+      "name": "eval-table-vs-kpi-disambiguation",
+      "repeat": 1,
+      "run_id": "eval-table-vs-kpi-disambiguation-73a111",
+      "passed": true,
+      "error": null,
+      "tokens_in": 22992,
+      "tokens_out": 1913,
+      "cost": 0.061288,
+      "elapsed": 26.5,
+      "expected_slides": 1,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 208 -> 209px",
+            "slide 1: text x1.99 (e.g. 15 -> 22pt), spacing x1.40, fill 35% -> 49%",
+            "slide 1: text x1.99 (e.g. 22 -> 22pt), spacing x1.40, fill 40% -> 46%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight the phrase 'Attrition' in the title"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "highlight the Support row with accent color to emphasize its outlier attrition rate; bold the 11.3% cell"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "marker-highlight the phrase 'outlier' in the narrative"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.792,
+              "frame": [
+                36,
+                110,
+                1208,
+                271
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.51,
+              "frame": [
+                36,
+                427,
+                1208,
+                225
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 2,
+          "invented_examples": [
+            "2024",
+            "2024"
+          ]
+        }
+      ],
+      "bundle": "tables-check-20260924-144722"
+    },
+    {
+      "name": "mixed-executive-slide",
+      "repeat": 1,
+      "run_id": "mixed-executive-slide-e47499",
+      "passed": true,
+      "error": null,
+      "tokens_in": 12224,
+      "tokens_out": 1197,
+      "cost": 0.034024,
+      "elapsed": 16.0,
+      "expected_slides": 1,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 160 -> 192px",
+            "slide 1: text x1.99 (e.g. 14 -> 20pt), spacing x1.40, fill 66% -> 71%"
+          ],
+          "components": [],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.994,
+              "frame": [
+                38,
+                139,
+                405,
+                120
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.994,
+              "frame": [
+                457,
+                139,
+                381,
+                120
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.994,
+              "frame": [
+                852,
+                139,
+                390,
+                120
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.999,
+              "frame": [
+                38,
+                277,
+                498,
+                369
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.519,
+              "frame": [
+                554,
+                277,
+                688,
+                369
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 14,
+          "invented_examples": [
+            "42.8",
+            "18",
+            "114",
+            "72.1",
+            "1.4",
+            "36.1",
+            "39.1",
+            "42.3"
+          ]
+        }
+      ],
+      "bundle": "tables-check-20260924-144722"
+    },
+    {
+      "name": "maximal-density",
+      "repeat": 1,
+      "run_id": "maximal-density-cc02e6",
+      "passed": true,
+      "error": null,
+      "tokens_in": 13570,
+      "tokens_out": 2061,
+      "cost": 0.043628,
+      "elapsed": 22.6,
+      "expected_slides": 1,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: table squeezed 36px on an over-full slide: rows 200 -> 135px (no taller than the generator's; the text needs 135px)"
+          ],
+          "components": [],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.979,
+              "frame": [
+                30,
+                103,
+                304,
+                94
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.979,
+              "frame": [
+                344,
+                103,
+                282,
+                94
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.979,
+              "frame": [
+                636,
+                103,
+                297,
+                94
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.979,
+              "frame": [
+                943,
+                103,
+                307,
+                94
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.967,
+              "frame": [
+                30,
+                209,
+                336,
+                234
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.984,
+              "frame": [
+                44,
+                246,
+                308,
+                183
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.967,
+              "frame": [
+                378,
+                209,
+                359,
+                234
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.984,
+              "frame": [
+                392,
+                246,
+                331,
+                183
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.902,
+              "frame": [
+                749,
+                209,
+                501,
+                234
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.928,
+              "frame": [
+                30,
+                455,
+                1220,
+                173
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 11,
+          "empty_cells": 0,
+          "invented_numbers": 29,
+          "invented_examples": [
+            "42.8",
+            "18",
+            "114",
+            "72.1",
+            "1.4",
+            "10.2",
+            "2.1",
+            "36.1"
+          ]
+        }
+      ],
+      "bundle": "tables-check-20260924-144722"
+    },
+    {
+      "name": "gate-deck-cheffin-audit",
+      "repeat": 1,
+      "run_id": "gate-deck-cheffin-audit-9eb1bf",
+      "passed": true,
+      "error": null,
+      "tokens_in": 125695,
+      "tokens_out": 13823,
+      "cost": 0.361974,
+      "elapsed": 134.6,
+      "expected_slides": 6,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 16 -> 23pt), spacing x1.40, fill 61% -> 68%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "hero",
+              "design_hint": "marker-highlight FLIPCART and ZAROMA in the title to cue platform branding; large, bold headline with marketplace color accent"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the card; icon in the card header to cue audit/scope"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "lift / elevate the card; marker-highlight 'roadmap for profitable paid growth'"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.906,
+              "frame": [
+                0,
+                0,
+                717,
+                720
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.991,
+              "frame": [
+                56,
+                380,
+                605,
+                108
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.991,
+              "frame": [
+                56,
+                556,
+                605,
+                108
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.64,
+              "frame": [
+                717,
+                0,
+                563,
+                720
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 120 -> 192px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Structurally Unprofitable Traffic' in the title to reinforce the problem framing"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "accent border on the table card; emphasize ROAS and CPC columns with bold text and muted background; shade any ROAS below 1x in negative color"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "peer",
+              "design_hint": "color-code the ROAS tile in negative to signal unprofitability; use icon in each tile (money, sales, warning)"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the card; marker-highlight 'structural' and 'do not support current spend levels' to reinforce the diagnosis"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.984,
+              "frame": [
+                36,
+                131,
+                403,
+                124
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.984,
+              "frame": [
+                451,
+                131,
+                412,
+                124
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.984,
+              "frame": [
+                875,
+                131,
+                369,
+                124
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.565,
+              "frame": [
+                36,
+                269,
+                1208,
+                259
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.929,
+              "frame": [
+                36,
+                542,
+                1208,
+                49
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 2,
+          "invented_examples": [
+            "24",
+            "24"
+          ]
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: main table into spare height: cell text x1.18 (14 -> 16px), rows 216 -> 216px",
+            "slide 1: text x1.32 (e.g. 14 -> 18pt), fill 68% -> 79%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight the phrases 'Search', 'Bid', and 'Audience Discipline' in the title"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "accent border on the card; emphasize the left column to highlight the four gap areas"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point: magnifying glass for search, price tag for bid, layers for campaign, map pin for audience/city"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.796,
+              "frame": [
+                36,
+                130,
+                1208,
+                278
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.75,
+              "frame": [
+                36,
+                454,
+                1208,
+                198
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 1,
+          "invented_examples": [
+            "2024"
+          ]
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "BORDER_ACCENT_FIX": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table squeezed 4px: rows 160 -> 152px, box protected (minH)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight the phrase 'Not Aligned' in the title to reinforce the core issue"
+            },
+            {
+              "kind": "chart",
+              "weight": "peer",
+              "design_hint": "use dual-axis bar chart; accent FLIPCART and ZAROMA bars in contrasting colors; annotate both as insufficient to support current CPCs"
+            },
+            {
+              "kind": "chart",
+              "weight": "peer",
+              "design_hint": "highlight the gap between allowable and actual CPC with accent color on allowable bars; annotate that actual CPCs are above allowable for both platforms"
+            },
+            {
+              "kind": "table",
+              "weight": "supporting",
+              "design_hint": "shade the row(s) representing high-performing segments; muted color for low-performing rows; annotate that budget is not optimized toward high performers"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "marker-highlight 'FLIPCART ACOS: 290%' in the text; accent border on the card for emphasis"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "chart_card",
+              "fill": 0.999,
+              "frame": [
+                36,
+                132,
+                597,
+                267
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.999,
+              "frame": [
+                647,
+                132,
+                597,
+                267
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.999,
+              "frame": [
+                36,
+                413,
+                597,
+                239
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.35,
+              "frame": [
+                647,
+                413,
+                597,
+                239
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 3,
+          "invented_examples": [
+            "13.5",
+            "17.2",
+            "2024"
+          ]
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 360 -> 360px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Data Quality Caveats' in the title to emphasize transparency"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "hero",
+              "design_hint": "accent border on the card; icon beside each point to signal caution or methodology"
+            },
+            {
+              "kind": "table",
+              "weight": "supporting",
+              "design_hint": "shade the Formula column; emphasize the Allowable CPC row with accent color"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.993,
+              "frame": [
+                36,
+                107,
+                1208,
+                114
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.816,
+              "frame": [
+                36,
+                235,
+                1208,
+                417
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 1,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 5,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "ZERO_SPACING": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: table columns -> [85, 89] (fewest wrapped lines)",
+            "slide 1: table rows +141px to fit their wrapped text",
+            "slide 1: table squeezed 89px on an over-full slide: rows 160 -> 160px (no taller than the generator's; the text needs 301px)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "marker-highlight 'Data-Led Model' in the title to emphasize the agency's unique approach"
+            },
+            {
+              "kind": "process_arrow",
+              "weight": "hero",
+              "design_hint": "accent border on the process_arrow card; gradient progression across chevrons to suggest transformation"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "peer",
+              "design_hint": "icon beside each point to visually distinguish the four actions; bold the action verbs (Lower, Improve, Raise, Reallocate)"
+            },
+            {
+              "kind": "table",
+              "weight": "supporting",
+              "design_hint": "shade the first column to differentiate agency actions; accent border on the card"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "lift / elevate the narrative card to give the closing statement prominence"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.964,
+              "frame": [
+                0,
+                0,
+                768,
+                720
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.878,
+              "frame": [
+                36,
+                138,
+                696,
+                141
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.997,
+              "frame": [
+                36,
+                297,
+                696,
+                124
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.947,
+              "frame": [
+                36,
+                439,
+                159,
+                211
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.424,
+              "frame": [
+                211,
+                439,
+                521,
+                211
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.557,
+              "frame": [
+                768,
+                0,
+                512,
+                720
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 20,
+          "empty_cells": 0,
+          "invented_numbers": 3,
+          "invented_examples": [
+            "18",
+            "22",
+            "2024"
+          ]
+        }
+      ],
+      "bundle": "tables-check-20260924-204854"
     }
   ]
 }
