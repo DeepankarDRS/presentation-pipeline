@@ -255,6 +255,12 @@ def test_invented_numbers_ignores_formatting_variants():
     assert invented_numbers(xml, brief) == ["3.12", "2024"]
 
 
+def test_invented_numbers_survives_xml_a_strict_parser_rejects():
+    """eval 2026-09-24 crashed on a slide POM compiled but ElementTree rejects (a bare '<' in text)."""
+    xml = '<Slide><Text fontSize="14">ACOS <20% target, ROAS 4.33x</Text><Chart><ChartDataPoint label="Q1" value="12.5" /></Chart></Slide>'
+    assert invented_numbers(xml, "ROAS 4.33x, Q1 12.5") == ["20"]
+
+
 def test_pick_reviews_failed_first_then_lowest_fill():
     results = {"cases": [{"name": "a", "repeat": 1, "slides": [
         {"index": 0, "compiled": True, "cards": [{"fill": 0.9}]},

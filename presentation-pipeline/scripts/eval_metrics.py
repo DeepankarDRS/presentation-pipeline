@@ -230,9 +230,15 @@ def invented_numbers(slide_xml: str, brief: str) -> list[str]:
     known = {n.rstrip("0").rstrip(".") if "." in n else n for n in _numbers(brief)}
     xml = re.sub(r"&(?![a-zA-Z]+;|#\d+;)", "&amp;", re.sub(r"<Theme\b[^>]*/>", "", slide_xml))
     shown = []
-    for el in ET.fromstring(f"<r>{xml}</r>").iter():
-        shown += _numbers(el.text or "")
-        shown += [n for a in _CONTENT_ATTRS if el.get(a) for n in _numbers(el.get(a))]
+    try:
+        for el in ET.fromstring(f"<r>{xml}</r>").iter():
+            shown += _numbers(el.text or "")
+            shown += [n for a in _CONTENT_ATTRS if el.get(a) for n in _numbers(el.get(a))]
+    except ET.ParseError:
+        # POM's parser accepts text a strict XML parser rejects (e.g. a bare "<" in "ACOS <20%"):
+        # read the text between tags and the content attributes by regex instead of failing the eval
+        shown += _numbers(re.sub(r"<[A-Za-z/!?][^>]*>", " ", xml))
+        shown += [n for a in _CONTENT_ATTRS for v in re.findall(rf'\s{a}\s*=\s*"([^"]*)"', xml) for n in _numbers(v)]
     return [n for n in shown if (n.rstrip("0").rstrip(".") if "." in n else n) not in known]
 
 
