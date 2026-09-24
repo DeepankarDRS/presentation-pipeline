@@ -388,6 +388,8 @@ async function fitTables(xml, report) {
 // POM never grows a row with its text and splits unset columns equally (F5); on
 // an over-full slide it flex-shrinks the table box while the pptx still writes
 // every row, so the table spills over the next band. For each such table:
+//   font    — a cell without fontSize gets 14 px (house body size) instead of
+//             POM's 18 px default, which is too big for a narrow table.
 //   columns — of the generator's widths, "keep the set widths, content-size the
 //             rest" and "content-size every column" (HTML auto layout), take the
 //             one whose rows come out shortest; the generator's are replaced only
@@ -396,7 +398,9 @@ async function fitTables(xml, report) {
 //   rows    — every row at least as tall as its wrapped text.
 //   squeeze — rows tighten toward their text and minH = rows protects the box, so
 //             a flexible band gives instead; if the slide still overflows, no minH
-//             (POM's autoFit would shrink fonts) and the squeeze is reported.
+//             (POM's autoFit would shrink fonts), rows no taller than the
+//             generator's (taller rows only make POM squeeze the rest of the
+//             slide; the renderer grows them anyway) and the squeeze is reported.
 //   spare   — the slide's main table (>= 2x any other: peer tables keep one type
 //             size) grows its cell text (<= 18 px), then its
 //             rows (<= 64 px, <= 1.5x their text), into empty slide space or dead
@@ -404,6 +408,7 @@ async function fitTables(xml, report) {
 //             (a peer card stretched by a taller row would just gain dead space).
 
 const TD_FONT = 18;  // POM's <Td> default fontSize
+const TD_BODY = 14;  // written into cells without fontSize
 const ROW_PAD = 8;   // px around a cell's lines (POM writes Td margins of 0)
 const ROW_CAP = 64;
 const TD_FONT_CAP = 18;
@@ -492,7 +497,7 @@ function planTable(n, grid, W, fontOf, ctx, floor) {
   candidates.forEach((widths, i) => {
     const rows = need(widths);
     const cost = sum(rows.map((r, j) => rowFor(floor[j], r)));
-    const valid = widths.every((w, j) => w >= word[j]);
+    const valid = widths.every((w, j) => w >= word[j] - 1); // integer widths round down
     if (!best || (valid && !best.valid)
       || (valid === best.valid && cost < best.cost - (best.i === 0 ? line : 1))) best = { i, widths, rows, cost, valid };
   });
@@ -500,7 +505,7 @@ function planTable(n, grid, W, fontOf, ctx, floor) {
 }
 
 /** Rewrite a table's column widths, row heights, cell fonts and/or minH in the XML text. */
-function writeTable(xml, id, { widths, rows, fontOf, minH }) {
+function writeTable(xml, id, { widths, rows, fontOf, minH, cellFont }) {
   if (minH !== undefined) xml = setAttrs(xml, id, { minH });
   const el = findElement(xml, id);
   let body = xml.slice(el.openEnd, el.end);
@@ -516,6 +521,7 @@ function writeTable(xml, id, { widths, rows, fontOf, minH }) {
     let i = 0;
     body = body.replace(/<Tr\b[^>]*>/g, (m) => put(m, "height", rows[i++]));
   }
+  if (cellFont) body = body.replace(/<Td\b(?![^>]*\sfontSize\s*=)/g, `<Td fontSize="${cellFont}"`);
   if (fontOf) {
     body = body.replace(/<Td\b[^>]*?>/g, (m) => {
       const f = Number((m.match(/\sfontSize\s*=\s*["'](\d+(?:\.\d+)?)/) ?? [])[1] ?? TD_FONT);
@@ -587,8 +593,13 @@ async function sizeTables(xml, report) {
   const main = sizes.length && ids.includes(sizes[0].id)
     && (sizes.length === 1 || sizes[0].size >= 2 * sizes[1].size) ? sizes[0] : null;
 
-  const protectedIds = new Set();
+  const settled = new Set(); // squeeze handled (protected or reported): no spare growth
   for (const id of ids) {
+    const el = findElement(xml, id);
+    if (/<Td\b(?![^>]*\sfontSize\s*=)/.test(xml.slice(el.openEnd, el.end))) {
+      xml = writeTable(xml, id, { cellFont: TD_BODY });
+      report.push(`table cells without fontSize -> ${TD_BODY}px (POM default ${TD_FONT})`);
+    }
     // columns + rows at least as tall as their text
     L = await layout(xml);
     let declared, plan;
@@ -616,25 +627,25 @@ async function sizeTables(xml, report) {
     } finally { L.free(); }
     if (short <= 1) continue;
     const loose = declared.map((d, i) => rowFor(d, tight.need[i]));
-    const rowsAt = (s) => loose.map((b, i) => Math.round(tight.need[i] + s * Math.max(0, b - tight.need[i])));
+    const low = tight.need.map((r, i) => Math.min(r, loose[i])); // a kept row may hold its lines unpadded
+    const rowsAt = (s) => loose.map((b, i) => Math.round(low[i] + s * (b - low[i])));
     const protect = (s) => writeTable(xml, id, { widths: tight.widths, rows: rowsAt(s), minH: sum(rowsAt(s)) });
     if (await tableFits(protect(0), id, before)) {
       const s = await bisect(0, 1, (x) => tableFits(protect(x), id, before));
       xml = protect(s);
-      protectedIds.add(id);
+      settled.add(id);
       report.push(`table squeezed ${Math.round(short)}px: rows ${sum(declared)} -> ${sum(rowsAt(s))}px, box protected (minH)`
         + (tight.widths ? `, columns -> [${tight.widths.join(", ")}]` : ""));
     } else {
-      xml = writeTable(xml, id, { widths: tight.widths, rows: tight.need });
-      L = await layout(xml);
-      let still;
-      try { const n = L.byId.get(id); still = rowsSum(n) - L.box(n).h; } finally { L.free(); }
-      report.push(`table squeezed ${Math.round(short)}px on an over-full slide: rows tightened to their text`
-        + ` (${sum(base)} -> ${sum(tight.need)}px), still ${Math.max(0, Math.round(still))}px short`
+      const rows = low.map((r, i) => Math.min(r, declared[i]));
+      xml = writeTable(xml, id, { widths: tight.widths, rows });
+      settled.add(id);
+      report.push(`table squeezed ${Math.round(short)}px on an over-full slide: rows ${sum(declared)} -> ${sum(rows)}px`
+        + ` (no taller than the generator's; the text needs ${sum(low)}px)`
         + (tight.widths ? `, columns -> [${tight.widths.join(", ")}]` : ""));
     }
   }
-  if (main && !protectedIds.has(main.id)) xml = await growMainTable(xml, main.id, report);
+  if (main && !settled.has(main.id)) xml = await growMainTable(xml, main.id, report);
   return xml;
 }
 

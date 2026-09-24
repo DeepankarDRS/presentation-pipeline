@@ -216,6 +216,7 @@ async function compile() {
 
   // Grow content into spare space (POM's autoFit only shrinks). Never fatal:
   // any failure compiles the original XML. Set POM_FIT_GROW=0 to disable.
+  const originalXml = xml;
   if (process.env.POM_FIT_GROW !== "0") {
     try {
       const { fitGrow } = await import("./fit-grow.js");
@@ -231,7 +232,16 @@ async function compile() {
   }
 
   try {
-    const { pptx, diagnostics } = await buildPptx(xml, SLIDE_SIZE);
+    let built;
+    try {
+      built = await buildPptx(xml, SLIDE_SIZE);
+    } catch (error) {
+      if (xml === originalXml) throw error;
+      // the fitted XML failed: a fit-grow bug must not cost a retry
+      result.fitGrow.push(`fitted XML failed to build (${error && error.message ? error.message : String(error)}); compiled the original`);
+      built = await buildPptx(originalXml, SLIDE_SIZE);
+    }
+    const { pptx, diagnostics } = built;
 
     if (Array.isArray(diagnostics) && diagnostics.length > 0) {
       result.warnings = diagnostics.map((d) => ({

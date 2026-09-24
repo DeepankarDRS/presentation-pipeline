@@ -58,6 +58,8 @@ def test_over_full_slide_is_reported_not_protected(tmp_path):
     spill_off = 105  # measured on the phase-1 replay: 280 px of rows in a 175 px frame
     assert 0 < table_spill(tmp_path / "on" / "presentation.pptx") < spill_off
     assert min(_td_fonts(on["xml"])) >= 14
+    # rows never taller than the generator's (40 px): taller rows would only squeeze the rest of the slide
+    assert all(int(h) <= 40 for h in re.findall(r'<Tr\b[^>]*\sheight="(\d+)"', on["xml"]))
 
 
 def test_main_table_grows_into_its_card(tmp_path):
@@ -93,3 +95,19 @@ def test_grown_text_never_breaks_a_word(tmp_path):
     first_col = int(re.search(r'<Col\b[^>]*\swidth="(\d+)"', on["xml"]).group(1))
     if max(_td_fonts(on["xml"])) >= 18:
         assert first_col >= 108
+
+
+def test_cells_without_font_get_body_size(tmp_path):
+    """POM's Td default is 18 px, bigger than the 14 px body text: fit-grow writes 14 (never below it)."""
+    xml = tmp_path / "t.xml"
+    xml.write_text(
+        '<Slide><VStack w="1280" h="720" padding="36" gap="14">'
+        '<VStack w="560" padding="16"><Table defaultRowHeight="40"><Col width="140" /><Col /><Col /><Col /><Col /><Col />'
+        '<Tr><Td bold="true">Platform</Td><Td>Spend</Td><Td>Sales</Td><Td>ROI</Td><Td>ACOS</Td><Td>Share</Td></Tr>'
+        '<Tr><Td>Hyderabad</Td><Td>23.2 L</Td><Td>1.20 Cr</Td><Td>5.16x</Td><Td>19.4%</Td><Td>67%</Td></Tr>'
+        '</Table></VStack>'
+        '<VStack grow="1" padding="16"><Text fontSize="14">Notes</Text></VStack></VStack></Slide>', encoding="utf-8")
+    on = _compile(xml, tmp_path / "on")
+    assert any("without fontSize -> 14px" in r for r in on["fitGrow"])
+    fonts = _td_fonts(on["xml"])
+    assert len(fonts) == 12 and all(14 <= f <= 18 for f in fonts)
