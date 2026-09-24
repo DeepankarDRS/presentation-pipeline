@@ -199,6 +199,129 @@ def _strip_zero_strokes(xml: str) -> tuple[str, list[str]]:
     return _ELEMENT_TAG_RE.sub(_fix, xml), removed
 
 
+# ── Deterministic structure fixes (each reproduced against POM 10.3.0, 2026-09-24) ──────────
+# Every one of these cost a repair retry (or a lost slide) in the Phase 0 baseline.
+
+_BARE_AMP_RE = re.compile(r"&(?!(?:[A-Za-z]+|#\d+|#x[0-9A-Fa-f]+);)")
+_BORDER_SHORTHAND_RE = re.compile(r'\sborder\.width\s*=\s*"((?:\s*\d+(?:\.\d+)?(?:px)?){2,4})\s*"')
+_BORDER_COLOR_RE = re.compile(r'\sborder\.color\s*=\s*"([^"]*)"')
+# Truly empty only: whitespace-only Td/Text/Li compile, and "<Td> </Td>" must stay a fixed point
+# (the deck assembler normalizes every slide a second time).
+_EMPTY_TD_RE = re.compile(r"<Td\b([^>]*?)(?:/>|></Td>)")
+_EMPTY_TEXT_RE = re.compile(r"<Text\b[^>]*?(?:/>|></Text>)")
+_EMPTY_LI_RE = re.compile(r"<Li\b[^>]*?(?:/>|></Li>)")
+_EMPTY_LIST_RE = re.compile(r"<(Ul|Ol)\b[^>]*>\s*</\1>")
+_TABLE_RE = re.compile(r"<Table\b[^>]*>.*?</Table>", re.DOTALL)
+_TR_RE = re.compile(r"<Tr\b[^>]*>(.*?)</Tr>", re.DOTALL)
+_TD_OPEN_RE = re.compile(r"<Td\b([^>]*)>|<Td\b([^>]*)/>")
+_COLSPAN_RE = re.compile(r'\bcolspan\s*=\s*"(\d+)"')
+_SIDES = ("Top", "Right", "Bottom", "Left")
+
+
+def _drop_attr_conflicts(xml: str) -> tuple[str, list[str]]:
+    """`shadow="…"` next to `shadow.blur="…"` is a POM PARSE_ERROR ("conflicts with dot-notation").
+    The dotted form carries the detail, so the bare attribute is dropped."""
+    dropped: list[str] = []
+
+    def _fix(m: re.Match) -> str:
+        tag = m.group(0)
+        for base in _OBJECT_ATTR_BASES:
+            if re.search(rf'\s{base}\s*=\s*"', tag) and re.search(rf'\s{base}\.[A-Za-z]+\s*=', tag):
+                tag = re.sub(rf'\s{base}\s*=\s*"[^"]*"', "", tag)
+                dropped.append(base)
+        return tag
+
+    return _ELEMENT_TAG_RE.sub(_fix, xml), dropped
+
+
+def _expand_border_shorthand(xml: str) -> tuple[str, int]:
+    """CSS-style `border.width="0 0 0 5"` (top right bottom left) is not a number to POM; write
+    one `border<Side>.width` (+ the border colour) per non-zero side instead."""
+    count = 0
+
+    def _fix(m: re.Match) -> str:
+        nonlocal count
+        tag = m.group(0)
+        short = _BORDER_SHORTHAND_RE.search(tag)
+        if not short:
+            return tag
+        vals = [v.removesuffix("px") for v in short.group(1).split()]
+        top, right, bottom, left = {2: vals * 2, 3: vals + vals[1:2], 4: vals}[len(vals)]
+        color = _BORDER_COLOR_RE.search(tag)
+        sides = ""
+        for side, width in zip(_SIDES, (top, right, bottom, left)):
+            if float(width) > 0:
+                sides += f' border{side}.width="{width}"'
+                if color:
+                    sides += f' border{side}.color="{color.group(1)}"'
+        tag = _BORDER_SHORTHAND_RE.sub("", tag)
+        tag = _BORDER_COLOR_RE.sub("", tag)
+        count += 1
+        end = -2 if tag.endswith("/>") else -1
+        return tag[:end].rstrip() + sides + tag[end:]
+
+    return _ELEMENT_TAG_RE.sub(_fix, xml), count
+
+
+def _pad_table_columns(xml: str) -> tuple[str, int]:
+    """A row with more cells (colspan counted) than declared <Col>s fails buildPptx ("each row must
+    contain one cell per grid column"). Add width-less <Col />s — POM shares the rest of the width."""
+    count = 0
+
+    def _fix(m: re.Match) -> str:
+        nonlocal count
+        table = m.group(0)
+        cols = len(_COL_RE.findall(table))
+        if not cols:
+            return table
+        cells = max((sum(int((_COLSPAN_RE.search(a or b or "") or [0, 1])[1])
+                         for a, b in _TD_OPEN_RE.findall(row))
+                     for row in _TR_RE.findall(table)), default=0)
+        if cells <= cols:
+            return table
+        count += 1
+        last_col = list(_COL_RE.finditer(table))[-1]
+        return table[:last_col.end()] + "<Col />" * (cells - cols) + table[last_col.end():]
+
+    return _TABLE_RE.sub(_fix, xml), count
+
+
+def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
+    """Deterministic fixes for inputs POM rejects. stage="early" runs before the Td/Li
+    flattener (which needs parseable text), stage="late" after it (it can leave empty cells)."""
+
+    def note(code: str, message: str) -> None:
+        issues.append({"code": code, "message": message, "auto_fixed": True})
+
+    if stage == "early":
+        xml, n = _BARE_AMP_RE.subn("&amp;", xml)
+        if n:
+            note("AMPERSAND_ESCAPED", f"Escaped {n} bare '&' as '&amp;' (strict XML parsers reject it).")
+        xml, dropped = _drop_attr_conflicts(xml)
+        if dropped:
+            note("ATTR_CONFLICT_FIXED", "Dropped bare attribute(s) that conflict with their dot-notation "
+                 f"form: {', '.join(sorted(set(dropped)))}.")
+        xml, n = _expand_border_shorthand(xml)
+        if n:
+            note("BORDER_SHORTHAND_EXPANDED", f'Rewrote {n} CSS-style border.width="t r b l" as per-side borders.')
+        return xml
+
+    xml, n = _EMPTY_TD_RE.subn(r"<Td\1> </Td>", xml)
+    if n:
+        note("EMPTY_CELL_FILLED", f"Gave {n} empty <Td> a blank text (POM rejects empty cells).")
+    xml, n = _EMPTY_TEXT_RE.subn("", xml)
+    if n:
+        note("EMPTY_TEXT_REMOVED", f"Removed {n} empty <Text> (POM requires text).")
+    xml, n = _EMPTY_LI_RE.subn("", xml)
+    xml, n_lists = _EMPTY_LIST_RE.subn("", xml)
+    if n:
+        note("EMPTY_ITEM_REMOVED", f"Removed {n} empty <Li>" + (f" and {n_lists} emptied list(s)." if n_lists else "."))
+    xml, n = _pad_table_columns(xml)
+    if n:
+        note("TABLE_COLS_PADDED", f"Added <Col /> to {n} table(s) whose rows had more cells than columns.")
+    return xml
+
+
 def _strip_fences(xml: str) -> tuple[str, bool]:
     stripped = xml.strip()
     if "```" not in stripped:
@@ -250,6 +373,7 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
 
     xml = _BR_RE.sub("", xml)
     xml = _HR_RE.sub("", xml)
+    xml = _fix_structure(xml, issues, "early")
 
     hash_hits = list(_HASH_COLOR_RE.finditer(xml))
     if hash_hits:
@@ -329,6 +453,8 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
             ),
             "auto_fixed": True,
         })
+
+    xml = _fix_structure(xml, issues, "late")
 
     xml, icons_renamed, icons_removed = fix_icon_names(xml)
     if icons_renamed:
