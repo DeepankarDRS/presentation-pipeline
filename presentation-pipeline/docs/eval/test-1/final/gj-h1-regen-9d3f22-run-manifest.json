@@ -1,0 +1,163 @@
+{
+  "case": "gj-h1-regen",
+  "run_id": "gj-h1-regen-9d3f22",
+  "seconds": 55.3,
+  "calls": [
+    {
+      "step": "storyline",
+      "tokens_in": 9317,
+      "tokens_out": 3191,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.04416
+    },
+    {
+      "step": "storyline",
+      "tokens_in": 13190,
+      "tokens_out": 3211,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.05207
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2204,
+      "tokens_out": 333,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00707
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2615,
+      "tokens_out": 369,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00818
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2931,
+      "tokens_out": 1061,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01435
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 4386,
+      "tokens_out": 1198,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01836
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2463,
+      "tokens_out": 509,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.009
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2614,
+      "tokens_out": 748,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01121
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2808,
+      "tokens_out": 783,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01188
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2747,
+      "tokens_out": 989,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01341
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2738,
+      "tokens_out": 1015,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.0136
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2517,
+      "tokens_out": 778,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01126
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2682,
+      "tokens_out": 932,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01282
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2574,
+      "tokens_out": 339,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00786
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2706,
+      "tokens_out": 744,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01136
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 3655,
+      "tokens_out": 776,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01352
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 3676,
+      "tokens_out": 804,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01378
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2731,
+      "tokens_out": 1380,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.0165
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 4381,
+      "tokens_out": 1425,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.02016
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 4624,
+      "tokens_out": 1521,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.02142
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2539,
+      "tokens_out": 415,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.0084
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2469,
+      "tokens_out": 854,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.01177
+    }
+  ],
+  "llm_calls": 22,
+  "cost": 0.3521
+}

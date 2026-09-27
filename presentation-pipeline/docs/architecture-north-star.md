@@ -560,6 +560,22 @@ Also fixed after round 1: chart units by the first metric word, header repeated 
 
 **Pre-run review for the final Test 1 run (2026-09-27, independent reviewer + own checks; no blocker).** Fixed: an empty block id could crash a paid run (now skipped; any error in fill/check is recorded as an issue instead of failing the run); numbers in a component's `emphasis` (it becomes the design hint) are now checked for invention; the scorer uses the planner's own rule for what a slide must show (per section: years, slide counts and single-digit values after normalizing like "2.0x" are not required; gj-h1 denominator 362 → 354; rounds re-scored: round 1 4.2%, round 2 2.8% — unchanged verdicts); every storyline and slide attempt's issues are saved (`issue_log`); progress is logged while running; "on no slide" ignores "Slide N:" headings; the storyline prompt says preamble blocks are shared context and set-aside reasons must be honest. Final run: `python -m scripts.plan_only gj-h1-regen gate-deck-cheffin-audit --repeat 3 --label test-1-final --bundle` (≈ $1.3–1.6, worst case ≈ $3).
 
+**Test 1 final run (paid, 2026-09-27, label `test-1-final`, gj-h1 × 3 + CHEFFIN-audit × 3, default retries, $1.64, `docs/eval/test-1/final/`).** The test PC ran the code before `1d750ca` (no `issue_log` in the output): the pre-run fixes to the emphasis check, crash guard and logs were not active; scoring used the current scorer.
+
+| criterion | old planner | final run | pass if | verdict |
+|---|---|---|---|---|
+| gj-h1 headlines kept | 0/13 | 13/13 in all 3 runs | ≥ 12 | **pass** |
+| gj-h1 numbers dropped | 7–13% | 0.0% / 0.6% / 2.5% (mean 1.0%) | ≤ 2% | **pass on the mean**, 2 of 3 runs individually |
+| invented numbers | 0–2 + CHEFFIN's invented table / dates | 0 in all 6 runs | 0 | **pass** |
+| design hints per slide | 5–7 | ≤ 2 | ≤ 2 | **pass** |
+| same component kinds across 3 runs | 1/14 | 8/14 (9/14 if a text read-out as bullets vs narrative counts as the same) | ≥ 10/14 | **fail** |
+| CHEFFIN plan checks | invented table, wrong CPC values, default palette | 3/3 runs pass | pass | **pass** |
+| cost per gj-h1 plan | $0.44, 17 calls | $0.32–0.35, 21–22 calls | ≤ today | pass |
+
+- The 2.5% run: slide 1 (the densest: 5 KPIs, chart, 3 platform cards, read-out) left out two platform-card tables (9 numbers) after 3 attempts; the check caught it every time, the model did not comply. The 0.6% run: one read-out line left in `not_shown` after 3 attempts.
+- Where the plans differ between runs (stability): slide 11 (five pillars: KPI + table / process arrow + bullets / bullets + table), slide 7 (one card list vs three), slide 8 (timeline alone or with narrative / bullets), slide 10 (an extra KPI row), slide 1 (the dropped tables), slide 3 (read-out as bullets vs narrative). These are slides whose content has several valid forms; the fix candidates are code-picked defaults for parsed tables / charts and for recurring content shapes (pillars, cards, playbooks), or a storyline-level layout decision per parallel group — not more retries.
+- CHEFFIN-audit headlines (user to judge): mostly conclusions ("CHEFFIN is spending at scale, but current traffic economics are structurally weak across both platforms"); weak ones: "Data context and methodology notes." (a topic), "Current performance issues are structural, not just campaign-level." (generic); no kicker labels when the brief gives none.
+
 **Reference: the production CHEFFIN deck (read 2026-09-27; kept locally in `llm_test/`, not pushed — real client and platform names).** 17 slides built on the **gj-h1 template** from the brief plus the data files (a search-term CSV of ~18.8k rows, targeting report, campaign / city / keyword sheets). What it tells us:
 - Same arc and header as our storyline: diagnosis → per-platform evidence → cross-platform synthesis → approach → 30-60-90 roadmap → ask; kicker label + claim headline + one-line sub-headline; two platform deep-dives on one layout (= `parallel_group`).
 - Components beyond Test 2's five: status chips (SCALE / PROTECT / REVIEW / CAP), a gap panel (actual vs allowable), numbered pillars mapped to gaps, phased roadmap with exit criteria, a source line from the real data files on every slide.
