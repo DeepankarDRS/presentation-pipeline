@@ -558,6 +558,14 @@ Also fixed after round 1: chart units by the first metric word, header repeated 
 - CHEFFIN-audit: CPC-vs-allowable check **fails**: slide 2 was designed as two KPI rows of 7 tiles (one per platform); the capacity check flagged it, but with `--slide-retries 1` the one re-ask did not fix it. The data-quality note is now on slide 3 (round-1 fix works). Invented 0, all numbers placed, 10 calls, $0.10.
 - Next: gj-h1 + CHEFFIN-audit once more with the default 2 slide retries, then the stability repeats.
 
+**Reference: the production CHEFFIN deck (read 2026-09-27; kept locally in `llm_test/`, not pushed — real client and platform names).** 17 slides built on the **gj-h1 template** from the brief plus the data files (a search-term CSV of ~18.8k rows, targeting report, campaign / city / keyword sheets). What it tells us:
+- Same arc and header as our storyline: diagnosis → per-platform evidence → cross-platform synthesis → approach → 30-60-90 roadmap → ask; kicker label + claim headline + one-line sub-headline; two platform deep-dives on one layout (= `parallel_group`).
+- Components beyond Test 2's five: status chips (SCALE / PROTECT / REVIEW / CAP), a gap panel (actual vs allowable), numbered pillars mapped to gaps, phased roadmap with exit criteria, a source line from the real data files on every slide.
+- ~60% of its content needs the data files (search-term leakage, winners vs weak terms, month / campaign-class / match / city cuts). From the text brief our planner can only name that gap. **Data-file input (CSV / XLSX → fact tables + aggregates by code, M6) is central, not late.**
+- It relies on **derived numbers** (ACOS = spend ÷ sales, shares, multiples, row counts and sums). Our check rejects any number not written in the brief; §7.7 already says "traceable to a fact or a formula" → derived facts computed and verified by code are needed.
+- It states **targets / projections** ("≥ 0.9x in 90 days", "~₹8.7L / month redirected"). Under D2 ("never invent") the planner refuses these → open decision D12.
+- It contradicts itself (the same platform CPC / CVR / AOV differ between slides 2 and 3; one CVR is called "lower" while it is higher) — the fact store's one-value-per-fact check would catch this.
+
 ---
 
 ## 10. Build milestones (after the tests)
@@ -617,6 +625,8 @@ These are provisional; reorder them by the test results.
 | D9 | Gate set and budget per milestone | ~8 decks, ≈ $3 per gate run | as proposed | open |
 | D10 | Stronger model for the storyline stage only | yes / no / later | later, if Test 1 falls short | open |
 | D11 | `docs/roadmap-derived-components.md` | continue / halt | — | **decided 2026-09-24 (user): halted** |
+| D12 | Targets and projections (e.g. "ROAS ≥ 0.9x in 90 days") | never / allowed when labelled as target or projection and tied to the facts they start from | allowed, labelled | open (raised 2026-09-27 from the production CHEFFIN deck) |
+| D13 | Derived numbers (ACOS = spend ÷ sales, shares, multiples, row aggregates) | only numbers written in the brief / computed by code from facts with the formula recorded | computed by code | open |
 
 ---
 

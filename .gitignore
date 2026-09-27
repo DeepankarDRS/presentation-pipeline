@@ -24,6 +24,10 @@ node_modules/
 presentation-pipeline/output/
 presentation-pipeline/.pytest_cache/
 
+# Local test results and client material (run zips, production decks, data files): never pushed.
+# Results worth keeping go to presentation-pipeline/docs/eval/ as text (summaries, storylines).
+presentation-pipeline/llm_test/
+
 # OS
 .DS_Store
 Thumbs.db
