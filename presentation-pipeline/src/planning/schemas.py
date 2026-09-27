@@ -81,7 +81,9 @@ class Series(BaseModel):
 class Item(BaseModel):
     label: str = Field(description="timeline: the date or period ('Jul '26'); other kinds: the step or level "
                                    "name, 1-3 words.")
-    detail: str = Field(default="")
+    detail: str = Field(default="", description="timeline only: the event text. process_arrow / flow / "
+                                                "pyramid / tree / matrix draw labels only — leave empty and put "
+                                                "details in a table or bullets.")
 
 
 class DesignComponent(BaseModel):

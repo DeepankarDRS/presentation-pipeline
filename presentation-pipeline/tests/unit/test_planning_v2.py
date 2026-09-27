@@ -394,3 +394,14 @@ def test_not_shown_never_excuses_data_and_requirements_must_be_placed():
     issues = check_storyline(story, ix2, 1)
     assert any(ix2["blocks"][1]["id"] in i and "ask for content" in i for i in issues)
     assert not any(ix2["blocks"][2]["id"] in i for i in issues)     # a bare "Include:" label is not a requirement
+
+
+def test_label_only_kinds_do_not_count_item_details_as_shown():
+    ix = index_brief("SLIDE 1: Pillars\nScale Swiggy Browse Boost (₹48K → ₹1.5L)\n")
+    story = _story(slide_index=0, label="PILLARS", block_ids=[b["id"] for b in ix["blocks"]])
+    design = {"components": [{"id": "p", "kind": "process_arrow", "role": "hero", "block_ids": story["block_ids"],
+                              "items": [{"label": "Format", "detail": "Scale Swiggy Browse Boost (₹48K → ₹1.5L)"}]}]}
+    issues = check_slide(design, story, ix)
+    assert any("shows only its labels" in i for i in issues) and any("is not shown" in i for i in issues)
+    design["components"][0]["kind"] = "timeline"   # a timeline draws its detail line
+    assert not check_slide(design, story, ix)

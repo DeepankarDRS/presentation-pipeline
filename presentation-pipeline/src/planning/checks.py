@@ -6,7 +6,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from src.planning.adapter import fill_component, shown_text
+from src.planning.adapter import LABEL_ONLY_KINDS, fill_component, shown_text
 from src.planning.brief_index import by_id, data_numbers, numbers
 
 MAX_EMPHASIS = 2
@@ -157,6 +157,9 @@ def check_slide(design: dict[str, Any], story: dict[str, Any], index: dict[str, 
             issues.append(f"{cid}: {len(c['rows'])} rows; at most {MAX_TABLE_ROWS} — split the slide or the table.")
         if kind == "bullet_list" and len(c.get("bullets", [])) > MAX_BULLETS:
             issues.append(f"{cid}: {len(c['bullets'])} bullets; at most {MAX_BULLETS}.")
+        if kind in LABEL_ONLY_KINDS and any(i.get("detail", "").strip() for i in c.get("items", [])):
+            issues.append(f"{cid}: a {kind} shows only its labels, so the item details would be lost — keep the "
+                          f"{kind} for the labels and put the details in a table or bullets.")
         if kind in _STEP_KINDS:
             long = [i["label"] for i in c.get("items", []) if len(i["label"].split()) > MAX_STEP_WORDS]
             if long:

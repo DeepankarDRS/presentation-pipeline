@@ -552,6 +552,12 @@ Causes (all in the Test 1 prompts/checks, fixed LLM-free the same day; a replay 
 3. Dropped requirement: blocks that ask for content ("Mention that…", "Include…") must be on a slide (storyline check). Slide counts ("a 14-slide deck") are not data.
 Also fixed after round 1: chart units by the first metric word, header repeated inside a component, "on no slide" measure (whole brief). Pending: user's judgement of the CHEFFIN-audit headlines; round 2 = gj-h1 + CHEFFIN-audit once (≈ $0.45).
 
+**Test 1 round 2 (paid, 2026-09-27, label `test-1b`, `--slide-retries 1`, `docs/eval/test-1/round-2/`):**
+- gj-h1: **headlines 13/13** (pass, was 5/13); numbers dropped 10/362 = 2.8% (fail, was 4.4%); invented 0; hints ≤ 2; 21 calls, $0.32.
+- All 10 dropped numbers are on slide 11 (five pillars): the model put each pillar's goal / moves / target in the `detail` of a **process_arrow**, which draws labels only. The check counted the detail as shown; the adapter (correctly) passed only labels on. Fixed LLM-free: details of label-only kinds (process_arrow, flow, pyramid, tree, matrix) no longer count as shown, and the slide is asked to put them in a table or bullets. Replay flags slide 11.
+- CHEFFIN-audit: CPC-vs-allowable check **fails**: slide 2 was designed as two KPI rows of 7 tiles (one per platform); the capacity check flagged it, but with `--slide-retries 1` the one re-ask did not fix it. The data-quality note is now on slide 3 (round-1 fix works). Invented 0, all numbers placed, 10 calls, $0.10.
+- Next: gj-h1 + CHEFFIN-audit once more with the default 2 slide retries, then the stability repeats.
+
 ---
 
 ## 10. Build milestones (after the tests)

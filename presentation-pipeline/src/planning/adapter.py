@@ -48,13 +48,20 @@ def fill_component(comp: dict[str, Any], blocks: dict[str, dict[str, Any]]) -> d
     return out
 
 
+# kinds that draw only their item labels (chevrons, bands, nodes): an item's detail never reaches the slide
+LABEL_ONLY_KINDS = {"process_arrow", "flow", "pyramid", "tree", "matrix"}
+
+
 def shown_text(comp: dict[str, Any]) -> str:
-    """Everything a filled component puts on the slide, as one string (for number checks)."""
+    """Everything a filled component puts on the slide, as one string (for number checks).
+    Must match what _content_data hands the generator: details of label-only kinds are not shown."""
     bits = [comp.get("title", ""), comp.get("text", "")]
     bits += [f"{k['label']} {k['value']} {k.get('note', '')}" for k in comp.get("kpis", [])]
     bits += comp.get("columns", []) + [" ".join(r) for r in comp.get("rows", [])]
     bits += comp.get("labels", []) + [f"{s['name']} {' '.join(s['values'])}" for s in comp.get("series", [])]
-    bits += comp.get("bullets", []) + [f"{i['label']} {i.get('detail', '')}" for i in comp.get("items", [])]
+    with_detail = comp.get("kind") not in LABEL_ONLY_KINDS
+    bits += comp.get("bullets", []) + [f"{i['label']} {i.get('detail', '') if with_detail else ''}"
+                                       for i in comp.get("items", [])]
     return " ".join(b for b in bits if b)
 
 

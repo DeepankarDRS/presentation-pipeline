@@ -1,0 +1,79 @@
+{
+  "case": "gate-deck-cheffin-audit",
+  "run_id": "gate-deck-cheffin-audit-0352c8",
+  "seconds": 24.6,
+  "calls": [
+    {
+      "step": "storyline",
+      "tokens_in": 2978,
+      "tokens_out": 1480,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.0178
+    },
+    {
+      "step": "storyline",
+      "tokens_in": 4765,
+      "tokens_out": 1526,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.02174
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2094,
+      "tokens_out": 222,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00596
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2157,
+      "tokens_out": 403,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00754
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2256,
+      "tokens_out": 636,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.0096
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 3090,
+      "tokens_out": 374,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00917
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2198,
+      "tokens_out": 412,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00769
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2189,
+      "tokens_out": 404,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00761
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2122,
+      "tokens_out": 425,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00764
+    },
+    {
+      "step": "slide_designer",
+      "tokens_in": 2673,
+      "tokens_out": 520,
+      "model": "gpt-4.1-2025-04-14",
+      "cost": 0.00951
+    }
+  ],
+  "llm_calls": 10,
+  "cost": 0.1043
+}
