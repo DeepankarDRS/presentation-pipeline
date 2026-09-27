@@ -58,11 +58,15 @@ def shown_text(comp: dict[str, Any]) -> str:
     return " ".join(b for b in bits if b)
 
 
-def _num(v: str) -> float | str:
+def _num(v: str) -> float | int | str:
+    """Chart value as a number; integral values stay ints ("5" → 5, not 5.0, which reads as a new number)."""
     try:
-        return float(re.sub(r"[^\d.\-]", "", v)) if re.search(r"\d", v) else v
+        f = float(re.sub(r"[^\d.\-]", "", v)) if re.search(r"\d", v) else None
     except ValueError:
         return v
+    if f is None:
+        return v
+    return int(f) if f.is_integer() and "." not in v else f
 
 
 def _direction(note: str) -> str:

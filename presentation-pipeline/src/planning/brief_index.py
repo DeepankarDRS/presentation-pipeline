@@ -40,7 +40,8 @@ def data_numbers(text: str) -> list[str]:
     """Numbers a slide must show: without years ('26, 2026) and list numbering (01)."""
     if _MARKER.match(text or ""):
         return []
-    return numbers(_YEAR.sub(" ", text or ""))
+    # "1.0x" normalizes to "1": a single digit is not required (a slide may show it as "1x")
+    return [n for n in numbers(_YEAR.sub(" ", text or "")) if len(re.sub(r"\D", "", n)) >= 2]
 
 
 def _cells(line: str) -> list[str]:
@@ -117,7 +118,7 @@ def index_brief(brief: str) -> dict[str, Any]:
                 rows.append(_cells(lines[j]))
                 j += 1
             if len(rows) >= 2:
-                has_header = not numbers(" ".join(rows[0]))
+                has_header = not data_numbers(" ".join(rows[0]))  # "JAN '26 | FEB '26" is still a header
                 add("T", "\n".join(lines[i:j]).strip(),
                     header=rows[0] if has_header else [], rows=rows[1:] if has_header else rows)
                 i = j

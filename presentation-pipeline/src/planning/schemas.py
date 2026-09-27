@@ -79,7 +79,8 @@ class Series(BaseModel):
 
 
 class Item(BaseModel):
-    label: str = Field(description="1-3 words.")
+    label: str = Field(description="timeline: the date or period ('Jul '26'); other kinds: the step or level "
+                                   "name, 1-3 words.")
     detail: str = Field(default="")
 
 
@@ -92,9 +93,8 @@ class DesignComponent(BaseModel):
     title: str = Field(default="", description="Card title, copied from the brief when it gives one.")
     kpis: list[Kpi] = Field(default_factory=list, description="kpi_row only.")
     columns: list[str] = Field(default_factory=list,
-                               description="table: for a parsed table block, the header cells to keep, in "
-                                           "order (empty = all); for a table you build from text blocks, "
-                                           "its header.")
+                               description="table: ONLY for a table you build from text blocks — its header. "
+                                           "Leave empty for a parsed table block (it is shown whole).")
     rows: list[list[str]] = Field(default_factory=list,
                                   description="table: ONLY when you build it from text blocks. Leave empty "
                                               "for a parsed table block — code fills it.")

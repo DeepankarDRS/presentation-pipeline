@@ -26,14 +26,15 @@ from pathlib import Path
 import yaml
 
 from scripts.eval_lineage import _norm, golden_headlines, load_brief, score, stability
-from src.planning.brief_index import numbers
+from src.planning.brief_index import _YEAR, numbers
 from src.utils.llm_client import get_pricing
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output" / "plans"
 CASES = ROOT / "tests" / "cases"
-# brief numbers that are not content: section numbers / the year (gj-h1), a number-format example (CHEFFIN)
-LINEAGE_IGNORE = {"gj-h1-regen": "01,02,03,04,05,26", "gate-deck-cheffin-audit": "290"}
+# brief numbers that are not content: pillar numbers (gj-h1); a number-format example and "1.0x" in
+# "Allowable CPC for 1.0x ROAS" (CHEFFIN). Years are removed before scoring (see score_label).
+LINEAGE_IGNORE = {"gj-h1-regen": "01,02,03,04,05", "gate-deck-cheffin-audit": "290,1"}
 HEADLINE_SIZES = {"26", "27", "28", "42"}
 
 
@@ -65,7 +66,7 @@ def _storyline_md(story: dict, issues: list[str], designs: dict) -> str:
     return "\n".join(lines)
 
 
-def run_case(case: dict, label: str) -> Path:
+def run_case(case: dict, label: str, **retries: int) -> Path:
     name = case["name"]
     rid = f"{name}-{uuid.uuid4().hex[:6]}"
     folder = OUT / label / rid
@@ -73,12 +74,12 @@ def run_case(case: dict, label: str) -> Path:
     from src.planning.graph import run_planning  # imported late: --rescore needs no LLM stack
 
     t0 = time.time()
-    out = run_planning(case["request"], target_slides=(case.get("expect") or {}).get("slide_count"))
+    out = run_planning(case["request"], target_slides=(case.get("expect") or {}).get("slide_count"), **retries)
     seconds = round(time.time() - t0, 1)
     story, designs = out["storyline"], out.get("designs", {})
     slides = [{"slide_index": p["slide_index"], "slide_plan": p, "story": story["slides"][p["slide_index"]],
                "design": designs.get(p["slide_index"], {}),
-               "issues": designs.get(p["slide_index"], {}).get("issues", [])} for p in out["slide_plans"]]
+               "issues": designs.get(p["slide_index"], {}).get("issues", [])} for p in out.get("slide_plans", [])]
     calls = [{**c, "cost": _cost(c)} for c in out.get("calls", [])]
     (folder / "slides.json").write_text(json.dumps(slides, indent=2, ensure_ascii=False), encoding="utf-8")
     (folder / "storyline.json").write_text(json.dumps(
@@ -114,6 +115,8 @@ def _plan_checks(case: dict, slides: list[dict], story: dict) -> list[tuple[str,
 
 
 def score_label(label: str) -> str:
+    if not (OUT / label).is_dir():
+        return f"No runs saved under output/plans/{label} (every run failed? see the errors above)."
     folders = sorted(p for p in (OUT / label).iterdir() if (p / "slides.json").exists())
     by_case: dict[str, list[Path]] = {}
     for f in folders:
@@ -123,6 +126,8 @@ def score_label(label: str) -> str:
         case = yaml.safe_load((CASES / f"{name}.yaml").read_text(encoding="utf-8"))
         brief, sections = load_brief(case)
         ignore = {_norm(n) for n in LINEAGE_IGNORE.get(name, "").split(",") if n}
+        # the planner's own rule: numbers the brief uses only as years ("Jun '26", "2026") are dates, not data
+        ignore |= set(numbers(" ".join(_YEAR.findall(brief)))) - set(numbers(_YEAR.sub(" ", brief)))
         heads = golden_headlines(ROOT / case["golden"], HEADLINE_SIZES) if case.get("golden") else None
         loaded = {f.name: json.loads((f / "slides.json").read_text(encoding="utf-8")) for f in runs}
         md += [f"## {name}", "", "| run | headlines kept | numbers dropped | invented | max hints/slide "
@@ -133,6 +138,9 @@ def score_label(label: str) -> str:
             man = json.loads((f / "run-manifest.json").read_text(encoding="utf-8"))
             story = json.loads((f / "storyline.json").read_text(encoding="utf-8"))["storyline"]
             checks = _plan_checks(case, slides, story)
+            if not slides:
+                md.append(f"| {f.name} | run produced no slides | | | | | {man['llm_calls']} | ${man['cost']:.3f} | |")
+                continue
             dropped = f"{m['dropped_planning']}/{m['brief']} ({100 * m['dropped_planning'] / max(1, m['brief']):.1f}%)"
             heads_cell = f"{m['headlines_kept']}/{m['headlines_counted']}" if "headlines_kept" in m else "n/a"
             md.append(f"| {f.name} | {heads_cell} | {dropped} | {m['invented_planning']} | "
@@ -158,6 +166,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--repeat", type=int, default=3)
     ap.add_argument("--label", default="test-1")
     ap.add_argument("--bundle", action="store_true", help="zip output/plans/<label> into llm_test/")
+    ap.add_argument("--storyline-retries", type=int, default=1, help="re-asks after a failed storyline check")
+    ap.add_argument("--slide-retries", type=int, default=2, help="re-asks per slide after a failed check")
     ap.add_argument("--rescore", action="store_true", help="only re-score the saved runs of --label (no LLM)")
     args = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")
@@ -168,7 +178,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{name} × {args.repeat}")
             for _ in range(args.repeat):
                 try:
-                    run_case(case, args.label)
+                    run_case(case, args.label, storyline_retries=args.storyline_retries,
+                             slide_retries=args.slide_retries)
                 except Exception:  # one failed run must not lose the others
                     print("  run failed:")
                     traceback.print_exc()

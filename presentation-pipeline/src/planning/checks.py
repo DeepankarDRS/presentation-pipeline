@@ -15,7 +15,10 @@ MAX_TABLE_ROWS = 10
 MAX_BULLETS = 6
 MAX_STEP_WORDS = 4
 _STEP_KINDS = {"timeline", "process_arrow", "flow", "pyramid", "tree", "matrix"}
-_UNITS = {"%": r"%", "₹": r"₹|\brs\b|inr", "x": r"\broas\b|\broi\b|\(x\)"}
+# unit of a chart series or category, from its name (CHEFFIN put CVR % and AOV ₹ on one axis)
+_UNITS = {"%": r"%|\bcvr\b|\bctr\b|\bacos\b|\bshare\b",
+          "₹": r"₹|\brs\b|\binr\b|\baov\b|\bcpc\b|\bcpm\b|\bspend\b|\bsales\b|\brevenue\b|\bgmv\b",
+          "x": r"\broas\b|\broi\b|\(x\)"}
 
 
 def _canon(s: str) -> str:
@@ -27,12 +30,19 @@ def _short(ids: list[str], n: int = 12) -> str:
 
 
 def apply_headline_blocks(story: dict[str, Any], index: dict[str, Any]) -> None:
-    """Copy the brief's headline verbatim where the storyline pointed at one; renumber slides."""
+    """Copy the brief's headline verbatim where the storyline pointed at one; renumber slides.
+
+    If the LLM's headline is a verbatim part of the block and only a label is left over
+    ("SLIDE 1: Title Slide Headline: X" → "X"), it is kept. If the rest of the block carries numbers,
+    the headline was cut short, and the whole block text is used."""
     blocks = by_id(index)
     for i, s in enumerate(story.get("slides", [])):
         s["slide_index"] = i
         b = blocks.get(s.get("headline_block") or "")
-        if b and b["kind"] == "text":
+        if not b or b["kind"] != "text":
+            continue
+        own = (s.get("headline") or "").strip()
+        if not (own and own in b["text"] and not data_numbers(b["text"].replace(own, " ", 1))):
             s["headline"] = b["text"]
 
 
@@ -127,8 +137,10 @@ def check_slide(design: dict[str, Any], story: dict[str, Any], index: dict[str, 
                 issues.append(f"{cid}: {kind} labels must be ≤ {MAX_STEP_WORDS} words ({long[0]!r}); put the "
                               "detail in a table or bullets instead.")
         if kind == "chart":
-            names = " ".join(s["name"] for s in c.get("series", [])).lower()
-            units = [u for u, pat in _UNITS.items() if re.search(pat, names)]
+            names = [s["name"] for s in c.get("series", [])]
+            if len(names) < 2:  # one series: its categories may name the metrics ("CVR", "AOV")
+                names += c.get("labels", [])
+            units = [u for u, pat in _UNITS.items() if any(re.search(pat, n.lower()) for n in names)]
             if len(units) > 1:
                 issues.append(f"{cid}: series mix units ({', '.join(units)}) on one axis — use one chart per "
                               "unit, or a table.")

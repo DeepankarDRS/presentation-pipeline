@@ -231,3 +231,88 @@ def test_graph_end_to_end_with_retries():
     chart = next(c for c in plans[1]["components"] if c["kind"] == "chart")
     assert chart["content_data"]["chart_labels"] == ["Milk 500ml", "Curd 400g", "Paneer 200g"]
     assert len(out["calls"]) == 5
+
+
+# ── Review fixes (2026-09-27) ───────────────────────────────────────────────
+
+def test_headline_block_keeps_llm_headline_when_it_is_a_verbatim_part():
+    ix = index_brief("SLIDE 1: Title Slide Headline: CHEFFIN FLIPCART & ZAROMA Ads Audit\nOther line")
+    bid = ix["blocks"][0]["id"]
+    story = {"slides": [_story(slide_index=0, headline_block=bid, headline="CHEFFIN FLIPCART & ZAROMA Ads Audit"),
+                        _story(slide_index=1, headline_block=bid, headline="A paraphrase")]}
+    apply_headline_blocks(story, ix)
+    assert story["slides"][0]["headline"] == "CHEFFIN FLIPCART & ZAROMA Ads Audit"   # kept, verbatim part
+    assert story["slides"][1]["headline"].startswith("SLIDE 1: Title Slide Headline")  # replaced by the block
+
+
+def test_chart_units_from_metric_names():
+    ix = index_brief(BRIEF)
+    one_series = {"id": "c", "kind": "chart", "role": "hero", "block_ids": [], "labels": ["CVR", "AOV"],
+                  "series": [{"name": "FLIPCART", "values": ["5.5", "195"]}]}
+    same_unit = {"id": "c", "kind": "chart", "role": "hero", "block_ids": [], "labels": ["FLIPCART", "ZAROMA"],
+                 "series": [{"name": "CPC", "values": ["31.1", "46.2"]},
+                            {"name": "Allowable CPC", "values": ["10.7", "14.8"]}]}
+    assert any("mix units" in i for i in check_slide({"components": [one_series]}, _story(), ix))
+    assert not any("mix units" in i for i in check_slide({"components": [same_unit]}, _story(), ix))
+
+
+class _FailingLLM(_FakeLLM):
+    """Slide design calls fail (e.g. truncated output); the storyline works."""
+
+    def invoke(self, messages):
+        if self.schema is SlideDesign:
+            self.calls.append(("SlideDesign", ""))
+            return {"raw": None, "parsed": None, "parsing_error": "length"}
+        return super().invoke(messages)
+
+
+def test_failed_design_call_costs_the_slide_not_the_run_and_retries_are_configurable():
+    fake = _FailingLLM(index_brief(BRIEF))
+    with patch("src.planning.graph.get_llm", return_value=fake):
+        out = run_planning(BRIEF, target_slides=2, storyline_retries=0, slide_retries=1)
+    steps = [s for s, _ in fake.calls]
+    assert steps.count("Storyline") == 1          # storyline_retries=0: no re-ask despite its issue
+    assert steps.count("SlideDesign") == 4        # 2 slides × (1 + slide_retries=1)
+    assert len(out["slide_plans"]) == 2
+    assert "design call failed" in out["designs"][1]["issues"][0]
+
+
+def test_headline_cut_short_is_replaced_by_the_whole_block():
+    ix = index_brief("Every platform closed Q2 higher than Q1 · Blinkit leads on efficiency (6.69x)")
+    story = {"slides": [_story(slide_index=0, headline_block=ix["blocks"][0]["id"],
+                               headline="Every platform closed Q2 higher than Q1")]}
+    apply_headline_blocks(story, ix)
+    assert story["slides"][0]["headline"].endswith("(6.69x)")
+
+
+def test_single_digit_after_normalizing_is_not_required_and_chart_ints_stay_ints():
+    assert data_numbers("Allowable CPC for 1.0x ROAS: ₹10.7") == ["10.7"]
+    plan = to_slide_plan(_story(), {"components": [
+        {"id": "c", "kind": "chart", "role": "hero", "block_ids": [], "labels": ["a", "b"],
+         "series": [{"name": "s", "values": ["5", "2.5"]}]}]})
+    assert plan["components"][1]["content_data"]["chart_values"] == [5, 2.5]
+    assert isinstance(plan["components"][1]["content_data"]["chart_values"][0], int)
+
+
+class _FlakyLLM(_FakeLLM):
+    """Slide 2's first design call fails; later ones return a design that still has an issue."""
+
+    def invoke(self, messages):
+        user = messages[-1].content
+        if self.schema is SlideDesign and "SLIDE 2 of" in user:
+            n = sum(1 for s, u in self.calls if s == "SlideDesign" and "SLIDE 2 of" in u)
+            self.calls.append(("SlideDesign", user))
+            if n == 0:
+                return {"raw": None, "parsed": None, "parsing_error": "length"}
+            return SlideDesign(reading="r", layout="l", components=[
+                dict(id="n", kind="narrative", role="hero", block_ids=[], text="Blinkit ROAS 6.35x")])
+        return super().invoke(messages)
+
+
+def test_real_design_beats_a_failed_call_placeholder():
+    fake = _FlakyLLM(index_brief(BRIEF))
+    with patch("src.planning.graph.get_llm", return_value=fake):
+        out = run_planning(BRIEF, target_slides=2)
+    d = out["designs"][1]
+    assert d["components"] and d["components"][0]["id"] == "n"   # the real design, not the placeholder
+    assert d["issues"] and not d.get("failed")
