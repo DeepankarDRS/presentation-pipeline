@@ -16,6 +16,10 @@ import operator
 from pathlib import Path
 from typing import Annotated, Any, TypedDict
 
+from dotenv import load_dotenv
+
+load_dotenv()  # OPENAI_API_KEY from presentation-pipeline/.env, as src/graph.py does
+
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph

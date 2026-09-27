@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -25,10 +26,11 @@ import uuid
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
 
 from scripts.eval_lineage import _canon, _norm, golden_headlines, load_brief, score, stability
 from src.planning.brief_index import _YEAR, numbers
-from src.utils.llm_client import get_pricing
+from src.utils.llm_client import get_pricing, get_step_config
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "output" / "plans"
@@ -183,6 +185,11 @@ def main(argv: list[str] | None = None) -> int:
     sys.stdout.reconfigure(encoding="utf-8")
 
     if not args.rescore:
+        load_dotenv(ROOT / ".env")
+        if get_step_config("storyline").get("provider", "openai") == "openai" and not os.environ.get("OPENAI_API_KEY"):
+            print(f"No OPENAI_API_KEY: put it in {ROOT / '.env'} (OPENAI_API_KEY=sk-...) or set it in the shell. "
+                  "Nothing was run.")
+            return 2
         for name in args.cases:
             case = yaml.safe_load((CASES / f"{name}.yaml").read_text(encoding="utf-8"))
             print(f"{name} × {args.repeat}")
@@ -194,7 +201,9 @@ def main(argv: list[str] | None = None) -> int:
                     print("  run failed:")
                     traceback.print_exc()
     print(score_label(args.label))
-    if args.bundle:
+    if args.bundle and not any((OUT / args.label).glob("*/slides.json")):
+        print("bundle: skipped, no saved runs")
+    elif args.bundle:
         (ROOT / "llm_test").mkdir(exist_ok=True)
         base = ROOT / "llm_test" / f"plans-{args.label}-{time.strftime('%Y%m%d-%H%M%S')}"
         print("bundle:", shutil.make_archive(str(base), "zip", OUT, args.label))
