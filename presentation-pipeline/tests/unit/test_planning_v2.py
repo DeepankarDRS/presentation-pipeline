@@ -369,3 +369,28 @@ def test_unit_comes_from_the_first_metric_word_and_header_repeats_are_flagged():
              "text": "Efficient on ROAS, softened on top-line\nPrepared by our agency"}
     story = _story(headline="Efficient on ROAS, softened on top-line")
     assert any("repeats the slide's headline" in i for i in check_slide({"components": [cover]}, story, ix))
+
+
+def test_not_shown_never_excuses_data_and_requirements_must_be_placed():
+    ix = index_brief(BRIEF)
+    blocks = by_id(ix)
+    s2 = [b["id"] for b in ix["blocks"] if b["section"] == 1]
+    readout = next(b for b in s2 if blocks[b]["text"].startswith("Curd is the star"))
+    table = next(b["id"] for b in ix["blocks"] if b["kind"] == "table")
+    chart = next(b["id"] for b in ix["blocks"] if b["kind"] == "chart")
+    kpi_blocks = [b for b in s2 if blocks[b]["kind"] == "text" and b != readout]
+    design = {"components": [
+        {"id": "kpis", "kind": "kpi_row", "role": "strip", "block_ids": kpi_blocks,
+         "kpis": [{"label": "Total sales", "value": "₹1.32 Cr"}, {"label": "ROAS", "value": "6.35x"}]},
+        {"id": "t", "kind": "table", "role": "hero", "block_ids": [table]},
+        {"id": "c", "kind": "chart", "role": "support", "block_ids": [chart]}],
+        "not_shown": [{"block_id": readout, "reason": "too detailed"}]}
+    assert any("in not_shown" in i and "12.5" in i for i in check_slide(fill_design(design, ix), _story(block_ids=s2), ix))
+
+    ix2 = index_brief("Create a 14-slide deck.\nDATA QUALITY NOTE: Mention that some sheets had zeroed fields.\nInclude:\nRevenue ₹42.8M")
+    assert data_numbers(ix2["blocks"][0]["text"]) == []            # "14-slide" is not data
+    story = {"slides": [_story(slide_index=0, headline="Revenue", block_ids=[ix2["blocks"][3]["id"]])],
+             "set_aside": [{"block_id": ix2["blocks"][1]["id"], "reason": "note"}]}
+    issues = check_storyline(story, ix2, 1)
+    assert any(ix2["blocks"][1]["id"] in i and "ask for content" in i for i in issues)
+    assert not any(ix2["blocks"][2]["id"] in i for i in issues)     # a bare "Include:" label is not a requirement

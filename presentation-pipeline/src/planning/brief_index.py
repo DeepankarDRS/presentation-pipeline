@@ -21,7 +21,8 @@ _CHART = re.compile(r"^\s*Chart \(([\w -]+)\):\s*$")
 _SERIES = re.compile(r"^\s+(.+?):\s+(.+)$")
 _MARKER = re.compile(r"^\s*0\d\s*$")               # "01".."09": list numbering, not data
 _YEAR = re.compile(r"'\d\d\b|\b(?:19|20)\d\d\b")   # "Jun '26", "2026": dates, not data
-_LONG = 240                                       # split lines longer than this
+_SLIDE_COUNT = re.compile(r"\b\d+\s*-?\s*slides?\b", re.I)  # "14-slide", "6-SLIDE STRUCTURE", "18 slides"
+_LONG = 240                                      # split lines longer than this
 _SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9₹\"'(])|\s+-\s+(?=\S)|\s+(?=\d\.\s+[A-Z])|\s{2,}")
 _LIST_NO = re.compile(r"^\d\.$")
 
@@ -40,8 +41,9 @@ def data_numbers(text: str) -> list[str]:
     """Numbers a slide must show: without years ('26, 2026) and list numbering (01)."""
     if _MARKER.match(text or ""):
         return []
+    text = _SLIDE_COUNT.sub(" ", _YEAR.sub(" ", text or ""))  # "a 14-slide deck" is an instruction, not data
     # "1.0x" normalizes to "1": a single digit is not required (a slide may show it as "1x")
-    return [n for n in numbers(_YEAR.sub(" ", text or "")) if len(re.sub(r"\D", "", n)) >= 2]
+    return [n for n in numbers(text) if len(re.sub(r"\D", "", n)) >= 2]
 
 
 def _cells(line: str) -> list[str]:

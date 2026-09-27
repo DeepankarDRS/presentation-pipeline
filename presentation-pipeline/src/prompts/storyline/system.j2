@@ -18,7 +18,7 @@ You refer to content by block id. You never retype data — code copies it from 
 - Exactly the requested number of slides. If the brief has "Brief section for slide N" parts, slide N follows its section one-to-one: use that section's blocks and no other section's.
 - Where the brief gives no per-slide structure, choose the slides that best argue deck_argument, using only the brief's data.
 - label: the short kicker above the headline (a section name like "PLATFORM DEEP-DIVE · 01"). Copy it when the brief gives one.
-- headline: the slide's conclusion — a claim the audience can agree or disagree with, with its key number when there is one ("Efficient on ROAS, softened on top-line"), not a topic ("Blinkit performance"). If the brief states a headline for the slide, set headline_block to that block's id instead of paraphrasing it; code copies it verbatim. A cover's headline is the deck title.
+- headline: if the brief gives this slide a headline — a line after "Headline:", or the line right after the slide's label in its section — set headline_block to that block's id and keep the brief's wording, even when it reads like a topic ("Six-Month Sales Trajectory"). The brief's words win; code copies them verbatim. Put your own conclusion in so_what. Only when the brief gives no headline, write one yourself: the slide's conclusion, a claim the audience can agree or disagree with, with its key number when there is one ("Efficient on ROAS, softened on top-line"), not a topic ("Blinkit performance"). A cover's headline is the deck title.
 - subtitle: one line of context (period, scope). Copy it when the brief gives one.
 - block_ids: every block whose content appears on this slide — the numbers, tables, charts and read-outs that prove the headline, plus the label / headline / subtitle blocks.
 - so_what: one sentence the audience should take away.
@@ -29,4 +29,7 @@ You refer to content by block id. You never retype data — code copies it from 
 ## Numbers
 
 - Every number you write (headline, subtitle, so_what, emphasis) must appear in the brief. No derived percentages, no rounding, no projections the brief does not state.
-- Every block that contains numbers must be on a slide, or listed in set_aside with the reason (an instruction to you, a formula, a style direction, a duplicate).
+- Every block that contains numbers must be on a slide, or listed in set_aside with the reason (an instruction to you, a formula, a style direction, a duplicate). Blocks without numbers that are only instructions or style need not be listed.
+
+## Requirements
+When the brief asks for something to be shown ("Mention that…", "Include…", "Show…", "Add a callout…"), put that block on the slide where it belongs. It is content the client asked for, not an instruction to set aside.

@@ -14,7 +14,10 @@ MAX_KPIS = 6
 MAX_TABLE_ROWS = 10
 MAX_BULLETS = 6
 MAX_STEP_WORDS = 4
-_STEP_KINDS = {"timeline", "process_arrow", "flow", "pyramid", "tree", "matrix"}
+# a brief line that asks for content: "Mention that…", "DATA QUALITY NOTE: Mention…", "Also mention…",
+# "Include: Prepared by…" (a bare "Include:" label line has nothing after it and does not count)
+_REQUIREMENT = re.compile(r"^(?:[A-Z][A-Z ]+:\s*)?(?:also\s+)?(?:mention|include|add)\b[:\s]+\S{2}", re.I)
+_STEP_KINDS ={"timeline", "process_arrow", "flow", "pyramid", "tree", "matrix"}
 # unit of a chart series or category, from its name (CHEFFIN put CVR % and AOV ₹ on one axis)
 _UNITS = {"%": r"%|\bcvr\b|\bctr\b|\bacos\b|\bshare\b",
           "₹": r"₹|\brs\b|\binr\b|\baov\b|\bcpc\b|\bcpm\b|\bspend\b|\bsales\b|\brevenue\b|\bgmv\b",
@@ -92,6 +95,11 @@ def check_storyline(story: dict[str, Any], index: dict[str, Any], target_slides:
     if missing:
         issues.append(f"Blocks with numbers that no slide shows and set_aside does not list: {_short(missing)}. "
                       "Put each on a slide, or in set_aside with the reason.")
+    asked = [b["id"] for b in index["blocks"] if b["kind"] == "text" and _REQUIREMENT.match(b["text"])
+             and b["id"] not in used]
+    if asked:
+        issues.append(f"Blocks {_short(asked)} ask for content to be shown (\"Mention…\", \"Include…\") but are on "
+                      "no slide. Put each on the slide where it belongs.")
     return issues
 
 
@@ -111,15 +119,19 @@ def check_slide(design: dict[str, Any], story: dict[str, Any], index: dict[str, 
     if invented:
         issues.append(f"Numbers not in the brief: {', '.join(invented)}. Copy values exactly from the blocks.")
 
+    # not_shown is for labels and instructions; it never excuses data (gj-h1 run 7af681 dropped KPI notes
+    # and read-out figures that way). Dropping data is a storyline decision (set_aside), visible deck-wide.
     skipped = {a["block_id"] for a in design.get("not_shown", [])}
-    for bid in sorted(assigned - skipped, key=lambda x: (x[0], int(x[1:]) if x[1:].isdigit() else 0)):
+    for bid in sorted(assigned, key=lambda x: (x[0], int(x[1:]) if x[1:].isdigit() else 0)):
         b = blocks.get(bid)
         if not b:
             continue
         lost = sorted(set(data_numbers(b["text"])) - shown)
-        if lost:
-            issues.append(f"Block {bid} is assigned to this slide but {', '.join(lost)} is not shown. "
-                          f"Show it, or list {bid} in not_shown with the reason.")
+        if lost and bid in skipped:
+            issues.append(f"Block {bid} holds data ({', '.join(lost)}) but is in not_shown — not_shown is only for "
+                          "labels and instructions. Show it: a KPI note, a table cell or the read-out.")
+        elif lost:
+            issues.append(f"Block {bid} is assigned to this slide but {', '.join(lost)} is not shown. Show it.")
 
     heroes = [c["id"] for c in comps if c.get("role") == "hero"]
     if len(heroes) > 1:

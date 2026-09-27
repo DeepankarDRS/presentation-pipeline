@@ -534,6 +534,24 @@ It's cheaper because the prompt drops most of today's 8–13k tokens of rules, a
 - Scorer: `eval_lineage.py` reads plan-only runs (headlines and numbers from the plan), counts design hints per slide, and no longer counts component counts (`rows`, `items`) as numbers — §3.2 still reproduces exactly. Baseline for hints: today's plans reach 5–7 per slide, 6–9 slides over 2.
 - LLM calls: 1 + N if every check passes (gj-h1: 15; today's planning: 17), plus one call per failed check.
 
+**Test 1 round 1 (paid, 2026-09-27, one run per case, `docs/eval/test-1/round-1/`):**
+
+| | old planner (§3.2) | round 1 | pass if | |
+|---|---|---|---|---|
+| gj-h1 headlines kept | 0/13 | 5/13 | ≥ 12 | fail |
+| gj-h1 numbers dropped by planning | 7–13% | 16/362 (4.4%) | ≤ 2% | fail |
+| invented numbers (3 cases) | 0–2 per deck + CHEFFIN's invented table / dates | 0 | 0 | pass |
+| design hints per slide (max) | 5–7 | 2 | ≤ 2 | pass |
+| CHEFFIN-full plan checks (6/6 brief headlines, CPC / ad-type / match-type in one component, colours) | — | all pass | pass | pass |
+| CHEFFIN-audit plan checks | — | all pass; but the brief's "mention the data-quality note" was set aside and never shown | pass | partial |
+| gj-h1 planning cost | $0.44, 17 calls | $0.29, 19 calls (2 storyline, 17 designs) | ≤ today | pass |
+
+Causes (all in the Test 1 prompts/checks, fixed LLM-free the same day; a replay of the returned plans through the new checks flags exactly these):
+1. Headlines: the prompt said both "copy the brief's headline" and "a headline is a conclusion, not a topic"; on 9 gj-h1 slides whose brief headline reads like a topic ("Six-Month Sales Trajectory") the model wrote its own conclusion. Now: the brief's wording wins; the model's conclusion goes to `so_what`.
+2. Dropped numbers: `not_shown` excused data — on gj-h1 slides 1 and 6 KPI notes and read-out figures ("6.1% of H1 GMV", "424K orders") went there. Now `not_shown` never excuses data; dropping data is only a storyline `set_aside` decision.
+3. Dropped requirement: blocks that ask for content ("Mention that…", "Include…") must be on a slide (storyline check). Slide counts ("a 14-slide deck") are not data.
+Also fixed after round 1: chart units by the first metric word, header repeated inside a component, "on no slide" measure (whole brief). Pending: user's judgement of the CHEFFIN-audit headlines; round 2 = gj-h1 + CHEFFIN-audit once (≈ $0.45).
+
 ---
 
 ## 10. Build milestones (after the tests)
@@ -616,6 +634,7 @@ These can be fixed independently of the plan above.
 | 2026-09-24 | Architecture review | Traced the flow (graphify map + code); rendered real generator prompts; audited the four saved gj-h1 runs + CHEFFIN against the golden; revised the recommendation to keep LLM-authored XML; defined Tests 1–3 | Created |
 | 2026-09-24 | Follow-up | `AGENTS.md` "Next work" now points here and marks the roadmap halted; added `scripts/eval_lineage.py`, which reproduces §3.2 exactly; planned the `src/state.py` changes. Next: Test 1 in a new session | §3.1, §7.11, §9, §14, Appendix C |
 | 2026-09-27 | Test 1 build | Built planning v2 (`src/planning/`, 2 prompts, `scripts/plan_only.py`, scorer support, 8 unit tests; 450 pass, same 4 pre-existing failures). Dry run with a scripted LLM on the real gj-h1 and CHEFFIN briefs: 14/14 headlines copied, 0/365 dropped, CHEFFIN checks pass, capacity check fires and re-asks. User decisions: D2 never; CHEFFIN checks in Test 1; the Genspark UI tracking (2026-09-25) is the reference for pre-writing reasoning. Next: paid run on the test PC | Status, §9, §12, §14 |
+| 2026-09-27 | Test 1 round 1 | Paid runs (one each): CHEFFIN-full passes; CHEFFIN-audit passes its checks but dropped a "mention" requirement; gj-h1 fails headlines (5/13) and dropped numbers (4.4%) — better than the old planner on every measure, causes found in the Test 1 prompts/checks and fixed LLM-free (replay confirms). Also: independent code review, `gate-deck-cheffin-full` case, `.env` loading, retry flags. Next: round 2 (gj-h1 + CHEFFIN-audit × 1) | §9 round 1 |
 
 ---
 
