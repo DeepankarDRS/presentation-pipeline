@@ -1,0 +1,18 @@
+DECK: {{ target_slides ~ ' slides' if target_slides else 'choose the number of slides the brief asks for' }}
+{% if deck_settings %}
+SETTINGS: {% for k, v in deck_settings.items() %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}
+
+{% endif %}
+BRIEF (numbered blocks):
+
+{{ blocks }}
+{% if previous %}
+
+YOUR PREVIOUS ANSWER:
+{{ previous }}
+
+PROBLEMS FOUND BY THE CHECKS — fix every one and return the complete corrected storyline:
+{% for issue in issues %}
+- {{ issue }}
+{% endfor %}
+{% endif %}

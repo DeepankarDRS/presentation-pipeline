@@ -1,0 +1,26 @@
+DECK ARGUMENT: {{ deck_argument }}
+AUDIENCE AND USE: {{ audience_and_use }}
+
+SLIDE {{ story.slide_index + 1 }} of {{ total_slides }} · intent: {{ story.intent }}
+Label: {{ story.label or '(none)' }}
+Headline: {{ story.headline }}
+Subtitle: {{ story.subtitle or '(none)' }}
+So what: {{ story.so_what }}
+Emphasis: {{ story.emphasis | join(' · ') if story.emphasis else '(none)' }}
+{% if parallel %}
+Parallel group "{{ story.parallel_group }}": slides {{ parallel | join(', ') }} share one arrangement — design this slide so the others can follow the same pattern.
+{% endif %}
+
+THIS SLIDE'S BLOCKS:
+
+{{ blocks }}
+{% if previous %}
+
+YOUR PREVIOUS ANSWER:
+{{ previous }}
+
+PROBLEMS FOUND BY THE CHECKS — fix every one and return the complete corrected design:
+{% for issue in issues %}
+- {{ issue }}
+{% endfor %}
+{% endif %}

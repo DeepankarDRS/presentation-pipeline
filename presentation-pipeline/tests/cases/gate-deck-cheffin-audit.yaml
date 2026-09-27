@@ -11,3 +11,11 @@ expect:
   watch: >
     supplied numbers used verbatim (₹29.4L, 0.34x, ₹31.1 vs allowable ₹10.7);
     CPC-vs-allowable comparison as a chart or table; headlines state conclusions.
+# Test 1 (scripts/plan_only.py) — user decision 2026-09-27: CHEFFIN is the storytelling test.
+plan_checks:
+  - name: CPC vs allowable CPC in one component
+    same_component: ["31.1", "10.7", "46.2", "14.8"]
+  - name: missing sheet named as a gap
+    gaps_mention: ["sheet"]
+  - name: brand colours captured
+    style_mentions: ["orange", "purple"]

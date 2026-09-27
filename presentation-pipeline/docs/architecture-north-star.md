@@ -2,7 +2,7 @@
 
 > **Living document.** Created 2026-09-24 in the architecture-review session. It is the **plan of record for slide quality** and supersedes `docs/roadmap-derived-components.md`, which the user halted on 2026-09-24 because slide quality was not improving. Update it every session (§0).
 
-**Status (2026-09-24):** review finished, evidence recorded (§3), pipeline code unchanged (the evidence tool `scripts/eval_lineage.py` was added). **Next step: Test 1** (§9). Open decisions: §12.
+**Status (2026-09-27):** Test 1 built and verified LLM-free (§9, "Test 1 as built"); **next step: the Test 1 paid run on the test PC**. Open decisions: §12.
 
 ## Contents
 
@@ -513,7 +513,7 @@ It's cheaper because the prompt drops most of today's 8–13k tokens of rules, a
 
 | # | Test | What | Cost | Pass if | Status |
 |---|---|---|---|---|---|
-| 1 | Planning | New fact-store, storyline and slide-planning prompts; planning only; gj-h1 + CHEFFIN, 3 repeats each | ≈ $2 | gj-h1 headlines kept on ≥ 12/14; ≤ 2% of numbers dropped; 0 invented numbers; ≤ 2 emphasis marks per slide; same components across repeats on ≥ 10/14 slides | not started |
+| 1 | Planning | New fact-store, storyline and slide-planning prompts; planning only; gj-h1 + CHEFFIN, 3 repeats each | ≈ $2 (estimate after the build: ≈ $1.5) | gj-h1 headlines kept on ≥ 12/14; ≤ 2% of numbers dropped; 0 invented numbers; ≤ 2 emphasis marks per slide; same components across repeats on ≥ 10/14 slides. CHEFFIN (added 2026-09-27, user): CPC vs allowable CPC (₹31.1 / ₹46.2 vs ₹10.7 / ₹14.8) in one component, the missing sheet named as a gap, the brand colours captured, 0 invented numbers; headlines state conclusions (judged by the user from `storyline.md`) | built 2026-09-27 (LLM-free, dry-run verified); paid run pending |
 | 2 | Rendered A/B | Test 1's plans through today's generator, with the prompt cleanup. Two comparisons: with vs without 5 component tags (Header, KpiTile, TableCard, ChartCard, ReadoutPanel), and merged vs separate planning + XML call | ≈ $2 | new slides preferred in ≥ 70% of blind pairs; distinct card styles ≤ the golden's; 0 over-full tables. If the tag version doesn't win, skip the component layer | not started |
 | 3 | Critic + editor | 10 edit requests + 10 critic findings: whole-slide rewrite vs element-level edit | ≈ $1 | ≥ 90% done correctly; nothing else on the slide changes; no number changes; ≥ 50% fewer tokens | not started |
 
@@ -522,6 +522,15 @@ It's cheaper because the prompt drops most of today's 8–13k tokens of rules, a
 - an adapter from the new plan to today's generator input;
 - the scorer: extend `scripts/eval_lineage.py` to read the new plan format and to count emphasis marks per slide. It already measures headlines kept, numbers dropped and invented per stage, decoration, style variety and plan stability across runs.
 - the test PC must send back the run folders (`output/runs/<run_id>` zips), not only the eval bundle, because the scorer needs `slides.json`.
+
+**Test 1 as built (2026-09-27, branch `test-1-planning`):**
+- `src/planning/` — its own LangGraph graph; `src/graph.py` and `src/state.py` untouched:
+  `index_brief` (code) → `plan_storyline` (LLM) ⇄ `check_storyline` (code, 1 retry) → `Send` × N → `design_slide` (LLM + `check_slide` inside, ≤ 2 re-asks) → `to_slide_plans` (code adapter to today's `SlidePlan`).
+- Simplification vs §7.2 (agreed 2026-09-27): the fact store is built by code (`brief_index.py`: every line, pipe table and chart block gets an id; tables and charts are parsed and filled by code). The storyline call does the brief-understanding (`audience_and_use`, `deck_argument`, `gaps`, `style_directives` come first in its schema). A separate "understand brief" LLM call is added only if the storyline call struggles.
+- Prompts: `src/prompts/storyline/`, `src/prompts/slide_designer/` (~700 tokens each, vs ~6k for the old slide planner's template). Models: `storyline` and `slide_designer` steps in `models.yaml` (gpt-4.1, temperature 0.1).
+- Runner: `python -m scripts.plan_only gj-h1-regen gate-deck-cheffin-audit --repeat 3 --label test-1 --bundle` → `output/plans/test-1/<run>/` (`slides.json`, `storyline.json`, `storyline.md`, `run-manifest.json`), `summary.md` with the criteria, and a zip in `llm_test/`. `--rescore` re-scores saved runs without the LLM.
+- Scorer: `eval_lineage.py` reads plan-only runs (headlines and numbers from the plan), counts design hints per slide, and no longer counts component counts (`rows`, `items`) as numbers — §3.2 still reproduces exactly. Baseline for hints: today's plans reach 5–7 per slide, 6–9 slides over 2.
+- LLM calls: 1 + N if every check passes (gj-h1: 15; today's planning: 17), plus one call per failed check.
 
 ---
 
@@ -572,7 +581,7 @@ These are provisional; reorder them by the test results.
 | # | Decision | Options | Recommendation | Status |
 |---|---|---|---|---|
 | D1 | Who writes the slide markup | keep LLM-authored POM XML / replace with a JSON spec | keep (§3.2, §7) | recommended 2026-09-24 — user to confirm |
-| D2 | Invented numbers in data decks | never / "illustrative" only when the brief has no data, labelled on the slide | never | open |
+| D2 | Invented numbers in data decks | never / "illustrative" only when the brief has no data, labelled on the slide | never | **decided 2026-09-27 (user): never** — missing data is named as a gap |
 | D3 | Density tiers and minimum font | presented 14–16 / pre-read ~10–11 / one floor for all | two tiers | open |
 | D4 | Deck font | must exist on Office machines: Calibri / Arial / Aptos | — | open |
 | D5 | Slide planning + XML writing | one call per slide / two calls as today | decide on Test 2 data | open |
@@ -604,6 +613,7 @@ These can be fixed independently of the plan above.
 |---|---|---|---|
 | 2026-09-24 | Architecture review | Traced the flow (graphify map + code); rendered real generator prompts; audited the four saved gj-h1 runs + CHEFFIN against the golden; revised the recommendation to keep LLM-authored XML; defined Tests 1–3 | Created |
 | 2026-09-24 | Follow-up | `AGENTS.md` "Next work" now points here and marks the roadmap halted; added `scripts/eval_lineage.py`, which reproduces §3.2 exactly; planned the `src/state.py` changes. Next: Test 1 in a new session | §3.1, §7.11, §9, §14, Appendix C |
+| 2026-09-27 | Test 1 build | Built planning v2 (`src/planning/`, 2 prompts, `scripts/plan_only.py`, scorer support, 8 unit tests; 450 pass, same 4 pre-existing failures). Dry run with a scripted LLM on the real gj-h1 and CHEFFIN briefs: 14/14 headlines copied, 0/365 dropped, CHEFFIN checks pass, capacity check fires and re-asks. User decisions: D2 never; CHEFFIN checks in Test 1; the Genspark UI tracking (2026-09-25) is the reference for pre-writing reasoning. Next: paid run on the test PC | Status, §9, §12, §14 |
 
 ---
 

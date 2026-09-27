@@ -120,9 +120,13 @@ def _plan(slide: dict) -> dict | None:
     return slide.get("slide_plan")
 
 
+_COUNT_FIELDS = {"count", "rows", "columns", "items", "series_count"}  # structure, not content
+
+
 def _plan_nums(slide: dict) -> set[str]:
     plan = _plan(slide) or {}
-    return nums(json.dumps(plan.get("components", []), ensure_ascii=False) + " " + plan.get("slide_title", ""))
+    comps = [{k: v for k, v in c.items() if k not in _COUNT_FIELDS} for c in plan.get("components", [])]
+    return nums(json.dumps(comps, ensure_ascii=False) + " " + plan.get("slide_title", ""))
 
 
 def _canon(s: str) -> str:
@@ -131,10 +135,31 @@ def _canon(s: str) -> str:
 
 # ── Measures ────────────────────────────────────────────────────────────────
 
+def _plan_text(slide: dict) -> str:
+    """What a plan puts on the slide (planning-only runs have no XML)."""
+    plan = _plan(slide) or {}
+    return plan.get("slide_title", "") + " " + json.dumps(plan.get("components", []), ensure_ascii=False)
+
+
+def _shown(slide: dict) -> str:
+    return slide_text(slide["xml"]) if slide.get("xml") else _plan_text(slide)
+
+
 def lineage(slides: list[dict], brief: str, sections: dict[int, str] | None, ignore: set[str]) -> dict:
-    """Brief numbers dropped / invented per stage. Slides without a plan (golden) get only `missing_final`."""
+    """Brief numbers dropped / invented per stage. Slides without a plan (golden) get only `missing_final`;
+    planning-only runs (no XML) get only the planning measures."""
     known = nums(brief)
     has_plan = any(_plan(s) for s in slides)
+    if not any(s.get("xml") for s in slides):
+        t = Counter()
+        pairs = ([(nums(sections.get(s["slide_index"], "")) - ignore, [s]) for s in slides] if sections
+                 else [(known - ignore, slides)])
+        for brief_nums, group in pairs:
+            planned = set().union(*(_plan_nums(s) for s in group))
+            t["brief"] += len(brief_nums)
+            t["dropped_planning"] += len(brief_nums - planned)
+            t["invented_planning"] += len(planned - known)
+        return dict(t)
     if sections:
         pairs = [(nums(sections.get(s["slide_index"], "")) - ignore, [s]) for s in slides]
     else:
@@ -161,7 +186,7 @@ def headlines(slides: list[dict], heads: list[str]) -> tuple[int, int]:
         if i >= len(heads) or not heads[i] or (_plan(s) or {}).get("slide_type") in _COVERS:
             continue
         counted += 1
-        kept += _canon(heads[i]) in _canon(slide_text(s.get("xml") or ""))
+        kept += _canon(heads[i]) in _canon(_shown(s))
     return kept, counted
 
 
@@ -181,6 +206,9 @@ def decoration(slides: list[dict]) -> dict:
         plan = _plan(s)
         if plan is None:
             continue
+        n_hints = sum(1 for c in plan.get("components", []) if c.get("kind") != "title" and c.get("design_hint"))
+        d["max_hints_per_slide"] = max(d["max_hints_per_slide"], n_hints)
+        d["slides_over_2_hints"] += n_hints > 2
         hints = " ".join(c.get("design_hint") or "" for c in plan.get("components", [])).lower()
         asked_highlight = bool(re.search(r"highlight|marker", hints))
         d["slides_hint_highlight"] += asked_highlight
@@ -256,9 +284,11 @@ _ROWS = [
     ("brief numbers", lambda m: m.get("brief", 0)),
     ("dropped by planning", lambda m: _pct(m["dropped_planning"], m["brief"]) if "dropped_planning" in m else "n/a"),
     ("dropped by XML writing", lambda m: _pct(m["dropped_xml"], m["brief"]) if "dropped_xml" in m else "n/a"),
-    ("missing on final slides", lambda m: _pct(m.get("missing_final", 0), m.get("brief", 0))),
+    ("missing on final slides", lambda m: _pct(m["missing_final"], m.get("brief", 0)) if "missing_final" in m else "n/a"),
     ("invented by planning", lambda m: m.get("invented_planning", "n/a")),
     ("invented by XML writing", lambda m: m.get("invented_xml", "n/a")),
+    ("design hints per slide (max)", lambda m: m.get("max_hints_per_slide", "n/a")),
+    ("slides with > 2 design hints", lambda m: m.get("slides_over_2_hints", "n/a")),
     ("slides whose hints ask for highlighting", lambda m: m.get("slides_hint_highlight", "n/a")),
     ("slides with unasked highlights", lambda m: m.get("slides_unasked_highlight", "n/a")),
     ("slides with unasked icons", lambda m: m.get("slides_unasked_icons", "n/a")),

@@ -56,6 +56,7 @@ then check the run's XML in `output/runs/<run_id>/`: no HStack/Icon inside `<Td>
 
 ## Next work: `docs/architecture-north-star.md`
 Plan of record since 2026-09-24 (architecture review): measured evidence of where slide quality is lost, the target architecture (LLM-authored POM XML kept; fact store + storyline; component tags only if they win a blind test; sizing done by code), validation Tests 1–3 with pass criteria, milestones, open decisions and a per-session log. Start each session from its §0 kick-off prompt and add a row to its §14 session log. Evidence tool: `python -m scripts.eval_lineage` (usage in the doc's Appendix C).
+**Test 1 built (2026-09-27, branch `test-1-planning`)**: planning v2 in `src/planning/` (own LangGraph graph; main graph untouched), prompts `src/prompts/storyline/` + `slide_designer/`, runner `python -m scripts.plan_only gj-h1-regen gate-deck-cheffin-audit --repeat 3 --label test-1 --bundle` (paid, ≈ $1.5; send back the `llm_test/plans-test-1-*.zip`). D2 decided: never invent numbers. Unit tests 450 pass, same 4 pre-existing failures.
 `docs/roadmap-derived-components.md` is **halted** (user, 2026-09-24: slide quality was not improving) — keep it as history. Its eval harness, normalizer fixes, table sizing and pptx post-process stay in the code. The two-device workflow and the paid-run cost rule in `docs/session-kickoff.md` still apply (its phase prompts refer to the halted roadmap).
 
 ## Where work stands (2026-09-24)
