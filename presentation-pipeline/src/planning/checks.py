@@ -21,6 +21,13 @@ _UNITS = {"%": r"%|\bcvr\b|\bctr\b|\bacos\b|\bshare\b",
           "x": r"\broas\b|\broi\b|\(x\)"}
 
 
+def _unit(name: str) -> str | None:
+    """The unit of a series / category name: its FIRST metric word decides
+    ("Allowable CPC for 1.0x ROAS" is ₹ — the ROAS is only a qualifier)."""
+    hits = [(m.start(), u) for u, pat in _UNITS.items() if (m := re.search(pat, name.lower()))]
+    return min(hits)[1] if hits else None
+
+
 def _canon(s: str) -> str:
     return re.sub(r"[^a-z0-9₹%]+", " ", (s or "").lower()).strip()
 
@@ -121,8 +128,12 @@ def check_slide(design: dict[str, Any], story: dict[str, Any], index: dict[str, 
     if len(emph) > MAX_EMPHASIS:
         issues.append(f"{len(emph)} components carry emphasis; at most {MAX_EMPHASIS}.")
 
+    header_lines = [h for h in (story.get("headline", ""), story.get("subtitle", "")) if len(_canon(h)) >= 15]
     for c in comps:
         cid, kind = c["id"], c["kind"]
+        body = _canon(" ".join([c.get("text", ""), *c.get("bullets", [])]))
+        if any(_canon(h) in body for h in header_lines):
+            issues.append(f"{cid}: repeats the slide's headline or subtitle — the header already shows them.")
         stray = [b for b in c.get("block_ids", []) if b not in assigned]
         if stray:
             issues.append(f"{cid}: blocks {_short(stray)} are not assigned to this slide.")
@@ -143,7 +154,7 @@ def check_slide(design: dict[str, Any], story: dict[str, Any], index: dict[str, 
             names = [s["name"] for s in c.get("series", [])]
             if len(names) < 2:  # one series: its categories may name the metrics ("CVR", "AOV")
                 names += c.get("labels", [])
-            units = [u for u, pat in _UNITS.items() if any(re.search(pat, n.lower()) for n in names)]
+            units = sorted({u for n in names if (u := _unit(n))})
             if len(units) > 1:
                 issues.append(f"{cid}: series mix units ({', '.join(units)}) on one axis — use one chart per "
                               "unit, or a table.")

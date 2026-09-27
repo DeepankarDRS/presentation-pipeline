@@ -23,7 +23,8 @@ Roles: `strip` (a row of KPI tiles, usually on top), `hero` (the focal point —
 - A parsed table [T#] or chart [C#]: bind it in block_ids and leave columns / rows / series empty — code fills them exactly, with every column.
 - KPI tiles, bullets, text, and tables or charts you build from text blocks: copy every value exactly as written in the blocks ("₹1.32 Cr", "6.35x", "▼ 18.4% vs May"). Never round, convert or compute.
 - Every number in this slide's blocks must appear on the slide. If a block does not belong on the slide, list it in not_shown with the reason; it goes to the speaker notes. Never write a number that is not in the blocks.
-- By default each block goes into one component. Do not show the same data twice.
+- By default each block goes into one component. Do not show the same data twice, unless the brief asks for it (e.g. a table and a chart of the same numbers).
+- The header already shows the label, headline and subtitle: never repeat them inside a component.
 - The content decides the number of components: a dense slide can have a KPI strip, two tables, a chart and a read-out panel; a statement slide can have one narrative.
 
 ## Emphasis and decoration

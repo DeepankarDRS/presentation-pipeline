@@ -28,8 +28,8 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from scripts.eval_lineage import _canon, _norm, golden_headlines, load_brief, score, stability
-from src.planning.brief_index import _YEAR, numbers
+from scripts.eval_lineage import _canon, _norm, _plan_nums, golden_headlines, load_brief, score, stability
+from src.planning.brief_index import _YEAR, data_numbers, numbers
 from src.utils.llm_client import get_pricing, get_step_config
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -48,7 +48,15 @@ def _cost(call: dict) -> float:
     return round(call.get("tokens_in", 0) * p["input"] / 1e6 + call.get("tokens_out", 0) * p["output"] / 1e6, 5)
 
 
-def _storyline_md(story: dict, issues: list[str], designs: dict) -> str:
+def _unshown(case: dict, slides: list[dict]) -> list[str]:
+    """Brief numbers that are on no slide of the deck, whole brief — also the part above any "SLIDE N:"
+    section, which the per-slide scorer does not count (e.g. CHEFFIN's platform summary)."""
+    ignore = {_norm(n) for n in LINEAGE_IGNORE.get(case["name"], "").split(",") if n}
+    planned = set().union(*(_plan_nums(s) for s in slides)) if slides else set()
+    return sorted(set(data_numbers(case.get("request", ""))) - ignore - planned, key=lambda n: float(n))
+
+
+def _storyline_md(story: dict, issues: list[str], designs: dict, unshown: list[str]) -> str:
     lines = [f"# {story.get('deck_title', '')}", "", f"**Argument:** {story.get('deck_argument', '')}",
              f"**Audience:** {story.get('audience_and_use', '')}",
              "**Gaps:** " + ("; ".join(story.get("gaps", [])) or "none"),
@@ -68,19 +76,20 @@ def _storyline_md(story: dict, issues: list[str], designs: dict) -> str:
         lines.append("")
     if issues:
         lines += ["## Storyline issues left", *[f"- {i}" for i in issues]]
+    lines += ["", "## Brief numbers on no slide", ", ".join(unshown) or "none"]
     return "\n".join(lines)
 
 
 def run_case(case: dict, label: str, **retries: int) -> Path:
     name = case["name"]
     rid = f"{name}-{uuid.uuid4().hex[:6]}"
-    folder = OUT / label / rid
-    folder.mkdir(parents=True, exist_ok=True)
     from src.planning.graph import run_planning  # imported late: --rescore needs no LLM stack
 
     t0 = time.time()
     out = run_planning(case["request"], target_slides=(case.get("expect") or {}).get("slide_count"), **retries)
     seconds = round(time.time() - t0, 1)
+    folder = OUT / label / rid  # only after a run that finished: a failed run leaves no empty folder
+    folder.mkdir(parents=True, exist_ok=True)
     story, designs = out["storyline"], out.get("designs", {})
     slides = [{"slide_index": p["slide_index"], "slide_plan": p, "story": story["slides"][p["slide_index"]],
                "design": designs.get(p["slide_index"], {}),
@@ -90,8 +99,8 @@ def run_case(case: dict, label: str, **retries: int) -> Path:
     (folder / "storyline.json").write_text(json.dumps(
         {"storyline": story, "issues": out.get("storyline_issues", []),
          "attempts": out.get("storyline_attempts", 0)}, indent=2, ensure_ascii=False), encoding="utf-8")
-    (folder / "storyline.md").write_text(_storyline_md(story, out.get("storyline_issues", []), designs),
-                                         encoding="utf-8")
+    (folder / "storyline.md").write_text(
+        _storyline_md(story, out.get("storyline_issues", []), designs, _unshown(case, slides)), encoding="utf-8")
     (folder / "run-manifest.json").write_text(json.dumps(
         {"case": name, "run_id": rid, "seconds": seconds, "calls": calls,
          "llm_calls": len(calls), "cost": round(sum(c["cost"] for c in calls), 4)}, indent=2), encoding="utf-8")
@@ -133,7 +142,9 @@ def score_label(label: str) -> str:
     by_case: dict[str, list[Path]] = {}
     for f in folders:
         by_case.setdefault(json.loads((f / "run-manifest.json").read_text(encoding="utf-8"))["case"], []).append(f)
-    md = [f"# Test 1 — planning only · label `{label}`", ""]
+    md = [f"# Test 1 — planning only · label `{label}`", "",
+          "numbers dropped = per slide section (or whole brief without sections); on no slide = whole brief, "
+          "including data above the slide sections", ""]
     for name, runs in by_case.items():
         case = yaml.safe_load((CASES / f"{name}.yaml").read_text(encoding="utf-8"))
         brief, sections = load_brief(case)
@@ -142,8 +153,8 @@ def score_label(label: str) -> str:
         ignore |= set(numbers(" ".join(_YEAR.findall(brief)))) - set(numbers(_YEAR.sub(" ", brief)))
         heads = golden_headlines(ROOT / case["golden"], HEADLINE_SIZES) if case.get("golden") else None
         loaded = {f.name: json.loads((f / "slides.json").read_text(encoding="utf-8")) for f in runs}
-        md += [f"## {name}", "", "| run | headlines kept | numbers dropped | invented | max hints/slide "
-               "| slides with issues | LLM calls | cost | plan checks |", "|---" * 9 + "|"]
+        md += [f"## {name}", "", "| run | headlines kept | numbers dropped | on no slide | invented "
+               "| max hints/slide | slides with issues | LLM calls | cost | plan checks |", "|---" * 10 + "|"]
         for f in runs:
             slides = loaded[f.name]
             m = score(slides, brief, sections, ignore, heads)
@@ -151,11 +162,13 @@ def score_label(label: str) -> str:
             story = json.loads((f / "storyline.json").read_text(encoding="utf-8"))["storyline"]
             checks = _plan_checks(case, slides, story)
             if not slides:
-                md.append(f"| {f.name} | run produced no slides | | | | | {man['llm_calls']} | ${man['cost']:.3f} | |")
+                md.append(f"| {f.name} | run produced no slides | | | | | | {man['llm_calls']} | ${man['cost']:.3f} | |")
                 continue
             dropped = f"{m['dropped_planning']}/{m['brief']} ({100 * m['dropped_planning'] / max(1, m['brief']):.1f}%)"
             heads_cell = f"{m['headlines_kept']}/{m['headlines_counted']}" if "headlines_kept" in m else "n/a"
-            md.append(f"| {f.name} | {heads_cell} | {dropped} | {m['invented_planning']} | "
+            unshown = _unshown(case, slides)
+            md.append(f"| {f.name} | {heads_cell} | {dropped} | {len(unshown)}: {', '.join(unshown[:8])} | "
+                      f"{m['invented_planning']} | "
                       f"{m.get('max_hints_per_slide', 0)} | {sum(1 for s in slides if s['issues'])} | "
                       f"{man['llm_calls']} | ${man['cost']:.3f} | "
                       + (", ".join(f"{n}: {'pass' if ok else 'FAIL'}" for n, ok in checks) or "—") + " |")

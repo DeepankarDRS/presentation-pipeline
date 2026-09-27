@@ -357,3 +357,15 @@ def test_runner_stops_without_a_key_and_reads_the_key_from_dotenv(tmp_path, monk
     (tmp_path / ".env").write_text("OPENAI_API_KEY=sk-test-key-for-unit-test-only\n", encoding="utf-8")
     assert po.main(["gate-deck-cheffin-full", "--repeat", "1"]) == 0 and ran == ["gate-deck-cheffin-full"]
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+
+def test_unit_comes_from_the_first_metric_word_and_header_repeats_are_flagged():
+    ix = index_brief(BRIEF)
+    chart = {"id": "c", "kind": "chart", "role": "hero", "block_ids": [], "labels": ["FLIPCART", "ZAROMA"],
+             "series": [{"name": "Actual CPC", "values": ["31.1", "46.2"]},
+                        {"name": "Allowable CPC for 1.0x ROAS", "values": ["10.7", "14.8"]}]}
+    assert not any("mix units" in i for i in check_slide({"components": [chart]}, _story(), ix))
+    cover = {"id": "n", "kind": "narrative", "role": "hero", "block_ids": [],
+             "text": "Efficient on ROAS, softened on top-line\nPrepared by our agency"}
+    story = _story(headline="Efficient on ROAS, softened on top-line")
+    assert any("repeats the slide's headline" in i for i in check_slide({"components": [cover]}, story, ix))
