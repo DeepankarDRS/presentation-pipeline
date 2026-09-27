@@ -405,3 +405,11 @@ def test_label_only_kinds_do_not_count_item_details_as_shown():
     assert any("shows only its labels" in i for i in issues) and any("is not shown" in i for i in issues)
     design["components"][0]["kind"] = "timeline"   # a timeline draws its detail line
     assert not check_slide(design, story, ix)
+
+
+def test_empty_block_id_does_not_crash_and_emphasis_numbers_are_checked():
+    ix = index_brief(BRIEF)
+    comp = {"id": "k", "kind": "kpi_row", "role": "strip", "block_ids": [],
+            "kpis": [{"label": "ROAS", "value": "6.35x"}], "emphasis": "ROAS up 48.2%"}
+    issues = check_slide({"components": [comp]}, _story(label="", block_ids=["", "X99"]), ix)
+    assert any("48.2" in i and "not in the brief" in i for i in issues)

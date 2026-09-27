@@ -56,6 +56,7 @@ class PlanningState(TypedDict, total=False):
     storyline_prev: dict[str, Any] | None
     storyline_prev_issues: list[str]
     storyline_retries: int
+    storyline_issue_log: Annotated[list[list[str]], operator.add]  # issues of every storyline check, in order
     slide_retries: int
     designs: Annotated[dict[int, dict[str, Any]], _merge]
     slide_plans: list[dict[str, Any]]
@@ -122,7 +123,7 @@ def check_storyline_node(state: PlanningState) -> dict[str, Any]:
         logger.info("check_storyline: the retry is worse; keeping the previous storyline")
         story, issues = prev, state["storyline_prev_issues"]
     logger.info(f"check_storyline: {len(issues)} issue(s)")
-    return {"storyline": story, "storyline_issues": issues, "storyline_prev": None}
+    return {"storyline": story, "storyline_issues": issues, "storyline_prev": None, "storyline_issue_log": [issues]}
 
 
 def route_after_storyline_check(state: PlanningState) -> str | list[Send]:
@@ -154,7 +155,7 @@ def design_slide(payload: dict[str, Any]) -> dict[str, Any]:
     A failed call (API error, truncated output) costs this slide an attempt, not the whole run."""
     story, index, deck = payload["slide"], payload["index"], payload["deck"]
     system = _env.get_template("slide_designer/system.j2").render()
-    best, calls, previous, issues = None, [], "", []
+    best, calls, previous, issues, issue_log = None, [], "", [], []
     for attempt in range(payload.get("retries", SLIDE_RETRIES) + 1):
         user = _env.get_template("slide_designer/user.j2").render(
             story=story, total_slides=deck["total_slides"], deck_argument=deck["deck_argument"],
@@ -171,8 +172,13 @@ def design_slide(payload: dict[str, Any]) -> dict[str, Any]:
                         "issues": [f"design call failed: {exc}"]}
             continue
         calls.append(usage)
-        filled = fill_design(design, index)
-        issues = check_slide(filled, story, index)
+        try:
+            filled = fill_design(design, index)
+            issues = check_slide(filled, story, index)
+        except Exception as exc:  # a bug in code must not throw away a paid run
+            logger.error(f"design_slide {story['slide_index'] + 1}: check failed: {exc!r}")
+            filled, issues = design, [f"check failed in code: {exc!r}"]
+        issue_log.append(issues)
         # a real design always beats a failed-call placeholder; otherwise keep the fewest issues
         if best is None or best.get("failed") or len(issues) < len(best["issues"]):
             best = {**filled, "issues": issues}
@@ -180,6 +186,7 @@ def design_slide(payload: dict[str, Any]) -> dict[str, Any]:
             break
         previous = json.dumps(design, ensure_ascii=False)
     best["attempts"] = len(calls)
+    best["issue_log"] = issue_log  # the issues of every attempt, in order
     logger.info(f"design_slide {story['slide_index'] + 1}: {len(calls)} call(s), {len(best['issues'])} issue(s) left")
     return {"designs": {story["slide_index"]: best}, "calls": calls}
 
@@ -215,5 +222,5 @@ def run_planning(brief: str, *, target_slides: int | None = None, deck_settings:
     app = build_planning_graph().compile()
     return app.invoke({"brief": brief, "target_slides": target_slides, "deck_settings": deck_settings or {},
                        "storyline_attempts": 0, "storyline_retries": storyline_retries,
-                       "slide_retries": slide_retries, "designs": {}, "calls": []},
+                       "slide_retries": slide_retries, "designs": {}, "calls": [], "storyline_issue_log": []},
                       config={"max_concurrency": max_concurrency, "recursion_limit": 50})

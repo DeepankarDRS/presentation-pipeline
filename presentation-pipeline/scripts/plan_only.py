@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import re
 import shutil
@@ -29,7 +30,7 @@ import yaml
 from dotenv import load_dotenv
 
 from scripts.eval_lineage import _canon, _norm, _plan_nums, golden_headlines, load_brief, score, stability
-from src.planning.brief_index import _YEAR, data_numbers, numbers
+from src.planning.brief_index import _SLIDE_COUNT, _YEAR, data_numbers, numbers
 from src.utils.llm_client import get_pricing, get_step_config
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -53,7 +54,8 @@ def _unshown(case: dict, slides: list[dict]) -> list[str]:
     section, which the per-slide scorer does not count (e.g. CHEFFIN's platform summary)."""
     ignore = {_norm(n) for n in LINEAGE_IGNORE.get(case["name"], "").split(",") if n}
     planned = set().union(*(_plan_nums(s) for s in slides)) if slides else set()
-    return sorted(set(data_numbers(case.get("request", ""))) - ignore - planned, key=lambda n: float(n))
+    text = re.sub(r"(?im)^\s*slide\s+\d+\s*:", " ", case.get("request", ""))  # "Slide 13:" headings are not data
+    return sorted(set(data_numbers(text)) - ignore - planned, key=lambda n: float(n))
 
 
 def _storyline_md(story: dict, issues: list[str], designs: dict, unshown: list[str]) -> str:
@@ -98,7 +100,8 @@ def run_case(case: dict, label: str, **retries: int) -> Path:
     (folder / "slides.json").write_text(json.dumps(slides, indent=2, ensure_ascii=False), encoding="utf-8")
     (folder / "storyline.json").write_text(json.dumps(
         {"storyline": story, "issues": out.get("storyline_issues", []),
-         "attempts": out.get("storyline_attempts", 0)}, indent=2, ensure_ascii=False), encoding="utf-8")
+         "attempts": out.get("storyline_attempts", 0), "issue_log": out.get("storyline_issue_log", [])},
+        indent=2, ensure_ascii=False), encoding="utf-8")
     (folder / "storyline.md").write_text(
         _storyline_md(story, out.get("storyline_issues", []), designs, _unshown(case, slides)), encoding="utf-8")
     (folder / "run-manifest.json").write_text(json.dumps(
@@ -151,6 +154,12 @@ def score_label(label: str) -> str:
         ignore = {_norm(n) for n in LINEAGE_IGNORE.get(name, "").split(",") if n}
         # the planner's own rule: numbers the brief uses only as years ("Jun '26", "2026") are dates, not data
         ignore |= set(numbers(" ".join(_YEAR.findall(brief)))) - set(numbers(_YEAR.sub(" ", brief)))
+        # Score with the planner's own rule for what a slide must show (brief_index.data_numbers): per slide
+        # section, years ("Dec '25") and slide counts are dates / instructions, and "2.0x" → "2" (a single
+        # digit) is not required. The full brief still decides what counts as invented.
+        if sections:
+            sections = {k: _SLIDE_COUNT.sub(" ", _YEAR.sub(" ", v)) for k, v in sections.items()}
+        ignore |= {n for n in numbers(brief) if len(re.sub(r"\D", "", n)) < 2}
         heads = golden_headlines(ROOT / case["golden"], HEADLINE_SIZES) if case.get("golden") else None
         loaded = {f.name: json.loads((f / "slides.json").read_text(encoding="utf-8")) for f in runs}
         md += [f"## {name}", "", "| run | headlines kept | numbers dropped | on no slide | invented "
@@ -196,6 +205,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--rescore", action="store_true", help="only re-score the saved runs of --label (no LLM)")
     args = ap.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")
+    logging.basicConfig(level=logging.WARNING, format="    %(message)s")
+    logging.getLogger("src.planning").setLevel(logging.INFO)  # progress: storyline checks, each slide's calls
 
     if not args.rescore:
         load_dotenv(ROOT / ".env")

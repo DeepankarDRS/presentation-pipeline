@@ -115,14 +115,17 @@ def check_slide(design: dict[str, Any], story: dict[str, Any], index: dict[str, 
     shown_parts = [header] + [shown_text(c) for c in comps]
     shown = set(numbers(" ".join(shown_parts)))
 
-    invented = sorted(shown - known)
+    # emphasis is free text that becomes the generator's design_hint: its numbers must be real too
+    # (it does not count as "shown" for coverage)
+    emphasis_text = " ".join(c.get("emphasis", "") for c in comps)
+    invented = sorted((shown | set(numbers(emphasis_text))) - known)
     if invented:
         issues.append(f"Numbers not in the brief: {', '.join(invented)}. Copy values exactly from the blocks.")
 
     # not_shown is for labels and instructions; it never excuses data (gj-h1 run 7af681 dropped KPI notes
     # and read-out figures that way). Dropping data is a storyline decision (set_aside), visible deck-wide.
     skipped = {a["block_id"] for a in design.get("not_shown", [])}
-    for bid in sorted(assigned, key=lambda x: (x[0], int(x[1:]) if x[1:].isdigit() else 0)):
+    for bid in sorted(assigned & blocks.keys(), key=lambda x: (x[0], int(x[1:]) if x[1:].isdigit() else 0)):
         b = blocks.get(bid)
         if not b:
             continue
