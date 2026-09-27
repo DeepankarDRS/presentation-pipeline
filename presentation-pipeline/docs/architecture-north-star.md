@@ -2,7 +2,7 @@
 
 > **Living document.** Created 2026-09-24 in the architecture-review session. It is the **plan of record for slide quality** and supersedes `docs/roadmap-derived-components.md`, which the user halted on 2026-09-24 because slide quality was not improving. Update it every session (§0).
 
-**Status (2026-09-27):** **Test 1 passed** (user decision; stability 8/14 carried forward to the build) — §9. Carried forward: plan stability (code-picked default components), headline style (see "CHEFFIN headlines vs the production deck"), derived numbers and targets (D12 / D13), data-file input. **Next: choose Test 2 or data-file input.** Open decisions: §12.
+**Status (2026-09-27, later):** Test 1 passed. **Direction changed (user, D14):** keep `outline_planner` + `slide_component_planner` and make `plan_reviewer` a real feedback loop; carry Test 1's fidelity fixes into them; the Test 1 planning path is not taken to production; **Tests 2 and 3 dropped**. Work paused until the user kicks off the build — plan in `AGENTS.md` "Next work". Open decisions: §12.
 
 ## Contents
 
@@ -514,8 +514,8 @@ It's cheaper because the prompt drops most of today's 8–13k tokens of rules, a
 | # | Test | What | Cost | Pass if | Status |
 |---|---|---|---|---|---|
 | 1 | Planning | New fact-store, storyline and slide-planning prompts; planning only; gj-h1 + CHEFFIN, 3 repeats each | ≈ $2 (estimate after the build: ≈ $1.5) | gj-h1 headlines kept on ≥ 12/14; ≤ 2% of numbers dropped; 0 invented numbers; ≤ 2 emphasis marks per slide; same components across repeats on ≥ 10/14 slides. CHEFFIN (added 2026-09-27, user): CPC vs allowable CPC (₹31.1 / ₹46.2 vs ₹10.7 / ₹14.8) in one component, the missing sheet named as a gap, the brand colours captured, 0 invented numbers; headlines state conclusions (judged by the user from `storyline.md`) | **passed 2026-09-27 (user), stability carried forward** — final run: headlines 13/13, dropped mean 1.0%, 0 invented, ≤ 2 hints, CHEFFIN checks 3/3; stability 8/14 (target 10, old 1/14); $1.64 + $0.6 in rounds 1–2 |
-| 2 | Rendered A/B | Test 1's plans through today's generator, with the prompt cleanup. Two comparisons: with vs without 5 component tags (Header, KpiTile, TableCard, ChartCard, ReadoutPanel), and merged vs separate planning + XML call | ≈ $2 | new slides preferred in ≥ 70% of blind pairs; distinct card styles ≤ the golden's; 0 over-full tables. If the tag version doesn't win, skip the component layer | not started |
-| 3 | Critic + editor | 10 edit requests + 10 critic findings: whole-slide rewrite vs element-level edit | ≈ $1 | ≥ 90% done correctly; nothing else on the slide changes; no number changes; ≥ 50% fewer tokens | not started |
+| 2 | Rendered A/B | Test 1's plans through today's generator, with the prompt cleanup. Two comparisons: with vs without 5 component tags (Header, KpiTile, TableCard, ChartCard, ReadoutPanel), and merged vs separate planning + XML call | ≈ $2 | new slides preferred in ≥ 70% of blind pairs; distinct card styles ≤ the golden's; 0 over-full tables. If the tag version doesn't win, skip the component layer | **dropped 2026-09-27 (user, D14)** — it tested the Test 1 planning path |
+| 3 | Critic + editor | 10 edit requests + 10 critic findings: whole-slide rewrite vs element-level edit | ≈ $1 | ≥ 90% done correctly; nothing else on the slide changes; no number changes; ≥ 50% fewer tokens | **dropped 2026-09-27 (user, D14)** — it tested the Test 1 planning path |
 
 **Test 1 deliverables (build PC):**
 - fact-store and storyline schemas and prompts;
@@ -647,6 +647,7 @@ These are provisional; reorder them by the test results.
 | D11 | `docs/roadmap-derived-components.md` | continue / halt | — | **decided 2026-09-24 (user): halted** |
 | D12 | Targets and projections (e.g. "ROAS ≥ 0.9x in 90 days") | never / allowed when labelled as target or projection and tied to the facts they start from | allowed, labelled | open (raised 2026-09-27 from the production CHEFFIN deck) |
 | D13 | Derived numbers (ACOS = spend ÷ sales, shares, multiples, row aggregates) | only numbers written in the brief / computed by code from facts with the formula recorded | computed by code | open |
+| D14 | Planning path after Test 1 | new path (storyline + slide designer) / existing planners + fixes + reviewer loop | — | **decided 2026-09-27 (user): existing planners + fidelity fixes + `plan_reviewer` as a feedback loop.** Reason: the new slide designer gave too few components on thin briefs (CHEFFIN 1.8 per slide vs 2.83 for the old planner; gj-h1 equal at 3.04). Tests 2 and 3 dropped |
 
 ---
 
@@ -670,6 +671,7 @@ These can be fixed independently of the plan above.
 | 2026-09-24 | Architecture review | Traced the flow (graphify map + code); rendered real generator prompts; audited the four saved gj-h1 runs + CHEFFIN against the golden; revised the recommendation to keep LLM-authored XML; defined Tests 1–3 | Created |
 | 2026-09-24 | Follow-up | `AGENTS.md` "Next work" now points here and marks the roadmap halted; added `scripts/eval_lineage.py`, which reproduces §3.2 exactly; planned the `src/state.py` changes. Next: Test 1 in a new session | §3.1, §7.11, §9, §14, Appendix C |
 | 2026-09-27 | Test 1 build | Built planning v2 (`src/planning/`, 2 prompts, `scripts/plan_only.py`, scorer support, 8 unit tests; 450 pass, same 4 pre-existing failures). Dry run with a scripted LLM on the real gj-h1 and CHEFFIN briefs: 14/14 headlines copied, 0/365 dropped, CHEFFIN checks pass, capacity check fires and re-asks. User decisions: D2 never; CHEFFIN checks in Test 1; the Genspark UI tracking (2026-09-25) is the reference for pre-writing reasoning. Next: paid run on the test PC | Status, §9, §12, §14 |
+| 2026-09-27 | Direction change | Measured component counts old vs new (gj-h1 3.04 = 3.04; CHEFFIN 2.83 vs 1.80) and block-id hallucination (0 bad ids in 3,194 references; 7 false set-aside claims in one run). User: keep the existing planners, make `plan_reviewer` a feedback loop, drop Tests 2 and 3, pause. `AGENTS.md` rewritten for the new direction | Status, §9, §12 D14, §14 |
 | 2026-09-27 | Test 1 final | Final paid run (gj-h1 × 3 + CHEFFIN-audit × 3, $1.64): 5 of 6 criteria pass, stability 8/14; user: **Test 1 passed, stability carried forward**; CHEFFIN headlines compared with the production deck (generic vs sharp; carried forward). Also: pre-run review fixes, `llm_test/` gitignored and untracked, production-deck notes, D12 / D13 | Status, §9 final + comparison, §12, §14 |
 | 2026-09-27 | Test 1 round 1 | Paid runs (one each): CHEFFIN-full passes; CHEFFIN-audit passes its checks but dropped a "mention" requirement; gj-h1 fails headlines (5/13) and dropped numbers (4.4%) — better than the old planner on every measure, causes found in the Test 1 prompts/checks and fixed LLM-free (replay confirms). Also: independent code review, `gate-deck-cheffin-full` case, `.env` loading, retry flags. Next: round 2 (gj-h1 + CHEFFIN-audit × 1) | §9 round 1 |
 
