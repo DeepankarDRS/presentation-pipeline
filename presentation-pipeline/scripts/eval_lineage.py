@@ -34,7 +34,7 @@ import yaml
 
 from scripts.eval_metrics import _CONTENT_ATTRS, _numbers
 
-_SECTION = re.compile(r"\n\s*Slide (\d+):\s*\n")
+_SECTION = re.compile(r"\n\s*slide (\d+):[^\n]*\n", re.I)  # "Slide 5:" or "SLIDE 2: Executive Summary"
 _COVERS = {"cover", "section_break"}
 _DECORATION = {
     "icons": r"<Icon\b",

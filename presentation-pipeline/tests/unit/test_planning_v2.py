@@ -242,7 +242,7 @@ def test_headline_block_keeps_llm_headline_when_it_is_a_verbatim_part():
                         _story(slide_index=1, headline_block=bid, headline="A paraphrase")]}
     apply_headline_blocks(story, ix)
     assert story["slides"][0]["headline"] == "CHEFFIN FLIPCART & ZAROMA Ads Audit"   # kept, verbatim part
-    assert story["slides"][1]["headline"].startswith("SLIDE 1: Title Slide Headline")  # replaced by the block
+    assert story["slides"][1]["headline"].startswith("Title Slide Headline")  # replaced by the block
 
 
 def test_chart_units_from_metric_names():
@@ -316,3 +316,30 @@ def test_real_design_beats_a_failed_call_placeholder():
     d = out["designs"][1]
     assert d["components"] and d["components"][0]["id"] == "n"   # the real design, not the placeholder
     assert d["issues"] and not d.get("failed")
+
+
+def test_uppercase_slide_headings_with_titles_are_sections():
+    ix = index_brief(_case("gate-deck-cheffin-full"))
+    assert ix["has_sections"]
+    s2 = [b for b in ix["blocks"] if b["section"] == 2]
+    assert s2[0]["text"] == "Core Economics Problem"
+    assert "CPC is nearly 3x higher than what current conversion economics can support." in [b["text"] for b in s2]
+    table = next(b for b in s2 if b["kind"] == "table")
+    assert table["header"][:3] == ["Platform", "Actual CPC", "Allowable CPC for 1.0x ROAS"]
+    # the short CHEFFIN case has "SLIDE 1:" mid-paragraph: still no sections
+    assert not index_brief(_case("gate-deck-cheffin-audit"))["has_sections"]
+
+
+def test_headline_pointing_at_a_field_label_is_flagged():
+    ix = index_brief("SLIDE 1: Economics\nHeadline:\nCPC is nearly 3x too high.\n")
+    label = next(b["id"] for b in ix["blocks"] if b["text"] == "Headline:")
+    story = {"slides": [_story(slide_index=0, headline_block=label, headline="x", label="ECONOMICS")], "set_aside": []}
+    apply_headline_blocks(story, ix)
+    assert any("field label" in i for i in check_storyline(story, ix, 1))
+
+
+def test_short_llm_headline_inside_the_block_does_not_block_the_copy():
+    ix = index_brief("CPC is nearly 3x higher than what current conversion economics can support.")
+    story = {"slides": [_story(slide_index=0, headline_block=ix["blocks"][0]["id"], headline="x")]}
+    apply_headline_blocks(story, ix)
+    assert story["slides"][0]["headline"].startswith("CPC is nearly 3x higher")

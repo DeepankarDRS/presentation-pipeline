@@ -16,7 +16,7 @@ from typing import Any
 # Number rule shared with the eval (scripts/eval_metrics._numbers): ≥ 2 digits, thousands
 # separators dropped, trailing decimal zeros ignored ("4.40" = "4.4").
 _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
-_SECTION = re.compile(r"^\s*Slide (\d+):\s*$")
+_SECTION = re.compile(r"^\s*slide\s+(\d+)\s*:\s*(.*)$", re.I)  # "Slide 5:" or "SLIDE 2: Executive Summary"
 _CHART = re.compile(r"^\s*Chart \(([\w -]+)\):\s*$")
 _SERIES = re.compile(r"^\s+(.+?):\s+(.+)$")
 _MARKER = re.compile(r"^\s*0\d\s*$")               # "01".."09": list numbering, not data
@@ -94,6 +94,8 @@ def index_brief(brief: str) -> dict[str, Any]:
         m = _SECTION.match(line)
         if m:
             section = int(m.group(1)) - 1  # 0-based, like slide_index
+            if m.group(2).strip():  # the slide's name in the brief, e.g. "Executive Summary"
+                add("L", m.group(2).strip(), marker=False)
             i += 1
             continue
         if not line.strip():

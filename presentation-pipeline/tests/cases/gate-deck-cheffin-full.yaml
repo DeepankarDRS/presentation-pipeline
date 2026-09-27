@@ -1,0 +1,211 @@
+# GATE deck, fuller paste (user, 2026-09-27): same brief as gate-deck-cheffin-audit plus the per-slide
+# specs for slides 1-6 (the paste stops after slide 6 of the original 18). Edited only: "18-SLIDE" ->
+# "6-SLIDE", chat timestamps removed, agency name anonymised. Test 1:
+#   python -m scripts.plan_only gate-deck-cheffin-full --repeat 1 --label cheffin-full --bundle
+name: gate-deck-cheffin-full
+objective: 6-slide ads audit deck where every slide is specified (headline, table, chart, insight); tests that the planner follows a per-slide spec verbatim.
+request: |
+  You are a senior performance marketing strategist, FLIPCART Ads expert, quick-commerce media buyer, and data scientist.
+
+  Create a polished, client-ready audit presentation for CHEFFIN, a ready-to-cook / ready-to-eat food brand. The deck should audit the brand’s current FLIPCART Ads and ZAROMA Ads performance, identify key gaps in the current operating model, and make a strong case for why our agency should take over performance media operations.
+
+  IMPORTANT:
+  Keep the deck concise and executive-friendly.. Cover all important insights, but avoid unnecessary detail. Use sharp headlines, clear tables, charts, and concise recommendations.
+
+  DECK OBJECTIVE:
+  The deck should help us present to the client that:
+  1. The brand is spending heavily across FLIPCART and ZAROMA but not buying profitable demand.
+  2. The current performance problem is structural, not just a small campaign optimization issue.
+  3. CPC is much higher than what the current AOV and conversion rate can support.
+  4. There are clear gaps in search-term governance, bid discipline, campaign structure, audience strategy, city allocation, and budget allocation.
+  5. Our agency can improve performance using a stronger data-led operating model.
+
+  STYLE:
+  - Clean, modern, boardroom-ready.
+  - Use Indian currency format: ₹, L for lakhs.
+  - Use ROAS as “0.34x”, CPC as “₹31.1”, ACOS as “290%”.
+  - Use white background, dark text, and subtle FLIPCART orange + ZAROMA purple accents.
+  - Use charts and tables where useful.
+  - Avoid overcrowding slides.
+  - Every slide headline should state the conclusion, not just the topic.
+  - Do not attack the current agency directly. Use professional language such as “current operating gaps”, “opportunity to improve governance”, and “needs tighter control”.
+
+  DATA CONTEXT: refer attached sheet which has all the data.
+  The audit is based on:
+  1. FLIPCART Targeting last 90 days data.
+  2. FLIPCART Search Term report.
+  3. ZAROMA April, May, and June data.
+  4. ZAROMA campaign, city, and keyword-level views.
+
+  DATA QUALITY NOTE:
+  Mention that some FLIPCART pivot-style sheets had unreliable or zeroed ratio fields, so metrics were recalculated from raw data. Also mention that ZAROMA campaign, city, and keyword sheets may not reconcile perfectly because they appear to have slightly different coverage. Use ZAROMA campaign-level data as the primary platform total source, while city and keyword sheets should be used for diagnostic insights.
+
+  KEY FORMULAS:
+  ROAS = Revenue or Sales / Spend
+  ACOS = Spend / Sales
+  CTR = Clicks / Impressions
+  CPC = Spend / Clicks
+  CVR = Orders or Purchases / Clicks
+  CPA = Spend / Orders or Purchases
+  AOV = Sales / Orders or Purchases
+  Allowable CPC for 1.0x ROAS = AOV × CVR
+
+  CORE EXECUTIVE DIAGNOSIS:
+  Across FLIPCART and ZAROMA, CHEFFIN is spending at scale but the traffic economics are structurally weak. The issue is not just campaign optimization. The brand needs a paid-growth operating system built around intent, SKU economics, search-term governance, city-level allocation, break-even CPC rules, AOV improvement, and CVR improvement.
+
+  PLATFORM SUMMARY:
+  FLIPCART:
+  - Spend: ₹29.4L
+  - Ad sales: ₹10.1L
+  - ROAS: 0.34x
+  - CPC: ₹31.1
+  - CVR: 5.5%
+  - AOV: ₹195
+  - Allowable CPC for 1.0x ROAS: ₹10.7
+
+  ZAROMA:
+  - Spend: ₹85.5L
+  - Ad revenue: ₹27.3L
+  - ROAS: 0.32x
+  - CPC: ₹46.2
+  - CVR: 6.4%
+  - AOV: ₹230
+  - Allowable CPC for 1.0x ROAS: ₹14.8
+
+  Combined:
+  - Spend: ₹114.9L
+  - Revenue: ₹37.4L
+  - ROAS: 0.33x
+  - CPC: ₹41.1
+  - CVR: 6.1%
+  - AOV: ₹219
+
+  KEY INTERPRETATION:
+  The current CPCs are almost 3x higher than what current AOV and CVR can support. Therefore, performance cannot be fixed only by bid tweaks. The account needs:
+  1. Lower CPC on weak traffic.
+  2. Higher CVR through better keyword, SKU, and city matching.
+  3. Higher AOV through bundles, multipacks, offers, and higher-value SKUs.
+  4. Spend reallocation from low-intent traffic to proven high-intent pockets.
+  5. Break-even CPC rules by platform, keyword, SKU, city, and campaign objective.
+
+  CREATE THE DECK USING THIS 6-SLIDE STRUCTURE:
+
+  SLIDE 1: Title Slide
+  Headline:
+  CHEFFIN FLIPCART & ZAROMA Ads Audit
+
+  Subtitle:
+  Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap
+
+  Include:
+  Prepared by our agency
+
+  Visual:
+  Marketplace growth theme with FLIPCART and ZAROMA visual cues.
+
+  SLIDE 2: Executive Summary
+  Headline:
+  The account is spending at scale, but not yet buying profitable demand.
+
+  Show key numbers:
+  - Combined spend: ₹114.9L
+  - Combined revenue: ₹37.4L
+  - Combined ROAS: 0.33x
+  - FLIPCART ROAS: 0.34x
+  - ZAROMA ROAS: 0.32x
+
+  Main insight:
+  Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR.
+
+  Add callout:
+  “This is a media economics problem, not just a campaign hygiene problem.”
+
+  SLIDE 3: Core Economics Problem
+  Headline:
+  CPC is nearly 3x higher than what current conversion economics can support.
+
+  Create a table:
+  Platform | Actual CPC | Allowable CPC for 1.0x ROAS | Gap
+  FLIPCART | ₹31.1 | ₹10.7 | Actual CPC is ~2.9x allowable
+  ZAROMA | ₹46.2 | ₹14.8 | Actual CPC is ~3.1x allowable
+
+  Visual:
+  Bar chart comparing actual CPC vs allowable CPC.
+
+  Main insight:
+  At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together.
+
+  SLIDE 4: Data Reviewed & Methodology
+  Headline:
+  We rebuilt the audit from raw performance data, not surface-level reports.
+
+  Include:
+  - FLIPCART Targeting last 90 days report
+  - FLIPCART Search Term report
+  - ZAROMA campaign-level data
+  - ZAROMA city-level data
+  - ZAROMA keyword-level data
+
+  Data quality note:
+  - Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.
+  - ZAROMA sheets appear to have different coverage, so campaign-level totals were used as primary totals and city/keyword sheets were used for diagnostics.
+
+  SLIDE 5: FLIPCART Performance Snapshot
+  Headline:
+  FLIPCART is generating traffic, but at weak revenue efficiency.
+
+  Show table:
+  Metric | Value
+  Spend | ₹29.4L
+  Ad sales | ₹10.1L
+  ROAS | 0.34x
+  CPC | ₹31.1
+  CVR | 5.5%
+  AOV | ₹195
+  Allowable CPC for 1.0x ROAS | ₹10.7
+
+  Main insight:
+  FLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support.
+
+  SLIDE 6: FLIPCART Ad Type & Match-Type Diagnosis
+  Headline:
+  SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.
+
+  Use two mini tables or one combined visual.
+
+  Ad type performance:
+  Ad Type | Spend Share | Sales Share | ROAS | Interpretation
+  SP | 75.6% | 75.3% | 0.34x | Main volume driver, but inefficient overall
+  SBV | 12.8% | 8.5% | 0.23x | Weak video efficiency
+  SBT | 9.3% | 15.1% | 0.56x | Best ad type; under-allocated
+  SD | 2.4% | 1.1% | 0.17x | Weak conversion quality
+
+  Match / targeting performance:
+  Exact ROAS: 0.44x
+  Phrase ROAS: 0.26x
+  Auto ROAS: 0.30x
+  Category ROAS: 0.25x
+  Broad ROAS: 0.22x
+  Audience ROAS: 0.15x
+
+  Main insight:
+  Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control.
+content_source: fully specified for slides 1-6 (headlines, tables, chart, insights); the attached sheet is still not attached
+expect:
+  compiles: true
+  slide_count: 6
+  watch: >
+    each slide's brief headline used verbatim; CPC-vs-allowable table + bar chart on slide 3; ad-type table
+    and match-type ROAS on slide 6; no numbers beyond the brief.
+# Test 1 (scripts/plan_only.py)
+plan_checks:
+  - name: brief headlines used on their slides
+    headlines_from_brief: true
+  - name: CPC vs allowable CPC in one component
+    same_component: ["31.1", "10.7", "46.2", "14.8"]
+  - name: ad-type table in one component
+    same_component: ["75.6", "12.8", "9.3", "2.4", "0.56", "0.23", "0.17"]
+  - name: match-type ROAS in one component
+    same_component: ["0.44", "0.26", "0.30", "0.25", "0.22", "0.15"]
+  - name: brand colours captured
+    style_mentions: ["orange", "purple"]

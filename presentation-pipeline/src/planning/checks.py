@@ -32,18 +32,18 @@ def _short(ids: list[str], n: int = 12) -> str:
 def apply_headline_blocks(story: dict[str, Any], index: dict[str, Any]) -> None:
     """Copy the brief's headline verbatim where the storyline pointed at one; renumber slides.
 
-    If the LLM's headline is a verbatim part of the block and only a label is left over
-    ("SLIDE 1: Title Slide Headline: X" → "X"), it is kept. If the rest of the block carries numbers,
-    the headline was cut short, and the whole block text is used."""
+    The LLM's headline is kept only when the block is "<label>: <that headline>"
+    ("Title Slide Headline: X" → "X"); in every other case the whole block text is used."""
     blocks = by_id(index)
     for i, s in enumerate(story.get("slides", [])):
         s["slide_index"] = i
         b = blocks.get(s.get("headline_block") or "")
         if not b or b["kind"] != "text":
             continue
-        own = (s.get("headline") or "").strip()
-        if not (own and own in b["text"] and not data_numbers(b["text"].replace(own, " ", 1))):
-            s["headline"] = b["text"]
+        own, text = (s.get("headline") or "").strip(), b["text"].strip()
+        label_only = bool(own) and text.endswith(own) and text[: len(text) - len(own)].rstrip().endswith(":")
+        if not label_only:
+            s["headline"] = text
 
 
 def check_storyline(story: dict[str, Any], index: dict[str, Any], target_slides: int | None) -> list[str]:
@@ -66,6 +66,9 @@ def check_storyline(story: dict[str, Any], index: dict[str, Any], target_slides:
             issues.append(f"Slide {n}: headline_block '{hb}' is not a text block.")
         if not s.get("headline", "").strip():
             issues.append(f"Slide {n}: the headline is empty.")
+        elif s["headline"].strip().endswith(":"):
+            issues.append(f"Slide {n}: the headline '{s['headline'].strip()}' is a field label; point "
+                          "headline_block at the line that follows it.")
         elif s.get("intent") not in ("cover", "section_divider", "closing") and \
                 _canon(s["headline"]) == _canon(s.get("label", "")):
             issues.append(f"Slide {n}: the headline repeats the label; state the slide's conclusion.")

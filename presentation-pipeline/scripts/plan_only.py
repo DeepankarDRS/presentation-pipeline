@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import sys
 import time
@@ -25,7 +26,7 @@ from pathlib import Path
 
 import yaml
 
-from scripts.eval_lineage import _norm, golden_headlines, load_brief, score, stability
+from scripts.eval_lineage import _canon, _norm, golden_headlines, load_brief, score, stability
 from src.planning.brief_index import _YEAR, numbers
 from src.utils.llm_client import get_pricing
 
@@ -34,7 +35,9 @@ OUT = ROOT / "output" / "plans"
 CASES = ROOT / "tests" / "cases"
 # brief numbers that are not content: pillar numbers (gj-h1); a number-format example and "1.0x" in
 # "Allowable CPC for 1.0x ROAS" (CHEFFIN). Years are removed before scoring (see score_label).
-LINEAGE_IGNORE = {"gj-h1-regen": "01,02,03,04,05", "gate-deck-cheffin-audit": "290,1"}
+LINEAGE_IGNORE = {"gj-h1-regen": "01,02,03,04,05", "gate-deck-cheffin-audit": "290,1",
+                  "gate-deck-cheffin-full": "290,1"}
+_BRIEF_HEADLINE = re.compile(r"slide\s+(\d+)\s*:[^\n]*\n\s*headline:\s*\n\s*([^\n]+)", re.I)
 HEADLINE_SIZES = {"26", "27", "28", "42"}
 
 
@@ -103,6 +106,13 @@ def _plan_checks(case: dict, slides: list[dict], story: dict) -> list[tuple[str,
             want = {_norm(n) for n in chk["same_component"]}
             ok = any(want <= set(numbers(json.dumps(c.get("content_data", {}), ensure_ascii=False)))
                      for s in slides for c in s["slide_plan"]["components"])
+        elif chk.get("headlines_from_brief"):
+            # "SLIDE N: ...\nHeadline:\n<text>" in the brief → <text> must be slide N's planned title
+            want = {int(n) - 1: h.strip() for n, h in _BRIEF_HEADLINE.findall(case.get("request", ""))}
+            titles = {s["slide_index"]: s["slide_plan"].get("slide_title", "") for s in slides}
+            kept = sum(1 for i, h in want.items() if _canon(h) and _canon(h) in _canon(titles.get(i, "")))
+            results.append((f"{chk['name']} {kept}/{len(want)}", bool(want) and kept == len(want)))
+            continue
         elif "gaps_mention" in chk:
             ok = all(any(w.lower() in g.lower() for g in story.get("gaps", [])) for w in chk["gaps_mention"])
         elif "style_mentions" in chk:
