@@ -59,6 +59,10 @@ then check the run's XML in `output/runs/<run_id>/`: no HStack/Icon inside `<Td>
 ## Next work (updated 2026-09-27) — PAUSED, waiting for the user to kick off
 **Direction (user, 2026-09-27):** keep the existing planners — `outline_planner` + `slide_component_planner` — and make `plan_reviewer` a real feedback loop. The new planning path from Test 1 (`src/planning/`: storyline + slide designer) is **not** taken to production: its slides had too few components on thin briefs (CHEFFIN: 1.8 per slide vs 2.83 for the old planner; gj-h1 equal at 3.04).
 
+**Design proposal (2026-09-27): `docs/plan-reviewer-loop.md`** — options, recommended topology, reviewer spec, cost, build steps, test plan, 8 decisions for the user (§11). Read it before building; it refines the list below.
+
+**Independent research doc (2026-09-28): `docs/planner-redesign-research.md`** — standalone research and plan for the outline planner + slide component planner changes (input kinds, evidence, 14 research questions, a candidate design, phased plan, open decisions, research log). It deliberately does not inherit the north-star's decisions; the user asked for it as a separate starting point.
+
 Proposed build (not started; confirm with the user first):
 1. Carry Test 1's fidelity fixes into the old planners: `slide_component_planner` gets the brief's own lines for its slide (not the outline's retyped `key_messages`); the outline splits label / headline and copies the brief's headlines; never invent numbers (D2); `design_hint` optional.
 2. `plan_reviewer` = code checks (coverage, invented numbers, capacity — reuse `src/planning/checks.py`) + an LLM rubric (headline sharpness, evidence in the sub-headline, slides too thin for their purpose, fact reuse, parallel slides consistent, story arc). Issues tagged by slide and stage → outline issues patch the named outline slides, slide issues re-plan only those slides (`plan_single_slide(repair_context=…)`); ≤ 2 rounds, keep the best version. Today `route_after_plan_review` ignores the review.
