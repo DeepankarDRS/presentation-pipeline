@@ -249,6 +249,70 @@ Run `gj-h1-regen-bf396b`, 14 slides:
 
 We don't record cached tokens, so these are list prices.
 
+### 3.6 Genspark on the same briefs (2026-09-28)
+
+Five local traces the user captured from the Genspark UI (Desktop, not in the repo): three **AI Slides** runs (HTML slides) and two **Super Agent** runs (python-pptx in a sandbox). The AI Slides traces show the prompt, the visible thinking, the to-do list, layout-check output and the final report. The Super Agent traces show only the code it wrote, its commands and patches; no planning is visible, and the Super Agent CHEFFIN prompt is not in the trace.
+
+| Trace | Product · brief | Slides |
+|---|---|---|
+| `cheffin_full_context.txt` | AI Slides · the `gate-deck-cheffin-audit` brief (per-slide spec for 6 slides, "refer attached sheet", no sheet attached) | 6 |
+| `xtsy-full.txt` | AI Slides · the `gate-deck-xtsy-qcomm` brief (per-slide spec, no numbers, "arrows rather than hard numbers" on slide 7) | 8 |
+| `gate-deck-agency-takeover genspark.txt` | AI Slides · the `gate-deck-agency-takeover` brief (`[Platform A]` / `[Platform B]` placeholders, 6-slide mapping, speaker notes asked) | 6 |
+| `superagent_cheffin_full.txt` | Super Agent · CHEFFIN audit (prompt not in the trace) | 18 |
+| `superagent_xtsy_full.txt` | Super Agent · the XTSY brief, plus web research | 8 |
+
+**Flow common to the AI Slides runs:**
+1. Reason over the whole brief before any tool call: slide count, the missing attached sheet, names to keep, agency name, date.
+2. Read 2–4 reference decks picked by deck type (audit, capability pitch, QBR), as inspiration, not templates.
+3. Fix one design system for the deck: colours with roles, type roles (display, body, numerals), grid, shared chrome.
+4. Plan every slide in one pass with the whole deck in view, choosing each slide's visual form.
+5. To-do list; write slides in batches.
+6. Layout check → fix only the flagged items → re-check → screenshot the reported regions.
+7. Final report: per-slide contents, the judgement calls the user can change, what was left out.
+
+**What they did well (observed):**
+
+| # | Behaviour | Where |
+|---|---|---|
+| G1 | **The brief is a spec.** Per-slide headlines, table columns, callouts and "include" lists copied as given; `[Platform A]`, FLIPCART, ZAROMA kept as written (it inferred the real platforms and still didn't substitute); "exactly 6 slides" kept although it wanted to add ZAROMA slides | all three AI Slides runs |
+| G2 | **Assumptions and gaps are stated, not filled.** Noticed the missing sheet; did not invent city / keyword data; the report lists judgement calls (agency name placeholder, cover date) and follow-ups (ZAROMA data mentioned in the brief but no slide for it) | AI Slides CHEFFIN, agency |
+| G3 | **The brief's "don'ts" are followed and reported:** arrows only on XTSY slide 7 (the report says no invented numbers); no criticism of the current agency | AI Slides XTSY, CHEFFIN; Super Agent XTSY |
+| G4 | **Style directions become colour roles:** orange = FLIPCART data, purple = ZAROMA, red only for warnings, a separate colour for the agency's own part; the brief's number formats (0.34x, ₹31.1, L for lakhs) followed | AI Slides CHEFFIN, Super Agent CHEFFIN |
+| G5 | **Visual form chosen from content, with the whole deck in view:** occasions → day timeline, rows × platforms → 4×3 matrix, phases → chevrons, engine → flow with a feedback arrow, impact → arrows; dark/light rhythm planned across slides | AI Slides XTSY |
+| G6 | **One style kit, defined once:** slide frame (label above a claim headline, accent rule, footer with page number and a source line); KPI tile; table; bullets with a bold lead; a callout bar whose label follows the slide's job (INSIGHT, SO WHAT, THE PATTERN, METHOD, PATH) | both Super Agent runs; AI Slides shared CSS |
+| G7 | **Derived numbers computed in code:** a verification script recomputes clicks, orders, CPA, allowable CPC, the CPC-cap ladder and scenarios from the brief's base numbers before any slide is written | Super Agent CHEFFIN |
+| G8 | **Missing data → a method slide, labelled:** city and keyword slides became decision-rule tables ("CPC above ₹14.8 → city-level bid cap") marked as proposed thresholds | Super Agent CHEFFIN |
+| G9 | **Checks run early and admit their limits:** slide 1 checked before writing the rest; findings tiered (errors = rules with ≥ 80% measured precision, warnings = verify with a region screenshot); a run where fonts failed to load was reported as "not a clean pass" | AI Slides agency, XTSY |
+| G10 | **Speaker notes:** a presenter script per slide; Super Agent notes show the working behind each derived number | AI Slides agency, Super Agent CHEFFIN |
+
+**What went wrong (observed):**
+
+| # | Failure | Where |
+|---|---|---|
+| G11 | Numbers changed for looks: the cover shows ₹30L / ₹85L where the brief says ₹29.4L / ₹85.5L | AI Slides CHEFFIN |
+| G12 | Computed numbers retyped by hand drift: ₹7.2 (slide 8) vs 7.1 (slide 15 notes) for the same cap; ₹14.7 and ₹14.8 for the same quantity on slide 9 | Super Agent CHEFFIN |
+| G13 | Invented data dressed as a chart: a "target vs current trajectory" line on the cover; scenario inputs (CPC 24, CVR 10%) invented, though labelled illustrative | Super Agent CHEFFIN |
+| G14 | Most favourable outside statistic picked: search results gave India energy-drink growth from 2.25% to 13.44% CAGR; the deck used 13.4% | Super Agent XTSY |
+| G15 | Heavy-handed fixes and unverified "done": a whole slide rewritten for one contrast error; no re-render after the Super Agent XTSY fixes; clean checks while earlier runs had tiny secondary text | AI Slides CHEFFIN, Super Agent XTSY |
+| G16 | Much of the visible thinking goes on process (whether to ask questions, which reference to open), not on the content | all AI Slides runs |
+
+### 3.7 What to take from them
+
+| Lesson | Evidence | Lands in | Our gap today |
+|---|---|---|---|
+| L1. Treat a per-slide brief as a spec: lock headlines, required items, stated visuals, callouts; take the slide count from the brief; keep names and placeholders verbatim | G1 | RQ1-C, RQ7, RQ11; outline planner | outline retypes into `key_messages`; slide count from settings (P3, P11) |
+| L2. The outline states `assumptions` and `not_covered` (brief content on no slide, missing attachments), shown in the UI and the final report | G2 | RQ9, RQ12; outline schema; evaluator | no such field anywhere in `src/`; the CHEFFIN run filled the missing sheet with a fake table (P15) |
+| L3. Pull the brief's constraints ("no hard numbers on slide 7", "don't attack the current agency") into requirement blocks; check them by code where possible | G3 | RQ3 (requirement blocks), RQ9 | constraints come only from the settings form (P16) |
+| L4. Read style directions from the brief: colour roles tied to entities or meanings, number formats | G4 | P14, §7.2 item 6; `style_directives` | `resolve_theme()` only looks up a named palette |
+| L5. Decide each slide's visual form in the outline, with the whole deck in view; a brief's "Visual:" line is locked | G5 | RQ4-E (new) | the slide planner sees only other slides' titles (P17) |
+| L6. A deck style kit: slide frame (label, claim headline, sub-headline, source line), a purpose-labelled callout, KPI tile, defined once and rendered by the generator | G6 | RQ7, Q9; §7.2 item 3 | kicker derived by the generator; no purpose-labelled callout |
+| L7. Derived numbers computed by code **and referenced by id**, never retyped — Genspark computed them and still drifted when retyping | G7, G12 | RQ2-D, Q4 | numbers retyped three times (P1) |
+| L8. Missing data → a method or rules slide, labelled as proposed | G8 | RQ10 option (d) | the pipeline invents (P4) |
+| L9. Checks after rendering: first slide before the rest; always on; tiered by measured precision; report incomplete checks; fix one element | G9, G15 | RQ9 (render layer) — outside the planners, needed for the generator contract | POM overlap / out-of-bounds read only by the off-by-default critic; fit-grow measures a different font than tables use |
+| L10. Speaker notes: presenter script plus the formula behind each derived number | G10 | generator | `speaker_notes` exists in state; filling it not verified |
+
+**Do not copy:** rounding brief numbers for looks (G11), decorative invented data (G13), choosing outside statistics (G14), whole-slide rewrites for one finding (G15), a mandatory reference-deck step on every request (G16), HTML with absolute positioning, and running LLM-written code (the Super Agent sandbox). Our deterministic compiler already gives an editable .pptx without it.
+
 ---
 
 ## 4. Problems to solve
@@ -268,7 +332,10 @@ We don't record cached tokens, so these are list prices.
 | P11 | **Settings conflict with the brief:** the slide count overrides the brief's count; "amount of text" limits data | §1.4 |
 | P12 | **Edit paths are broken or thin:** `/plan/refine` ignores the feedback; re-planning a slide duplicates it | §1.3 |
 | P13 | **Richness depends on invention on thin briefs:** removing invention alone made slides sparse (1.80 components) | §3.2, §3.3 |
-| P14 | **Style asked for in the brief is ignored** (brand colours) | §3.2 |
+| P14 | **Style asked for in the brief is ignored** (brand colours, colour roles, number formats) | §3.2, §3.6 G4 |
+| P15 | **Assumptions and gaps are silent:** a missing attachment or brief content with no slide is filled or dropped without telling the user | §3.2 fake table; §3.6 G2 |
+| P16 | **The brief's own constraints are not captured** ("no hard numbers here", "don't attack the current agency"), so nothing checks them | §3.6 G3 |
+| P17 | **No deck-level visual plan:** each slide's form is chosen alone, seeing only the other titles | §1.2; §3.6 G5 |
 
 ---
 
@@ -340,8 +407,9 @@ Each question lists today's behaviour, the options, what would settle it, and th
 | B. Code suggests defaults from content shape; the LLM keeps them or overrides with a reason | parsed table → table; parsed chart → chart; ≥ 3 short "label: value" lines → KPI row (≤ 6); steps with long detail → table, not timeline or arrow; "Mention…" → read-out |
 | C. Code decides for parsed tables and charts; the LLM decides the rest | stricter B |
 | D. Layouts learned from reference decks | PPTAgent-style: slide types and content schemas taken from a golden deck, matched to each slide's content |
+| E. The outline assigns each slide a visual form (timeline, matrix, phases, flow, comparison, KPI + evidence …) in one call with the whole deck in view; a brief's "Visual:" line is copied and locked; the slide planner builds components for that form | Genspark AI Slides (§3.6 G5); fixes P17 |
 
-- **Risk of B–D:** suggestions harden into templates, and every slide looks the same. B stays a suggestion, derived only from content, never decoration.
+- **Risk of B–E:** suggestions harden into templates, and every slide looks the same. B stays a suggestion, derived only from content, never decoration. E must stay the LLM's choice from content; a variety rule in code caused the 2026-09-10 regression.
 - **Settle it by** stability across 3 runs, components per slide, and capacity violations.
 - **Cheapest test:** print the code suggestions for every slide of gj-h1 and CHEFFIN (free), then single-slide cases with and without the suggestions (cents each).
 
@@ -373,6 +441,8 @@ Today it is 6,780 tokens: a routing table, a visual fitness guide, structure + d
 | B | A reviewer that flags slides too thin for their purpose |
 | C | Derived numbers computed by code |
 | D | Ask the user for data (elicitor) when a slide's purpose needs data the input lacks |
+| E | A purpose-labelled read-out (INSIGHT, SO WHAT, METHOD, PATH) on content slides; qualitative, so no invention risk (§3.6 G6) |
+| F | Missing data turned into a method or rules slide (decision rules, thresholds labelled "proposed"), as Genspark did for the city and keyword views (§3.6 G8) |
 
 - **Settle it by** components per slide on thin inputs (CHEFFIN), with invented numbers staying at 0.
 
@@ -407,6 +477,8 @@ Today it is 6,780 tokens: a routing table, a visual fitness guide, structure + d
 | Inside the outline node | coverage (content on no slide), requirements ("Mention…") not placed, slide count, invented numbers, missing headline | code check → ≤ 1 re-ask, keep the better |
 | Inside each slide branch | dropped or invented numbers, capacity, mixed chart units, too many hints | code check → ≤ 1 re-ask, keep the better |
 | Deck reviewer | cross-slide issues (the same fact with different values; parallel slides inconsistent); judgment (headline tension, evidence in the sub-headline, too thin, story order, the brief's own rules such as "don't attack the current agency") | code checks + an LLM yes/no checklist → patch the named outline slides / re-plan only the flagged slides; ≤ 2 rounds; keep the best version of each slide |
+| Report to the user | assumptions made, brief content on no slide, missing attachments, constraints honoured (§3.6 G2–G3) | code fills `not_covered` from the coverage check; the outline writes `assumptions`; shown with the outline and in the final evaluation |
+| After rendering (outside the planners) | overlap, clipping, contrast, font floor, empty placeholders | first slide checked before the rest; always on; errors only for rules with measured precision, the rest advisory; a check that could not run is reported as incomplete, not passed; fixes touch one element (§3.6 G9, G15) |
 
 **Research points:**
 - LLMs fix things reliably with external feedback (code checks, tools) and poorly without it (Huang et al.; CRITIC).
@@ -420,6 +492,7 @@ When the input implies data it doesn't contain (a "revenue trend" with no number
 - (a) Ask the user (elicitor).
 - (b) Build a qualitative slide and name the gap.
 - (c) Allow sample data, clearly labelled on the slide.
+- (d) Turn the slide into a method or rules slide (how the data would be read, with proposed thresholds), and list the missing data in `assumptions` / `not_covered`. Genspark did this for CHEFFIN's city and keyword views (§3.6 G8).
 
 It affects the 13 topic-only cases most. Today the pipeline invents.
 
@@ -474,8 +547,9 @@ any input ─► INTAKE (code)                                                  
    ├ single slide → skip the outline: one slide gets all the blocks                RQ1-D
    └ otherwise ─► OUTLINE PLANNER (LLM; code check + ≤ 1 re-ask inside the node)   RQ1-B, RQ7, RQ9
                     per slide: intent, label, headline (copied when the brief gives one), subtitle,
-                    block_ids, points to make, emphasis (≤ 2), parallel group
-                    per deck: audience and use, argument, gaps, style directives, set-aside blocks
+                    block_ids, points to make, emphasis (≤ 2), parallel group, visual form (RQ4-E)
+                    per deck: audience and use, argument, gaps, style directives, set-aside blocks,
+                              assumptions, not_covered, constraints (§3.7)
  ─► SLIDE COMPONENT PLANNER × N (LLM; code suggestions in, tables/charts filled by code,  RQ2-B, RQ4-B, RQ5
     code check + ≤ 1 re-ask inside the node)
  ─► fan-in keyed by slide index
@@ -496,6 +570,7 @@ block_ids: [L140, L141, T4, C2]
 key_messages: ["Recommendation ads carry the efficiency", "Paneer drags the mix"]   # points, not data
 emphasis: ["ROAS 6.35x"]
 parallel_group: platform_deep_dive
+visual_form: kpi_plus_evidence    # decided with the whole deck in view; copied when the brief states a visual
 ```
 
 **Candidate component.** Additive:
@@ -532,10 +607,10 @@ A code-only reviewer saves about $0.25 per 14 slides.
 
 | Where | Change |
 |---|---|
-| top level | `brief_index` (the blocks), `brief_kind` |
-| `OutlinePlan` | `audience_and_use`, `gaps`, `style_directives`, `set_aside` |
-| `OutlineSlide` | `intent`, `label`, `headline_block`, `subtitle`, `block_ids`, `emphasis`, `parallel_group`; `slide_title` = the headline; `key_messages` become the points the slide makes |
-| `ComponentPlan` | `block_ids`; `design_hint` optional |
+| top level | `brief_index` (the blocks), `brief_kind`; later `fact_sheet` (id, value, unit, source block or formula, display string) for derived numbers (Q4, §3.6 L7) |
+| `OutlinePlan` | `audience_and_use`, `gaps`, `style_directives` (incl. colour roles and number formats, §3.6 L4), `set_aside`, `assumptions`, `not_covered`, `constraints` (the brief's "don'ts", as block ids) |
+| `OutlineSlide` | `intent`, `label`, `headline_block`, `subtitle`, `block_ids`, `emphasis`, `parallel_group`, `visual_form` (+ `visual_block` when the brief states it); `slide_title` = the headline; `key_messages` become the points the slide makes |
+| `ComponentPlan` | `block_ids`; later `fact_ids`; `design_hint` optional |
 | `SlidePlan` | `label`, `subtitle` |
 | `assembled_slide_plans` | keyed reducer by `slide_index` instead of `operator.add` |
 | feedback loop | `current_repair_context`, `plan_review_round`, `plan_versions` |
@@ -554,7 +629,10 @@ These change in the same step as the readers of these structures:
 3. Render the planned kicker and sub-headline, instead of deriving a kicker ([system.j2:102](../src/prompts/generator/system.j2:102)). Write the "Source:" line only when the plan has a source ([:109](../src/prompts/generator/system.j2:109)).
 4. Drop the mandatory layout archetype and `previous_slide_archetype` ([:218](../src/prompts/generator/system.j2:218)).
 5. Make the blueprint a reference, not "do NOT rearrange" ([:183](../src/prompts/generator/system.j2:183)).
-6. Style: `style_resolver` should apply colours and brand directions found in the brief (P14).
+6. Style: `style_resolver` should apply colours and brand directions found in the brief (P14), including colour roles (entity → colour, a colour reserved for warnings) and number formats (§3.6 G4).
+7. A deck style kit rendered the same way on every slide: label, claim headline, sub-headline, source line, and a purpose-labelled read-out (§3.6 G6).
+8. Numbers come from the plan's bound blocks or fact ids and are never retyped or rounded for looks (§3.6 G11, G12).
+9. Speaker notes: a short presenter script, plus the formula for each derived number (§3.6 G10).
 
 ---
 
@@ -601,6 +679,50 @@ Every phase ends with LLM-free proof. Paid runs only at the end of a phase, afte
 | 5. Feedback loop | deck reviewer (code + checklist), outline patcher, targeted re-plans, keyed reducer, keep-best, `/plan/refine` fix | routing, reducer and keep-best unit tests; a full scripted planning run with planted defects re-plans exactly those slides | $0 |
 | 6. Comparison | old (saved runs, free) vs new, on gj-h1 × 3 + CHEFFIN-audit × 3 (+ a judge-consistency check) | the targets you set in §10 | ≈ $3.6 for the new arm at 3 repeats; ≈ $2.4 at 2 repeats; a staged ≈ $1.4 smoke run first |
 
+### 9.1 Priority order by impact on the output (2026-09-28)
+
+Ranked by expected effect on the finished deck, from the evidence in §3 and the prompt lines cited below. Line numbers are as of 2026-09-28.
+
+**Planners** (`outline_planner`, `outline_replanner`, `slide_component_planner`, `state.py`):
+
+| # | Change | Why (evidence) | Files | Effort | Free check |
+|---|---|---|---|---|---|
+| 1 | Remove invention: the "plausible / invent a number" lines and the $42.8M-style examples; missing data becomes a gap, never a number; "Generate" writes wording, never figures | fake table and dates (§3.2); invented numbers → 0 in §3.3 | `outline_planner/system.j2:43`, `outline_planner_schema.py:56`, `outline_replanner/system.j2:18`, `settings_mapper.py` | small | prompt render; grep |
+| 2 | The brief as a spec: `label` / `headline` / `subtitle`, the brief's headline copied; slide count from the brief when stated; names and placeholders verbatim | headlines 0/13 → 13/13 (§3.1, §3.3); `EXACTLY {{ target_slides }}` overrides "6-SLIDE"; G1 | outline schema, `outline_planner.py`, prompts, `state.py` | small–medium | outline replay; `eval_lineage.py` |
+| 3 | Content by reference: `block_ids` per slide (`brief_index.py`); the slide planner gets those lines verbatim; code fills parsed tables and charts; `key_messages` = points, not data; replaces `_filter_supplied_content_for_slide` | 7–13% numbers dropped in planning; wrong CPC chart (§3.1–3.2); 1% in §3.3 | both planners, prompts, `planner_schema.py` | medium | `eval_lineage.py` |
+| 4 | Code checks + ≤ 1 re-ask inside each node: coverage, invented numbers, slide count, headline present; dropped numbers, capacity, mixed chart units; keep the better attempt (reuse `src/planning/checks.py`) | 8–10 / 14 slides flagged per old run; re-ask fixed 6/6 storylines (§3.3) | `outline_planner.py`, `slide_component_planner.py` | medium | scripted-LLM tests |
+| 5 | Deck-level fields in the same outline call: `assumptions`, `not_covered`, `constraints`, `style_directives` | P14–P16; G2–G4 | outline schema and prompt, `state.py` | small–medium | replay |
+| 6 | Richness without invention: claim + evidence pairing, a purpose-labelled read-out, a method slide for missing data; `design_hint` optional, ≤ 2 per slide (keep the uncommitted matrix fix) | 1.80 components per slide without invention; 14/14 slides ask for highlighting (§3.1, §3.3) | `slide_component_planner/system.j2:150`, `planner_schema.py` | small | single-slide cases (cents) |
+| 7 | The slide planner sees a one-line summary of each other slide; parallel slides share a structure | the CHEFFIN table repeated as bullets; production deck's shared deep-dive layout (§3.4) | `slide_component_planner.py`, `user.j2` | small | replay |
+| 8 | The replanner edits instead of regenerating: brief lines + neighbours' titles, locked fields kept, no new numbers; wire `/plan/refine` | §1.3 | `outline_replanner.py`, prompts, `api.py` | small | unit test |
+| 9 | Planner temperature 0.3 → 0.1 | 1/14 stable (§3.1) | `models.yaml` | trivial | needs 2–3 paid runs |
+| 10 | The outline picks each slide's visual form (RQ4-E) | G5; test first (Q13) | outline schema, slide planner | medium | outline-only runs |
+| 11 | Keyed merge + the plan-reviewer loop | P8, P12 | `state.py`, `graph.py`, `plan_reviewer` | medium–large | unit tests |
+| 12 | Derived numbers in a fact sheet (Q4) | §3.4; G7, G12 | new module + both planners | medium–large | unit tests |
+
+**Generator** (`generator.py` and its prompts):
+
+| # | Change | Why (evidence) | Files | Effort | Free check |
+|---|---|---|---|---|---|
+| 1 | Stop invention: remove the invent / "add substance" lines; a "Source:" line only when the plan has a source | fake sources ("Q2 FY24"), fake table, invented uplift (§3.2) | `generator/user.j2:55, 60, 73`, `generator/system.j2:109` | small | prompt render; replay saved plans |
+| 2 | Draw the planned label, headline and subtitle instead of deriving a kicker | headline loss (§3.1) | `generator/system.j2:102–104`, `user.j2` | small–medium | `eval_lineage.py` |
+| 3 | Only the slide's own data: per-component data from the plan, not the whole `supplied_content`; numbers never retyped or rounded | §1.5; G11, G12 | `generator.py`, `user.j2` | medium | `eval_lineage.py` |
+| 4 | The brief's colours and number formats: theme override + colour-role map | default blue on CHEFFIN (§3.2); G4 | `style_resolver.py`, `context_builder.py` | small–medium | compile saved XML with the override; render |
+| 5 | Remove forced variety and the rigid blueprint: drop the mandatory archetype and "do NOT rearrange"; the blueprint becomes a reference | the 2026-09-10 regression; G5 | `generator/system.j2:183, 218`, `user.j2:29–32` | small | prompt render; needs a paid A/B |
+| 6 | Code-only layout checks on by default: POM overlap / out-of-bounds + layout audit; first slide checked before the rest; one-element fixes; "incomplete" rather than "passed" when a check can't be trusted | the CHEFFIN slide 5 table overflow went unflagged; `critic_mode` defaults to off; G9 | `graph.py`, critic / layout audit, repairer | medium | re-check saved XML |
+| 7 | Read-out and method slide drawn as planned (pairs with planner #6) | P13 | recipes | small | single-slide cases |
+| 8 | Report assumptions, `not_covered` and constraints in the final evaluation | G2–G3 | evaluator, UI | small–medium | replay |
+| 9 | Derived numbers from the fact sheet (pairs with planner #12) | G7, G12 | generator | medium | unit tests |
+| 10 | Speaker notes: a presenter script + the formula for each derived number | G10 | generator | small | prompt render |
+
+**Batches:**
+- **A:** planners 1, 2, 9 + generator 1, 2, 5. Prompts and schema; checked with free replays. The generator half is needed or the planner gains are lost at the XML step.
+- **B:** planners 3, 4 + generator 3, 4. Content fidelity and brief style; reuses the Test 1 code.
+- **C:** planners 5–8 + generator 6–8, then planners 10–12 and generator 9–10.
+- **Proof:** one paid comparison after A + B on gj-h1 + CHEFFIN-audit (≈ $2), after asking.
+
+**File order within batch A:** `outline_planner` (+ schema, prompts and the matching `state.py` fields) → generator prompts → `models.yaml`. Then `slide_component_planner` (batch B), and `outline_replanner` last (it only runs on a user's per-slide regenerate).
+
 ---
 
 ## 10. Open decisions
@@ -618,6 +740,9 @@ Every phase ends with LLM-free proof. Paid runs only at the end of a phase, afte
 | Q9 | Kicker on every content slide | planner decides / generator decides / none | planner decides, generator renders | open |
 | Q10 | Targets for the comparison run | set before running | — | open |
 | Q11 | Budget for the comparison | full / 2 repeats / staged | staged | open |
+| Q12 | Show `assumptions` / `not_covered` to the user | outline review only / also in the final report / off | both (§3.6 L2) | open |
+| Q13 | Visual form decided in the outline (RQ4-E) | yes / no / test first | test first on xtsy + agency takeover (outline-only runs) | open |
+| Q14 | Post-render checks on by default, first slide checked before the rest | yes / setting / no | yes; outside the planners but part of the generator contract (§3.6 L9) | open |
 
 ---
 
@@ -629,6 +754,8 @@ Every phase ends with LLM-free proof. Paid runs only at the end of a phase, afte
 | 2026-09-27 | RQ3 | Indexed all 53 cases and a format zoo with `brief_index.py` | §2: 5 input kinds; parser gaps listed in RQ3; nothing lost |
 | 2026-09-27 | RQ4, RQ9 | Replayed simple code checks over 4 saved old-planner gj-h1 runs | 8–10/14 slides flagged per run; the same slides every run |
 | 2026-09-27 | RQ9, RQ14 | Checked LangGraph 0.6.11 (`Command`, `Send`, `interrupt`, `RetryPolicy`, `defer`; no `Overwrite`); read the docs and papers in §12 | StateGraph only; keyed reducer needed |
+| 2026-09-28 | §9.1 | Read the three planners' and the generator's prompts and schemas; ranked changes by expected impact on the output | §9.1: invention lines in 6 prompt/schema places; header, slide count and forced-variety rules; batches A–C |
+| 2026-09-28 | RQ2, RQ4, RQ6, RQ7, RQ9, RQ10 | Read five Genspark traces (3 AI Slides, 2 Super Agent) on the CHEFFIN, XTSY and agency-takeover briefs; checked our code for brief style handling (`style_resolver.resolve_theme()` reads only a named palette) and for any assumptions / gaps field (none) | §3.6–3.7: brief-as-spec, stated assumptions and gaps, colour roles, deck-level visual forms, code-computed numbers that still drift when retyped; new P15–P17, RQ4-E, RQ6-E/F, RQ10-(d), Q12–Q14 |
 
 ---
 
@@ -640,3 +767,4 @@ Every phase ends with LLM-free proof. Paid runs only at the end of a phase, afte
 - [DeepPresenter](https://arxiv.org/abs/2602.22839): reflection grounded in rendered artifacts.
 - [Large Language Models Cannot Self-Correct Reasoning Yet](https://arxiv.org/abs/2310.01798) · [CRITIC](https://arxiv.org/abs/2305.11738): self-correction needs external feedback.
 - [CheckEval](https://aclanthology.org/2025.emnlp-main.796/): yes/no checklists for reliable LLM judges.
+- Genspark AI Slides and Super Agent: five UI traces captured by the user on 2026-09-27/28 (local only; file names in §3.6). Findings are paraphrased; the traces are not copied into the repo.
