@@ -44,7 +44,9 @@ def _slide_plan_to_outline_slide(slide_plan: SlidePlan) -> dict[str, Any]:
     """
     return {
         "slide_index": slide_plan.get("slide_index", 0),
-        "slide_title": slide_plan.get("content_data", {}).get("title", ""),
+        "slide_title": slide_plan.get("slide_title") or slide_plan.get("content_data", {}).get("title", ""),
+        "label": slide_plan.get("label", ""),
+        "subtitle": slide_plan.get("subtitle", ""),
         "section": "",
         "narrative_role": "",
         "key_messages": [],

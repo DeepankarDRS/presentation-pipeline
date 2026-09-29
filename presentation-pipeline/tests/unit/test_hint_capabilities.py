@@ -107,4 +107,4 @@ def test_generator_system_prompt_has_icon_vocabulary_and_scoped_translation():
     prompt = env.get_template("system.j2").render(**contract)
     assert "Icon names (unknown names are removed; no brand logos): trending-up" in prompt
     assert "- cell_fill (" in prompt and "- sparkline (" not in prompt
-    assert "<!-- archetype: X -->" in prompt  # deck_nodes.py parses this marker
+    assert "archetype" not in prompt.lower()  # forced layout variety removed (§9.1 generator 5)

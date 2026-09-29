@@ -7,7 +7,7 @@ DECK SETTINGS:
 - Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}
 - Theme: {{ deck_settings.get('theme', 'corporate-slate') }}
 - Amount of text: {{ deck_settings.get('amount_of_text', 'concise') }} → {{ constraints.get('narrative_guidance', 'data-focused') }}
-- Text mode: {{ deck_settings.get('text_mode', 'generate') }}
+- Text mode: {{ deck_settings.get('text_mode', 'generate') }}{% if deck_settings.get('text_mode', 'generate') == 'generate' %} (write the wording yourself; figures come only from the request){% endif %}
 {% if deck_settings.get('additional_instructions') %}
 - Additional instructions: {{ deck_settings['additional_instructions'] }}
 {% endif %}
@@ -26,18 +26,18 @@ SUPPLIED CONTENT (use these values VERBATIM in key_messages — do NOT rephrase 
 {{ supplied_content | tojson(indent=2) }}
 ```
 Content distribution guidance:
-- kpi_* keys → key_messages as standalone metrics (e.g. "ARR reached $42.8M (+18% QoQ)")
-- chart_* keys → key_messages as data series (e.g. "Revenue by quarter: Q1 $28.4M, Q2 $31.2M...")
-- table_* keys → key_messages as record sets (e.g. "Enterprise $28.1M +22% | Mid-Market $10.4M +14%")
+- kpi_* keys → key_messages as standalone metrics ("<metric>: <value> (<change>)")
+- chart_* keys → key_messages as data series ("<measure> by <period>: <label> <value>, ...")
+- table_* keys → key_messages as record sets ("<entity>: <measure> <value>, ... | <entity>: ...")
 - bullets → key_messages as qualitative insights
 - timeline_items → key_messages as sequential events
 - flow_steps → key_messages as process steps
 - title/subtitle → first slide's key_messages
 {% endif %}
 
-TARGET DECK SIZE: {{ target_slides }} slides.
+TARGET DECK SIZE: {{ target_slides }} slides{% if slide_count_source == 'request' %} (the count the request states){% endif %}.
 {% if target_slides and target_slides > 1 %}
 Produce EXACTLY {{ target_slides }} slides in your outline. Do NOT add Q&A, Appendix, Thank You, or Next Steps slides unless the request explicitly asks for them.
 {% endif %}
 
-Produce the deck outline. Every slide's key_messages must be specific, data-dense, and carry semantic intent (the downstream planner reads the shape of each message to choose components).
+Produce the deck outline. Every slide's key_messages must be specific, carry the request's figures exactly as written, and carry semantic intent (the downstream planner reads the shape of each message to choose components). Never make up a figure.

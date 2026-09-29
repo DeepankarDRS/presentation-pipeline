@@ -148,7 +148,6 @@ data: |
         </VStack>
       </VStack>
     </HStack>
-    <Text fontSize="14" color="$textMuted">Source: [data source] · [period] · [any methodology note]</Text>
   </VStack></Slide>
 
 narrative: |

@@ -185,6 +185,7 @@ def test_evaluator_writes_manifest():
     assert "tokens" in data
     assert "cost" in data
     assert "steps" in data
+    assert {"git_commit", "git_uncommitted_changes", "theme", "request_sha256"} <= data.keys()
 
     # Cleanup (evaluator may write extra files, so use rmtree not rmdir)
     shutil.rmtree(manifest_path.parent, ignore_errors=True)
@@ -258,3 +259,33 @@ def test_evaluator_provenance_no_plans():
     prov = result["evaluation"]["data_provenance"]
     assert prov["user"] == 0
     assert prov["sample"] == 0
+
+
+# ── Run provenance (§9.1 R4) ─────────────────────────────────────────────
+
+def test_run_provenance_fields():
+    from unittest.mock import patch
+    from src.agents.evaluator import _run_provenance
+
+    state = _make_state(theme_name="saascolor", supplied_content={"kpi": "1"})
+    with patch("src.agents.evaluator._git", side_effect=["abc1234", " M src/api.py"]):
+        prov = _run_provenance(state)
+    assert prov["git_commit"] == "abc1234"
+    assert prov["git_uncommitted_changes"] is True
+    assert prov["theme"] == "saascolor"
+    assert len(prov["request_sha256"]) == 16
+
+    with patch("src.agents.evaluator._git", return_value=None):   # no git on the machine
+        prov2 = _run_provenance(state)
+    assert prov2["git_commit"] == "unknown" and prov2["git_uncommitted_changes"] is None
+    assert prov2["request_sha256"] == prov["request_sha256"]         # same request, same hash
+
+    other = _run_provenance(_make_state(theme_name="saascolor", supplied_content={"kpi": "2"}))
+    assert other["request_sha256"] != prov["request_sha256"]
+
+
+def test_run_provenance_real_git():
+    from src.agents.evaluator import _run_provenance
+    prov = _run_provenance(_make_state())
+    assert prov["git_commit"] != "unknown"                          # this checkout is a git repo
+    assert isinstance(prov["git_uncommitted_changes"], bool)

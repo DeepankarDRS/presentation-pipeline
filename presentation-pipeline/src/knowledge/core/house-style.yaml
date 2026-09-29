@@ -37,7 +37,7 @@ vocabulary:
   'grow="N" in a VStack': 'share of the spare height (SIZING BY WEIGHT); no grow = content height.'
   'h="max" minH="180"': 'a chart/diagram fills its card; minH = readability floor.'
   'fixed px': >
-    only icon, accent bar, divider, badge, sidebar rail, Timeline/Pyramid h,
+    only icon, accent bar, divider, sidebar rail, Timeline/Pyramid h,
     table row height. Never a pixel h on a band or card.
   'minW / maxW / minH / maxH': 'clamp a flexible box so it cannot collapse or run away.'
 
@@ -47,7 +47,7 @@ alignment:
     so side-by-side cards end up the same height. Header HStack: start/center/end.
   'justifyContent': >
     start | center | end | spaceBetween | spaceAround | spaceEvenly. spaceBetween
-    pushes two groups to the edges (eyebrow left / badge right; label / value).
+    pushes two groups to the edges (label / value).
   'alignSelf': 'one child opting out of the parent''s alignItems.'
   'flexWrap="wrap"': >
     on a row of tiles/cards that might not fit - they wrap to a new line
@@ -91,8 +91,8 @@ composition: >
 
 header_band: >
   <HStack justifyContent="spaceBetween" alignItems="start"> (no h, no grow): left a
-  <VStack gap="4-5"> of eyebrow + title + optional subtitle (see type ramp);
-  right optional - a badge or one headline KPI.
+  <VStack gap="4-5"> of the planned kicker + headline + subtitle (see type ramp);
+  right optional - one headline KPI from the plan. No badge or pill in the header.
 
 # --- sizing by weight (verified v10.3.0, docs/layout-sizing-plan.md) -----
 # POM's flexbox shares the height. Never add up pixel heights: the generator's
@@ -108,7 +108,8 @@ sizing: |
     a Table, Timeline or Pyramid alone.
   - Content bands + minHs + gaps + 2*padding must fit 720 (past it, bands shrink
     and overlap silently). Too much: CUT content, never fonts below 14. Too
-    little (nothing can grow): ADD a band, don't stretch a card.
+    little: let a chart, diagram or text panel grow - never add content the plan
+    does not have, and don't stretch a table card.
   height-weight and visual-intent are NOT POM attributes - never put them in XML.
   TEXT LIMITS: bullets 1 line (~55 chars), max 4; callout 1 sentence (<= 80 chars).
   REWRITE shorter - never shrink the font.
@@ -222,51 +223,10 @@ render_gotchas:
   - "$textMain is the theme INK, light on DARK themes. A dark-filled panel uses
      $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
 
-layout_archetypes: |
-  Every slide MUST use one of these five archetypes. NEVER repeat the same
-  archetype on consecutive slides — check PREVIOUS SLIDE ARCHETYPE in the
-  user prompt and pick a DIFFERENT one. Interpret each archetype as a
-  FEEL and INTENT — vary the exact proportions, number of children, and
-  card treatments each time you use one. Two slides using archetype B
-  should still look distinct from each other.
-
-  A  SPLIT-HERO — Two-panel layout (HStack root). One side carries the
-     main content, the other is a contrasting accent or dark panel with
-     a bold statement, hero number, or supporting KPIs. Vary the split
-     ratio and which side is dark. Feel: dramatic, high-contrast.
-
-  B  DASHBOARD — Data-rich overview (VStack root). Combines a headline
-     metric row with a primary visualization and supporting context
-     cards. Vary how many metric tiles, what fills the supporting zone
-     (cards, callouts, bullets), and the split between chart and context.
-     Feel: analytical, information-dense but organized.
-
-  C  FULL-WIDTH-DATA — Single focal point (VStack root). One dominant
-     data component (table or chart) gets the full width, framed by a
-     header and an optional callout. Feel: clean, focused, executive.
-
-  D  EQUAL-COLUMNS — Parallel items (VStack root). A row of equally
-     weighted cards for pillars, options, phases, or comparisons. Vary
-     the number of columns (3-5), card styling, and internal structure.
-     Feel: balanced, structured, easy to scan.
-
-  E  DENSE-QUAD — Multi-view deep dive (VStack root). Multiple data
-     components packed together — tables beside charts, readout panels,
-     stacked visualizations. Feel: comprehensive, analytical, detailed.
-
-  Archetype suggestions (not rules — any archetype CAN work for any
-  slide type when it serves the content):
-    cover/closing  → often A, but D or C also work
-    data-heavy     → often B or E, but C works for a single focal chart
-    content/narrative → often D or B, but A works for a bold statement
-    executive summary → often C, but B adds metric context
-
 design_variety: >
-  NEVER repeat the same layout archetype on consecutive slides. Check the
-  PREVIOUS SLIDE ARCHETYPE signal and pick a different one. A deck with
-  five identical VStack-bands slides looks templated, not designed. Also
-  vary card treatments — not every slide needs the same borderRadius/
-  border.color style. Use at most ONE dark panel ($textMain bg) per 3 slides.
+  Lay out each slide for its own content. Vary card treatments when it helps
+  the content - not every slide needs the same borderRadius/border.color style.
+  Use at most ONE dark panel ($textMain bg) per 3 slides.
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:
@@ -283,5 +243,5 @@ checklist:
   - "No fixed-px width on a text or chart column."
   - "Bullet lists: max 3-4 items, each ≤ 50 chars, fontSize 14-16."
   - "At most one hero_panel. Accent used as a highlight, not a fill."
-  - "If nothing on the slide can use the spare height, ADD a band (stat row /
-     callout / second visual) - don't stretch a table or text card to fill it."
+  - "If nothing on the slide can use the spare height, let a chart, diagram or text
+     panel grow - never add content the plan does not have, and don't stretch a table card."

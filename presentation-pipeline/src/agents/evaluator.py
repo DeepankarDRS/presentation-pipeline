@@ -15,8 +15,10 @@ Writes: evaluation, pptx_path, passed
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -35,6 +37,31 @@ def _compute_cost(tokens_in: int, tokens_out: int, model: str) -> float:
     cost_in = (tokens_in / 1_000_000) * pricing.get("input", 0.0)
     cost_out = (tokens_out / 1_000_000) * pricing.get("output", 0.0)
     return round(cost_in + cost_out, 6)
+
+
+def _git(*args: str) -> str | None:
+    """Output of a git command in the pipeline folder, or None when git is unavailable."""
+    try:
+        proc = subprocess.run(["git", *args], capture_output=True, text=True, timeout=10, cwd=_PIPELINE_ROOT)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return proc.stdout.strip() if proc.returncode == 0 else None
+
+
+def _run_provenance(state: PresentationState) -> dict[str, Any]:
+    """What produced this run: code version, theme and a fingerprint of the request."""
+    commit = _git("rev-parse", "--short", "HEAD")
+    status = _git("status", "--porcelain", "--untracked-files=no", "--", ".")
+    request = json.dumps(
+        {"request": state.get("raw_request", ""), "supplied_content": state.get("supplied_content")},
+        sort_keys=True, ensure_ascii=False, default=str,
+    )
+    return {
+        "git_commit": commit or "unknown",
+        "git_uncommitted_changes": None if status is None else bool(status),
+        "theme": state.get("theme_name") or (state.get("resolved_theme") or {}).get("name") or "",
+        "request_sha256": hashlib.sha256(request.encode("utf-8")).hexdigest()[:16],
+    }
 
 
 def _build_step_summary(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -206,6 +233,7 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
 
     manifest: dict[str, Any] = {
         "run_id": run_id,
+        **_run_provenance(state),
         "passed": passed,
         "compile_ok": compile_ok,
         "critic_ok": critic_ok,

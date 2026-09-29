@@ -43,7 +43,7 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Where a deck loses the brief's headlines / numbers (saved runs, no API) | `python -m scripts.eval_lineage <run zips> --case tests/cases/<case>.yaml` (north-star Appendix C) |
 | Planning-only runs of the Test 1 path + scoring (paid; `--rescore` is free) | `python -m scripts.plan_only <cases> --repeat 1 --label <label> --bundle` |
 
-Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-09-27: 464 pass, 4 fail — not regressions):
+Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-09-29: 483 pass, 4 fail — not regressions):
 `test_critic.py::test_critic_medium_only_passes`, `test_layout_audit.py::test_font_at_minimum_ok`, and two routing tests in `test_graph.py` (`*_budget_exhausted*`: expect `evaluator`/`slide_router`, code now routes to `visual_repairer` — tests or routing are stale).
 Always record your own baseline (`pytest tests/unit -q`) before a change and compare against it.
 
@@ -76,10 +76,11 @@ Open decisions: D12 (targets / projections), D13 (derived numbers such as ACOS o
 
 Background: `docs/architecture-north-star.md` (evidence audit, decisions, session log §14 — add a row per session). `docs/roadmap-derived-components.md` is halted (2026-09-24), kept as history. The two-device workflow and paid-run cost rule in `docs/session-kickoff.md` still apply.
 
-## Where work stands (2026-09-27)
+## Where work stands (2026-09-29)
+- **Planner batch A built (2026-09-29)** — `docs/planner-redesign-research.md` §9.1 items planners 1, 2, 9, 13, 15, 16, 20; generator 1, 2, 5, 12; R4 (status table under §9.1). Outline slides now carry `label` / `slide_title` (the headline) / `subtitle` through `SlidePlan`, `slides.json`, the generator's `HEADER` block and the plan editor; the slide count comes from the brief when it states one (`outline_planner.stated_slide_count`); no invent lines left in the outline, replanner, generator or knowledge files; no forced archetype; planners at temperature 0.1; `run-manifest.json` records commit, dirty flag, theme and a request hash. Verified LLM-free only; the paid comparison (gj-h1 + CHEFFIN-audit, ≈ $2) waits until batch B is built. Next: batch B (planners 3, 4, 14, 18; generator 3, 4, 11; R2).
 - **Branch `test-1-planning`** (pushed, based on `feat/golden-reference-grounding`, **not merged**): Test 1 code + docs. `feat/golden-reference-grounding` holds all earlier work; `master` is 60+ commits behind — do not run from `master`.
 - **Test 1 code** (keep until the useful parts are ported; then remove what is unused — ask the user): `src/planning/` (brief index, checks, adapter reusable; `graph.py`, `schemas.py` and prompts `src/prompts/storyline/`, `slide_designer/` only serve the new path), `scripts/plan_only.py`, `tests/unit/test_planning_v2.py`, case `gate-deck-cheffin-full`. `models.yaml` has steps `storyline`, `slide_designer`.
-- **Unit tests** 464 pass, 4 pre-existing failures (listed above).
+- **Unit tests** 483 pass, 4 pre-existing failures (listed above).
 - **Render layer (done 2026-09-24, still in the code):** eval harness (`scripts/eval_*.py`), deterministic normalizer fixes, table sizing in `src/node/fit-grow.js`, pptx post-process (`src/node/pptx-post.js`, falls back to POM's pptx with `PPTX_POST_SKIPPED`). Evals in `docs/eval/` (baseline, phase-1, phase-5-tables, tables-check, test-1). Still open: over-full slides hide table rows; 0 cell margins (user: leave); tables drawn in Aptos while fit-grow measures Noto Sans JP; crushed KPI tiles; long timeline labels. Details: roadmap Phase 5 Step 3.
 - **`llm_test/` is gitignored and untracked** (2026-09-27): local run zips (the only source for LLM-free replays — back them up), the production CHEFFIN deck (real client names — never push), old slide dumps. Keep results worth sharing as text in `docs/eval/`.
 - `pymupdf` is installed on the build PC only (`uv pip install pymupdf`, removed by `uv sync`) to render decks: `soffice --convert-to pdf`, then pymupdf to PNG.

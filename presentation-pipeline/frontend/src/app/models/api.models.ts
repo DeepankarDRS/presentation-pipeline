@@ -113,7 +113,9 @@ export interface ElicitResponse {
 
 export interface OutlineSlide {
   slide_index: number;
-  slide_title: string;
+  label?: string;       // kicker above the headline
+  slide_title: string;  // the headline
+  subtitle?: string;    // evidence line under the headline (key figures)
   section: string;
   narrative_role: string;
   key_messages: string[];

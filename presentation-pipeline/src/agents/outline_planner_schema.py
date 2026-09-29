@@ -1,6 +1,6 @@
 """Pydantic models for the outline planner's structured output.
 
-The outline planner produces a rich per-slide skeleton (key_messages,
+The outline planner produces a rich per-slide skeleton (header, key_messages,
 narrative_role, visual_emphasis) but NOT slide_type, component-level details,
 or content_data JSON. Those are the slide_component_planner's job.
 """
@@ -14,9 +14,26 @@ class OutlineSlide(BaseModel):
     """Rich outline entry for one slide — enough context for slide_component_planner."""
 
     slide_index: int = Field(description="Zero-based position in the deck.")
+    label: str = Field(
+        default="",
+        description="Kicker shown above the headline: 2-4 words naming the slide's "
+                    "place in the deck, e.g. 'EXECUTIVE SUMMARY', 'PLATFORM DEEP-DIVE · 01'. "
+                    "Use the request's own label when it gives one. Empty on the cover.",
+    )
     slide_title: str = Field(
-        description="Short headline for the slide (≤8 words). "
-                    "E.g. 'Revenue Grew 40% — At What Cost?'"
+        description="The slide's headline, shown on the slide. When the request gives "
+                    "this slide a headline or title, copy it exactly, word for word. "
+                    "Otherwise write one claim (not a topic) that names its subject, "
+                    "at most ~14 words. E.g. 'Enterprise carries the quarter while SMB "
+                    "churn rises', not 'Segment Performance'."
+    )
+    subtitle: str = Field(
+        default="",
+        description="One line under the headline that carries the evidence: 2-4 key "
+                    "figures from this slide's content, copied exactly as the request "
+                    "writes them, e.g. '<figure> · <figure> · <figure>'. Not a description "
+                    "of the slide ('Performance overview'). Empty on the cover or when the "
+                    "slide has no figures.",
     )
     section: str = Field(
         default="",
@@ -32,35 +49,29 @@ class OutlineSlide(BaseModel):
 
     key_messages: list[str] = Field(
         min_length=1,
-        description="The ABSOLUTE source of truth for this slide's content. Every "
-                    "message must be specific and data-dense — a concrete claim the "
-                    "slide component planner can route directly to the right component "
-                    "(KPI tile, chart series, table row, bullet, or narrative paragraph).\n"
+        description="The points this slide makes and the content it carries, in order. "
+                    "The slide component planner reads each message to choose a component "
+                    "and copies its values, so every figure, series and table row the slide "
+                    "needs must appear here exactly as the request writes it (same numbers, "
+                    "units, formats, names and placeholders).\n"
                     "\n"
-                    "Each key_message carries SEMANTIC intent — it is NOT just text for "
-                    "a bullet list. The slide component planner reads the shape of the "
-                    "message to decide which component type fits:\n"
-                    "  • A standalone metric → KPI tile: 'ARR reached $42.8M (+18% QoQ)'\n"
-                    "  • A time-series or comparison → chart: 'Revenue by quarter: "
-                    "Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M'\n"
-                    "  • A multi-column record set → table: 'Enterprise $28.1M +22% | "
-                    "Mid-Market $10.4M +14% | SMB $4.3M +8%'\n"
-                    "  • A qualitative insight → narrative or bullet: 'Self-serve "
-                    "onboarding could cut CAC payback from 14 to 10 months'\n"
+                    "The SHAPE of a message tells the planner which component fits:\n"
+                    "  • one metric → '<metric>: <value> (<change>)'\n"
+                    "  • a series → '<measure> by <period>: <label> <value>, <label> <value>, …'\n"
+                    "  • a record set → '<entity>: <measure> <value>, <measure> <value> | "
+                    "<entity>: …'\n"
+                    "  • a qualitative point → a plain sentence\n"
+                    "  • ordered steps → '<step> → <step> → <step>'\n"
                     "\n"
                     "Rules:\n"
-                    "  - MUST be specific and falsifiable — not vague summaries.\n"
-                    "    BAD: 'Shows strong growth.'\n"
-                    "    GOOD: 'Revenue grew 40% YoY to $42.8M in FY2025.'\n"
-                    "  - Use supplied data VERBATIM when available.\n"
-                    "  - When no data is supplied: invent a plausible concrete number. "
-                    "Never write placeholder syntax like '[estimate]', '[TBD]', or "
-                    "'[value]'.\n"
-                    "  - For dashboard/metrics slides: provide 4-6 quantitative messages "
-                    "(one per metric tile or data point).\n"
-                    "  - Count per slide is governed by amount_of_text setting:\n"
-                    "    minimal → 1, concise → 2, detailed → 3-4, extensive → 4-6\n"
-                    "  - Hero/intro slides: 1-2 messages max regardless of setting.",
+                    "  - Specific, not vague summaries ('Shows strong growth' is not a message).\n"
+                    "  - Figures come only from the request, the supplied content or the "
+                    "clarification answers. When a point needs a figure they do not give, "
+                    "state the point without a number. Never make up a number, and never "
+                    "write placeholders like '[estimate]' or '[TBD]'.\n"
+                    "  - Count per slide: one message per data group the slide carries, plus "
+                    "the narrative the amount_of_text setting asks for.\n"
+                    "  - Hero/intro slides: 1-2 messages.",
     )
 
     visual_emphasis: str = Field(
@@ -86,7 +97,7 @@ class OutlinePlannerOutput(BaseModel):
     core_hook: str = Field(
         description="One narrative tension sentence tying the entire deck together. "
                     "Must have tension or contrast. "
-                    "E.g. 'Revenue grew 40% YoY but customer acquisition costs are rising faster than revenue.'"
+                    "E.g. 'Revenue is growing, but customer acquisition costs are growing faster.'"
     )
     slides: list[OutlineSlide] = Field(
         min_length=1,

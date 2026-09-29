@@ -189,6 +189,8 @@ def _plan_to_outline_slide(plan: dict[str, Any]) -> dict[str, Any]:
     return {
         "slide_index": plan.get("slide_index", 0),
         "slide_title": plan.get("slide_title", content_data.get("title", "")),
+        "label": plan.get("label", ""),
+        "subtitle": plan.get("subtitle", ""),
         "section": "",
         "narrative_role": "",
         "key_messages": key_messages,
@@ -528,6 +530,8 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             user_prompt = _gen_env.get_template("user.j2").render(
                 objective=state.get("raw_request", ""),
                 slide_title=new_plan.get("slide_title", ""),
+                label=new_plan.get("label", ""),
+                subtitle=new_plan.get("subtitle", ""),
                 core_hook=state.get("core_hook", ""),
                 components=new_plan.get("components", []),
                 layout_hint=new_plan.get("layout_hint", ""),

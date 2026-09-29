@@ -1,5 +1,12 @@
 {% if slide_title %}
-SLIDE OBJECTIVE: {{ slide_title }}
+HEADER (draw exactly as written, in this order; skip a line that is absent):
+{% if label %}
+  kicker: {{ label }}
+{% endif %}
+  headline: {{ slide_title }}
+{% if subtitle %}
+  subtitle: {{ subtitle }}
+{% endif %}
 {% if core_hook %}
 DECK NARRATIVE: {{ core_hook }}
 {% endif %}
@@ -26,11 +33,6 @@ COMPONENTS (put every one on the slide — each carries its own data):
   {% endfor %}
 {% endif %}
 {% endfor %}
-{% if previous_slide_archetype %}
-
-PREVIOUS SLIDE ARCHETYPE: {{ previous_slide_archetype }}
-You MUST use a DIFFERENT archetype for this slide. Do NOT repeat {{ previous_slide_archetype }}.
-{% endif %}
 {% if layout_hint %}
 
 LAYOUT INTENT - which regions carry weight and how the components relate
@@ -51,17 +53,12 @@ SLIDE-LEVEL DATA (fallback — use per-component data above when available):
 {% for key, value in content_data.items() %}
 {{ key }}: {{ value }}
 {% endfor %}
-
-For any component with no matching key above, invent realistic, specific
-content - real-sounding numbers ($42.8M, 114%, +18% QoQ), named entities,
-concise prose. Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1".
-{% else %}
-
-CONTENT: No data supplied - invent realistic, specific figures and text.
-Real-sounding numbers ($42.8M, 114%, +18% QoQ), named entities, concise prose.
-Never "XX%", "TBD", "Lorem ipsum", "Company A", "Metric 1". Every value should
-look like it came from a real business report.
 {% endif %}
+
+FIGURES: use only the figures given above, exactly as written - never make up,
+round or restyle a number, a date or a source. A component with no data gets
+short wording from the plan and no numbers. Never "XX%", "TBD", "Lorem ipsum",
+"Company A", "Metric 1".
 
 SIZING — follow SIZING BY WEIGHT and DATA NODE SIZING in the layout grammar.
 No pixel h on bands or cards: grow (from the height-weight) on the band(s) that
@@ -70,7 +67,8 @@ Header, KPI rows and text-only bands (callout, narrative, bullet_list) size to c
 KEEP TEXT SHORT so content-sized bands stay compact:
   Bullets: 1 line each (~50-60 chars). Callout body: 1 sentence (≤ 80 chars).
   Timeline description: 1-3 words ONLY — sentences collide in columns.
-If the content is thin, add substance rather than leaving the slide half-empty.
+If the content is thin, give the components more room (see SIZING BY WEIGHT) -
+never add content the plan does not have.
 
 Output the POM XML for this slide - a single <Slide> element, no <Theme>, no
 markdown fences, no commentary.

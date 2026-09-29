@@ -528,3 +528,12 @@ def test_edit_endpoint_screenshot_failure_does_not_go_stale_looking():
     finally:
         _edit_sessions.pop("edit-screenshot-stale-test", None)
         shutil.rmtree(run_dir)
+
+
+def test_payload_to_slide_plans_keeps_header():
+    from src.api import SlidePlanPayload, _payload_to_slide_plans
+    plans = _payload_to_slide_plans(
+        [SlidePlanPayload(slide_type="data", components=[], label="KPIS", slide_title="Headline", subtitle="3 figures")],
+        None,
+    )
+    assert (plans[0]["label"], plans[0]["slide_title"], plans[0]["subtitle"]) == ("KPIS", "Headline", "3 figures")

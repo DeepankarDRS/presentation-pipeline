@@ -130,7 +130,6 @@ kpi_snapshot:
           <Text fontSize="27" color="$textMain" bold="true">Headline with key metrics inline</Text>
           <Text fontSize="14" color="$textMuted">Supporting context line</Text>
         </VStack>
-        <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
       <HStack gap="12" alignItems="stretch">
         <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
@@ -194,7 +193,6 @@ chart_hero__sidebar_cards:
           <Text fontSize="28" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context line</Text>
         </VStack>
-        <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
       <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="62%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
@@ -247,7 +245,6 @@ kpi_top__table_full:
           <Text fontSize="28" color="$textMain" bold="true">Headline reads here</Text>
           <Text fontSize="14" color="$textMuted">Period · Scope</Text>
         </VStack>
-        <Shape shapeType="roundRect" w="135" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
       <HStack gap="12" alignItems="stretch">
         <VStack w="max" padding="14" gap="3" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
@@ -344,7 +341,6 @@ dense_deepdive:
           <Text fontSize="26" color="$textMain" bold="true">Headline reads here</Text>
           <Text fontSize="14" color="$textMuted">Period · Category scope</Text>
         </VStack>
-        <Shape shapeType="roundRect" w="90" h="26" fill.color="E0F2EC" color="$accent" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
       <HStack gap="10" alignItems="stretch">
         <VStack w="max" padding="12" gap="2" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
@@ -453,7 +449,6 @@ table_with_action_cards:
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context</Text>
         </VStack>
-        <Shape shapeType="roundRect" w="130" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
       <VStack padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
         <Table defaultRowHeight="42" cellBorder.color="$border" cellBorder.width="1">
@@ -502,7 +497,6 @@ pillar_cards:
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context line</Text>
         </VStack>
-        <Shape shapeType="roundRect" w="110" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
       <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="33%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" borderTop.color="$accent" borderTop.width="4">
@@ -553,7 +547,6 @@ table_roadmap:
           <Text fontSize="27" color="$textMain" bold="true">Headline</Text>
           <Text fontSize="14" color="$textMuted">Context</Text>
         </VStack>
-        <Shape shapeType="roundRect" w="155" h="26" fill.color="E0F2EC" color="$textMain" fontSize="14" bold="true" borderRadius="999">BADGE</Shape>
       </HStack>
       <VStack padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
         <Table defaultRowHeight="50" cellBorder.color="$border" cellBorder.width="1">

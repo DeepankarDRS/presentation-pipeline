@@ -8,7 +8,9 @@ import { OutlineSlide } from '../../models/api.models';
 function emptyOutlineSlide(index: number): OutlineSlide {
   return {
     slide_index: index,
+    label: '',
     slide_title: '',
+    subtitle: '',
     section: '',
     narrative_role: '',
     key_messages: [],
@@ -18,7 +20,7 @@ function emptyOutlineSlide(index: number): OutlineSlide {
 
 /**
  * Narrative-only outline review — deck title, core hook, and per-slide
- * title + key messages. Deliberately hides section/narrative_role/
+ * header (label, headline, subtitle) + key messages. Deliberately hides section/narrative_role/
  * visual_emphasis: those still travel on each OutlineSlide and still reach
  * slide_component_planner untouched — they're implementation detail a
  * reviewer shouldn't have to read through to judge whether the outline
@@ -73,10 +75,24 @@ function emptyOutlineSlide(index: number): OutlineSlide {
               <div class="flex-1 min-w-0">
                 <input
                   type="text"
+                  class="w-full text-xs font-semibold uppercase tracking-wider text-blue-600 border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 px-0 py-0.5 focus:outline-none"
+                  [ngModel]="slide.label ?? ''"
+                  (ngModelChange)="patchSlide(i, { label: $event })"
+                  placeholder="Label (kicker)"
+                />
+                <input
+                  type="text"
                   class="w-full font-medium text-gray-900 border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 px-0 py-1 text-sm focus:outline-none"
                   [ngModel]="slide.slide_title"
                   (ngModelChange)="patchSlide(i, { slide_title: $event })"
-                  placeholder="Slide title"
+                  placeholder="Headline"
+                />
+                <input
+                  type="text"
+                  class="w-full text-xs text-gray-500 border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 px-0 py-0.5 focus:outline-none"
+                  [ngModel]="slide.subtitle ?? ''"
+                  (ngModelChange)="patchSlide(i, { subtitle: $event })"
+                  placeholder="Subtitle (key figures)"
                 />
               </div>
               <div class="flex items-center gap-1 shrink-0">

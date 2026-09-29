@@ -29,7 +29,8 @@ Read the SHAPE of each key_message to decide which component type fits:
 | Named rows × named columns (a grid, even when the brief calls it a "matrix") | table | "Rows: Visibility, Conversion · Columns: Zepto, Blinkit, Instamart" |
 | Entity + single metric (3+ entities) | chart | "Bengaluru 0.45x · Hyderabad 0.31x · Chennai 0.28x" |
 | Categorized list (items grouped under labels) | bullet_list | "Winners: brand exact, paneer · Weak: butter chicken phrase, instant food" |
-| Sequential process (short labels, no sub-detail) | process_arrow | "Discovery → Design → Build → Test → Deploy" |
+| Ordered sequence of ≤ 5 steps, labels ≤ 2 words | process_arrow (full slide width) | "Discovery → Design → Build → Test → Deploy" |
+| Parallel items that are not a sequence (pillars, impact areas, capabilities) | bullet_list (an icon per point) | "Visibility · Conversion · Retention · Loyalty" |
 | Process with branching or decisions | flow | "Validate → OK? → (Yes: Save) (No: Retry)" |
 | Chronological events with dates | timeline | "Q1 2025: Alpha · Q2 2025: Beta · Q3 2025: GA" |
 | Parent-child hierarchy | tree | "CEO → CTO (Eng, Product) · CFO (Finance)" |
@@ -43,6 +44,7 @@ Read the SHAPE of each key_message to decide which component type fits:
 - Comparison across entities → **table** (not matrix, which only positions items on 2 axes without showing values)
 - Named rows × named columns → **table**, even when the brief calls it a "matrix" or "opportunity matrix". The **matrix** kind is only a 2×2 positioning map: use it only when the key_messages say where each item sits on both axes — never make up positions.
 - Sequential steps WITH detail per step → **process_arrow** (structure) + **bullet_list** (detail), not process_arrow alone
+- Items with no order between them → **bullet_list**, never **process_arrow**: chevrons claim a sequence the content doesn't have
 - Items grouped by category → **bullet_list** (not separate components per category)
 
 When a key_message contains MULTIPLE data points of the same type (e.g. 4 quarters of revenue), they belong in a SINGLE component (one chart with 4 data points), not 4 separate components.
@@ -77,7 +79,7 @@ When in doubt between cover and data, choose data.
 | layer | Layer, Line, Arrow, Svg | Free-form positioning | Architecture diagrams, annotated visuals |
 | tree | Tree, TreeItem | items = total nodes | Org charts, hierarchical breakdowns |
 | matrix | Matrix, MatrixAxes, MatrixQuadrants, MatrixItem | items = positioned items (3-5) | 2×2 positioning maps: effort-impact, BCG, priority maps (not rows × columns grids — use table) |
-| process_arrow | ProcessArrow, ProcessArrowStep | items = steps (3-5) | Linear sequential processes (chevrons) |
+| process_arrow | ProcessArrow, ProcessArrowStep | items = steps (3-5), labels ≤ 2 words, full slide width | A real ordered sequence (chevrons); never for unordered items |
 | pyramid | Pyramid, PyramidLevel | items = levels (3-5) | Layered hierarchies, funnels |
 
 ### Visual Fitness Guide
@@ -92,7 +94,7 @@ Each component renders as a SPECIFIC visual shape. Choosing the wrong one for yo
 
 **bullet_list** — Vertical list with bullet markers (Ul/Li). Supports inline formatting (bold, italic, spans). Best for: qualitative insights, action items, takeaways, tactical detail — any content that is a list of parallel statements. Very flexible on text length per item. Pair with a structural component (process_arrow, flow) to add visual hierarchy above the detail.
 
-**process_arrow** — Overlapping chevron shapes in a horizontal or vertical strip. Labels render INSIDE the chevron shapes, which are roughly 150×80px each. Best for: 3-5 sequential phases or steps where the ORDER is the message. The chevron shape itself communicates forward momentum. Breaks when: labels exceed 2-5 words (text overflows the chevron shape) or when steps need sub-detail (pair with bullet_list for the detail).
+**process_arrow** — Overlapping chevron shapes in a horizontal or vertical strip. Labels render INSIDE the chevron shapes, which are roughly 150×80px each. Best for: 3-5 sequential phases or steps where the ORDER is the message. The chevron shape itself communicates forward momentum. Needs the full slide width. Breaks when: there are more than 5 steps, a label is longer than 2 words (words break across lines inside the chevron), it sits in a half-width card, the items are not a real sequence (use bullet_list), or steps need sub-detail (pair with bullet_list for the detail).
 
 **flow** — Flowchart with shaped nodes (process, decision, terminator, etc.) connected by arrowed lines. Nodes are roughly 120×60px each. Best for: processes with BRANCHING or DECISIONS — the diamond decision node and labeled connections are Flow's unique strength over ProcessArrow. Breaks when: node labels exceed 1-3 words, or when the process is purely linear with no branches (use process_arrow instead).
 
@@ -215,7 +217,7 @@ For bullet_list: { "bullets": ["First insight", "Second insight", "Third insight
 
 For narrative: { "text": "Explanatory paragraph text..." }
 
-For caption: { "text": "Source: Company Q3 2025 earnings report" }
+For caption: { "text": "<a note or source named in the key_messages>" } — never make up a source or a date
 
 For timeline:
   { "direction": "horizontal",
@@ -250,21 +252,21 @@ For matrix (only when the key_messages say where each item sits; positions are l
 
 ## Worked Examples
 
-These complete input→output pairs show correct routing for the most-confused patterns. Study them before planning your slide.
+These complete input→output pairs show correct routing for the most-confused patterns. They are chosen by the SHAPE of the content, not its topic: route your slide by the shape of its key_messages, even when its topic resembles one example more than another.
 
 ---
 
-### Example 1 — Multiple entities × multiple metrics → table (NOT kpi_row or separate charts)
+### Example 1 — One entity's metrics → kpi_row (NOT a two-column "Metric | Value" table)
 
 **Input brief:**
-Title: Match Type Performance — Q3 FY26
-Narrative role: Show how three ad match types compare on spend, ROAS, and CPC to identify which is profitable.
+Headline: The app grew its base and kept it
+Narrative role: Show the mobile app's health this quarter at a glance.
 Key messages:
-1. Phrase match: Spend ₹45L, ROAS 0.32x, CPC ₹62
-2. Exact match: Spend ₹21L, ROAS 0.41x, CPC ₹48
-3. Broad match: Spend ₹34L, ROAS 0.19x, CPC ₹38
-4. Exact is the only profitable match type at break-even ROAS of 0.40x; phrase and broad are both loss-making
-Visual emphasis: The profit gap between match types is the story — exact leads; table preserves the per-entity detail
+1. Monthly active users: 2.4M (+12% QoQ)
+2. Day-30 retention: 38% (+3 pts)
+3. Store rating: 4.6
+4. Crash-free sessions: 99.2%
+Visual emphasis: four headline metrics for one product
 
 **Correct output:**
 ```json
@@ -275,49 +277,39 @@ Visual emphasis: The profit gap between match types is the story — exact leads
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "Match Type Performance — Q3 FY26"}
+      "content_data_json": {"title": "The app grew its base and kept it"}
     },
     {
-      "component_id": "match_table",
-      "kind": "table",
+      "component_id": "app_kpis",
+      "kind": "kpi_row",
+      "count": 4,
       "weight": "hero",
-      "design_hint": "highlight the Exact row with accent color to show it is the only profitable type; red tint on Phrase and Broad ROAS cells",
+      "design_hint": "show the QoQ deltas on active users and retention in positive color",
       "content_data_json": {
-        "table_columns": ["Match Type", "Spend", "ROAS", "CPC"],
-        "table_rows": [
-          ["Phrase", "₹45L", "0.32x", "₹62"],
-          ["Exact", "₹21L", "0.41x", "₹48"],
-          ["Broad", "₹34L", "0.19x", "₹38"]
-        ]
+        "kpi_labels": ["Monthly active users", "Day-30 retention", "Store rating", "Crash-free sessions"],
+        "kpi_values": ["2.4M", "38%", "4.6", "99.2%"],
+        "kpi_deltas": ["+12% QoQ", "+3 pts", "", ""],
+        "kpi_directions": ["up", "up", "", ""]
       }
-    },
-    {
-      "component_id": "profit_note",
-      "kind": "narrative",
-      "weight": "supporting",
-      "content_data_json": {"text": "Exact is the only profitable match type at break-even ROAS of 0.40x; phrase and broad are both loss-making"}
     }
   ],
-  "layout_hint": "match_table is the hero — full width; profit_note sits below as supporting context"
+  "layout_hint": "app_kpis is the whole slide: four equal tiles under the header"
 }
 ```
 
-**Why table and not kpi_row:** Three distinct entities (match types) each have THREE metrics. kpi_row shows one entity's metrics as tiles — it loses the per-entity breakdown. table preserves the 3×3 grid so the audience can compare across both rows AND columns.
+**Why kpi_row and not a table:** all four metrics describe ONE entity (the app). A "Metric | Value" table spends a column on labels and hides the numbers in small cells; tiles make each value large and scannable. Use a table when several entities share the metrics (Example 3).
 
 ---
 
-### Example 2 — Entity + single metric across 3+ entities → chart (NOT kpi_row)
+### Example 2 — One measure across 3+ entities → bar chart, sorted (NOT kpi_row)
 
 **Input brief:**
-Title: City-wise ROAS — Q3 FY26
-Narrative role: Show ROAS by city to identify where ad spend is profitable and where it is not.
+Headline: Billing tickets take twice as long as any other queue
+Narrative role: Show average resolution time by support queue to find the bottleneck.
 Key messages:
-1. Bengaluru ROAS 0.45x
-2. Hyderabad ROAS 0.31x
-3. Chennai ROAS 0.28x
-4. Mumbai ROAS 0.21x
-5. Only Bengaluru is above the break-even threshold of 0.40x
-Visual emphasis: Bengaluru is the clear leader; the other three cities underperform — bar chart shows the gap at a glance
+1. Average resolution time by queue: Onboarding 6.1h, Billing 14.8h, Technical 7.3h, Account 5.2h
+2. Billing is the only queue above the 8h service target
+Visual emphasis: the Billing bar stands out against the target
 
 **Correct output:**
 ```json
@@ -328,36 +320,84 @@ Visual emphasis: Bengaluru is the clear leader; the other three cities underperf
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "City-wise ROAS — Q3 FY26"}
+      "content_data_json": {"title": "Billing tickets take twice as long as any other queue"}
     },
     {
-      "component_id": "city_chart",
+      "component_id": "queue_chart",
       "kind": "chart",
+      "chart_type": "bar",
       "weight": "hero",
-      "design_hint": "add a horizontal reference line at 0.40x labeled break-even; use accent color for the Bengaluru bar, muted color for the rest",
+      "design_hint": "accent color on the Billing bar, muted color for the rest",
       "content_data_json": {
         "chart_type": "bar",
-        "chart_title": "ROAS by City",
-        "chart_labels": ["Bengaluru", "Hyderabad", "Chennai", "Mumbai"],
-        "chart_values": [0.45, 0.31, 0.28, 0.21]
+        "chart_title": "Average resolution time (hours)",
+        "chart_labels": ["Billing", "Technical", "Onboarding", "Account"],
+        "chart_values": [14.8, 7.3, 6.1, 5.2]
       }
     },
     {
-      "component_id": "threshold_note",
+      "component_id": "target_note",
       "kind": "narrative",
       "weight": "supporting",
-      "content_data_json": {"text": "Only Bengaluru is above the break-even threshold of 0.40x"}
+      "content_data_json": {"text": "Billing is the only queue above the 8h service target"}
     }
   ],
-  "layout_hint": "city_chart is the hero; threshold_note is a slim supporting band below it"
+  "layout_hint": "queue_chart is the hero; target_note is a slim supporting band below it"
 }
 ```
 
-**Why chart and not kpi_row:** Four cities each with ONE metric is a comparison-across-entities, not a headline-metrics dashboard. A bar chart communicates rank and gap at a glance. kpi_row would render four equal tiles with no visual sense of order or distance.
+**Why a sorted chart and not kpi_row:** four entities each with ONE measure is a comparison, not a dashboard. A bar chart shows rank and gap at a glance; sorting the bars (largest first) makes the rank readable without changing any value. kpi_row would render four equal tiles with no sense of order or distance.
 
 ---
 
-### Example 3 — Categorized list → bullet_list (NOT one component per category)
+### Example 3 — Several entities × several measures → table (NOT kpi_row or separate charts)
+
+**Input brief:**
+Headline: The West leads on growth, the North on margin
+Narrative role: Compare the three regions on revenue, growth and margin.
+Key messages:
+1. North: revenue €12.4M, growth +4%, margin 31%
+2. South: revenue €9.8M, growth +9%, margin 24%
+3. West: revenue €7.1M, growth +18%, margin 22%
+Visual emphasis: the per-region breakdown; the growth vs margin trade-off
+
+**Correct output:**
+```json
+{
+  "slide_type": "data",
+  "components": [
+    {
+      "component_id": "slide_title",
+      "kind": "title",
+      "weight": "minor",
+      "content_data_json": {"title": "The West leads on growth, the North on margin"}
+    },
+    {
+      "component_id": "region_table",
+      "kind": "table",
+      "columns": 4,
+      "rows": 3,
+      "weight": "hero",
+      "design_hint": "accent on the highest growth and the highest margin cells",
+      "content_data_json": {
+        "table_columns": ["Region", "Revenue", "Growth", "Margin"],
+        "table_rows": [
+          ["North", "€12.4M", "+4%", "31%"],
+          ["South", "€9.8M", "+9%", "24%"],
+          ["West", "€7.1M", "+18%", "22%"]
+        ]
+      }
+    }
+  ],
+  "layout_hint": "region_table is the hero, full width"
+}
+```
+
+**Why table and not kpi_row:** three entities (regions) each have THREE measures. kpi_row shows one entity's metrics as tiles and loses the per-entity breakdown; a table keeps the 3×3 grid so the audience can compare across rows AND columns.
+
+---
+
+### Example 4 — Categorized list → bullet_list (NOT one component per category)
 
 **Input brief:**
 Title: Campaign Winners and Losers — Q3 FY26

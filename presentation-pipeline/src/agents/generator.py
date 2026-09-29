@@ -60,6 +60,8 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
     user_prompt = user_tmpl.render(
         objective=state.get("raw_request", ""),
         slide_title=plan.get("slide_title", ""),
+        label=plan.get("label", ""),
+        subtitle=plan.get("subtitle", ""),
         core_hook=state.get("core_hook", ""),
         components=components,
         hint_scopes=contract.get("hint_scopes", {}),
@@ -67,7 +69,6 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         content_data=plan.get("content_data", {}),
         supplied_content=state.get("supplied_content"),
         slide_type=plan.get("slide_type", ""),
-        previous_slide_archetype=state.get("previous_slide_archetype", ""),
     )
 
     return system_prompt, user_prompt

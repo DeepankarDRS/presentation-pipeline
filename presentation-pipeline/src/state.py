@@ -18,7 +18,9 @@ from typing import Annotated, Any, Literal, TypedDict
 
 class OutlineSlide(TypedDict, total=False):
     slide_index: int
-    slide_title: str
+    label: str         # kicker above the headline
+    slide_title: str   # the headline
+    subtitle: str      # evidence line under the headline (key figures)
     section: str
     narrative_role: str
     key_messages: list[str]
@@ -56,7 +58,9 @@ class ComponentPlan(TypedDict, total=False):
 
 class SlidePlan(TypedDict, total=False):
     slide_index: int
-    slide_title: str   # short headline from the outline planner
+    slide_title: str   # the headline from the outline planner
+    label: str         # kicker from the outline planner
+    subtitle: str      # evidence line from the outline planner
     slide_type: str    # cover | content | data | section_break | closing
     components: list[ComponentPlan]
     layout_hint: str   # freeform layout INTENT (priority/relationships, not pixels)

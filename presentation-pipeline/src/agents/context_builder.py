@@ -322,7 +322,7 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     design = _load_yaml("core/design-language.yaml")
     if design:
         # Content-quality guidance is never in the grammar — always include it.
-        for rule in design.get("content_invention", []):
+        for rule in design.get("content_rules", []):
             notes.append(rule)
         if not has_grammar:
             for principle in design.get("design_principles", []):

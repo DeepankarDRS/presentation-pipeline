@@ -21,7 +21,7 @@ class DeckSettings(BaseModel):
     # Gamma "textcontent" — how to handle existing content
     text_mode: Literal["generate", "condense", "preserve"] = Field(
         default="generate",
-        description="generate = LLM invents content freely; "
+        description="generate = LLM writes the wording from the prompt; figures come only from the user; "
                     "condense = LLM compresses supplied_content to slide-friendly length; "
                     "preserve = LLM uses supplied_content verbatim, only adds structure.",
     )

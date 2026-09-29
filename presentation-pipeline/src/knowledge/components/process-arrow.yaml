@@ -41,7 +41,7 @@ ProcessArrowStep_attributes:
 
 notes:
   - "ProcessArrow needs explicit w and h. w=\"max\" works for width; h must be a pixel number."
-  - "3-6 steps work best. More steps need wider w or smaller itemWidth."
+  - "Capacity: 3-5 steps, labels of 1-2 short words, full slide width (in a band that spans the slide)."
   - "Use a gradient of related hues (light→dark or dark→light) across steps for visual flow."
   - "For branching or non-linear processes, use <Flow> instead."
   - "gap can be negative for overlapping chevron effect."
@@ -49,7 +49,7 @@ notes:
 pitfalls:
   - "label is required on every ProcessArrowStep."
   - "Missing w/h on ProcessArrow — will not render correctly."
-  - "Too many steps (>6) in horizontal mode at 1280 wide will cause overflow."
+  - "More than 5 steps, or a ProcessArrow in a half-width card, breaks labels into single letters (seen 2026-09-29: 7 impact areas drawn as chevrons). Put longer or unordered items in a bullet list instead."
   - "VERIFIED v10.3.0 render: a ProcessArrowStep label longer than ~2 short words
      clips / wraps badly inside the chevron at h<=70 (e.g. 'AUTONOMIZE' broke to
      'AUTONOMI ZE'). Keep labels to 1-2 words. Put any longer phase description

@@ -12,7 +12,13 @@ Tone: {{ deck_settings.get('tone') | join(', ') or 'professional' }}
 
 SLIDE TO PLAN (slide {{ slide.slide_index + 1 }} of {{ total_slides }}):
 
-Title: {{ slide.slide_title }}
+{% if slide.label %}
+Label (kicker): {{ slide.label }}
+{% endif %}
+Headline: {{ slide.slide_title }}
+{% if slide.subtitle %}
+Subtitle: {{ slide.subtitle }}
+{% endif %}
 Section: {{ slide.section or '(none)' }}
 
 Narrative role:

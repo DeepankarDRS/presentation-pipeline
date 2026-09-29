@@ -1,11 +1,13 @@
 """Outline planner agent — produces the deck skeleton (replaces planner.py).
 
 Takes the enriched request (raw_request + deck_settings + elicitation_answers +
-supplied_content) and produces a rich per-slide outline: slide_title, section,
-narrative_role, key_messages, visual_emphasis.
+supplied_content) and produces a rich per-slide outline: the header (label,
+slide_title = headline, subtitle), section, narrative_role, key_messages,
+visual_emphasis.
 
-key_messages is the absolute source of truth — every message carries semantic
-intent that the slide component planner routes to the right component type.
+key_messages carry each slide's content, copied from the request — every message
+carries semantic intent that the slide component planner routes to the right
+component type. Figures come only from the request (never invented).
 
 Does NOT produce slide_type, component lists, or content_data JSON. Those are
 the slide_component_planner's job.
@@ -17,6 +19,7 @@ Writes: outline_plan
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +39,33 @@ _jinja_env = Environment(
     trim_blocks=True,
     lstrip_blocks=True,
 )
+
+
+_NUMBER_WORDS = ("one two three four five six seven eight nine ten eleven twelve thirteen "
+                 "fourteen fifteen sixteen seventeen eighteen nineteen twenty").split()
+# "6-SLIDE", "14 slides", "a five-slide deck"; not "1280x720 slide" or "one slide per section"
+_STATED_COUNT = re.compile(
+    r"(?<![\d.x×])\b(\d{1,2}|" + "|".join(_NUMBER_WORDS) + r")\s*-?\s*slides?\b(?!\s+(?:per|each|for)\b)",
+    re.I,
+)
+_SLIDE_HEADING = re.compile(r"\bslide\s+(\d{1,2})\s*[:\-–—]", re.I)  # "Slide 3:" anywhere in a line
+
+
+def stated_slide_count(request: str) -> int | None:
+    """The slide count the request states: "6-SLIDE" / "five slides", else "Slide 1:" … "Slide N:".
+
+    None when the request states no count or states different counts.
+    """
+    counts = {int(m) if m.isdigit() else _NUMBER_WORDS.index(m.lower()) + 1
+              for m in _STATED_COUNT.findall(request or "")}
+    if len(counts) == 1:
+        return counts.pop()
+    if counts:
+        return None
+    headings = {int(m) for m in _SLIDE_HEADING.findall(request or "")}
+    if len(headings) >= 2 and headings == set(range(1, max(headings) + 1)):
+        return max(headings)
+    return None
 
 
 def _get_constraints(deck_settings_dict: dict[str, Any]) -> dict[str, Any]:
@@ -58,11 +88,15 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
     deck_settings = state.get("deck_settings") or {}
     constraints = _get_constraints(deck_settings)
 
+    # Slide count: the test case's → the one the request states → the settings bucket
     target_slides = constraints.get("deck_min_threshold") or state.get("deck_min_threshold", 6)
-    # Request override: if test_case specifies a slide count, honour it
+    slide_count_source = "settings"
+    stated = stated_slide_count(state.get("raw_request", ""))
+    if stated:
+        target_slides, slide_count_source = stated, "request"
     test_case = state.get("test_case") or {}
     if test_case.get("slide_count"):
-        target_slides = test_case["slide_count"]
+        target_slides, slide_count_source = test_case["slide_count"], "test_case"
 
     user_msg = _jinja_env.get_template("user.j2").render(
         raw_request=state.get("raw_request", ""),
@@ -71,6 +105,7 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
         elicitation_answers=state.get("elicitation_answers") or {},
         supplied_content=state.get("supplied_content"),
         target_slides=target_slides,
+        slide_count_source=slide_count_source,
     )
     system_msg = _jinja_env.get_template("system.j2").render()
 

@@ -94,6 +94,9 @@ class ComponentPlanPayload(BaseModel):
 
 class SlidePlanPayload(BaseModel):
     slide_index: int = 0
+    slide_title: str = ""  # the headline
+    label: str = ""        # kicker above the headline
+    subtitle: str = ""     # evidence line under the headline
     slide_type: str
     components: list[ComponentPlanPayload]
     layout_pattern: str = ""  # deprecated, ignored - kept so old clients don't 422
@@ -486,6 +489,9 @@ def _payload_to_slide_plans(
 
         result.append(SlidePlan(
             slide_index=i,
+            slide_title=s.slide_title,
+            label=s.label,
+            subtitle=s.subtitle,
             slide_type=s.slide_type,
             components=components,
             layout_hint=s.layout_hint,
@@ -546,7 +552,7 @@ async def deck_settings_schema() -> dict[str, Any]:
                 "label": "Content handling",
                 "type": "single_choice",
                 "options": [
-                    {"value": "generate", "label": "Generate", "description": "LLM invents the content from your prompt"},
+                    {"value": "generate", "label": "Generate", "description": "Writes the wording from your prompt; never makes up figures"},
                     {"value": "condense", "label": "Condense", "description": "LLM compresses your supplied content"},
                     {"value": "preserve", "label": "Preserve", "description": "LLM uses your supplied content verbatim"},
                 ],

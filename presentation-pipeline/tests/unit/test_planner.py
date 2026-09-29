@@ -8,9 +8,12 @@ Replaces the old monolithic planner tests. Tests now cover:
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
 from src.agents.plan_reviewer_schema import PlanReviewerOutput, PlanReviewIssue
 from src.agents.planner_schema import PlannerComponent, PlannerSlide
+from src.agents.outline_planner import stated_slide_count
 from src.agents.settings_mapper import compute_provenance, settings_to_constraints, DeckSettings
 from src.agents.slide_component_planner import _planner_slide_to_state
 from src.state import SlidePlan, initial_state
@@ -251,6 +254,97 @@ def test_outline_planner_with_deck_settings(mock_get_llm):
     assert "outline_plan" in result
 
 
+def _captured_user_prompt(mock_get_llm) -> str:
+    structured = mock_get_llm.return_value.with_structured_output.return_value
+    return structured.invoke.call_args[0][0][1].content
+
+
+@pytest.mark.parametrize("request_text, expected", [
+    ("Create a 6-SLIDE audit presentation", 6),
+    ("Create a 14-slide deck, one slide per section below", 14),
+    ("A five-slide pitch deck. Slide 1: cover. Slide 2: problem.", 5),
+    ("Deck. Slide 1: cover. Slide 2: KPIs. Slide 3: plan.", 3),     # headings only
+    ("One slide with four KPIs on a single 1280x720 slide", 1),
+    ("A 1280x720 slide with a chart", None),
+    ("Show our revenue trend", None),
+    ("Either 6 slides or 8 slides", None),                          # conflicting counts
+    ("Slide 1: cover. Slide 3: plan.", None),                        # headings with a gap
+])
+def test_stated_slide_count(request_text, expected):
+    assert stated_slide_count(request_text) == expected
+
+
+@patch("src.agents.outline_planner.get_llm")
+def test_outline_planner_slide_count_from_request(mock_get_llm):
+    mock_get_llm.return_value = _make_structured_llm(_mock_outline_output({}))
+    state = initial_state(run_id="op4", raw_request="Create a 5-slide QBR deck")  # settings default = 8
+    outline_planner_node(state)
+    prompt = _captured_user_prompt(mock_get_llm)
+    assert "TARGET DECK SIZE: 5 slides (the count the request states)." in prompt
+    assert "EXACTLY 5 slides" in prompt
+
+
+@patch("src.agents.outline_planner.get_llm")
+def test_outline_planner_test_case_count_wins(mock_get_llm):
+    mock_get_llm.return_value = _make_structured_llm(_mock_outline_output({}))
+    state = initial_state(run_id="op5", raw_request="Create a 5-slide QBR deck")
+    state["test_case"] = {"slide_count": 7}
+    outline_planner_node(state)
+    assert "TARGET DECK SIZE: 7 slides." in _captured_user_prompt(mock_get_llm)
+
+
+@patch("src.agents.outline_planner.get_llm")
+def test_outline_planner_header_reaches_slide_plan(mock_get_llm):
+    output = OutlinePlannerOutput(deck_title="D", core_hook="H", slides=[OutlineSlide(
+        slide_index=0, label="PLATFORM DEEP-DIVE", slide_title="Search carries sales",
+        subtitle="₹1.32 Cr sales · 6.35x ROAS", narrative_role="r", key_messages=["m"],
+        visual_emphasis="e",
+    )])
+    mock_get_llm.return_value = _make_structured_llm(output)
+    outline_slide = outline_planner_node(initial_state(run_id="op6", raw_request="x"))["outline_plan"]["slides"][0]
+    assert outline_slide["label"] == "PLATFORM DEEP-DIVE"
+    assert outline_slide["subtitle"] == "₹1.32 Cr sales · 6.35x ROAS"
+
+    plan = _planner_slide_to_state(
+        0, PlannerSlide(slide_type="data", layout_hint="", components=[
+            PlannerComponent(component_id="t", kind="title", count=1, content_summary="t")]),
+        slide_title=outline_slide["slide_title"], label=outline_slide["label"],
+        subtitle=outline_slide["subtitle"],
+    )
+    assert (plan["label"], plan["slide_title"], plan["subtitle"]) == (
+        "PLATFORM DEEP-DIVE", "Search carries sales", "₹1.32 Cr sales · 6.35x ROAS")
+
+
+def test_outline_prompts_have_no_invention_lines():
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2] / "src"
+    texts = [
+        (root / "prompts/outline_planner/system.j2").read_text(encoding="utf-8"),
+        (root / "prompts/outline_planner/user.j2").read_text(encoding="utf-8"),
+        (root / "prompts/outline_replanner/system.j2").read_text(encoding="utf-8"),
+        str(OutlinePlannerOutput.model_json_schema()),
+    ]
+    for text in texts:
+        assert "plausible" not in text and "$42.8M" not in text
+
+
+def test_generator_prompts_draw_the_planned_header_and_invent_nothing():
+    from src.agents.generator import _render_prompts
+    plan = {"slide_title": "Search carries sales", "label": "DEEP-DIVE", "subtitle": "₹1.32 Cr · 6.35x",
+            "slide_type": "data", "components": [{"kind": "table", "component_id": "t", "count": 1}]}
+    for content_data in ({}, {"x": "1"}):
+        plan["content_data"] = content_data
+        system, user = _render_prompts({"slide_plans": [plan], "current_slide_index": 0, "contract": {},
+                                        "previous_slide_archetype": "B"})
+        assert "kicker: DEEP-DIVE\n  headline: Search carries sales\n  subtitle: ₹1.32 Cr · 6.35x" in user
+        for text in (system, user):
+            low = text.lower()
+            assert "invent realistic" not in low and "real-sounding" not in low
+            assert "add substance" not in low and "archetype" not in low
+            assert "$42.8M" not in text and "do NOT rearrange" not in text
+            assert "Derive the kicker" not in text
+
+
 # ── compute_provenance tests ───────────────────────────────────────────────
 
 def test_compute_provenance_all_sample():
@@ -330,3 +424,23 @@ def test_settings_to_constraints_extensive():
 
 # Local import needed for the outline node tests
 from src.agents.outline_planner import outline_planner_node
+
+
+def test_planner_temperatures_are_low():
+    """§9.1 planner 9: both planners at 0.1 for stable plans."""
+    from src.utils.llm_client import _load_models_config
+    steps = _load_models_config()["steps"]
+    assert steps["outline_planner"]["temperature"] == 0.1
+    assert steps["slide_component_planner"]["temperature"] == 0.1
+
+
+def test_slide_planner_prompt_examples_by_shape():
+    """§9.1 planners 13, 15, 16 — and the matrix routing fix (f51c3f6) stays."""
+    from src.agents.hint_capabilities import planner_capabilities_section
+    from src.agents.slide_component_planner import _jinja_env
+    prompt = _jinja_env.get_template("system.j2").render(hint_capabilities=planner_capabilities_section())
+    assert "Source: Company" not in prompt                       # 13: no dated source example
+    assert "Match Type Performance" not in prompt                # 15: examples outside the ad domain
+    assert "One entity's metrics → kpi_row" in prompt
+    assert "labels ≤ 2 words, full slide width" in prompt        # 16: chevron capacity
+    assert "The **matrix** kind is only a 2×2 positioning map" in prompt
