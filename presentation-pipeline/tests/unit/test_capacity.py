@@ -93,3 +93,84 @@ def test_components_within_capacity_are_untouched():
              {"kind": "table", "content_data": {"table_rows": [[1]] * 30}}]
     before = [dict(c) for c in comps]
     assert enforce_capacity(comps) == [] and comps == before
+
+
+# ── layout-batch run fixes (2026-09-29, XTSY + CHEFFIN) ─────────────────────
+
+from src.agents.capacity import per_row  # noqa: E402
+
+
+def test_per_row_balances_rows():
+    assert [per_row(n, 4) for n in (3, 4, 5, 6, 7, 8, 9, 12)] == [3, 4, 3, 3, 4, 4, 3, 4]
+
+
+def test_every_grid_gets_its_cards_per_row():
+    """XTSY run 2: 7 impact cards drawn in one row."""
+    comps = [{"kind": "card_grid", "content_data": {"card_layout": "grid", "cards": [{"title": f"c{i}"} for i in range(7)]}}]
+    enforce_capacity(comps)
+    assert comps[0]["content_data"]["per_row"] == 4
+
+
+def test_seven_steps_become_a_grid_and_a_long_flow_becomes_cards():
+    """XTSY run 2: 7 workflow steps in one row of a 62% panel broke words into letters."""
+    steps = [{"kind": "card_grid", "content_data": {"card_layout": "steps", "cards": [{"title": f"s{i}"} for i in range(7)]}}]
+    flow = [{"kind": "flow", "content_data": {"flow_steps": [f"Node {i}" for i in range(7)]}}]
+    n1, n2 = enforce_capacity(steps), enforce_capacity(flow)
+    assert steps[0]["content_data"]["card_layout"] == "grid" and "too many for one row" in n1[0]
+    assert flow[0]["kind"] == "card_grid" and flow[0]["content_data"]["per_row"] == 4 and "flow with 7" in n2[0]
+
+
+def test_metric_value_table_of_one_entity_becomes_kpi_tiers():
+    """CHEFFIN slide 5: the brief's 'Show table: Metric | Value' (user decision L5: switch, record why)."""
+    rows = [["Spend", "₹29.4L"], ["Ad sales", "₹10.1L"], ["ROAS", "0.34x"], ["CPC", "₹31.1"],
+            ["CVR", "5.5%"], ["AOV", "₹195"], ["Allowable CPC for 1.0x ROAS", "₹10.7"]]
+    comps = [{"component_id": "flip", "kind": "table", "weight": "hero", "design_hint": "shade the CPC row",
+              "content_data": {"table_columns": ["Metric", "Value"], "table_rows": rows}},
+             {"kind": "narrative", "content_data": {"text": "x"}}]
+    notes = enforce_capacity(comps)
+    assert [c["kind"] for c in comps] == ["kpi_row", "kpi_row", "narrative"]
+    assert comps[0]["content_data"]["kpi_labels"] == ["Spend", "Ad sales", "ROAS"] and comps[0]["weight"] == "hero"
+    assert comps[1]["content_data"]["kpi_values"] == ["₹31.1", "5.5%", "₹195", "₹10.7"] and comps[1]["weight"] == "supporting"
+    assert "3 + 4" in notes[0] and "switched" in notes[0]
+
+
+def test_one_measure_across_entities_stays_a_table():
+    rows = [["Bengaluru", "0.45x"], ["Hyderabad", "0.31x"], ["Chennai", "0.28x"]]
+    comps = [{"kind": "table", "content_data": {"table_columns": ["City", "ROAS"], "table_rows": rows}}]
+    assert enforce_capacity(comps) == [] and comps[0]["kind"] == "table"
+
+
+def test_icon_list_of_short_named_items_becomes_cards_but_sentences_stay():
+    """CHEFFIN slide 4: five data sources as an icon list."""
+    sources = ["FLIPCART Targeting last 90 days report", "FLIPCART Search Term report", "ZAROMA campaign-level data",
+               "ZAROMA city-level data", "ZAROMA keyword-level data"]
+    notes_list = ["Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.",
+                  "ZAROMA sheets appear to have different coverage."]
+    comps = [{"kind": "bullet_list", "design_hint": "icon beside each point", "content_data": {"bullets": sources}},
+             {"kind": "bullet_list", "design_hint": "icon beside each point", "content_data": {"bullets": notes_list}},
+             {"kind": "bullet_list", "design_hint": "bold the action", "content_data": {"bullets": sources}}]
+    enforce_capacity(comps)
+    assert [c["kind"] for c in comps] == ["card_grid", "bullet_list", "bullet_list"]
+    assert comps[0]["content_data"]["per_row"] == 3
+    reviewed = [{"kind": "bullet_list", "design_hint": "icon beside each point",
+                 "content_data": {"bullets": [f"{t} reviewed." for t in sources]}}]  # CHEFFIN run 2 wording
+    enforce_capacity(reviewed)
+    assert reviewed[0]["kind"] == "card_grid"
+
+
+def test_matrix_of_row_and_column_names_becomes_one_card_per_row():
+    """XTSY slide 3: cells read 'Visibility — Zepto'."""
+    rows, cols = ["Visibility", "Conversion", "Repeat Purchase", "Market Expansion"], ["Zepto", "Blinkit", "Instamart"]
+    cards = [{"title": f"{r} — {c}"} for r in rows for c in cols]
+    comps = [{"kind": "card_grid", "content_data": {"card_layout": "matrix", "rows": rows, "columns": cols, "cards": cards}}]
+    notes = enforce_capacity(comps)
+    cd = comps[0]["content_data"]
+    assert cd["card_layout"] == "grid" and [c["title"] for c in cd["cards"]] == rows and "repeated" in notes[0]
+
+
+def test_real_matrix_is_kept():
+    rows, cols = ["Reach"], ["Web", "App"]
+    comps = [{"kind": "card_grid", "content_data": {"card_layout": "matrix", "rows": rows, "columns": cols,
+                                                    "cards": [{"title": "Search visibility"}, {"title": "Home-screen placement"}]}}]
+    enforce_capacity(comps)
+    assert comps[0]["content_data"]["card_layout"] == "matrix"

@@ -32,7 +32,8 @@ from src.agents.capacity import capacity, enforce_capacity, span
 from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
-from src.agents.written_lines import flag_written_lines
+from src.agents.written_lines import (content_lines, drop_visual_directions, flag_written_lines,
+                                      visual_directions)
 from src.state import ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, unpack_raw
 
@@ -212,8 +213,13 @@ def plan_single_slide(
     brief_text = " ".join([*(slide.get("key_messages") or []), slide.get("slide_title", ""),
                            slide.get("subtitle", ""), slide.get("visual_emphasis", ""),
                            json.dumps(supplied_for_slide or {}, ensure_ascii=False)])
-    for note in flag_written_lines(plan, brief_text):
+    directions = visual_directions(slide)
+    notes = (drop_visual_directions(plan, directions, content_lines(slide, directions))
+             + flag_written_lines(plan, brief_text))
+    for note in notes:
         logger.info(f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} {note}")
+    if notes:
+        plan["capacity_fixes"] = [*plan.get("capacity_fixes", []), *notes]
     return plan, usage
 
 

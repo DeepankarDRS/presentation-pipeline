@@ -21,7 +21,8 @@ kpi_row: |
   # sizes to its tiles. Tiles w="max" (equal width shares). Inside each tile
   # justifyContent="center" (NOT spaceBetween). Unit in a <Span> inside the value <Text>.
   # EVERY font in the tile must be >= 14. Labels=14, values=28-34, deltas/notes=14.
-  # 2-5 tiles per row. A second tier (the plan's detail kpi_row) goes in its own
+  # 2-5 tiles per row (the data's per_row when given: rows of that many tiles).
+  # A second tier (the plan's detail kpi_row) goes in its own
   # row below, sized to content (compact_kpi_strip).
   # Read-out tile (design_hint "inverted panel on the X tile"): that one tile uses the
   # hero_panel colours - light theme backgroundColor="$textMain" with label/value
@@ -332,7 +333,8 @@ card_grid: |
   # the same %, left-aligned).
   # Card = optional tag (14, letterSpacing 1, muted) + title (16-20 bold) + optional
   # body (the plan's line, 14 muted, wraps). Optional <Icon size="24" alignSelf="start"> as the first child.
-  # 2-4 cards per row; 5+ items: two rows (7 = 4 + 3). The design_hint's emphasised
+  # Cards per row = the data's per_row (7 cards, per_row 4 -> rows of 4 + 3); never
+  # all cards in one row when per_row is smaller. The design_hint's emphasised
   # card: light theme backgroundColor="$textMain" with $surfaceAlt / $accentAlt text.
   <VStack grow="2" gap="12">
     <HStack grow="1" gap="12" alignItems="stretch">
@@ -372,6 +374,7 @@ card_grid: |
 card_steps: |
   # Card steps: an ordered sequence whose steps carry detail (phases, a 90-day plan,
   # a workflow) - cards joined by arrows, NOT chevrons + a separate bullet list.
+  # Needs the FULL slide width - never inside a side column or a narrow panel.
   # Band grow from its weight; cards w="max" in one HStack (2-5 steps). Card = tag
   # ("PHASE 01 · DAY 0-30", 14 muted) + title (16-20 bold) + the plan's detail as a
   # short <Ul> or one line. Arrow: <Icon name="arrow-right" size="20"> with

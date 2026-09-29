@@ -36,3 +36,50 @@ def test_other_components_and_empty_cards_untouched():
     plan = {"components": [{"kind": "bullet_list", "content_data": {"bullets": ["made up"]}}]}
     assert flag_written_lines(plan, BRIEF) == [] and "written_lines" not in plan
     assert from_brief("", BRIEF)
+
+
+# ── design directions are not content (fix 6, CHEFFIN cover) ────────────────
+
+from src.agents.written_lines import content_lines, drop_visual_directions, visual_directions  # noqa: E402
+
+COVER = {"key_messages": ["Prepared by our agency",
+                          "Visual: Marketplace growth theme with FLIPCART and ZAROMA visual cues."],
+         "visual_emphasis": "Marketplace growth theme with FLIPCART and ZAROMA visual cues."}
+
+
+def _cover_plan():
+    return {"components": [
+        {"kind": "caption", "component_id": "prep", "content_data": {"text": "Prepared by our agency"}},
+        {"kind": "narrative", "component_id": "theme",
+         "content_data": {"text": "Marketplace growth theme with FLIPCART and ZAROMA visual cues."}}]}
+
+
+def test_visual_line_printed_as_a_card_is_dropped():
+    plan = _cover_plan()
+    dirs = visual_directions(COVER)
+    notes = drop_visual_directions(plan, dirs, content_lines(COVER, dirs))
+    assert [c["component_id"] for c in plan["components"]] == ["prep"] and "design direction" in notes[0]
+
+
+def test_direction_copied_into_key_messages_without_label_still_counts():
+    slide = {**COVER, "key_messages": ["Prepared by our agency", COVER["visual_emphasis"]]}
+    plan = _cover_plan()
+    dirs = visual_directions(slide)
+    drop_visual_directions(plan, dirs, content_lines(slide, dirs))
+    assert [c["component_id"] for c in plan["components"]] == ["prep"]
+
+
+def test_content_that_is_also_in_the_visual_emphasis_is_kept():
+    slide = {"key_messages": ["Late fixes is the fastest-growing moment", "Stand-up and review drive daily use"],
+             "visual_emphasis": "Late fixes is the fastest-growing moment"}
+    plan = {"components": [{"kind": "narrative", "content_data": {"text": "Stand-up and review drive daily use"}}]}
+    dirs = visual_directions(slide)
+    assert drop_visual_directions(plan, dirs, content_lines(slide, dirs)) == [] and len(plan["components"]) == 1
+
+
+def test_emphasis_that_restates_content_never_drops_it():
+    slide = {"key_messages": ["Late fixes is the fastest-growing moment"],
+             "visual_emphasis": "Late fixes is the fastest-growing moment"}
+    plan = {"components": [{"kind": "narrative", "content_data": {"text": "Late fixes is the fastest-growing moment"}}]}
+    dirs = visual_directions(slide)
+    assert dirs == [] and drop_visual_directions(plan, dirs, content_lines(slide, dirs)) == []

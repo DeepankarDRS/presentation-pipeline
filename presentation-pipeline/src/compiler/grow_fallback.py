@@ -97,3 +97,48 @@ def ensure_growing_band(xml: str) -> tuple[str, str | None]:
     what = "chart/diagram" if with_fill else f"{pick.nodes}-node {pick.name}"
     return xml, (f'No band of the root VStack grew; gave grow="1" to the main content band '
                  f"({what}) so it takes the spare height. Opening tag was: {tag_open[:80]}")
+
+
+# ── rows of cards share their band's height ─────────────────────────────────
+# XTSY layout-batch run: the card grid's band had grow="2" but its two card rows
+# had none, so the rows kept their content height and the band's lower half stayed
+# empty. A growing VStack whose children are all HStack rows, none flexible, gives
+# each row grow="1" (the recipe's own shape).
+
+def _elements(xml: str) -> list[dict]:
+    """Every element as {name, attrs, start, open_end, children}, in document order."""
+    stack: list[dict] = []
+    out: list[dict] = []
+    for m in _TAG_RE.finditer(xml):
+        name = m.group("name")
+        if name is None:
+            continue
+        if m.group("close"):
+            if stack:
+                stack.pop()
+            continue
+        el = {"name": name, "attrs": m.group("attrs"), "start": m.start(), "open_end": m.end(), "children": []}
+        if stack:
+            stack[-1]["children"].append(el)
+        out.append(el)
+        if not m.group("self"):
+            stack.append(el)
+    return out
+
+
+def share_row_height(xml: str) -> tuple[str, str | None]:
+    """Return (xml, message); message is None when nothing changed."""
+    inserts: list[int] = []
+    for el in _elements(xml):
+        if el["name"] != "VStack" or not _FLEX_ATTR_RE.search(el["attrs"]):
+            continue
+        rows = el["children"]
+        if len(rows) < 2 or any(r["name"] != "HStack" or _FLEX_ATTR_RE.search(r["attrs"]) for r in rows):
+            continue
+        inserts.extend(r["start"] + 1 + len("HStack") for r in rows)
+    if not inserts:
+        return xml, None
+    for at in sorted(inserts, reverse=True):
+        xml = xml[:at] + ' grow="1"' + xml[at:]
+    return xml, (f'Gave grow="1" to {len(inserts)} card row(s) of a growing band so the rows '
+                 "share its height (none of them grew).")

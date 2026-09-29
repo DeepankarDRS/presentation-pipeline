@@ -11,7 +11,7 @@ import re
 from typing import Any
 
 from src.compiler.content_model import find_violations, flatten_text_containers
-from src.compiler.grow_fallback import ensure_growing_band
+from src.compiler.grow_fallback import ensure_growing_band, share_row_height
 from src.compiler.icons import fix_icon_names
 
 
@@ -653,6 +653,9 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     xml, grow_note = ensure_growing_band(xml)
     if grow_note:
         issues.append({"code": "GROW_BAND_ADDED", "message": grow_note, "auto_fixed": True})
+    xml, rows_note = share_row_height(xml)
+    if rows_note:
+        issues.append({"code": "GROW_ROWS_ADDED", "message": rows_note, "auto_fixed": True})
 
     cleaned = xml.strip() + "\n"
     auto_fixed = sum(1 for i in issues if i["auto_fixed"])

@@ -53,3 +53,14 @@ def test_normalizer_reports_grow_band_added():
     out = normalize_xml(slide(HEADER, KPI_ROW, CALLOUT))
     assert any(i["code"] == "GROW_BAND_ADDED" for i in out["issues"])
     assert not out["blocking"]
+
+
+def test_card_rows_share_a_growing_bands_height():
+    """XTSY layout-batch: band grow="2", rows without grow -> lower half of the slide empty."""
+    from src.compiler.grow_fallback import share_row_height
+    grid = f'<VStack grow="2" gap="14"><HStack gap="14">{TILE}{TILE}</HStack><HStack gap="14">{TILE}</HStack></VStack>'
+    xml, note = share_row_height(slide(HEADER, grid, CALLOUT))
+    assert xml.count('<HStack grow="1" gap="14">') == 2 and "2 card row" in note
+    assert share_row_height(xml) == (xml, None)                      # idempotent
+    fixed = grid.replace('<HStack gap="14">', '<HStack grow="1" gap="14">', 1)
+    assert share_row_height(slide(HEADER, fixed))[1] is None         # one row already flexible: leave it

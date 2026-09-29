@@ -29,6 +29,50 @@ def from_brief(line: str, brief_text: str) -> bool:
     return sum(w in have for w in words) / len(words) >= BRIEF_OVERLAP
 
 
+_DIRECTION = re.compile(r"^\s*(visual|design|style|look|layout)\s*:\s*", re.I)
+_TEXT_KINDS = {"narrative", "caption", "bullet_list"}
+_DESIGN_WORDS = re.compile(r"visual|theme|cues?\b|colou?r|icons?\b|imagery|illustrat|gradient|layout|style|mood|look and feel",
+                           re.I)
+
+
+def visual_directions(slide: dict[str, Any]) -> list[str]:
+    """The brief's design directions for this slide (a "Visual:" line, visual_emphasis)."""
+    out = [_DIRECTION.sub("", m) for m in slide.get("key_messages") or [] if _DIRECTION.match(m or "")]
+    emphasis = str(slide.get("visual_emphasis") or "")
+    if _DESIGN_WORDS.search(emphasis):  # an emphasis note that restates content is not a direction
+        out.append(_DIRECTION.sub("", emphasis))
+    return [d for d in out if d.strip()]
+
+
+def _component_text(comp: dict[str, Any]) -> str:
+    data = comp.get("content_data") or {}
+    return " ".join(str(x) for x in [data.get("text", ""), *(data.get("bullets") or [])])
+
+
+def content_lines(slide: dict[str, Any], directions: list[str]) -> str:
+    """The slide's brief lines that are content: not labelled as, or copied from, a design direction."""
+    return " ".join(m for m in slide.get("key_messages") or []
+                    if m and not _DIRECTION.match(m) and not any(from_brief(m, d) for d in directions))
+
+
+def drop_visual_directions(plan: dict[str, Any], directions: list[str], content: str = "") -> list[str]:
+    """Remove text components that only repeat a design direction ("Marketplace growth theme
+    with FLIPCART and ZAROMA visual cues." printed as a card on the CHEFFIN cover). The
+    direction still reaches the generator through visual_emphasis / the design hints."""
+    notes: list[str] = []
+    keep = []
+    for comp in plan.get("components", []):
+        text = _component_text(comp)
+        if (comp.get("kind") in _TEXT_KINDS and text.strip() and any(from_brief(text, d) for d in directions)
+                and not (content and from_brief(text, content))):
+            notes.append(f"dropped {comp.get('kind')} '{comp.get('component_id', '')}': it repeats the brief's "
+                         f"design direction, not content: {text[:80]}")
+            continue
+        keep.append(comp)
+    plan["components"] = keep
+    return notes
+
+
 def flag_written_lines(plan: dict[str, Any], brief_text: str) -> list[str]:
     """Mark card_grid lines not found in the brief as written, in place; drop written
     lines with numbers. Returns plain-words notes; the kept written lines are listed
