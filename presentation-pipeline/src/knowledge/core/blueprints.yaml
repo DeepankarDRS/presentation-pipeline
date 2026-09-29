@@ -203,7 +203,7 @@ chart_hero__sidebar_cards:
         </VStack>
         <VStack w="38%" gap="10">
           <VStack padding="16" gap="8" backgroundColor="E0F2EC" borderRadius="12" borderLeft.color="3B82F6" borderLeft.width="5">
-            <Text fontSize="14" color="3B82F6" bold="true" letterSpacing="1">INSIGHT LABEL</Text>
+            <Text fontSize="14" color="1D4ED8" bold="true" letterSpacing="1">INSIGHT LABEL</Text>
             <Text fontSize="28" color="$textMain" bold="true">+50.5%</Text>
             <Text fontSize="14" color="$textMuted" lineHeight="1.4">Explanation text with context.</Text>
           </VStack>

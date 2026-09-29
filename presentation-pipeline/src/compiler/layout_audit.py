@@ -356,6 +356,95 @@ def _check_table_width(root: ET.Element, issues: list[dict[str, str]]) -> None:
             })
 
 
+# LOW_CONTRAST (report only — nothing is recoloured): text against the nearest
+# background, WCAG ratios — 4.5 for body text, 3.0 for large text (>= 24 px, or
+# >= 19 px bold). Genspark's linter flags the same ("ZAROMA" purple on a dark
+# panel, 1.62). Colours resolve through the slide's <Theme>; a text with no colour
+# of its own (inherits POM's default) is not judged, to keep false alarms out.
+MIN_CONTRAST = 4.5
+# codes recorded for scoring only: never shown to the critic, so they never trigger a repair
+REPORT_ONLY_CODES = {"LOW_CONTRAST"}
+MIN_CONTRAST_LARGE = 3.0
+_TEXT_TAGS = {"Text", "Li", "Td", "Shape"}
+
+
+def _rgb(value: str | None, theme: dict[str, str]) -> tuple[int, int, int] | None:
+    if not value:
+        return None
+    v = value.strip()
+    if v.startswith("$"):
+        v = theme.get(v[1:], "")
+    v = v.lstrip("#")
+    if len(v) == 3:
+        v = "".join(c * 2 for c in v)
+    if len(v) != 6:
+        return None
+    try:
+        return tuple(int(v[i:i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
+    except ValueError:
+        return None
+
+
+def _contrast_ratio(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
+    def lum(rgb: tuple[int, int, int]) -> float:
+        def lin(c: float) -> float:
+            c /= 255
+            return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+        r, g, bl = (lin(c) for c in rgb)
+        return 0.2126 * r + 0.7152 * g + 0.0722 * bl
+    hi, lo = sorted((lum(a), lum(b)), reverse=True)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def _check_contrast(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    theme_el = root.find("Theme")
+    theme = dict(theme_el.attrib) if theme_el is not None else {}
+    found: dict[tuple, dict[str, Any]] = {}
+
+    def judge(fg: str | None, bg: tuple[int, int, int] | None, text: str, size: float, bold: bool) -> None:
+        rgb = _rgb(fg, theme)
+        text = " ".join(text.split())
+        if rgb is None or bg is None or not text:
+            return
+        large = size >= 24 or (bold and size >= 19)
+        ratio = _contrast_ratio(rgb, bg)
+        if ratio >= (MIN_CONTRAST_LARGE if large else MIN_CONTRAST):
+            return
+        key = (fg, bg)
+        hit = found.setdefault(key, {"n": 0, "ratio": ratio, "sample": text[:40]})
+        hit["n"] += 1
+
+    def walk(el: ET.Element, bg: tuple[int, int, int] | None, fg: str | None, size: float, bold: bool) -> None:
+        # a background that does not resolve (a $token with no <Theme>) makes the
+        # colour behind the text unknown: judge nothing under it
+        for attr in ("backgroundColor", "fill.color") if el.tag == "Shape" else ("backgroundColor",):
+            if el.get(attr):
+                bg = _rgb(el.get(attr), theme)
+        fg = el.get("color") or fg
+        size = float(_parse_num(el.get("fontSize")) or size)
+        bold = el.get("bold") == "true" if el.get("bold") else bold
+        if el.tag in _TEXT_TAGS:
+            own = el.get("text") if el.tag == "Shape" else (el.text or "") + "".join(c.tail or "" for c in el)
+            judge(fg, bg, own or "", size, bold)
+            for span in el.iter():
+                if span is not el and span.get("color"):
+                    judge(span.get("color"), bg, "".join(span.itertext()),
+                          float(_parse_num(span.get("fontSize")) or size), span.get("bold") == "true" or bold)
+        for child in el:
+            walk(child, bg, fg, size, bold)
+
+    for slide in root.iter("Slide"):
+        walk(slide, (255, 255, 255), None, 24.0, False)
+    for (fg, _bg), hit in found.items():
+        issues.append({
+            "severity": "medium",
+            "code": "LOW_CONTRAST",
+            "message": f'{hit["n"]} text(s) in {fg} on #{"".join(f"{c:02X}" for c in _bg)} '
+                       f'at contrast {hit["ratio"]:.2f} (e.g. "{hit["sample"]}"). '
+                       f"Fix: a darker or lighter text colour, or another background.",
+        })
+
+
 def audit_layout(xml: str) -> list[dict[str, str]]:
     """Parse POM XML and check spatial/layout constraints.
 
@@ -380,5 +469,6 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_band_height_sum(root, root_padding, issues)
     _check_hstack_column_heights(root, issues)
     _check_table_width(root, issues)
+    _check_contrast(root, issues)
 
     return issues

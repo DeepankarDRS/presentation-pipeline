@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from src.agents.visual_critic import run_visual_critic
+from src.compiler.layout_audit import REPORT_ONLY_CODES
 from src.compiler.screenshot import render_screenshots
 from src.state import CriticResult, PresentationState, VisualCriticResult
 
@@ -99,7 +100,7 @@ def _run_visual_review(
         theme_element=state.get("theme_element", ""),
         contract=state.get("contract"),
         compile_warnings=compile_warnings,
-        layout_issues=state.get("layout_issues", []),
+        layout_issues=[i for i in state.get("layout_issues", []) if i.get("code") not in REPORT_ONLY_CODES],
         previous_issues=previous_issues,
     )
 
