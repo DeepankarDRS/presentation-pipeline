@@ -92,7 +92,7 @@ export type AppView = 'form' | 'planning' | 'elicitation' | 'plan-editor' | 'pro
 export type ComponentKind =
   | 'title' | 'narrative' | 'caption' | 'kpi_row' | 'bullet_list'
   | 'chart' | 'table' | 'timeline' | 'flow' | 'layer'
-  | 'tree' | 'matrix' | 'process_arrow' | 'pyramid';
+  | 'tree' | 'matrix' | 'process_arrow' | 'pyramid' | 'card_grid';
 
 export type SlideType = 'cover' | 'content' | 'data' | 'section_break' | 'closing';
 
@@ -184,6 +184,8 @@ export interface SlideInfoReview {
   screenshot_url: string | null;
   has_edits: boolean;
   edit_count: number;
+  /** Card lines the pipeline wrote itself (not in the brief) — shown for review. */
+  written_lines?: string[];
 }
 
 export interface EditSessionStatus {

@@ -98,21 +98,27 @@ header_band: >
 # POM's flexbox shares the height. Never add up pixel heights: the generator's
 # arithmetic was the main source of half-empty and overflowing cards.
 sizing: |
-  - Header, KPI rows, callouts, bullet and table cards: NO h, NO grow (content height).
-    A HERO table too: its weight means more / taller rows, never grow on its card.
-  - grow from height-weight on the band/card that should fill: hero 3 | peer 2 |
-    supporting 1 | minor none. In a side-by-side HStack the weight is the width
-    share (% or grow); heights stretch to the tallest.
-  - At least one band grows. It must hold something that fills: a chart/diagram
-    with h="max", or a text panel (fonts are enlarged after generation) - never
-    a Table, Timeline or Pyramid alone.
+  - Header, source/caption line: NO h, NO grow (content height).
+  - The band holding the slide's MAIN content takes grow from its height-weight:
+    hero 3 | peer 2 | supporting 1 | minor none. Any component may be that band:
+    a chart or diagram card, a KPI row, a callout / narrative panel, a bullet card.
+    Tiles, cards and panels in a growing band stretch; their text is enlarged after
+    generation, so keep justifyContent="center" inside tiles.
+  - A slide WITH a chart or diagram: that card grows; KPI rows and callouts beside
+    it keep their content height.
+  - Table cards: NO h, NO grow - a table sizes to its rows. On a slide with a
+    table no band grows: the table's rows and text are enlarged into the spare
+    height after generation.
+  - EVERY slide has at least one growing band, unless its only content is a table.
+  - In a side-by-side HStack the weight is the width share (% or grow); heights
+    stretch to the tallest.
   - Content bands + minHs + gaps + 2*padding must fit 720 (past it, bands shrink
-    and overlap silently). Too much: CUT content, never fonts below 14. Too
-    little: let a chart, diagram or text panel grow - never add content the plan
-    does not have, and don't stretch a table card.
+    and overlap silently). Too much: move items to a second row or column, never
+    fonts below 14. Too little: let the main band grow - never add content the
+    plan does not have.
   height-weight and visual-intent are NOT POM attributes - never put them in XML.
-  TEXT LIMITS: bullets 1 line (~55 chars), max 4; callout 1 sentence (<= 80 chars).
-  REWRITE shorter - never shrink the font.
+  TEXT: keep the plan's wording. A long point wraps to 2-3 lines; split long lists
+  into two columns instead of cutting them. Never shrink the font below 14.
 
 data_nodes: |
   Chart / Matrix / Flow / Tree / ProcessArrow: h="max" minH (Chart 180, Matrix 260,
@@ -148,9 +154,9 @@ recipes:
     backgroundColor="$textMain" with heading color="$surfaceAlt". On a DARK
     theme $textMain is the light ink - use backgroundColor="$surfaceAlt" with a
     borderLeft.color="$accent" borderLeft.width="5" and normal $textMain text
-    instead. Heading is ONE line (<= ~24 chars - long headings wrap to 3 lines
-    and overrun the panel); body one short sentence; optional a 2-3 row stat
-    list. Do NOT stack heading + long body + stats in a short panel. One per slide.
+    instead. Heading is short (long headings wrap to 3 lines and overrun the
+    panel); body the plan's sentence(s); optional a 2-3 row stat list. A panel
+    with heading + body + stats needs the height - give it grow. One per slide.
   micro_pair: >
     a label-over-value stat with no card: <VStack gap="2"><Text 10-12
     "$textMuted">Label</Text><Text 24-34 bold "$textMain">Value</Text></VStack>.
@@ -178,7 +184,9 @@ font_floor: >
   ABSOLUTE RULE: no fontSize on ANY element may be below 14. This applies to
   Text, Ul, Li, Span, Shape labels, ProcessArrowStep, TimelineItem, PyramidLevel,
   FlowNode, TreeItem, MatrixItem, and every other node that renders text. If the
-  content does not fit at fontSize 14, CUT THE CONTENT — never shrink the font.
+  content does not fit at fontSize 14, RE-LAY IT OUT (a second row or column, a
+  wider card, fewer decorations) and trim filler words - never shrink the font,
+  never drop an item, a figure or a line of the plan.
   The layout_audit flags FONT_TOO_SMALL as a hard failure, not a suggestion.
 
 spacing_scale: "use 2, 4, 6, 8, 10, 12, 14, 16, 18, 22 - nothing in between."
@@ -199,7 +207,8 @@ render_gotchas:
   - "FONT SHRINK (the #1 quality killer): the generator tends to shrink fonts
      to fit more content. This produces 8-12pt text that is illegible when
      projected. NEVER emit fontSize below 14 on any element. If content does
-     not fit, CUT the content (fewer bullets, shorter text, fewer KPI tiles).
+     not fit, re-lay it out (second row or column, wider card) and trim filler
+     words - never drop an item, a figure or a line of the plan.
      All recipes now use 14pt minimum. Copy those sizes exactly."
   - "A KPI tile with justifyContent=\"spaceBetween\" in a tall row is the classic
      bad KPI card: label glued to the top, number floating low, delta clipped
@@ -235,13 +244,14 @@ checklist:
      If ANY is below 14, FIX IT before anything else. This is the #1 rule."
   - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
   - "2-4 top-level bands, none with w=\"max\" (width stretches); nesting within bands matches content grouping."
-  - "No pixel h on a band or card; grow by weight only where the slide should fill
-     (at least one). Data nodes sized per DATA NODE SIZING."
-  - "KPI row: no h, no grow (auto-sizes). Tiles: w=\"max\", justifyContent=\"center\". Labels 14pt, values 26-36pt."
+  - "No pixel h on a band or card; grow by weight on the band that holds the slide's
+     main content (at least one, unless the only content is a table). Data nodes
+     sized per DATA NODE SIZING."
+  - "KPI row: no pixel h; grow when it is the slide's main content. Tiles: w=\"max\", justifyContent=\"center\". Labels 14pt, values 28-36pt (hero tiles 40-56pt)."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
   - "An HStack inside a VStack gets its width by stretch (no w); inside an HStack, w=\"max\" or %."
   - "No fixed-px width on a text or chart column."
-  - "Bullet lists: max 3-4 items, each ≤ 50 chars, fontSize 14-16."
+  - "Bullet lists: every point of the plan, fontSize 14-16; 6+ points split into two columns."
   - "At most one hero_panel. Accent used as a highlight, not a fill."
-  - "If nothing on the slide can use the spare height, let a chart, diagram or text
-     panel grow - never add content the plan does not have, and don't stretch a table card."
+  - "If the slide looks half empty, give its main band grow - never add content the
+     plan does not have, and don't stretch a table card."

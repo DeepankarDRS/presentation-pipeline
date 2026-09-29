@@ -23,12 +23,16 @@
 //   3. diagrams     — a Chart/Flow/Tree/ProcessArrow absorbs the spare height of
 //                     its card, then Flow/Tree/ProcessArrow nodes are enlarged
 //                     to fill their box.
+//   3b. KPI values  — a sparse row of stat tiles grows its hero numbers (and
+//                     their inline unit <Span>s) together, up to 60px.
 //   4. text         — in each stack under ~70% full, fonts grow together (body
 //                     by s, headings/labels by sqrt(s); titles and each box's
 //                     stat/hero number untouched) until ~88% full; past the size
 //                     caps the rest goes into line height and gaps. Peer cards
 //                     in a row scale as one group; headings never gain a line;
 //                     text with an inline <Span fontSize> keeps its size.
+//   5. headings     — a heading that wraps one line more at 85% of its width
+//                     (the renderer's font runs wider) gets minH for that line.
 //
 // It edits the ORIGINAL XML text (only size attributes change), and measures
 // with POM's own layout engine so its numbers match what buildPptx will do.
@@ -73,7 +77,7 @@ const LOW_FILL = 0.7;       // a stack below this is "sparse" (POM measure runs 
 const TARGET_FILL = 0.88;   // grow until this full (slack for renderer wrap drift)
 const MIN_SLACK = 30;       // px — ignore smaller gaps
 const MAX_SCALE = 2.0;
-const FIXED_FONT = 24;      // >= this is a title / KPI number: never grown
+const FIXED_FONT = 24;      // >= this is a title / KPI number: not grown as text (KPI numbers: growStats)
 const BODY_CAP = 22;
 const HEADING_CAP = 24;
 const STACKS = new Set(["vstack", "hstack"]);
@@ -744,7 +748,68 @@ function diagramEdit(n, W, H) {
     levelGap: Math.floor((n.levelGap ?? 60) * k), siblingGap: Math.floor((n.siblingGap ?? 20) * k) };
 }
 
-// --- phase 3: grow text inside sparse text-only stacks -------------------------
+// --- phase 3a: grow the stat values of a sparse KPI tile row --------------------
+// A tile's hero number (the one text >= FIXED_FONT, often "₹114.9<Span>L</Span>")
+// is frozen by phase 3b, so a KPI row given the slide's spare height showed a
+// 30px number in a tall, empty tile. Peer tiles in one HStack scale their numbers
+// together (one type size across the row), inline <Span fontSize> units with them,
+// up to STAT_CAP, without wrapping a number or changing any width.
+
+const STAT_CAP = 60;
+
+/** The single largest text (>= FIXED_FONT) inside a tile, or null. */
+function statAnchor(tile) {
+  const texts = [];
+  let rigid = false;
+  walk(tile, (n) => {
+    if (RIGID.has(n.type)) rigid = true;
+    if (n.id && n.type === "text") texts.push(n);
+  });
+  if (rigid || texts.length < 2) return null;
+  const size = (t) => t.fontSize ?? 24;
+  const top = Math.max(...texts.map(size));
+  const tops = texts.filter((t) => size(t) === top);
+  return top >= FIXED_FONT && tops.length === 1 ? tops[0] : null;
+}
+
+/** Scale fontSize on one element's open tag and on every <Span fontSize> inside it. */
+function scaleTextFont(xml, id, s) {
+  const el = findElement(xml, id);
+  if (!el) return xml;
+  const grow = (v) => String(Math.min(Math.round(Number(v) * s), STAT_CAP));
+  const body = xml.slice(el.start, el.end).replace(/(<(?:Text|Span)\b[^>]*?\sfontSize\s*=\s*")([\d.]+)(")/g,
+    (m, a, v, b) => a + grow(v) + b);
+  return xml.slice(0, el.start) + body + xml.slice(el.end);
+}
+
+async function growStats(xml, report) {
+  const L = await layout(xml);
+  const groups = [];
+  try {
+    for (const root of L.slides) walk(root, (n) => {
+      if (n.type !== "hstack") return;
+      const tiles = (n.children ?? []).filter((c) => STACKS.has(c.type) && c.id);
+      if (tiles.length < 2) return;
+      const anchors = tiles.map(statAnchor);
+      if (anchors.some((a) => !a)) return;
+      const f0 = Math.min(...anchors.map((a) => a.fontSize ?? 24));
+      if (f0 >= STAT_CAP) return;
+      const ratio = Math.max(...tiles.map((t) => fill(t, L).ratio));
+      if (ratio < LOW_FILL) groups.push({ ids: tiles.map((t) => t.id), anchors: anchors.map((a) => a.id), f0, ratio });
+    });
+  } finally { L.free(); }
+  for (const g of groups) {
+    const apply = (src, s) => g.anchors.reduce((x, id) => scaleTextFont(x, id, s), src);
+    const r = await search(xml, g.ids, apply, STAT_CAP / g.f0, g.anchors);
+    if (r.best <= 1.05) continue;
+    xml = apply(xml, r.best);
+    report.push(`KPI values x${r.best.toFixed(2)} (${g.f0} -> ${Math.min(Math.round(g.f0 * r.best), STAT_CAP)}px), `
+      + `fill ${Math.round(g.ratio * 100)}% -> ${Math.round(r.ratio * 100)}%`);
+  }
+  return xml;
+}
+
+// --- phase 3b: grow text inside sparse text-only stacks ------------------------
 
 function textTargets(stack) {
   const out = [];
@@ -882,6 +947,40 @@ function lineCount(n, L) {
   return Math.round(heightPx / (fs * lh));
 }
 
+// --- phase 5: reserve the renderer's extra line for headings --------------------
+// The renderer's font runs wider than POM's measuring font: a headline POM lays out
+// on 1 line wraps to 2 on the slide and runs into the subtitle or the card below
+// (CHEFFIN cf98c42b5371 slides 1, 3, 4). A heading (>= 20px) whose line count at 85%
+// of its width is higher gets minH for those lines, when the slide has the room.
+
+const HEADING_PX = 20;
+
+async function reserveWrap(xml, report) {
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const root of L.slides) {
+      let spare = SLIDE.h - natural(root, L);
+      walk(root, (n) => {
+        if (!n.id || n.type !== "text" || (n.fontSize ?? 24) < HEADING_PX) return;
+        const fs = n.fontSize ?? 24, lh = n.lineHeight ?? 1.3;
+        const have = Math.round(L.box(n).h / (fs * lh));
+        const need = lineCount(n, L);
+        const extra = Math.ceil((need - have) * fs * lh);
+        if (need > have && extra <= spare) {
+          spare -= extra;
+          edits.push([n.id, Math.ceil(need * fs * lh), have, need]);
+        }
+      });
+    }
+  } finally { L.free(); }
+  for (const [id, minH, have, need] of edits) {
+    xml = setAttrs(xml, id, { minH });
+    report.push(`heading ${have} -> ${need} lines reserved (renderer wraps wider than POM)`);
+  }
+  return xml;
+}
+
 /** Width of every node outside the candidate stacks (their own content may reflow). */
 function outsideWidths(L, ids) {
   const inside = new Set();
@@ -940,7 +1039,9 @@ async function fitSlide(inputXml, report) {
   xml = await fitTables(xml, report);
   xml = await sizeTables(xml, report);
   xml = await growDiagrams(xml, report);
+  xml = await growStats(xml, report);
   xml = await growText(xml, report);
+  xml = await reserveWrap(xml, report);
   return report.length ? untag(xml) : inputXml;
 }
 

@@ -86,7 +86,7 @@ content_rules:
 
 design_principles:
   - "Use $surfaceAlt cards to group related content — never float raw text on the background"
-  - "One idea per slide — if content overflows, CUT content rather than shrink fonts below 14"
+  - "One idea per slide — if content overflows, re-lay it out and trim filler words; never drop a point or a figure, never a font below 14"
   - "Card borders: border.color=$border (subtle gray), borderTop.color=$accent (bold stripe). Never accent the full border."
 
 additional_styling:

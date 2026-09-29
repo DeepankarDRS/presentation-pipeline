@@ -6,12 +6,12 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from src.agents.capacity import max_of
 from src.planning.adapter import LABEL_ONLY_KINDS, fill_component, shown_text
 from src.planning.brief_index import by_id, data_numbers, numbers
 
 MAX_EMPHASIS = 2
-MAX_KPIS = 6
-MAX_TABLE_ROWS = 10
+MAX_TABLE_ROWS = max_of("table", "max_rows")  # knowledge/core/capacity.yaml
 MAX_BULLETS = 6
 MAX_STEP_WORDS = 4
 # a brief line that asks for content: "Mention that…", "DATA QUALITY NOTE: Mention…", "Also mention…",
@@ -154,8 +154,6 @@ def check_slide(design: dict[str, Any], story: dict[str, Any], index: dict[str, 
             issues.append(f"{cid}: blocks {_short(stray)} are not assigned to this slide.")
         if not shown_text(c).strip():
             issues.append(f"{cid}: no content (bind a parsed table/chart block or fill its fields).")
-        if kind == "kpi_row" and len(c.get("kpis", [])) > MAX_KPIS:
-            issues.append(f"{cid}: {len(c['kpis'])} KPI tiles; at most {MAX_KPIS} — use a table for more.")
         if kind == "table" and len(c.get("rows", [])) > MAX_TABLE_ROWS:
             issues.append(f"{cid}: {len(c['rows'])} rows; at most {MAX_TABLE_ROWS} — split the slide or the table.")
         if kind == "bullet_list" and len(c.get("bullets", [])) > MAX_BULLETS:

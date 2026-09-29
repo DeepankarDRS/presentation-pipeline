@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 ComponentKindLiteral = Literal[
     "title", "narrative", "caption", "kpi_row", "bullet_list",
     "chart", "table", "timeline", "flow", "layer",
-    "tree", "matrix", "process_arrow", "pyramid",
+    "tree", "matrix", "process_arrow", "pyramid", "card_grid",
 ]
 
 WeightLiteral = Literal["hero", "peer", "supporting", "minor"]
@@ -54,7 +54,7 @@ class PlannerComponent(BaseModel):
     )
     items: int = Field(
         default=0, ge=0,
-        description="Item count for bullet_list, timeline, flow, process_arrow, pyramid."
+        description="Item count for bullet_list, timeline, flow, process_arrow, pyramid, card_grid."
     )
     content_summary: str = Field(
         default="",
@@ -68,7 +68,7 @@ class PlannerComponent(BaseModel):
                     "Must match the component's schema:\n"
                     "  title: {\"title\": \"...\", \"subtitle\": \"...\"}\n"
                     "  kpi_row: {\"kpi_labels\": [...], \"kpi_values\": [...], "
-                    "\"kpi_deltas\": [...], \"kpi_directions\": [...]}\n"
+                    "\"kpi_deltas\": [change or short note, ...], \"kpi_directions\": [...]}\n"
                     "  chart: {\"chart_type\": \"bar\", \"chart_title\": \"...\", "
                     "\"chart_labels\": [...], \"chart_values\": [...]}\n"
                     "  table: {\"table_columns\": [...], \"table_rows\": [...]}\n"
@@ -80,6 +80,11 @@ class PlannerComponent(BaseModel):
                     "\"process_steps\": [...]}\n"
                     "  pyramid: {\"direction\": \"up\", \"pyramid_levels\": [...]}\n"
                     "  tree: {\"layout\": \"vertical\", \"tree_nodes\": [...]}\n"
+                    "  card_grid: {\"card_layout\": \"grid\" | \"steps\" | \"matrix\", "
+                    "\"cards\": [{\"title\": \"...\", \"tag\": \"...\", \"body\": \"...\", "
+                    "\"bullets\": [...]}]; matrix also \"columns\": [...], \"rows\": [...] with "
+                    "cards in row order (one per row x column). tag / body / bullets only "
+                    "when the key_messages give them}\n"
                     "  narrative: {\"text\": \"...\"}\n"
                     "  caption: {\"text\": \"...\"}\n"
                     "Must be valid JSON. No placeholders."

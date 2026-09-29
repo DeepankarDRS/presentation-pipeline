@@ -94,6 +94,9 @@ kinds:
     never: "extra nodes inside steps (use the step's own color)"
   pyramid:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+  card_grid:
+    treatments: [emphasis, sentiment, highlight_text, icon_tiles, inverted_panel, accent_border, lift]
+    never: "a bullet or icon list in place of the cards"
     never: "extra nodes inside levels (use the level's own color)"
   layer:
     treatments: [emphasis, sentiment, accent_border, lift]

@@ -4,8 +4,22 @@
     {
       "name": "frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "--prefix", "frontend"],
+      "runtimeArgs": [
+        "run",
+        "start",
+        "--prefix",
+        "frontend"
+      ],
       "port": 4200
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": ".venv/Scripts/python",
+      "runtimeArgs": [
+        "-m",
+        "src.api"
+      ],
+      "port": 8000
     }
   ]
 }

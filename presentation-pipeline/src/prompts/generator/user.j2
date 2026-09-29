@@ -61,13 +61,14 @@ short wording from the plan and no numbers. Never "XX%", "TBD", "Lorem ipsum",
 "Company A", "Metric 1".
 
 SIZING — follow SIZING BY WEIGHT and DATA NODE SIZING in the layout grammar.
-No pixel h on bands or cards: grow (from the height-weight) on the band(s) that
-should fill, h="max" minH on charts and diagrams, tables sized by their rows.
-Header, KPI rows and text-only bands (callout, narrative, bullet_list) size to content.
-KEEP TEXT SHORT so content-sized bands stay compact:
-  Bullets: 1 line each (~50-60 chars). Callout body: 1 sentence (≤ 80 chars).
-  Timeline description: 1-3 words ONLY — sentences collide in columns.
-If the content is thin, give the components more room (see SIZING BY WEIGHT) -
+No pixel h on bands or cards: grow (from the height-weight) on the band that holds
+the slide's main content - a chart or diagram card, a KPI row, a callout or a
+bullet card; h="max" minH on charts and diagrams; tables sized by their rows.
+Header and source line size to content.
+TEXT: keep the plan's wording - never cut a point to make it fit. A long point
+wraps to 2-3 lines; a long list splits into two columns.
+  Timeline and ProcessArrow labels: 1-3 words - put the detail beside them.
+If the content is thin, give the main band more room (see SIZING BY WEIGHT) -
 never add content the plan does not have.
 
 Output the POM XML for this slide - a single <Slide> element, no <Theme>, no

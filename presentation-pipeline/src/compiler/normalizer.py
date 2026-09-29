@@ -11,6 +11,7 @@ import re
 from typing import Any
 
 from src.compiler.content_model import find_violations, flatten_text_containers
+from src.compiler.grow_fallback import ensure_growing_band
 from src.compiler.icons import fix_icon_names
 
 
@@ -648,6 +649,10 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     had_theme = bool(_THEME_RE.search(xml))
     if had_theme:
         xml = strip_theme(xml)
+
+    xml, grow_note = ensure_growing_band(xml)
+    if grow_note:
+        issues.append({"code": "GROW_BAND_ADDED", "message": grow_note, "auto_fixed": True})
 
     cleaned = xml.strip() + "\n"
     auto_fixed = sum(1 for i in issues if i["auto_fixed"])

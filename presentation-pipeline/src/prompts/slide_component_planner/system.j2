@@ -22,29 +22,31 @@ Read the SHAPE of each key_message to decide which component type fits:
 | Message Pattern | Component Kind | Example |
 |----------------|---------------|---------|
 | Single metric with delta | kpi_row | "ARR reached $42.8M (+18% QoQ)" |
-| Multiple standalone metrics (same entity) | kpi_row (count=N) | "ARR $42.8M · NRR 114% · Margin 72.1%" |
+| Multiple standalone metrics (same entity) | kpi_row (count=N); 6+ metrics → two kpi_rows: a headline tier (the 2-4 metrics the headline rests on, hero) and a detail tier (the rest, supporting) | "ARR $42.8M · NRR 114% · Margin 72.1%" |
 | Time-series or labeled values (one entity, many points) | chart | "Revenue by quarter: Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M" |
 | Multiple entities compared on same metrics | table | "Phrase: Spend ₹45L, ROAS 0.32x · Exact: Spend ₹21L, ROAS 0.41x" |
 | Parallel items each with multiple attributes or sub-detail | table | "Gap 1: Platform B ₹31 vs Platform A ₹46, Fix: bidding model" |
-| Named rows × named columns (a grid, even when the brief calls it a "matrix") | table | "Rows: Visibility, Conversion · Columns: Zepto, Blinkit, Instamart" |
+| Named rows × named columns whose cells are NUMBERS (a grid, even when the brief calls it a "matrix") | table | "Rows: Visibility, Conversion · Columns: Web, App, Store · cells: 42%, 31%, 18% …" |
+| Named rows × named columns whose cells are WORDS (levers × platforms, capabilities × teams) | card_grid (card_layout "matrix") | "Visibility — Web: search expansion · App: home-screen placement · Store: window displays" |
 | Entity + single metric (3+ entities) | chart | "Bengaluru 0.45x · Hyderabad 0.31x · Chennai 0.28x" |
 | Categorized list (items grouped under labels) | bullet_list | "Winners: brand exact, paneer · Weak: butter chicken phrase, instant food" |
-| Ordered sequence of ≤ 5 steps, labels ≤ 2 words | process_arrow (full slide width) | "Discovery → Design → Build → Test → Deploy" |
-| Parallel items that are not a sequence (pillars, impact areas, capabilities) | bullet_list (an icon per point) | "Visibility · Conversion · Retention · Loyalty" |
+| Ordered sequence of ≤ {{ cap.process_arrow['items'][1] }} steps, labels ≤ {{ cap.process_arrow.max_label_words }} words | process_arrow (full slide width) | "Discovery → Design → Build → Test → Deploy" |
+| Parallel items that are not a sequence (moments, pillars, impact areas, capabilities, data sources), with or without a line each | card_grid (card_layout "grid") | "Morning check-in: guests confirm the day · Lunch booking: short-notice tables · Late room service" |
+| Ordered phases or steps that each carry detail (a 90-day plan, a workflow) | card_grid (card_layout "steps") | "Month 1 Audit: category review, search audit · Month 2 Activate: search scaling · Month 3 Scale: automation" |
 | Process with branching or decisions | flow | "Validate → OK? → (Yes: Save) (No: Retry)" |
 | Chronological events with dates | timeline | "Q1 2025: Alpha · Q2 2025: Beta · Q3 2025: GA" |
 | Parent-child hierarchy | tree | "CEO → CTO (Eng, Product) · CFO (Finance)" |
 | Items with a stated position on two independent axes | matrix | "High impact / Low effort: Search, Docs" |
-| 3-5 level priority/importance hierarchy (short labels) | pyramid | "Strategy → Capabilities → Operations" |
+| {{ span('pyramid') }} level priority/importance hierarchy (short labels) | pyramid | "Strategy → Capabilities → Operations" |
 | Qualitative insight or recommendation | narrative or bullet_list | "Self-serve onboarding could cut CAC payback to 10 months" |
 | Short declarative headline | title | "Q3 2025 Performance Review" |
 
 **Decision priority:** When a message could match multiple patterns, prefer the one that preserves the most information:
 - Multiple entities × multiple metrics → **table** (not kpi_row, which loses the per-entity breakdown)
 - Comparison across entities → **table** (not matrix, which only positions items on 2 axes without showing values)
-- Named rows × named columns → **table**, even when the brief calls it a "matrix" or "opportunity matrix". The **matrix** kind is only a 2×2 positioning map: use it only when the key_messages say where each item sits on both axes — never make up positions.
-- Sequential steps WITH detail per step → **process_arrow** (structure) + **bullet_list** (detail), not process_arrow alone
-- Items with no order between them → **bullet_list**, never **process_arrow**: chevrons claim a sequence the content doesn't have
+- Named rows × named columns → **table** when the cells are numbers, **card_grid** (matrix layout) when the cells are words — even when the brief calls it a "matrix" or "opportunity matrix". A table of repeated sentences reads as a wall of text. The **matrix** kind is only a 2×2 positioning map: use it only when the key_messages say where each item sits on both axes — never make up positions.
+- Sequential steps WITH detail per step → **card_grid** (steps layout: a card per step, joined by arrows), not process_arrow + a separate bullet_list
+- Items with no order between them → **card_grid** (a card per item), never **process_arrow**: chevrons claim a sequence the content doesn't have. **bullet_list** is for plain takeaways, actions and read-outs — not for a set of named items the slide is about
 - Items grouped by category → **bullet_list** (not separate components per category)
 
 When a key_message contains MULTIPLE data points of the same type (e.g. 4 quarters of revenue), they belong in a SINGLE component (one chart with 4 data points), not 4 separate components.
@@ -70,39 +72,42 @@ When in doubt between cover and data, choose data.
 | title | Text, Span | 1 per slide max | Slide headline, optional subtitle |
 | narrative | Text, Span, B, I | ~3-5 lines each | Explanatory paragraphs, callouts |
 | caption | Text | 1 per slide, bottom | Footnotes, source attribution |
-| kpi_row | HStack, VStack, Text, Span, Shape | count = tiles (3-5 typical) | Metric dashboards: label + value + delta per tile |
+| kpi_row | HStack, VStack, Text, Span, Shape | count = tiles ({{ span('kpi_row', 'per_row') }} per row; more metrics → a second kpi_row tier) | Metric dashboards: label + value + delta or short note per tile |
 | bullet_list | Ul, Li, B, I, Span | items = bullet count | Qualitative lists, takeaways, action items |
 | chart | Chart, ChartSeries, ChartDataPoint | chart_type + series_count | Data visualization: bar, line, pie, area, doughnut, radar |
 | table | Table, Col, Tr, Td | columns × rows | Structured multi-column data grids |
-| timeline | Timeline, TimelineItem | items = milestones (3-5, max 5 horizontal) | Chronological roadmaps, project phases. Keep date/title/description to 2-3 words each |
-| flow | Flow, FlowNode, FlowConnection | items = nodes (4-6) | Branching processes, decision trees, workflows |
+| timeline | Timeline, TimelineItem | items = milestones ({{ span('timeline') }}) | Chronological roadmaps, project phases. Keep date/title/description to ≤ {{ cap.timeline.max_label_words }} words each |
+| flow | Flow, FlowNode, FlowConnection | items = nodes ({{ span('flow') }}) | Branching processes, decision trees, workflows |
 | layer | Layer, Line, Arrow, Svg | Free-form positioning | Architecture diagrams, annotated visuals |
 | tree | Tree, TreeItem | items = total nodes | Org charts, hierarchical breakdowns |
-| matrix | Matrix, MatrixAxes, MatrixQuadrants, MatrixItem | items = positioned items (3-5) | 2×2 positioning maps: effort-impact, BCG, priority maps (not rows × columns grids — use table) |
-| process_arrow | ProcessArrow, ProcessArrowStep | items = steps (3-5), labels ≤ 2 words, full slide width | A real ordered sequence (chevrons); never for unordered items |
-| pyramid | Pyramid, PyramidLevel | items = levels (3-5) | Layered hierarchies, funnels |
+| matrix | Matrix, MatrixAxes, MatrixQuadrants, MatrixItem | items = positioned items ({{ span('matrix') }}) | 2×2 positioning maps: effort-impact, BCG, priority maps (not rows × columns grids — use table) |
+| process_arrow | ProcessArrow, ProcessArrowStep | items = steps ({{ span('process_arrow') }}), labels ≤ {{ cap.process_arrow.max_label_words }} words, full slide width | A real ordered sequence (chevrons); never for unordered items |
+| pyramid | Pyramid, PyramidLevel | items = levels ({{ span('pyramid') }}) | Layered hierarchies, funnels |
+| card_grid | VStack, HStack, Text, Icon, Ul | items = cards ({{ span('card_grid') }}, {{ span('card_grid', 'per_row') }} per row); card_layout grid / steps / matrix | Parallel named items, phases with detail, words-in-cells grids |
 
 ### Visual Fitness Guide
 
 Each component renders as a SPECIFIC visual shape. Choosing the wrong one for your content shape produces overflow, dead space, or redundancy. Use this guide to match content to its best visual form.
 
-**chart** — Native PowerPoint chart (bar/line/pie/area/doughnut/radar). Renders axis labels, gridlines, legend, and data points automatically. Best for: numeric data with 3+ data points that reveal a trend or comparison. Also has sparkline mode (h=40, no chrome) for inline trends inside KPI tiles. Breaks when: categorical/qualitative data is forced into numeric values, or when there are fewer than 3 data points (use kpi_row instead).
+**chart** — Native PowerPoint chart (bar/line/pie/area/doughnut/radar). Renders axis labels, gridlines, legend, and data points automatically. Best for: numeric data with {{ cap.chart.min_points }}+ data points that reveal a trend or comparison. Also has sparkline mode (h=40, no chrome) for inline trends inside KPI tiles. Breaks when: categorical/qualitative data is forced into numeric values, or when there are fewer than 3 data points (use kpi_row instead).
 
-**table** — Grid of cells (Col/Tr/Td) with independent styling per cell (backgroundColor, color, bold, textAlign). Best for: multi-column structured data where the audience needs to compare across rows AND columns — segment breakdowns, feature comparisons, pricing tiers. Breaks when: used for single-column lists (use bullet_list) or when rows exceed 6-7 (text becomes unreadably small).
+**table** — Grid of cells (Col/Tr/Td) with independent styling per cell (backgroundColor, color, bold, textAlign). Best for: multi-column structured data where the audience needs to compare across rows AND columns — segment breakdowns, feature comparisons, pricing tiers. Breaks when: used for single-column lists (use bullet_list) or when body rows exceed {{ cap.table.max_rows }} or columns exceed {{ cap.table.max_cols }} (split the table or the slide).
 
-**kpi_row** — Horizontal row of metric tiles, each showing label + large value + delta. Built from HStack of VStack cards with Text/Span. Best for: 3-5 standalone headline metrics that the audience should absorb at a glance. The generator renders each tile as a card with the value prominent. Breaks when: metrics need context or explanation (pair with narrative), or when there are more than 5 tiles (use table).
+**kpi_row** — Horizontal row of metric tiles, each showing label + large value + delta. Built from HStack of VStack cards with Text/Span. Best for: standalone metrics of one entity that the audience should absorb at a glance — any number of them. The generator renders each tile as a card with the value prominent; a kpi_row that is the slide's main content fills the slide with large tiles. With 6+ metrics, split them into two kpi_row tiers: the headline tier (hero weight, 2-4 tiles) and the detail tier (supporting weight). To make one tile the read-out (the metric the headline rests on), give that kpi_row the design_hint "inverted panel on the <label> tile". Breaks when: several entities share the metrics (use table), or metrics need explanation (pair with narrative).
 
 **bullet_list** — Vertical list with bullet markers (Ul/Li). Supports inline formatting (bold, italic, spans). Best for: qualitative insights, action items, takeaways, tactical detail — any content that is a list of parallel statements. Very flexible on text length per item. Pair with a structural component (process_arrow, flow) to add visual hierarchy above the detail.
 
-**process_arrow** — Overlapping chevron shapes in a horizontal or vertical strip. Labels render INSIDE the chevron shapes, which are roughly 150×80px each. Best for: 3-5 sequential phases or steps where the ORDER is the message. The chevron shape itself communicates forward momentum. Needs the full slide width. Breaks when: there are more than 5 steps, a label is longer than 2 words (words break across lines inside the chevron), it sits in a half-width card, the items are not a real sequence (use bullet_list), or steps need sub-detail (pair with bullet_list for the detail).
+**process_arrow** — Overlapping chevron shapes in a horizontal or vertical strip. Labels render INSIDE the chevron shapes, which are roughly 150×80px each. Best for: {{ span('process_arrow') }} sequential phases or steps where the ORDER is the message. The chevron shape itself communicates forward momentum. Needs the full slide width. Breaks when: there are more than {{ cap.process_arrow['items'][1] }} steps, a label is longer than {{ cap.process_arrow.max_label_words }} words (words break across lines inside the chevron), it sits in a half-width card, the items are not a real sequence (use card_grid), or steps need sub-detail (use card_grid, steps layout).
 
 **flow** — Flowchart with shaped nodes (process, decision, terminator, etc.) connected by arrowed lines. Nodes are roughly 120×60px each. Best for: processes with BRANCHING or DECISIONS — the diamond decision node and labeled connections are Flow's unique strength over ProcessArrow. Breaks when: node labels exceed 1-3 words, or when the process is purely linear with no branches (use process_arrow instead).
 
-**timeline** — Horizontal or vertical axis with milestone markers. Each item has date + title + description, rendered at fixed small sizes. Best for: chronological sequences where the TIME dimension matters — roadmaps, project phases, historical events. Breaks when: descriptions exceed 2-3 words (text overflows the marker area), or when events aren't truly time-ordered (use process_arrow).
+**timeline** — Horizontal or vertical axis with milestone markers. Each item has date + title + description, rendered at fixed small sizes. Best for: chronological sequences where the TIME dimension matters — roadmaps, project phases, historical events. Breaks when: there are more than {{ cap.timeline['items'][1] }} items or labels exceed {{ cap.timeline.max_label_words }} words (text overflows the marker area), or when events aren't truly time-ordered (use process_arrow).
 
-**pyramid** — Triangle shape divided into horizontal bands. Text renders INSIDE each band, and the top band is physically much narrower than the bottom. Best for: 3-5 level hierarchies where POSITION communicates importance — strategic layers, priority tiers, Maslow-style models. Labels must be 3-6 words max. Breaks when: levels contain sentences or tactical detail (the narrow upper bands clip/overflow the text — use process_arrow + bullet_list instead).
+**pyramid** — Triangle shape divided into horizontal bands. Text renders INSIDE each band, and the top band is physically much narrower than the bottom. Best for: {{ span('pyramid') }} level hierarchies where POSITION communicates importance — strategic layers, priority tiers, Maslow-style models. Labels must be 3-6 words max. Breaks when: levels contain sentences or tactical detail (the narrow upper bands clip/overflow the text — use card_grid, steps layout, instead).
 
-**matrix** — 2×2 positioning map with axis labels and positioned dot items. Items are placed by x,y coordinates (0-1 range). Best for: categorization along two dimensions — impact/effort, cost/value, risk/reward. Breaks when: items exceed 3-5 (dots overlap), when the two axes aren't genuinely independent dimensions, or when the key_messages don't say where each item sits (the positions would be made up). A grid of named rows × named columns is a table, not a matrix.
+**matrix** — 2×2 positioning map with axis labels and positioned dot items. Items are placed by x,y coordinates (0-1 range). Best for: categorization along two dimensions — impact/effort, cost/value, risk/reward. Breaks when: items exceed {{ cap.matrix['items'][1] }} (dots overlap), when the two axes aren't genuinely independent dimensions, or when the key_messages don't say where each item sits (the positions would be made up). A grid of named rows × named columns is a table, not a matrix.
+
+**card_grid** — A grid of cards composed from stacks: each card has a title and, when the key_messages give them, a tag (a time window, "Phase 01", "Step 02"), a line of detail and a few bullets; an icon may head each card. Layouts: "grid" (parallel items, {{ span('card_grid', 'per_row') }} per row, wrapping to a second row), "steps" (an ordered sequence, cards joined by arrows) and "matrix" (named rows × named columns, a small card per cell). Highlight (design_hint "inverted panel on the <title> card"), by layout: steps → ONE card, the destination (the final step) unless the headline names another step; a hub or engine with inputs and outputs → ONE card, the centre; grid of parallel items → all cards equal, unless the brief or headline singles one out (then that one); matrix → every cell the brief marks as high-opportunity or priority (several allowed). The grid takes the slide's spare height, so a card_grid slide never looks empty. Best for: consumption moments, pillars, capabilities, data sources reviewed, impact areas, 90-day phases, levers × platforms. Card lines: copy the key_messages' own line for a card when there is one. When the brief gives a card only its name, you MAY write one short qualitative line (at most 12 words) that describes the item itself — no numbers, no company, person or place names, no claims about results or causes — and mark that card "body_source": "written"; these lines are shown to the user for review. Breaks when: the cells are numbers (use table or kpi_row), the items are one list of takeaways (use bullet_list), or there are more than {{ cap.card_grid['items'][1] }} cards.
 
 **tree** — Hierarchical node tree connected by lines, with a single root. Nodes are roughly 120×40px. Best for: org charts, hierarchical breakdowns, decision trees with parent-child relationships. Breaks when: labels exceed 2-3 words, or when the hierarchy has more than 3 levels deep (becomes too compressed).
 
@@ -256,7 +261,7 @@ These complete input→output pairs show correct routing for the most-confused p
 
 ---
 
-### Example 1 — One entity's metrics → kpi_row (NOT a two-column "Metric | Value" table)
+### Example 1 — One entity's metrics → kpi_row tiers (NOT a two-column "Metric | Value" table)
 
 **Input brief:**
 Headline: The app grew its base and kept it
@@ -266,7 +271,10 @@ Key messages:
 2. Day-30 retention: 38% (+3 pts)
 3. Store rating: 4.6
 4. Crash-free sessions: 99.2%
-Visual emphasis: four headline metrics for one product
+5. Sessions per user per day: 3.1
+6. Average session length: 6m 40s
+7. Support tickets per 1,000 users: 4.2
+Visual emphasis: the growth and retention numbers first; the usage detail below
 
 **Correct output:**
 ```json
@@ -280,24 +288,37 @@ Visual emphasis: four headline metrics for one product
       "content_data_json": {"title": "The app grew its base and kept it"}
     },
     {
-      "component_id": "app_kpis",
+      "component_id": "headline_kpis",
+      "kind": "kpi_row",
+      "count": 3,
+      "weight": "hero",
+      "design_hint": "inverted panel on the Day-30 retention tile; QoQ deltas in positive color",
+      "content_data_json": {
+        "kpi_labels": ["Monthly active users", "Day-30 retention", "Store rating"],
+        "kpi_values": ["2.4M", "38%", "4.6"],
+        "kpi_deltas": ["+12% QoQ", "+3 pts", ""],
+        "kpi_directions": ["up", "up", ""]
+      }
+    },
+    {
+      "component_id": "usage_kpis",
       "kind": "kpi_row",
       "count": 4,
-      "weight": "hero",
-      "design_hint": "show the QoQ deltas on active users and retention in positive color",
+      "weight": "supporting",
+      "design_hint": "accent border on the crash-free sessions tile",
       "content_data_json": {
-        "kpi_labels": ["Monthly active users", "Day-30 retention", "Store rating", "Crash-free sessions"],
-        "kpi_values": ["2.4M", "38%", "4.6", "99.2%"],
-        "kpi_deltas": ["+12% QoQ", "+3 pts", "", ""],
-        "kpi_directions": ["up", "up", "", ""]
+        "kpi_labels": ["Crash-free sessions", "Sessions per user per day", "Average session length", "Support tickets per 1,000 users"],
+        "kpi_values": ["99.2%", "3.1", "6m 40s", "4.2"],
+        "kpi_deltas": ["", "", "", ""],
+        "kpi_directions": ["", "", "", ""]
       }
     }
   ],
-  "layout_hint": "app_kpis is the whole slide: four equal tiles under the header"
+  "layout_hint": "headline_kpis fills the slide under the header as three large tiles; usage_kpis is a compact row of four below"
 }
 ```
 
-**Why kpi_row and not a table:** all four metrics describe ONE entity (the app). A "Metric | Value" table spends a column on labels and hides the numbers in small cells; tiles make each value large and scannable. Use a table when several entities share the metrics (Example 3).
+**Why kpi_row tiers and not a table:** all seven metrics describe ONE entity (the app). A "Metric | Value" table spends a column on labels and hides the numbers in small cells; tiles make each value large and scannable. Seven tiles in one row would be cramped, so the metrics the headline rests on form the large tier and the rest a compact tier. Use a table when several entities share the metrics (Example 3).
 
 ---
 
@@ -440,6 +461,56 @@ Visual emphasis: The winner/loser split is the headline; action item should stan
 ```
 
 **Why one bullet_list and not three separate components:** Items under different category labels (Winners / Breakeven / Losing) are still a SINGLE list of parallel statements. Splitting into three components would create three separate visual blocks for no reason. bullet_list supports inline formatting to differentiate the categories visually.
+
+---
+
+### Example 5 — Parallel named items, each with a line → card_grid (NOT a bullet or icon list)
+
+**Input brief:**
+Headline: Teams open the tool at five moments in the working day
+Narrative role: Show when usage happens, so the launch plan targets those moments.
+Key messages:
+1. Stand-up (09:00-09:30): the board is reviewed live with the whole team
+2. Deep work (10:00-12:00): tasks are updated quietly, one person at a time
+3. Hand-off (14:00-15:00): work passes between time zones
+4. Review (16:00-17:00): managers approve the day's changes
+5. Late fixes (after 20:00): urgent edits from mobile — the fastest-growing moment
+Visual emphasis: late fixes is the moment to win
+
+**Correct output:**
+```json
+{
+  "slide_type": "content",
+  "components": [
+    {
+      "component_id": "slide_title",
+      "kind": "title",
+      "weight": "minor",
+      "content_data_json": {"title": "Teams open the tool at five moments in the working day"}
+    },
+    {
+      "component_id": "usage_moments",
+      "kind": "card_grid",
+      "items": 5,
+      "weight": "hero",
+      "design_hint": "inverted panel on the Late fixes card; clock icon in each card",
+      "content_data_json": {
+        "card_layout": "grid",
+        "cards": [
+          {"title": "Stand-up", "tag": "09:00-09:30", "body": "The board is reviewed live with the whole team"},
+          {"title": "Deep work", "tag": "10:00-12:00", "body": "Tasks are updated quietly, one person at a time"},
+          {"title": "Hand-off", "tag": "14:00-15:00", "body": "Work passes between time zones"},
+          {"title": "Review", "tag": "16:00-17:00", "body": "Managers approve the day's changes"},
+          {"title": "Late fixes", "tag": "After 20:00", "body": "Urgent edits from mobile — the fastest-growing moment"}
+        ]
+      }
+    }
+  ],
+  "layout_hint": "usage_moments fills the slide as two rows of cards (3 + 2); Late fixes is the one dark card"
+}
+```
+
+**Why card_grid and not a bullet list:** the five moments ARE the slide — each is a named item with its own time and detail. A card per moment gives each one room, keeps its detail beside it, and fills the slide; an icon list would leave the card half empty and drop the detail. Use bullet_list only for plain takeaways or actions.
 
 ---
 

@@ -11,7 +11,6 @@ from src.agents.hint_capabilities import (
     hint_scopes, load_capabilities, planner_capabilities_section, visual_intent_techniques,
 )
 from src.agents.planner_schema import ComponentKindLiteral, PlannerComponent
-from src.agents.slide_component_planner import _PROMPTS_DIR as _PLANNER_PROMPTS
 from src.agents.style_resolver import DEFAULT_THEME
 from src.compiler.content_model import find_violations
 
@@ -66,8 +65,8 @@ def test_hint_scopes():
 
 
 def test_planner_prompt_renders_capabilities():
-    env = Environment(loader=FileSystemLoader(str(_PLANNER_PROMPTS)), trim_blocks=True, lstrip_blocks=True)
-    prompt = env.get_template("system.j2").render(hint_capabilities=planner_capabilities_section())
+    from src.agents.slide_component_planner import _jinja_env
+    prompt = _jinja_env.get_template("system.j2").render(hint_capabilities=planner_capabilities_section())
     assert "- **table**:" in prompt and "NEVER: icons, logos" in prompt
     assert "NO brand or company logos" in prompt
     assert "using nested VStack/HStack" not in prompt  # old unscoped enrichment claim

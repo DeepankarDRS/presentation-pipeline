@@ -40,6 +40,7 @@ _INTENT_KEYWORDS: dict[str, list[str]] = {
     "layer":         ["diagram", "architecture diagram", "layer", "annotated"],
     "process_arrow": ["process arrow", "step by step", "pipeline"],
     "tree":          ["tree", "org chart", "organization"],
+    "card_grid":     ["card grid", "cards", "tiles", "pillars"],
 }
 
 
@@ -74,6 +75,7 @@ _KIND_TO_NODES: dict[str, list[str]] = {
     "matrix":        ["Matrix", "MatrixAxes", "MatrixQuadrants", "MatrixItem"],
     "process_arrow": ["ProcessArrow", "ProcessArrowStep"],
     "pyramid":       ["Pyramid", "PyramidLevel"],
+    "card_grid":     ["HStack", "Icon", "Ul", "Li", "Span"],
     "badge":         [],
 }
 
@@ -89,6 +91,7 @@ _KIND_TO_COMPONENT_FILE: dict[str, str] = {
     "matrix":        "components/matrix.yaml",
     "process_arrow": "components/process-arrow.yaml",
     "pyramid":       "components/pyramid.yaml",
+    "card_grid":     "components/icon.yaml",
 }
 
 _BASE_NODES = ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Icon"]
@@ -438,10 +441,13 @@ _KIND_TO_RECIPE: dict[str, str] = {
     "tree":          "tree",
     "layer":         "layer_diagram",
     "badge":         "badge",
+    "card_grid":     "card_grid",
+    "card_steps":    "card_steps",
+    "card_matrix":   "card_matrix",
+    "icon_rows":     "icon_bullet_list",
 }
 
 _EXTRA_RECIPES: dict[str, list[str]] = {
-    "bullet_list": ["icon_bullet_list"],
     "pyramid": ["pyramid_with_annotations"],
     "kpi_row": ["compact_kpi_strip"],
 }
@@ -450,6 +456,21 @@ _EXTRA_RECIPES: dict[str, list[str]] = {
 @functools.lru_cache(maxsize=1)
 def _all_recipes() -> dict[str, str]:
     return _load_yaml("core/recipes.yaml") or {}
+
+
+_CARD_LAYOUT_RECIPE = {"grid": "card_grid", "steps": "card_steps", "matrix": "card_matrix"}
+
+
+def _recipe_kind(component: dict[str, Any]) -> str:
+    """Recipe key for a planned component: card_grid picks its layout's recipe; a
+    bullet_list gets the icon-row recipe only when its design_hint asks for icons."""
+    kind = component.get("kind", "")
+    if kind == "bullet_list" and "icon" in (component.get("design_hint") or "").lower():
+        return "icon_rows"
+    if kind == "card_grid":
+        layout = (component.get("content_data") or {}).get("card_layout", "grid")
+        return _CARD_LAYOUT_RECIPE.get(layout, "card_grid")
+    return kind
 
 
 def _render_component_recipes(kinds: list[str]) -> str:
@@ -466,11 +487,11 @@ def _render_component_recipes(kinds: list[str]) -> str:
             if extra_key not in seen and extra_key in recipes:
                 seen.add(extra_key)
                 picked.append(f"# {extra_key}\n{str(recipes[extra_key]).strip()}")
-    # Inject platform_header + dark_callout_panel for data slides that already
-    # have a kpi_row — these are the GJ-style deep-dives where those patterns
-    # add the most value.
+    # Inject dark_callout_panel for data slides that already have a kpi_row —
+    # the GJ-style deep-dives where a dark read-out adds the most value. (The
+    # header comes from the planned HEADER block and house-style header_band.)
     if "kpi_row" in kinds:
-        for key in ("platform_header", "dark_callout_panel"):
+        for key in ("dark_callout_panel",):
             if key not in seen and key in recipes:
                 seen.add(key)
                 picked.append(f"# {key}\n{str(recipes[key]).strip()}")
@@ -546,7 +567,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
     )
     house_style = _render_house_style()
-    component_recipes = _render_component_recipes(kinds)
+    component_recipes = _render_component_recipes(
+        [_recipe_kind(c) for c in slide_plan.get("components", [])])
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar else ""
 

@@ -65,11 +65,11 @@ These are the markers that separate a polished deck from a passable one. Always 
 **MEDIUM severity (triggers PATCH repair — all slide types):**
 - **Kicker/eyebrow missing**: Every slide except cover and section_break must have an uppercase kicker above the title (`fontSize="14"`, `letterSpacing="2"`, `color="$accent"`, `bold="true"`). Missing kicker is MEDIUM. Patch: insert one Text node above the title.
 - **Bare table or chart (no card shell)**: Tables and charts must sit inside a card shell (`backgroundColor="$surfaceAlt"`, `border.color="$border"`, `borderRadius="14"`). A bare table or chart rendered directly in the root layout is MEDIUM. Patch: wrap the element in a VStack with card attributes.
-- **Missing source/caption line**: Data, deepdive, and performance slides must end with a source attribution at the bottom (`fontSize="14"`, `color="$textMuted"`). Absence is MEDIUM. Patch: append one Text node.
+- **Missing source/caption line**: when the XML or plan names a source that the slide does not show, append it at the bottom (`fontSize="14"`, `color="$textMuted"`). MEDIUM. Never make up a source or a date: no named source, no issue.
 
 **LOW severity (flag only — all slide types):**
-- **KPI strip height**: A KPI strip occupying more than 200px height is disproportionate — it should be compact (~78px). Oversized KPI strip is LOW. Patch: reduce `h` on the HStack container.
-- **Badge/platform chip**: Header slides identifying a platform (Blinkit, Amazon, etc.) should have a pill badge on the right side of the header. Its absence is LOW. Patch: add a Shape with `shapeType="roundRect"` and platform name.
+- **Under-filled slide**: content ends well above the footer and leaves a large empty band (roughly a quarter of the slide or more) while cards or tiles could be larger. LOW. Patch: give the main band (KPI row, card grid, table card or chart card) `grow="2"`.
+- **Parallel items as a plain list**: 3+ parallel items (moments, pillars, phases, impact areas) drawn as a bare bullet or icon list in a mostly empty card, where a grid of cards would fill the space. LOW, flag only (the component was chosen by the planner; do not patch it).
 
 Only flag these if they are obviously present — do not invent problems on clean slides.
 
@@ -78,7 +78,7 @@ Only flag these if they are obviously present — do not invent problems on clea
 - If the slide looks good, return an empty issues list with overall_assessment "good".
 - Be specific: describe what you see and where on the slide.
 - For each issue, include:
-  - `fix`: a concrete POM XML change — name the node, attribute, and value. Good: "On Chart, set h=\"200\"". Bad: "make the chart smaller".
+  - `fix`: a concrete POM XML change — name the node, attribute, and value. Good: "On the chart's card VStack, set grow=\"2\"". Bad: "make the chart bigger".
   - `affected_nodes`: use only valid POM node names: Slide, Theme, VStack, HStack, ZStack, Text, Chart, Table, KPI, Image, Bullet, Divider, Spacer, Pyramid, Timeline, Flow, Matrix, Tree.
 - Set `overall_assessment`: "layout_broken" if severe structural problems, "needs_tuning" for minor fixes, "good" if acceptable.
 - Set `repair_strategy`: "regenerate" when: wrong component types were chosen, OR 2+ HIGH structural issues and layout is fundamentally broken, OR flat KPI tiles or absent dark anchor panel (structural rebuild needed). Use "patch" for: missing kicker, bare table/chart, missing source line, inconsistent semantic coloring, and all LOW items. Use "none" only when no issues require repair.

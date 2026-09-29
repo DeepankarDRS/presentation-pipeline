@@ -10,17 +10,22 @@
 #
 # ── GLOBAL RULE ──────────────────────────────────────────────────────────
 # EVERY fontSize in EVERY recipe is >= 14. No exceptions. If content doesn't
-# fit at 11pt, CUT the content (shorter words, fewer items) — NEVER shrink
-# the font. This is the #1 quality rule. The generator MUST preserve these
+# fit at 14pt, re-lay it out (second row / column, wider card) and trim filler
+# words — NEVER shrink the font, never drop an item or a figure. This is the #1 quality rule. The generator MUST preserve these
 # font sizes when adapting a recipe — copying the structure but lowering
 # fonts defeats the purpose.
 
 kpi_row: |
-  # KPI row: NO h, NO grow on the band — auto-sizes to tile content. Tiles w="max"
-  # (equal width shares). Inside each tile justifyContent="center" (NOT spaceBetween).
-  # Unit in a <Span> inside the value <Text>.
-  # EVERY font in the tile must be >= 14. Labels=14, values=28-34, deltas=14.
-  # Max 3-4 tiles per row. More than 4? Use two rows, NOT smaller fonts.
+  # KPI row: NO pixel h. grow on the band when the KPIs are the slide's main content
+  # (their numbers and labels are enlarged to fill after generation); otherwise it
+  # sizes to its tiles. Tiles w="max" (equal width shares). Inside each tile
+  # justifyContent="center" (NOT spaceBetween). Unit in a <Span> inside the value <Text>.
+  # EVERY font in the tile must be >= 14. Labels=14, values=28-34, deltas/notes=14.
+  # 2-5 tiles per row. A second tier (the plan's detail kpi_row) goes in its own
+  # row below, sized to content (compact_kpi_strip).
+  # Read-out tile (design_hint "inverted panel on the X tile"): that one tile uses the
+  # hero_panel colours - light theme backgroundColor="$textMain" with label/value
+  # color="$surfaceAlt"; dark theme $surfaceAlt + borderLeft.color="$accent".
   <HStack gap="14" alignItems="stretch">
     <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="14" color="$textMuted">Annual recurring revenue</Text>
@@ -83,10 +88,9 @@ table_card: |
   </VStack>
 
 bullet_list: |
-  # Bullets: <Ul>/<Li>. NO h — auto-sizes. Each bullet = ONE line (~55 chars max).
-  # Multi-line paragraphs overflow the slide and cause overlap.
-  # fontSize 14-16, NEVER below 14. Max 3-4 bullets. If more, split across cards.
-  # REWRITE long bullets shorter — never shrink the font to fit more text.
+  # Bullets: <Ul>/<Li>. NO pixel h. One point per plan line, in the plan's words;
+  # a point may wrap to 2 lines. fontSize 14-16, NEVER below 14.
+  # 6+ points: two <Ul> side by side in an HStack. Never drop a point to fit.
   <VStack padding="20" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
     <Ul fontSize="14" color="$textMain" lineHeight="1.4">
       <Li>Close 3 enterprise logos worth $4M+ combined ARR</Li>
@@ -121,8 +125,8 @@ badge: |
   <Shape shapeType="roundRect" w="120" h="28" fill.color="DCFCE7" color="15803D" fontSize="14" bold="true" borderRadius="999">ON TRACK</Shape>
 
 callout: |
-  # Callout / narrative strip: NO h — auto-sizes to text content.
-  # STRICT: body text = 1 sentence, ≤ 80 chars. Longer text pushes total > 720.
+  # Callout / narrative strip: NO pixel h — sizes to its text (grow when it is the
+  # slide's main content). Body = the plan's sentence(s), wrapping to 2-3 lines.
   # ALL fonts >= 14. Header=14 bold, body=14-16.
   <VStack padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
     <Text fontSize="14" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
@@ -283,9 +287,9 @@ tree: |
   </VStack>
 
 compact_kpi_strip: |
-  # Compact KPI strip for dense data slides: 3-4 tiles above a content area.
-  # ALL fonts >= 14. Labels=14, values=24-28, deltas=14. No fixed h — auto-sizes.
-  # Max 4 tiles. If 5+ metrics, use TWO rows — never shrink fonts below 14.
+  # Compact KPI strip: the detail tier under a headline kpi_row, or 3-5 tiles above
+  # a chart / table. ALL fonts >= 14. Labels=14, values=24-28, deltas=14. No h — sizes
+  # to its tiles. 6+ tiles: two rows — never shrink fonts below 14.
   <HStack gap="10" alignItems="stretch">
     <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">METRIC A</Text>
@@ -309,7 +313,7 @@ dark_callout_panel: |
   # backgroundColor="$textMain", header in $accentAlt (letterSpacing="1"),
   # list items in a light muted color (D0DDD8 on dark backgrounds).
   # Use at bottom-right of a 2-col layout or as a full-width closing band.
-  # ALL fonts >= 14. Max 3-4 bullet items, each ≤ 50 chars.
+  # ALL fonts >= 14. One item per plan read-out, in the plan's words.
   <VStack padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
     <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">KEY READ-OUTS</Text>
     <Ul fontSize="14" color="D0DDD8" lineHeight="1.45">
@@ -320,15 +324,129 @@ dark_callout_panel: |
     </Ul>
   </VStack>
 
-platform_header: |
-  # Platform/section header band: kicker + title + subtitle left, badge right.
-  # Badge is a pill Shape (borderRadius="999") — NOT a Text node on its own.
-  # letterSpacing="2" on the kicker is the detail that makes it look professional.
-  <HStack justifyContent="spaceBetween" alignItems="start">
-    <VStack gap="4">
-      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">SECTION LABEL · NN</Text>
-      <Text fontSize="26" color="$textMain" bold="true">Headline — one clause naming the tension</Text>
-      <Text fontSize="14" color="$textMuted">[Period] · [Subject] — [scope]</Text>
+card_grid: |
+  # Card grid: parallel items (moments, pillars, capabilities, impact areas) as a grid
+  # of cards - NOT a bullet or icon list. The band takes grow from its weight; each
+  # row HStack grow="1" so the rows share the height. Card width is a % so every
+  # row lines up: 2 per row w="49%", 3 w="32%", 4 w="24%" (a shorter last row keeps
+  # the same %, left-aligned).
+  # Card = optional tag (14, letterSpacing 1, muted) + title (16-20 bold) + optional
+  # body (the plan's line, 14 muted, wraps). Optional <Icon size="24" alignSelf="start"> as the first child.
+  # 2-4 cards per row; 5+ items: two rows (7 = 4 + 3). The design_hint's emphasised
+  # card: light theme backgroundColor="$textMain" with $surfaceAlt / $accentAlt text.
+  <VStack grow="2" gap="12">
+    <HStack grow="1" gap="12" alignItems="stretch">
+      <VStack w="32%" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Icon name="zap" size="24" color="$accent" alignSelf="start" />
+        <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">06:00 - 09:00</Text>
+        <Text fontSize="18" color="$textMain" bold="true">Morning check-in</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.45">Guests confirm the plan for the day before leaving the room.</Text>
+      </VStack>
+      <VStack w="32%" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Icon name="map-pin" size="24" color="$accent" alignSelf="start" />
+        <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">12:00 - 14:00</Text>
+        <Text fontSize="18" color="$textMain" bold="true">Lunch booking</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.45">Short-notice tables near the activity of the day.</Text>
+      </VStack>
+      <VStack w="32%" padding="18" gap="6" backgroundColor="$textMain" borderRadius="14" justifyContent="center">
+        <Icon name="moon" size="24" color="$accentAlt" alignSelf="start" />
+        <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">21:00 - 23:00</Text>
+        <Text fontSize="18" color="$surfaceAlt" bold="true">Late room service</Text>
+        <Text fontSize="14" color="$surfaceAlt" lineHeight="1.45">The highest-value moment of the day.</Text>
+      </VStack>
+    </HStack>
+    <HStack grow="1" gap="12" alignItems="stretch">
+      <VStack w="32%" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Icon name="users" size="24" color="$accent" alignSelf="start" />
+        <Text fontSize="18" color="$textMain" bold="true">Group events</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.45">Bookings for five or more guests.</Text>
+      </VStack>
+      <VStack w="32%" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Icon name="calendar" size="24" color="$accent" alignSelf="start" />
+        <Text fontSize="18" color="$textMain" bold="true">Weekend stays</Text>
+        <Text fontSize="14" color="$textMuted" lineHeight="1.45">Friday-to-Sunday packages booked midweek.</Text>
+      </VStack>
+    </HStack>
+  </VStack>
+
+card_steps: |
+  # Card steps: an ordered sequence whose steps carry detail (phases, a 90-day plan,
+  # a workflow) - cards joined by arrows, NOT chevrons + a separate bullet list.
+  # Band grow from its weight; cards w="max" in one HStack (2-5 steps). Card = tag
+  # ("PHASE 01 · DAY 0-30", 14 muted) + title (16-20 bold) + the plan's detail as a
+  # short <Ul> or one line. Arrow: <Icon name="arrow-right" size="20"> with
+  # alignSelf="center" between cards. The final or emphasised step may be inverted.
+  <HStack grow="2" gap="10" alignItems="stretch">
+    <VStack w="max" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">PHASE 01 · DAY 0-30</Text>
+      <Text fontSize="18" color="$textMain" bold="true">Audit</Text>
+      <Ul fontSize="14" color="$textMain" lineHeight="1.45">
+        <Li>Map every open ticket by queue</Li>
+        <Li>Time each hand-off</Li>
+      </Ul>
     </VStack>
-    <Shape shapeType="roundRect" w="90" h="26" fill.color="$surfaceAlt" color="$accent" fontSize="14" bold="true" borderRadius="999">ENTITY</Shape>
+    <Icon name="arrow-right" size="20" color="$textMuted" alignSelf="center" />
+    <VStack w="max" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
+      <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">PHASE 02 · DAY 31-60</Text>
+      <Text fontSize="18" color="$textMain" bold="true">Rebuild</Text>
+      <Ul fontSize="14" color="$textMain" lineHeight="1.45">
+        <Li>Merge duplicate queues</Li>
+        <Li>Route billing to specialists</Li>
+      </Ul>
+    </VStack>
+    <Icon name="arrow-right" size="20" color="$textMuted" alignSelf="center" />
+    <VStack w="max" padding="18" gap="8" backgroundColor="$textMain" borderRadius="14">
+      <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">PHASE 03 · DAY 61-90</Text>
+      <Text fontSize="18" color="$surfaceAlt" bold="true">Scale</Text>
+      <Ul fontSize="14" color="$surfaceAlt" lineHeight="1.45">
+        <Li>Automate first replies</Li>
+        <Li>Report resolution time weekly</Li>
+      </Ul>
+    </VStack>
   </HStack>
+
+card_matrix: |
+  # Card matrix: named rows x named columns whose cells are WORDS (levers x platforms,
+  # capabilities x teams) - a grid of small cards, NOT a table of repeated text. A
+  # table stays right when the cells are numbers. Band grow from its weight; a header
+  # row of column labels; each row HStack grow="1": a row-label VStack w="14%" + one
+  # cell card per column. Widths are % so the columns line up across rows: cells
+  # (84 / columns)% - 2 columns 42%, 3 columns 28%, 4 columns 21%; the header labels
+  # use the same %. Cell = the plan's words (14-16), optional 14 muted line. An
+  # emphasised cell may use $textMain background with $surfaceAlt text.
+  <VStack grow="2" gap="8">
+    <HStack gap="8">
+      <VStack w="14%"><Text fontSize="14" color="$textMuted">LEVER</Text></VStack>
+      <Text w="28%" fontSize="14" color="$textMain" bold="true" letterSpacing="1">WEB</Text>
+      <Text w="28%" fontSize="14" color="$textMain" bold="true" letterSpacing="1">APP</Text>
+      <Text w="28%" fontSize="14" color="$textMain" bold="true" letterSpacing="1">STORE</Text>
+    </HStack>
+    <HStack grow="1" gap="8" alignItems="stretch">
+      <VStack w="14%" justifyContent="center">
+        <Text fontSize="16" color="$textMain" bold="true">Reach</Text>
+      </VStack>
+      <VStack w="28%" padding="12" backgroundColor="$textMain" borderRadius="10" justifyContent="center">
+        <Text fontSize="15" color="$surfaceAlt" bold="true">Search visibility</Text>
+      </VStack>
+      <VStack w="28%" padding="12" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="15" color="$textMain">Home-screen placement</Text>
+      </VStack>
+      <VStack w="28%" padding="12" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="15" color="$textMain">Window displays</Text>
+      </VStack>
+    </HStack>
+    <HStack grow="1" gap="8" alignItems="stretch">
+      <VStack w="14%" justifyContent="center">
+        <Text fontSize="16" color="$textMain" bold="true">Conversion</Text>
+      </VStack>
+      <VStack w="28%" padding="12" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="15" color="$textMain">One-page checkout</Text>
+      </VStack>
+      <VStack w="28%" padding="12" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="15" color="$textMain">Saved baskets</Text>
+      </VStack>
+      <VStack w="28%" padding="12" backgroundColor="$textMain" borderRadius="10" justifyContent="center">
+        <Text fontSize="15" color="$surfaceAlt" bold="true">Staff-assisted orders</Text>
+      </VStack>
+    </HStack>
+  </VStack>

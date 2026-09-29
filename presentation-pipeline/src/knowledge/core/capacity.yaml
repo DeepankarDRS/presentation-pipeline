@@ -1,0 +1,35 @@
+# pom-knowledge/core/capacity.yaml
+# The ONE place a component's capacity is stated. The slide component planner
+# prompt renders these numbers (src/agents/capacity.py), the plan checks enforce
+# them, and tests/unit/test_capacity.py fails when a prompt or knowledge file
+# states a different number. Change a limit here, never in prose.
+#
+# A capacity is what the component can DRAW legibly on a 1280x720 slide at the
+# 14 px font floor (verified renders, sizing notes in house-style.yaml). It is
+# never a reason to drop content: past it, split into a second row / tier /
+# component, or choose another kind.
+
+kpi_row:
+  per_row: [2, 5]        # tiles in one row; more metrics -> a second kpi_row tier
+table:
+  max_rows: 10           # body rows; past it the slide squeezes and rows spill
+  max_cols: 8
+bullet_list:
+  two_columns_from: 6    # 6+ points: two lists side by side
+chart:
+  min_points: 3          # fewer -> kpi_row
+timeline:
+  items: [3, 5]          # horizontal; labels collide past 5
+  max_label_words: 3
+process_arrow:
+  items: [3, 5]          # chevrons break words past 5 or in a half-width card
+  max_label_words: 2
+flow:
+  items: [4, 6]
+matrix:
+  items: [3, 4]          # dots and labels overlap past 4 (recipes.yaml matrix)
+pyramid:
+  items: [3, 5]
+card_grid:
+  items: [2, 12]
+  per_row: [2, 4]

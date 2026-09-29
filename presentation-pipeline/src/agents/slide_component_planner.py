@@ -28,9 +28,11 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from src.agents.capacity import capacity, enforce_capacity, span
 from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
+from src.agents.written_lines import flag_written_lines
 from src.state import ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, unpack_raw
 
@@ -50,6 +52,8 @@ _jinja_env = Environment(
     trim_blocks=True,
     lstrip_blocks=True,
 )
+# component capacity (knowledge/core/capacity.yaml) — the prompt's limits come from here
+_jinja_env.globals.update(cap=capacity(), span=span)
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
 
@@ -99,10 +103,15 @@ def _planner_slide_to_state(
             comp_data = {}
 
         comp["content_data"] = comp_data
-        merged_content_data.update(comp_data)
         components.append(comp)
 
-    return SlidePlan(
+    capacity_fixes = enforce_capacity(components)
+    for note in capacity_fixes:
+        logger.info(f"slide_component_planner: slide {idx + 1} capacity fix: {note}")
+    for comp in components:
+        merged_content_data.update(comp["content_data"])
+
+    plan = SlidePlan(
         slide_index=idx,
         slide_title=slide_title,
         label=label,
@@ -113,6 +122,9 @@ def _planner_slide_to_state(
         content_data=merged_content_data,
         data_provenance=compute_provenance(merged_content_data, supplied_content or {}),
     )
+    if capacity_fixes:
+        plan["capacity_fixes"] = capacity_fixes
+    return plan
 
 
 # ── Per-slide planning ──────────────────────────────────────────────────────
@@ -197,6 +209,11 @@ def plan_single_slide(
         label=slide.get("label", ""),
         subtitle=slide.get("subtitle", ""),
     )
+    brief_text = " ".join([*(slide.get("key_messages") or []), slide.get("slide_title", ""),
+                           slide.get("subtitle", ""), slide.get("visual_emphasis", ""),
+                           json.dumps(supplied_for_slide or {}, ensure_ascii=False)])
+    for note in flag_written_lines(plan, brief_text):
+        logger.info(f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} {note}")
     return plan, usage
 
 

@@ -33,3 +33,39 @@ def test_fixed_height_table_rows_are_sized_for_the_18px_default(tmp_path):
                    '<VStack w="max"><Text>x</Text></VStack></HStack></VStack></Slide>', encoding="utf-8")
     on = _compile(xml, tmp_path / "on")
     assert int(re.search(r'defaultRowHeight="(\d+)"', on["xml"]).group(1)) >= 2 * 18 * 1.3
+
+
+def test_kpi_values_grow_with_their_unit_span_in_a_growing_tile_row(tmp_path):
+    """s11 CHEFFIN exec summary (1b306e1de67f slide 2): the KPI row takes the spare height (grow
+    fallback) and its hero numbers, frozen as >= 24 px text, stayed 30 px in tall empty tiles."""
+    on = _compile(_FIT / "s11-kpi-row-grows-cheffin.xml", tmp_path / "on")
+    assert any(re.search(r"KPI values x1\.\d+ \(30 -> [4-6]\dpx\)", r) for r in on["fitGrow"]), on["fitGrow"]
+    value = re.search(r'<Text[^>]*\sfontSize="(\d+)"[^>]*>₹114\.9<Span fontSize="(\d+)"', on["xml"])
+    assert value and int(value.group(1)) >= 40 and int(value.group(2)) > 16
+    sizes = set(re.findall(r'<Text[^>]*\sfontSize="(\d+)" bold="true" color="\$(?:textMain|negative)">[₹0-9]', on["xml"]))
+    assert len(sizes) == 1, sizes  # peer tiles keep one number size
+
+
+def _header_slide(tmp_path, headline: str):
+    xml = tmp_path / "h.xml"
+    xml.write_text('<Theme accent="F5821F" textMain="041E42" textMuted="4E5D6E" />'
+                   '<Slide><VStack w="1280" h="720" padding="36" gap="14"><VStack gap="4">'
+                   '<Text fontSize="14" bold="true" letterSpacing="2">CORE PROBLEM</Text>'
+                   f'<Text fontSize="30" bold="true">{headline}</Text>'
+                   '<Text fontSize="14">FLIPCART: ₹31.1 vs ₹10.7 · ZAROMA: ₹46.2 vs ₹14.8</Text></VStack>'
+                   '<VStack grow="1" padding="18" backgroundColor="FFFFFF"><Text fontSize="16">Chart card</Text></VStack>'
+                   '</VStack></Slide>', encoding="utf-8")
+    return _compile(xml, tmp_path / "on")
+
+
+def test_headline_at_the_wrap_edge_reserves_its_second_line(tmp_path):
+    """CHEFFIN cf98c42b5371 slide 3: POM laid the headline out on 1 line (39 px box); the
+    renderer wrapped it to 2 and the second line ran into the subtitle."""
+    on = _header_slide(tmp_path, "CPC is nearly 3x higher than what current conversion economics can support.")
+    assert any("heading 1 -> 2 lines reserved" in r for r in on["fitGrow"]), on["fitGrow"]
+    assert re.search(r'<Text[^>]*\sminH="\d+"[^>]*>CPC is nearly', on["xml"])
+
+
+def test_short_headline_is_left_alone(tmp_path):
+    on = _header_slide(tmp_path, "CPC is 3x too high")
+    assert not any("lines reserved" in r for r in on["fitGrow"]), on["fitGrow"]

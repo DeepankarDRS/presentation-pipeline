@@ -40,11 +40,11 @@ TimelineItem_attributes:
 
 notes:
   - "Timeline needs explicit w and h — it does not auto-size."
-  - "3-6 items work well. More than 8 gets cramped horizontally at 1280 wide."
+  - "3-5 items (core/capacity.yaml). More gets cramped horizontally at 1280 wide - put the rest in a table or cards."
   - "Use horizontal for a left-to-right chronology, vertical for a top-to-bottom roadmap."
   - "Each item's color sets the dot/marker accent. Use the palette's accent, positive, negative tokens for semantic milestones."
 
 pitfalls:
   - "Missing w/h on Timeline — will not render correctly."
   - "date and title are both required on every TimelineItem."
-  - "Too many items (>8) in horizontal mode will cause cramping or overflow."
+  - "Too many items (>5) in horizontal mode will cause cramping or overflow."

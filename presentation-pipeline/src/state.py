@@ -66,6 +66,8 @@ class SlidePlan(TypedDict, total=False):
     layout_hint: str   # freeform layout INTENT (priority/relationships, not pixels)
     content_data: dict[str, Any]
     data_provenance: dict[str, str]  # key → "user" | "sample"
+    capacity_fixes: list[str]        # components converted past capacity.yaml (plan check)
+    written_lines: list[str]         # card lines the planner wrote (not in the brief), for review
 
 
 class DeckPlan(TypedDict, total=False):

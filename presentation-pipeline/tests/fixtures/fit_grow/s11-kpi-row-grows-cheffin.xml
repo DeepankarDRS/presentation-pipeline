@@ -1,0 +1,42 @@
+<Theme surface="F9F8F4" surfaceAlt="FFFFFF" accent="F5821F" accentAlt="673AB7" positive="2E7D32" negative="A03B24" warning="A03B24" textMain="041E42" textMuted="4E5D6E" border="E4E2D8" />
+<!-- archetype: A -->
+<Slide><VStack w="1280" h="720" padding="36" gap="14" alignItems="stretch" backgroundColor="$surface">
+  <HStack justifyContent="spaceBetween" alignItems="start">
+    <VStack gap="4">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PERFORMANCE OVERVIEW</Text>
+      <Text fontSize="28" color="$textMain" bold="true">Spending at Scale, <Span color="$accent">Not Buying Profitable Demand</Span></Text>
+      <Text fontSize="14" color="$textMuted">CHEFFIN ad spend across FLIPCART and ZAROMA is structurally unprofitable</Text>
+    </VStack>
+  </HStack>
+  <HStack grow="1" gap="14" alignItems="stretch">
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+      <Icon name="shopping-cart" size="24" color="$accent" margin.bottom="2"/>
+      <Text fontSize="14" color="$textMuted" bold="true">Ad Spend (Total)</Text>
+      <Text fontSize="30" bold="true" color="$textMain">₹114.9<Span fontSize="16" color="$textMuted">L</Span></Text>
+    </VStack>
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+      <Icon name="dollar-sign" size="24" color="$accent" margin.bottom="2"/>
+      <Text fontSize="14" color="$textMuted" bold="true">Revenue (Total)</Text>
+      <Text fontSize="30" bold="true" color="$textMain">₹37.4<Span fontSize="16" color="$textMuted">L</Span></Text>
+    </VStack>
+    <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$negative" border.width="2" justifyContent="center">
+      <Icon name="percent" size="24" color="$negative" margin.bottom="2"/>
+      <Text fontSize="14" color="$negative" bold="true">ROAS (F: 0.34x, Z: 0.32x)</Text>
+      <Text fontSize="30" bold="true" color="$negative">0.33<Span fontSize="16" color="$textMuted">x</Span></Text>
+      <Text fontSize="14" color="$negative" bold="true">Unprofitable</Text>
+    </VStack>
+  </HStack>
+  <HStack gap="14" alignItems="stretch">
+    <VStack w="max" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" borderLeft.color="$accent" borderLeft.width="5" border.color="$border" border.width="1">
+      <HStack gap="8" alignItems="center">
+        <Icon name="triangle-alert" size="20" color="$accent"/>
+        <Text fontSize="14" color="$textMain" bold="true">Structural Problem</Text>
+      </HStack>
+      <Text fontSize="15" color="$textMain" lineHeight="1.5">Both platforms show the same issue: CPC is too high relative to AOV and CVR, making <B>profitable growth impossible</B> without <B>structural change</B>.</Text>
+    </VStack>
+  </HStack>
+  <VStack padding="16" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000">
+    <Text fontSize="14" color="$textMain" lineHeight="1.45"><Span color="$accent">Media economics problem</Span>, not just a campaign hygiene problem.</Text>
+  </VStack>
+  <Text fontSize="14" color="$textMuted">Source: CHEFFIN ad platform data, Q2 FY24</Text>
+</VStack></Slide>

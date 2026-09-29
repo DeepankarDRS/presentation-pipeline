@@ -149,6 +149,22 @@ interface EditHistoryEntry {
             </div>
           }
 
+          <!-- Lines the pipeline wrote (not in the brief) -->
+          @if (selectedWrittenLines().length > 0) {
+            <div class="px-5 py-3 border-t border-amber-200 bg-amber-50">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Written by the pipeline — not in your brief</p>
+              <ul class="mt-1.5 space-y-1 text-xs text-amber-900 list-disc pl-4">
+                @for (line of selectedWrittenLines(); track $index) {
+                  <li>{{ line }}</li>
+                }
+              </ul>
+              <div class="mt-2 flex gap-2">
+                <button class="btn-secondary text-xs" (click)="keepWrittenLines()" [disabled]="isEditing()">Keep</button>
+                <button class="btn-secondary text-xs" (click)="removeWrittenLines()" [disabled]="isEditing()">Remove these lines</button>
+              </div>
+            </div>
+          }
+
           <!-- Edit input -->
           <div class="px-5 py-4 border-t border-slate-200 bg-white">
             @if (editError()) {
@@ -208,6 +224,8 @@ export class SlideReviewComponent {
   readonly editHistoryMap = signal<Map<number, EditHistoryEntry[]>>(new Map());
   readonly slideVersions = signal<Map<number, number>>(new Map());
   readonly screenshotVersions = signal<Map<number, number>>(new Map());
+  /** Slides whose written lines the user already kept or removed. */
+  readonly writtenReviewed = signal<Set<number>>(new Set());
 
   feedbackText = '';
 
@@ -229,6 +247,29 @@ export class SlideReviewComponent {
     const ver = this.screenshotVersions().get(idx) ?? 0;
     return this.api.getScreenshotUrl(runId, idx, ver);
   });
+
+  readonly selectedWrittenLines = computed<string[]>(() => {
+    const idx = this.selectedIndex();
+    if (this.writtenReviewed().has(idx)) return [];
+    return this.slides().find(s => s.slide_index === idx)?.written_lines ?? [];
+  });
+
+  private markWrittenReviewed(idx: number): void {
+    this.writtenReviewed.set(new Set(this.writtenReviewed()).add(idx));
+  }
+
+  keepWrittenLines(): void {
+    this.markWrittenReviewed(this.selectedIndex());
+  }
+
+  async removeWrittenLines(): Promise<void> {
+    const idx = this.selectedIndex();
+    const lines = this.selectedWrittenLines();
+    this.feedbackText = 'Remove these description lines from their cards and keep everything else unchanged: '
+      + lines.map(l => `"${l}"`).join('; ');
+    await this.applyEdit();
+    if (this.lastEditResult()?.ok) this.markWrittenReviewed(idx);
+  }
 
   readonly editHistory = computed<EditHistoryEntry[]>(() => {
     return this.editHistoryMap().get(this.selectedIndex()) ?? [];

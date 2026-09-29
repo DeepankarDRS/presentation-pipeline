@@ -964,6 +964,7 @@ class SlideInfoResponse(BaseModel):
     screenshot_url: str | None
     has_edits: bool
     edit_count: int
+    written_lines: list[str] = []  # card lines the planner wrote (not in the brief), for review
 
 
 class EditSessionResponse(BaseModel):
@@ -1071,6 +1072,7 @@ async def create_edit_session(run_id: str) -> EditSessionResponse:
                 if s.screenshot_path else None,
             has_edits=len(s.edit_history) > 0,
             edit_count=len(s.edit_history),
+            written_lines=list((s.slide_plan or {}).get("written_lines") or []),
         ))
 
     return EditSessionResponse(
