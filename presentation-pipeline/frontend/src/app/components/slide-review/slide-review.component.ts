@@ -16,71 +16,81 @@ interface EditHistoryEntry {
   standalone: true,
   imports: [FormsModule],
   template: `
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="card overflow-hidden">
       <!-- Header -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 border-b border-slate-200 bg-gradient-to-br from-brand-50 via-white to-white">
         <div>
-          <h2 class="text-lg font-semibold text-gray-900">Slide Review & Edit</h2>
-          <p class="text-sm text-gray-500">{{ slideCount() }} slide(s) &mdash; click to select, type feedback to edit</p>
+          <h2 class="text-lg font-semibold text-slate-900">Slide Review & Edit</h2>
+          <p class="text-sm text-slate-500">{{ slideCount() }} slide(s) &mdash; select a slide, then describe what to change</p>
         </div>
         <div class="flex gap-2">
-          <button
-            (click)="gen.backToResult()"
-            class="text-sm text-gray-600 font-medium py-2 px-4 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors"
-          >
-            Back
-          </button>
-          <button
-            (click)="finalize()"
-            [disabled]="isEditing() || isFinalizing()"
-            class="text-sm bg-green-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <button (click)="gen.backToResult()" class="btn-secondary !py-2">Back</button>
+          <button (click)="finalize()" [disabled]="isEditing() || isFinalizing()" class="btn-success !py-2">
+            @if (isFinalizing()) {
+              <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            }
             {{ isFinalizing() ? 'Finalizing...' : 'Finalize Deck' }}
           </button>
         </div>
       </div>
 
-      <div class="flex" style="min-height: 500px">
+      <div class="flex" style="min-height: 540px">
         <!-- Sidebar: slide thumbnails -->
-        <div class="w-48 border-r border-gray-200 bg-gray-50 overflow-y-auto p-3 space-y-2 shrink-0">
+        <div class="w-52 border-r border-slate-200 bg-slate-50 overflow-y-auto p-3 space-y-3 shrink-0">
           @for (slide of slides(); track slide.slide_index) {
             <button
               (click)="selectSlide(slide.slide_index)"
-              class="w-full rounded-lg overflow-hidden border-2 transition-colors"
-              [class.border-indigo-500]="selectedIndex() === slide.slide_index"
-              [class.border-gray-200]="selectedIndex() !== slide.slide_index"
-              [class.hover:border-indigo-300]="selectedIndex() !== slide.slide_index"
+              class="group w-full rounded-xl overflow-hidden border bg-white text-left transition-all"
+              [class.border-brand-600]="selectedIndex() === slide.slide_index"
+              [class.ring-4]="selectedIndex() === slide.slide_index"
+              [class.ring-brand-100]="selectedIndex() === slide.slide_index"
+              [class.border-slate-200]="selectedIndex() !== slide.slide_index"
+              [class.hover:border-brand-300]="selectedIndex() !== slide.slide_index"
             >
-              @if (slide.screenshot_url) {
-                <img
-                  [src]="screenshotSrc(slide.slide_index)"
-                  [alt]="'Slide ' + (slide.slide_index + 1)"
-                  class="w-full aspect-video object-cover bg-gray-100"
-                />
-              } @else {
-                <div class="w-full aspect-video bg-gray-200 flex items-center justify-center">
-                  <span class="text-xs text-gray-400">No preview</span>
-                </div>
-              }
-              <div class="px-2 py-1.5 text-left">
-                <span class="text-xs font-medium text-gray-700">Slide {{ slide.slide_index + 1 }}</span>
-                @if (slide.has_edits) {
-                  <span class="ml-1 text-xs text-indigo-600">(v{{ slide.version }})</span>
+              <div class="relative">
+                @if (slide.screenshot_url) {
+                  <img
+                    [src]="screenshotSrc(slide.slide_index)"
+                    [alt]="'Slide ' + (slide.slide_index + 1)"
+                    class="w-full aspect-video object-cover bg-slate-100"
+                  />
+                } @else {
+                  <div class="w-full aspect-video bg-slate-100 flex items-center justify-center">
+                    <span class="text-xs text-slate-400">No preview</span>
+                  </div>
                 }
+                <span class="absolute top-1.5 left-1.5 rounded-md bg-slate-900/75 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  {{ slide.slide_index + 1 }}
+                </span>
+                @if (slide.has_edits) {
+                  <span class="absolute top-1.5 right-1.5 rounded-md bg-brand-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                    v{{ slide.version }}
+                  </span>
+                }
+              </div>
+              <div class="px-2.5 py-1.5">
+                <span class="text-xs font-medium"
+                  [class.text-brand-700]="selectedIndex() === slide.slide_index"
+                  [class.text-slate-600]="selectedIndex() !== slide.slide_index"
+                >Slide {{ slide.slide_index + 1 }}</span>
               </div>
             </button>
           }
         </div>
 
         <!-- Main content area -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col min-w-0">
           <!-- Screenshot display -->
-          <div class="flex-1 p-4 flex items-center justify-center bg-gray-100 relative">
+          <div class="flex-1 p-6 flex items-center justify-center bg-[radial-gradient(circle_at_center,_#f1f5f9,_#e2e8f0)] relative">
             @if (isEditing()) {
-              <div class="absolute inset-0 bg-white/70 flex items-center justify-center z-10">
+              <div class="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
                 <div class="flex flex-col items-center gap-3">
-                  <div class="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent"></div>
-                  <span class="text-sm text-gray-600">Applying edit...</span>
+                  <div class="spinner h-9 w-9"></div>
+                  <span class="text-sm font-medium text-slate-700">Applying edit...</span>
                 </div>
               </div>
             }
@@ -88,11 +98,11 @@ interface EditHistoryEntry {
               <img
                 [src]="selectedScreenshotUrl()"
                 alt="Selected slide"
-                class="max-w-full max-h-full rounded shadow-lg"
+                class="max-w-full max-h-full rounded-lg shadow-lift ring-1 ring-black/5"
               />
             } @else {
-              <div class="text-gray-400 text-sm text-center">
-                <svg class="mx-auto w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="text-slate-400 text-sm text-center">
+                <svg class="mx-auto w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <p>No screenshot available</p>
@@ -101,22 +111,60 @@ interface EditHistoryEntry {
             }
           </div>
 
+          <!-- Edit history (chat style) -->
+          @if (editHistory().length > 0) {
+            <div class="px-5 py-3 border-t border-slate-200 bg-slate-50/70 max-h-44 overflow-y-auto space-y-2">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Edit History</p>
+              @for (entry of editHistory(); track $index) {
+                <div class="flex justify-end">
+                  <div class="max-w-[85%] rounded-2xl rounded-br-md bg-brand-600 px-3 py-2 text-xs text-white shadow-sm">
+                    {{ entry.feedback }}
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  @if (entry.ok) {
+                    <span class="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    <span class="rounded-2xl rounded-bl-md bg-white border border-slate-200 px-3 py-1.5 text-xs text-slate-600">
+                      Applied
+                      @if (entry.repair_attempts > 0) {
+                        <span class="text-slate-400">&middot; {{ entry.repair_attempts }} repair(s)</span>
+                      }
+                    </span>
+                  } @else {
+                    <span class="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                      <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </span>
+                    <span class="rounded-2xl rounded-bl-md bg-white border border-red-200 px-3 py-1.5 text-xs text-red-600">
+                      {{ entry.error ?? 'Edit failed' }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          }
+
           <!-- Edit input -->
-          <div class="px-4 py-3 border-t border-gray-200 bg-white">
+          <div class="px-5 py-4 border-t border-slate-200 bg-white">
             @if (editError()) {
-              <div class="mb-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+              <div class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
                 {{ editError() }}
               </div>
             }
             @if (lastEditResult() && lastEditResult()!.ok) {
-              <div class="mb-2 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">
+              <div class="mb-3 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
                 Edit applied successfully
                 @if (lastEditResult()!.repair_attempts > 0) {
-                  <span class="text-green-600">({{ lastEditResult()!.repair_attempts }} repair(s))</span>
+                  <span class="text-emerald-600">({{ lastEditResult()!.repair_attempts }} repair(s))</span>
                 }
               </div>
               @if (!lastEditResult()!.screenshot_updated) {
-                <div class="mb-2 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                <div class="mb-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                   The change was applied, but the preview couldn't be refreshed — it's still
                   included in your download. Try the edit again to retry the preview.
                 </div>
@@ -128,46 +176,21 @@ interface EditHistoryEntry {
                 [(ngModel)]="feedbackText"
                 (keydown.enter)="applyEdit()"
                 placeholder="Describe what to change... (e.g., 'make the title larger', 'move chart to the left')"
-                class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                class="input"
                 [disabled]="isEditing()"
               />
               <button
                 (click)="applyEdit()"
                 [disabled]="isEditing() || !feedbackText.trim()"
-                class="bg-indigo-600 text-white font-medium py-2 px-5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm shrink-0"
+                class="btn-primary shrink-0"
               >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
                 Apply Edit
               </button>
             </div>
           </div>
-
-          <!-- Edit history -->
-          @if (editHistory().length > 0) {
-            <div class="px-4 py-2 border-t border-gray-100 bg-gray-50 max-h-32 overflow-y-auto">
-              <p class="text-xs font-medium text-gray-500 mb-1">Edit History</p>
-              @for (entry of editHistory(); track $index) {
-                <div class="flex items-center gap-2 text-xs py-0.5">
-                  @if (entry.ok) {
-                    <span class="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                      <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                  } @else {
-                    <span class="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-                      <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </span>
-                  }
-                  <span class="text-gray-700 truncate">{{ entry.feedback }}</span>
-                  @if (entry.repair_attempts > 0) {
-                    <span class="text-gray-400 shrink-0">({{ entry.repair_attempts }} repair(s))</span>
-                  }
-                </div>
-              }
-            </div>
-          }
         </div>
       </div>
     </div>

@@ -24,9 +24,9 @@ def test_resolve_named_light_palette():
     assert theme["name"] == "sky-minimal"
     assert theme["mode"] == "light"
     assert theme["is_dark"] is False
-    assert 'surface="F5F9FD"' in theme["element"]
-    assert 'accent="0284C7"' in theme["element"]
-    assert 'textMain="18202B"' in theme["element"]
+    assert 'surface="EAF6FB"' in theme["element"]
+    assert 'accent="0077B6"' in theme["element"]
+    assert 'textMain="03045E"' in theme["element"]
 
 
 def test_resolve_named_dark_palette():
@@ -48,7 +48,7 @@ def test_resolve_chart_colors():
     theme = resolve_theme("sky-minimal")
     assert isinstance(theme["chart_colors"], list)
     assert len(theme["chart_colors"]) >= 3
-    assert "0284C7" in theme["chart_colors"]
+    assert "0077B6" in theme["chart_colors"]
 
 
 def test_resolve_returns_copy():
@@ -64,4 +64,4 @@ def test_style_resolver_node_writes_state():
     assert "theme_element" in result
     assert "resolved_theme" in result
     assert result["resolved_theme"]["name"] == "sky-minimal"
-    assert 'surface="F5F9FD"' in result["theme_element"]
+    assert 'surface="EAF6FB"' in result["theme_element"]

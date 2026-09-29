@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Theme picker — design variations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+      colors: { brand: { 50: '#EEF5FF', 100: '#D9E8FF', 600: '#1E6FE8', 700: '#1753C4' } },
+    } } };
+  </script>
+  <style>
+    .clamp1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-lift { transition: transform .15s ease, box-shadow .15s ease; }
+    .card-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(16,24,40,.10); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+  <header class="sticky top-0 z-20 bg-white/85 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h1 class="text-lg font-semibold">Theme picker — design variations</h1>
+        <p class="text-xs text-slate-500">Same 16 palettes from <code>palettes.yaml</code>. Click cards to select; use the Light / Dark tabs.</p>
+      </div>
+      <nav class="flex gap-2 text-xs font-medium">
+        <a href="#v1" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200">A · Cover cards</a>
+        <a href="#v2" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200">B · Content + real text</a>
+        <a href="#v3" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200">C · Chips + live preview</a>
+        <a href="#v4" class="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200">D · Polished current</a>
+        <a href="#v5" class="px-3 py-1.5 rounded-full bg-brand-600 text-white hover:bg-brand-700">E · Covers + data preview</a>
+        <a href="#v6" class="px-3 py-1.5 rounded-full bg-brand-600 text-white hover:bg-brand-700">F · Compact chips</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8 space-y-10" id="root"></main>
+
+<script>
+const P = [
+  { id:'corporate-slate', label:'Corporate Slate', tone:'Corporate / cool blue', mode:'light', accent:'2563EB', accentAlt:'0EA5E9', surface:'F7F9FC', surfaceAlt:'FFFFFF', textMain:'16202E', textMuted:'55627A', border:'E2E8F0', chart:['2563EB','0EA5E9','14B8A6','6366F1'] },
+  { id:'sky-minimal', label:'Sky Minimal', tone:'Ocean blues on a pale sky wash', mode:'light', accent:'0077B6', accentAlt:'00B4D8', surface:'EAF6FB', surfaceAlt:'FFFFFF', textMain:'03045E', textMuted:'3E5C76', border:'CFE6F2', chart:['0077B6','00B4D8','03045E','48CAE4'] },
+  { id:'teal-slate', label:'Teal Slate', tone:'Warm sand with deep teal and copper', mode:'light', accent:'0E7C7B', accentAlt:'C8702A', surface:'F3EFE7', surfaceAlt:'FFFFFF', textMain:'12302F', textMuted:'5B6461', border:'E2DCCF', chart:['0E7C7B','C8702A','5FA8A0','12302F'] },
+  { id:'emerald-clean', label:'Emerald Clean', tone:'Crisp mint with emerald and lime', mode:'light', accent:'059669', accentAlt:'65A30D', surface:'ECF8F2', surfaceAlt:'FFFFFF', textMain:'053B2B', textMuted:'4B6B5E', border:'CDEBDD', chart:['059669','65A30D','0EA5E9','065F46'] },
+  { id:'forest-editorial', label:'Forest Editorial', tone:'Forest green and amber on cream', mode:'light', accent:'2D5016', accentAlt:'D4891A', surface:'F5F0E8', surfaceAlt:'FFFCF6', textMain:'1E2612', textMuted:'5E5A48', border:'E3DACB', chart:['2D5016','D4891A','7A9A3A','8C5A2B'] },
+  { id:'warm-editorial', label:'Warm Editorial', tone:'Terracotta and teal on peach cream', mode:'light', accent:'C2410C', accentAlt:'1F6F78', surface:'FAF1E9', surfaceAlt:'FFFFFF', textMain:'3B2016', textMuted:'76594A', border:'EEDCCD', chart:['C2410C','1F6F78','E9A06B','7A4A32'] },
+  { id:'amber-mono', label:'Amber Mono', tone:'Navy ink with antique gold on ivory', mode:'light', accent:'A87B1E', accentAlt:'C9A84C', surface:'F8F6F0', surfaceAlt:'FFFFFF', textMain:'1B2A4A', textMuted:'5C6376', border:'E6E0D2', chart:['A87B1E','1B2A4A','C9A84C','6B7A99'] },
+  { id:'rose-report', label:'Rose Report', tone:'Blush with berry and wine', mode:'light', accent:'BE185D', accentAlt:'6B2D5C', surface:'FBF0F3', surfaceAlt:'FFFFFF', textMain:'3A1026', textMuted:'7A5566', border:'F0D9E1', chart:['BE185D','6B2D5C','F472B6','9D174D'] },
+  { id:'violet-modern', label:'Violet Modern', tone:'Lavender with deep violet and coral', mode:'light', accent:'6D28D9', accentAlt:'E8505B', surface:'F5F2FF', surfaceAlt:'FFFFFF', textMain:'2A1458', textMuted:'625A80', border:'E4DDF7', chart:['6D28D9','E8505B','A78BFA','2A1458'] },
+  { id:'saascolor', label:'Saas Color', tone:'Navy on cream, orange accents', mode:'light', accent:'F5821F', accentAlt:'673AB7', surface:'F9F8F4', surfaceAlt:'FFFFFF', textMain:'041E42', textMuted:'4E5D6E', border:'E4E2D8', chart:['F5821F','673AB7','B39DDB','2E7D32'] },
+  { id:'navy-orange', label:'Navy Orange', tone:'Navy on warm off-white, orange', mode:'light', accent:'F7941D', accentAlt:'673AB7', surface:'FFFFFF', surfaceAlt:'F4F3F0', textMain:'112340', textMuted:'5A6578', border:'E8E6E3', chart:['F7941D','673AB7','B39DDB','95A5B6'] },
+  { id:'graphite-mono', label:'Graphite Mono', tone:'White and charcoal, electric blue', mode:'light', accent:'0066FF', accentAlt:'6B7280', surface:'FFFFFF', surfaceAlt:'F2F3F5', textMain:'2C2C2C', textMuted:'5F6368', border:'E1E3E6', chart:['0066FF','2C2C2C','9CA3AF','60A5FA'] },
+  { id:'graphite-dark', label:'Graphite Dark', tone:'Neutral blue-dark executive', mode:'dark', accent:'60A5FA', accentAlt:'38BDF8', surface:'0F1729', surfaceAlt:'1E2A44', textMain:'F1F5F9', textMuted:'AAB7C7', border:'36455F', chart:['60A5FA','34D399','FBBF24','A78BFA'] },
+  { id:'midnight-indigo', label:'Midnight Indigo', tone:'Deep indigo dark', mode:'dark', accent:'818CF8', accentAlt:'A5B4FC', surface:'12122A', surfaceAlt:'232346', textMain:'EEF0FB', textMuted:'AAAECF', border:'3A3A63', chart:['818CF8','34D399','FBBF24','F472B6'] },
+  { id:'forest-dark', label:'Forest Dark', tone:'Dark green', mode:'dark', accent:'4ADE80', accentAlt:'2DD4BF', surface:'0C1A14', surfaceAlt:'172C22', textMain:'ECF5EF', textMuted:'9BB4A6', border:'2C4438', chart:['4ADE80','2DD4BF','FBBF24','60A5FA'] },
+  { id:'carbon-dark', label:'Carbon Dark', tone:'Charcoal neutral, warm orange', mode:'dark', accent:'FB923C', accentAlt:'FBBF24', surface:'171717', surfaceAlt:'262626', textMain:'F5F5F4', textMuted:'A8A29E', border:'3F3F3F', chart:['FB923C','FBBF24','A3E635','38BDF8'] },
+];
+const BARS = [48, 72, 58, 92];
+const h = c => '#' + c;
+
+// "Cover" color: light palettes use their ink as a bold block; dark palettes use their surface.
+const cover = p => p.mode === 'dark' ? p.surface : p.textMain;
+const onCover = p => p.mode === 'dark' ? p.textMain : p.surface;
+
+const state = { v1:{sel:'corporate-slate', mode:'light'}, v2:{sel:'corporate-slate', mode:'light'},
+                v3:{sel:'teal-slate', mode:'light'}, v4:{sel:'corporate-slate', mode:'light'},
+                v5:{sel:'warm-editorial', mode:'light'} };
+
+function tabs(key) {
+  const s = state[key];
+  const btn = (m, label) => `<button onclick="setMode('${key}','${m}')" class="px-4 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${s.mode===m?'bg-white shadow-sm text-brand-700':'text-slate-600 hover:text-slate-900'}">${label} <span class="text-[10px] text-slate-400">${P.filter(p=>p.mode===m).length}</span></button>`;
+  const sel = P.find(p => p.id === s.sel);
+  return `<div class="flex items-center justify-between mb-4">
+    <div class="inline-flex rounded-xl bg-slate-100 p-1">${btn('light','Light')}${btn('dark','Dark')}</div>
+    <div class="text-xs text-slate-500 flex items-center gap-2"><span class="w-3 h-3 rounded-full" style="background:${h(sel.accent)}"></span>Selected: <b class="text-slate-800">${sel.label}</b></div>
+  </div>`;
+}
+
+function check(p) {
+  return `<span class="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-white shadow" style="background:${h(p.accent)}">
+    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>`;
+}
+
+function selRing(p, on) {
+  return on ? `border-color:${h(p.accent)};box-shadow:0 0 0 4px ${h(p.accent)}22;` : '';
+}
+
+/* ---------------- A · Cover cards (Gamma-style) ---------------- */
+function coverSlide(p, big) {
+  const t = big ? 'text-[22px]' : 'text-[13px]';
+  return `<div class="relative aspect-video w-full overflow-hidden rounded-lg" style="background:${h(p.surface)}">
+    <div class="absolute inset-y-0 left-0 w-[58%] p-[7%] flex flex-col justify-between" style="background:${h(cover(p))}">
+      <div class="text-[8px] font-semibold uppercase tracking-[.14em]" style="color:${h(p.accent)}">Quarterly review</div>
+      <div>
+        <div class="${t} font-extrabold leading-[1.05]" style="color:${h(onCover(p))}">Q3 Revenue<br>Review</div>
+        <div class="mt-1.5 h-[3px] w-8 rounded-full" style="background:${h(p.accent)}"></div>
+      </div>
+      <div class="text-[7px]" style="color:${h(onCover(p))};opacity:.7">Board update · Oct 2026</div>
+    </div>
+    <div class="absolute inset-y-0 right-0 w-[42%] p-[6%] flex flex-col justify-center gap-1">
+      <div class="text-[7px] font-medium" style="color:${h(p.textMuted)}">Revenue</div>
+      <div class="text-[15px] font-extrabold leading-none" style="color:${h(p.accent)}">$4.2M</div>
+      <div class="text-[7px] font-semibold" style="color:${h(p.accentAlt)}">▲ 12% QoQ</div>
+      <div class="mt-1.5 flex items-end gap-[6%] h-[28%]">
+        ${BARS.map((b,i)=>`<div class="flex-1 rounded-t-sm" style="height:${b}%;background:${h(p.chart[i])}"></div>`).join('')}
+      </div>
+    </div>
+    <div class="absolute -right-6 -top-6 w-16 h-16 rounded-full opacity-20" style="background:${h(p.accentAlt)}"></div>
+  </div>`;
+}
+function v1() {
+  const s = state.v1;
+  return P.filter(p=>p.mode===s.mode).map(p => {
+    const on = p.id === s.sel;
+    return `<button onclick="pick('v1','${p.id}')" class="card-lift relative rounded-2xl border bg-white p-2 text-left ${on?'border-2':'border-slate-200'}" style="${selRing(p,on)}">
+      ${on?check(p):''}
+      ${coverSlide(p)}
+      <div class="px-1 pt-2.5 pb-1 flex items-center justify-between gap-2">
+        <div class="min-w-0"><div class="text-sm font-semibold clamp1">${p.label}</div><div class="text-[11px] text-slate-500 clamp1">${p.tone}</div></div>
+      </div>
+    </button>`;
+  }).join('');
+}
+
+/* ---------------- B · Content slide with real text ---------------- */
+function contentSlide(p) {
+  return `<div class="relative aspect-video w-full overflow-hidden rounded-lg p-[6%]" style="background:${h(p.surface)};box-shadow:inset 0 0 0 1px ${h(p.border)}">
+    <div class="text-[11px] font-bold leading-tight" style="color:${h(p.textMain)}">Revenue grew 12% on retail</div>
+    <div class="text-[7px] mt-0.5" style="color:${h(p.textMuted)}">Q3 2026 · all regions</div>
+    <div class="mt-1 h-[2px] w-6 rounded-full" style="background:${h(p.accent)}"></div>
+    <div class="absolute left-[6%] right-[6%] bottom-[8%] top-[44%] flex gap-[4%]">
+      <div class="w-[34%] rounded-md p-[6%] flex flex-col justify-center" style="background:${h(p.surfaceAlt)};box-shadow:inset 0 0 0 1px ${h(p.border)},inset 0 2px 0 0 ${h(p.accent)}">
+        <div class="text-[13px] font-extrabold leading-none" style="color:${h(p.accent)}">$4.2M</div>
+        <div class="text-[6.5px] mt-1" style="color:${h(p.textMuted)}">Net revenue</div>
+      </div>
+      <div class="flex-1 rounded-md px-[6%] pt-[5%] pb-[4%] flex flex-col" style="background:${h(p.surfaceAlt)};box-shadow:inset 0 0 0 1px ${h(p.border)}">
+        <div class="flex-1 flex items-end gap-[8%]">
+          ${BARS.map((b,i)=>`<div class="flex-1 rounded-t-sm" style="height:${b}%;background:${h(p.chart[i])}"></div>`).join('')}
+        </div>
+        <div class="flex justify-between text-[5.5px] mt-0.5" style="color:${h(p.textMuted)}"><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+function swatches(p, size='h-3 w-3') {
+  return `<span class="flex overflow-hidden rounded-full ring-1 ring-black/5 shrink-0">${[p.surface,p.textMain,...p.chart.slice(0,3)].map(c=>`<span class="${size}" style="background:${h(c)}"></span>`).join('')}</span>`;
+}
+function v2() {
+  const s = state.v2;
+  return P.filter(p=>p.mode===s.mode).map(p => {
+    const on = p.id === s.sel;
+    return `<button onclick="pick('v2','${p.id}')" class="card-lift relative rounded-2xl border bg-white p-2 text-left ${on?'border-2':'border-slate-200'}" style="${selRing(p,on)}">
+      ${on?check(p):''}
+      ${contentSlide(p)}
+      <div class="px-1 pt-2.5 pb-1">
+        <div class="flex items-center justify-between gap-2"><span class="text-sm font-semibold clamp1">${p.label}</span>${swatches(p)}</div>
+        <div class="text-[11px] text-slate-500 clamp1 mt-0.5">${p.tone}</div>
+      </div>
+    </button>`;
+  }).join('');
+}
+
+/* ---------------- C · Chips + large live preview ---------------- */
+function v3() {
+  const s = state.v3;
+  const sel = P.find(p=>p.id===s.sel);
+  const chips = P.filter(p=>p.mode===s.mode).map(p => {
+    const on = p.id === s.sel;
+    return `<button onclick="pick('v3','${p.id}')" class="card-lift flex items-center gap-3 rounded-xl border bg-white p-2.5 text-left ${on?'border-2':'border-slate-200'}" style="${selRing(p,on)}">
+      <span class="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg" style="background:${h(p.surface)};box-shadow:inset 0 0 0 1px ${h(p.border)}">
+        <span class="absolute left-0 top-0 h-full w-1/2" style="background:${h(cover(p))}"></span>
+        <span class="absolute right-1.5 bottom-1.5 h-3 w-3 rounded-full" style="background:${h(p.accent)}"></span>
+        <span class="absolute right-1.5 top-1.5 h-2 w-2 rounded-full" style="background:${h(p.accentAlt)}"></span>
+      </span>
+      <span class="min-w-0"><span class="block text-[13px] font-semibold clamp1">${p.label}</span><span class="block text-[11px] text-slate-500 clamp1">${p.tone}</span></span>
+    </button>`;
+  }).join('');
+  return `<div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+    <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2 content-start max-h-[520px] overflow-y-auto pr-1">${chips}</div>
+    <div class="lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-4">
+      <div class="flex items-center justify-between mb-3">
+        <div><div class="text-sm font-semibold">${sel.label}</div><div class="text-xs text-slate-500">${sel.tone}</div></div>
+        ${swatches(sel,'h-4 w-4')}
+      </div>
+      <div class="space-y-3">
+        <div style="zoom:1.8;width:325px">${coverSlide(sel)}</div>
+        <div style="zoom:1.8;width:325px">${contentSlide(sel)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------------- D · Polished current ---------------- */
+function v4() {
+  const s = state.v4;
+  return P.filter(p=>p.mode===s.mode).map(p => {
+    const on = p.id === s.sel;
+    return `<button onclick="pick('v4','${p.id}')" class="card-lift relative rounded-2xl border bg-white p-2 text-left ${on?'border-2':'border-slate-200'}" style="${selRing(p,on)}">
+      ${on?check(p):''}
+      <div class="relative aspect-video w-full rounded-lg overflow-hidden" style="background:${h(p.surface)};box-shadow:inset 0 0 0 1px ${h(p.border)}">
+        <div class="absolute left-[7%] top-[10%] h-[8%] w-[46%] rounded-sm" style="background:${h(p.textMain)}"></div>
+        <div class="absolute left-[7%] top-[22%] h-[4%] w-[26%] rounded-sm opacity-70" style="background:${h(p.textMuted)}"></div>
+        <div class="absolute left-[7%] top-[30%] h-[3%] w-[12%] rounded-full" style="background:${h(p.accent)}"></div>
+        <div class="absolute left-[7%] top-[41%] bottom-[12%] w-[27%] rounded-md flex flex-col justify-center gap-[10%] px-[4%]" style="background:${h(p.surfaceAlt)};box-shadow:inset 0 0 0 1px ${h(p.border)},inset 0 3px 0 0 ${h(p.accent)}">
+          <div class="h-[22%] w-[70%] rounded-sm" style="background:${h(p.accent)}"></div>
+          <div class="h-[10%] w-[90%] rounded-sm opacity-60" style="background:${h(p.textMuted)}"></div>
+        </div>
+        <div class="absolute left-[38%] right-[7%] top-[41%] bottom-[12%] rounded-md flex items-end justify-center gap-[6%] px-[7%] pb-[7%]" style="background:${h(p.surfaceAlt)};box-shadow:inset 0 0 0 1px ${h(p.border)}">
+          ${BARS.map((b,i)=>`<div class="w-[14%] rounded-t-sm" style="height:${b}%;background:${h(p.chart[i])}"></div>`).join('')}
+        </div>
+      </div>
+      <div class="px-1 pt-2.5 pb-1">
+        <div class="flex items-center justify-between gap-2"><span class="text-sm font-semibold clamp1">${p.label}</span>${swatches(p,'h-3.5 w-3.5')}</div>
+        <div class="text-[11px] text-slate-500 clamp1 mt-0.5">${p.tone}</div>
+      </div>
+    </button>`;
+  }).join('');
+}
+
+/* ---------------- E · Scalable: search + mood filters + collapsed grid + data preview ---------------- */
+const TAGS = {
+  'corporate-slate':'cool', 'sky-minimal':'cool', 'graphite-mono':'cool',
+  'teal-slate':'warm', 'forest-editorial':'warm', 'warm-editorial':'warm', 'amber-mono':'warm',
+  'emerald-clean':'bold', 'rose-report':'bold', 'violet-modern':'bold',
+  'saascolor':'brand', 'navy-orange':'brand',
+};
+const FILTERS = [['all','All'],['cool','Cool'],['warm','Warm'],['bold','Bold'],['brand','Brand'],['dark','Dark']];
+const COLLAPSED = 8;
+const tagOf = p => p.mode === 'dark' ? 'dark' : (p.tag || TAGS[p.id] || 'cool');
+
+function hueShift(hex, deg) {
+  let r = parseInt(hex.slice(0,2),16)/255, g = parseInt(hex.slice(2,4),16)/255, b = parseInt(hex.slice(4,6),16)/255;
+  const mx = Math.max(r,g,b), mn = Math.min(r,g,b), l = (mx+mn)/2;
+  let hh = 0, s = 0;
+  if (mx !== mn) {
+    const d = mx - mn; s = l > .5 ? d/(2-mx-mn) : d/(mx+mn);
+    hh = mx === r ? (g-b)/d + (g<b?6:0) : mx === g ? (b-r)/d + 2 : (r-g)/d + 4; hh *= 60;
+  }
+  hh = (hh + deg) % 360;
+  const k = n => (n + hh/30) % 12, a = s * Math.min(l, 1-l);
+  const f = n => Math.round((l - a*Math.max(-1, Math.min(k(n)-3, 9-k(n), 1))) * 255).toString(16).padStart(2,'0');
+  return (f(0)+f(8)+f(4)).toUpperCase();
+}
+const SUFFIX = ['Nova','Aurora','Summit','Harbor','Atlas','Ember','Lumen','Drift'];
+function demoPalettes() {
+  const base = P.slice();
+  const extra = [];
+  [60, 150, 240].forEach((deg, round) => base.forEach((p, i) => {
+    const sh = c => hueShift(c, deg);
+    extra.push({ ...p, id: `${p.id}-demo${round}`, label: `${p.label.split(' ')[0]} ${SUFFIX[(i+round)%SUFFIX.length]}`,
+      tone: `Demo variant of ${p.label}`, tag: tagOf(p) === 'brand' ? 'bold' : tagOf(p),
+      accent: sh(p.accent), accentAlt: sh(p.accentAlt), textMain: p.mode==='dark'?p.textMain:sh(p.textMain),
+      surface: p.mode==='dark'?sh(p.surface):p.surface, chart: p.chart.map(sh) });
+  }));
+  return base.concat(extra);
+}
+
+state.v5.filter = 'all'; state.v5.q = ''; state.v5.expanded = false; state.v5.demo = false;
+const catalog = (k = 'v5') => state[k].demo ? demoPalettes() : P;
+
+function v5() {
+  return `<div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+      <div class="relative flex-1">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+        <input id="v5-q" value="${state.v5.q}" oninput="state.v5.q=this.value;state.v5.expanded=false;renderV5()" placeholder="Search themes (e.g. navy, warm, green)..."
+          class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-100 focus:border-brand-600">
+      </div>
+      <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
+        <input type="checkbox" ${state.v5.demo?'checked':''} onchange="state.v5.demo=this.checked;state.v5.expanded=false;renderV5()"> Demo: simulate 64 themes
+      </label>
+    </div>
+    <div id="v5-body"></div>`;
+}
+
+function renderV5() {
+  const s = state.v5;
+  const all = catalog();
+  const q = s.q.trim().toLowerCase();
+  const matchQ = p => !q || (p.label + ' ' + p.tone + ' ' + tagOf(p)).toLowerCase().includes(q);
+  const count = f => all.filter(p => matchQ(p) && (f === 'all' || tagOf(p) === f)).length;
+  const list = all.filter(p => matchQ(p) && (s.filter === 'all' || tagOf(p) === s.filter));
+  if (!all.find(p => p.id === s.sel)) s.sel = P[0].id;
+  const sel = all.find(p => p.id === s.sel);
+  const shown = s.expanded ? list : list.slice(0, COLLAPSED);
+  if (!s.expanded && list.length > COLLAPSED && !shown.includes(sel) && list.includes(sel)) shown[COLLAPSED-1] = sel;
+
+  const chips = FILTERS.map(([f, label]) => `<button onclick="state.v5.filter='${f}';state.v5.expanded=false;renderV5()"
+      class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${s.filter===f?'bg-brand-600 border-brand-600 text-white':'bg-white border-slate-200 text-slate-600 hover:border-brand-100'}">
+      ${label}<span class="${s.filter===f?'text-white/70':'text-slate-400'}">${count(f)}</span></button>`).join('');
+
+  const cards = shown.map(p => {
+    const on = p.id === s.sel;
+    return `<button onclick="state.v5.sel='${p.id}';renderV5()" class="card-lift relative rounded-2xl border bg-white p-2 text-left ${on?'border-2':'border-slate-200'}" style="${selRing(p,on)}">
+      ${on?check(p):''}
+      ${coverSlide(p)}
+      <div class="px-1 pt-2.5 pb-1">
+        <div class="text-sm font-semibold clamp1">${p.label}</div>
+        <div class="text-[11px] text-slate-500 clamp1">${p.tone}</div>
+      </div>
+    </button>`;
+  }).join('');
+
+  const more = list.length > COLLAPSED ? `<div class="mt-3 flex justify-center">
+      <button onclick="state.v5.expanded=!state.v5.expanded;renderV5()" class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+        ${s.expanded ? 'Show less' : `Show all ${list.length} themes`}
+        <svg class="w-3.5 h-3.5 ${s.expanded?'rotate-180':''}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+      </button></div>` : '';
+
+  const empty = list.length ? '' : `<div class="rounded-xl border border-dashed border-slate-300 py-10 text-center text-sm text-slate-500">No themes match "${s.q}".</div>`;
+
+  document.getElementById('v5-body').innerHTML = `
+    <div class="flex flex-wrap gap-2 mb-4">${chips}</div>
+    ${empty}
+    <div class="${s.expanded ? 'max-h-[560px] overflow-y-auto pr-1 rounded-xl' : ''}">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${cards}</div>
+    </div>
+    ${more}
+    ${previewStrip(sel)}`;
+}
+
+function previewStrip(sel) {
+  const role = (label, c) => `<div class="flex items-center gap-2 text-[11px] text-slate-600">
+      <span class="h-4 w-4 rounded-md ring-1 ring-black/10" style="background:${h(c)}"></span>${label}</div>`;
+  return `
+    <div class="mt-5 rounded-2xl border p-4 transition-colors" style="border-color:${h(sel.accent)}55;background:linear-gradient(135deg, ${h(sel.accent)}0D, #FFFFFF 55%)">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="flex h-6 w-6 items-center justify-center rounded-full text-white" style="background:${h(sel.accent)}">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </span>
+          <div>
+            <div class="text-sm font-semibold">${sel.label} <span class="font-normal text-slate-400">— how your data slides will look</span></div>
+            <div class="text-[11px] text-slate-500">${sel.tone}</div>
+          </div>
+        </div>
+        ${swatches(sel,'h-4 w-4')}
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+        <div class="md:col-span-2"><div style="zoom:1.35;width:74%">${coverSlide(sel)}</div><div class="mt-1.5 text-[11px] text-center text-slate-500">Cover</div></div>
+        <div class="md:col-span-2"><div style="zoom:1.35;width:74%">${contentSlide(sel)}</div><div class="mt-1.5 text-[11px] text-center text-slate-500">Data slide</div></div>
+        <div class="md:col-span-1 space-y-2">
+          ${role('Background', sel.surface)}
+          ${role('Cards', sel.surfaceAlt)}
+          ${role('Headings', sel.textMain)}
+          ${role('Accent', sel.accent)}
+          ${role('Second accent', sel.accentAlt)}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ---------------- F · Compact chips + filters + preview ---------------- */
+state.v6 = { sel:'warm-editorial', filter:'all', q:'', demo:false };
+
+function chipDot(p) {
+  return `<span class="relative h-6 w-6 shrink-0 overflow-hidden rounded-full" style="background:${h(p.surface)};box-shadow:inset 0 0 0 1px ${h(p.border)}">
+    <span class="absolute inset-y-0 left-0 w-1/2" style="background:${h(cover(p))}"></span>
+    <span class="absolute right-[3px] top-1/2 -translate-y-1/2 h-2 w-2 rounded-full" style="background:${h(p.accent)}"></span>
+  </span>`;
+}
+
+function v6() {
+  return `<div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+      <div class="relative flex-1">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+        <input value="${state.v6.q}" oninput="state.v6.q=this.value;renderV6()" placeholder="Search themes (e.g. navy, warm, green)..."
+          class="w-full rounded-xl border border-slate-300 pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-100 focus:border-brand-600">
+      </div>
+      <label class="flex items-center gap-2 text-xs text-slate-500 cursor-pointer select-none">
+        <input type="checkbox" ${state.v6.demo?'checked':''} onchange="state.v6.demo=this.checked;renderV6()"> Demo: simulate 64 themes
+      </label>
+    </div>
+    <div id="v6-body"></div>`;
+}
+
+function renderV6() {
+  const s = state.v6;
+  const all = catalog('v6');
+  const q = s.q.trim().toLowerCase();
+  const matchQ = p => !q || (p.label + ' ' + p.tone + ' ' + tagOf(p)).toLowerCase().includes(q);
+  const count = f => all.filter(p => matchQ(p) && (f === 'all' || tagOf(p) === f)).length;
+  const list = all.filter(p => matchQ(p) && (s.filter === 'all' || tagOf(p) === s.filter));
+  if (!all.find(p => p.id === s.sel)) s.sel = P[0].id;
+  const sel = all.find(p => p.id === s.sel);
+
+  const filters = FILTERS.map(([f, label]) => `<button onclick="state.v6.filter='${f}';renderV6()"
+      class="text-xs font-medium pb-1.5 border-b-2 ${s.filter===f?'border-brand-600 text-brand-700':'border-transparent text-slate-500 hover:text-slate-800'}">
+      ${label} <span class="text-slate-400">${count(f)}</span></button>`).join('');
+
+  const chips = list.map(p => {
+    const on = p.id === s.sel;
+    return `<button title="${p.tone}" onclick="state.v6.sel='${p.id}';renderV6()"
+        class="inline-flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs font-medium transition ${on?'':'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'}"
+        style="${on?`border-color:${h(p.accent)};background:${h(p.accent)}12;color:${h(p.mode==='dark'?'0F172A':p.textMain)};box-shadow:0 0 0 3px ${h(p.accent)}22`:''}">
+      ${chipDot(p)}<span class="whitespace-nowrap">${p.label}</span>
+      ${on?`<svg class="w-3.5 h-3.5" style="color:${h(p.accent)}" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>`:''}
+    </button>`;
+  }).join('');
+
+  const empty = `<div class="py-6 text-center text-sm text-slate-500">No themes match "${s.q}".</div>`;
+
+  document.getElementById('v6-body').innerHTML = `
+    <div class="flex flex-wrap gap-x-5 gap-y-2 border-b border-slate-100 mb-3">${filters}</div>
+    <div class="max-h-[132px] overflow-y-auto pr-1 flex flex-wrap gap-2 content-start">${list.length ? chips : empty}</div>
+    <div class="mt-1.5 text-[11px] text-slate-400">${list.length} of ${all.length} themes${list.length > 12 ? ' · scroll for more' : ''}</div>
+    ${previewStrip(sel)}`;
+}
+
+const SECTIONS = [
+  ['v1','A · Title-slide cover cards','Gamma-style. Each card shows a cover slide: the palette\'s dominant color as a bold block, a real title, a KPI and chart. Strongest mood and the most distinct.', v1, true],
+  ['v2','B · Content slide with real text','Keeps today\'s content-slide idea but with real title, KPI and labelled chart instead of grey bars. Most honest about how a data slide will look.', v2, true],
+  ['v3','C · Compact chips + large live preview','Pitch / Google Slides style. Small chips list; the selected theme is previewed large as a cover and a data slide. Scales to many themes, shows the most detail.', v3, false],
+  ['v4','D · Polished current design','Current abstract layout with equal card heights, one-line tone, bigger swatches, hover lift and the palette\'s accent as the selection ring.', v4, true],
+  ['v5','E · Scalable cover cards + data preview (recommended)','A\'s bold cover cards, built to scale: search, mood filters with counts, and a grid collapsed to 2 rows ("Show all" opens a scrollable panel, so the page never grows). The selected theme is always visible and previewed below as a cover AND a data slide. Tick "simulate 64 themes" to test it at scale.', v5, false],
+  ['v6','F · Compact chips + preview','Every theme is a small pill (cover color + accent dot + name) in a 3-row scrollable box, so even 100+ themes take the same space. Search and mood tabs narrow it; the selected theme is previewed large as a cover and a data slide.', v6, false],
+];
+
+function render() {
+  document.getElementById('root').innerHTML = SECTIONS.map(([key,title,desc,fn,grid]) => `
+    <section id="${key}" class="scroll-mt-24 rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="px-6 pt-5 pb-4 border-b border-slate-100">
+        <h2 class="text-base font-semibold">${title}</h2>
+        <p class="text-xs text-slate-500 mt-1 max-w-3xl">${desc}</p>
+      </div>
+      <div class="p-6">
+        ${key === 'v5' || key === 'v6' ? '' : tabs(key)}
+        ${grid ? `<div class="grid grid-cols-2 md:grid-cols-4 gap-3">${fn()}</div>` : fn()}
+      </div>
+    </section>`).join('');
+  renderV5();
+  renderV6();
+}
+function pick(key, id) { state[key].sel = id; render(); }
+function setMode(key, m) {
+  state[key].mode = m;
+  if (P.find(p=>p.id===state[key].sel).mode !== m) state[key].sel = P.find(p=>p.mode===m).id;
+  render();
+}
+render();
+</script>
+</body>
+</html>

@@ -17,16 +17,25 @@ import { SlideReviewComponent } from './components/slide-review/slide-review.com
       @switch (generation.view()) {
         @case ('form') {
           @if (generation.error()) {
-            <div class="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3">
-              {{ generation.error() }}
+            <div class="mb-4 flex items-start gap-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3.5">
+              <svg class="w-5 h-5 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              <span>{{ generation.error() }}</span>
             </div>
           }
           <app-prompt-form (generate)="generation.requestOutline($event)" />
         }
         @case ('planning') {
-          <div class="flex flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mb-4"></div>
-            <p class="text-sm text-gray-500">Planning your deck...</p>
+          <div class="card flex flex-col items-center justify-center py-20">
+            <div class="relative mb-5">
+              <div class="absolute inset-0 rounded-full bg-brand-200 animate-ping opacity-40"></div>
+              <div class="relative flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
+                <div class="spinner h-8 w-8"></div>
+              </div>
+            </div>
+            <p class="text-sm font-semibold text-slate-900">Planning your deck</p>
+            <p class="text-xs text-slate-500 mt-1">Drafting the storyline and slide outline...</p>
           </div>
         }
         @case ('elicitation') {

@@ -163,7 +163,16 @@ export interface ThemePalette {
   tone: string;
   mode: 'light' | 'dark';
   accent: string;
+  accentAlt: string;
+  surface: string;
+  surfaceAlt: string;
+  textMain: string;
+  textMuted: string;
+  border: string;
+  chartColors: string[];
 }
+
+export type ThemeMood = 'cool' | 'warm' | 'bold' | 'brand';
 
 // ── Edit session types ───────────────────────────────────────────────────
 

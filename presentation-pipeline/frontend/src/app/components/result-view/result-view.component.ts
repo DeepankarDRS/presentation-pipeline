@@ -10,122 +10,129 @@ import { ApiService } from '../../services/api.service';
   template: `
     @if (gen.error()) {
       <!-- Error state -->
-      <div class="bg-white rounded-xl shadow-sm border border-red-200 p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="card overflow-hidden">
+        <div class="px-6 py-8 bg-gradient-to-br from-red-50 via-white to-white flex flex-col items-center text-center">
+          <div class="w-14 h-14 rounded-full bg-red-100 ring-8 ring-red-50 flex items-center justify-center mb-4">
+            <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h2 class="text-xl font-semibold text-gray-900">Generation Failed</h2>
+          <h2 class="text-xl font-semibold text-slate-900">Generation Failed</h2>
+          <p class="text-sm text-slate-500 mt-1">Something went wrong while building your deck.</p>
         </div>
-        <p class="text-sm text-red-600 bg-red-50 rounded-lg p-3 mb-6 font-mono">{{ gen.error() }}</p>
-        <button
-          (click)="resetEmit.emit()"
-          class="w-full bg-gray-900 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-gray-800 transition-colors"
-        >
-          Try Again
-        </button>
+        <div class="px-6 pb-6">
+          <p class="text-xs text-red-700 bg-red-50 border border-red-200 rounded-xl p-3 mb-5 font-mono break-words">{{ gen.error() }}</p>
+          <button (click)="resetEmit.emit()" class="btn-primary w-full">Try Again</button>
+        </div>
       </div>
     } @else {
       <!-- Success state -->
-      <div class="bg-white rounded-xl shadow-sm border border-green-200 p-6">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      <div class="card overflow-hidden">
+        <div class="px-6 py-8 bg-gradient-to-br from-emerald-50 via-white to-brand-50/40 flex flex-col items-center text-center border-b border-slate-100">
+          <div class="w-16 h-16 rounded-full bg-emerald-500 ring-8 ring-emerald-100 flex items-center justify-center mb-4 shadow-lg shadow-emerald-500/20">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <div>
-            <h2 class="text-xl font-semibold text-gray-900">Presentation Ready</h2>
-            <div class="flex items-center gap-2 mt-0.5">
-              @if (gen.passed()) {
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                  Quality Check Passed
-                </span>
-              } @else {
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                  Quality Check: Review Recommended
-                </span>
-              }
-              @if (gen.evaluationSummary()?.excluded_slides?.length) {
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                  {{ gen.evaluationSummary()!.excluded_slides!.length }} slide(s) excluded
-                </span>
-              }
-            </div>
+          <h2 class="text-2xl font-semibold text-slate-900">Presentation Ready</h2>
+          <div class="flex flex-wrap items-center justify-center gap-2 mt-3">
+            @if (gen.passed()) {
+              <span class="badge bg-emerald-100 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Quality Check Passed
+              </span>
+            } @else {
+              <span class="badge bg-amber-100 text-amber-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Quality Check: Review Recommended
+              </span>
+            }
+            @if (gen.evaluationSummary()?.excluded_slides?.length) {
+              <span class="badge bg-orange-100 text-orange-800">
+                {{ gen.evaluationSummary()!.excluded_slides!.length }} slide(s) excluded
+              </span>
+            }
           </div>
         </div>
 
-        @if (gen.planReview(); as review) {
-          <div class="rounded-lg p-4 mb-4 border" [class]="review.approved ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-gray-900">Plan Quality</span>
-              <span class="text-xs font-medium px-2 py-0.5 rounded-full"
-                [class]="review.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'">
-                {{ (review.confidence_score * 100).toFixed(0) }}% confidence
-              </span>
+        <div class="p-6 space-y-4">
+          @if (gen.planReview(); as review) {
+            <div class="rounded-xl border p-4" [class]="review.approved ? 'bg-emerald-50/50 border-emerald-200' : 'bg-amber-50/50 border-amber-200'">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-slate-900">Plan Quality</span>
+                <span class="text-sm font-semibold tabular-nums" [class]="review.approved ? 'text-emerald-700' : 'text-amber-700'">
+                  {{ (review.confidence_score * 100).toFixed(0) }}% confidence
+                </span>
+              </div>
+              <div class="h-2 w-full rounded-full bg-white border border-slate-200 overflow-hidden mb-2">
+                <div
+                  class="h-full rounded-full transition-all duration-700"
+                  [class]="review.approved ? 'bg-emerald-500' : 'bg-amber-500'"
+                  [style.width.%]="review.confidence_score * 100"
+                ></div>
+              </div>
+              @if (review.summary) {
+                <p class="text-xs text-slate-600">{{ review.summary }}</p>
+              }
+              @if (review.issues.length > 0) {
+                <ul class="mt-2 space-y-1">
+                  @for (issue of review.issues; track $index) {
+                    <li class="flex items-start gap-2 text-xs text-slate-600">
+                      <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"></span>
+                      {{ issue.description }}
+                    </li>
+                  }
+                </ul>
+              }
             </div>
-            @if (review.summary) {
-              <p class="text-xs text-gray-600 mb-1">{{ review.summary }}</p>
-            }
-            @if (review.issues.length > 0) {
-              <ul class="text-xs text-gray-600 list-disc list-inside mt-1 space-y-0.5">
-                @for (issue of review.issues; track $index) {
-                  <li>{{ issue.description }}</li>
+          }
+
+          @if (gen.evaluationSummary(); as summary) {
+            @if (summary.tokens || summary.cost) {
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                @if (summary.tokens) {
+                  <div class="stat-tile">
+                    <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Tokens In</p>
+                    <p class="text-lg font-semibold text-slate-900 tabular-nums mt-0.5">{{ summary.tokens.total_in | number }}</p>
+                  </div>
+                  <div class="stat-tile">
+                    <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Tokens Out</p>
+                    <p class="text-lg font-semibold text-slate-900 tabular-nums mt-0.5">{{ summary.tokens.total_out | number }}</p>
+                  </div>
                 }
-              </ul>
+                @if (summary.cost) {
+                  <div class="stat-tile">
+                    <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Cost</p>
+                    <p class="text-lg font-semibold text-slate-900 tabular-nums mt-0.5">{{'$'}}{{ summary.cost.total_usd.toFixed(4) }}</p>
+                  </div>
+                  <div class="stat-tile">
+                    <p class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Models</p>
+                    <p class="text-sm font-semibold text-slate-900 mt-1 truncate" [title]="summary.cost.models_used.join(', ')">
+                      {{ summary.cost.models_used.join(', ') }}
+                    </p>
+                  </div>
+                }
+              </div>
             }
-          </div>
-        }
+          }
+        </div>
 
-        @if (gen.evaluationSummary()) {
-          <div class="bg-gray-50 rounded-lg p-4 mb-6 grid grid-cols-2 gap-3 text-sm">
-            @if (gen.evaluationSummary()!.tokens) {
-              <div>
-                <span class="text-gray-500">Tokens In</span>
-                <p class="font-medium text-gray-900">{{ gen.evaluationSummary()!.tokens!.total_in | number }}</p>
-              </div>
-              <div>
-                <span class="text-gray-500">Tokens Out</span>
-                <p class="font-medium text-gray-900">{{ gen.evaluationSummary()!.tokens!.total_out | number }}</p>
-              </div>
-            }
-            @if (gen.evaluationSummary()!.cost) {
-              <div>
-                <span class="text-gray-500">Cost</span>
-                <p class="font-medium text-gray-900">{{'$'}}{{ gen.evaluationSummary()!.cost!.total_usd.toFixed(4) }}</p>
-              </div>
-              <div>
-                <span class="text-gray-500">Models</span>
-                <p class="font-medium text-gray-900">{{ gen.evaluationSummary()!.cost!.models_used.join(', ') }}</p>
-              </div>
-            }
-          </div>
-        }
-
-        <div class="flex gap-3">
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row gap-3">
           @if (gen.runId()) {
-            <a
-              [href]="api.getDownloadUrl(gen.runId()!)"
-              download
-              class="flex-1 bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center"
-            >
+            <a [href]="api.getDownloadUrl(gen.runId()!)" download class="btn-primary flex-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+              </svg>
               Download PPTX
             </a>
-            <button
-              (click)="gen.startReview()"
-              class="flex-1 bg-indigo-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
+            <button (click)="gen.startReview()" class="btn-secondary flex-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
               Review & Edit Slides
             </button>
           }
-          <button
-            (click)="resetEmit.emit()"
-            class="flex-1 bg-white text-gray-700 font-medium py-2.5 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            New Presentation
-          </button>
+          <button (click)="resetEmit.emit()" class="btn-ghost flex-1">New Presentation</button>
         </div>
       </div>
     }

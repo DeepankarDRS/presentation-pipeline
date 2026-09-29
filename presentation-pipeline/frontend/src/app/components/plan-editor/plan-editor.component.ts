@@ -29,142 +29,182 @@ function emptyOutlineSlide(index: number): OutlineSlide {
   standalone: true,
   imports: [FormsModule],
   template: `
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div class="flex items-center justify-between mb-4">
+    <div class="card">
+      <div class="px-6 pt-6 pb-5 bg-gradient-to-br from-brand-50 via-white to-white border-b border-slate-100 rounded-t-2xl flex items-start justify-between gap-4">
         <div>
-          <h2 class="text-xl font-semibold text-gray-900">Review Deck Outline</h2>
-          <p class="text-sm text-gray-500">Edit the narrative and slide structure, then generate.</p>
+          <h2 class="text-xl font-semibold text-slate-900">Review Deck Outline</h2>
+          <p class="text-sm text-slate-500 mt-1">Edit the narrative and slide structure, then generate.</p>
         </div>
-        <span class="text-sm text-gray-400">{{ slides().length }} slide{{ slides().length === 1 ? '' : 's' }}</span>
+        <span class="badge bg-brand-100 text-brand-700 shrink-0">
+          {{ slides().length }} slide{{ slides().length === 1 ? '' : 's' }}
+        </span>
       </div>
 
-      @if (generation.outlineError()) {
-        <p class="text-sm text-red-600 bg-red-50 rounded-lg p-3 mb-4">{{ generation.outlineError() }}</p>
-      }
-
-      <!-- Deck title -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Deck Title</label>
-        <input
-          type="text"
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
-          [ngModel]="deckTitle()"
-          (ngModelChange)="deckTitle.set($event)"
-        />
-      </div>
-
-      <!-- Core hook -->
-      <div class="mb-5">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Core Hook</label>
-        <textarea
-          rows="2"
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm resize-y"
-          [ngModel]="coreHook()"
-          (ngModelChange)="coreHook.set($event)"
-        ></textarea>
-      </div>
-
-      <!-- Slide cards -->
-      <div class="space-y-3 mb-5">
-        @for (slide of slides(); track $index; let i = $index) {
-          <div class="border border-gray-200 rounded-lg p-4">
-            <div class="flex items-start gap-3 mb-3">
-              <span class="text-sm font-medium text-gray-400 w-6 pt-1.5">{{ i + 1 }}</span>
-              <div class="flex-1 min-w-0">
-                <input
-                  type="text"
-                  class="w-full font-medium text-gray-900 border-0 border-b border-transparent hover:border-gray-200 focus:border-blue-400 px-0 py-1 text-sm focus:outline-none"
-                  [ngModel]="slide.slide_title"
-                  (ngModelChange)="patchSlide(i, { slide_title: $event })"
-                  placeholder="Slide title"
-                />
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <button type="button" (click)="toggleRegenerate(i)"
-                  class="p-1 text-gray-400 hover:text-blue-600" title="Regenerate this slide">&#8635;</button>
-                @if (i > 0) {
-                  <button type="button" (click)="moveSlide(i, -1)"
-                    class="p-1 text-gray-400 hover:text-gray-600" title="Move up">&#9650;</button>
-                }
-                @if (i < slides().length - 1) {
-                  <button type="button" (click)="moveSlide(i, 1)"
-                    class="p-1 text-gray-400 hover:text-gray-600" title="Move down">&#9660;</button>
-                }
-                <button type="button" (click)="removeSlide(i)"
-                  class="p-1 text-red-400 hover:text-red-600"
-                  [disabled]="slides().length <= 1"
-                  title="Delete slide">&times;</button>
-              </div>
-            </div>
-
-            <!-- Key messages -->
-            <div class="pl-9">
-              <div class="space-y-1.5 mb-2">
-                @for (msg of slide.key_messages; track $index; let mi = $index) {
-                  <div class="flex items-start gap-2 text-sm text-gray-700">
-                    <span class="text-gray-300 mt-0.5">&bull;</span>
-                    <span class="flex-1">{{ msg }}</span>
-                    <button type="button" (click)="removeListItem(i, mi)" class="text-gray-300 hover:text-red-500 shrink-0">&times;</button>
-                  </div>
-                }
-              </div>
-              <div class="flex gap-1.5">
-                <input type="text" class="flex-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm"
-                  [(ngModel)]="newKeyMessage[i]" (keydown.enter)="$event.preventDefault(); commitKeyMessage(i)"
-                  placeholder="Add a key message..." />
-                <button type="button" (click)="commitKeyMessage(i)"
-                  class="px-3 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-100">+</button>
-              </div>
-
-              <!-- Regenerate feedback box -->
-              @if (regeneratingIndex() === i) {
-                <div class="mt-3 pt-3 border-t border-gray-100">
-                  @if (regenerateError() && regeneratingIndex() === i) {
-                    <p class="text-xs text-red-600 mb-1.5">{{ regenerateError() }}</p>
-                  }
-                  <textarea rows="2" class="w-full rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm resize-y mb-1.5"
-                    [(ngModel)]="regenerateFeedback[i]"
-                    placeholder="Describe how this slide should change..."
-                    [disabled]="regeneratingLoading() === i"
-                  ></textarea>
-                  <div class="flex gap-1.5">
-                    <button type="button" (click)="submitRegenerate(i)"
-                      class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 disabled:bg-gray-300"
-                      [disabled]="regeneratingLoading() === i || !feedbackFor(i).trim()"
-                    >{{ regeneratingLoading() === i ? 'Regenerating...' : 'Regenerate' }}</button>
-                    <button type="button" (click)="toggleRegenerate(i)"
-                      class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs text-gray-600 hover:bg-gray-100"
-                      [disabled]="regeneratingLoading() === i"
-                    >Cancel</button>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
+      <div class="p-6">
+        @if (generation.outlineError()) {
+          <p class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-3 mb-4">{{ generation.outlineError() }}</p>
         }
-      </div>
 
-      <!-- Add slide -->
-      <button
-        type="button"
-        (click)="addSlide()"
-        class="w-full border-2 border-dashed border-gray-300 rounded-lg py-2 text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 mb-5"
-        [disabled]="slides().length >= 20"
-      >+ Add Slide</button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <!-- Deck title -->
+          <div>
+            <label class="field-label">Deck Title</label>
+            <input
+              type="text"
+              class="input font-medium"
+              [ngModel]="deckTitle()"
+              (ngModelChange)="deckTitle.set($event)"
+            />
+          </div>
+
+          <!-- Core hook -->
+          <div>
+            <label class="field-label">Core Hook</label>
+            <textarea
+              rows="2"
+              class="input resize-y"
+              [ngModel]="coreHook()"
+              (ngModelChange)="coreHook.set($event)"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Slide cards -->
+        <div class="space-y-3 mb-4">
+          @for (slide of slides(); track $index; let i = $index) {
+            <div
+              class="group rounded-xl border bg-white p-4 transition-all hover:shadow-soft"
+              [class.border-brand-300]="regeneratingIndex() === i"
+              [class.ring-4]="regeneratingIndex() === i"
+              [class.ring-brand-50]="regeneratingIndex() === i"
+              [class.border-slate-200]="regeneratingIndex() !== i"
+            >
+              <div class="flex items-start gap-3 mb-3">
+                <span class="flex h-7 min-w-[28px] items-center justify-center rounded-lg bg-slate-900 px-2 text-xs font-semibold text-white">
+                  {{ i + 1 }}
+                </span>
+                <div class="flex-1 min-w-0">
+                  <input
+                    type="text"
+                    class="w-full font-semibold text-slate-900 border-0 border-b border-transparent hover:border-slate-200 focus:border-brand-500 px-0 py-1 text-sm focus:outline-none focus:ring-0 bg-transparent"
+                    [ngModel]="slide.slide_title"
+                    (ngModelChange)="patchSlide(i, { slide_title: $event })"
+                    placeholder="Slide title"
+                  />
+                </div>
+                <div class="flex items-center gap-0.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
+                  <button type="button" (click)="toggleRegenerate(i)"
+                    class="icon-btn hover:!text-brand-600 hover:!bg-brand-50" title="Regenerate this slide">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  <button type="button" (click)="moveSlide(i, -1)" class="icon-btn" title="Move up" [disabled]="i === 0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                    </svg>
+                  </button>
+                  <button type="button" (click)="moveSlide(i, 1)" class="icon-btn" title="Move down" [disabled]="i === slides().length - 1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <button type="button" (click)="removeSlide(i)"
+                    class="icon-btn hover:!text-red-600 hover:!bg-red-50"
+                    [disabled]="slides().length <= 1"
+                    title="Delete slide">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Key messages -->
+              <div class="pl-10">
+                <div class="space-y-1.5 mb-2.5">
+                  @for (msg of slide.key_messages; track $index; let mi = $index) {
+                    <div class="group/msg flex items-start gap-2.5 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                      <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>
+                      <span class="flex-1">{{ msg }}</span>
+                      <button type="button" (click)="removeListItem(i, mi)"
+                        class="shrink-0 text-slate-300 hover:text-red-500 opacity-0 group-hover/msg:opacity-100 transition-opacity"
+                        title="Remove message">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+                <div class="flex gap-2">
+                  <input type="text" class="input !py-2"
+                    [(ngModel)]="newKeyMessage[i]" (keydown.enter)="$event.preventDefault(); commitKeyMessage(i)"
+                    placeholder="Add a key message and press Enter..." />
+                  <button type="button" (click)="commitKeyMessage(i)" class="btn-secondary !px-3 !py-2" title="Add key message">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Regenerate feedback box -->
+                @if (regeneratingIndex() === i) {
+                  <div class="mt-3 rounded-xl border border-brand-100 bg-brand-50/60 p-3">
+                    <p class="text-xs font-semibold text-brand-800 mb-2">Regenerate this slide</p>
+                    @if (regenerateError() && regeneratingIndex() === i) {
+                      <p class="text-xs text-red-600 mb-1.5">{{ regenerateError() }}</p>
+                    }
+                    <textarea rows="2" class="input resize-y mb-2"
+                      [(ngModel)]="regenerateFeedback[i]"
+                      placeholder="Describe how this slide should change..."
+                      [disabled]="regeneratingLoading() === i"
+                    ></textarea>
+                    <div class="flex justify-end gap-2">
+                      <button type="button" (click)="toggleRegenerate(i)"
+                        class="btn-ghost !py-1.5 !text-xs"
+                        [disabled]="regeneratingLoading() === i"
+                      >Cancel</button>
+                      <button type="button" (click)="submitRegenerate(i)"
+                        class="btn-primary !py-1.5 !text-xs"
+                        [disabled]="regeneratingLoading() === i || !feedbackFor(i).trim()"
+                      >
+                        @if (regeneratingLoading() === i) {
+                          <span class="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                        }
+                        {{ regeneratingLoading() === i ? 'Regenerating...' : 'Regenerate' }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Add slide -->
+        <button
+          type="button"
+          (click)="addSlide()"
+          class="w-full flex items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-xl py-3 text-sm font-medium text-slate-500 hover:border-brand-400 hover:text-brand-600 hover:bg-brand-50/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="slides().length >= 20"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Add Slide
+        </button>
+      </div>
 
       <!-- Actions -->
-      <div class="flex gap-3">
-        <button
-          type="button"
-          (click)="generation.reset()"
-          class="flex-1 border border-gray-300 text-gray-700 font-medium py-2.5 px-4 rounded-lg hover:bg-gray-50"
-        >Back</button>
-        <button
-          type="button"
-          (click)="onConfirm()"
-          class="flex-1 bg-blue-600 text-white font-medium py-2.5 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-300"
-          [disabled]="!isValid()"
-        >Generate Presentation</button>
+      <div class="sticky bottom-0 z-10 px-6 py-4 bg-white/90 backdrop-blur border-t border-slate-200 rounded-b-2xl flex justify-end gap-3">
+        <button type="button" (click)="generation.reset()" class="btn-secondary">Back</button>
+        <button type="button" (click)="onConfirm()" class="btn-primary min-w-[200px]" [disabled]="!isValid()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Generate Presentation
+        </button>
       </div>
     </div>
   `,

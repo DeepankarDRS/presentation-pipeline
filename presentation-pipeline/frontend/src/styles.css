@@ -1,3 +1,110 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-soft;
+  }
+
+  .section-title {
+    @apply text-sm font-semibold text-slate-900;
+  }
+
+  .section-hint {
+    @apply text-xs text-slate-500 mt-0.5;
+  }
+
+  .field-label {
+    @apply block text-sm font-medium text-slate-700 mb-2;
+  }
+
+  .divider {
+    @apply border-t border-slate-100;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+      transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500
+      focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-brand-700 border border-brand-200 hover:bg-brand-50 hover:border-brand-300;
+  }
+
+  .btn-ghost {
+    @apply btn text-slate-600 hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  .btn-success {
+    @apply btn bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:scale-[0.98];
+  }
+
+  .icon-btn {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors
+      hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900
+      placeholder-slate-400 shadow-sm transition-colors focus:border-brand-500 focus:outline-none
+      focus:ring-4 focus:ring-brand-100;
+  }
+
+  .option-card {
+    @apply relative rounded-xl border border-slate-200 bg-white text-left transition-all duration-150
+      hover:border-brand-300 hover:shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+  }
+
+  .option-card-selected {
+    @apply border-2 border-brand-600 ring-4 ring-brand-100 hover:border-brand-600;
+  }
+
+  .check-badge {
+    @apply absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white shadow;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5
+      text-xs font-medium text-slate-600 transition-colors hover:border-brand-300 hover:text-brand-700;
+  }
+
+  .chip-selected {
+    @apply border-brand-600 bg-brand-600 text-white hover:border-brand-700 hover:text-white;
+  }
+
+  .segmented {
+    @apply inline-flex w-full rounded-xl bg-slate-100 p-1;
+  }
+
+  .segmented-item {
+    @apply flex-1 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-600 transition-all hover:text-slate-900;
+  }
+
+  .segmented-item-active {
+    @apply bg-white text-brand-700 shadow-sm hover:text-brand-700;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .stat-tile {
+    @apply rounded-xl border border-slate-200 bg-slate-50/60 p-3;
+  }
+
+  .spinner {
+    @apply animate-spin rounded-full border-2 border-brand-600 border-t-transparent;
+  }
+}
