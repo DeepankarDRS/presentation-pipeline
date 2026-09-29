@@ -315,6 +315,12 @@ _TEXT_BODY_RE = re.compile(r"(<(Text|Li|Td)\b([^>]*?)(?<!/)>)(.*?)(</\2>)", re.D
 _MARK_OPEN_RE = re.compile(r"<Mark\b([^>]*?)(/?)>")
 _MARK_CLOSE_RE = re.compile(r"</Mark\s*>")
 _HIGHLIGHT_ATTR_RE = re.compile(r'\s+highlight\s*=\s*"[^"]*"')
+# Item nodes that reject any border (verified on POM 10.3.0): a design hint like "accent
+# border on the ROAS row" put borderLeft on <Td> / <FlowNode> and cost an LLM repair on 6 of
+# 28 slides in the layout-batch run. The row's shading still marks it; the card keeps its border.
+_NO_BORDER_TAGS = ("Td", "Li", "Col", "FlowNode", "TimelineItem", "ProcessArrowStep", "PyramidLevel", "MatrixItem")
+_ITEM_TAG_RE = re.compile(r"<(?:%s)\b[^<>]*>" % "|".join(_NO_BORDER_TAGS))
+_BORDER_ATTR_RE = re.compile(r'\s+border(?:Left|Right|Top|Bottom)?\.[A-Za-z]+\s*=\s*"[^"]*"')
 _COLOR_ATTR_RE = re.compile(r'(?<![\w.])color\s*=\s*"([^"]*)"')
 _HEX6_RE = re.compile(r"#?([0-9A-Fa-f]{6})")
 _MIN_CONTRAST = 4.5
@@ -442,6 +448,18 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
         xml = _ELEMENT_TAG_RE.sub(_drop_highlight, xml)
         if n:
             note("HIGHLIGHT_REMOVED", f"Removed {n} highlight= attribute(s) (a box behind the text).")
+        n = 0
+
+        def _drop_item_border(m: re.Match) -> str:
+            nonlocal n
+            tag, hits = _BORDER_ATTR_RE.subn("", m.group(0))
+            n += hits
+            return tag
+
+        xml = _ITEM_TAG_RE.sub(_drop_item_border, xml)
+        if n:
+            note("ITEM_BORDER_REMOVED", f"Removed {n} border attribute(s) from table cells / list items / "
+                 "diagram nodes (POM rejects them; the accent border belongs on the card).")
         return xml
 
     xml, n = _EMPTY_TD_RE.subn(r"<Td\1> </Td>", xml)

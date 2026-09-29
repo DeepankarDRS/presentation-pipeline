@@ -41,7 +41,7 @@ treatments:
     intent: lift / elevate the card
     technique: 'card VStack shadow.type="outer" shadow.blur="6" shadow.offset="2" shadow.color="000" borderRadius="12"'
   accent_border:
-    intent: accent border on the card
+    intent: accent border on the component's card (never on a row, cell, column, list item or diagram node)
     technique: 'card VStack borderLeft.color="$accent" borderLeft.width="4"'
   header_icon:
     intent: icon in the card header
@@ -70,33 +70,33 @@ kinds:
     treatments: [emphasis, sentiment, icon_tiles, sparkline, status_dots, gradient, inverted_panel, accent_border, lift]
   bullet_list:
     treatments: [emphasis, sentiment, highlight_text, icon_rows, accent_border, lift, header_icon]
-    never: "icons, shapes or stacks inside <Li> (for per-point icons use icon rows)"
+    never: "icons, shapes, stacks or borders inside <Li> (for per-point icons use icon rows)"
   table:
     treatments: [emphasis, sentiment, cell_fill, highlight_text, accent_border, lift, header_icon]
-    never: "icons, logos, shapes, charts or stacks inside <Td> (cells hold text + inline tags only)"
+    never: "icons, logos, shapes, charts or stacks inside <Td> (cells hold text + inline tags only); borders on rows, cells or columns (mark a row with cell_fill)"
   chart:
     treatments: [series_color, accent_border, lift, header_icon]
     never: "anything inside <Chart> except its series"
   timeline:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
-    never: "extra nodes inside items (use the item's own color)"
+    never: "extra nodes or borders on items (use the item's own color)"
   flow:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
-    never: "extra nodes inside items (use the item's own color)"
+    never: "extra nodes or borders on items (use the item's own color)"
   tree:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
-    never: "extra nodes inside items (use the item's own color)"
+    never: "extra nodes or borders on items (use the item's own color)"
   matrix:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
-    never: "extra nodes inside items (use the item's own color)"
+    never: "extra nodes or borders on items (use the item's own color)"
   process_arrow:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
-    never: "extra nodes inside steps (use the step's own color)"
+    never: "extra nodes or borders on steps (use the step's own color)"
   pyramid:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    never: "extra nodes or borders on levels (use the level's own color)"
   card_grid:
     treatments: [emphasis, sentiment, highlight_text, icon_tiles, inverted_panel, accent_border, lift]
     never: "a bullet or icon list in place of the cards"
-    never: "extra nodes inside levels (use the level's own color)"
   layer:
     treatments: [emphasis, sentiment, accent_border, lift]
