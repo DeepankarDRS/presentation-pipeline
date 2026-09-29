@@ -84,125 +84,127 @@ palettes:
     border: "E2E8F0"
     chartColors: ["2563EB", "0EA5E9", "14B8A6", "6366F1", "F59E0B"]
 
+  # Each light palette below differs on three axes, not just accent hue:
+  # surface tint, a coloured textMain ink, and a contrasting accentAlt.
   sky-minimal:
-    tone: "Airy / high-key blue"
+    tone: "Ocean blues on a pale sky wash"
     mode: light
-    surface: "F5F9FD"
+    surface: "EAF6FB"
     surfaceAlt: "FFFFFF"
-    accent: "0284C7"
-    accentAlt: "0EA5E9"
+    accent: "0077B6"
+    accentAlt: "00B4D8"
     positive: "15803D"
     negative: "DC2626"
     warning: "B45309"
-    textMain: "18202B"
-    textMuted: "54627A"
-    border: "E4EDF5"
-    chartColors: ["0284C7", "0EA5E9", "38BDF8", "6366F1", "F59E0B"]
+    textMain: "03045E"
+    textMuted: "3E5C76"
+    border: "CFE6F2"
+    chartColors: ["0077B6", "00B4D8", "03045E", "48CAE4", "F59E0B"]
 
   teal-slate:
-    tone: "Cool grey with teal accent"
+    tone: "Warm sand with deep teal and copper"
     mode: light
-    surface: "F5F8F8"
+    surface: "F3EFE7"
     surfaceAlt: "FFFFFF"
-    accent: "0F766E"
-    accentAlt: "0891B2"
-    positive: "15803D"
-    negative: "DC2626"
-    warning: "B45309"
-    textMain: "152625"
-    textMuted: "50635F"
-    border: "DEE9E7"
-    chartColors: ["0F766E", "0891B2", "14B8A6", "2563EB", "F59E0B"]
+    accent: "0E7C7B"
+    accentAlt: "C8702A"
+    positive: "2F7D32"
+    negative: "B23A2E"
+    warning: "A86310"
+    textMain: "12302F"
+    textMuted: "5B6461"
+    border: "E2DCCF"
+    chartColors: ["0E7C7B", "C8702A", "5FA8A0", "12302F", "E0B15A"]
 
   emerald-clean:
-    tone: "Fresh / green"
+    tone: "Crisp mint with emerald and lime"
     mode: light
-    surface: "F4FAF7"
+    surface: "ECF8F2"
     surfaceAlt: "FFFFFF"
-    accent: "047857"
-    accentAlt: "0D9488"
+    accent: "059669"
+    accentAlt: "65A30D"
     positive: "047857"
     negative: "DC2626"
     warning: "B45309"
-    textMain: "10241D"
-    textMuted: "4F665C"
-    border: "D9EAE1"
-    chartColors: ["047857", "0D9488", "10B981", "65A30D", "F59E0B"]
+    textMain: "053B2B"
+    textMuted: "4B6B5E"
+    border: "CDEBDD"
+    chartColors: ["059669", "65A30D", "0EA5E9", "065F46", "FBBF24"]
 
   forest-editorial:
-    tone: "Deep forest green on warm paper"
+    tone: "Forest green and amber on cream paper"
     mode: light
-    surface: "F7F8F3"
-    surfaceAlt: "FFFFFF"
-    accent: "3F6212"
-    accentAlt: "4D7C0F"
-    positive: "3F6212"
-    negative: "B91C1C"
-    warning: "A16207"
-    textMain: "1E2411"
-    textMuted: "5C6047"
-    border: "E4E7D8"
-    chartColors: ["3F6212", "4D7C0F", "65A30D", "0F766E", "A16207"]
+    surface: "F5F0E8"
+    surfaceAlt: "FFFCF6"
+    accent: "2D5016"
+    accentAlt: "D4891A"
+    positive: "2D5016"
+    negative: "A33A2A"
+    warning: "A86310"
+    textMain: "1E2612"
+    textMuted: "5E5A48"
+    border: "E3DACB"
+    chartColors: ["2D5016", "D4891A", "7A9A3A", "8C5A2B", "B8C77A"]
 
   warm-editorial:
-    tone: "Warm / terracotta on cream"
+    tone: "Terracotta and teal on peach cream"
     mode: light
-    surface: "FBF7F1"
+    surface: "FAF1E9"
     surfaceAlt: "FFFFFF"
     accent: "C2410C"
-    accentAlt: "B45309"
+    accentAlt: "1F6F78"
     positive: "4D7C0F"
     negative: "B91C1C"
     warning: "A16207"
-    textMain: "2A211B"
-    textMuted: "6E6153"
-    border: "EBE2D6"
-    chartColors: ["C2410C", "B45309", "4D7C0F", "A16207", "7C6F5B"]
+    textMain: "3B2016"
+    textMuted: "76594A"
+    border: "EEDCCD"
+    chartColors: ["C2410C", "1F6F78", "E9A06B", "7A4A32", "4D7C0F"]
 
   amber-mono:
-    tone: "Near-monochrome warm, amber accent"
+    tone: "Navy ink with antique gold on ivory"
     mode: light
-    surface: "FBF8F2"
+    surface: "F8F6F0"
     surfaceAlt: "FFFFFF"
-    accent: "B45309"
-    accentAlt: "D97706"
-    positive: "4D7C0F"
-    negative: "B91C1C"
-    warning: "92400E"
-    textMain: "2A2419"
-    textMuted: "6B6250"
-    border: "ECE4D5"
-    chartColors: ["B45309", "D97706", "92400E", "A16207", "4D7C0F"]
+    accent: "A87B1E"
+    accentAlt: "C9A84C"
+    positive: "3F7D3A"
+    negative: "B23A2E"
+    warning: "9A6412"
+    textMain: "1B2A4A"
+    textMuted: "5C6376"
+    border: "E6E0D2"
+    chartColors: ["A87B1E", "1B2A4A", "C9A84C", "6B7A99", "3F7D3A"]
 
   rose-report:
-    tone: "Warm neutral with rose / burgundy accent"
+    tone: "Blush with berry and wine"
     mode: light
-    surface: "FDF6F7"
+    surface: "FBF0F3"
     surfaceAlt: "FFFFFF"
-    accent: "BE123C"
-    accentAlt: "E11D48"
+    accent: "BE185D"
+    accentAlt: "6B2D5C"
     positive: "15803D"
     negative: "B91C1C"
     warning: "A16207"
-    textMain: "2B1A20"
-    textMuted: "6B5560"
-    border: "EFE0E4"
-    chartColors: ["BE123C", "E11D48", "9F1239", "DB2777", "F59E0B"]
+    textMain: "3A1026"
+    textMuted: "7A5566"
+    border: "F0D9E1"
+    chartColors: ["BE185D", "6B2D5C", "F472B6", "9D174D", "F59E0B"]
 
   violet-modern:
-    tone: "Modern / purple"
+    tone: "Lavender with deep violet and coral"
     mode: light
-    surface: "F8F7FC"
+    surface: "F5F2FF"
     surfaceAlt: "FFFFFF"
     accent: "6D28D9"
-    accentAlt: "7C3AED"
+    accentAlt: "E8505B"
     positive: "15803D"
     negative: "DC2626"
     warning: "B45309"
-    textMain: "1E1B2E"
-    textMuted: "5E5772"
-    border: "E6E2F0"
-    chartColors: ["6D28D9", "7C3AED", "9333EA", "DB2777", "F59E0B"]
+    textMain: "2A1458"
+    textMuted: "625A80"
+    border: "E4DDF7"
+    chartColors: ["6D28D9", "E8505B", "A78BFA", "2A1458", "F59E0B"]
 
   # From the test PC (2026-09-28). The orange accent reads at ~2.3-2.6:1 as text on
   # these surfaces, below contrast_targets.accent_on_surface (3.0).
@@ -237,19 +239,19 @@ palettes:
     chartColors: ["F7941D", "673AB7", "B39DDB", "95A5B6", "2E7D32", "A84531"]
 
   graphite-mono:
-    tone: "Monochrome corporate grey, single blue pop"
+    tone: "Pure white and charcoal, electric blue pop"
     mode: light
-    surface: "F7F8FA"
-    surfaceAlt: "FFFFFF"
-    accent: "1D4ED8"
-    accentAlt: "0EA5E9"
+    surface: "FFFFFF"
+    surfaceAlt: "F2F3F5"
+    accent: "0066FF"
+    accentAlt: "6B7280"
     positive: "15803D"
     negative: "DC2626"
     warning: "B45309"
-    textMain: "1B1F27"
-    textMuted: "5A6472"
-    border: "E3E7EC"
-    chartColors: ["1D4ED8", "64748B", "0EA5E9", "334155", "94A3B8"]
+    textMain: "2C2C2C"
+    textMuted: "5F6368"
+    border: "E1E3E6"
+    chartColors: ["0066FF", "2C2C2C", "9CA3AF", "60A5FA", "4B5563"]
 
   # ---- DARK ---------------------------------------------------------------
   graphite-dark:

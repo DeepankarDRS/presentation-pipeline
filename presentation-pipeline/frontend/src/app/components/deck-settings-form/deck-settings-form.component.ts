@@ -12,51 +12,63 @@ import { DeckSettings, DeckSettingsField, DeckSettingsFieldOption } from '../../
   standalone: true,
   imports: [],
   template: `
-    <div class="border-t border-gray-100 pt-5 mt-5">
-      <h3 class="text-sm font-semibold text-gray-900 mb-1">Presentation Settings</h3>
-      <p class="text-xs text-gray-500 mb-4">Fine-tune how your deck is written, for whom, and how much text it carries.</p>
+    <div>
+      <h3 class="section-title">Presentation Settings</h3>
+      <p class="section-hint mb-4">Fine-tune how your deck is written, for whom, and how much text it carries.</p>
 
       @if (loading()) {
-        <div class="text-sm text-gray-400 py-2">Loading settings...</div>
+        <div class="grid grid-cols-3 gap-3 animate-pulse">
+          @for (i of [1, 2, 3]; track i) {
+            <div class="h-16 rounded-xl bg-slate-100"></div>
+          }
+        </div>
       } @else if (loadError()) {
-        <div class="text-sm text-red-500 py-2">{{ loadError() }}</div>
+        <div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{{ loadError() }}</div>
       } @else {
         <!-- Content handling -->
         <div class="mb-5">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Content handling</label>
-          <div class="grid grid-cols-3 gap-2">
-            @for (opt of fieldOptions('text_mode'); track opt.value) {
+          <label class="field-label">Content handling</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            @for (opt of fieldOptions('text_mode'); track opt.value; let i = $index) {
               <button
                 type="button"
                 (click)="setSingle('text_mode', opt.value)"
-                [class.border-blue-500]="values.text_mode === opt.value"
-                [class.bg-blue-50]="values.text_mode === opt.value"
-                [class.ring-1]="values.text_mode === opt.value"
-                [class.ring-blue-500]="values.text_mode === opt.value"
-                class="text-left border border-gray-200 rounded-lg p-2.5 hover:border-blue-300 transition-colors"
+                class="option-card flex items-start gap-3 p-3"
+                [class.option-card-selected]="values.text_mode === opt.value"
               >
-                <div class="text-xs font-medium text-gray-900">{{ opt.label }}</div>
-                @if (opt.description) {
-                  <div class="text-[11px] text-gray-500 mt-0.5 leading-snug">{{ opt.description }}</div>
-                }
+                <span
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors"
+                  [class.bg-brand-600]="values.text_mode === opt.value"
+                  [class.text-white]="values.text_mode === opt.value"
+                  [class.bg-slate-100]="values.text_mode !== opt.value"
+                  [class.text-slate-500]="values.text_mode !== opt.value"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="textModeIcon(i)" />
+                  </svg>
+                </span>
+                <span class="min-w-0">
+                  <span class="block text-xs font-semibold text-slate-900">{{ opt.label }}</span>
+                  @if (opt.description) {
+                    <span class="block text-[11px] text-slate-500 mt-0.5 leading-snug">{{ opt.description }}</span>
+                  }
+                </span>
               </button>
             }
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
           <!-- Amount of text -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Amount of text</label>
-            <div class="inline-flex w-full rounded-lg border border-gray-200 overflow-hidden">
+            <label class="field-label">Amount of text</label>
+            <div class="segmented">
               @for (opt of fieldOptions('amount_of_text'); track opt.value) {
                 <button
                   type="button"
                   (click)="setSingle('amount_of_text', opt.value)"
-                  [class.bg-blue-600]="values.amount_of_text === opt.value"
-                  [class.text-white]="values.amount_of_text === opt.value"
-                  [class.text-gray-600]="values.amount_of_text !== opt.value"
-                  class="flex-1 px-2 py-1.5 text-xs font-medium hover:bg-gray-50 border-r border-gray-200 last:border-r-0 transition-colors"
+                  class="segmented-item"
+                  [class.segmented-item-active]="values.amount_of_text === opt.value"
                 >
                   {{ opt.label }}
                 </button>
@@ -66,16 +78,14 @@ import { DeckSettings, DeckSettingsField, DeckSettingsFieldOption } from '../../
 
           <!-- Slide count -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Slide count</label>
-            <div class="inline-flex w-full rounded-lg border border-gray-200 overflow-hidden">
+            <label class="field-label">Slide count</label>
+            <div class="segmented">
               @for (opt of fieldOptions('slide_count'); track opt.value) {
                 <button
                   type="button"
                   (click)="setSingle('slide_count', opt.value)"
-                  [class.bg-blue-600]="values.slide_count === opt.value"
-                  [class.text-white]="values.slide_count === opt.value"
-                  [class.text-gray-600]="values.slide_count !== opt.value"
-                  class="flex-1 px-2 py-1.5 text-xs font-medium hover:bg-gray-50 border-r border-gray-200 last:border-r-0 transition-colors"
+                  class="segmented-item"
+                  [class.segmented-item-active]="values.slide_count === opt.value"
                 >
                   {{ opt.label }}
                 </button>
@@ -86,19 +96,20 @@ import { DeckSettings, DeckSettingsField, DeckSettingsFieldOption } from '../../
 
         <!-- Write for -->
         <div class="mb-5">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Write for</label>
-          <div class="flex flex-wrap gap-1.5">
+          <label class="field-label">Write for</label>
+          <div class="flex flex-wrap gap-2">
             @for (opt of fieldOptionsRaw('write_for'); track opt) {
               <button
                 type="button"
                 (click)="toggleMulti('write_for', opt)"
-                [class.bg-blue-600]="isSelected('write_for', opt)"
-                [class.text-white]="isSelected('write_for', opt)"
-                [class.border-blue-600]="isSelected('write_for', opt)"
-                [class.text-gray-600]="!isSelected('write_for', opt)"
-                [class.border-gray-200]="!isSelected('write_for', opt)"
-                class="text-xs font-medium px-2.5 py-1 rounded-full border hover:border-blue-300 transition-colors"
+                class="chip"
+                [class.chip-selected]="isSelected('write_for', opt)"
               >
+                @if (isSelected('write_for', opt)) {
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
                 {{ opt }}
               </button>
             }
@@ -107,19 +118,20 @@ import { DeckSettings, DeckSettingsField, DeckSettingsFieldOption } from '../../
 
         <!-- Tone -->
         <div class="mb-5">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Tone</label>
-          <div class="flex flex-wrap gap-1.5">
+          <label class="field-label">Tone</label>
+          <div class="flex flex-wrap gap-2">
             @for (opt of fieldOptionsRaw('tone'); track opt) {
               <button
                 type="button"
                 (click)="toggleMulti('tone', opt)"
-                [class.bg-blue-600]="isSelected('tone', opt)"
-                [class.text-white]="isSelected('tone', opt)"
-                [class.border-blue-600]="isSelected('tone', opt)"
-                [class.text-gray-600]="!isSelected('tone', opt)"
-                [class.border-gray-200]="!isSelected('tone', opt)"
-                class="text-xs font-medium px-2.5 py-1 rounded-full border hover:border-blue-300 transition-colors"
+                class="chip"
+                [class.chip-selected]="isSelected('tone', opt)"
               >
+                @if (isSelected('tone', opt)) {
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
                 {{ opt }}
               </button>
             }
@@ -128,15 +140,13 @@ import { DeckSettings, DeckSettingsField, DeckSettingsFieldOption } from '../../
 
         <!-- Additional instructions -->
         <div>
-          <label for="additionalInstructions" class="block text-sm font-medium text-gray-700 mb-1.5">
-            Additional instructions
-          </label>
+          <label for="additionalInstructions" class="field-label">Additional instructions</label>
           <textarea
             id="additionalInstructions"
             rows="2"
             [value]="values.additional_instructions"
             (input)="setFreeText('additional_instructions', $event)"
-            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
+            class="input resize-y"
             placeholder="e.g. Include a competitor comparison slide, avoid jargon..."
           ></textarea>
         </div>
@@ -157,7 +167,7 @@ export class DeckSettingsFormComponent implements OnInit {
     amount_of_text: 'concise',
     write_for: [],
     tone: [],
-    slide_count: '6-10',
+    slide_count: '3-5',
     additional_instructions: '',
   };
 
@@ -173,6 +183,16 @@ export class DeckSettingsFormComponent implements OnInit {
         this.loading.set(false);
       },
     );
+  }
+
+  private readonly textModeIcons = [
+    'M13 10V3L4 14h7v7l9-11h-7z',
+    'M4 6h16M4 12h10M4 18h7',
+    'M15.232 5.232l3.536 3.536M9 13l6.232-6.232a2.5 2.5 0 013.536 3.536L12.536 16.536 8 18l1.464-4.536z',
+  ];
+
+  textModeIcon(index: number): string {
+    return this.textModeIcons[index % this.textModeIcons.length];
   }
 
   fieldOptions(key: string): DeckSettingsFieldOption[] {
