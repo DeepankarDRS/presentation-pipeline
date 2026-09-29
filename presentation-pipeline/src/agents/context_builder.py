@@ -392,6 +392,7 @@ _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("type_ramp", "TYPE RAMP (fontSize)"),
     ("spacing_scale", "SPACING SCALE"),
     ("color_discipline", "COLOR DISCIPLINE"),
+    ("color_roles", "COLOR ROLES (meaning, the same on every slide)"),
     ("render_gotchas", "RENDER GOTCHAS"),
     ("design_variety", "DESIGN VARIETY"),
     ("checklist", "PRE-EMIT CHECKLIST"),
@@ -445,6 +446,7 @@ _KIND_TO_RECIPE: dict[str, str] = {
     "card_steps":    "card_steps",
     "card_matrix":   "card_matrix",
     "icon_rows":     "icon_bullet_list",
+    "hero_stat":     "hero_stat",
 }
 
 _EXTRA_RECIPES: dict[str, list[str]] = {
@@ -467,6 +469,8 @@ def _recipe_kind(component: dict[str, Any]) -> str:
     kind = component.get("kind", "")
     if kind == "bullet_list" and "icon" in (component.get("design_hint") or "").lower():
         return "icon_rows"
+    if kind == "kpi_row" and len((component.get("content_data") or {}).get("kpi_values") or []) == 1:
+        return "hero_stat"
     if kind == "card_grid":
         layout = (component.get("content_data") or {}).get("card_layout", "grid")
         return _CARD_LAYOUT_RECIPE.get(layout, "card_grid")

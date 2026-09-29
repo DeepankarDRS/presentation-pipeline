@@ -20,8 +20,8 @@ treatments:
     intent: emphasize one value, row or item
     technique: '$accent/$positive/$negative + bold on that element (Text/Td/Li color, or the item''s color=)'
   sentiment:
-    intent: color-code by outcome
-    technique: '$positive good, $negative bad, $accent neutral (same attributes as emphasis)'
+    intent: color-code by meaning (losses / fixes)
+    technique: '$negative = losses, leaks, risks; $positive = wins, fixes, actions to scale; $warning = watch; $accent neutral - the same meaning gets the same colour on every slide (same attributes as emphasis)'
   cell_fill:
     intent: shade a table row or column
     technique: 'backgroundColor on that row''s/column''s <Td>s'

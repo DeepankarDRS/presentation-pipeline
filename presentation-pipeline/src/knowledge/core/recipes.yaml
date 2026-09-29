@@ -453,3 +453,30 @@ card_matrix: |
       </VStack>
     </HStack>
   </VStack>
+
+hero_stat: |
+  # Hero stat: the ONE number the headline rests on (a kpi_row with a single tile),
+  # drawn far larger than tiles, with its supporting metrics (the plan's second
+  # kpi_row) as small stats beside it. The band takes grow from its weight; the
+  # hero number starts at 72 and is enlarged to fill after generation (up to 120).
+  # Label 14 muted uppercase, number 72 bold, context line 16 (the plan's kpi_deltas
+  # text; omit when empty). Unit in a <Span> at half the number's size.
+  # Emphasised hero (design_hint "inverted panel"): light theme backgroundColor=
+  # "$textMain" with $surfaceAlt text; otherwise the card below.
+  <HStack grow="3" gap="16" alignItems="stretch">
+    <VStack w="56%" padding="28" gap="8" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="2">COMBINED RETURN ON AD SPEND</Text>
+      <Text fontSize="72" color="$negative" bold="true">0.33<Span fontSize="36" color="$textMuted">x</Span></Text>
+      <Text fontSize="16" color="$textMain" lineHeight="1.45">Both platforms return a third of what they spend</Text>
+    </VStack>
+    <VStack w="max" gap="12">
+      <VStack grow="1" padding="18" gap="4" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">Combined spend</Text>
+        <Text fontSize="30" color="$textMain" bold="true">₹114.9<Span fontSize="16" color="$textMuted">L</Span></Text>
+      </VStack>
+      <VStack grow="1" padding="18" gap="4" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">Combined revenue</Text>
+        <Text fontSize="30" color="$textMain" bold="true">₹37.4<Span fontSize="16" color="$textMuted">L</Span></Text>
+      </VStack>
+    </VStack>
+  </HStack>

@@ -24,7 +24,8 @@
 //                     its card, then Flow/Tree/ProcessArrow nodes are enlarged
 //                     to fill their box.
 //   3b. KPI values  — a sparse row of stat tiles grows its hero numbers (and
-//                     their inline unit <Span>s) together, up to 60px.
+//                     their inline unit <Span>s) together, up to 60px; a lone hero
+//                     stat card (short number >= 48px) up to 120px.
 //   4. text         — in each stack under ~70% full, fonts grow together (body
 //                     by s, headings/labels by sqrt(s); titles and each box's
 //                     stat/hero number untouched) until ~88% full; past the size
@@ -756,6 +757,12 @@ function diagramEdit(n, W, H) {
 // up to STAT_CAP, without wrapping a number or changing any width.
 
 const STAT_CAP = 60;
+// A lone hero stat: Genspark draws the headline's number at 120-244 px on 1920 (80-160
+// on our 1280). Only a short numeric anchor ("0.33x", "₹114.9L") in a card qualifies,
+// so a headline or title in a card never grows here.
+const HERO_CAP = 120;
+const HERO_TEXT_MAX = 12;
+const HERO_MIN = 48;         // drawn as a hero already (recipe: 72); side microstats (~30) are not
 
 /** The single largest text (>= FIXED_FONT) inside a tile, or null. */
 function statAnchor(tile) {
@@ -773,10 +780,10 @@ function statAnchor(tile) {
 }
 
 /** Scale fontSize on one element's open tag and on every <Span fontSize> inside it. */
-function scaleTextFont(xml, id, s) {
+function scaleTextFont(xml, id, s, cap = STAT_CAP) {
   const el = findElement(xml, id);
   if (!el) return xml;
-  const grow = (v) => String(Math.min(Math.round(Number(v) * s), STAT_CAP));
+  const grow = (v) => String(Math.min(Math.round(Number(v) * s), cap));
   const body = xml.slice(el.start, el.end).replace(/(<(?:Text|Span)\b[^>]*?\sfontSize\s*=\s*")([\d.]+)(")/g,
     (m, a, v, b) => a + grow(v) + b);
   return xml.slice(0, el.start) + body + xml.slice(el.end);
@@ -795,15 +802,27 @@ async function growStats(xml, report) {
       const f0 = Math.min(...anchors.map((a) => a.fontSize ?? 24));
       if (f0 >= STAT_CAP) return;
       const ratio = Math.max(...tiles.map((t) => fill(t, L).ratio));
-      if (ratio < LOW_FILL) groups.push({ ids: tiles.map((t) => t.id), anchors: anchors.map((a) => a.id), f0, ratio });
+      if (ratio < LOW_FILL) groups.push({ ids: tiles.map((t) => t.id), anchors: anchors.map((a) => a.id), f0, ratio, cap: STAT_CAP });
+    });
+    // a lone hero stat (the one number the headline rests on) grows past tile size
+    const grouped = new Set(groups.flatMap((g) => g.ids));
+    for (const root of L.slides) walk(root, (n, parent) => {
+      if (!parent || n.type !== "vstack" || !n.id || grouped.has(n.id) || !hasBoxStyle(n)) return; // not the slide root
+      if (parent?.type === "hstack" && (parent.children ?? []).filter((c) => STACKS.has(c.type) && statAnchor(c)).length > 1) return;
+      const a = statAnchor(n);
+      const text = a ? (a.text ?? (a.runs ?? []).map((r) => r.text).join("")) : "";
+      if (!a || !/\d/.test(text) || text.trim().length > HERO_TEXT_MAX) return;
+      if ((a.fontSize ?? 24) < HERO_MIN || (a.fontSize ?? 24) >= HERO_CAP) return;
+      const ratio = fill(n, L).ratio;
+      if (ratio < LOW_FILL) groups.push({ ids: [n.id], anchors: [a.id], f0: a.fontSize ?? 24, ratio, cap: HERO_CAP, hero: true });
     });
   } finally { L.free(); }
   for (const g of groups) {
-    const apply = (src, s) => g.anchors.reduce((x, id) => scaleTextFont(x, id, s), src);
-    const r = await search(xml, g.ids, apply, STAT_CAP / g.f0, g.anchors);
+    const apply = (src, s) => g.anchors.reduce((x, id) => scaleTextFont(x, id, s, g.cap), src);
+    const r = await search(xml, g.ids, apply, g.cap / g.f0, g.anchors);
     if (r.best <= 1.05) continue;
     xml = apply(xml, r.best);
-    report.push(`KPI values x${r.best.toFixed(2)} (${g.f0} -> ${Math.min(Math.round(g.f0 * r.best), STAT_CAP)}px), `
+    report.push(`${g.hero ? "hero stat" : "KPI values"} x${r.best.toFixed(2)} (${g.f0} -> ${Math.min(Math.round(g.f0 * r.best), g.cap)}px), `
       + `fill ${Math.round(g.ratio * 100)}% -> ${Math.round(r.ratio * 100)}%`);
   }
   return xml;

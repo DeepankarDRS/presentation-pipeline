@@ -69,3 +69,14 @@ def test_headline_at_the_wrap_edge_reserves_its_second_line(tmp_path):
 def test_short_headline_is_left_alone(tmp_path):
     on = _header_slide(tmp_path, "CPC is 3x too high")
     assert not any("lines reserved" in r for r in on["fitGrow"]), on["fitGrow"]
+
+
+def test_lone_hero_stat_grows_past_tile_size_but_not_its_microstats_or_headline(tmp_path):
+    """A (Genspark hero stat): the one number the headline rests on, 72 -> up to 120 px."""
+    on = _compile(_FIT / "s12-hero-stat.xml", tmp_path / "on")
+    assert sum("hero stat" in r for r in on["fitGrow"]) == 1, on["fitGrow"]
+    hero = re.search(r'<Text[^>]*\sfontSize="(\d+)"[^>]*>0\.33<Span fontSize="(\d+)"', on["xml"])
+    assert hero and int(hero.group(1)) >= 96 and int(hero.group(2)) > 36
+    micro = re.search(r'<Text[^>]*\sfontSize="(\d+)"[^>]*>₹114\.9', on["xml"])
+    assert micro and int(micro.group(1)) < 48
+    assert re.search(r'<Text[^>]*\sfontSize="28"[^>]*>The account is spending', on["xml"])

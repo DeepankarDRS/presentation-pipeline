@@ -194,13 +194,22 @@ spacing_scale: "use 2, 4, 6, 8, 10, 12, 14, 16, 18, 22 - nothing in between."
 color_discipline: >
   Every color is a $token or a 6-digit hex (NO #). Body text $textMain /
   $textMuted only. $accent for the eyebrow, one figure, one edge - not whole
-  blocks. $positive / $negative only on deltas. Card bg is $surfaceAlt;
+  blocks. Card bg is $surfaceAlt;
   slide bg $surface; inverted panel $textMain. chartColors is literal hex,
   copied from the resolved palette - $tokens do NOT resolve inside it.
   Do NOT emit a <Theme> - the pipeline injects exactly one.
   COVER/HERO slides follow the SAME token rules — never hardcode raw hex
   for large backgrounds (use $surface, $surfaceAlt, $textMain, $accent).
   Raw hex is acceptable ONLY for chartColors and small decorative accents.
+
+color_roles: >
+  Colour carries meaning, the SAME on every slide of the deck, so the reader
+  learns it once: $negative = losses, leaks, underperformers, risks;
+  $positive = wins, fixes, recommended actions, what to protect or scale;
+  $warning = watch / breakeven; $accent = neutral emphasis (the eyebrow, the
+  number the headline rests on). Apply a role to a figure, a phrase, a row's
+  cell_fill, a card's accent edge or a tile - never to a whole slide. Never use
+  $negative / $positive for decoration, and never give one meaning two colours.
 
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:

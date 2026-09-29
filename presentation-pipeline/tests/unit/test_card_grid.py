@@ -61,3 +61,13 @@ def test_highlight_default_follows_the_layout():
     assert "a hub or engine with inputs and outputs → ONE card, the centre" in p
     assert "grid of parallel items → all cards equal" in p
     assert "matrix → every cell the brief marks" in p
+
+
+def test_single_kpi_gets_the_hero_stat_recipe_and_planner_explains_it():
+    """A: the one number the headline rests on is a kpi_row of 1, drawn as a hero stat."""
+    one = {"kind": "kpi_row", "content_data": {"kpi_values": ["0.33x"]}}
+    many = {"kind": "kpi_row", "content_data": {"kpi_values": ["₹114.9L", "₹37.4L"]}}
+    assert _recipe_kind(one) == "hero_stat" and _recipe_kind(many) == "kpi_row"
+    assert "# hero_stat\n" in _render_component_recipes(["hero_stat"])
+    p = _prompt()
+    assert "ONE number the headline rests on" in p and "kpi_row count=1 (hero: drawn very large)" in p
