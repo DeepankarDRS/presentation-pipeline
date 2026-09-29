@@ -204,6 +204,38 @@ palettes:
     border: "E6E2F0"
     chartColors: ["6D28D9", "7C3AED", "9333EA", "DB2777", "F59E0B"]
 
+  # From the test PC (2026-09-28). The orange accent reads at ~2.3-2.6:1 as text on
+  # these surfaces, below contrast_targets.accent_on_surface (3.0).
+  saascolor:
+    tone: "Navy on cream with orange + purple accents"
+    mode: light
+    surface: "F9F8F4"
+    surfaceAlt: "FFFFFF"
+    accent: "F5821F"
+    accentAlt: "673AB7"
+    positive: "2E7D32"
+    negative: "A03B24"
+    warning: "A03B24"
+    textMain: "041E42"
+    textMuted: "4E5D6E"
+    border: "E4E2D8"
+    chartColors: ["F5821F", "673AB7", "B39DDB", "2E7D32", "A03B24", "E6B8A2"]
+
+  navy-orange:
+    tone: "Diagnostic — navy on white, warm off-white cards, orange + purple accents"
+    mode: light
+    surface: "FFFFFF"
+    surfaceAlt: "F4F3F0"
+    accent: "F7941D"
+    accentAlt: "673AB7"
+    positive: "2E7D32"
+    negative: "A84531"
+    warning: "A84531"
+    textMain: "112340"
+    textMuted: "5A6578"
+    border: "E8E6E3"
+    chartColors: ["F7941D", "673AB7", "B39DDB", "95A5B6", "2E7D32", "A84531"]
+
   graphite-mono:
     tone: "Monochrome corporate grey, single blue pop"
     mode: light

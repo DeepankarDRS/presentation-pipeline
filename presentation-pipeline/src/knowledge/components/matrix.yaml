@@ -51,6 +51,8 @@ notes:
   - "Matrix needs explicit w and h. w=\"max\" works for width; h must be a pixel number (>=200 so labels have room)."
   - "4-6 items work best. Too many items will overlap."
   - "Common patterns: effort-impact, risk-likelihood, cost-value, urgency-importance."
+  - "NOT for a grid of named rows × named columns (e.g. growth levers × platforms): that is a Table, even when a brief calls it a 'matrix'."
+  - "Positions come from the slide plan's matrix_items (low / mid / high ≈ 0.2 / 0.5 / 0.8). The quadrant labels name regions of the map; they are not rows of a grid."
 
 pitfalls:
   - "MatrixItem x and y must be between 0 and 1 (normalised coordinates, not pixel values)."

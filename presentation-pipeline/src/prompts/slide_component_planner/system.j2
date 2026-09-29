@@ -26,13 +26,14 @@ Read the SHAPE of each key_message to decide which component type fits:
 | Time-series or labeled values (one entity, many points) | chart | "Revenue by quarter: Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M" |
 | Multiple entities compared on same metrics | table | "Phrase: Spend ₹45L, ROAS 0.32x · Exact: Spend ₹21L, ROAS 0.41x" |
 | Parallel items each with multiple attributes or sub-detail | table | "Gap 1: Platform B ₹31 vs Platform A ₹46, Fix: bidding model" |
+| Named rows × named columns (a grid, even when the brief calls it a "matrix") | table | "Rows: Visibility, Conversion · Columns: Zepto, Blinkit, Instamart" |
 | Entity + single metric (3+ entities) | chart | "Bengaluru 0.45x · Hyderabad 0.31x · Chennai 0.28x" |
 | Categorized list (items grouped under labels) | bullet_list | "Winners: brand exact, paneer · Weak: butter chicken phrase, instant food" |
 | Sequential process (short labels, no sub-detail) | process_arrow | "Discovery → Design → Build → Test → Deploy" |
 | Process with branching or decisions | flow | "Validate → OK? → (Yes: Save) (No: Retry)" |
 | Chronological events with dates | timeline | "Q1 2025: Alpha · Q2 2025: Beta · Q3 2025: GA" |
 | Parent-child hierarchy | tree | "CEO → CTO (Eng, Product) · CFO (Finance)" |
-| Items positioned on two independent axes | matrix | "High impact / Low effort: Search, Docs" |
+| Items with a stated position on two independent axes | matrix | "High impact / Low effort: Search, Docs" |
 | 3-5 level priority/importance hierarchy (short labels) | pyramid | "Strategy → Capabilities → Operations" |
 | Qualitative insight or recommendation | narrative or bullet_list | "Self-serve onboarding could cut CAC payback to 10 months" |
 | Short declarative headline | title | "Q3 2025 Performance Review" |
@@ -40,6 +41,7 @@ Read the SHAPE of each key_message to decide which component type fits:
 **Decision priority:** When a message could match multiple patterns, prefer the one that preserves the most information:
 - Multiple entities × multiple metrics → **table** (not kpi_row, which loses the per-entity breakdown)
 - Comparison across entities → **table** (not matrix, which only positions items on 2 axes without showing values)
+- Named rows × named columns → **table**, even when the brief calls it a "matrix" or "opportunity matrix". The **matrix** kind is only a 2×2 positioning map: use it only when the key_messages say where each item sits on both axes — never make up positions.
 - Sequential steps WITH detail per step → **process_arrow** (structure) + **bullet_list** (detail), not process_arrow alone
 - Items grouped by category → **bullet_list** (not separate components per category)
 
@@ -74,7 +76,7 @@ When in doubt between cover and data, choose data.
 | flow | Flow, FlowNode, FlowConnection | items = nodes (4-6) | Branching processes, decision trees, workflows |
 | layer | Layer, Line, Arrow, Svg | Free-form positioning | Architecture diagrams, annotated visuals |
 | tree | Tree, TreeItem | items = total nodes | Org charts, hierarchical breakdowns |
-| matrix | Matrix, MatrixAxes, MatrixQuadrants, MatrixItem | items = positioned items (3-5) | 2×2 grids: effort-impact, BCG, priority maps |
+| matrix | Matrix, MatrixAxes, MatrixQuadrants, MatrixItem | items = positioned items (3-5) | 2×2 positioning maps: effort-impact, BCG, priority maps (not rows × columns grids — use table) |
 | process_arrow | ProcessArrow, ProcessArrowStep | items = steps (3-5) | Linear sequential processes (chevrons) |
 | pyramid | Pyramid, PyramidLevel | items = levels (3-5) | Layered hierarchies, funnels |
 
@@ -98,7 +100,7 @@ Each component renders as a SPECIFIC visual shape. Choosing the wrong one for yo
 
 **pyramid** — Triangle shape divided into horizontal bands. Text renders INSIDE each band, and the top band is physically much narrower than the bottom. Best for: 3-5 level hierarchies where POSITION communicates importance — strategic layers, priority tiers, Maslow-style models. Labels must be 3-6 words max. Breaks when: levels contain sentences or tactical detail (the narrow upper bands clip/overflow the text — use process_arrow + bullet_list instead).
 
-**matrix** — 2×2 grid with axis labels and positioned dot items. Items are placed by x,y coordinates (0-1 range). Best for: categorization along two dimensions — impact/effort, cost/value, risk/reward. Breaks when: items exceed 3-5 (dots overlap) or when the two axes aren't genuinely independent dimensions.
+**matrix** — 2×2 positioning map with axis labels and positioned dot items. Items are placed by x,y coordinates (0-1 range). Best for: categorization along two dimensions — impact/effort, cost/value, risk/reward. Breaks when: items exceed 3-5 (dots overlap), when the two axes aren't genuinely independent dimensions, or when the key_messages don't say where each item sits (the positions would be made up). A grid of named rows × named columns is a table, not a matrix.
 
 **tree** — Hierarchical node tree connected by lines, with a single root. Nodes are roughly 120×40px. Best for: org charts, hierarchical breakdowns, decision trees with parent-child relationships. Breaks when: labels exceed 2-3 words, or when the hierarchy has more than 3 levels deep (becomes too compressed).
 
@@ -234,6 +236,11 @@ For pyramid:
 For tree:
   { "layout": "vertical",
     "tree_nodes": [{"label": "Root", "children": [{"label": "Branch A"}]}] }
+
+For matrix (only when the key_messages say where each item sits; positions are low / mid / high):
+  { "x_axis": "Effort", "y_axis": "Impact",
+    "quadrants": {"top_left": "Plan", "top_right": "Do first", "bottom_left": "Skip", "bottom_right": "Quick wins"},
+    "matrix_items": [{"label": "Search", "x": "low", "y": "high"}] }
 
 ### Content fidelity rules:
 - EVERY value must come from key_messages. Extract, do not invent.

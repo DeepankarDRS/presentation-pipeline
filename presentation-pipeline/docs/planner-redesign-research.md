@@ -284,6 +284,7 @@ Five local traces the user captured from the Genspark UI (Desktop, not in the re
 | G8 | **Missing data → a method slide, labelled:** city and keyword slides became decision-rule tables ("CPC above ₹14.8 → city-level bid cap") marked as proposed thresholds | Super Agent CHEFFIN |
 | G9 | **Checks run early and admit their limits:** slide 1 checked before writing the rest; findings tiered (errors = rules with ≥ 80% measured precision, warnings = verify with a region screenshot); a run where fonts failed to load was reported as "not a clean pass" | AI Slides agency, XTSY |
 | G10 | **Speaker notes:** a presenter script per slide; Super Agent notes show the working behind each derived number | AI Slides agency, Super Agent CHEFFIN |
+| G17 | **A named visual is kept when it suits the data and re-chosen when it doesn't:** the 4×3 opportunity grid stayed a grid; "Show table: Metric \| Value" (one platform's 7 metrics) became a 7-tile KPI grid; "two mini tables or one combined visual" became one table plus a sorted bar chart of match-type ROAS | AI Slides CHEFFIN-full (the user's screenshots, 2026-09-28), XTSY |
 
 **What went wrong (observed):**
 
@@ -300,11 +301,11 @@ Five local traces the user captured from the Genspark UI (Desktop, not in the re
 
 | Lesson | Evidence | Lands in | Our gap today |
 |---|---|---|---|
-| L1. Treat a per-slide brief as a spec: lock headlines, required items, stated visuals, callouts; take the slide count from the brief; keep names and placeholders verbatim | G1 | RQ1-C, RQ7, RQ11; outline planner | outline retypes into `key_messages`; slide count from settings (P3, P11) |
+| L1. Treat a per-slide brief as a spec: lock headlines, required items and callouts; keep stated visuals when they suit the data (L5); take the slide count from the brief; keep names and placeholders verbatim | G1, G17 | RQ1-C, RQ7, RQ11; outline planner | outline retypes into `key_messages`; slide count from settings (P3, P11) |
 | L2. The outline states `assumptions` and `not_covered` (brief content on no slide, missing attachments), shown in the UI and the final report | G2 | RQ9, RQ12; outline schema; evaluator | no such field anywhere in `src/`; the CHEFFIN run filled the missing sheet with a fake table (P15) |
 | L3. Pull the brief's constraints ("no hard numbers on slide 7", "don't attack the current agency") into requirement blocks; check them by code where possible | G3 | RQ3 (requirement blocks), RQ9 | constraints come only from the settings form (P16) |
 | L4. Read style directions from the brief: colour roles tied to entities or meanings, number formats | G4 | P14, §7.2 item 6; `style_directives` | `resolve_theme()` only looks up a named palette |
-| L5. Decide each slide's visual form in the outline, with the whole deck in view; a brief's "Visual:" line is locked | G5 | RQ4-E (new) | the slide planner sees only other slides' titles (P17) |
+| L5. Decide each slide's visual form in the outline, with the whole deck in view. The brief's content and intent are locked, and its named visual is kept when it suits the data. When the data calls for another form (one platform's 7 metrics asked as "Show table" → KPI tiles), switch and record why, shown in the outline so the user can override it (corrected 2026-09-29; it said "a brief's Visual: line is locked") | G5, G17 | RQ4-E (new) | the slide planner sees only other slides' titles (P17), and follows the brief's layout words literally ("Show table: Metric \| Value" → a two-column table on `1b306e1de67f` slide 5) |
 | L6. A deck style kit: slide frame (label, claim headline, sub-headline, source line), a purpose-labelled callout, KPI tile, defined once and rendered by the generator | G6 | RQ7, Q9; §7.2 item 3 | kicker derived by the generator; no purpose-labelled callout |
 | L7. Derived numbers computed by code **and referenced by id**, never retyped — Genspark computed them and still drifted when retyping | G7, G12 | RQ2-D, Q4 | numbers retyped three times (P1) |
 | L8. Missing data → a method or rules slide, labelled as proposed | G8 | RQ10 option (d) | the pipeline invents (P4) |
@@ -681,7 +682,7 @@ Every phase ends with LLM-free proof. Paid runs only at the end of a phase, afte
 
 ### 9.1 Priority order by impact on the output (2026-09-28)
 
-Ranked by expected effect on the finished deck, from the evidence in §3 and the prompt lines cited below. Line numbers are as of 2026-09-28.
+Ranked by expected effect on the finished deck, from the evidence in §3 and the prompt lines cited below. Line numbers are as of 2026-09-28. Rows added on 2026-09-29 (planners 13–20, generator 11–12, R1–R4) come from reviewing three of our decks (§11) and cite lines as of that date, including the uncommitted matrix fix in `slide_component_planner/system.j2`.
 
 **Planners** (`outline_planner`, `outline_replanner`, `slide_component_planner`, `state.py`):
 
@@ -699,6 +700,14 @@ Ranked by expected effect on the finished deck, from the evidence in §3 and the
 | 10 | The outline picks each slide's visual form (RQ4-E) | G5; test first (Q13) | outline schema, slide planner | medium | outline-only runs |
 | 11 | Keyed merge + the plan-reviewer loop | P8, P12 | `state.py`, `graph.py`, `plan_reviewer` | medium–large | unit tests |
 | 12 | Derived numbers in a fact sheet (Q4) | §3.4; G7, G12 | new module + both planners | medium–large | unit tests |
+| 13 | Remove the dated caption example ("Source: Company Q3 2025 earnings report"); a caption cites only what the plan names | invented dated sources on all three reviewed decks: "Q2 FY24", "May 2024" (CHEFFIN), "XTSY Consumer Occasion Study 2024" (XTSY) | `slide_component_planner/system.j2:218` | trivial | prompt render; grep |
+| 14 | One entity's metrics → KPI tiles, not a two-column table: lift the "more than 5 tiles (use table)" cap; add a two-row KPI grid (6–8 tiles) | `1b306e1de67f` slide 5: FLIPCART's 7 metrics as "Metric \| Value"; Genspark drew the same content as a 7-tile grid (G17) | `slide_component_planner/system.j2:91`, `recipes.yaml` (kpi_row) | small | compile the grid recipe; single-slide cases (cents) |
+| 15 | Replace worked Example 1 ("match types → table") with examples chosen by content shape, across domains: one entity's metrics → KPI grid; one measure across entities → sorted bar chart; entities × measures → table | `1b306e1de67f` slide 6: match-type ROAS (one measure, 6 types) drawn as a table, against the prompt's own "entity + single metric → chart" row; the example matched by topic | `slide_component_planner/system.j2:257` | small | prompt render; single-slide cases |
+| 16 | Chevrons only for a real ordered sequence of ≤ 5 short labels (≤ 2 words) at full width; items that aren't a sequence → tiles or an icon list; capacity declared in the knowledge file | XTSY slides 4 and 7: 4 phases in a half-width card and 7 impact areas as chevrons, labels broken into single letters (13 broken words in the deck) | `slide_component_planner/system.j2:32, 80`, `components/process-arrow.yaml` | small | prompt render; R3 re-check of the saved deck |
+| 17 | Flow with branches: a nodes + edges format (fan-out / fan-in) and a branching flow recipe | XTSY slide 6: "input → engine → 4 parallel actions → outcome" drawn as one line, the outcome dropped | `slide_component_planner/system.j2:224–226`, `components/flow.yaml`, `recipes.yaml` (flow) | medium | compile a branching Flow; render |
+| 18 | Provenance: values found in the brief count as user data (or retire `data_provenance` for block ids, §7.1) | `1b306e1de67f` manifest: `user 0, sample 37`, though every number came from the brief | `settings_mapper.py:129` (`compute_provenance`) | small | unit test |
+| 19 | Stop mapping words to components: remove `_INTENT_KEYWORDS`; with no plan, fall back to the slide planner or a neutral default; the slide editor passes the user's words to the planner | the XTSY slide 3 naming trap ("matrix" → 2×2; also "grid" → table, "funnel" → pyramid, "pipeline" → chevrons), live in single-slide runs and slide edits | `context_builder.py:29–55`, `slide_replanner.py:71`, `tests/unit/test_context_builder.py` | small–medium | unit tests |
+| 20 | Caveats, data-quality notes and formulas go into footnotes, table captions or a read-out on the slide they qualify; a slide of their own only when the brief asks for one | `tables-check` CHEFFIN slide 5: a whole slide of caveats and formulas; Genspark put formulas in row captions and the caveat in footnotes | `outline_planner/system.j2` | small | outline replay |
 
 **Generator** (`generator.py` and its prompts):
 
@@ -714,12 +723,24 @@ Ranked by expected effect on the finished deck, from the evidence in §3 and the
 | 8 | Report assumptions, `not_covered` and constraints in the final evaluation | G2–G3 | evaluator, UI | small–medium | replay |
 | 9 | Derived numbers from the fact sheet (pairs with planner #12) | G7, G12 | generator | medium | unit tests |
 | 10 | Speaker notes: a presenter script + the formula for each derived number | G10 | generator | small | prompt render |
+| 11 | Theme colour tokens (`$accent`, `$accentAlt`, …) in the diagram examples instead of hard-coded blue hex | `1b306e1de67f` slide 4 and XTSY slides 4 and 7: blue chevrons in an orange / purple deck | `components/process-arrow.yaml:17–20, 45`, `recipes.yaml` (process_arrow) | trivial | compile with tokens; render |
+| 12 | Card shells only where a component needs a frame; no top-right badges; no placeholder shapes for visuals the brief asks for but we can't draw (they go to `not_covered`, planner #5) | near-empty cards (`1b306e1de67f` slides 2, 4, 6); a green circle on both CHEFFIN covers; "TRAFFIC ECONOMICS" and "TECH ENABLED" badges; a gradient card (XTSY slide 7) | `generator/system.j2:105, 111`, `house-style.yaml:40, 50, 95` | small | prompt render; replay prompts |
+
+**Render layer and tooling** (added 2026-09-29):
+
+| # | Change | Why (evidence) | Files | Effort | Free check |
+|---|---|---|---|---|---|
+| R1 | Chart options: a second value axis, values on bars, horizontal and stacked bars. The normalizer lifts the extra `<Chart>` options (POM rejects unknown attributes) and `pptx-post.js` patches the chart XML (POM's writer hard-codes `barDir="col"` and `grouping="clustered"`, with no data labels) | `tables-check` CHEFFIN slide 4: CVR (%) and AOV (₹) on one axis, so the CVR bars vanish; Genspark's sorted horizontal bars with values (CHEFFIN-full slides 3 and 6) | `src/node/pptx-post.js`, `src/compiler/normalizer.py`, `components/chart.yaml`, the planner's chart format | medium | XML-patch unit tests; compile + LibreOffice render |
+| R2 | Check every palette against `meta.contrast_targets` when themes load; flag accents that fail as text and use a darker text accent there | `saascolor` accent 2.44:1 and `navy-orange` 2.28:1 on their surfaces (target 3.0): faint orange labels and headline phrases on `1b306e1de67f` | `style_resolver.py`, `palettes.yaml` | small | unit test over all palettes |
+| R3 | Broken-word and diagram label-fit checks on every compiled slide (promote `word_breaks`); on failure widen the band, switch the variant or re-plan the component | XTSY: 13 broken words on slides 4, 6 and 7; `1b306e1de67f` slide 4 | `scripts/eval_metrics.py:155` → `validator.py` / the layout checks (generator #6) | small–medium | re-check the saved decks |
+| R4 | Record the git commit (plus an uncommitted-changes flag), the theme name and a hash of the request in every `run-manifest.json` | `1b306e1de67f` could not be traced to a commit (only eval bundles record `git_commit`), and its theme existed only on the test PC | `evaluator.py:144` | trivial | unit test |
 
 **Batches:**
 - **A:** planners 1, 2, 9 + generator 1, 2, 5. Prompts and schema; checked with free replays. The generator half is needed or the planner gains are lost at the XML step.
 - **B:** planners 3, 4 + generator 3, 4. Content fidelity and brief style; reuses the Test 1 code.
 - **C:** planners 5–8 + generator 6–8, then planners 10–12 and generator 9–10.
 - **Proof:** one paid comparison after A + B on gj-h1 + CHEFFIN-audit (≈ $2), after asking.
+- **Added 2026-09-29:** A += planners 13, 15, 16, 20, generator 12, R4 · B += planners 14, 18, generator 11, R2 · C += planners 17, 19, R1, R3.
 
 **File order within batch A:** `outline_planner` (+ schema, prompts and the matching `state.py` fields) → generator prompts → `models.yaml`. Then `slide_component_planner` (batch B), and `outline_replanner` last (it only runs on a user's per-slide regenerate).
 
@@ -756,6 +777,7 @@ Ranked by expected effect on the finished deck, from the evidence in §3 and the
 | 2026-09-27 | RQ9, RQ14 | Checked LangGraph 0.6.11 (`Command`, `Send`, `interrupt`, `RetryPolicy`, `defer`; no `Overwrite`); read the docs and papers in §12 | StateGraph only; keyed reducer needed |
 | 2026-09-28 | §9.1 | Read the three planners' and the generator's prompts and schemas; ranked changes by expected impact on the output | §9.1: invention lines in 6 prompt/schema places; header, slide count and forced-variety rules; batches A–C |
 | 2026-09-28 | RQ2, RQ4, RQ6, RQ7, RQ9, RQ10 | Read five Genspark traces (3 AI Slides, 2 Super Agent) on the CHEFFIN, XTSY and agency-takeover briefs; checked our code for brief style handling (`style_resolver.resolve_theme()` reads only a named palette) and for any assumptions / gaps field (none) | §3.6–3.7: brief-as-spec, stated assumptions and gaps, colour roles, deck-level visual forms, code-computed numbers that still drift when retyped; new P15–P17, RQ4-E, RQ6-E/F, RQ10-(d), Q12–Q14 |
+| 2026-09-29 | RQ4, RQ5, RQ9 | Reviewed three of our decks against their briefs and Genspark's slides: `tables-check` (CHEFFIN short brief, commit 9b668e1), `1b306e1de67f` (CHEFFIN full brief, 2026-09-28, theme `saascolor`), `189ac04f3584` (XTSY); mapped every finding to §9.1 | 14 items were missing and are now in §9.1 (planners 13–20, generator 11–12, R1–R4); L1 / L5 corrected with G17: a named visual is kept when it suits the data, otherwise switched with a recorded reason |
 
 ---
 
