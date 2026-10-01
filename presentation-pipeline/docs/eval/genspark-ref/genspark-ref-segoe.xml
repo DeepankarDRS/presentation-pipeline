@@ -1,0 +1,186 @@
+<Theme surface="F1ECE2" card="FFFFFF" ink="111311" paper="F7F5EF" lime="C9F03D" rust="C4552E" muted="6E6B63" border="D8D2C4" dark="0D0F0C" darkMuted="9A9C94" />
+
+<Slide>
+  <VStack w="1280" h="720" padding.top="36" padding.bottom="28" padding.left="56" padding.right="56" alignItems="stretch" backgroundGradient="radial-gradient(circle at 12% 8%, #26301A 0%, #0D0F0C 60%)">
+    <HStack alignItems="center" gap="10">
+      <Shape shapeType="rect" w="8" h="8" fill.color="$lime" />
+      <Text fontSize="12" fontFamily="Consolas" bold="true" color="$paper" letterSpacing="1.5">XTSY</Text>
+      <Text fontSize="11" fontFamily="Consolas" color="$darkMuted" letterSpacing="1.5">/ QUICK COMMERCE</Text>
+    </HStack>
+    <VStack grow="1" />
+    <HStack gap="40" alignItems="center">
+      <VStack w="58%" gap="18">
+        <HStack gap="10" alignItems="center">
+          <Shape shapeType="rect" w="28" h="2" fill.color="$lime" />
+          <Text fontSize="11" fontFamily="Consolas" color="$lime" letterSpacing="1.5">STRATEGY · QUICK COMMERCE</Text>
+        </HStack>
+        <Text maxW="660" fontSize="54" fontFamily="Segoe UI" bold="true" color="$paper" lineHeight="1.08">Unlocking the next phase of growth for <I><Span color="$lime">XTSY</Span></I> on Quick Commerce.</Text>
+        <Text maxW="600" fontSize="16" fontFamily="Segoe UI" color="$darkMuted" lineHeight="1.4">Building category share, visibility and consumer penetration through data-led commerce execution.</Text>
+      </VStack>
+      <VStack grow="1" gap="14">
+        <Text fontSize="11" fontFamily="Consolas" color="$darkMuted" letterSpacing="1.5">PLATFORMS FEEDING THE ENGINE</Text>
+        <Layer w="440" h="230">
+          <Line x1="170" y1="35" x2="300" y2="115" color="$lime" lineWidth="1.5" />
+          <Line x1="170" y1="115" x2="300" y2="115" color="$lime" lineWidth="1.5" />
+          <Line x1="170" y1="195" x2="300" y2="115" color="$lime" lineWidth="1.5" />
+          <Shape shapeType="rect" x="0" y="12" w="170" h="46" fill.color="$dark" line.color="$paper" line.width="1" text="ZEPTO" fontSize="14" fontFamily="Consolas" bold="true" color="$paper" />
+          <Shape shapeType="rect" x="0" y="92" w="170" h="46" fill.color="$dark" line.color="$paper" line.width="1" text="BLINKIT" fontSize="14" fontFamily="Consolas" bold="true" color="$paper" />
+          <Shape shapeType="rect" x="0" y="172" w="170" h="46" fill.color="$dark" line.color="$paper" line.width="1" text="INSTAMART" fontSize="14" fontFamily="Consolas" bold="true" color="$paper" />
+          <Shape shapeType="rect" x="152" y="31" w="8" h="8" fill.color="$lime" />
+          <Shape shapeType="rect" x="152" y="111" w="8" h="8" fill.color="$lime" />
+          <Shape shapeType="rect" x="152" y="191" w="8" h="8" fill.color="$lime" />
+          <Shape shapeType="rect" x="300" y="40" w="140" h="150" fill.color="$lime" text="XTSY growth engine." fontSize="20" fontFamily="Segoe UI" bold="true" color="$ink" />
+        </Layer>
+        <Text maxW="440" fontSize="13" fontFamily="Segoe UI" italic="true" color="$darkMuted" lineHeight="1.4">Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, creating a significant opportunity for XTSY to scale.</Text>
+      </VStack>
+    </HStack>
+    <VStack grow="1" />
+    <HStack alignItems="center" gap="10">
+      <Shape shapeType="rect" w="28" h="2" fill.color="$lime" />
+      <Text fontSize="10" fontFamily="Consolas" color="$darkMuted" letterSpacing="1.5">SECTION 01 — COVER</Text>
+      <VStack grow="1" />
+      <Text fontSize="10" fontFamily="Consolas" color="$darkMuted" letterSpacing="1.5">01 / 08</Text>
+    </HStack>
+  </VStack>
+</Slide>
+
+<Slide>
+  <VStack w="1280" h="720" padding.top="36" padding.bottom="26" padding.left="56" padding.right="56" alignItems="stretch" backgroundColor="$surface">
+    <HStack gap="8" alignItems="center">
+      <Shape shapeType="rect" w="7" h="7" fill.color="$lime" />
+      <Text fontSize="11" fontFamily="Consolas" color="$muted" letterSpacing="1.5">EXPECTED BUSINESS IMPACT · 07</Text>
+    </HStack>
+    <Text margin.top="14" maxW="760" fontSize="40" fontFamily="Segoe UI" color="$ink" lineHeight="1.12">Seven growth levers, <B>one scalable engine.</B></Text>
+
+    <HStack margin.top="30" gap="14" alignItems="stretch" h="112">
+      <HStack w="max" padding="16" gap="10" alignItems="center" backgroundColor="$card" border.color="$border" border.width="1">
+        <VStack grow="1" gap="8">
+          <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.2">IMPACT 01</Text>
+          <Text fontSize="17" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1.15">Category <I>visibility</I></Text>
+        </VStack>
+        <Icon name="arrow-up" size="44" color="$lime" />
+      </HStack>
+      <HStack w="max" padding="16" gap="10" alignItems="center" backgroundColor="$ink">
+        <VStack grow="1" gap="8">
+          <Text fontSize="10" fontFamily="Consolas" color="$lime" letterSpacing="1.2">IMPACT 02</Text>
+          <Text fontSize="17" fontFamily="Segoe UI" bold="true" color="$paper" lineHeight="1.15">Search <I><Span color="$lime">share</Span></I></Text>
+        </VStack>
+        <Icon name="arrow-up" size="44" color="$lime" />
+      </HStack>
+      <HStack w="max" padding="16" gap="10" alignItems="center" backgroundColor="$card" border.color="$border" border.width="1">
+        <VStack grow="1" gap="8">
+          <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.2">IMPACT 03</Text>
+          <Text fontSize="17" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1.15">Sponsored placement <I>share</I></Text>
+        </VStack>
+        <Icon name="arrow-up" size="44" color="$rust" />
+      </HStack>
+      <HStack w="max" padding="16" gap="10" alignItems="center" backgroundColor="$lime">
+        <VStack grow="1" gap="8">
+          <Text fontSize="10" fontFamily="Consolas" color="$ink" letterSpacing="1.2">IMPACT 04</Text>
+          <Text fontSize="17" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1.15">New consumer <I>acquisition</I></Text>
+        </VStack>
+        <Icon name="arrow-up" size="44" color="$ink" />
+      </HStack>
+    </HStack>
+
+    <HStack margin.top="14" gap="14" alignItems="stretch" h="112">
+      <HStack w="max" padding="16" gap="10" alignItems="center" backgroundColor="$card" border.color="$ink" border.width="2">
+        <VStack grow="1" gap="8">
+          <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.2">IMPACT 05</Text>
+          <Text fontSize="17" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1.15">Repeat purchase <I>rate</I></Text>
+        </VStack>
+        <Icon name="arrow-up" size="44" color="$ink" />
+      </HStack>
+      <HStack w="max" padding="16" gap="10" alignItems="center" backgroundColor="$ink">
+        <VStack grow="1" gap="8">
+          <Text fontSize="10" fontFamily="Consolas" color="$lime" letterSpacing="1.2">IMPACT 06</Text>
+          <Text fontSize="17" fontFamily="Segoe UI" bold="true" color="$paper" lineHeight="1.15">Market <I><Span color="$lime">share</Span></I></Text>
+        </VStack>
+        <Icon name="arrow-up" size="44" color="$lime" />
+      </HStack>
+      <HStack w="max" padding="16" gap="10" alignItems="center" backgroundColor="$card" border.color="$border" border.width="1">
+        <VStack grow="1" gap="8">
+          <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.2">IMPACT 07</Text>
+          <Text fontSize="17" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1.15">Sales <I>velocity</I></Text>
+        </VStack>
+        <Icon name="arrow-up" size="44" color="$rust" />
+      </HStack>
+    </HStack>
+
+    <Shape margin.top="26" shapeType="rect" w="100%" h="1" fill.color="$border" />
+    <HStack margin.top="20" gap="32" alignItems="center">
+      <VStack grow="1" gap="8">
+        <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.5">— KEY MESSAGE</Text>
+        <Text fontSize="18" fontFamily="Segoe UI" color="$ink" lineHeight="1.35">Combining category intelligence, automation and performance execution creates a <B>scalable growth engine.</B></Text>
+      </VStack>
+      <VStack w="132" h="112" padding="14" backgroundColor="$lime" justifyContent="spaceBetween">
+        <Text fontSize="10" fontFamily="Consolas" color="$ink" letterSpacing="1.2">IMPACT AREAS</Text>
+        <Text fontSize="48" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1">7</Text>
+      </VStack>
+    </HStack>
+
+    <VStack grow="1" />
+    <HStack alignItems="center">
+      <Text fontSize="10" fontFamily="Consolas" bold="true" color="$ink" letterSpacing="1.5">XTSY</Text>
+      <VStack grow="1" />
+      <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.5">07 / 08</Text>
+    </HStack>
+  </VStack>
+</Slide>
+
+<Slide>
+  <VStack w="1280" h="720" padding.top="36" padding.bottom="26" padding.left="56" padding.right="56" alignItems="stretch" backgroundColor="$surface">
+    <HStack gap="8" alignItems="center">
+      <Shape shapeType="rect" w="7" h="7" fill.color="$ink" />
+      <Text fontSize="11" fontFamily="Consolas" color="$muted" letterSpacing="1.5">90-DAY ROADMAP · 08</Text>
+    </HStack>
+    <Text margin.top="14" maxW="760" fontSize="40" fontFamily="Segoe UI" color="$ink" lineHeight="1.12">The next <B>90 days</B>, in three continuous <I>phases.</I></Text>
+    <Text margin.top="12" fontSize="14" fontFamily="Segoe UI" color="$muted">Audit &amp; Benchmarking → Growth Activation → Optimization &amp; Scale</Text>
+
+    <VStack grow="1" />
+    <HStack gap="24" alignItems="stretch" h="300">
+      <VStack w="max" padding="22" gap="14" backgroundColor="$card" border.color="$border" border.width="1" borderTop.color="$ink" borderTop.width="3">
+        <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.5">MONTH 01 · DAY 1–30</Text>
+        <Text fontSize="26" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1.1">Audit &amp; <I>benchmarking</I></Text>
+        <Ul margin.top="6" fontSize="14" fontFamily="Segoe UI" color="$ink" lineHeight="1.5">
+          <Li>Category assessment</Li>
+          <Li>Search visibility audit</Li>
+          <Li>Availability review</Li>
+          <Li>Platform diagnostics</Li>
+        </Ul>
+      </VStack>
+      <VStack w="max" padding="22" gap="14" backgroundColor="$card" border.color="$border" border.width="1" borderTop.color="$rust" borderTop.width="3">
+        <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.5">MONTH 02 · DAY 31–60</Text>
+        <Text fontSize="26" fontFamily="Segoe UI" bold="true" color="$ink" lineHeight="1.1">Growth <I>activation</I></Text>
+        <Ul margin.top="6" fontSize="14" fontFamily="Segoe UI" color="$ink" lineHeight="1.5">
+          <Li>Search scaling</Li>
+          <Li>Placement expansion</Li>
+          <Li>Competitor conquesting</Li>
+          <Li>Portfolio prioritization</Li>
+        </Ul>
+      </VStack>
+      <VStack w="max" padding="22" gap="14" backgroundColor="$ink" borderTop.color="$lime" borderTop.width="3">
+        <Text fontSize="10" fontFamily="Consolas" color="$lime" letterSpacing="1.5">MONTH 03 · DAY 61–90</Text>
+        <Text fontSize="26" fontFamily="Segoe UI" bold="true" color="$paper" lineHeight="1.1">Optimization <I><Span color="$lime">&amp; scale</Span></I></Text>
+        <Ul margin.top="6" fontSize="14" fontFamily="Segoe UI" color="$paper" lineHeight="1.5">
+          <Li>Automation deployment</Li>
+          <Li>Budget optimization</Li>
+          <Li>Expansion planning</Li>
+          <Li>Growth measurement</Li>
+        </Ul>
+      </VStack>
+    </HStack>
+
+    <HStack margin.top="28" gap="16" alignItems="start">
+      <Shape margin.top="12" shapeType="rect" w="36" h="2" fill.color="$ink" />
+      <Text grow="1" fontSize="18" fontFamily="Segoe UI" italic="true" color="$ink" lineHeight="1.35"><B>Winning Quick Commerce is no longer about spending more.</B> It is about capturing visibility faster, converting demand better and scaling through intelligence and automation.</Text>
+    </HStack>
+
+    <VStack grow="1" />
+    <HStack alignItems="center">
+      <Text fontSize="10" fontFamily="Consolas" bold="true" color="$ink" letterSpacing="1.5">XTSY</Text>
+      <VStack grow="1" />
+      <Text fontSize="10" fontFamily="Consolas" color="$muted" letterSpacing="1.5">08 / 08</Text>
+    </HStack>
+  </VStack>
+</Slide>
