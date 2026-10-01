@@ -1,3 +1,8 @@
+# Reasoning models (gpt-5*, o1/o3/o4*): get_llm drops temperature and sends
+# reasoning_effort (minimal | low | medium | high; default medium). Reasoning
+# tokens count against max_tokens — raise it (~16000) or the answer can come
+# back empty. To try one on a step, replace the step's model / max_tokens lines
+# with its commented "reasoning model" lines (temperature is then ignored).
 steps:
   # ── Hierarchical planning pipeline ──────────────────────────────────────
   elicitor:
@@ -12,18 +17,30 @@ steps:
     temperature: 0.1  # 0.3 -> 0.1 for stable plans (§9.1 planner 9; Test 1 used 0.1)
     max_tokens: 12000  # a 14-slide data-dense outline hit 4000 and was truncated (2026-09-24)
     response_format: json_schema
+    # reasoning model:
+    # model: gpt-5-mini
+    # reasoning_effort: medium
+    # max_tokens: 32000
   slide_component_planner:
     provider: openai
     model: gpt-4.1
     temperature: 0.1  # 0.3 -> 0.1 for stable plans (§9.1 planner 9)
     max_tokens: 4000
     response_format: json_schema
+    # reasoning model:
+    # model: gpt-5-mini
+    # reasoning_effort: medium
+    # max_tokens: 16000
   plan_reviewer:
     provider: openai
     model: gpt-4.1
     temperature: 0.1
     max_tokens: 2000
     response_format: json_schema
+    # reasoning model:
+    # model: gpt-5-mini
+    # reasoning_effort: medium
+    # max_tokens: 16000
   # ── Planning v2 (src/planning, Test 1) ──────────────────────────────────
   storyline:
     provider: openai
@@ -80,3 +97,10 @@ pricing:
   gpt-4.1:      { input: 2.00, output: 8.00 }
   gpt-4.1-mini: { input: 0.40, output: 1.60 }
   gpt-4.1-nano: { input: 0.10, output: 0.40 }
+  # Reasoning models — USD per 1M tokens as last known; check OpenAI's pricing page.
+  # Output includes reasoning tokens. Longest prefix wins, so gpt-5-mini never matches gpt-5.
+  gpt-5:        { input: 1.25, output: 10.00 }
+  gpt-5-mini:   { input: 0.25, output: 2.00 }
+  gpt-5-nano:   { input: 0.05, output: 0.40 }
+  o3:           { input: 2.00, output: 8.00 }
+  o4-mini:      { input: 1.10, output: 4.40 }

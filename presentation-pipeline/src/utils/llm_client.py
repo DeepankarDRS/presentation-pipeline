@@ -40,19 +40,40 @@ def get_step_config(step: str) -> dict[str, Any]:
     return merged
 
 
+_REASONING_PREFIXES = ("gpt-5", "o1", "o3", "o4")
+
+
+def _is_reasoning_model(model: str) -> bool:
+    """OpenAI reasoning models (GPT-5 family, o-series) reject temperature and take reasoning_effort."""
+    return model.lower().startswith(_REASONING_PREFIXES)
+
+
+def _sampling_kwargs(step: str, model: str, cfg: dict[str, Any]) -> dict[str, Any]:
+    """temperature for chat models; reasoning_effort (default medium) for reasoning models.
+
+    Reasoning tokens count against max_tokens, so a reasoning step needs a far larger
+    max_tokens than the same step on gpt-4.1 (see models.yaml).
+    """
+    if _is_reasoning_model(model):
+        effort = cfg.get("reasoning_effort", "medium")
+        logger.info("get_llm: %s uses reasoning model %s (reasoning_effort=%s)", step, model, effort)
+        return {"reasoning_effort": effort}
+    return {"temperature": cfg.get("temperature", 0.2)}
+
+
 def get_llm(step: str, **overrides: Any) -> ChatOpenAI | AzureChatOpenAI:
     """Build a LangChain chat model for the given pipeline step.
 
-    Reads models.yaml for model/temperature/max_tokens, falls back to env vars,
-    then applies any explicit overrides.
+    Reads models.yaml for model/temperature/max_tokens (reasoning_effort for
+    reasoning models), falls back to env vars, then applies any explicit overrides.
     """
     cfg = get_step_config(step)
     cfg.update(overrides)
 
     provider = cfg.get("provider", "openai")
     model = cfg.get("model", os.environ.get("OPENAI_MODEL", "gpt-4.1-mini"))
-    temperature = cfg.get("temperature", 0.2)
     max_tokens = cfg.get("max_tokens", 2000)
+    sampling = _sampling_kwargs(step, model, cfg)
 
     if provider == "azure_openai":
         return AzureChatOpenAI(
@@ -60,28 +81,34 @@ def get_llm(step: str, **overrides: Any) -> ChatOpenAI | AzureChatOpenAI:
             azure_endpoint=cfg.get("azure_endpoint", os.environ.get("AZURE_OPENAI_ENDPOINT", "")),
             api_version=cfg.get("azure_api_version", "2024-12-01-preview"),
             api_key=os.environ.get("AZURE_OPENAI_API_KEY", ""),
-            temperature=temperature,
             max_tokens=max_tokens,
+            **sampling,
         )
 
     return ChatOpenAI(
         model=model,
-        temperature=temperature,
         max_tokens=max_tokens,
         api_key=os.environ.get("OPENAI_API_KEY", "not-set"),
+        **sampling,
     )
 
 
-_ZERO_USAGE: dict[str, Any] = {"tokens_in": 0, "tokens_out": 0, "model": "unknown"}
+_ZERO_USAGE: dict[str, Any] = {"tokens_in": 0, "tokens_out": 0, "tokens_reasoning": 0, "model": "unknown"}
 
 
 def extract_usage(response) -> dict[str, Any]:
-    """Extract tokens_in, tokens_out, model from an AIMessage's metadata."""
+    """Extract tokens_in, tokens_out, tokens_reasoning, model from an AIMessage's metadata.
+
+    tokens_out already includes tokens_reasoning (OpenAI bills them as output),
+    so cost stays tokens_in / tokens_out; tokens_reasoning is for reading only.
+    """
     meta = getattr(response, "response_metadata", None) or {}
-    token_usage = meta.get("token_usage", {})
+    token_usage = meta.get("token_usage") or {}
+    details = token_usage.get("completion_tokens_details") or {}
     return {
         "tokens_in": token_usage.get("prompt_tokens", 0),
         "tokens_out": token_usage.get("completion_tokens", 0),
+        "tokens_reasoning": details.get("reasoning_tokens") or 0,
         "model": meta.get("model_name", "unknown"),
     }
 

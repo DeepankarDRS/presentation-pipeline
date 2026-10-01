@@ -26,6 +26,7 @@ npm install --prefix frontend         # Angular UI (only if you use the web UI)
 
 `.env` is gitignored — it never travels with the repo; create it on every machine.
 Models per pipeline step (all OpenAI, mostly `gpt-4.1`) are set in `models.yaml`.
+Reasoning models (`gpt-5*`, `o1/o3/o4*`) work per step: `get_llm` drops `temperature` and sends `reasoning_effort` (default `medium`); give the step a much larger `max_tokens` (reasoning tokens count against it). Commented examples sit under `outline_planner`, `slide_component_planner`, `plan_reviewer`; usage records `tokens_reasoning`.
 
 ## Testing outputs (with OPENAI_API_KEY)
 All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>/` (input XML, `compile-result.json`, `presentation.pptx`; multi-slide runs use `slide-N/` and `retry-N/` subfolders). `output/` is gitignored.
