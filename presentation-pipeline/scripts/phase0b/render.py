@@ -100,36 +100,56 @@ def text_px(text: str, fs: float, bold: bool = False) -> float:
 
 # Real glyph widths for the fonts shipped in src/node/fonts/ (what POM measures and the
 # slide renders with); other families fall back to the per-character estimate.
-FONT_FILES = {"inter": ("Inter-Regular.ttf", "Inter-Bold.ttf"),
-              "jetbrains mono": ("JetBrainsMono-Regular.ttf", "JetBrainsMono-Bold.ttf")}
+FONT_FILES = {("inter", False, False): "Inter-Regular.ttf", ("inter", True, False): "Inter-Bold.ttf",
+              ("inter", False, True): "Inter-Italic.ttf", ("inter", True, True): "Inter-BoldItalic.ttf",
+              ("jetbrains mono", False, False): "JetBrainsMono-Regular.ttf",
+              ("jetbrains mono", True, False): "JetBrainsMono-Bold.ttf"}
 
 
 @lru_cache(maxsize=None)
-def _font(family: str, bold: bool):
-    files = FONT_FILES.get(family.lower())
-    if not files:
+def _font(family: str, bold: bool, italic: bool = False):
+    name = FONT_FILES.get((family.lower(), bold, italic)) or FONT_FILES.get((family.lower(), bold, False))
+    if not name:
         return None
     try:
         from PIL import ImageFont
-        return ImageFont.truetype(str(HERE.parent.parent / "src" / "node" / "fonts" / files[bold]), 100)
+        return ImageFont.truetype(str(HERE.parent.parent / "src" / "node" / "fonts" / name), 100)
     except Exception:  # no Pillow / no font file: estimate
         return None
 
 
-def em(text: str, family: str, bold: bool = True) -> float:
+def em(text: str, family: str, bold: bool = True, italic: bool = False) -> float:
     """Width of text in em (px at fontSize 1)."""
-    f = _font(family, bold)
+    f = _font(family, bold, italic)
     return f.getlength(text) / 100 if f else len(text) * (0.62 if bold else 0.54)
 
 
-def wrap_lines(text: str, family: str, fs: float, width: float) -> int | None:
-    """Greedy line count of text at fs in width; None if one word is wider than the box."""
+def pom_lines(text: str, family: str, fs: float, width: float, bold: bool = True) -> int:
+    """Lines POM reserves (measureText.js): tokens "word " keep their trailing space, no break
+    inside a word; a word wider than the box takes a line of its own."""
+    words = text.split()
+    tokens = [w + " " for w in words[:-1]] + words[-1:]
+    lines, cur = 1, ""
+    for tok in tokens:
+        cand = cur + tok
+        if not cur or em(cand, family, bold) * fs <= width:
+            cur = cand
+        else:
+            lines, cur = lines + 1, tok
+    return lines
+
+
+def drawn_lines(text: str, family: str, fs: float, width: float, bold: bool = True,
+                italic_last: bool = False) -> int | None:
+    """Lines the renderer draws (breaks after hyphens too; the last word italic when the pack
+    sets it so); None if a piece is wider than the box."""
     lines, cur = 1, 0.0
-    space = em(" ", family) * fs
-    for word in text.split():
-        # the renderers also break after a hyphen ("campaign-" / "level")
+    space = em(" ", family, bold) * fs
+    words = text.split()
+    for wi, word in enumerate(words):
+        it = italic_last and wi == len(words) - 1 and len(words) > 1
         for k, piece in enumerate(re.findall(r"[^-]+-?|-", word)):
-            ww = em(piece, family) * fs
+            ww = em(piece, family, bold, it) * fs
             if ww > width:
                 return None
             gap = space if k == 0 else 0.0
@@ -140,10 +160,53 @@ def wrap_lines(text: str, family: str, fs: float, width: float) -> int | None:
     return lines
 
 
-def fill_title_fs(titles: list[str], family: str, width: float, height: float, lo: int, hi: int = 48) -> int:
-    """Largest title size (lo..hi) at which every title fits its card's width and the free height."""
+def text_lines(text: str, family: str, fs: float, width: float, bold: bool = True,
+               italic_last: bool = False) -> int | None:
+    """Lines the renderer draws, only when that count is stable within +-3% of the width
+    (borders, rounding); None = a break too close to call at this size. Where POM's own
+    count differs (it keeps trailing spaces, never breaks at hyphens, measures italics
+    upright), the caller pins the Text's height to these lines (pin_h)."""
+    a = drawn_lines(text, family, fs, width * 0.97, bold, italic_last)
+    b = drawn_lines(text, family, fs, width * 1.03, bold, italic_last)
+    return a if a is not None and a == b else None
+
+
+def pin_h(text: str, family: str, fs: float, width: float, lh: float, bold: bool = True,
+            italic_last: bool = False) -> str:
+    """h="…" pinning a Text to the lines the renderer draws, when POM would reserve another
+    number (a blank line, or text running out of its box); "" when they agree."""
+    drawn = text_lines(text, family, fs, width, bold, italic_last)
+    if drawn is None or drawn == pom_lines(text, family, fs, width, bold):
+        return ""
+    return f' h="{math.ceil(drawn * fs * lh)}"'
+
+
+def fill_card_text(cards: list[tuple[str, str]], family: str, width: float, height: float,
+                   lo: tuple[int, int], hi: int = 36, italic_last: bool = False) -> tuple[int, int]:
+    """(title, description) sizes that fill every card's width and free height: the largest
+    description first (<= 18px), then the largest title, the title at least 1.3x the
+    description (lo = the pack's sizes). Only sizes where every line break is unambiguous."""
+    def fits(tfs: int, bfs: int) -> bool:
+        for title, body in cards:
+            tl = text_lines(title, family, tfs, width, italic_last=italic_last)
+            bl = text_lines(body, family, bfs, width, bold=False) if body else 0
+            if tl is None or bl is None or tl * tfs * 1.2 + (8 + bl * bfs * 1.4 if body else 0) > height:
+                return False
+        return True
+
+    for bfs in range(18, lo[1] - 1, -1):
+        for tfs in range(hi, max(lo[0], math.ceil(bfs * 1.3)) - 1, -1):
+            if fits(tfs, bfs):
+                return tfs, bfs
+    return lo
+
+
+def fill_title_fs(titles: list[str], family: str, width: float, height: float, lo: int, hi: int = 48,
+                  italic_last: bool = False) -> int:
+    """Largest title size (lo..hi) at which every title fits its card's width and the free
+    height, with unambiguous line breaks (text_lines)."""
     for fs in range(hi, lo, -1):
-        lines = [wrap_lines(t, family, fs, width) for t in titles]
+        lines = [text_lines(t, family, fs, width, italic_last=italic_last) for t in titles]
         if all(n is not None and n * fs * 1.2 <= height for n in lines):
             return fs
     return lo
@@ -269,6 +332,26 @@ def _named_in_hint(comp: dict, names: list[str], word: str) -> str | None:
     return max(hits, key=len) if hits else None
 
 
+def card_text_fit(cards: list[dict], p: Pack, card_w: float, row_h: float) -> tuple[int, int]:
+    """(title, description) sizes that fill title + description cards of this size."""
+    lab_fs = int(min(13, max(p.t["label"], row_h / 13)))
+    pairs = [(_PHASE.sub(r"\2", c.get("title", "")).replace("↑", "").strip(), c.get("body") or "") for c in cards]
+    return fill_card_text(pairs, p.sans, card_w, row_h - 36 - lab_fs * 1.3 - 8 - 6, (p.t["title"], 12),
+                          italic_last=p.card_titles == "italic_last")
+
+
+def grid_text_fit(comp: dict, p: Pack, width: float, h: float) -> tuple[int, int] | None:
+    """card_text_fit for a whole grid in a slot (uses its _cols); None if not description cards."""
+    cd = comp["content_data"]
+    cards = [c if isinstance(c, dict) else {"title": str(c)} for c in cd.get("cards", [])]
+    if not cards or not cd.get("_cols") or not any(c.get("body") for c in cards) or any(
+            c.get("bullets") or _split_list(c.get("body") or "") for c in cards):
+        return None
+    n = cd["_cols"]
+    rows = math.ceil(len(cards) / n)
+    return card_text_fit(cards, p, (width - 12 * (n - 1)) / n - 36, (h - 12 * (rows - 1)) / rows)
+
+
 def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = None, grow: str = "") -> str:
     cd = comp["content_data"]
     cards = [c if isinstance(c, dict) else {"title": str(c)} for c in cd.get("cards", [])]
@@ -277,8 +360,8 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
     hi = _named_in_hint(comp, titles, "inverted") or (titles[-1] if steps and len(titles) > 1 else None)
     rich = any(c.get("body") or c.get("bullets") for c in cards)
     tfs = p.t["title"] + (2 if rich else 0)
-    n = len(cards) if steps and len(cards) <= 5 else fit_columns(
-        [_PHASE.sub(r"\2", t) for t in titles], width, tfs, 5 if len(cards) == 5 else 4)
+    n = cd.get("_cols") or (len(cards) if steps and len(cards) <= 5 else fit_columns(
+        [_PHASE.sub(r"\2", t) for t in titles], width, tfs, 5 if len(cards) == 5 else 4))
 
     n_rows = 1 if steps and len(cards) <= 5 else math.ceil(len(cards) / n)
     tile_h = {1: 150, 2: 120}.get(n_rows, 96)
@@ -287,15 +370,22 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
         row_h = (h - 12 * (n_rows - 1)) / n_rows
         card_w = (width - 12 * (n - 1)) / n - 36
         longest = max((len(w) for t in titles for w in _PHASE.sub(r"\2", t).split()), default=1)
-        if rich:
+        most_items = max((len(c.get("bullets") or _split_list(c.get("body") or "") or []) for c in cards), default=0)
+        if rich and not most_items:  # title + description cards: both grow to fill the card
+            lab_fs = int(min(13, max(p.t["label"], row_h / 13)))
+            tfs, body_fs = card_text_fit(cards, p, card_w, row_h)
+            if cd.get("_fit"):  # a peer grid beside it: both use the smaller fit
+                tfs, body_fs = min(tfs, cd["_fit"][0]), min(body_fs, cd["_fit"][1])
+        elif rich:
             tfs = int(max(p.t["title"], min(tfs, card_w / (longest * 0.62))))
         else:  # title-only cards: the title fills the card's width and free height
             lab_fs = int(min(13, max(p.t["label"], row_h / 13)))
             icon = 50 if p.arrows and any("↑" in t for t in titles) else 0
             ghost_h = 54 if p.ghost and (steps or any(_PHASE.match(t) for t in titles)) else 0
-            shown = [_PHASE.sub(r"", t).replace("↑", "").strip() for t in titles]
-            tfs = fill_title_fs(shown, p.sans, card_w - icon, row_h - 36 - lab_fs * 1.3 - 8 - ghost_h - 6,
-                                p.t["title"])
+            shown = [_PHASE.sub(r"\2", t).replace("↑", "").strip() for t in titles]
+            title_w = card_w - icon
+            tfs = fill_title_fs(shown, p.sans, title_w, row_h - 36 - lab_fs * 1.3 - 8 - ghost_h - 6,
+                                p.t["title"], italic_last=p.card_titles == "italic_last")
         most = max((len(c.get("bullets") or _split_list(c.get("body") or "") or []) for c in cards), default=0)
         if rich and most:
             free = row_h - 36 - 14 - 8 - (54 if p.ghost and (steps or any(_PHASE.match(t) for t in titles)) else 0) - tfs * 2.6
@@ -304,6 +394,9 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
             bgap = int(max(8, min(22, per - bfs * 1.35)))
 
     lab_size = locals().get("lab_fs")
+    # filled cards: pin each Text to the lines the renderer draws (pin_h)
+    text_w = (locals().get("title_w") or locals().get("card_w")) if locals().get("lab_fs") else None
+    body_fs = locals().get("body_fs", 12)
     bfs = locals().get("bfs", p.t["body"])
     bgap = locals().get("bgap", 8)
 
@@ -316,6 +409,11 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
             if hi is None and i == 3:
                 return "highlight"
         return "normal"
+
+    italic = p.card_titles == "italic_last"
+
+    def pin(text: str, fs: float, lh: float, bold: bool) -> str:
+        return pin_h(text.replace("↑", "").strip(), p.sans, fs, text_w, lh, bold, italic and bold) if text_w else ""
 
     def one(i: int, c: dict) -> str:
         title = c.get("title", "")
@@ -335,12 +433,13 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
             gcol = "$line" if role == "normal" else lab
             ghost = f'<Text fontSize="46" fontFamily="{p.sans}" bold="true" color="{gcol}" lineHeight="1">{int(num.group()):02d}</Text>'
         parts = [p.label(tag, lab, lab_size), ghost,
-                 f'<Text fontSize="{tfs}" fontFamily="{p.sans}" bold="true" color="{ink}" lineHeight="1.2">{title_runs(title, p, on_dark)}</Text>']
+                 f'<Text fontSize="{tfs}" fontFamily="{p.sans}" bold="true" color="{ink}" lineHeight="1.2"'
+                 f'{pin(title, tfs, 1.2, True)}>{title_runs(title, p, on_dark)}</Text>']
         parts = [q for q in parts if q]
         bullets = c.get("bullets") or (_split_list(c["body"]) if c.get("body") else None)
         if c.get("body") and not bullets:
-            parts.append(f'<Text fontSize="12" fontFamily="{p.sans}" color="{ink if inv else "$muted"}" '
-                         f'lineHeight="1.4">{x(c["body"])}</Text>')
+            parts.append(f'<Text fontSize="{body_fs}" fontFamily="{p.sans}" color="{ink if inv else "$muted"}" '
+                         f'lineHeight="1.4"{pin(c["body"], body_fs, 1.4, False)}>{x(c["body"])}</Text>')
         if cd.get("columns"):
             parts.append(f'<Text fontSize="12" fontFamily="{p.sans}" color="$muted" lineHeight="1.4">'
                          f'{x(" · ".join(cd["columns"]))}</Text>')
@@ -580,6 +679,8 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
                         for q in cards), default=0)
             if not most and not any(isinstance(q, dict) and q.get("body") for q in cards):
                 return rows * 170 + 12 * (rows - 1)
+            if not most:  # title + description cards: their text grows with the card (fill_card_text)
+                return 1e9
             per_card = 36 + 14 + 8 + 54 + 60 + most * 34
             return rows * per_card + 12 * (rows - 1)
         if k == "table":
@@ -622,6 +723,17 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
         if pair:
             wl = INNER * (0.56 if c["kind"] == "table" else 0.5) - 12
             wr = INNER - wl - 24
+            if c["kind"] == nxt["kind"] == "card_grid":
+                # peer grids: same number of rows, width split by columns -> every card the same
+                # size, so both grids fill with the same type
+                nl, nr = len(c["content_data"].get("cards", [])), len(nxt["content_data"].get("cards", []))
+                rows = 2 if max(nl, nr) > 3 else 1
+                cl, cr = math.ceil(nl / rows), math.ceil(nr / rows)
+                unit = (INNER - 24 - 12 * (cl - 1) - 12 * (cr - 1)) / (cl + cr)
+                wl = unit * cl + 12 * (cl - 1)
+                wr = INNER - wl - 24
+                c = dict(c, content_data=dict(c["content_data"], _cols=cl))
+                nxt = dict(nxt, content_data=dict(nxt["content_data"], _cols=cr))
 
             def side(cc: dict, w: float, h: float, extra: str) -> str:
                 title = cc["content_data"].get("chart_title")
@@ -630,9 +742,16 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
                 return f'<VStack gap="12"{extra}>{head}{draw(cc, w, inner_h, chr(32) + "grow=" + chr(34) + "1" + chr(34))}</VStack>'
 
             pair_cap = max(cap_of(c), cap_of(nxt)) + 24
-            grower(lambda h, g, c=c, nxt=nxt, wl=wl, wr=wr:
-                   f'<HStack gap="24" alignItems="stretch"{g}>{side(c, wl, h, f" w={chr(34)}{round(wl)}{chr(34)}")}'
-                   f'{side(nxt, wr, h, chr(32) + "grow=" + chr(34) + "1" + chr(34))}</HStack>', 3, pair_cap)
+
+            def pair_xml(h, g, c=c, nxt=nxt, wl=wl, wr=wr):
+                fits = [grid_text_fit(c, p, wl, h), grid_text_fit(nxt, p, wr, h)]
+                if all(fits):  # peer description grids share the smaller fit
+                    shared = (min(f[0] for f in fits), min(f[1] for f in fits))
+                    c = dict(c, content_data=dict(c["content_data"], _fit=shared))
+                    nxt = dict(nxt, content_data=dict(nxt["content_data"], _fit=shared))
+                return (f'<HStack gap="24" alignItems="stretch"{g}>{side(c, wl, h, f" w={chr(34)}{round(wl)}{chr(34)}")}'
+                        f'{side(nxt, wr, h, chr(32) + "grow=" + chr(34) + "1" + chr(34))}</HStack>')
+            grower(pair_xml, 3, pair_cap)
             i += 2
             continue
         k = c["kind"]

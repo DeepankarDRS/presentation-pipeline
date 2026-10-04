@@ -334,8 +334,18 @@ largest size the tile width allows (no 72px cap; e.g. 72 → 96–104px hero, 64
 supporting); the label scales to 14px. A KPI number is width-bound, so the KPI tile is
 capped at the height that number needs × 1.15 (never above the old 240 / 150px).
 Card sizes elsewhere unchanged. XTSY + CHEFFIN (studio_inter): 14/14 compile, 0 broken
-words and 0 KPI wraps in the LibreOffice render, text check 0 / 0. Open: cards with a
-body line (XTSY 5) still keep small body text.
+words and 0 KPI wraps in the LibreOffice render, text check 0 / 0.
+
+**Description cards (title + body, XTSY 5):** title and description grow together, the
+largest description first (≤ 18px), the title ≥ 1.3× it. Peer grids side by side get the
+same rows, a width split by column count, and one shared size (the smaller fit); their
+height cap is lifted so they use the slide's spare height. XTSY 5: 19/12 → 25/16px.
+Line breaks must agree between POM and the renderer, or the card shows a blank line
+(POM reserves more) or overflows (fewer). They differ because POM's wrap keeps each
+word's trailing space, never breaks at a hyphen, and measures italic runs upright. So
+the fit counts lines as the renderer draws them (italic last word in the italic face),
+accepts only sizes where that count is stable within ±3% of the width, and pins a Text's
+`h` to the drawn lines when POM's count differs (`pin_h`).
 
 ### 10g. Root cause: POM measures every font as Noto Sans JP (found 2026-10-04)
 
