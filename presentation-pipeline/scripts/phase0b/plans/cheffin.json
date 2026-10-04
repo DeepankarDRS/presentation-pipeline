@@ -1,0 +1,355 @@
+{
+ "deck": {
+  "pack": "editorial",
+  "brand": "CHEFFIN",
+  "running": "CHEFFIN | Ads Audit",
+  "entities": {
+   "FLIPCART": "E8590C",
+   "ZAROMA": "7048E8"
+  },
+  "source": "rebuilt by hand from tests/cases/gate-deck-cheffin-full.yaml; component kinds as our planner chose them on 29 Sep (layout-fixes run 2); text verbatim from the brief"
+ },
+ "slides": [
+  {
+   "label": null,
+   "slide_title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+   "subtitle": "Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap",
+   "slide_type": "cover",
+   "components": [
+    {
+     "component_id": "prepared_by",
+     "kind": "caption",
+     "weight": "minor",
+     "design_hint": "",
+     "content_data": {
+      "text": "Prepared by our agency"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Executive Summary",
+   "slide_title": "The account is spending at scale, but not yet buying profitable demand.",
+   "subtitle": null,
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "key_numbers",
+     "kind": "kpi_row",
+     "weight": "hero",
+     "design_hint": "inverted panel on the Combined ROAS tile",
+     "content_data": {
+      "kpi_labels": [
+       "Combined spend",
+       "Combined revenue",
+       "Combined ROAS",
+       "FLIPCART ROAS",
+       "ZAROMA ROAS"
+      ],
+      "kpi_values": [
+       "₹114.9L",
+       "₹37.4L",
+       "0.33x",
+       "0.34x",
+       "0.32x"
+      ]
+     }
+    },
+    {
+     "component_id": "main_insight",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "",
+     "content_data": {
+      "text": "Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR."
+     }
+    },
+    {
+     "component_id": "callout",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "",
+     "content_data": {
+      "text": "This is a media economics problem, not just a campaign hygiene problem."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Core Economics Problem",
+   "slide_title": "CPC is nearly 3x higher than what current conversion economics can support.",
+   "subtitle": null,
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "cpc_table",
+     "kind": "table",
+     "weight": "peer",
+     "design_hint": "",
+     "content_data": {
+      "table_columns": [
+       "Platform",
+       "Actual CPC",
+       "Allowable CPC for 1.0x ROAS",
+       "Gap"
+      ],
+      "table_rows": [
+       [
+        "FLIPCART",
+        "₹31.1",
+        "₹10.7",
+        "Actual CPC is ~2.9x allowable"
+       ],
+       [
+        "ZAROMA",
+        "₹46.2",
+        "₹14.8",
+        "Actual CPC is ~3.1x allowable"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "cpc_chart",
+     "kind": "chart",
+     "weight": "peer",
+     "design_hint": "",
+     "content_data": {
+      "chart_type": "bar",
+      "chart_title": "Actual vs allowable CPC",
+      "chart_labels": [
+       "FLIPCART",
+       "ZAROMA"
+      ],
+      "chart_series": [
+       {
+        "name": "Actual CPC",
+        "values": [
+         "₹31.1",
+         "₹46.2"
+        ]
+       },
+       {
+        "name": "Allowable CPC",
+        "values": [
+         "₹10.7",
+         "₹14.8"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "main_insight",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "",
+     "content_data": {
+      "text": "At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Data Reviewed & Methodology",
+   "slide_title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+   "subtitle": null,
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "sources",
+     "kind": "card_grid",
+     "weight": "hero",
+     "design_hint": "",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "FLIPCART Targeting last 90 days report"
+       },
+       {
+        "title": "FLIPCART Search Term report"
+       },
+       {
+        "title": "ZAROMA campaign-level data"
+       },
+       {
+        "title": "ZAROMA city-level data"
+       },
+       {
+        "title": "ZAROMA keyword-level data"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "quality_notes",
+     "kind": "bullet_list",
+     "weight": "supporting",
+     "design_hint": "",
+     "content_data": {
+      "bullets": [
+       "Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.",
+       "ZAROMA sheets appear to have different coverage, so campaign-level totals were used as primary totals and city/keyword sheets were used for diagnostics."
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "FLIPCART Performance Snapshot",
+   "slide_title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+   "subtitle": null,
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "flip",
+     "kind": "kpi_row",
+     "weight": "hero",
+     "design_hint": "",
+     "content_data": {
+      "kpi_labels": [
+       "Spend",
+       "Ad sales",
+       "ROAS"
+      ],
+      "kpi_values": [
+       "₹29.4L",
+       "₹10.1L",
+       "0.34x"
+      ]
+     }
+    },
+    {
+     "component_id": "flip_detail",
+     "kind": "kpi_row",
+     "weight": "supporting",
+     "design_hint": "inverted panel on the Allowable CPC for 1.0x ROAS tile",
+     "content_data": {
+      "kpi_labels": [
+       "CPC",
+       "CVR",
+       "AOV",
+       "Allowable CPC for 1.0x ROAS"
+      ],
+      "kpi_values": [
+       "₹31.1",
+       "5.5%",
+       "₹195",
+       "₹10.7"
+      ]
+     }
+    },
+    {
+     "component_id": "main_insight",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "",
+     "content_data": {
+      "text": "FLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+     }
+    }
+   ]
+  },
+  {
+   "label": "FLIPCART Ad Type & Match-Type Diagnosis",
+   "slide_title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+   "subtitle": null,
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "ad_type",
+     "kind": "table",
+     "weight": "peer",
+     "design_hint": "accent border on the SBT row",
+     "content_data": {
+      "table_columns": [
+       "Ad Type",
+       "Spend Share",
+       "Sales Share",
+       "ROAS",
+       "Interpretation"
+      ],
+      "table_rows": [
+       [
+        "SP",
+        "75.6%",
+        "75.3%",
+        "0.34x",
+        "Main volume driver, but inefficient overall"
+       ],
+       [
+        "SBV",
+        "12.8%",
+        "8.5%",
+        "0.23x",
+        "Weak video efficiency"
+       ],
+       [
+        "SBT",
+        "9.3%",
+        "15.1%",
+        "0.56x",
+        "Best ad type; under-allocated"
+       ],
+       [
+        "SD",
+        "2.4%",
+        "1.1%",
+        "0.17x",
+        "Weak conversion quality"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "match_type",
+     "kind": "table",
+     "weight": "peer",
+     "design_hint": "",
+     "content_data": {
+      "table_columns": [
+       "Match / Targeting",
+       "ROAS"
+      ],
+      "table_rows": [
+       [
+        "Exact",
+        "0.44x"
+       ],
+       [
+        "Phrase",
+        "0.26x"
+       ],
+       [
+        "Auto",
+        "0.30x"
+       ],
+       [
+        "Category",
+        "0.25x"
+       ],
+       [
+        "Broad",
+        "0.22x"
+       ],
+       [
+        "Audience",
+        "0.15x"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "main_insight",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "",
+     "content_data": {
+      "text": "Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control."
+     }
+    }
+   ]
+  }
+ ]
+}

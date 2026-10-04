@@ -1,0 +1,39 @@
+# Phase 0b style packs (docs/derived-nodes-design.md §10b). Experiment only.
+# Colours become <Theme> tokens ($bg, $ink, ...). Fonts: Segoe UI + Consolas render
+# as named on Windows / LibreOffice here; the Genspark decks used Inter-like sans + mono.
+
+editorial:            # from Genspark's CHEFFIN deck: white, ink, entity accents
+  colors:
+    bg: "FFFFFF"
+    ink: "111111"
+    muted: "6B6B6B"
+    line: "E7E4DE"
+    panel: "F7F6F3"
+    dark: "0E1117"
+    white: "FFFFFF"
+    accent: "C2410C"      # labels, best value (darkened: small labels need 4.5:1)
+    accent2: "F5A524"     # label colour on dark strips
+    negative: "C92A2A"
+  fonts: {sans: "Segoe UI", mono: "Consolas"}
+  type: {headline: 32, cover: 96, big: 54, mid: 34, title: 17, body: 13, label: 10}
+  badge: dot            # label row starts with a small square
+  rule_under_headline: true
+  top_bar: false
+
+tech:                 # from Genspark's XTSY deck: navy + teal + lime
+  colors:
+    bg: "FFFFFF"
+    ink: "0B1B2B"
+    muted: "5B6B7B"
+    line: "DDE3EA"
+    panel: "F3F6F9"
+    dark: "0B1F33"
+    white: "FFFFFF"
+    accent: "00795A"
+    accent2: "C6F24E"
+    negative: "C92A2A"
+  fonts: {sans: "Segoe UI", mono: "Consolas"}
+  type: {headline: 30, cover: 46, big: 54, mid: 34, title: 16, body: 13, label: 10}
+  badge: number         # label row starts with a lime square holding the slide number
+  rule_under_headline: false
+  top_bar: true

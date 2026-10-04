@@ -1,0 +1,543 @@
+{
+ "deck": {
+  "pack": "tech",
+  "brand": "XTSY",
+  "running": "XTSY | Quick Commerce",
+  "source": "gpt-4.1 UI deck gate-deck-xtsy-qcomm-995d72 (1 Oct), slides.json plans; icon-list conversions reverted"
+ },
+ "slides": [
+  {
+   "label": "",
+   "slide_title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+   "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution",
+   "slide_type": "cover",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "hero",
+     "design_hint": "color the phrase 'Next Phase of Growth' in the title; accent border on the card",
+     "content_data": {
+      "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+      "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution"
+     }
+    },
+    {
+     "component_id": "context_narrative",
+     "kind": "narrative",
+     "weight": "peer",
+     "design_hint": "lift the card; bold the phrase 'significant opportunity for XTSY to scale'",
+     "content_data": {
+      "text": "Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, creating a significant opportunity for XTSY to scale."
+     }
+    }
+   ]
+  },
+  {
+   "label": "CATEGORY DYNAMICS",
+   "slide_title": "Why the Energy Drink Category is Built for Quick Commerce",
+   "subtitle": "Pre-workout · Gaming · Late-night work/study · Travel · Party · Instant energy",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "minor",
+     "design_hint": "color the phrase 'Built for Quick Commerce' in the title; subtitle in lighter tone",
+     "content_data": {
+      "title": "Why the Energy Drink Category is Built for Quick Commerce",
+      "subtitle": "Pre-workout · Gaming · Late-night work/study · Travel · Party · Instant energy"
+     }
+    },
+    {
+     "component_id": "occasion_map",
+     "kind": "card_grid",
+     "weight": "hero",
+     "design_hint": "inverted panel on the Instant energy requirements card; clock icon in each card",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Pre-workout consumption",
+        "tag": "",
+        "body": ""
+       },
+       {
+        "title": "Gaming sessions",
+        "tag": "",
+        "body": ""
+       },
+       {
+        "title": "Late-night work/study",
+        "tag": "",
+        "body": ""
+       },
+       {
+        "title": "Travel & commuting",
+        "tag": "",
+        "body": ""
+       },
+       {
+        "title": "Party & social occasions",
+        "tag": "",
+        "body": ""
+       },
+       {
+        "title": "Instant energy requirements",
+        "tag": "",
+        "body": ""
+       }
+      ],
+      "per_row": 3
+     }
+    },
+    {
+     "component_id": "category_fit_narrative",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "accent border on the card; emphasize 'instant-need' and 'highly compatible'",
+     "content_data": {
+      "text": "Energy drinks have one of the strongest instant-need consumption behaviors, making them highly compatible with Quick Commerce."
+     }
+    },
+    {
+     "component_id": "growth_drivers_list",
+     "kind": "bullet_list",
+     "weight": "supporting",
+     "design_hint": "icon beside each point; color-code 'Impulse purchase behaviour' in positive",
+     "content_data": {
+      "bullets": [
+       "Impulse purchase behaviour",
+       "Consumer demand moments",
+       "Instant consumption needs"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "GROWTH OPPORTUNITIES",
+   "slide_title": "Growth Opportunities for XTSY Across Quick Commerce Platforms",
+   "subtitle": "Visibility · Conversion · Repeat Purchase · Market Expansion across Zepto, Blinkit, Instamart",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "minor",
+     "design_hint": "color the phrase 'Growth Opportunities' in the title",
+     "content_data": {
+      "title": "Growth Opportunities for XTSY Across Quick Commerce Platforms",
+      "subtitle": "Visibility · Conversion · Repeat Purchase · Market Expansion across Zepto, Blinkit, Instamart"
+     }
+    },
+    {
+     "component_id": "opportunity_matrix",
+     "kind": "card_grid",
+     "weight": "hero",
+     "design_hint": "accent border on the card grid; matrix layout with lever columns and platform rows",
+     "content_data": {
+      "card_layout": "grid",
+      "columns": [
+       "Visibility",
+       "Conversion",
+       "Repeat Purchase",
+       "Market Expansion"
+      ],
+      "cards": [
+       {
+        "title": "Zepto"
+       },
+       {
+        "title": "Blinkit"
+       },
+       {
+        "title": "Instamart"
+       }
+      ],
+      "per_row": 3
+     }
+    },
+    {
+     "component_id": "opportunity_areas_list",
+     "kind": "bullet_list",
+     "weight": "supporting",
+     "design_hint": "icon beside each point; lift the card",
+     "content_data": {
+      "bullets": [
+       "Search visibility expansion",
+       "Sponsored placements",
+       "Category page dominance",
+       "New city penetration",
+       "Portfolio expansion",
+       "Basket attachment opportunities",
+       "Subscription/repeat purchase growth"
+      ]
+     }
+    },
+    {
+     "component_id": "growth_takeaway",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "color the phrase 'not limited to ad spends' in the text",
+     "content_data": {
+      "text": "Growth is not limited to ad spends; it is unlocked through visibility, availability, discoverability and repeat purchase strategies."
+     }
+    }
+   ]
+  },
+  {
+   "label": "GROWTH FRAMEWORK",
+   "slide_title": "Our 4-Phase Framework to Build Category Share",
+   "subtitle": "Visibility → Offtakes → Market Share → Profitability",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "minor",
+     "design_hint": "color the progression phrase in the subtitle; kicker 'GROWTH FRAMEWORK' as a colored tag above the title",
+     "content_data": {}
+    },
+    {
+     "component_id": "framework_steps",
+     "kind": "card_grid",
+     "weight": "hero",
+     "design_hint": "steps layout with arrows connecting the four phase cards; accent border on the Phase 4 card",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Phase 1: Foundation & Hygiene",
+        "body": "Availability tracking, OOS reduction, Search audit, Visibility benchmark, Portfolio prioritization."
+       },
+       {
+        "title": "Phase 2: Market Share Capture",
+        "body": "Search dominance, Sponsored placements, Keyword expansion, Competitor conquesting, Category page visibility."
+       },
+       {
+        "title": "Phase 3: Consumer Expansion",
+        "body": "New-to-brand acquisition, New-to-category targeting, Cross-platform expansion, Geo expansion."
+       },
+       {
+        "title": "Phase 4: Scale & Profitability",
+        "body": "Automation-led optimization, Incrementality focus, Repeat purchase acceleration, Portfolio scaling."
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "progression_arrow",
+     "kind": "process_arrow",
+     "weight": "supporting",
+     "design_hint": "gradient progression across the chevrons; emphasize the Profitability step",
+     "content_data": {
+      "direction": "horizontal",
+      "process_steps": [
+       "Visibility",
+       "Offtakes",
+       "Market Share",
+       "Profitability"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "COMMERCE INTELLIGENCE",
+   "slide_title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+   "subtitle": "Share of Search · Share of Shelf · SKU Performance · City Opportunity Mapping",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "minor",
+     "design_hint": "color the kicker 'COMMERCE INTELLIGENCE' in accent; emphasize the four subtitle focus areas",
+     "content_data": {
+      "title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+      "subtitle": "Share of Search · Share of Shelf · SKU Performance · City Opportunity Mapping"
+     }
+    },
+    {
+     "component_id": "tracking_capabilities",
+     "kind": "card_grid",
+     "weight": "peer",
+     "design_hint": "icon in each card; accent border on the Share of Search card",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Share of Search",
+        "body": "Track brand visibility in platform search results",
+        "body_source": "written"
+       },
+       {
+        "title": "Share of Shelf",
+        "body": "Monitor product placement and prominence",
+        "body_source": "written"
+       },
+       {
+        "title": "Availability Monitoring",
+        "body": "Detect out-of-stock and replenishment events",
+        "body_source": "written"
+       },
+       {
+        "title": "Pricing Intelligence",
+        "body": "Track price changes and promotions",
+        "body_source": "written"
+       },
+       {
+        "title": "Competitor Monitoring",
+        "body": "Benchmark against rival brands",
+        "body_source": "written"
+       }
+      ],
+      "per_row": 3
+     }
+    },
+    {
+     "component_id": "insights_capabilities",
+     "kind": "card_grid",
+     "weight": "peer",
+     "design_hint": "icon in each card; accent border on the City-level Opportunity Mapping card",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "SKU-level Performance",
+        "body": "Identify top and underperforming SKUs",
+        "body_source": "written"
+       },
+       {
+        "title": "City-level Opportunity Mapping",
+        "body": "Spot high-potential cities for growth",
+        "body_source": "written"
+       },
+       {
+        "title": "Platform-wise Growth Pockets",
+        "body": "Find where demand is accelerating",
+        "body_source": "written"
+       },
+       {
+        "title": "Category Trends",
+        "body": "Track shifts in consumer preferences",
+        "body_source": "written"
+       }
+      ],
+      "per_row": 4
+     }
+    },
+    {
+     "component_id": "measurement_narrative",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "accent border on the card; bold the phrase 'measured gets scaled'",
+     "content_data": {
+      "text": "What gets measured gets scaled."
+     }
+    }
+   ]
+  },
+  {
+   "label": "PERFORMANCE AUTOMATION",
+   "slide_title": "Ads Automation Engine Designed for Quick Commerce",
+   "subtitle": "Faster optimization · Improved ROAS · Higher conversion efficiency",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "minor",
+     "design_hint": "color PERFORMANCE AUTOMATION kicker in accent; emphasize 'Automation Engine' in headline",
+     "content_data": {
+      "title": "Ads Automation Engine Designed for Quick Commerce",
+      "subtitle": "Faster optimization · Improved ROAS · Higher conversion efficiency"
+     }
+    },
+    {
+     "component_id": "automation_workflow",
+     "kind": "card_grid",
+     "weight": "hero",
+     "design_hint": "gradient progression along the arrows; accent border on the Business Outcome step",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Platform Data"
+       },
+       {
+        "title": "Decision Engine"
+       },
+       {
+        "title": "Bid Optimization"
+       },
+       {
+        "title": "Budget Reallocation"
+       },
+       {
+        "title": "Keyword Expansion"
+       },
+       {
+        "title": "Placement Optimization"
+       },
+       {
+        "title": "Business Outcome"
+       }
+      ],
+      "per_row": 4
+     }
+    },
+    {
+     "component_id": "automation_benefits",
+     "kind": "bullet_list",
+     "weight": "supporting",
+     "design_hint": "icon beside each point; color-code Improved ROAS and Higher conversion efficiency in positive",
+     "content_data": {
+      "bullets": [
+       "Faster optimization cycles",
+       "Reduced manual intervention",
+       "Improved ROAS",
+       "Improved share of visibility",
+       "Higher conversion efficiency"
+      ]
+     }
+    },
+    {
+     "component_id": "automation_highlight",
+     "kind": "narrative",
+     "weight": "minor",
+     "design_hint": "dark / inverted panel; emphasize 'hours instead of weeks'",
+     "content_data": {
+      "text": "Automation allows brands to react in hours instead of weeks."
+     }
+    }
+   ]
+  },
+  {
+   "label": "BUSINESS IMPACT",
+   "slide_title": "Expected Business Impact for XTSY",
+   "subtitle": "Category Visibility ↑ · Search Share ↑ · Sponsored Placement Share ↑ · New Consumer Acquisition ↑ · Repeat Purchase Rate ↑ · Market Share ↑ · Sales Velocity ↑",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "minor",
+     "design_hint": "color the upward arrows in the subtitle in positive green",
+     "content_data": {
+      "title": "Expected Business Impact for XTSY",
+      "subtitle": "Category Visibility ↑ · Search Share ↑ · Sponsored Placement Share ↑ · New Consumer Acquisition ↑ · Repeat Purchase Rate ↑ · Market Share ↑ · Sales Velocity ↑"
+     }
+    },
+    {
+     "component_id": "impact_arrows",
+     "kind": "card_grid",
+     "weight": "hero",
+     "design_hint": "gradient progression across the arrows; accent color on the Market Share ↑ step",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Category Visibility ↑"
+       },
+       {
+        "title": "Search Share ↑"
+       },
+       {
+        "title": "Sponsored Placement Share ↑"
+       },
+       {
+        "title": "New Consumer Acquisition ↑"
+       },
+       {
+        "title": "Repeat Purchase Rate ↑"
+       },
+       {
+        "title": "Market Share ↑"
+       },
+       {
+        "title": "Sales Velocity ↑"
+       }
+      ],
+      "per_row": 4
+     }
+    },
+    {
+     "component_id": "growth_engine_narrative",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "accent border on the narrative card",
+     "content_data": {
+      "text": "Combining category intelligence, automation and performance execution creates a scalable growth engine."
+     }
+    }
+   ]
+  },
+  {
+   "label": "90-DAY ROADMAP",
+   "slide_title": "Roadmap for the Next 90 Days",
+   "subtitle": "Month 1: Audit & Benchmarking · Month 2: Growth Activation · Month 3: Optimization & Scale",
+   "slide_type": "closing",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "weight": "minor",
+     "design_hint": "color the '90 Days' phrase in the title",
+     "content_data": {
+      "title": "Roadmap for the Next 90 Days",
+      "subtitle": "Month 1: Audit & Benchmarking · Month 2: Growth Activation · Month 3: Optimization & Scale"
+     }
+    },
+    {
+     "component_id": "roadmap_steps",
+     "kind": "card_grid",
+     "weight": "hero",
+     "design_hint": "steps layout with an accent border on the Month 3 card",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Month 1: Audit & Benchmarking",
+        "tag": "Category assessment",
+        "bullets": [
+         "Search visibility audit",
+         "Availability review",
+         "Platform diagnostics"
+        ]
+       },
+       {
+        "title": "Month 2: Growth Activation",
+        "tag": "Search scaling",
+        "bullets": [
+         "Placement expansion",
+         "Competitor conquesting",
+         "Portfolio prioritization"
+        ]
+       },
+       {
+        "title": "Month 3: Optimization & Scale",
+        "tag": "Automation deployment",
+        "bullets": [
+         "Budget optimization",
+         "Expansion planning",
+         "Growth measurement"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "closing_statement",
+     "kind": "narrative",
+     "weight": "supporting",
+     "design_hint": "dark / inverted panel with bold on 'capturing visibility', 'converting demand', and 'scaling through intelligence and automation'",
+     "content_data": {
+      "text": "Winning Quick Commerce is no longer about spending more. It is about capturing visibility faster, converting demand better and scaling through intelligence and automation."
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -221,6 +221,52 @@ Pass → wire in (§9 steps 1–3). Fail → we learn where the gap really is, f
 What it cannot show: content Genspark adds (source lines, card descriptions, time
 ranges) — that is the content-density decision, measured separately.
 
+### 10c. Phase 0b results (2026-10-04, build PC, no API)
+
+Built: `scripts/phase0b/` — `style_packs.yaml` (editorial, tech), `render.py` (frame,
+cover, KpiRow, CardGrid, tile row, note columns, bullet panel, DataTable, BarList,
+ProcessSteps, MessageStrip, insight; a fixed-rule composer), `check.py` (criterion 2),
+`plans/xtsy.json`, `plans/cheffin.json`. Run:
+
+```bash
+python -m scripts.phase0b.render scripts/phase0b/plans/cheffin.json --out output/phase0b/cheffin
+python -m scripts.render_check --in output/phase0b/cheffin --out output/render_check/phase0b-cheffin
+python -m scripts.phase0b.check scripts/phase0b/plans/cheffin.json output/phase0b/cheffin
+```
+
+| Criterion | Ours (same XTSY plan, gpt-4.1 UI deck) | Code renderer |
+|---|---|---|
+| Compiles first time | 8/8 (after repairs in the run) | 14/14, no repair loop |
+| 1. Broken words / slide (eval) | 1.0 | **0** (XTSY and CHEFFIN) |
+| Mean fill · low-fill cards | 0.81 · 23% | **0.91 · 0%** (XTSY), **0.97 · 0%** (CHEFFIN) |
+| 2. Plan words missing · words not in plan | 0 · 4 (an invented "Opportunity Matrix: Levers…" heading, "Key takeaway") | **0 · 0** both decks |
+| 3. Same frame on every slide | no (each slide's header drawn differently) | **yes** (by construction) |
+| 4. Closer to Genspark (user's judgement) | — | side-by-side sheets: `output/phase0b/cmp_cheffin.png`, `cmp_xtsy.png` (gitignored) |
+
+Audit after the run: only the intended 9–10px `FONT_TOO_SMALL` labels, `DEEP_NESTING`
+(low), and the known `LOW_CONTRAST` false alarm on the XTSY cover gradient.
+
+What the side by side shows (author's read; the user decides criterion 4):
+- **CHEFFIN (data deck): close.** Frame, entity colours, KPI tiers, ranked bars, dark
+  strip, numbered source cards match Genspark's design language. Remaining gap: Genspark
+  fills the slide (bigger numbers, a note under each KPI, "2.9x" derived column, a
+  larger "what this means" panel); ours leaves vertical space where the plan has less
+  content.
+- **XTSY (narrative deck): look yes, visuals no.** Frame, number badge, phase columns,
+  progression row and strip match; Genspark's purpose-built slide visuals (time-of-day
+  line, input → engine → outcome with a feedback loop, rising arrows) are slide patterns
+  (§ ranked option 3) plus extra content, which blocks alone don't give.
+- The renderer needed **no LLM call and no repair**; every number and line is the plan's.
+
+Found on the way (feed into the build):
+- fit-grow `growStats` grew a KPI number 42 → 60px that the renderer then wrapped
+  ("₹114." / "9L"): code-drawn nodes must be **exempt from fit-grow** (or fit-grow must
+  measure in the slide's font) — confirms §6.
+- fit-grow `reserveWrap` again added blank heading lines; the renderer holds headlines
+  in a fixed-height box, as Phase 0 found.
+- Small orange / teal labels need darker shades for 4.5:1 (`C2410C`, `00795A`; entity
+  text uses a 25% darker shade of the entity colour).
+
 ## 11. Risks
 
 - **Templated sameness** (why archetypes were removed 2026-09-10): nodes cover card
