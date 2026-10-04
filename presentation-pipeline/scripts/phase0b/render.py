@@ -14,6 +14,7 @@ import argparse
 import json
 import math
 import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
@@ -97,6 +98,57 @@ def text_px(text: str, fs: float, bold: bool = False) -> float:
     return len(text) * fs * (0.6 if bold else 0.54)
 
 
+# Real glyph widths for the fonts shipped in src/node/fonts/ (what POM measures and the
+# slide renders with); other families fall back to the per-character estimate.
+FONT_FILES = {"inter": ("Inter-Regular.ttf", "Inter-Bold.ttf"),
+              "jetbrains mono": ("JetBrainsMono-Regular.ttf", "JetBrainsMono-Bold.ttf")}
+
+
+@lru_cache(maxsize=None)
+def _font(family: str, bold: bool):
+    files = FONT_FILES.get(family.lower())
+    if not files:
+        return None
+    try:
+        from PIL import ImageFont
+        return ImageFont.truetype(str(HERE.parent.parent / "src" / "node" / "fonts" / files[bold]), 100)
+    except Exception:  # no Pillow / no font file: estimate
+        return None
+
+
+def em(text: str, family: str, bold: bool = True) -> float:
+    """Width of text in em (px at fontSize 1)."""
+    f = _font(family, bold)
+    return f.getlength(text) / 100 if f else len(text) * (0.62 if bold else 0.54)
+
+
+def wrap_lines(text: str, family: str, fs: float, width: float) -> int | None:
+    """Greedy line count of text at fs in width; None if one word is wider than the box."""
+    lines, cur = 1, 0.0
+    space = em(" ", family) * fs
+    for word in text.split():
+        # the renderers also break after a hyphen ("campaign-" / "level")
+        for k, piece in enumerate(re.findall(r"[^-]+-?|-", word)):
+            ww = em(piece, family) * fs
+            if ww > width:
+                return None
+            gap = space if k == 0 else 0.0
+            if cur and cur + gap + ww > width:
+                lines, cur = lines + 1, ww
+            else:
+                cur = cur + gap + ww if cur else ww
+    return lines
+
+
+def fill_title_fs(titles: list[str], family: str, width: float, height: float, lo: int, hi: int = 48) -> int:
+    """Largest title size (lo..hi) at which every title fits its card's width and the free height."""
+    for fs in range(hi, lo, -1):
+        lines = [wrap_lines(t, family, fs, width) for t in titles]
+        if all(n is not None and n * fs * 1.2 <= height for n in lines):
+            return fs
+    return lo
+
+
 def per_row(n: int, most: int) -> int:
     rows = math.ceil(n / most)
     return math.ceil(n / rows)
@@ -126,16 +178,40 @@ def big_number(value: str, fs: int, color: str, p: Pack) -> str:
             f'{x(m["pre"] + m["num"])}<Span fontSize="{round(fs * 0.45)}">{x(m["unit"])}</Span></Text>')
 
 
+def _value_em(value: str, p: Pack) -> float:
+    m = _NUM.match(value.strip())
+    if not m or not m["unit"]:
+        return em(value, p.sans)
+    return em(m["pre"] + m["num"], p.sans) + 0.45 * em(m["unit"], p.sans)
+
+
+def kpi_label_fs(p: Pack, h: float | None) -> int:
+    return int(min(14, max(p.t["label"], (h or 0) / 17)))
+
+
+def kpi_width_fs(comp: dict, p: Pack) -> int:
+    """Largest number size at which every value fits its tile's width (5% margin)."""
+    values = comp["content_data"].get("kpi_values", [])
+    tile_w = (INNER - 12 * (len(values) - 1)) / max(1, len(values)) - 40
+    return int(tile_w * 0.95 / max((_value_em(v, p) for v in values), default=1))
+
+
+def kpi_need(comp: dict, p: Pack, h: float) -> float:
+    """Tile height when the number fills the width: padding + label + gap + number (+ note)."""
+    notes = 22 if any(comp["content_data"].get("kpi_deltas") or []) else 0
+    return 40 + kpi_label_fs(p, h) * 1.3 + 12 + kpi_width_fs(comp, p) + notes
+
+
 def kpi_row(comp: dict, p: Pack, hero: bool, h: float | None = None, grow: str = "") -> str:
     cd = comp["content_data"]
     labels, values = cd.get("kpi_labels", []), cd.get("kpi_values", [])
     notes = cd.get("kpi_deltas") or [""] * len(values)
     dark = _named_in_hint(comp, labels, "inverted")
-    tile_w = (INNER - 12 * (len(values) - 1)) / max(1, len(values)) - 40
-    chars = max((len(v) for v in values), default=1)
-    fs = min(p.t["big"] if hero else p.t["mid"], int(tile_w / (chars * 0.62)))
-    if h:  # sized to the slot: the number takes what the tile's width and height allow
-        fs = max(24, min(72, int(tile_w / (chars * 0.62)), int((h - 40 - 30 - (16 if any(notes) else 0)) * 0.8)))
+    width_fs = kpi_width_fs(comp, p)
+    fs = min(p.t["big"] if hero else p.t["mid"], width_fs)
+    lfs = kpi_label_fs(p, h)
+    if h:  # sized to the slot: the number fills what the tile's width and height allow
+        fs = max(24, min(width_fs, int(h - 40 - lfs * 1.3 - 12 - (22 if any(notes) else 0))))
     tiles = []
     for label, value, note in zip(labels, values, notes):
         ent = p.entity(label)
@@ -149,7 +225,7 @@ def kpi_row(comp: dict, p: Pack, hero: bool, h: float | None = None, grow: str =
                     f'{x(note)}</Text>' if note else "")
         fixed_h = "" if h else f' h="{130 if hero else 100}"'
         tiles.append(f'<VStack w="1" grow="1"{fixed_h} padding="20" gap="8" backgroundColor="{bg}"{border} '
-                     f'justifyContent="spaceBetween">{p.label(label, lab_c)}'
+                     f'justifyContent="spaceBetween">{p.label(label, lab_c, lfs)}'
                      f'<VStack gap="6">{big_number(value, fs, num_c, p)}{note_xml}</VStack></VStack>')
     return f'<HStack gap="12" alignItems="stretch"{grow}>{"".join(tiles)}</HStack>'
 
@@ -211,8 +287,15 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
         row_h = (h - 12 * (n_rows - 1)) / n_rows
         card_w = (width - 12 * (n - 1)) / n - 36
         longest = max((len(w) for t in titles for w in _PHASE.sub(r"\2", t).split()), default=1)
-        want = tfs if rich else max(tfs, row_h * 0.15)
-        tfs = int(max(p.t["title"], min(want, 30, card_w / (longest * 0.62))))
+        if rich:
+            tfs = int(max(p.t["title"], min(tfs, card_w / (longest * 0.62))))
+        else:  # title-only cards: the title fills the card's width and free height
+            lab_fs = int(min(13, max(p.t["label"], row_h / 13)))
+            icon = 50 if p.arrows and any("↑" in t for t in titles) else 0
+            ghost_h = 54 if p.ghost and (steps or any(_PHASE.match(t) for t in titles)) else 0
+            shown = [_PHASE.sub(r"", t).replace("↑", "").strip() for t in titles]
+            tfs = fill_title_fs(shown, p.sans, card_w - icon, row_h - 36 - lab_fs * 1.3 - 8 - ghost_h - 6,
+                                p.t["title"])
         most = max((len(c.get("bullets") or _split_list(c.get("body") or "") or []) for c in cards), default=0)
         if rich and most:
             free = row_h - 36 - 14 - 8 - (54 if p.ghost and (steps or any(_PHASE.match(t) for t in titles)) else 0) - tfs * 2.6
@@ -220,6 +303,7 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
             bfs = int(max(p.t["body"], min(17, per * 0.42)))
             bgap = int(max(8, min(22, per - bfs * 1.35)))
 
+    lab_size = locals().get("lab_fs")
     bfs = locals().get("bfs", p.t["body"])
     bgap = locals().get("bgap", 8)
 
@@ -250,7 +334,7 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
         if p.ghost and (steps or m) and num:
             gcol = "$line" if role == "normal" else lab
             ghost = f'<Text fontSize="46" fontFamily="{p.sans}" bold="true" color="{gcol}" lineHeight="1">{int(num.group()):02d}</Text>'
-        parts = [p.label(tag, lab), ghost,
+        parts = [p.label(tag, lab, lab_size), ghost,
                  f'<Text fontSize="{tfs}" fontFamily="{p.sans}" bold="true" color="{ink}" lineHeight="1.2">{title_runs(title, p, on_dark)}</Text>']
         parts = [q for q in parts if q]
         bullets = c.get("bullets") or (_split_list(c["body"]) if c.get("body") else None)
@@ -485,8 +569,9 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
 
     def cap_of(c: dict) -> float:
         k, cd = c["kind"], c.get("content_data") or {}
-        if k == "kpi_row":
-            return 240 if c.get("weight") != "supporting" else 150
+        if k == "kpi_row":  # the number is width-bound: a taller tile would only add empty space
+            cap = 240 if c.get("weight") != "supporting" else 150
+            return min(cap, kpi_need(c, p, cap) * 1.15)
         if k == "card_grid":
             cards = cd.get("cards", [])
             n = len(cards) if cd.get("card_layout") == "steps" and len(cards) <= 5 else max(1, min(4, len(cards)))

@@ -323,6 +323,20 @@ Proposed rule (not built):
   of the body, report `SLIDE_SPARSE` to the plan reviewer: the fix is §12 content
   (derived values, flagged card lines, a second component), not inflation.
 
+**Update (2026-10-04, user decision): fill the card, don't shrink it.** Shrinking caps to
+natural height × 1.25 removed the gap but left small type and floating white space; the
+user rejected it ("the content should increase font size to fit the area"). Built instead
+(`render.py`): text is measured with the real Inter / JetBrains Mono widths (PIL on
+`src/node/fonts/`, estimate for other fonts); **title-only cards** get the largest title
+size (≤ 48px) at which every title fits the card width and free height, breaking after
+hyphens like the renderers; the card label scales to 13px. **KPI numbers** take the
+largest size the tile width allows (no 72px cap; e.g. 72 → 96–104px hero, 64 → 85px
+supporting); the label scales to 14px. A KPI number is width-bound, so the KPI tile is
+capped at the height that number needs × 1.15 (never above the old 240 / 150px).
+Card sizes elsewhere unchanged. XTSY + CHEFFIN (studio_inter): 14/14 compile, 0 broken
+words and 0 KPI wraps in the LibreOffice render, text check 0 / 0. Open: cards with a
+body line (XTSY 5) still keep small body text.
+
 ### 10g. Root cause: POM measures every font as Noto Sans JP (found 2026-10-04)
 
 Verified in code: POM can measure real fonts (`buildPptx(xml, size, { fonts })` →
