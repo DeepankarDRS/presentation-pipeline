@@ -1,0 +1,134 @@
+# Every component kind in the fewest slides (2026-10-01): 9 slides, 1-3 components each,
+# paired so each slide still reads well (no two full-width diagrams on one slide, every
+# component inside its capacity.yaml limits). The 14-slide one-kind-per-slide version is
+# gate-deck-all-nodes.yaml. Full pipeline (same graph as the UI):
+#   python -m scripts.eval_run gate-deck-all-nodes-compact --label all-nodes-compact --repeat 1
+name: gate-deck-all-nodes-compact
+objective: 9-slide growth-strategy deck that uses every component kind (title, caption, narrative, hero stat, kpi_row, chart, table, process_arrow, timeline, pyramid, matrix, tree, layer, flow, bullet_list, card_grid grid and steps) with 1-3 components per slide.
+request: |
+  You are a senior growth strategist. Create a polished, client-ready strategy deck for BREWLY,
+  a direct-to-consumer specialty coffee brand selling on its own website and two quick-commerce
+  apps (QUIKMART and DASHCART).
+
+  STYLE:
+  - Clean, modern, boardroom-ready. White background, dark text, warm coffee-brown accent with a teal secondary accent.
+  - Use Indian currency format: ₹, L for lakhs, Cr for crores. Show ROAS as "2.4x", growth as "+38%".
+  - Every slide headline states the conclusion, not the topic.
+  - Do not add any number that is not in this brief.
+
+  CREATE THE DECK USING THIS 9-SLIDE STRUCTURE:
+
+  SLIDE 1: Title Slide
+  Headline:
+  BREWLY Growth Strategy FY27
+  Subtitle:
+  Where we stand, what is working, and the 90-day plan to scale profitably
+  Include (small line at the bottom):
+  Prepared by the Growth Team | October 2026
+
+  SLIDE 2: Executive Summary
+  Headline:
+  Repeat customers now drive most of BREWLY's revenue.
+  Hero number (the one number the headline rests on):
+  62% of revenue comes from repeat customers, up from 41% a year ago.
+  Supporting metrics:
+  - Annual revenue: ₹14.2Cr
+  - Revenue growth: +38%
+  - Blended ROAS: 2.4x
+  - Customer acquisition cost: ₹410
+  Main insight (one short paragraph):
+  Growth came from retention and pricing, not from buying more traffic, so the next phase should deepen repeat buying before scaling acquisition.
+
+  SLIDE 3: Revenue and Channel Economics
+  Headline:
+  Revenue has climbed six quarters in a row, and the website earns the best margin.
+  Left: bar chart of quarterly revenue (₹ Cr):
+  Q1 FY26: 2.6 | Q2 FY26: 2.9 | Q3 FY26: 3.3 | Q4 FY26: 3.6 | Q1 FY27: 3.9 | Q2 FY27: 4.4
+  Right: table:
+  Channel | Revenue | ROAS | Gross Margin
+  Website | ₹7.1Cr | 3.1x | 64%
+  QUIKMART | ₹4.3Cr | 2.2x | 55%
+  DASHCART | ₹2.8Cr | 1.4x | 47%
+  Source line under both:
+  Source: BREWLY finance and channel dashboards, FY26-FY27.
+
+  SLIDE 4: Operations and History
+  Headline:
+  A four-stage fulfilment chain has scaled through five milestones.
+  Top, full width: process (the order is the message):
+  Roast → Pack → Dispatch → Deliver
+  Bottom, full width: timeline:
+  - 2021: Café opens
+  - 2022: Website launch
+  - 2023: Subscriptions live
+  - 2024: QUIKMART listing
+  - 2025: DASHCART listing
+
+  SLIDE 5: Priorities and Initiatives
+  Headline:
+  Product quality is the base; bundles and referrals are the quick wins on top of it.
+  Left: pyramid, top to bottom:
+  - Category leadership
+  - Loyal subscriber base
+  - Consistent brand experience
+  - Freshly roasted quality
+  Right: 2x2 matrix, x-axis Effort (low to high), y-axis Impact (low to high). Positions:
+  - Bundle offers: low effort, high impact
+  - Referral program: low effort, high impact
+  - Own delivery fleet: high effort, high impact
+  - Loyalty app: high effort, low impact
+
+  SLIDE 6: Team and Platform
+  Headline:
+  One growth team runs on one shared customer platform.
+  Left: org chart:
+  Head of Growth
+  - Performance Lead
+  - Retention Lead
+  - Marketplace Lead
+  Right: architecture diagram, layers from top to bottom:
+  - Channels: Website, QUIKMART, DASHCART
+  - Customer data platform: unified profiles, purchase history
+  - Operations: roastery, inventory, delivery partners
+
+  SLIDE 7: Offer Decision Flow
+  Headline:
+  A simple decision flow shows each visitor the offer most likely to convert.
+  Flow (full width):
+  Visitor lands → Has bought before? → Yes: Subscription offer / No: Trial pack → Checkout
+  Rules (plain takeaways, under the flow):
+  - Returning buyers never see the trial pack
+  - First-time visitors get one offer, not three
+  - Every offer ends at the same one-page checkout
+
+  SLIDE 8: Growth Pillars
+  Headline:
+  Five pillars will carry BREWLY's next phase of growth.
+  Pillars (no order between them), each with its line:
+  - Subscriptions: deepen repeat buying
+  - Bundles: lift order value
+  - Gifting: open corporate demand
+  - Marketplaces: protect quick-commerce share
+  - Content: build the coffee-lover community
+
+  SLIDE 9: 90-Day Plan and Asks
+  Headline:
+  A 90-day plan moves from audit to scale, with three asks of leadership today.
+  90-day plan (ordered phases, each with detail):
+  - Month 1 Audit: channel economics review, offer audit
+  - Month 2 Activate: launch bundles, start referral pilot
+  - Month 3 Scale: shift budget to winning channels, expand subscriptions
+  Asks (plain takeaways):
+  - Approve the bundle launch budget
+  - Assign an owner for the referral pilot
+  - Review results at the end of month 1
+content_source: fully specified per slide; every number is in the brief
+slide_count: 9
+expect:
+  compiles: true
+  slide_count: 9
+  watch: >
+    intended kinds — 1 title + caption; 2 kpi_row count 1 (hero stat) + supporting kpi_row + narrative;
+    3 chart (bar) + table + caption; 4 process_arrow + timeline; 5 pyramid + matrix; 6 tree + layer;
+    7 flow + bullet_list; 8 card_grid (grid, 3 + 2); 9 card_grid (steps) + bullet_list.
+    No numbers beyond the brief.

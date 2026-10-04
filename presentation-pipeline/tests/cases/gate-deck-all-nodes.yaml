@@ -1,0 +1,159 @@
+# Every component kind in one deck (2026-10-01). Each slide's brief is shaped so the
+# planner's routing rules (slide_component_planner/system.j2) and capacity.yaml pick ONE
+# intended kind, inside its limits — the kind is noted in the expect.watch list below.
+# Full pipeline (same graph as the UI; planner kinds are reported per slide):
+#   python -m scripts.eval_run gate-deck-all-nodes --label all-nodes --repeat 1
+# Not for scripts/plan_only.py: that runs planning v2 (src/planning), which has no card_grid.
+name: gate-deck-all-nodes
+objective: 14-slide growth-strategy deck where each slide is built to exercise one component kind (title, hero stat, kpi_row, chart, table, process_arrow, timeline, flow, tree, pyramid, matrix, layer, card_grid grid / steps / matrix, bullet_list).
+request: |
+  You are a senior growth strategist. Create a polished, client-ready strategy deck for BREWLY,
+  a direct-to-consumer specialty coffee brand selling on its own website and two quick-commerce
+  apps (QUIKMART and DASHCART).
+
+  STYLE:
+  - Clean, modern, boardroom-ready. White background, dark text, warm coffee-brown accent with a teal secondary accent.
+  - Use Indian currency format: ₹, L for lakhs, Cr for crores. Show ROAS as "2.4x", growth as "+38%".
+  - Every slide headline states the conclusion, not the topic.
+  - Do not add any number that is not in this brief.
+
+  CREATE THE DECK USING THIS 14-SLIDE STRUCTURE:
+
+  SLIDE 1: Title Slide
+  Headline:
+  BREWLY Growth Strategy FY27
+  Subtitle:
+  Where we stand, what is working, and the 90-day plan to scale profitably
+  Include:
+  Prepared by the Growth Team | October 2026
+
+  SLIDE 2: The One Number
+  Headline:
+  Repeat customers now drive most of BREWLY's revenue.
+  Hero number:
+  62% of revenue comes from repeat customers (up from 41% a year ago).
+  Supporting metrics:
+  - Active subscribers: 18,400
+  - Average order value: ₹640
+  - Monthly churn: 4.1%
+
+  SLIDE 3: Business Scorecard
+  Headline:
+  Revenue grew strongly while acquisition cost stayed flat.
+  Show key numbers:
+  - Annual revenue: ₹14.2Cr
+  - Revenue growth: +38%
+  - Blended ROAS: 2.4x
+  - Customer acquisition cost: ₹410
+  - Gross margin: 58%
+  Main insight:
+  Growth came from retention and pricing, not from buying more traffic.
+
+  SLIDE 4: Revenue Trend
+  Headline:
+  Quarterly revenue has climbed every quarter for six quarters.
+  Visual:
+  Bar chart of quarterly revenue (₹ Cr):
+  Q1 FY26: 2.6 | Q2 FY26: 2.9 | Q3 FY26: 3.3 | Q4 FY26: 3.6 | Q1 FY27: 3.9 | Q2 FY27: 4.4
+  Main insight:
+  The festive quarter is no longer the only peak; growth is steady across the year.
+
+  SLIDE 5: Channel Comparison
+  Headline:
+  The website earns the best margin; DASHCART is the least efficient channel.
+  Create a table:
+  Channel | Revenue | Share | ROAS | Gross Margin
+  Website | ₹7.1Cr | 50% | 3.1x | 64%
+  QUIKMART | ₹4.3Cr | 30% | 2.2x | 55%
+  DASHCART | ₹2.8Cr | 20% | 1.4x | 47%
+  Callout:
+  "Shift incremental budget toward the website and QUIKMART before scaling DASHCART."
+
+  SLIDE 6: How an Order Is Fulfilled
+  Headline:
+  Every order moves through four fixed stages from roast to doorstep.
+  Process (in this order; the order is the message):
+  Roast → Pack → Dispatch → Deliver
+
+  SLIDE 7: Milestones
+  Headline:
+  Five milestones took BREWLY from one café to a national brand.
+  Timeline:
+  - 2021: Café opens
+  - 2022: Website launch
+  - 2023: Subscriptions live
+  - 2024: QUIKMART listing
+  - 2025: DASHCART listing
+
+  SLIDE 8: Subscription Decision Flow
+  Headline:
+  A simple decision flow decides which offer each visitor sees.
+  Flow:
+  Visitor lands → Has bought before? → If yes: Show subscription offer → If no: Show trial pack → Checkout
+
+  SLIDE 9: Growth Team Structure
+  Headline:
+  One growth lead owns three focused pods.
+  Org chart:
+  Head of Growth
+  - Performance Marketing Lead
+  - Retention & CRM Lead
+  - Marketplace Lead
+
+  SLIDE 10: Brand Priorities
+  Headline:
+  Product quality is the base that every other priority rests on.
+  Pyramid, top to bottom:
+  - Category leadership
+  - Loyal subscriber base
+  - Consistent brand experience
+  - Freshly roasted product quality
+
+  SLIDE 11: Initiative Prioritisation
+  Headline:
+  Two initiatives are quick wins; one is a big bet worth planning now.
+  2x2 matrix, x-axis Effort (low to high), y-axis Impact (low to high). Positions:
+  - Bundle offers: low effort, high impact
+  - Referral program: low effort, high impact
+  - Own delivery fleet: high effort, high impact
+  - Loyalty app: high effort, low impact
+
+  SLIDE 12: Platform Architecture
+  Headline:
+  A three-layer platform connects every channel to one customer view.
+  Architecture diagram, layers from top to bottom:
+  - Channels: Website, QUIKMART, DASHCART
+  - Customer data platform: unified profiles, purchase history
+  - Operations: roastery, inventory, last-mile partners
+
+  SLIDE 13: Growth Pillars
+  Headline:
+  Five pillars will carry BREWLY's next phase of growth.
+  Pillars (no order between them):
+  - Subscriptions: deepen repeat buying
+  - Bundles: lift order value
+  - Gifting: open corporate demand
+  - Marketplaces: protect share on quick commerce
+  - Content: build the coffee-lover community
+
+  SLIDE 14: 90-Day Plan and Next Steps
+  Headline:
+  A 90-day plan moves from audit to scale, with three asks of leadership today.
+  90-day plan (ordered phases, each with detail):
+  - Month 1 Audit: channel economics review, offer audit
+  - Month 2 Activate: launch bundles, start referral pilot
+  - Month 3 Scale: shift budget to winning channels, expand subscriptions
+  Next steps (plain takeaways):
+  - Approve the bundle launch budget
+  - Assign an owner for the referral pilot
+  - Review results at the end of month 1
+content_source: fully specified per slide; every number is in the brief
+slide_count: 14
+expect:
+  compiles: true
+  slide_count: 14
+  watch: >
+    intended kinds — 1 title; 2 kpi_row count 1 (hero stat) + supporting kpi_row; 3 kpi_row + narrative;
+    4 chart (bar); 5 table + callout; 6 process_arrow (4 steps, 1-word labels); 7 timeline (5 items);
+    8 flow; 9 tree; 10 pyramid; 11 matrix (2x2, positions given); 12 layer; 13 card_grid (grid);
+    14 card_grid (steps) + bullet_list. No numbers beyond the brief.
