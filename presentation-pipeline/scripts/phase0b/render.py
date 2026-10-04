@@ -384,8 +384,16 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
             ghost_h = 54 if p.ghost and (steps or any(_PHASE.match(t) for t in titles)) else 0
             shown = [_PHASE.sub(r"\2", t).replace("↑", "").strip() for t in titles]
             title_w = card_w - icon
-            tfs = fill_title_fs(shown, p.sans, title_w, row_h - 36 - lab_fs * 1.3 - 8 - ghost_h - 6,
-                                p.t["title"], italic_last=p.card_titles == "italic_last")
+            free_h = row_h - 36 - lab_fs * 1.3 - 8 - ghost_h - 6
+            tfs = fill_title_fs(shown, p.sans, title_w, free_h, p.t["title"],
+                                italic_last=p.card_titles == "italic_last")
+            # titles are width-bound (narrow cards): the space they can't use goes to the card's
+            # own number, drawn as a big numeral instead of the small label (numbered cards)
+            used = max((text_lines(t, p.sans, tfs, title_w, italic_last=p.card_titles == "italic_last") or 1)
+                       for t in shown) * tfs * 1.2
+            left = free_h - used
+            if left > 40 and not ghost_h and not icon and all(not c.get("tag") for c in cards):
+                num_fs = int(min(96, lab_fs * 1.3 + left - 6))
         most = max((len(c.get("bullets") or _split_list(c.get("body") or "") or []) for c in cards), default=0)
         if rich and most:
             free = row_h - 36 - 14 - 8 - (54 if p.ghost and (steps or any(_PHASE.match(t) for t in titles)) else 0) - tfs * 2.6
@@ -394,6 +402,7 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
             bgap = int(max(8, min(22, per - bfs * 1.35)))
 
     lab_size = locals().get("lab_fs")
+    num_fs = locals().get("num_fs")
     # filled cards: pin each Text to the lines the renderer draws (pin_h)
     text_w = (locals().get("title_w") or locals().get("card_w")) if locals().get("lab_fs") else None
     body_fs = locals().get("body_fs", 12)
@@ -432,7 +441,10 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = 
         if p.ghost and (steps or m) and num:
             gcol = "$line" if role == "normal" else lab
             ghost = f'<Text fontSize="46" fontFamily="{p.sans}" bold="true" color="{gcol}" lineHeight="1">{int(num.group()):02d}</Text>'
-        parts = [p.label(tag, lab, lab_size), ghost,
+        num_col = "$line" if role == "normal" else lab  # faint, like the pack's ghost numerals
+        tag_xml = (f'<Text fontSize="{num_fs}" fontFamily="{p.sans}" bold="true" color="{num_col}" lineHeight="1">{x(tag)}</Text>'
+                   if num_fs and re.fullmatch(r"\d+", tag) else p.label(tag, lab, lab_size))
+        parts = [tag_xml, ghost,
                  f'<Text fontSize="{tfs}" fontFamily="{p.sans}" bold="true" color="{ink}" lineHeight="1.2"'
                  f'{pin(title, tfs, 1.2, True)}>{title_runs(title, p, on_dark)}</Text>']
         parts = [q for q in parts if q]

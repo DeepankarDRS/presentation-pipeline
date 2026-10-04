@@ -347,6 +347,12 @@ the fit counts lines as the renderer draws them (italic last word in the italic 
 accepts only sizes where that count is stable within ±3% of the width, and pins a Text's
 `h` to the drawn lines when POM's count differs (`pin_h`).
 
+**Width-bound title cards (CHEFFIN 4: five tall, narrow cards):** when the widest word caps
+the title size and the card keeps > 40px of height the title can't use, the card's own
+number (its "01" label) is drawn as a big faint numeral sized to that space (≤ 96px;
+`$line` on white cards, the label colour on dark / lime) — the numbered source cards of
+Genspark's CHEFFIN deck, no new content. Not used with ghost numerals, icons or tags.
+
 ### 10g. Root cause: POM measures every font as Noto Sans JP (found 2026-10-04)
 
 Verified in code: POM can measure real fonts (`buildPptx(xml, size, { fonts })` →
