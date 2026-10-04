@@ -287,6 +287,65 @@ for "↑" items. `python -m scripts.phase0b.render <plans> --out <dir> --pack st
   charts, filled matrix), rewritten claim headlines and per-card descriptions — slide
   patterns and content policy, not style.
 
+### 10e. Layout v2: height by weights and caps (2026-10-04, `943dd13`)
+
+The empty bands in 10c/10d came from the composer, not POM: all slack went to one
+spacer, KPI tiles and title-only cards had fixed heights, type ignored the slot.
+Now the frame passes the body height; fixed blocks (strips, statements, tile rows,
+note panels, progression rows) take their estimated height; growers share the rest by
+weight (hero 3, peer 3, supporting 1) up to a per-block cap (water-filling); slack
+left over widens gaps (≤ +32px) and centres the rest. Blocks size to their slot (KPI
+numbers, card titles, rich-card bullets, table rows, bar thickness). 5+ KPI tiles that
+mix totals and per-entity values split into two tiers. A slide containing
+`<!-- fit-grow: off -->` skips fit-grow (`compile-pom.js`); code-drawn slides carry it.
+28/28 compile, text check 0 / 0 on all four deck × pack runs.
+
+Open (see 10f): the caps are fixed numbers, not relative to the content, so sparse
+blocks are enlarged rather than left with honest white space.
+
+### 10f. Sparse content is enlarged, not left alone (open, 2026-10-04)
+
+Why KPI tiles and card grids grow when the content is sparse: after the fixed blocks,
+the composer gives **all** remaining height to the growers, up to caps that are fixed
+numbers (KPI hero 240px, supporting 150px, title-only cards 170px per row). On a
+sparse slide the fixed blocks are small, so every grower reaches its cap — about twice
+its natural height (a title-only card needs ~80px, a hero KPI tile ~110px) — and the
+type then scales to the taller box (KPI numbers up to 72px, card titles up to 30px).
+That is "fill the slide" by inflation: the same thing fit-grow did, moved into the
+composer.
+
+Proposed rule (not built):
+- **Cap = natural content height × a stretch factor** (≈ 1.3, per block kind), not a
+  fixed pixel number; type grows at most one step (KPI hero ≤ 56px, card title ≤ 22px).
+- **White space is allowed.** Slack beyond the caps goes to spacing rhythm (gaps,
+  centring, margins) — never to bigger boxes or bigger type.
+- **Thin slides are a content signal, not a layout job.** If the content fills < ~55%
+  of the body, report `SLIDE_SPARSE` to the plan reviewer: the fix is §12 content
+  (derived values, flagged card lines, a second component), not inflation.
+
+## 12. Content policy (decided by the user, 2026-10-04)
+
+Replaces the blanket "never invent" for slide text. The test: **can a reviewer check
+it from the brief alone?**
+
+| Kind | What it is | Examples (Genspark decks) | Rule |
+|---|---|---|---|
+| **Copied** | the brief's own words | headlines, numbers, list items | allowed (as today) |
+| **Derived** | computed from facts in the brief | "2.9x" (₹31.1 ÷ ₹10.7), "Seven growth levers", "Day 1–30" from "90 days / 3 months", "best ad type" (highest ROAS), "≈ ⅓ of break-even" | **allowed, computed by code**: the planner names the derivation, code computes it, the slide marks it derived (provenance). Settles D13. |
+| **Inferred** | a plausible reading, not stated | one-line card descriptions, a claim headline written from the brief's own key message, placing the brief's listed items into matrix cells | **allowed, flagged**: qualitative only — no numbers, no company / person / place names not in the brief, no claims about results or causes; listed on the review screen with Keep / Remove (extends `written_lines`) |
+| **Invented** | new facts | market sizes and CAGRs, cited sources, "6–8% incremental demand", new list items ("Tier-2 city entry", "Combo upsell + multi-can"), time windows ("5–7 AM") | **not allowed**; a later opt-in research mode may add figures only with a cited source the user approves |
+
+Consequences for the build:
+- Headlines: the planner may write a claim headline from the brief's key message
+  (flagged inferred); the brief's own headline stays available as the subtitle.
+- Matrix: the brief's listed items may be placed in lever × platform cells (flagged);
+  no items beyond the brief's list.
+- Derived values need a small, tested set of operations in code (ratio, difference,
+  share, rank / best / worst, count, range split) and a provenance tag per value.
+- Checks: `scripts/phase0b/check.py`-style text check becomes three-way — copied words,
+  derived values (recomputed), inferred lines (on the review list); anything else is
+  an error.
+
 ## 11. Risks
 
 - **Templated sameness** (why archetypes were removed 2026-09-10): nodes cover card
