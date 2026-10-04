@@ -111,13 +111,14 @@ def test_every_grid_gets_its_cards_per_row():
     assert comps[0]["content_data"]["per_row"] == 4
 
 
-def test_seven_steps_become_a_grid_and_a_long_flow_becomes_cards():
-    """XTSY run 2: 7 workflow steps in one row of a 62% panel broke words into letters."""
+def test_seven_steps_become_a_grid_and_a_long_flow_stays_a_flow():
+    """XTSY run 2: 7 workflow steps in one row of a 62% panel broke words into letters.
+    A long flow is reported, not switched: as cards it lost its arrows (2026-10-04)."""
     steps = [{"kind": "card_grid", "content_data": {"card_layout": "steps", "cards": [{"title": f"s{i}"} for i in range(7)]}}]
     flow = [{"kind": "flow", "content_data": {"flow_steps": [f"Node {i}" for i in range(7)]}}]
     n1, n2 = enforce_capacity(steps), enforce_capacity(flow)
     assert steps[0]["content_data"]["card_layout"] == "grid" and "too many for one row" in n1[0]
-    assert flow[0]["kind"] == "card_grid" and flow[0]["content_data"]["per_row"] == 4 and "flow with 7" in n2[0]
+    assert flow[0]["kind"] == "flow" and "over its capacity" in n2[0] and "kept as a flow" in n2[0]
 
 
 def test_metric_value_table_of_one_entity_becomes_kpi_tiers():
@@ -140,22 +141,13 @@ def test_one_measure_across_entities_stays_a_table():
     assert enforce_capacity(comps) == [] and comps[0]["kind"] == "table"
 
 
-def test_icon_list_of_short_named_items_becomes_cards_but_sentences_stay():
-    """CHEFFIN slide 4: five data sources as an icon list."""
+def test_icon_list_stays_a_list():
+    """CHEFFIN slide 4 used to become a second card grid beside the main one, which
+    narrowed the cards and broke words (XTSY slides 2, 3, 6); removed 2026-10-04."""
     sources = ["FLIPCART Targeting last 90 days report", "FLIPCART Search Term report", "ZAROMA campaign-level data",
                "ZAROMA city-level data", "ZAROMA keyword-level data"]
-    notes_list = ["Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.",
-                  "ZAROMA sheets appear to have different coverage."]
-    comps = [{"kind": "bullet_list", "design_hint": "icon beside each point", "content_data": {"bullets": sources}},
-             {"kind": "bullet_list", "design_hint": "icon beside each point", "content_data": {"bullets": notes_list}},
-             {"kind": "bullet_list", "design_hint": "bold the action", "content_data": {"bullets": sources}}]
-    enforce_capacity(comps)
-    assert [c["kind"] for c in comps] == ["card_grid", "bullet_list", "bullet_list"]
-    assert comps[0]["content_data"]["per_row"] == 3
-    reviewed = [{"kind": "bullet_list", "design_hint": "icon beside each point",
-                 "content_data": {"bullets": [f"{t} reviewed." for t in sources]}}]  # CHEFFIN run 2 wording
-    enforce_capacity(reviewed)
-    assert reviewed[0]["kind"] == "card_grid"
+    comps = [{"kind": "bullet_list", "design_hint": "icon beside each point", "content_data": {"bullets": sources}}]
+    assert enforce_capacity(comps) == [] and comps[0]["kind"] == "bullet_list"
 
 
 def test_matrix_of_row_and_column_names_becomes_one_card_per_row():

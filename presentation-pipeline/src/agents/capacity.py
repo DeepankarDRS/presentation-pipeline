@@ -38,6 +38,8 @@ def max_of(kind: str, key: str = "items") -> int:
 # Chevrons with 7 items or sentence labels break words into letters ("Consume r",
 # XTSY slide 7); a horizontal timeline past 5 items collides. A card_grid holds the
 # same items legibly, so the plan is fixed in code — no re-plan call.
+# A flow past capacity is only reported, not switched (2026-10-04): as cards it lost
+# its arrows and stopped reading as a sequence (XTSY slide 6, two UI decks).
 
 def _label(item: Any) -> str:
     if isinstance(item, dict):
@@ -79,8 +81,9 @@ def _to_cards(comp: dict[str, Any], cards: list[dict[str, str]]) -> None:
 
 # ── a named visual that doesn't suit the data is switched (user decision L5) ─
 # One entity's metrics asked as "Show table: Metric | Value" read better as KPI
-# tiles; an icon list of short named items reads better as cards. The switch is
-# recorded in the plan (capacity_fixes) so the user can see why.
+# tiles. The switch is recorded in the plan (capacity_fixes) so the user can see why.
+# The icon list -> cards switch was removed 2026-10-04: it put a second card grid
+# beside the main one (narrow cards, broken words; XTSY slides 2, 3 and 6).
 
 _UNITS = (("₹", re.compile(r"₹|\brs\.?\s*\d|\$|€|£", re.I)), ("%", re.compile(r"%")),
           ("x", re.compile(r"\d\s*x\b", re.I)))
@@ -128,14 +131,6 @@ def _placeholder_matrix(cd: dict[str, Any]) -> bool:
         for c in cards)
 
 
-def _short_items(items: list[Any]) -> bool:
-    words = max_of("card_grid", "max_title_words")
-    lo, hi = capacity()["card_grid"]["items"]
-    texts = [_label(i).strip().rstrip(".") for i in items]  # a lone full stop doesn't make a sentence
-    return lo + 1 <= len(texts) <= hi and all(
-        t and len(t.split()) <= words and not any(p in t for p in (". ", ";", ",")) for t in texts)
-
-
 def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
     """Fix the plan in place where a component cannot draw its items (capacity.yaml)
     or a named visual does not suit the data. Returns one plain-words note per change."""
@@ -162,8 +157,7 @@ def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
         elif kind == "flow":
             steps = data.get("flow_steps") or []
             if len(steps) > max_of("flow"):
-                _to_cards(comp, _as_cards(steps))
-                notes.append(f"{cid}: flow with {len(steps)} nodes -> card_grid ({comp['content_data']['card_layout']})")
+                notes.append(f"{cid}: flow with {len(steps)} nodes is over its capacity ({max_of('flow')}); kept as a flow")
         elif kind == "table":
             tiers = _metric_table_to_kpis(comp)
             if tiers:
@@ -172,13 +166,6 @@ def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
                 notes.append(f"{cid}: 2-column metric table of one entity -> kpi_row tiers ({sizes}); "
                              "the brief's table switched because the metrics read better as tiles")
                 continue
-        elif kind == "bullet_list" and "icon" in (comp.get("design_hint") or "").lower():
-            bullets = data.get("bullets") or []
-            if _short_items(bullets):
-                comp["kind"] = "card_grid"
-                comp["items"] = len(bullets)
-                comp["content_data"] = {"card_layout": "grid", "cards": [{"title": _label(b).strip().rstrip(".")} for b in bullets]}
-                notes.append(f"{cid}: icon list of {len(bullets)} short items -> card_grid")
         # every grid knows its cards per row; a steps row past its capacity becomes a grid
         if comp.get("kind") == "card_grid":
             cd = comp.setdefault("content_data", {})
