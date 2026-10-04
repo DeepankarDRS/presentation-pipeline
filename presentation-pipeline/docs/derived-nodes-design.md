@@ -323,6 +323,35 @@ Proposed rule (not built):
   of the body, report `SLIDE_SPARSE` to the plan reviewer: the fix is §12 content
   (derived values, flagged card lines, a second component), not inflation.
 
+### 10g. Root cause: POM measures every font as Noto Sans JP (found 2026-10-04)
+
+Verified in code: POM can measure real fonts (`buildPptx(xml, size, { fonts })` →
+`FontRegistry`), but we never pass any — `compile-pom.js` calls
+`buildPptx(xml, SLIDE_SIZE)` and `fit-grow.js` calls `createBuildContext("auto")`. So
+POM lays out every `fontFamily` with Noto Sans JP metrics while the slide renders in
+Segoe UI / Aptos / a substitute. Every sizing compensation follows from this:
+fit-grow's 85% width margin, `reserveWrap`'s blank heading lines, its timid caps
+(text ≥ 24px frozen, body ≤ 22, KPI ≤ 60) and its occasional over-growth (₹114.9L
+wrapped at 60px), and the composer caps in 10e. Adding rules hides one symptom and
+creates another.
+
+Production-grade direction (proposed, in order):
+1. **Measure with the real fonts** — ship open fonts (Inter, Space Grotesk,
+   JetBrains Mono, Noto Sans; Segoe UI cannot be redistributed), pass them to
+   `buildPptx(…, { fonts })` and fit-grow's `createBuildContext`, embed / install them
+   where decks are opened. **Next step: the font experiment** — Phase 0b slides in
+   Inter + JetBrains Mono, fit-grow back on, measure broken words and blank heading
+   lines against the LibreOffice render.
+2. **One sizing authority, content first** — each block measures its content, picks a
+   size from a fixed type scale by role, emits `minH` (natural) / `maxH` (≈ ×1.3) /
+   `grow`; POM's Yoga solves the slide. Replaces the Python water-filling and
+   fit-grow's post-hoc filling.
+3. **Alignment is a style token** — card content top-aligned by default (`spaceBetween`
+   only where a pack asks; the pipeline's `card_grid` recipe centres today).
+4. **fit-grow becomes a guard** — shrink one step / report overflow, never fill.
+5. Sparse slides → §12 content + `SLIDE_SPARSE`, not inflation (10f).
+6. Real-renderer checks in tests (render_check + eval word breaks / overflow).
+
 ## 12. Content policy (decided by the user, 2026-10-04)
 
 Replaces the blanket "never invent" for slide text. The test: **can a reviewer check
