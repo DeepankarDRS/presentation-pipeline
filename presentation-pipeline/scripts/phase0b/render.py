@@ -42,9 +42,26 @@ class Pack:
         self.rule = spec["rule_under_headline"]
         self.top_bar = spec["top_bar"]
         self.entities = {k.upper(): v for k, v in (entities or {}).items()}
+        self.dark_c = spec.get("colors_dark")
+        self.headline = spec.get("headline", "bold")
+        self.head_max_w = spec.get("headline_max_w", INNER)
+        self.card_titles = spec.get("card_titles", "plain")
+        self.fills = spec.get("fills", "flat")
+        self.card_border = spec.get("card_border", False)
+        self.ghost = spec.get("ghost_numerals", False)
+        self.dark_slides = spec.get("dark_slides", [])
+        self.strip_style = spec.get("strip", "dark")
+        self.kicker_number = spec.get("kicker_number", False)
+        self.running = spec.get("running", True)
+        self.arrows = spec.get("arrows", False)
+        self.is_dark = False  # set per slide
+
+    @property
+    def border(self) -> str:
+        return ' border.color="$line" border.width="1"' if self.card_border else ""
 
     def theme(self) -> str:
-        tokens = dict(self.c)
+        tokens = dict(self.dark_c if self.is_dark and self.dark_c else self.c)
         for i, (_, col) in enumerate(self.entities.items()):
             tokens[f"e{i}"] = col
             tokens[f"e{i}t"] = tint(col)
@@ -120,7 +137,7 @@ def kpi_row(comp: dict, p: Pack, hero: bool) -> str:
     tiles = []
     for label, value, note in zip(labels, values, notes):
         ent = p.entity(label)
-        bg, lab_c, num_c, border = "$panel", "$muted", "$ink", ""
+        bg, lab_c, num_c, border = "$panel", "$muted", "$ink", p.border
         if label == dark:
             bg, lab_c, num_c = "$dark", "$accent2", "$white"
         elif ent:
@@ -140,6 +157,28 @@ _PHASE = re.compile(r"^((?:Phase|Month|Step|Stage)\s*\d+)\s*[:\-–]\s*(.+)$", r
 def _split_list(body: str) -> list[str] | None:
     parts = [s.strip().rstrip(".") for s in body.split(",")]
     return parts if len(parts) >= 3 and all(0 < len(s.split()) <= 5 for s in parts) else None
+
+
+def card_role(p: Pack, role: str) -> tuple[str, str, str, str]:
+    """(fill, text, label colour, border) for a card role: normal / highlight / dark."""
+    if p.fills == "rhythm":
+        if role == "highlight" or (role == "dark" and p.is_dark):
+            return "$accent2", "$onAccent", "$onAccent", ""
+        if role == "dark":
+            return "$dark", "$white", "$accent2", ""
+        return "$panel", "$ink", "$muted", p.border
+    if role in ("highlight", "dark"):
+        return "$dark", "$white", "$accent2", ""
+    return "$panel", "$ink", "$accent", p.border
+
+
+def title_runs(title: str, p: Pack, on_dark: bool) -> str:
+    t = title.replace("↑", "").strip() if p.arrows else title
+    if p.card_titles != "italic_last" or " " not in t:
+        return x(t)
+    head, last = t.rsplit(" ", 1)
+    inner = f'<Span color="$accent2">{x(last)}</Span>' if on_dark else x(last)
+    return f"{x(head)} <I>{inner}</I>"
 
 
 def _named_in_hint(comp: dict, names: list[str], word: str) -> str | None:
@@ -166,6 +205,16 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool) -> str:
     tile_h = {1: 150, 2: 120}.get(n_rows, 96)
     grows = grows and rich
 
+    def role_of(i: int, c: dict) -> str:
+        if c.get("title") == hi:
+            return "dark" if steps and p.fills == "rhythm" and not p.is_dark else "highlight"
+        if p.fills == "rhythm" and not steps and len(cards) >= 5:
+            if i % 4 == 1:
+                return "dark"
+            if hi is None and i == 3:
+                return "highlight"
+        return "normal"
+
     def one(i: int, c: dict) -> str:
         title = c.get("title", "")
         m = _PHASE.match(title)
@@ -173,27 +222,43 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool) -> str:
         if m and c.get("tag"):
             tag = f"{tag} · {c['tag']}"
         title = m.group(2) if m else title
-        inv = c.get("title") == hi
-        bg, ink, lab = ("$dark", "$white", "$accent2") if inv else ("$panel", "$ink", "$accent")
+        role = role_of(i, c)
+        bg, ink, lab, border = card_role(p, role)
+        inv = role != "normal"
+        on_dark = bg == "$dark" or (p.is_dark and role == "normal")
         top = f' borderTop.color="{lab if inv else "$accent"}" borderTop.width="3"' if steps else ""
-        parts = [p.label(tag, lab),
-                 f'<Text fontSize="{tfs}" fontFamily="{p.sans}" bold="true" color="{ink}" lineHeight="1.2">{x(title)}</Text>']
+        ghost = ""
+        num = re.search(r"\d+", tag)
+        if p.ghost and (steps or m) and num:
+            gcol = "$line" if role == "normal" else lab
+            ghost = f'<Text fontSize="46" fontFamily="{p.sans}" bold="true" color="{gcol}" lineHeight="1">{int(num.group()):02d}</Text>'
+        parts = [p.label(tag, lab), ghost,
+                 f'<Text fontSize="{tfs}" fontFamily="{p.sans}" bold="true" color="{ink}" lineHeight="1.2">{title_runs(title, p, on_dark)}</Text>']
+        parts = [q for q in parts if q]
         bullets = c.get("bullets") or (_split_list(c["body"]) if c.get("body") else None)
         if c.get("body") and not bullets:
-            parts.append(f'<Text fontSize="12" fontFamily="{p.sans}" color="{"$white" if inv else "$muted"}" '
+            parts.append(f'<Text fontSize="12" fontFamily="{p.sans}" color="{ink if inv else "$muted"}" '
                          f'lineHeight="1.4">{x(c["body"])}</Text>')
         if cd.get("columns"):
             parts.append(f'<Text fontSize="12" fontFamily="{p.sans}" color="$muted" lineHeight="1.4">'
                          f'{x(" · ".join(cd["columns"]))}</Text>')
         if bullets:
-            dot = "$accent2" if inv else "$accent"
+            dot = lab if inv else ("$accent2" if p.is_dark else "$accent")
             parts.append('<VStack margin.top="4" gap="8">' + "".join(
                 f'<HStack gap="10" alignItems="center"><Shape shapeType="rect" w="5" h="5" fill.color="{dot}" />'
                 f'<Text fontSize="{p.t["body"]}" fontFamily="{p.sans}" color="{ink}">{x(b)}</Text></HStack>'
                 for b in bullets) + "</VStack>")
         lone = len(parts) == 2  # label + title only: fixed tile, label top, title bottom
         just = f' h="{tile_h}" justifyContent="spaceBetween"' if lone else ""
-        return (f'<VStack w="1" grow="1" padding="18" gap="8" backgroundColor="{bg}"{top}{just}>'
+        if p.arrows and "↑" in title:
+            icol = {"highlight": "$onAccent", "dark": "$accent2"}.get(role, "$accent" if i % 2 == 0 else "$ink")
+            if p.is_dark and role == "dark":
+                icol = "$onAccent"
+            return (f'<HStack w="1" grow="1" padding="18" gap="10" alignItems="center" backgroundColor="{bg}"{border}{top}'
+                    f'{" h=" + chr(34) + str(tile_h) + chr(34) if lone else ""}>'
+                    f'<VStack grow="1" gap="8" justifyContent="spaceBetween">{"".join(parts)}</VStack>'
+                    f'<Icon name="arrow-up" size="40" color="{icol}" /></HStack>')
+        return (f'<VStack w="1" grow="1" padding="18" gap="8" backgroundColor="{bg}"{border}{top}{just}>'
                 + "".join(parts) + "</VStack>")
 
     if steps and len(cards) <= 5:
@@ -213,7 +278,7 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool) -> str:
 def tile_row(items: list[str], p: Pack) -> str:
     """Short parallel items in ONE compact row (Genspark XTSY slide 6 benefits)."""
     tiles = "".join(
-        f'<VStack w="1" grow="1" padding="14" backgroundColor="$panel" borderTop.color="$accent" borderTop.width="2">'
+        f'<VStack w="1" grow="1" padding="14" backgroundColor="$panel"{p.border} borderTop.color="{"$accent2" if p.fills == "rhythm" else "$accent"}" borderTop.width="3">'
         f'<Text fontSize="13" fontFamily="{p.sans}" bold="true" color="$ink" lineHeight="1.25">{x(i)}</Text></VStack>'
         for i in items)
     return f'<HStack gap="10" alignItems="stretch">{tiles}</HStack>'
@@ -230,7 +295,7 @@ def bullet_panel(items: list[str], p: Pack) -> str:
     rows = "".join(f'<HStack gap="10" alignItems="center"><Shape shapeType="rect" w="5" h="5" fill.color="$accent" />'
                    f'<Text fontSize="{p.t["body"] + 1}" fontFamily="{p.sans}" color="$ink">{x(i)}</Text></HStack>'
                    for i in items)
-    return f'<VStack padding="18" gap="10" backgroundColor="$panel">{rows}</VStack>'
+    return f'<VStack padding="18" gap="10" backgroundColor="$panel"{p.border}>{rows}</VStack>'
 
 
 def bullets_block(comp: dict, p: Pack) -> str:
@@ -247,8 +312,8 @@ def process_steps(comp: dict, p: Pack) -> str:
     out = []
     for i, s in enumerate(steps):
         last = i == len(steps) - 1
-        bg, ink = ("$accent2", "$ink") if last else ("$panel", "$ink")
-        out.append(f'<VStack w="1" grow="1" padding="12" backgroundColor="{bg}" alignItems="center">'
+        bg, ink = ("$accent2", "$onAccent") if last else ("$panel", "$ink")
+        out.append(f'<VStack w="1" grow="1" padding="12" backgroundColor="{bg}"{"" if last else p.border} alignItems="center">'
                    f'<Text fontSize="14" fontFamily="{p.sans}" bold="true" color="{ink}" textAlign="center">{x(s)}</Text></VStack>')
     arrow = '<Icon name="arrow-right" size="18" color="$accent" alignSelf="center" />'
     return f'<HStack gap="8" alignItems="stretch">{arrow.join(out)}</HStack>'
@@ -332,6 +397,11 @@ def insight(text: str, p: Pack) -> str:
 
 
 def strip(text: str, label: str, p: Pack) -> str:
+    if p.strip_style == "statement":
+        parts = re.split(r"(?<=[.!?])\s+", text, maxsplit=1)
+        body = f"<B>{x(parts[0])}</B> {x(parts[1])}" if len(parts) == 2 else x(text)
+        return (f'<HStack gap="16" alignItems="start"><Shape margin.top="13" shapeType="rect" w="36" h="2" fill.color="$ink" />'
+                f'<Text grow="1" fontSize="19" fontFamily="{p.sans}" italic="true" color="$ink" lineHeight="1.35">{body}</Text></HStack>')
     return (f'<HStack padding="18" gap="16" backgroundColor="$dark" alignItems="center" '
             f'borderLeft.color="$accent2" borderLeft.width="4">'
             f'{p.label(label, "$accent2", extra=" w=\"120\"")}'
@@ -397,6 +467,27 @@ def compose_body(plan: dict, p: Pack) -> str:
     return "".join(out)
 
 
+_PHRASE = re.compile(r"phrase\s+['\"‘“](.+?)['\"’”]")
+
+
+def headline_runs(plan: dict, p: Pack) -> str:
+    """two_tone: regular weight, the plan's emphasised phrase (title design_hint) in bold."""
+    t = plan["slide_title"]
+    if p.headline != "two_tone":
+        return x(t)
+    hint = " ".join(c.get("design_hint") or "" for c in plan["components"] if c["kind"] == "title")
+    m = _PHRASE.search(hint)
+    if m and m.group(1) in t:
+        i = t.index(m.group(1))
+        return x(t[:i]) + "<B>" + x(m.group(1)) + "</B>" + x(t[i + len(m.group(1)):])
+    for sep in ("; ", " — ", ", "):
+        if sep in t:
+            a, b = t.rsplit(sep, 1)
+            return x(a + sep) + "<B>" + x(b) + "</B>"
+    w = t.split()
+    return x(" ".join(w[:-3]) + " ") + "<B>" + x(" ".join(w[-3:])) + "</B>" if len(w) > 4 else "<B>" + x(t) + "</B>"
+
+
 def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
     bar = ('<HStack h="6"><Shape shapeType="rect" w="1" grow="1" h="6" fill.color="$dark" />'
            '<Shape shapeType="rect" w="180" h="6" fill.color="$accent2" /></HStack>') if p.top_bar else ""
@@ -404,12 +495,14 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
         badge = (f'<VStack w="26" h="26" backgroundColor="$accent2" justifyContent="center" alignItems="center">'
                  f'<Text fontSize="12" fontFamily="{p.mono}" bold="true" color="$ink">{n}</Text></VStack>')
     else:
-        badge = '<Shape shapeType="rect" w="7" h="7" fill.color="$accent" />'
-    label = p.label(plan.get("label") or "", "$accent") if plan.get("label") else ""
+        badge = f'<Shape shapeType="rect" w="7" h="7" fill.color="{"$accent2" if p.fills == "rhythm" else "$accent"}" />'
+    ktext = (plan.get("label") or "") + (f" · {n:02d}" if p.kicker_number and plan.get("label") else "")
+    label = p.label(ktext, "$muted" if p.fills == "rhythm" else "$accent") if plan.get("label") else ""
+    running = p.label(deck["running"], "$muted", 9, ' textAlign="right"') if p.running else ""
     sub = (f'<Text margin.top="8" fontSize="14" fontFamily="{p.sans}" color="$muted" lineHeight="1.35">'
            f'{x(plan["subtitle"])}</Text>') if plan.get("subtitle") else ""
     rule = '<Shape margin.top="14" shapeType="rect" w="36" h="2" fill.color="$ink" />' if p.rule else ""
-    lines = math.ceil(len(plan["slide_title"]) * p.t["headline"] * 0.56 / INNER)
+    lines = math.ceil(len(plan["slide_title"]) * p.t["headline"] * 0.56 / p.head_max_w)
     head_h = round(lines * p.t["headline"] * 1.15 + 6)
     return f'''<Slide>
   <VStack w="{W}" h="{H}" backgroundColor="$bg" alignItems="stretch">
@@ -417,13 +510,13 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
     <VStack grow="1" padding.top="26" padding.bottom="20" padding.left="{PAD_X}" padding.right="{PAD_X}" alignItems="stretch">
       <HStack alignItems="center" justifyContent="spaceBetween">
         <HStack gap="10" alignItems="center">{badge}{label}</HStack>
-        {p.label(deck["running"], "$muted", 9, ' textAlign="right"')}
+        {running}
       </HStack>
-      <VStack margin.top="14" h="{head_h}"><Text fontSize="{p.t["headline"]}" fontFamily="{p.sans}" bold="true" color="$ink" lineHeight="1.15">{x(plan["slide_title"])}</Text></VStack>
+      <VStack margin.top="14" h="{head_h}"><Text maxW="{p.head_max_w}" fontSize="{p.t["headline"]}" fontFamily="{p.sans}"{"" if p.headline == "two_tone" else ' bold="true"'} color="$ink" lineHeight="1.15">{headline_runs(plan, p)}</Text></VStack>
       {sub}{rule}
       <VStack margin.top="20" grow="1" gap="16" alignItems="stretch">{compose_body(plan, p)}</VStack>
       <HStack margin.top="14" alignItems="center" justifyContent="spaceBetween">
-        {p.label(deck["brand"], "$muted", 9)}
+        {p.label(deck["brand"], "$ink" if p.fills == "rhythm" else "$muted", 9, ' bold="true"' if p.fills == "rhythm" else "")}
         {p.label(f"{n:02d} / {total:02d}", "$muted", 9, ' textAlign="right"')}
       </HStack>
     </VStack>
@@ -437,6 +530,32 @@ def cover(plan: dict, deck: dict, p: Pack, total: int) -> str:
     narr = comps.get("narrative", {}).get("content_data", {}).get("text", "")
     title, brand = plan["slide_title"], deck["brand"]
     sub = plan.get("subtitle") or ""
+    if p.fills == "rhythm":  # studio: dark hero, brand word italic lime in the title
+        runs = x(title)
+        if brand in title:
+            i = title.index(brand)
+            runs = x(title[:i]) + f'<I><Span color="$accent2">{x(brand)}</Span></I>' + x(title[i + len(brand):])
+        msg = (f'<VStack w="380" gap="10" padding.left="18" borderLeft.color="$accent2" borderLeft.width="3">'
+               f'{p.label("Key message", "$accent2")}<Text fontSize="15" fontFamily="{p.sans}" italic="true" color="$muted" '
+               f'lineHeight="1.45">{x(narr)}</Text></VStack>') if narr else ""
+        return f'''<Slide>
+  <VStack w="{W}" h="{H}" padding="56" alignItems="stretch" backgroundGradient="radial-gradient(circle at 12% 8%, #26301A 0%, #0D0F0C 60%)">
+    <HStack alignItems="center" justifyContent="spaceBetween">
+      <HStack gap="10" alignItems="center"><Shape shapeType="rect" w="8" h="8" fill.color="$accent2" />{p.label(brand, "$ink", 12, ' bold="true"')}</HStack>
+      {p.label(f"01 / {total:02d}", "$muted", 9, ' textAlign="right"')}
+    </HStack>
+    <VStack grow="1" />
+    <HStack gap="48" alignItems="end">
+      <VStack grow="1" gap="20">
+        <Text fontSize="{p.t["cover"]}" fontFamily="{p.sans}" bold="true" color="$ink" lineHeight="1.08">{runs}</Text>
+        <Text fontSize="16" fontFamily="{p.sans}" color="$muted" lineHeight="1.4">{x(sub)}</Text>
+      </VStack>
+      {msg}
+    </HStack>
+    <VStack grow="1" />
+    <HStack gap="10" alignItems="center"><Shape shapeType="rect" w="28" h="2" fill.color="$accent2" />{p.label(caption or brand, "$muted", 9)}</HStack>
+  </VStack>
+</Slide>'''
     if p.badge == "number":  # tech: dark hero
         msg = (f'<VStack padding="18" borderLeft.color="$accent2" borderLeft.width="3" backgroundColor="$dark">'
                f'{p.label("Key message", "$accent2")}<Text margin.top="8" fontSize="15" fontFamily="{p.sans}" color="$white" '
@@ -489,13 +608,22 @@ def cover(plan: dict, deck: dict, p: Pack, total: int) -> str:
 </Slide>'''
 
 
-def render(plans_file: Path, out: Path) -> list[Path]:
+def _dark_slide(plan: dict, p: Pack) -> bool:
+    if plan.get("slide_type") == "cover":
+        return p.fills == "rhythm"
+    return "steps" in p.dark_slides and any(
+        c["kind"] == "card_grid" and c["content_data"].get("card_layout") == "steps"
+        and len(c["content_data"].get("cards", [])) >= 4 for c in plan["components"])
+
+
+def render(plans_file: Path, out: Path, pack: str | None = None) -> list[Path]:
     data = json.loads(plans_file.read_text(encoding="utf-8"))
     deck, plans = data["deck"], data["slides"]
-    p = Pack(deck["pack"], deck.get("entities"))
+    p = Pack(pack or deck["pack"], deck.get("entities"))
     out.mkdir(parents=True, exist_ok=True)
     written = []
     for i, plan in enumerate(plans):
+        p.is_dark = _dark_slide(plan, p)
         body = cover(plan, deck, p, len(plans)) if plan.get("slide_type") == "cover" else frame(plan, deck, p, i + 1, len(plans))
         f = out / f"slide-{i + 1:02d}.xml"
         f.write_text(p.theme() + "\n\n" + body + "\n", encoding="utf-8")
@@ -507,8 +635,9 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("plans", type=Path)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--pack", help="style pack to use instead of the plans file's")
     a = ap.parse_args()
-    for f in render(a.plans, a.out):
+    for f in render(a.plans, a.out, a.pack):
         print(f)
 
 

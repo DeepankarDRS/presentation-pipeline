@@ -267,6 +267,26 @@ Found on the way (feed into the build):
 - Small orange / teal labels need darker shades for 4.5:1 (`C2410C`, `00795A`; entity
   text uses a 25% darker shade of the entity colour).
 
+### 10d. Studio style pack (2026-10-04, no API)
+
+Compared against Genspark **AI Slides**' XTSY deck (cream, lime, display type) — the
+tech pack matched its structure but not its style. A third pack, `studio` (from AI
+Slides + the Phase 0 hand-built slides), added as style-pack switches only:
+two-tone headlines (the bold phrase comes from the plan's own title `design_hint`,
+"color the phrase …"), italic last word on card titles, a white / dark / lime fill
+rhythm, hairline-bordered white cards on cream, ghost numerals on phase cards, a dark
+slide when the hero is 4+ ordered steps, ruled italic closing statements, arrow icons
+for "↑" items. `python -m scripts.phase0b.render <plans> --out <dir> --pack studio`.
+
+- XTSY 8/8 and CHEFFIN 6/6 compile; plan words missing 0, words not in plan 0 (both).
+- New contrast findings are audit limits (dark slides measured against white, the
+  gradient cover) and the intentionally faint ghost numerals.
+- One switch restyles a whole deck: CHEFFIN rendered in studio with no other change.
+- Side by side (`output/phase0b/cmp_xtsy_studio_*.png`): typography and colour rhythm
+  now read like AI Slides. Still missing: purpose-built visuals (engine diagram, mini
+  charts, filled matrix), rewritten claim headlines and per-card descriptions — slide
+  patterns and content policy, not style.
+
 ## 11. Risks
 
 - **Templated sameness** (why archetypes were removed 2026-09-10): nodes cover card
