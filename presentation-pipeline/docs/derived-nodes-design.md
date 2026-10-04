@@ -13,7 +13,7 @@ decks (XTSY, gpt-4.1 and gpt-5-mini planners):
 | Failure | Where | Root cause |
 |---|---|---|
 | Invented content: 6 of 7 impact areas made up | gpt-5-mini slide 7 | the plan's card grid came back empty; the generator wrote cards anyway, nothing checked them |
-| Content dropped: each month's first bullet became the card tag | gpt-4.1 slide 8 | the generator retypes the plan into XML and reshapes it |
+| Content dropped: each month's first bullet became the card tag | gpt-4.1 slide 8 | the planner moved it into `tag` (in the plan itself); nothing checks plan items against the brief |
 | Broken words ("Zept o", "optimizati on"), tiny cards | XTSY slides 2, 3, 6 in every run | narrow cards; the generator picks widths without measuring; second grids from the plan check (removed in `30da01e`) |
 | Same items twice (phase cards + chevrons) | slide 4, both decks | nothing compares components on a slide |
 | Generic look: rounded white cards, 14px labels, no header chrome | every slide | the generator copies one recipe per kind (`recipes.yaml`) |
@@ -175,6 +175,51 @@ New eval metrics: `card_text_not_in_plan` (target 0), `duplicate_items_per_slide
 5. **How much look the LLM controls:** variants per node (recommended: 3–4 each) vs one
    look per node. More variants = more variety, more templates to test.
 6. **`SlideHeader` + deck footer in scope** for step 5, or keep headers LLM-written.
+
+## 10b. Phase 0b — proof before wiring (added 2026-10-04)
+
+**Question:** is the gap to Genspark in *drawing* (code could close it) or in
+*planning* (it couldn't)?
+
+**Evidence so far**
+- Our CHEFFIN plan (29 Sep `layout-fixes`, run 2) matches Genspark's CHEFFIN deck slide
+  for slide: exec summary = KPI tiles + dark diagnosis strip; CPC gap = table + bars +
+  note; methodology = 5 source cards + 2 notes; FLIPCART = 3 + 4 KPI tiles + strip;
+  ad-type / match-type = table + ranked values + action. Headlines identical.
+  The differences are drawing: entity colours (FLIPCART orange, ZAROMA purple), big
+  numbers with small units, 9–11px mono labels, numbered cards, ranked bars, a frame.
+- Phase 0: POM draws the Genspark look when the XML is careful.
+- 1 Oct: gpt-5-mini planners changed visual choices on 3 slides, none of the drawing.
+- Both Genspark decks use one design system each and ~6 recurring blocks — not a
+  library of templates.
+- Correction: the XTSY roadmap's missing first bullet is in the **plan**
+  (`"tag": "Category assessment"`), a planner error, not the generator's.
+
+**Experiment** (no API): a standalone renderer, `scripts/phase0b/`, that turns saved
+plans into POM XML with code only:
+- a **style pack** (palette roles, entity colours, type scale with a 9–11px label tier,
+  frame) — `editorial` from Genspark CHEFFIN, `tech` from Genspark XTSY;
+- a **frame** (label + running title, headline, subtitle, footer with source + n / N);
+- blocks: `KpiRow`, `CardGrid`, `MessageStrip`, `DataTable` (+ `BarList`, `ProcessSteps`,
+  `BulletPanel` where the decks need them);
+- a small **composer** that stands in for the generator's layout choices (order, side
+  by side, which variant) with fixed rules — the real pipeline leaves those to the LLM.
+
+Inputs: XTSY = the gpt-4.1 UI deck's `slides.json` (1 Oct; plans complete; components
+the removed icon-list rule had converted are drawn as lists, as current code would plan
+them). CHEFFIN = plans rebuilt by hand from `tests/cases/gate-deck-cheffin-full.yaml`
+with the component kinds our planner chose on 29 Sep, content verbatim from the brief.
+
+**Pass criteria (fixed before building)**
+1. 0 broken words (eval `word_breaks`) on every slide.
+2. Every plan string is on its slide and no other text is (frame labels excepted).
+3. The same frame on every slide.
+4. Side by side (ours now / plan + code renderer / Genspark), the user judges the code
+   renderer clearly closer to Genspark than ours.
+
+Pass → wire in (§9 steps 1–3). Fail → we learn where the gap really is, for no API cost.
+What it cannot show: content Genspark adds (source lines, card descriptions, time
+ranges) — that is the content-density decision, measured separately.
 
 ## 11. Risks
 
