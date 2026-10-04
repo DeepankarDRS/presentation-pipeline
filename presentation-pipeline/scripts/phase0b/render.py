@@ -126,7 +126,7 @@ def big_number(value: str, fs: int, color: str, p: Pack) -> str:
             f'{x(m["pre"] + m["num"])}<Span fontSize="{round(fs * 0.45)}">{x(m["unit"])}</Span></Text>')
 
 
-def kpi_row(comp: dict, p: Pack, hero: bool) -> str:
+def kpi_row(comp: dict, p: Pack, hero: bool, h: float | None = None, grow: str = "") -> str:
     cd = comp["content_data"]
     labels, values = cd.get("kpi_labels", []), cd.get("kpi_values", [])
     notes = cd.get("kpi_deltas") or [""] * len(values)
@@ -134,6 +134,8 @@ def kpi_row(comp: dict, p: Pack, hero: bool) -> str:
     tile_w = (INNER - 12 * (len(values) - 1)) / max(1, len(values)) - 40
     chars = max((len(v) for v in values), default=1)
     fs = min(p.t["big"] if hero else p.t["mid"], int(tile_w / (chars * 0.62)))
+    if h:  # sized to the slot: the number takes what the tile's width and height allow
+        fs = max(24, min(72, int(tile_w / (chars * 0.62)), int((h - 40 - 30 - (16 if any(notes) else 0)) * 0.8)))
     tiles = []
     for label, value, note in zip(labels, values, notes):
         ent = p.entity(label)
@@ -145,10 +147,11 @@ def kpi_row(comp: dict, p: Pack, hero: bool) -> str:
             border = f' borderLeft.color="{ent[0]}" borderLeft.width="3"'
         note_xml = (f'<Text fontSize="11" fontFamily="{p.sans}" color="{"$white" if label == dark else "$muted"}">'
                     f'{x(note)}</Text>' if note else "")
-        tiles.append(f'<VStack w="1" grow="1" h="{130 if hero else 100}" padding="20" gap="8" backgroundColor="{bg}"{border} '
+        fixed_h = "" if h else f' h="{130 if hero else 100}"'
+        tiles.append(f'<VStack w="1" grow="1"{fixed_h} padding="20" gap="8" backgroundColor="{bg}"{border} '
                      f'justifyContent="spaceBetween">{p.label(label, lab_c)}'
                      f'<VStack gap="6">{big_number(value, fs, num_c, p)}{note_xml}</VStack></VStack>')
-    return f'<HStack gap="12" alignItems="stretch">{"".join(tiles)}</HStack>'
+    return f'<HStack gap="12" alignItems="stretch"{grow}>{"".join(tiles)}</HStack>'
 
 
 _PHASE = re.compile(r"^((?:Phase|Month|Step|Stage)\s*\d+)\s*[:\-–]\s*(.+)$", re.I)
@@ -190,7 +193,7 @@ def _named_in_hint(comp: dict, names: list[str], word: str) -> str | None:
     return max(hits, key=len) if hits else None
 
 
-def card_grid(comp: dict, p: Pack, width: float, grows: bool) -> str:
+def card_grid(comp: dict, p: Pack, width: float, grows: bool, h: float | None = None, grow: str = "") -> str:
     cd = comp["content_data"]
     cards = [c if isinstance(c, dict) else {"title": str(c)} for c in cd.get("cards", [])]
     steps = cd.get("card_layout") == "steps"
@@ -203,7 +206,22 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool) -> str:
 
     n_rows = 1 if steps and len(cards) <= 5 else math.ceil(len(cards) / n)
     tile_h = {1: 150, 2: 120}.get(n_rows, 96)
-    grows = grows and rich
+    if h:  # a slot: rows share it, titles grow with the row (never past the longest word's width)
+        grows = True
+        row_h = (h - 12 * (n_rows - 1)) / n_rows
+        card_w = (width - 12 * (n - 1)) / n - 36
+        longest = max((len(w) for t in titles for w in _PHASE.sub(r"\2", t).split()), default=1)
+        want = tfs if rich else max(tfs, row_h * 0.15)
+        tfs = int(max(p.t["title"], min(want, 30, card_w / (longest * 0.62))))
+        most = max((len(c.get("bullets") or _split_list(c.get("body") or "") or []) for c in cards), default=0)
+        if rich and most:
+            free = row_h - 36 - 14 - 8 - (54 if p.ghost and (steps or any(_PHASE.match(t) for t in titles)) else 0) - tfs * 2.6
+            per = free / most
+            bfs = int(max(p.t["body"], min(17, per * 0.42)))
+            bgap = int(max(8, min(22, per - bfs * 1.35)))
+
+    bfs = locals().get("bfs", p.t["body"])
+    bgap = locals().get("bgap", 8)
 
     def role_of(i: int, c: dict) -> str:
         if c.get("title") == hi:
@@ -244,18 +262,18 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool) -> str:
                          f'{x(" · ".join(cd["columns"]))}</Text>')
         if bullets:
             dot = lab if inv else ("$accent2" if p.is_dark else "$accent")
-            parts.append('<VStack margin.top="4" gap="8">' + "".join(
+            parts.append(f'<VStack margin.top="4" gap="{bgap}">' + "".join(
                 f'<HStack gap="10" alignItems="center"><Shape shapeType="rect" w="5" h="5" fill.color="{dot}" />'
-                f'<Text fontSize="{p.t["body"]}" fontFamily="{p.sans}" color="{ink}">{x(b)}</Text></HStack>'
+                f'<Text fontSize="{bfs}" fontFamily="{p.sans}" color="{ink}">{x(b)}</Text></HStack>'
                 for b in bullets) + "</VStack>")
         lone = len(parts) == 2  # label + title only: fixed tile, label top, title bottom
-        just = f' h="{tile_h}" justifyContent="spaceBetween"' if lone else ""
+        just = (' justifyContent="spaceBetween"' if grows else f' h="{tile_h}" justifyContent="spaceBetween"') if lone else ""
         if p.arrows and "↑" in title:
             icol = {"highlight": "$onAccent", "dark": "$accent2"}.get(role, "$accent" if i % 2 == 0 else "$ink")
             if p.is_dark and role == "dark":
                 icol = "$onAccent"
             return (f'<HStack w="1" grow="1" padding="18" gap="10" alignItems="center" backgroundColor="{bg}"{border}{top}'
-                    f'{" h=" + chr(34) + str(tile_h) + chr(34) if lone else ""}>'
+                    f'{" h=" + chr(34) + str(tile_h) + chr(34) if lone and not grows else ""}>'
                     f'<VStack grow="1" gap="8" justifyContent="spaceBetween">{"".join(parts)}</VStack>'
                     f'<Icon name="arrow-up" size="40" color="{icol}" /></HStack>')
         return (f'<VStack w="1" grow="1" padding="18" gap="8" backgroundColor="{bg}"{border}{top}{just}>'
@@ -264,14 +282,14 @@ def card_grid(comp: dict, p: Pack, width: float, grows: bool) -> str:
     if steps and len(cards) <= 5:
         arrow = f'<Icon name="arrow-right" size="18" color="$muted" alignSelf="center" />'
         row = arrow.join(one(i, c) for i, c in enumerate(cards))
-        return f'<HStack gap="10" alignItems="stretch"{" grow=\"1\"" if grows else ""}>{row}</HStack>'
+        return f'<HStack gap="10" alignItems="stretch"{grow or (" grow=" + chr(34) + "1" + chr(34) if grows else "")}>{row}</HStack>'
     rows = []
     for r in range(0, len(cards), n):
         chunk = [one(i, c) for i, c in enumerate(cards[r:r + n], start=r)]
         chunk += ['<VStack w="1" grow="1" />'] * (n - len(chunk))  # keep columns aligned
         g = ' grow="1"' if grows else ""
         rows.append(f'<HStack gap="12" alignItems="stretch"{g}>{"".join(chunk)}</HStack>')
-    g = ' grow="1"' if grows else ""
+    g = grow or (' grow="1"' if grows else "")
     return f'<VStack gap="12" alignItems="stretch"{g}>{"".join(rows)}</VStack>'
 
 
@@ -291,20 +309,21 @@ def note_columns(items: list[str], p: Pack) -> str:
     return f'<HStack padding="20" gap="28" backgroundColor="$dark" alignItems="start">{cols}</HStack>'
 
 
-def bullet_panel(items: list[str], p: Pack) -> str:
+def bullet_panel(items: list[str], p: Pack, grow: str = "") -> str:
     rows = "".join(f'<HStack gap="10" alignItems="center"><Shape shapeType="rect" w="5" h="5" fill.color="$accent" />'
                    f'<Text fontSize="{p.t["body"] + 1}" fontFamily="{p.sans}" color="$ink">{x(i)}</Text></HStack>'
                    for i in items)
-    return f'<VStack padding="18" gap="10" backgroundColor="$panel"{p.border}>{rows}</VStack>'
+    spread = ' justifyContent="spaceEvenly"' if grow else ""
+    return f'<VStack padding="18" gap="10" backgroundColor="$panel"{p.border}{grow}{spread}>{rows}</VStack>'
 
 
-def bullets_block(comp: dict, p: Pack) -> str:
+def bullets_block(comp: dict, p: Pack, grow: str = "") -> str:
     items = [str(b) for b in comp["content_data"].get("bullets", [])]
     if 2 <= len(items) <= 6 and all(len(i.split()) <= 5 for i in items):
         return tile_row(items, p)
     if 2 <= len(items) <= 3 and all(len(i.split()) >= 8 for i in items):
         return note_columns(items, p)
-    return bullet_panel(items, p)
+    return bullet_panel(items, p, grow)
 
 
 def process_steps(comp: dict, p: Pack) -> str:
@@ -319,7 +338,7 @@ def process_steps(comp: dict, p: Pack) -> str:
     return f'<HStack gap="8" alignItems="stretch">{arrow.join(out)}</HStack>'
 
 
-def data_table(comp: dict, p: Pack, width: float) -> str:
+def data_table(comp: dict, p: Pack, width: float, h: float | None = None) -> str:
     cd = comp["content_data"]
     cols, rows = cd.get("table_columns", []), cd.get("table_rows", [])
     hi = _named_in_hint(comp, [str(r[0]) for r in rows], "row") if rows else None
@@ -327,9 +346,12 @@ def data_table(comp: dict, p: Pack, width: float) -> str:
     total = sum(min(l, 40) + 6 for l in lens)
     widths = [round(width * (min(l, 40) + 6) / total) for l in lens]
     fs, rh = (15, 50) if len(rows) <= 4 else (13, 38)
+    if h:
+        rh = int(max(38, min(76, (h - 40) / max(1, len(rows)))))
+        fs = 13 if rh < 46 else (15 if rh < 60 else 17)
     out = [f'<Table defaultRowHeight="{rh}" cellBorder.color="$line" cellBorder.width="1">']
     out += [f'<Col width="{w}" />' for w in widths]
-    out.append("<Tr>" + "".join(f'<Td fontSize="10" fontFamily="{p.mono}" color="$muted" bold="true">{x(str(c).upper())}</Td>'
+    out.append('<Tr height="40">' + "".join(f'<Td fontSize="10" fontFamily="{p.mono}" color="$muted" bold="true">{x(str(c).upper())}</Td>'
                                 for c in cols) + "</Tr>")
     for r in rows:
         bg = ' backgroundColor="$panel"' if str(r[0]) == hi else ""
@@ -349,12 +371,18 @@ def _num(v: Any) -> float | None:
     return float(m.group()) if m else None
 
 
-def bar_list(labels: list[str], series: list[tuple[str, list[str]]], p: Pack, width: float) -> str:
+def bar_list(labels: list[str], series: list[tuple[str, list[str]]], p: Pack, width: float, h: float | None = None) -> str:
     """Horizontal bars. One series: best = accent, worst = negative. Two: entity colour + grey."""
     track = width - 130 - 100
     vals = [_num(v) or 0 for _, vs in series for v in vs]
     top = max(vals) or 1
     rows = []
+    per = (h - (34 if len(series) > 1 else 0)) / max(1, len(labels)) if h else None
+
+    def thick(per_row: float | None) -> int:
+        if per_row is None:
+            return (22 if len(labels) <= 3 else 16) if len(series) == 1 else (18 if len(labels) <= 3 else 12)
+        return int(max(12, min(30, per_row * (0.32 if len(series) == 1 else 0.22))))
     for li, label in enumerate(labels):
         ent = p.entity(label)
         bars = []
@@ -365,8 +393,8 @@ def bar_list(labels: list[str], series: list[tuple[str, list[str]]], p: Pack, wi
             else:
                 col = (ent[0] if ent else "$ink") if si == 0 else "$line"
             bars.append(f'<HStack gap="8" alignItems="center"><Shape shapeType="rect" w="{max(4, round(track * v / top))}" '
-                        f'h="{(22 if len(labels) <= 3 else 16) if len(series) == 1 else (18 if len(labels) <= 3 else 12)}" fill.color="{col}" />'
-                        f'<Text fontSize="12" fontFamily="{p.sans}" bold="true" color="$ink">{x(vs[li])}</Text></HStack>')
+                        f'h="{thick(per)}" fill.color="{col}" />'
+                        f'<Text fontSize="{14 if per and per > 70 else 12}" fontFamily="{p.sans}" bold="true" color="$ink">{x(vs[li])}</Text></HStack>')
         lab_c = ent[2] if ent else "$ink"
         rows.append(f'<HStack gap="10" alignItems="center"><Text w="120" fontSize="14" fontFamily="{p.sans}" bold="true" '
                     f'color="{lab_c}">{x(label)}</Text><VStack gap="4">{"".join(bars)}</VStack></HStack>')
@@ -375,14 +403,16 @@ def bar_list(labels: list[str], series: list[tuple[str, list[str]]], p: Pack, wi
         legend = '<HStack gap="16" margin.top="4">' + "".join(
             f'<HStack gap="6" alignItems="center"><Shape shapeType="rect" w="10" h="10" fill.color="{"$ink" if i == 0 else "$line"}" />'
             f'{p.label(name)}</HStack>' for i, (name, _) in enumerate(series)) + "</HStack>"
+    if h:
+        return (f'<VStack grow="1" gap="10"><VStack grow="1" justifyContent="spaceAround">{"".join(rows)}</VStack>{legend}</VStack>')
     return f'<VStack gap="{24 if len(labels) <= 3 else 14}">{"".join(rows)}{legend}</VStack>'
 
 
-def chart_block(comp: dict, p: Pack, width: float) -> str:
+def chart_block(comp: dict, p: Pack, width: float, h: float | None = None) -> str:
     cd = comp["content_data"]
     labels = cd.get("chart_labels", [])
     series = [(s["name"], s["values"]) for s in cd.get("chart_series", [])] or [(cd.get("chart_title", ""), cd.get("chart_values", []))]
-    return bar_list(labels, series, p, width)
+    return bar_list(labels, series, p, width, h)
 
 
 def panel(title: str | None, body: str, p: Pack, grows: bool = False) -> str:
@@ -410,32 +440,92 @@ def strip(text: str, label: str, p: Pack) -> str:
 
 # ── composer (stands in for the generator's layout choices) ──────────────────
 
-def compose_body(plan: dict, p: Pack) -> str:
+def _lines(text: str, fs: float, width: float) -> int:
+    return max(1, math.ceil(text_px(text, fs) / width))
+
+
+WEIGHT = {"hero": 3, "peer": 3, "supporting": 1, "minor": 1}
+GAP = 16
+
+
+def _split_kpi_tiers(comps: list[dict], p: Pack) -> list[dict]:
+    """5+ tiles mixing combined and per-entity values -> combined tier + entity tier
+    (Genspark CHEFFIN slide 2). Same content, laid out to fit."""
+    out = []
+    for c in comps:
+        cd = c.get("content_data") or {}
+        labels = cd.get("kpi_labels") or []
+        ents = [i for i, l in enumerate(labels) if p.entity(l)]
+        if c["kind"] == "kpi_row" and len(labels) > 4 and 0 < len(ents) < len(labels):
+            for keep, weight, suffix in ((lambda i: i not in ents, c.get("weight", "hero"), ""),
+                                          (lambda i: i in ents, "supporting", "_entities")):
+                idx = [i for i in range(len(labels)) if keep(i)]
+                tier = dict(c, weight=weight, component_id=(c.get("component_id") or "kpi") + suffix)
+                tier["content_data"] = {k: ([v[i] for i in idx] if isinstance(v, list) and len(v) == len(labels) else v)
+                                        for k, v in cd.items()}
+                out.append(tier)
+        else:
+            out.append(c)
+    return out
+
+
+def compose_body(plan: dict, p: Pack, body_h: float) -> str:
     comps = [c for c in plan["components"] if c["kind"] not in ("title", "caption")]
     narr = [c for c in comps if c["kind"] == "narrative"]
-    main = [c for c in comps if c["kind"] != "narrative"]
-    out: list[str] = []
-    grew = False
+    main = _split_kpi_tiers([c for c in comps if c["kind"] != "narrative"], p)
 
-    def draw(c: dict, width: float, grows: bool) -> str:
+    # 1. blocks: ("fixed", xml, est_h) or ("grow", draw(h, grow_attr), weight)
+    blocks: list[tuple] = []
+
+    def fixed(xml: str, h: float) -> None:
+        blocks.append(("fixed", xml, h))
+
+    def grower(fn, weight: float, cap: float = 1e9) -> None:
+        blocks.append(("grow", fn, weight, cap))
+
+    def cap_of(c: dict) -> float:
+        k, cd = c["kind"], c.get("content_data") or {}
+        if k == "kpi_row":
+            return 240 if c.get("weight") != "supporting" else 150
+        if k == "card_grid":
+            cards = cd.get("cards", [])
+            n = len(cards) if cd.get("card_layout") == "steps" and len(cards) <= 5 else max(1, min(4, len(cards)))
+            rows = math.ceil(len(cards) / n) if cards else 1
+            most = max((len(q.get("bullets") or _split_list(q.get("body") or "") or []) if isinstance(q, dict) else 0
+                        for q in cards), default=0)
+            if not most and not any(isinstance(q, dict) and q.get("body") for q in cards):
+                return rows * 170 + 12 * (rows - 1)
+            per_card = 36 + 14 + 8 + 54 + 60 + most * 34
+            return rows * per_card + 12 * (rows - 1)
+        if k == "table":
+            rows, cols = cd.get("table_rows", []), cd.get("table_columns", [])
+            if len(cols) == 2 and all(_num(r[1]) is not None for r in rows):
+                return 24 + len(rows) * 52
+            return 40 + len(rows) * 76
+        if k == "chart":
+            series = cd.get("chart_series") or [1]
+            return len(cd.get("chart_labels", [])) * (len(series) * 34 + 40) + 34
+        if k == "bullet_list":
+            return 36 + len(cd.get("bullets", [])) * 34
+        return 1e9
+
+    def draw(c: dict, width: float, h: float, g: str) -> str:
         k = c["kind"]
         if k == "kpi_row":
-            return kpi_row(c, p, hero=c.get("weight") != "supporting")
+            return kpi_row(c, p, hero=c.get("weight") != "supporting", h=h, grow=g)
         if k == "card_grid":
-            return card_grid(c, p, width, grows)
+            return card_grid(c, p, width, True, h=h, grow=g)
         if k == "table":
             rows = c["content_data"].get("table_rows", [])
-            if len(c["content_data"].get("table_columns", [])) == 2 and all(_num(r[1]) is not None for r in rows):
-                cols = c["content_data"]["table_columns"]
-                return (f'<VStack gap="12">{p.label(" · ".join(map(str, cols)))}'
-                        + bar_list([str(r[0]) for r in rows], [(cols[1], [r[1] for r in rows])], p, width) + "</VStack>")
-            return data_table(c, p, width)
+            cols = c["content_data"].get("table_columns", [])
+            if len(cols) == 2 and all(_num(r[1]) is not None for r in rows):
+                return (f'<VStack gap="12"{g}>{p.label(" · ".join(map(str, cols)))}'
+                        + bar_list([str(r[0]) for r in rows], [(cols[1], [r[1] for r in rows])], p, width, h - 24) + "</VStack>")
+            return f'<VStack{g}>{data_table(c, p, width, h)}</VStack>'
         if k == "chart":
-            return chart_block(c, p, width)
+            return f'<VStack{g}>{chart_block(c, p, width, h)}</VStack>'
         if k == "bullet_list":
-            return bullets_block(c, p)
-        if k == "process_arrow":
-            return process_steps(c, p)
+            return bullets_block(c, p, g)
         return ""
 
     i = 0
@@ -447,24 +537,80 @@ def compose_body(plan: dict, p: Pack) -> str:
         if pair:
             wl = INNER * (0.56 if c["kind"] == "table" else 0.5) - 12
             wr = INNER - wl - 24
-            left = panel(c["content_data"].get("chart_title") or None, draw(c, wl, False), p)
-            right = panel(nxt["content_data"].get("chart_title") or None, draw(nxt, wr, False), p)
-            out.append(f'<HStack gap="24" alignItems="start"><VStack w="{round(wl)}">{left}</VStack>'
-                       f'<VStack grow="1">{right}</VStack></HStack>')
+
+            def side(cc: dict, w: float, h: float, extra: str) -> str:
+                title = cc["content_data"].get("chart_title")
+                head = p.label(title) if title else ""
+                inner_h = h - (24 if title else 0)
+                return f'<VStack gap="12"{extra}>{head}{draw(cc, w, inner_h, chr(32) + "grow=" + chr(34) + "1" + chr(34))}</VStack>'
+
+            pair_cap = max(cap_of(c), cap_of(nxt)) + 24
+            grower(lambda h, g, c=c, nxt=nxt, wl=wl, wr=wr:
+                   f'<HStack gap="24" alignItems="stretch"{g}>{side(c, wl, h, f" w={chr(34)}{round(wl)}{chr(34)}")}'
+                   f'{side(nxt, wr, h, chr(32) + "grow=" + chr(34) + "1" + chr(34))}</HStack>', 3, pair_cap)
             i += 2
             continue
-        rich = c["kind"] == "card_grid" and any(
-            isinstance(k, dict) and (k.get("body") or k.get("bullets")) for k in c["content_data"].get("cards", []))
-        grows = not grew and rich and c.get("weight") in ("hero", "peer", None)
-        grew = grew or grows
-        out.append(draw(c, INNER, grows))
+        k = c["kind"]
+        if k == "process_arrow":
+            fixed(process_steps(c, p), 50)
+        elif k == "bullet_list":
+            items = [str(b) for b in c["content_data"].get("bullets", [])]
+            if 2 <= len(items) <= 6 and all(len(t.split()) <= 5 for t in items):
+                fixed(tile_row(items, p), 62)
+            elif 2 <= len(items) <= 3 and all(len(t.split()) >= 8 for t in items):
+                col_w = (INNER - 40 - 28 * (len(items) - 1)) / len(items)
+                fixed(note_columns(items, p), 40 + max(_lines(t, 13, col_w) for t in items) * 19)
+            else:
+                grower(lambda h, g, c=c: draw(c, INNER, h, g), 1, cap_of(c))
+        else:
+            grower(lambda h, g, c=c: draw(c, INNER, h, g), WEIGHT.get(c.get("weight") or "hero", 3)
+                   if not (k == "kpi_row" and c.get("weight") == "supporting") else 1.4, cap_of(c))
         i += 1
-    if not grew:
-        out.append('<VStack grow="1" />')
+
     for j, n in enumerate(narr):
-        last = j == len(narr) - 1
-        out.append(strip(n["content_data"]["text"], "Key message", p) if last else insight(n["content_data"]["text"], p))
-    return "".join(out)
+        text = n["content_data"]["text"]
+        if j == len(narr) - 1:
+            if p.strip_style == "statement":
+                fixed(strip(text, "Key message", p), _lines(text, 19, INNER - 52) * 26)
+            else:
+                fixed(strip(text, "Key message", p), 36 + _lines(text, 15, INNER - 170) * 21)
+        else:
+            fixed(insight(text, p), _lines(text, 16, INNER - 20) * 23)
+
+    # 2. split the height: fixed blocks take what they need; growers share the rest by
+    #    weight up to their cap (water-filling); slack left over becomes even spacing.
+    fixed_h = sum(b[2] for b in blocks if b[0] == "fixed")
+    gaps = GAP * (len(blocks) - 1)
+    spare = max(120.0, body_h - fixed_h - gaps)
+    growers = [i for i, b in enumerate(blocks) if b[0] == "grow"]
+    alloc = {i: 0.0 for i in growers}
+    open_ = set(growers)
+    left = spare
+    while open_ and left > 1:
+        wsum = sum(blocks[i][2] for i in open_)
+        step = {i: left * blocks[i][2] / wsum for i in open_}
+        left = 0.0
+        for i in list(open_):
+            room = blocks[i][3] - alloc[i]
+            if step[i] >= room:
+                alloc[i] += room
+                left += step[i] - room
+                open_.discard(i)
+            else:
+                alloc[i] += step[i]
+    slack = max(0.0, left)
+    out = []
+    for i, blk in enumerate(blocks):
+        if blk[0] == "fixed":
+            out.append(blk[1])
+        else:
+            h = alloc[i]
+            out.append(blk[1](h, f' h="{round(h)}"'))
+    # slack: widen the gaps (up to +32px) and centre what remains, never one empty band
+    extra = min(32.0, slack / max(1, len(blocks) + 1))
+    rest = slack - extra * max(0, len(blocks) - 1)
+    pad = '<VStack h="%d" />' % round(rest / 2) if rest > 8 else ""
+    return pad + "".join(out) + pad, GAP + extra
 
 
 _PHRASE = re.compile(r"phrase\s+['\"‘“](.+?)['\"’”]")
@@ -504,6 +650,10 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
     rule = '<Shape margin.top="14" shapeType="rect" w="36" h="2" fill.color="$ink" />' if p.rule else ""
     lines = math.ceil(len(plan["slide_title"]) * p.t["headline"] * 0.56 / p.head_max_w)
     head_h = round(lines * p.t["headline"] * 1.15 + 6)
+    sub_h = (8 + _lines(plan["subtitle"], 14, INNER) * 19) if plan.get("subtitle") else 0
+    body_h = (H - (6 if p.top_bar else 0) - 26 - 20 - 14 - 14 - head_h - sub_h - (16 if p.rule else 0)
+              - 20 - 14 - 12)
+    body_xml, body_gap = compose_body(plan, p, body_h)
     return f'''<Slide>
   <VStack w="{W}" h="{H}" backgroundColor="$bg" alignItems="stretch">
     {bar}
@@ -514,7 +664,7 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
       </HStack>
       <VStack margin.top="14" h="{head_h}"><Text maxW="{p.head_max_w}" fontSize="{p.t["headline"]}" fontFamily="{p.sans}"{"" if p.headline == "two_tone" else ' bold="true"'} color="$ink" lineHeight="1.15">{headline_runs(plan, p)}</Text></VStack>
       {sub}{rule}
-      <VStack margin.top="20" grow="1" gap="16" alignItems="stretch">{compose_body(plan, p)}</VStack>
+      <VStack margin.top="20" grow="1" gap="{round(body_gap)}" alignItems="stretch">{body_xml}</VStack>
       <HStack margin.top="14" alignItems="center" justifyContent="spaceBetween">
         {p.label(deck["brand"], "$ink" if p.fills == "rhythm" else "$muted", 9, ' bold="true"' if p.fills == "rhythm" else "")}
         {p.label(f"{n:02d} / {total:02d}", "$muted", 9, ' textAlign="right"')}
@@ -626,7 +776,7 @@ def render(plans_file: Path, out: Path, pack: str | None = None) -> list[Path]:
         p.is_dark = _dark_slide(plan, p)
         body = cover(plan, deck, p, len(plans)) if plan.get("slide_type") == "cover" else frame(plan, deck, p, i + 1, len(plans))
         f = out / f"slide-{i + 1:02d}.xml"
-        f.write_text(p.theme() + "\n\n" + body + "\n", encoding="utf-8")
+        f.write_text(p.theme() + "\n<!-- fit-grow: off -->\n" + body + "\n", encoding="utf-8")
         written.append(f)
     return written
 

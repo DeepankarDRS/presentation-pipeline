@@ -216,9 +216,11 @@ async function compile() {
   }
 
   // Grow content into spare space (POM's autoFit only shrinks). Never fatal:
-  // any failure compiles the original XML. Set POM_FIT_GROW=0 to disable.
+  // any failure compiles the original XML. Set POM_FIT_GROW=0 to disable, or put
+  // <!-- fit-grow: off --> in a slide that code already sized (derived nodes): fit-grow
+  // measures in another font than the renderer and would undo that sizing.
   const originalXml = xml;
-  if (process.env.POM_FIT_GROW !== "0") {
+  if (process.env.POM_FIT_GROW !== "0" && !xml.includes("<!-- fit-grow: off -->")) {
     try {
       const { fitGrow } = await import("./fit-grow.js");
       const fitted = await fitGrow(xml);
