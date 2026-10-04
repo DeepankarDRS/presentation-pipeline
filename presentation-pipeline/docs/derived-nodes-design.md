@@ -437,8 +437,13 @@ cover the measurement gap, so with the true width it reserves a line the rendere
 never draws. The 85% margins in fit-grow (`reserveWrap`, table columns) are now the
 error source.
 
-Next (proposed, not built): when a text's font is registered, measure at 100% width and
-drop `reserveWrap` for it. Then re-run this comparison, expecting 0 blank lines. After
+**Fixed (2026-10-04):** fit-grow's `lineCount` measures a text whose font is loaded
+(`fontRegistry.hasFont`) at full width, not 85%, so `reserveWrap` and the heading guard in
+`search` no longer see phantom wraps; other fonts keep the 85% margin. Re-run (c), same
+14 slides: headings reserved 6 → **0**, blank lines drawn 6 → **0**, broken words 0, KPI
+numbers 0 wrapped / 0 past their box; covers and peer card titles (XTSY 2, 6) line up.
+Test: `test_headline_in_a_loaded_font_is_measured_at_full_width`. The other 85% margins
+(table column sizing) are untouched. After
 that, step 2 (one sizing authority). Fonts also need to reach the people who open the
 decks: embed them or require installation, since PowerPoint without Inter substitutes
 another font and the measurement no longer matches.

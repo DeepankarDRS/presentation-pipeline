@@ -1,6 +1,6 @@
 """Font experiment (derived-nodes-design §10g): score LibreOffice renders, not estimates.
 
-    python scripts/phase0b/fontcheck.py output/fontexp
+    python scripts/phase0b/fontcheck.py output/fontexp [a b c]
 
 Expects <root>/src-<deck>/slide-NN.xml, <root>/<variant>-<deck>/slide-NN/ (render_check output)
 and <root>/pdf/<variant>-<deck>-slide-NN.pdf (soffice --convert-to pdf of each presentation.pptx).
@@ -16,6 +16,7 @@ sys.path.insert(0, ".")
 from scripts.eval_metrics import _shapes
 
 ROOT = Path(sys.argv[1])
+VARIANTS = sys.argv[2:] or ["a", "b"]  # run folders <variant>-<deck>
 EDGE = "\"'“”‘’,;:()[]!?"
 
 
@@ -99,7 +100,7 @@ def kpi_boxes(pptx, pdf):
 
 
 rows = {}
-for variant in ("a", "b"):
+for variant in VARIANTS:
     for deck in ("xtsy", "cheffin"):
         for sdir in sorted((ROOT / f"{variant}-{deck}").glob("slide-*")):
             name = sdir.name
@@ -122,7 +123,7 @@ for variant in ("a", "b"):
             rows[f"{variant}-{deck}-{name}"] = {"broken": broken(words, vocab), "headings": heads, "kpi": kpis}
 
 json.dump(rows, open(ROOT / "fontcheck.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-for variant in ("a", "b"):
+for variant in VARIANTS:
     br = sum(len(r["broken"]) for k, r in rows.items() if k.startswith(variant + "-"))
     hs = [h for k, r in rows.items() if k.startswith(variant + "-") for h in r["headings"]]
     blank = sum(1 for h in hs if h["drawn"] is not None and h["reserved"] > h["drawn"])

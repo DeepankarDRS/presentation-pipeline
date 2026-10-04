@@ -46,12 +46,12 @@ def test_kpi_values_grow_with_their_unit_span_in_a_growing_tile_row(tmp_path):
     assert len(sizes) == 1, sizes  # peer tiles keep one number size
 
 
-def _header_slide(tmp_path, headline: str):
+def _header_slide(tmp_path, headline: str, font: str = ""):
     xml = tmp_path / "h.xml"
     xml.write_text('<Theme accent="F5821F" textMain="041E42" textMuted="4E5D6E" />'
                    '<Slide><VStack w="1280" h="720" padding="36" gap="14"><VStack gap="4">'
                    '<Text fontSize="14" bold="true" letterSpacing="2">CORE PROBLEM</Text>'
-                   f'<Text fontSize="30" bold="true">{headline}</Text>'
+                   f'<Text fontSize="30" bold="true"{font}>{headline}</Text>'
                    '<Text fontSize="14">FLIPCART: ₹31.1 vs ₹10.7 · ZAROMA: ₹46.2 vs ₹14.8</Text></VStack>'
                    '<VStack grow="1" padding="18" backgroundColor="FFFFFF"><Text fontSize="16">Chart card</Text></VStack>'
                    '</VStack></Slide>', encoding="utf-8")
@@ -64,6 +64,15 @@ def test_headline_at_the_wrap_edge_reserves_its_second_line(tmp_path):
     on = _header_slide(tmp_path, "CPC is nearly 3x higher than what current conversion economics can support.")
     assert any("heading 1 -> 2 lines reserved" in r for r in on["fitGrow"]), on["fitGrow"]
     assert re.search(r'<Text[^>]*\sminH="\d+"[^>]*>CPC is nearly', on["xml"])
+
+
+def test_headline_in_a_loaded_font_is_measured_at_full_width(tmp_path):
+    """§10g-1: Inter is loaded from src/node/fonts/, so POM measures its real width; at 85% of
+    the box this headline (~1070 px in a 1208 px box) "wrapped" and got a line the renderer
+    never drew (blank band under the headline). At full width it stays on one line."""
+    on = _header_slide(tmp_path, "CPC is nearly 3x higher than what current conversion economics support",
+                       ' fontFamily="Inter"')
+    assert not any("lines reserved" in r for r in on["fitGrow"]), on["fitGrow"]
 
 
 def test_short_headline_is_left_alone(tmp_path):

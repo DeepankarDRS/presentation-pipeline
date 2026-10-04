@@ -33,7 +33,9 @@
 //                     in a row scale as one group; headings never gain a line;
 //                     text with an inline <Span fontSize> keeps its size.
 //   5. headings     — a heading that wraps one line more at 85% of its width
-//                     (the renderer's font runs wider) gets minH for that line.
+//                     (the renderer's font runs wider) gets minH for that line;
+//                     a heading in a loaded font (src/node/fonts/) is measured at
+//                     full width, so it never gets one.
 //
 // It edits the ORIGINAL XML text (only size attributes change), and measures
 // with POM's own layout engine so its numbers match what buildPptx will do.
@@ -956,12 +958,16 @@ function overflows(L) {
  * Lines a text node wraps to, measured at 85% of its width: the renderer's font
  * runs wider than POM's measuring font, so a heading that "just fits" in POM
  * wraps on the slide. The margin keeps grown headings on their line count.
+ * A font loaded from src/node/fonts/ is measured with its real widths, so no
+ * margin: 85% there reserved lines the renderer never draws (§10g-1).
  */
 function lineCount(n, L) {
   const b = L.box(n);
   const fs = n.fontSize ?? 24, lh = n.lineHeight ?? 1.3;
+  const family = n.fontFamily ?? "Noto Sans JP";
+  const real = L.ctx.fontRegistry.hasFont(family, n.bold ? "bold" : "normal");
   const { heightPx } = measureText(n.text ?? (n.runs ?? []).map((r) => r.text).join(""),
-    Math.max(0, b.w - b.pl - b.pr) * 0.85, { fontFamily: n.fontFamily ?? "Noto Sans JP", fontSizePx: fs,
+    Math.max(0, b.w - b.pl - b.pr) * (real ? 1 : 0.85), { fontFamily: family, fontSizePx: fs,
       lineHeight: lh, fontWeight: n.bold ? "bold" : "normal", letterSpacingPx: n.letterSpacing },
     L.ctx.textMeasurementMode, L.ctx.fontRegistry);
   return Math.round(heightPx / (fs * lh));
@@ -972,6 +978,8 @@ function lineCount(n, L) {
 // on 1 line wraps to 2 on the slide and runs into the subtitle or the card below
 // (CHEFFIN cf98c42b5371 slides 1, 3, 4). A heading (>= 20px) whose line count at 85%
 // of its width is higher gets minH for those lines, when the slide has the room.
+// Headings in a loaded font (src/node/fonts/) are measured at full width (lineCount),
+// so they only get minH if POM itself would wrap them, i.e. never.
 
 const HEADING_PX = 20;
 
