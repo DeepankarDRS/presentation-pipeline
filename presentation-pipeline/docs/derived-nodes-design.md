@@ -352,6 +352,67 @@ Production-grade direction (proposed, in order):
 5. Sparse slides → §12 content + `SLIDE_SPARSE`, not inflation (10f).
 6. Real-renderer checks in tests (render_check + eval word breaks / overflow).
 
+**Correction (font experiment, same day):** POM's `"auto"` mode measures with Noto only
+when the text names "Noto Sans JP" or no font. Any other unregistered `fontFamily`
+(Segoe UI, Inter, Consolas …) gets a **0.5 em-per-character estimate**
+(`measureText.js` → `measureTextFallback`). Phase 0b names Segoe UI / Consolas, so its
+"baseline" was the estimate, not Noto. Even with registered fonts, POM uses only the
+font's **widths**. Line height and vertical metrics stay on Noto
+(`measureFontLineHeightRatio`), and faces are keyed by family + normal/bold, so italic
+measures as upright.
+
+#### 10g-1. Font experiment result (2026-10-04, build PC, no API)
+
+Built: `src/node/fonts.js` loads every `.ttf/.otf` in `src/node/fonts/` (Inter 4.1
+Regular/Bold/Italic/BoldItalic, JetBrains Mono 2.304 Regular/Bold, OFL files beside
+them). `compile-pom.js` passes them to `buildPptx(…, { fonts })` and `fit-grow.js` to
+`createBuildContext("auto", fonts)`. `POM_FONTS=0` or an empty folder gives the old
+behaviour. Two details were needed:
+- **Italic files are not passed:** they would replace the upright face in POM's registry.
+- **GSUB is hidden in memory:** POM's opentype.js 2.0.0 throws on a GSUB lookup that
+  both fonts use (lookupType 6 format 2) during width measurement. Renaming the table
+  tag before parsing avoids it, and the files on disk stay upstream. Substitutions don't
+  change advance widths or kerning. A font that still fails a sample measurement is
+  skipped with a warning instead of failing every compile.
+
+Measured width of a 46-char sentence at 20px: estimate 470px; Inter Regular 474,
+Inter Bold 488, JetBrains Mono 562 (mono labels are about 20% wider than POM assumed).
+
+Run: pack `studio_inter` (copy of studio in Inter + JetBrains Mono, both installed
+per-user so LibreOffice draws them), both Phase 0b decks with the `fit-grow: off` marker
+removed. (a) is `POM_FONTS=0` (the estimate) and (b) is the real fonts. Both were
+scored on the LibreOffice PDF with `scripts/phase0b/fontcheck.py`, plus `eval_run
+--fixtures` and `phase0b.check`.
+
+| 14 slides (XTSY 8 + CHEFFIN 6) | (a) estimate | (b) real fonts |
+|---|---|---|
+| Compile | 14/14 | 14/14 |
+| Broken words in the LibreOffice render | 0 | 0 |
+| Eval `word_breaks` (0.55 em estimate) | 0 | 2 (false: "Visibility", "Profitability" boxes now sized to the real word; drawn intact) |
+| Text spilling out of a card (seen in render) | 1 (CHEFFIN 4: "report" below the dark card) | **0** |
+| Table text wrapping in a too-narrow column | CHEFFIN 3: "Actual CPC is ~2.9x allowable" on 2 lines | **1 line** (fit-grow column choice now sees real widths); CHEFFIN 6: one cell wraps to 2 lines |
+| `reserveWrap` headings → blank line drawn | 3 → **3 blank** | 6 → **6 blank** (both covers shift up, peer card titles misaligned on XTSY 2 and 6) |
+| KPI numbers: wrapped / past box | 0 / 0 of 19 | 0 / 0 of 19 (XTSY 3 platform names 46 → 60px, fit) |
+| Mean fill · text overflows (eval) | 0.92 / 0.96 · 0 | same |
+| Text check (missing · extra plan words) | 0 · 0 | 0 · 0 |
+
+Side by side: `output/fontexp/cmp_xtsy_1-4.png`, `cmp_xtsy_5-8.png`,
+`cmp_cheffin_1-3.png`, `cmp_cheffin_4-6.png` (gitignored).
+
+**Reading:** real-font measurement fixes what it should. Overflow and wrap decisions now
+match the renderer: the CHEFFIN 4 spill and the 2-line table cell are gone, and nothing
+broke. But **every `reserveWrap` line is wrong in both runs**, and real fonts make it
+worse (3 → 6). It measures headings at 85% of their width, a margin that existed to
+cover the measurement gap, so with the true width it reserves a line the renderer
+never draws. The 85% margins in fit-grow (`reserveWrap`, table columns) are now the
+error source.
+
+Next (proposed, not built): when a text's font is registered, measure at 100% width and
+drop `reserveWrap` for it. Then re-run this comparison, expecting 0 blank lines. After
+that, step 2 (one sizing authority). Fonts also need to reach the people who open the
+decks: embed them or require installation, since PowerPoint without Inter substitutes
+another font and the measurement no longer matches.
+
 ## 12. Content policy (decided by the user, 2026-10-04)
 
 Replaces the blanket "never invent" for slide text. The test: **can a reviewer check

@@ -43,6 +43,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
+import { loadFonts } from "./fonts.js";
 
 const POM_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)),
   "node_modules", "@hirokisakabe", "pom");
@@ -139,7 +140,7 @@ function setAttrs(xml, id, attrs) {
 // --- layout + measurement (POM's own engine) -----------------------------------
 
 async function layout(xml) {
-  const ctx = createBuildContext("auto");
+  const ctx = createBuildContext("auto", loadFonts());
   const slides = parseXml(xml);
   const maps = [];
   const byId = new Map();

@@ -18,6 +18,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { buildPptx, parseXml, ParseXmlError } from "@hirokisakabe/pom";
 import { postProcessPptx } from "./pptx-post.js";
+import { loadFonts } from "./fonts.js";
 
 const SLIDE_SIZE = { w: 1280, h: 720 };
 const POM_VERSION = "10.3.0";
@@ -234,15 +235,17 @@ async function compile() {
     }
   }
 
+  // measure text with the real font files (src/node/fonts/), not POM's defaults
+  const fonts = loadFonts();
   try {
     let built;
     try {
-      built = await buildPptx(xml, SLIDE_SIZE);
+      built = await buildPptx(xml, SLIDE_SIZE, { fonts });
     } catch (error) {
       if (xml === originalXml) throw error;
       // the fitted XML failed: a fit-grow bug must not cost a retry
       result.fitGrow.push(`fitted XML failed to build (${error && error.message ? error.message : String(error)}); compiled the original`);
-      built = await buildPptx(originalXml, SLIDE_SIZE);
+      built = await buildPptx(originalXml, SLIDE_SIZE, { fonts });
     }
     const { pptx, diagnostics } = built;
 

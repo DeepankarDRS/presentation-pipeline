@@ -81,3 +81,45 @@ studio:               # from Genspark AI Slides' XTSY deck and the Phase 0 hand-
   kicker_number: true    # "CATEGORY DYNAMICS · 02"
   running: false
   arrows: true           # "Search Share ↑" -> an arrow icon on the card
+
+studio_inter:         # studio in Inter + JetBrains Mono (src/node/fonts/, font experiment §10g)
+  colors:
+    bg: "F1ECE2"          # cream
+    ink: "111311"
+    muted: "6E6B63"
+    line: "D8D2C4"
+    panel: "FFFFFF"       # cards are white on cream, with a hairline border
+    dark: "0D0F0C"
+    white: "FFFFFF"
+    accent: "A8441F"      # rust: labels, markers (darkened for 4.5:1 on cream)
+    accent2: "C9F03D"     # lime: highlight fills, accents on dark
+    negative: "B23A2E"
+    onAccent: "111311"
+  colors_dark:          # slides drawn dark (phase frameworks)
+    bg: "0D0F0C"
+    ink: "F7F5EF"
+    muted: "A3A59C"
+    line: "33372F"
+    panel: "171A16"
+    dark: "F7F5EF"
+    white: "FFFFFF"
+    accent: "C9F03D"
+    accent2: "C9F03D"
+    negative: "E0715F"
+    onAccent: "111311"
+  fonts: {sans: "Inter", mono: "JetBrains Mono"}   # measured by POM with these files; install them to render
+  type: {headline: 40, cover: 54, big: 54, mid: 34, title: 19, body: 13, label: 10}
+  badge: dot
+  rule_under_headline: false
+  top_bar: false
+  headline: two_tone     # regular weight, the plan's emphasised phrase in bold
+  headline_max_w: 860
+  card_titles: italic_last
+  fills: rhythm          # white / dark / lime by role and position
+  card_border: true
+  ghost_numerals: true   # big faint 01 / 02 on phase cards
+  dark_slides: [steps]   # a slide whose hero is 4+ ordered steps is drawn dark
+  strip: statement       # closing line as a ruled italic statement, not a dark bar
+  kicker_number: true    # "CATEGORY DYNAMICS · 02"
+  running: false
+  arrows: true           # "Search Share ↑" -> an arrow icon on the card
