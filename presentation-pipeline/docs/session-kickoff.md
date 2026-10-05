@@ -15,9 +15,12 @@ roadmap phases 0–4 (`docs/roadmap-derived-components.md`) are history; their e
   (`tests/unit/test_py311_syntax.py`).
 - **Channel back:** the user emails the eval bundle (and anything else requested) to the
   build device; the build session imports it and commits the summary.
-- One Claude/Cursor session per step on the build device. Branch: **`feat/derived-blocks`** (created
-  2026-10-06 from `test-1-planning` at `2e5f0ab`; all §14.6 work goes here, `test-1-planning` stays as
-  the record up to the plan).
+- One Claude/Cursor session per step on the build device. **Branches:** `feat/derived-blocks` is the
+  integration branch for all §14.6 work (created 2026-10-06 from `test-1-planning` at `2e5f0ab`;
+  `test-1-planning` stays as the record up to the plan). **Each session works on its own branch off it**,
+  named `feat/derived-blocks-<step>` (first one: `feat/derived-blocks-step0`, created 2026-10-06 for the
+  planning session and step 0), and merges back into `feat/derived-blocks` only after the user approves
+  the step. The test PC runs from the session branch until it is merged.
 
 ---
 
@@ -27,8 +30,10 @@ roadmap phases 0–4 (`docs/roadmap-derived-components.md`) are history; their e
 
 ```text
 Planning session for the derived design (docs/derived-nodes-design.md §14.6). No code yet: we plan and settle
-the open items, then I approve before anything is built. Work on branch feat/derived-blocks (already created
-and pushed): git fetch, git checkout feat/derived-blocks, git pull, and confirm the branch before anything else.
+the open items, then I approve before anything is built. Work on branch feat/derived-blocks-step0 (already
+created and pushed, branched from feat/derived-blocks): git fetch, git checkout feat/derived-blocks-step0,
+git pull, and confirm the branch before anything else. Commit and push only there; merge into
+feat/derived-blocks only after I approve the step.
 
 Read first: AGENTS.md ("Where work stands"), docs/session-kickoff.md, docs/derived-nodes-design.md (the
 "Current plan" box at the top, then §14.4–14.9 and the LLM calls / tokens subsection),
@@ -60,7 +65,8 @@ write decisions into the docs with dates; one topic at a time, recommend rather 
 ### 1b. Build session (one per step; change the step)
 
 ```text
-Build §14.6 step <0 | 1a | 1 | 2> of docs/derived-nodes-design.md on branch feat/derived-blocks.
+Build §14.6 step <0 | 1a | 1 | 2> of docs/derived-nodes-design.md on branch feat/derived-blocks-<step> (create it
+from feat/derived-blocks if it does not exist; merge back only after I approve the step).
 Read first: AGENTS.md, docs/session-kickoff.md, docs/derived-nodes-design.md ("Current plan" box, §14.6
 and the specs approved for this step). This device has NO OpenAI key and is the ONLY device that commits.
 
@@ -79,7 +85,7 @@ and the exact test-device commands plus the list of files to email back.
 
 ```bash
 git pull
-git checkout feat/derived-blocks
+git checkout feat/derived-blocks-step0        # the session branch named by the build session
 senv\Scripts\activate
 pip install -r requirements.txt
 npm install --prefix src/node
