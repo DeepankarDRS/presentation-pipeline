@@ -974,12 +974,18 @@ Replaces 14.1's "route A first". Reasons:
 
 | Step | What | Accepted when | API |
 |---|---|---|---|
-| 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard | hold-out plans have no `{}` components and no instruction / notes text (re-run planner only) | small paid planner run |
-| 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/phase0b/expand.py`; needs a small generator-only script | the kill criteria in 14.5 | ≈ $0.5 |
+| 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard. **Step-end run** (2026-10-05): full pipeline, × 1, on every step 3 case (`deck-qbr-data`, `deck-product-launch-data`, `gate-deck-agency-takeover`, `gate-deck-xtsy-qcomm`, `gate-deck-cheffin-full`, `gate-deck-all-nodes-dense`) with `--compose`, **run folders kept** (bundles lack `slides.json`). Its plans are reused by 1a and step 3; its `llm.pptx` decks are step 3's `off` arm | no `{}` components and no instruction / notes text in any plan | ≈ $1.8 |
+| 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on step 0's saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/phase0b/expand.py`. Builds the **from-plans runner** (≈ 30 lines: loads a run's `slides.json` into `state["slide_plans"]`; the graph already skips planning then, `route_after_start`, as `/generate-from-plan` does; Python 3.11-safe). Records the real cost per slide with the slot prompt | the kill criteria in 14.5 | ≈ $0.5 |
 | 1 | Only if 1a passes: blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block; every attribute a block writes checked against pom-jsx `types.ts` + `attributes.yaml` | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
 | 2 | Generator prompt: skeleton + slots for kinds with a block; checking loop (item 4) | replay on saved skeletons; unit tests | no |
-| 3 | **Paid check (≈ $2–3):** hold-out briefs + XTSY / CHEFFIN, `blocks: slots` vs `off` | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
+| 3 | **Paid check (≈ $1.2–1.5, revised 2026-10-05):** the from-plans runner on step 0's saved plans of all six cases (≈ 40 slides), `blocks: slots` only, × 1. The `off` arm is step 0's `llm.pptx` on the same plans (no extra cost), so the two arms differ only by the slot route. Before paying: a dry run with a scripted LLM replaying 1a's skeletons through the real pipeline, so the paid run is not repeated for a pipeline bug. Exact cost re-estimated from 1a's per-slide figure before asking | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
 | 4 | Timeline, flow, matrix blocks; plan reviewer loop | coverage, per `docs/plan-reviewer-loop.md` | step-end |
+
+**Paid runs, total (2026-10-05):** step 0 ≈ $1.8 + 1a ≈ $0.5 + step 3 ≈ $1.2–1.5 ≈ **$3.5–3.8**
+(was ≈ $3.6–4.6), with like-for-like arms in step 3. A failed 1a stops at ≈ $2.3. Per-slide
+estimates come from the 2026-10-05 hold-out run ($0.78 / 17 slides, gpt-5-mini planners).
+Precondition for reusing step 0's decks as the `off` arm: step 2's prompt and loop changes
+apply only under `blocks: slots`, so `off` stays the step 0 path.
 
 **Main risk now:** whether the LLM writes slots correctly (step 3), the same unknown as
 route B had. Fallback if it doesn't: the composer with a planner-chosen `arrangement`
