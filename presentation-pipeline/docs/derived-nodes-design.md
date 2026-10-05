@@ -1157,7 +1157,10 @@ Left as fallbacks: matrix (3) and layer / group (3, empty plans). Launch slide 5
    and plan quality (the blocks are the same code in both); it cannot show slot
    compliance, the look of skeleton + blocks, variety or the checking loop.
 5. **Q15, planner batch B timing** (`docs/planner-redesign-research.md` §10): with step 0
-   (recommended), after 1a, after step 3, or split. **Open.**
+   (recommended), after 1a, after step 3, or split.
+   **Decided 2026-10-05: after step 3.** The derived design comes first; planner 3 is parked
+   with its ideas in `docs/planner-redesign-research.md` §9.3. Step 0 keeps its own planner
+   fixes (item 1).
 
 ## 11. Risks
 

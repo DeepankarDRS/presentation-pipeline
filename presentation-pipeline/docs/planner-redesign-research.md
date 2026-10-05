@@ -803,6 +803,52 @@ plan reviewer loop. How the open §9.1 items sit in that order:
 | R2 (contrast per palette) | unchanged; also applies to the style packs |
 | R3 (broken-word checks) | shrink guard (step 0) + checking loop (step 2) |
 
+### 9.3 Planner 3 redesign, parked until the derived design is done (2026-10-05)
+
+**Decision (user, 2026-10-05, Q15):** batch B (planners 3 and 4, beyond what §14.6 step 0
+already holds) is built **after §14.6 step 3**, as its own project with its own paid
+comparison. Reasons: the slide plan (components + `content_data`) is the contract the
+blocks read and planner 3 does not change it; 1a measures slot compliance and step 3
+compares slots vs off on identical plans, so neither needs better plans; step 0 already
+carries the plan fixes blocks expose (empty-plan re-ask, instruction / notes text,
+`SLIDE_SPARSE`, card body ≠ title, C17); building both at once would mix two changes in
+step 3's results. Cost of waiting: 7–13% of brief numbers keep dropping in planning until
+then, one more planning run (≈ $1.8) to re-baseline, and the 20-slide gains wait.
+
+**Ideas to pick up then** (discussed 2026-10-05, nothing written into the schema yet):
+- **Compress by referencing, not summarising.** The outline makes decisions only; code
+  assembles each slide planner's input. Today the outline retypes all data into
+  `key_messages` (3.8–6.8k output tokens for 5–6 slides, ≈ 15–20k for 20, in one call).
+- **Brief digest for the outline's input** (from `index_brief`): text and list lines in
+  full with ids; each table as `[T#] title — rows × cols: first column`; each series as
+  `[C#] measure by period`. Fix the indexer's known parser gaps first (§5 RQ3).
+- **Decisions-only outline:** headline copied by code when the brief has one, else
+  LLM-written and flagged inferred (§12 of the design doc); subtitle = fact ids;
+  `facts: [ids]` + `points` (≤ 3 lines, no numbers) + emphasis (≤ 2 fact ids) instead of
+  `key_messages`; one-line argument instead of `narrative_role`; `visual` = the brief's
+  `Visual:` line verbatim or a short phrase; speaker notes out of the outline.
+- **Two paths.** A: briefs with "Slide N:" sections, so code assigns facts to slides (no LLM
+  choice). B: free-form briefs, so the LLM groups facts by id and code checks coverage,
+  "used on slide N" claims (C9) and duplicates.
+- **Slide packet built by code:** a shared, cacheable deck prefix (core hook, one line
+  per slide with its fact ids, a fact sheet of every brief number and code-computed
+  derived value with its formula, ~1–2k tokens) + the slide's header, argument, points,
+  visual and its facts in native shape (table rows, series, metrics, list items).
+- **Number check:** a number the LLM writes in free text must match a fact or derived
+  value, else reject and re-ask.
+- **Outside evidence (2026-10-05):** Genspark AI Slides maps "SLIDE X" briefs by
+  extracting their directives (path A) and groups free-form data by theme in its
+  reasoning (path B, unchecked). Genspark Super Agent (python-pptx; CHEFFIN 18 slides,
+  XTSY 8) keeps the whole brief in one agent's context, writes content inline in code,
+  draws with a fixed component kit at absolute positions, checks by rendering to PNG and
+  looking. Its `verify.py` computes every metric, yet slides retype them and drift
+  (ZAROMA allowable CPC ₹14.8 on slides 2, 3, 8 vs ₹14.7 on 9 and 15; FLIPCART 1.5× cap
+  ₹7.2 vs ₹7.1), the case for references over retyping. It also fills gaps: thresholds
+  ("clicks ≥ 15", "CTR below 0.4%"), scenario values, budget shares labelled "modelled",
+  a cover chart from made-up data, XTSY time windows ("5–7 AM"), and footer sources that
+  do not exist; web-researched market figures with citations (the later opt-in research
+  mode of §12).
+
 ---
 
 ## 10. Open decisions
@@ -823,7 +869,7 @@ plan reviewer loop. How the open §9.1 items sit in that order:
 | Q12 | Show `assumptions` / `not_covered` to the user | outline review only / also in the final report / off | both (§3.6 L2) | open |
 | Q13 | Visual form decided in the outline (RQ4-E) | yes / no / test first | test first on xtsy + agency takeover (outline-only runs) | open |
 | Q14 | Post-render checks on by default, first slide checked before the rest | yes / setting / no | yes; outside the planners but part of the generator contract (§3.6 L9) | **direction decided 2026-10-05**: the §14.6 checking loop (measured, ≤ 2 rounds, keep best); "first slide before the rest" still open |
-| Q15 | Batch B timing under §14.6 | with step 0 / after the slot test (1a) / after step 3 / split: planner 4 with step 0, planner 3 after 1a | with step 0 for planners 3 and 4: both free to build and useful whatever 1a shows; step 0's paid run then measures all planner fixes at once, and **its saved plans are the input 1a and step 3 reuse**, so batch B later means those plans are stale (a fresh planning run ≈ +$1.8) or step 3 runs on weaker plans; after step 3 means 7–13% of brief numbers keep dropping in planning for the whole build. Cost of "with step 0": a longer step 0 and more files at once (schema, `state.py`, both planners). The split gets the slot answer sooner for ≈ +$1.8 | open (2026-10-05) |
+| Q15 | Batch B timing under §14.6 | with step 0 / after the slot test (1a) / after step 3 / split: planner 4 with step 0, planner 3 after 1a | with step 0 for planners 3 and 4: both free to build and useful whatever 1a shows; step 0's paid run then measures all planner fixes at once, and **its saved plans are the input 1a and step 3 reuse**, so batch B later means those plans are stale (a fresh planning run ≈ +$1.8) or step 3 runs on weaker plans; after step 3 means 7–13% of brief numbers keep dropping in planning for the whole build. Cost of "with step 0": a longer step 0 and more files at once (schema, `state.py`, both planners). The split gets the slot answer sooner for ≈ +$1.8 | **decided 2026-10-05 (user): after §14.6 step 3** — the derived design first; planner 3 parked with its ideas in §9.3 |
 
 ---
 
@@ -839,6 +885,7 @@ plan reviewer loop. How the open §9.1 items sit in that order:
 | 2026-09-28 | RQ2, RQ4, RQ6, RQ7, RQ9, RQ10 | Read five Genspark traces (3 AI Slides, 2 Super Agent) on the CHEFFIN, XTSY and agency-takeover briefs; checked our code for brief style handling (`style_resolver.resolve_theme()` reads only a named palette) and for any assumptions / gaps field (none) | §3.6–3.7: brief-as-spec, stated assumptions and gaps, colour roles, deck-level visual forms, code-computed numbers that still drift when retyped; new P15–P17, RQ4-E, RQ6-E/F, RQ10-(d), Q12–Q14 |
 | 2026-09-29 | §9.1 batch A | Built batch A (planners 1, 2, 9, 13, 15, 16, 20; generator 1, 2, 5, 12; R4) with LLM-free checks: prompt renders on 6 briefs, a replay of the 14 saved gj-h1 generator prompts, the slide-count parse over all 53 cases, an Angular build and a stubbed browser check of the plan editor; 483 unit tests pass, 4 known failures | Three invention sources outside the §9.1 list reached every generator prompt (`design-language.yaml` `content_invention`, house-style "ADD a band", the golden `Source:` template); the default settings bucket told gj-h1 "EXACTLY 8" slides for a 14-slide brief. Status table under §9.1 |
 | 2026-09-29 | RQ4, RQ5, RQ9 | Reviewed three of our decks against their briefs and Genspark's slides: `tables-check` (CHEFFIN short brief, commit 9b668e1), `1b306e1de67f` (CHEFFIN full brief, 2026-09-28, theme `saascolor`), `189ac04f3584` (XTSY); mapped every finding to §9.1 | 14 items were missing and are now in §9.1 (planners 13–20, generator 11–12, R1–R4); L1 / L5 corrected with G17: a named visual is kept when it suits the data, otherwise switched with a recorded reason |
+| 2026-10-05 | §9.3, Q15 | Q15 decided: batch B after §14.6 step 3; read two Genspark Super Agent outputs (CHEFFIN, XTSY) | §9.3: planner-3 ideas parked (referencing, brief digest, decisions-only outline, paths A / B, slide packet, number check) with the Super Agent evidence |
 | 2026-10-05 | §9, Q3, Q4, Q14 | Aligned with the content policy (2026-10-04) and the render route the user chose (`derived-nodes-design.md` §14.6); hold-out test on 3 new briefs (§14.3b) | §9.2: step 0 adds four planner fixes (empty-plan re-ask, no instruction / notes text, `SLIDE_SPARSE`, card body ≠ title); generator 3 / 6 / R3 absorbed by blocks and the checking loop; Q4 decided, Q3 refined, Q14 direction set, Q15 added |
 
 ---
