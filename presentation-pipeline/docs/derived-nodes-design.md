@@ -17,7 +17,8 @@ as research code in `scripts/phase0b/` (R1–R4, 14.7). Started 2026-10-04 as a 
 >   where they disagree with §14.6, §14.6 wins.
 > - Related: `docs/plan-reviewer-loop.md` (2026-10-05 note), `docs/planner-redesign-research.md` §9.2, Q15.
 > - Variant evidence for the slot contract: §14.8 learnings and `docs/eval/genspark-variants/summary.md`
->   (2026-10-06: four Genspark runs, a draft variant shortlist per block).
+>   (2026-10-06: four Genspark runs, a draft variant shortlist per block). Style packs and brief
+>   colours on the hold-out plans: §14.9 (structure identical across packs; role-based text colours).
 Reopens Phase 4 of `docs/roadmap-derived-components.md` (halted 2026-09-24) with one
 change: a derived node gets its content **from the plan by reference**, not retyped
 by the generator.
@@ -1165,6 +1166,38 @@ Four runs of two variant-gallery prompts (AI Slides and Super Agent; full record
    columns. Avoid default shape shadows.
 9. **Variants per block:** a draft shortlist of 3–4 per block is in the summary; it feeds the
    slot contract (variant names the LLM may choose).
+
+### 14.9 Style packs and brief colours on the hold-out plans (2026-10-06, no API)
+
+Question (user): will decks from different prompts all look the same, and can they reach the
+Genspark level? Replay of the three hold-out plans (`output/holdout/inputs/*/slides.json`,
+17 slides) through the composer in editorial, tech, studio_inter and each brief's own theme
+colours (QBR corporate-slate, launch midnight-indigo; the agency brief names no colours, so
+the default corporate-slate). Tool: `scripts/phase0b/pack_replay.py` (two-pass sizing, then
+render_check + LibreOffice); sheets were made in the session, today's LLM deck as the first
+column.
+
+Findings:
+1. **Packs change colour and mood a lot** (white editorial, navy tech, cream studio, dark
+   indigo read as different decks).
+2. **Slide structure is identical in every pack:** the same KPI hero over three tiles, the same
+   horizontal bars, the same card grid with one highlighted card, the same thin dark strip for a
+   3-item list (QBR 5, launch 2). Cross-deck sameness comes from code-chosen layout, not from
+   colour: the composer's weakness, and support for §14.6 (the LLM arranges each slide).
+3. **Recolouring by swapping tokens breaks contrast:** QBR cover title dark on the dark cover;
+   launch slide 2 strip and slide 4 highlighted card turned light with light text. A brand
+   palette needs text colours per background role (on dark, on accent) and a contrast check.
+4. **A brief with no colours falls back to the default theme,** so different briefs share one
+   look (agency = QBR here).
+5. **Packs do not fix plan or chart problems:** QBR 5 and launch 5 (empty plan) stay near-empty;
+   QBR 3 still colours the oldest quarter red as "worst" (hold-out failure 1, §14.3b).
+
+**Proposed (not decided):**
+- **Theme source:** blocks take the deck's palette with role-based text colours (on dark, on
+  accent, on panel) and a contrast check; when the brief names no colours, a style pack is chosen
+  per deck rather than always the default. Feeds the open theme ↔ style-pack decision.
+- **1a kill criteria:** add a cross-deck check: decks from different briefs must not share the same
+  layout signatures (in addition to within-deck variety).
 
 ### 14.4 What the user decides
 
