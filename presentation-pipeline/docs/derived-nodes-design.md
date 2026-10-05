@@ -16,6 +16,8 @@ as research code in `scripts/phase0b/` (R1–R4, 14.7). Started 2026-10-04 as a 
 >   build order and decisions), §14.1–14.3 (composer-first route). Kept as the record;
 >   where they disagree with §14.6, §14.6 wins.
 > - Related: `docs/plan-reviewer-loop.md` (2026-10-05 note), `docs/planner-redesign-research.md` §9.2, Q15.
+> - Variant evidence for the slot contract: `docs/eval/genspark-variants/summary.md` (2026-10-06:
+>   four Genspark runs, learnings, a draft variant shortlist per block).
 Reopens Phase 4 of `docs/roadmap-derived-components.md` (halted 2026-09-24) with one
 change: a derived node gets its content **from the plan by reference**, not retyped
 by the generator.
