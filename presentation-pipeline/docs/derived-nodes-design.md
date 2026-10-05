@@ -1,6 +1,6 @@
 # Design: derived nodes that take their content from the plan
 
-Status: **proposal, 2026-10-04** — nothing built. Research gate §13 done; build route and decisions for the user in §14 (2026-10-05).
+Status: **proposal, 2026-10-04** — nothing built. Research gate §13 done; hold-out test §14.3b; current recommendation §14.6 (LLM layout + code blocks in slots + a checking loop, planner fixes first), decisions for the user in §14.4 (2026-10-05).
 Reopens Phase 4 of `docs/roadmap-derived-components.md` (halted 2026-09-24) with one
 change: a derived node gets its content **from the plan by reference**, not retyped
 by the generator.
@@ -681,10 +681,11 @@ The 6 decisions in §10 are answered before the build starts (1, 2, 6 have evide
 ## 14. Build route and decisions (proposal, 2026-10-05)
 
 Written after the research gate (§13), for the user's go / no-go. Nothing here is
-decided. Each item gives the **assumption** it rests on, the **evidence** for and against,
+decided. **The recommendation was revised after the hold-out test (14.3b) and the outside
+evidence (14.5): see 14.6.** 14.1–14.3 stay as the record of the first proposal. Each item gives the **assumption** it rests on, the **evidence** for and against,
 and a **recommendation**. "Free" = no API cost.
 
-### 14.1 Route: code composer first (recommended), LLM skeleton + tags later if needed
+### 14.1 Route: code composer first, LLM skeleton + tags later if needed (superseded by 14.6)
 
 **The two routes**
 
@@ -738,12 +739,12 @@ user's explicit agreement. Differences from 10 Sep:
 3. Route B: skeleton + tags, using the R3 slot code (`scripts/phase0b/expand.py`) as
    built.
 
-**Recommendation:** A, behind a setting (`render_mode: llm | code_first`), per-slide
+**Recommendation (first proposal, superseded by 14.6):** A, behind a setting (`render_mode: llm | code_first`), per-slide
 fallback to today's path. Add a free **variety metric** with the first block: distinct
 layout signatures per deck (block kinds × arrangement), code-drawn vs the LLM decks of
 the same plans. Move to 2 or B only if that metric or the user's review shows sameness.
 
-### 14.2 The six decisions of §10, revisited for route A
+### 14.2 The six decisions of §10, revisited for route A (rows 3, 5, 6 change under 14.6)
 
 | # | Decision | Assumption | Evidence | Recommendation |
 |---|---|---|---|---|
@@ -754,7 +755,7 @@ the same plans. Move to 2 or B only if that metric or the user's review shows sa
 | 5 | How much look the LLM controls | in route A, the LLM controls no look directly | one switch restyles a deck (§10d: CHEFFIN in studio, no other change). Per-component emphasis already comes from the plan's `design_hint` (inverted tile, highlighted row, bold phrase) | **One look per block per style pack**, plus the plan-driven switches above. No per-node variants for the LLM. Revisit with 14.1's variety metric. Provisional |
 | 6 | `SlideHeader` + deck footer | a deck needs one frame; slide-to-slide header drift reads as amateur | §10c criterion 3: same frame on every slide, code yes, ours no. In route A the frame comes with the composer (label, headline, subtitle, footer with brand + n / N) | **In scope from step 1.** Open: fallback slides still have LLM-drawn headers, so a mixed deck shows two header styles. First fix (free): code draws the frame on fallback slides too and the LLM draws only the body. That's a generator prompt change, so it goes in the paid check |
 
-### 14.3 Build order for route A
+### 14.3 Build order for route A (superseded by 14.6)
 
 Each step is free unless marked. Unit-test baseline before each change (557 pass, 4
 known failures as of 2026-10-05).
@@ -820,14 +821,122 @@ better on agency 1 (the LLM fills whole table rows red / green), equal on data s
 and 4; launch 3 and 4; agency 3 and 5), worse where the plan is thin or empty (QBR 5;
 launch 2, 5 and 6). The biggest visible gaps come from the plan, not the renderer.
 
+### 14.5 Outside evidence: what the POM author and other tools do (2026-10-05)
+
+**POM's own guidance** (pom kit docs, read 2026-10-05):
+- POM XML is the single source of truth. Every authoring surface (agent skills, Markdown
+  `pom-md`, JSX `pom-jsx`, the visual editor) produces it, and preview, validation and
+  rendering all work from it.
+- The **recommended** workflow is "AI agent + pom CLI". An agent with the `pom-slide`
+  skill writes and edits the XML, validates it, renders it for review, and keeps a live
+  preview open while the user asks for changes. That is the LLM writing POM XML
+  **in a loop** (write → validate → render → look → fix), not in one call.
+- Applications and custom pipelines (ours) call `buildPptx()` with the XML.
+- `pom-jsx` offers "typed, reusable slide components" that compile to POM XML. The author
+  provides code composition of reusable components alongside LLM-written XML.
+  Our blocks are the same idea in Python.
+
+So the author's model is: XML as the shared format, reusable components allowed, and an
+AI that writes XML **checks the render and iterates**. Our generator writes XML in one
+shot; repair only reacts to compile errors and one critic round.
+
+**Other tools** (public material only; internals mostly undisclosed):
+
+| Tool | Approach | Trade-off |
+|---|---|---|
+| Genspark (its own traces, §10b, Genspark notes 2026-10-05) | the LLM writes HTML/CSS per slide (absolute positions) from a deck-level token theme and reference patterns, then a layout checker (clipping, overflow, contrast) plus screenshots, then edits until 0 errors | varied, polished; many LLM calls per slide; still invented content in our check (§12) |
+| Gamma | described as "large language models and layout logic": the LLM produces content as cards, the engine lays them out ("layouts adjust automatically") | consistent, editable; own format, details not public |
+| Beautiful.ai | "smart templates": a design-rules engine reflows spacing, alignment and font size as content changes | always tidy; reviewers note decks converge on one house style |
+| Canva, SlidesAI | AI text into pre-built templates | fast, on-brand; same sameness |
+| Newer HTML-generation tools | the LLM writes each slide's code from a theme spec and a **component kit** (cards, callouts, tables, column splits) | the middle ground |
+
+Sources: [pom kit docs](https://github.com/hirokisakabe/pom),
+[Gamma: card-based layouts](https://gamma.app/explore/content/guides/ai-presentation-tool-card-based-layouts),
+[Gamma explained (SketchBubble)](https://www.sketchbubble.com/blog/gamma-explained-a-comprehensive-deep-dive-into-the-ai-powered-presentation-platform/),
+[HTML vs image slide generation (Tosea)](https://tosea.ai/blog/ai-slides-html-vs-image-generation-guide-2026),
+[LLMs vs layout engines (Perceptis)](https://perceptis.ai/blog/llms-vs-layout-engines-how-ai-presentation-tools-work),
+[Alai vs Beautiful.ai](https://getalai.com/blog/alai-vs-beautiful-ai). Gamma / Beautiful.ai
+descriptions come from marketing and review pages, not engineering documentation.
+
+**Where we stand against these:**
+- The pure composer (route A) is the **Beautiful.ai model**: a rules engine, tidy and
+  correct, converging on a house style. The hold-out showed exactly that: correct,
+  samey, and empty when the plan is thin.
+- Today's generator is a **weak version of the Genspark / POM-author model**: the LLM
+  writes the code, but without the render-and-fix loop that makes that model work.
+- The middle pattern (LLM layout + component kit + a checking loop) is what POM's
+  tooling supports and newer tools use.
+
+### 14.6 Updated recommendation (2026-10-05): LLM layout, code components, a checking loop
+
+Replaces 14.1's "route A first". Reasons:
+- **Composer rules don't scale to new briefs** (14.3b). Rules for the *inside* of a
+  component scale: one kind's content shape is bounded. Rules for the *slide layout* don't:
+  kinds × counts × weights × text lengths combine without limit. Fixed rules give sameness
+  plus a stream of uncovered cases (2 of the 4 hold-out failures were layout / sizing).
+- **Editing and the visual critic stay simple with LLM-written layout.** On a pure
+  composer slide, layout edits and critic fixes would need a pre-built option set, plus a
+  "detach" escape to XML for anything else. With LLM layout, layout edits and visual
+  repair stay XML edits (today's path). Only edits inside a block go through the plan.
+- **It matches the POM author's recommended model and the newer tools** (14.5).
+
+**The design:**
+1. **Planner fixes first** (they help every route; the hold-out's biggest visible gaps):
+   re-ask instead of the silent `{}` plan; never print planner instructions or speaker
+   notes as slide text; `SLIDE_SPARSE` for thin slides; card bodies that repeat titles
+   rejected.
+2. **The generator LLM keeps writing the slide's POM XML** (layout, bands, free text,
+   emphasis), with **slots for blocks**: `<VStack id="slot-<component_id>" …/>` or the §2
+   tag form.
+3. **Code blocks draw inside the slots** (component kit): KPI row, table, card grid,
+   chart, bullets, process steps, later timeline. Content comes from the plan by `ref`,
+   sized to the slot by two-pass measurement (`expand.py`, `fit.py`, built in R3), the
+   4 hold-out failures fixed and unit-tested.
+4. **A checking loop after the slide is drawn**, the part we lack: measured feedback from
+   POM's layout and the real fonts (squashed boxes, words wider than their box, overflow
+   into the footer, broken words on the render), stated precisely ("the KPI tile is 24 px
+   short"). Fixes come from code where the cause is a block (step type down, split rows)
+   and from the LLM where it is layout, for ≤ 2 rounds, keeping the best version.
+5. **Plan = source of truth for content; XML = source of truth for layout.** Content edits
+   change the plan and re-expand the blocks. Layout and look edits edit the XML (today's
+   edit service), with blocks re-expanded after each edit.
+6. **The composer stays** as the research and test tool (`compose_deck.py`), and as a
+   fallback for a slide whose LLM skeleton fails twice.
+
+**Changes to 14.2:**
+
+| # | Under 14.6 |
+|---|---|
+| 3 Source of truth | plan for block content, node-level XML (skeleton + slots) for layout; repair and edit work on the skeleton, blocks re-expanded after every change |
+| 5 Look the LLM controls | the LLM picks the layout and may pick a block variant per slot (3–4 per block, §10 #5 as first proposed); style pack for everything else |
+| 6 Header + footer | the frame becomes a block the skeleton places (`SlideHeader`), so every slide shares it, including slides with no other block |
+| 1, 2, 4 | unchanged (blocks after planner fixes; Python builders; label role ≥ 10 px, provisional) |
+
+**Build order:**
+
+| Step | What | Accepted when | API |
+|---|---|---|---|
+| 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard | hold-out plans have no `{}` components and no instruction / notes text (re-run planner only) | small paid planner run |
+| 1 | Blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
+| 2 | Generator prompt: skeleton + slots for kinds with a block; checking loop (item 4) | replay on saved skeletons; unit tests | no |
+| 3 | **Paid check (≈ $2–3):** hold-out briefs + XTSY / CHEFFIN, `blocks: slots` vs `off` | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
+| 4 | Timeline, flow, matrix blocks; plan reviewer loop | coverage, per `docs/plan-reviewer-loop.md` | step-end |
+
+**Main risk now:** whether the LLM writes slots correctly (step 3), the same unknown as
+route B had. Fallback if it doesn't: the composer with a planner-chosen `arrangement`
+field (14.1 option 2).
+
 ### 14.4 What the user decides
 
-1. **Route A first** (code composer, LLM free-layout given up on covered slides) or
-   route B as designed. This is the main question; 14.1 has the trade-off.
-2. The six rows of 14.2. The research supports #2, #3 and #6; #1 and #4 need the user's
-   judgement; #5 is provisional.
+1. **The 14.6 design** (LLM layout + code blocks in slots + a checking loop, planner fixes
+   first), or the first proposal (14.1, composer first).
+2. The 14.2 rows as changed in 14.6. The research supports #2; #1 changed with the hold-out
+   (planner fixes first); #3, #5, #6 follow from 14.6; #4 needs the user's judgement.
 3. Whether `gate-deck-all-nodes-dense` gets a paid planner run before step 1, or
-   the gj-h1 dense plans keep standing in (§13 R3 "not covered"). Cost to be estimated before asking.
+   the gj-h1 dense plans keep standing in (§13 R3 "not covered"). Cost to be estimated
+   before asking.
+4. The long-run comparison on the test PC (`compose_deck.py`, LLM vs composer on the same
+   runs) continues to feed this. It measures the composer's ceiling, not 14.6's.
 
 ## 11. Risks
 
