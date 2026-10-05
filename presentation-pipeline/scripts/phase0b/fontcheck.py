@@ -17,6 +17,7 @@ from scripts.eval_metrics import _shapes
 
 ROOT = Path(sys.argv[1])
 VARIANTS = sys.argv[2:] or ["a", "b"]  # run folders <variant>-<deck>
+DECKS = sorted(p.name[4:] for p in ROOT.glob("src-*"))  # source XML folders src-<deck>
 EDGE = "\"'“”‘’,;:()[]!?"
 
 
@@ -53,7 +54,9 @@ def pdf_words(pdf):
 def broken(words, vocab):
     hits = []
     for a, b in zip(words, words[1:]):
-        if (a[5], a[6]) == (b[5], b[6]):
+        # the next word must start at least half a line lower: a fallback glyph (₹ in a font
+        # without it) is split off by the PDF text layer but sits on the same line
+        if (a[5], a[6]) == (b[5], b[6]) or b[1] < a[1] + 0.5 * (a[3] - a[1]):
             continue
         ta, tb = norm(a[4]), norm(b[4])
         joined = norm(a[4] + b[4])
@@ -91,7 +94,7 @@ def kpi_boxes(pptx, pdf):
             continue
         x0, y0, x1, y1 = (sh["x"] * k, sh["y"] * k, (sh["x"] + sh["w"]) * k, (sh["y"] + sh["h"]) * k)
         inside = [w for w in words if x0 - 2 <= (w[0] + w[2]) / 2 <= x1 + 2 and y0 - 4 <= (w[1] + w[3]) / 2 <= y1 + 4]
-        ys = sorted({round(w[1]) for w in inside})
+        ys = sorted({round(w[3]) for w in inside})  # baselines: a smaller unit span ("Cr") sits higher
         lines = 1 + sum(q - p > 4 for p, q in zip(ys, ys[1:])) if ys else 0
         right = max((w[2] for w in inside), default=x0)
         out.append({"text": sh["text"], "px": round(px), "drawn": lines,
@@ -101,7 +104,7 @@ def kpi_boxes(pptx, pdf):
 
 rows = {}
 for variant in VARIANTS:
-    for deck in ("xtsy", "cheffin"):
+    for deck in DECKS:
         for sdir in sorted((ROOT / f"{variant}-{deck}").glob("slide-*")):
             name = sdir.name
             src = (ROOT / f"src-{deck}" / f"{name}.xml").read_text(encoding="utf-8")

@@ -498,10 +498,42 @@ broken words and invented cards).
 
 | # | Research | Answers | Cost |
 |---|---|---|---|
-| R1 | Font experiment (§10g step 1; started 2026-10-05 in another session: `94367ac`, `c4b9c13`) | does POM measuring the real fonts remove broken words / blank heading lines / KPI overflow? | no API |
+| R1 | Font experiment (§10g step 1; **done 2026-10-05**, result below: `94367ac`, `c4b9c13`) | does POM measuring the real fonts remove broken words / blank heading lines / KPI overflow? | no API |
 | R2 | Replay saved decks (`llm_test/` zips: gj-h1, tables-check, baseline, layout-batch, layout-fixes — those with full plans) through the Phase 0b renderer | share of components with a block vs LLM fallback; broken words; text check | no API |
 | R3 | Phase 0c: hand-written mixed slides (LLM-style skeleton + tags, half-width slots, free text beside blocks, 3–4 components per slide) + `gate-deck-all-nodes-dense`; two-pass slot measurement; per-block minimum readable size → `SLIDE_OVERFULL` instead of squashing; per-block fit-grow opt-out | overlap, squashing, broken words, text check on mixed and dense slides | no API |
 | R4 | PowerPoint check: the user opens 3–4 rendered `.pptx` (Phase 0b studio / editorial) in PowerPoint and compares with the LibreOffice PNGs | does PowerPoint match? | ~15 min of the user's time |
+
+#### R1 result (2026-10-05): done — fonts measure true; embedding works in LibreOffice
+
+1. **Phase 0b decks** (14 code-drawn slides, §10g-1): headings reserved / blank lines
+   6 → 0 after the full-width fix (`c4b9c13`); a text spill and a wrapped table cell fixed.
+2. **LLM decks** (28 slides from saved runs: CHEFFIN `1b306e1de67f`, gj-h1
+   `gj-h1-regen-5a9e2d`, tables-check CHEFFIN audit; final `input.xml` per slide;
+   `fontFamily="Inter"` added to every Text / Ul / Ol / Shape / Timeline / ProcessArrow /
+   Pyramid / Td; fit-grow on; LibreOffice render; `scripts/phase0b/fontcheck.py`):
+
+   | | o: as generated (Noto default) | a: Inter, no font files | c: Inter + font files |
+   |---|---|---|---|
+   | Broken words | 13 | 11 | **7** |
+   | Blank heading lines | 0 (3 reserved, all drawn) | 1 | **0** |
+   | KPI numbers wrapped / past box | 0 / 0 | 0 / 0 | 0 / 0 |
+
+   The 7 left in (c) are not measuring errors: one word wider than its box at the chosen
+   size ("Recommendation" in a narrow table column, "Projected" / "₹1.80" in narrow KPI
+   tiles, labels in narrow ProcessArrow chevrons). POM now knows they don't fit, but
+   fit-grow only grows: fixing them is §10g step 4 (shrink one step / report), not fonts.
+   Side effect seen: wider Inter text in a narrow card makes its row taller, the
+   ProcessArrow beside it loses height, and fit-grow's arrow widening (gated on height)
+   no longer runs, so the chevrons stay narrow (CHEFFIN 4, audit 6).
+3. **Embedding** (`scripts/embed_fonts.py`, uncompressed EOT parts as PowerPoint stores
+   them, ~840 KB for 4 Inter faces before subsetting): with Inter **uninstalled**,
+   LibreOffice drew the plain pptx in DejaVu Sans / Arial Black / Liberation Serif and
+   "₹114.9L" broke over two lines; the embedded pptx drew Inter, identical to the
+   installed render. PowerPoint is not on the build PC → part of R4
+   (`output/embedtest/embedded.pptx`). OFL allows embedding.
+
+Follow-ups (not R1): shrink guard for words wider than their box; ProcessArrow width
+growth without height growth; subset embedded fonts; embed in `pptx-post.js` if R4 passes.
 
 **Go** if: fonts measure true (R1), blocks cover most components of real decks (R2),
 mixed and dense slides neither overlap nor squash (R3), PowerPoint matches (R4).
