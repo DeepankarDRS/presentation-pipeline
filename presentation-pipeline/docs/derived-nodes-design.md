@@ -992,12 +992,57 @@ Replaces 14.1's "route A first". Reasons:
 
 | Step | What | Accepted when | API |
 |---|---|---|---|
-| 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard. **Step-end run** (2026-10-05): full pipeline, × 1, on every step 3 case (`deck-qbr-data`, `deck-product-launch-data`, `gate-deck-agency-takeover`, `gate-deck-xtsy-qcomm`, `gate-deck-cheffin-full`, `gate-deck-all-nodes-dense`) with `--compose`, **run folders kept** (bundles lack `slides.json`). Its plans are reused by 1a and step 3; its `llm.pptx` decks are step 3's `off` arm | no `{}` components, no instruction / notes text and no duplicate items on a slide in any plan | ≈ $1.8 |
-| 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on step 0's saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/phase0b/expand.py`. Builds the **from-plans runner** (≈ 30 lines: loads a run's `slides.json` into `state["slide_plans"]`; the graph already skips planning then, `route_after_start`, as `/generate-from-plan` does; Python 3.11-safe). Records the real cost per slide with the slot prompt | the kill criteria in 14.5 | ≈ $0.5 |
+| 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard. **Step-end run** (2026-10-05): full pipeline, × 1, on every step 3 case (`deck-qbr-data`, `deck-product-launch-data`, `gate-deck-agency-takeover`, `gate-deck-xtsy-qcomm`, `gate-deck-cheffin-full`, `gate-deck-all-nodes-dense`) with `--compose`, **run folders kept** (bundles lack `slides.json`). Its plans are reused by 1a and step 3; its `llm.pptx` decks are step 3's `off` arm. **Usage logging** (2026-10-05): every entry in `run-manifest.json` `steps` names its step (elicitor, outline_planner, slide_component_planner, plan_reviewer, generator, repairer, …, and later the checking loop) and slide index, and carries `tokens_reasoning` (already read in `src/utils/llm_client.py` but dropped before the manifest) and `tokens_cached` (from `prompt_tokens_details.cached_tokens`; not read today). Today steps are told apart only by model and order | no `{}` components, no instruction / notes text and no duplicate items on a slide in any plan; every manifest step named, with reasoning and cached tokens | ≈ $1.8 |
+| 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on step 0's saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/phase0b/expand.py`. Builds the **from-plans runner** (≈ 30 lines: loads a run's `slides.json` into `state["slide_plans"]`; the graph already skips planning then, `route_after_start`, as `/generate-from-plan` does; Python 3.11-safe). Records the real cost per slide with the slot prompt; token method below | the kill criteria in 14.5; tokens per slide reported against step 0's generator calls on the same plans | ≈ $0.5 |
 | 1 | Only if 1a passes: blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block; every attribute a block writes checked against pom-jsx `types.ts` + `attributes.yaml` | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
 | 2 | Generator prompt: skeleton + slots for kinds with a block; checking loop (item 4) | replay on saved skeletons; unit tests | no |
 | 3 | **Paid check (≈ $1.2–1.5, revised 2026-10-05):** the from-plans runner on step 0's saved plans of all six cases (≈ 40 slides), `blocks: slots` only, × 1. The `off` arm is step 0's `llm.pptx` on the same plans (no extra cost), so the two arms differ only by the slot route. Before paying: a dry run with a scripted LLM replaying 1a's skeletons through the real pipeline, so the paid run is not repeated for a pipeline bug. Exact cost re-estimated from 1a's per-slide figure before asking | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
 | 4 | Blocks still missing: 2×2 matrix, pyramid, tree, layer, branching flow (timeline and linear flow are done in Phase 0b, 14.7, and move in with step 1); plan reviewer loop | coverage, per `docs/plan-reviewer-loop.md` | step-end |
+
+**LLM calls and tokens: baseline, expected change, method (2026-10-05).**
+
+Baseline, from the hold-out run manifests (`output/holdout/inputs/*/run-manifest.json`, 17
+slides, $0.78; product-launch deck, 6 slides, $0.235):
+
+| Call | Model | Calls | In / call | Out / call | Share of cost |
+|---|---|---|---|---|---|
+| elicitor | gpt-4.1 | 1 | ~1.6k | ~60 | 2% |
+| outline planner | gpt-5-mini | 1 | ~3.6k | ~5k (incl. reasoning) | 5% |
+| slide component planner | gpt-5-mini | 1 / slide | ~11.4k | 1–6k | 22% |
+| plan reviewer | gpt-5-mini | 1 | ~2.3k | ~2.4k | 2% |
+| **generator** | gpt-4.1 | 1 / slide | **9–14k** | 0.1–2.4k (the slide XML) | **~69%** |
+| repairs | gpt-4.1 | 0–2 / deck | 2–10k | ~1k | varies |
+
+The generator's **input** (~12k ≈ $0.024 per slide) is the largest single cost. Generator
+calls were identified by their output matching the saved slide XML token count.
+
+Expected change (estimates until 1a / step 3 measure them):
+
+| Change | Calls | Tokens |
+|---|---|---|
+| step 0 empty-plan re-ask | +1 planner call only when a plan fails | ≈ $0.009 per re-ask |
+| planner 4 checks (batch B) | +≤ 1 re-ask per flagged slide (Test 1: 30–40% of slides) | ≈ +$0.003 / slide on average |
+| generator, kinds with a block | unchanged (1 / slide) | **input down**: the kind's recipe (kpi_row 614, card_grid 989, card_steps 649, card_matrix 798, hero_stat 551, table_card 424, timeline 264, chart_card 245 tokens, o200k) and its data become one slot line; **output down**: no card / table / KPI XML; small fixed rise for the slot rules in the system prompt |
+| compile repairs | likely down (code-drawn blocks compiled 88 / 88 vs 86 / 88) | fewer 2–10k repair calls |
+| checking loop (step 2) | +0–2 per slide with a *layout* issue; block issues fixed by code | ≈ $0.02–0.025 per round |
+| content edits in the UI | down: plan edit + re-draw, no LLM call | — |
+| reviewer loop (step 4) | +1 checklist per deck + re-plans | `plan-reviewer-loop.md` §8 (to re-estimate for gpt-5-mini) |
+
+Rough net per 6-slide deck (today ≈ $0.24–0.33): generator ≈ −$0.06, re-asks ≈ +$0.02,
+checking loop ≈ +$0.05 if one slide in three needs a round, repairs slightly down:
+**about flat (± 20%) — more calls, smaller generator calls**, before the step 4 reviewer.
+
+Method:
+1. **Baseline:** per-call `tokens_in` / `tokens_out` / `cost` from `run-manifest.json`; from
+   step 0 on, with step names, reasoning and cached tokens (step 0 logging item).
+2. **Free estimate before paying (step 2):** render the generator prompt for step 0's saved
+   plans in both modes (recipes + data vs slot lines) and count with `tiktoken`
+   (`o200k_base`): the exact input change, no API call.
+3. **1a:** generator tokens per slide with the slot prompt vs step 0's generator calls on the
+   same plans (like-for-like); used to re-estimate step 3 before asking.
+4. **Step 3:** per deck and per slide, slots vs off on identical plans: calls per slide,
+   tokens in / out / reasoning / cached by step, $ per slide; checking-loop rounds,
+   re-asks and repairs counted separately so any increase is traceable.
 
 **Paid runs, total (2026-10-05):** step 0 ≈ $1.8 + 1a ≈ $0.5 + step 3 ≈ $1.2–1.5 ≈ **$3.5–3.8**
 (was ≈ $3.6–4.6), with like-for-like arms in step 3. A failed 1a stops at ≈ $2.3. Per-slide
