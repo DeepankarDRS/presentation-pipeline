@@ -15,6 +15,8 @@ as research code in `scripts/phase0b/` (R1–R4, 14.7). Started 2026-10-04 as a 
 > - **History, superseded:** §2–§10 (the first node design: `CardGrid ref=…` tags, its
 >   build order and decisions), §14.1–14.3 (composer-first route). Kept as the record;
 >   where they disagree with §14.6, §14.6 wins.
+> - Planning session 2026-10-06: step 0 plan, slot contract, 1a protocol, theme source and checking-loop
+>   drafts in `docs/derived-blocks-planning-2026-10-06.md` (decisions awaiting the user, table in its §6).
 > - Related: `docs/plan-reviewer-loop.md` (2026-10-05 note), `docs/planner-redesign-research.md` §9.2, Q15.
 > - Variant evidence for the slot contract: §14.8 learnings and `docs/eval/genspark-variants/summary.md`
 >   (2026-10-06: four Genspark runs, a draft variant shortlist per block). Style packs and brief
