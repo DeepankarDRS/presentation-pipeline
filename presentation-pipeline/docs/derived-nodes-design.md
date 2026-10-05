@@ -1,6 +1,6 @@
 # Design: derived nodes that take their content from the plan
 
-Status: **proposal, 2026-10-04** — nothing built. Research gate §13 done; hold-out test §14.3b; current recommendation §14.6 (LLM layout + code blocks in slots + a checking loop, planner fixes first), decisions for the user in §14.4 (2026-10-05).
+Status: **proposal, 2026-10-04** — nothing built. Research gate §13 done; hold-out test §14.3b; current recommendation §14.6 (LLM layout + code blocks in slots + a checking loop, planner fixes first), decisions for the user in §14.4 (2026-10-05). **User chose §14.6 (2026-10-05)**; evidence per part and kill criteria in §14.5; the slot test (step 1a) runs before the build.
 Reopens Phase 4 of `docs/roadmap-derived-components.md` (halted 2026-09-24) with one
 change: a derived node gets its content **from the plan by reference**, not retyped
 by the generator.
@@ -832,13 +832,44 @@ launch 2, 5 and 6). The biggest visible gaps come from the plan, not the rendere
   preview open while the user asks for changes. That is the LLM writing POM XML
   **in a loop** (write → validate → render → look → fix), not in one call.
 - Applications and custom pipelines (ours) call `buildPptx()` with the XML.
-- `pom-jsx` offers "typed, reusable slide components" that compile to POM XML. The author
-  provides code composition of reusable components alongside LLM-written XML.
-  Our blocks are the same idea in Python.
+- `pom-jsx` (0.8.1, matches POM 10.3.0; README + `src/types.ts` read 2026-10-05) is a typed
+  JSX/TSX way for **developers** to write POM XML: every node is a component with
+  hand-written prop types ("attribute typos … surface at compile time"), and "custom
+  components" are plain functions returning fixed POM nodes (README example:
+  `TwoColumnSlide({title, left, right})`, a whole-slide layout template). It has **no
+  measuring, fitting or adapting** logic, no mention of LLMs, and is not described as
+  something to mix with LLM-written XML: the README calls agent skills, pom-jsx, pom-md and
+  the editor "alternative authoring surfaces", each producing XML on its own.
+  *Correction (2026-10-05): an earlier version of this section said the author provides
+  code components "alongside LLM-written XML". That was overstated.* What pom-jsx does show:
+  the author holds that reusable components should expand to **plain POM** (as our blocks
+  do). Our blocks differ in the part that did the work in R2 / R3: they measure and adapt
+  (`fill_card_text`, `pin_h`, two-pass `fit.py`).
+- The `pom-slide` skill (read 2026-10-05) builds to validate, renders to PNG, checks the
+  image ("no overflow/overlap, adequate spacing, aligned edges, visual hierarchy…") and
+  repeats up to 3 times; it tells the agent to reuse a "common header block" across slides.
+- Usable now: pom-jsx's `types.ts` is a readable list of each node's accepted attributes
+  (e.g. `Td` has no `borderLeft`, matching our `ITEM_BORDER_REMOVED` finding). Step 1 checks
+  every attribute a block writes against it plus `attributes.yaml` (POM's compile stays the
+  final word; the types are hand-written and may lag). Writing blocks in TSX: not worth it
+  (measuring lives in Python / Node; blocks already compile 88 / 88 + 17 / 17).
 
-So the author's model is: XML as the shared format, reusable components allowed, and an
-AI that writes XML **checks the render and iterates**. Our generator writes XML in one
-shot; repair only reacts to compile errors and one critic round.
+So the author's model is: XML as the shared format, components that expand to plain POM,
+and an AI that writes XML **checks the render and iterates** (in an interactive agent
+session, not a batch pipeline). The author does **not** address measured / adapting
+components or mixing LLM layout with code components through slots; those are ours. Our
+generator writes XML in one shot; repair only reacts to compile errors and one critic round.
+
+**Research on LLM slide generation:**
+- **AutoPresent** (CVPR 2025): the same 8B model writing slides through a high-level
+  function library (SlidesLib) instead of raw python-pptx: code that runs 2.1% → 54.4%,
+  score 1.3 → 33.5 ("observable gains … by at most 34.0 points"). Self-refinement helps a
+  little (58.0 → 59.5 → 60.1); "the first iteration usually gives the biggest performance
+  improvement". Human slides still score clearly higher.
+- **PPTAgent** (EMNLP 2025): the LLM picks reference slide layouts and edits them with
+  actions instead of drawing from scratch; beats end-to-end generation on content, design
+  and coherence (PPTEval). Closest analogue to "LLM decides structure, something fixed
+  carries the detail", but not our slot contract.
 
 **Other tools** (public material only; internals mostly undisclosed):
 
@@ -855,7 +886,11 @@ Sources: [pom kit docs](https://github.com/hirokisakabe/pom),
 [Gamma explained (SketchBubble)](https://www.sketchbubble.com/blog/gamma-explained-a-comprehensive-deep-dive-into-the-ai-powered-presentation-platform/),
 [HTML vs image slide generation (Tosea)](https://tosea.ai/blog/ai-slides-html-vs-image-generation-guide-2026),
 [LLMs vs layout engines (Perceptis)](https://perceptis.ai/blog/llms-vs-layout-engines-how-ai-presentation-tools-work),
-[Alai vs Beautiful.ai](https://getalai.com/blog/alai-vs-beautiful-ai). Gamma / Beautiful.ai
+[Alai vs Beautiful.ai](https://getalai.com/blog/alai-vs-beautiful-ai),
+[pom-jsx](https://github.com/hirokisakabe/pom/tree/main/packages/pom-jsx),
+[pom-slide skill](https://github.com/hirokisakabe/pom/tree/main/skills/pom-slide),
+[AutoPresent (arXiv 2501.00912)](https://arxiv.org/abs/2501.00912),
+[PPTAgent (arXiv 2501.03936)](https://arxiv.org/abs/2501.03936). Gamma / Beautiful.ai
 descriptions come from marketing and review pages, not engineering documentation.
 
 **Where we stand against these:**
@@ -864,8 +899,28 @@ descriptions come from marketing and review pages, not engineering documentation
   samey, and empty when the plan is thin.
 - Today's generator is a **weak version of the Genspark / POM-author model**: the LLM
   writes the code, but without the render-and-fix loop that makes that model work.
-- The middle pattern (LLM layout + component kit + a checking loop) is what POM's
-  tooling supports and newer tools use.
+- The middle pattern (LLM layout + component kit + a checking loop) is consistent with
+  POM's tooling and what newer tools use; the slot contract between the two is our own.
+
+**Evidence per part of 14.6** (what is proven, what is not):
+
+| Part | Our evidence | Outside evidence | Confidence |
+|---|---|---|---|
+| Code draws the inside of components | R2: broken words 32 → 2, compile 88 / 88 vs 86 / 88; hold-out (14.3b): 0 broken, 0 invented, 0 crashes on unseen briefs | AutoPresent library vs raw code (2.1% → 54.4% runs); pom-jsx components expand to plain POM; `pom-slide` "common header block" | **strong** |
+| LLM writes the layout as POM XML | today's pipeline | POM README: agent skills "recommended", XML "designed for LLM code generation" | **strong** |
+| Checking loop after drawing | none (not built) | `pom-slide`: render → check → fix, ≤ 3 rounds; AutoPresent: small gains, most in round 1 | **moderate** — helps, small; ≤ 2 rounds |
+| Slots (LLM leaves `slot-<id>`, code fills) | 4 hand-written skeletons (Phase 0c), all clean | none direct; PPTAgent is the nearest analogue | **weak — the main unknown** |
+| Planner fixes | hold-out: empty plans, instruction text, thin slides | — | **no-regret** |
+
+**Kill criteria, set before the slot test** (14.6 step 1a; on briefs not used for tuning):
+- slot compliance ≥ 90% first try (right `ref`, none missing / duplicated, no hand-built block);
+- 0 invented words inside blocks;
+- broken words and overlapping text ≤ today's LLM path on the same plans;
+- the user prefers the slot version on most slides side by side;
+- layout variety (distinct layout signatures per deck) not below LLM-only.
+Fail → keep blocks, drop slots: the composer with a planner-chosen `arrangement` field
+(14.1 option 2). After launch, track block fixes needed per new brief family (must fall
+toward 0, or we are back to rule-chasing), fallback rate, and checking-loop repairs per slide.
 
 ### 14.6 Updated recommendation (2026-10-05): LLM layout, code components, a checking loop
 
@@ -884,7 +939,10 @@ Replaces 14.1's "route A first". Reasons:
 1. **Planner fixes first** (they help every route; the hold-out's biggest visible gaps):
    re-ask instead of the silent `{}` plan; never print planner instructions or speaker
    notes as slide text; `SLIDE_SPARSE` for thin slides; card bodies that repeat titles
-   rejected.
+   rejected. These are the in-branch part of planner item 4 in
+   `docs/planner-redesign-research.md` §9.1 and checks C14–C16 of
+   `docs/plan-reviewer-loop.md`; both docs carry the 2026-10-05 alignment (§9.2 and the
+   status note). Batch B timing (planners 3, 4) is open there as Q15.
 2. **The generator LLM keeps writing the slide's POM XML** (layout, bands, free text,
    emphasis), with **slots for blocks**: `<VStack id="slot-<component_id>" …/>` or the §2
    tag form.
@@ -917,7 +975,8 @@ Replaces 14.1's "route A first". Reasons:
 | Step | What | Accepted when | API |
 |---|---|---|---|
 | 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard | hold-out plans have no `{}` components and no instruction / notes text (re-run planner only) | small paid planner run |
-| 1 | Blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
+| 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/phase0b/expand.py`; needs a small generator-only script | the kill criteria in 14.5 | ≈ $0.5 |
+| 1 | Only if 1a passes: blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block; every attribute a block writes checked against pom-jsx `types.ts` + `attributes.yaml` | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
 | 2 | Generator prompt: skeleton + slots for kinds with a block; checking loop (item 4) | replay on saved skeletons; unit tests | no |
 | 3 | **Paid check (≈ $2–3):** hold-out briefs + XTSY / CHEFFIN, `blocks: slots` vs `off` | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
 | 4 | Timeline, flow, matrix blocks; plan reviewer loop | coverage, per `docs/plan-reviewer-loop.md` | step-end |

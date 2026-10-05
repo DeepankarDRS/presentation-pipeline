@@ -3,6 +3,14 @@
 > **Status: proposal, 2026-09-27. No code yet; waiting for the decisions in §11.**
 > Direction D14 (`docs/architecture-north-star.md` §12): keep `outline_planner` + `slide_component_planner`, carry Test 1's fidelity fixes into them, and turn `plan_reviewer` into a feedback loop that changes the plan.
 > Branch `test-1-planning`. Unit-test baseline this session: 464 pass, 4 known failures.
+>
+> **Update 2026-10-05 (alignment with `docs/derived-nodes-design.md` §14.6, chosen by the user):**
+> - **Order.** The full loop here is **step 4** of the §14.6 build order (after planner fixes, the slot test, blocks and the generator change). Three small pieces of it move to **step 0** ("planner fixes first"): the in-branch re-ask for an empty plan (new row in §2), rejecting planner instructions / speaker notes as slide text (C16), and the thin-slide report (C14 ⇄ the renderer's `SLIDE_SPARSE`). Card bodies that repeat their title join C15.
+> - **Content policy (user, 2026-10-04, design doc §12)** replaces the blanket D2 "never invent": copied / **derived** (allowed, computed by code, marked; settles D13) / **inferred** (allowed, qualitative, flagged Keep / Remove) / invented (never). Affects F4, §5.4 and decision 8.
+> - **New input from the renderer:** blocks draw exactly what the plan holds, so thin or empty plans now *show* (hold-out test, design doc §14.3b). The renderer reports `SLIDE_SPARSE` / `SLIDE_OVERFULL`, and the duplicate check (two components on a slide with ≥ 70% overlapping items, design doc §5) becomes C17.
+> - **Naming.** "Skeleton" in §7 means *suggested components*, not the §14.6 XML skeleton with slots.
+> - **Models.** Since 2026-10-01 the planners and the reviewer run on gpt-5-mini (`models.yaml`); the §8 costs are gpt-4.1 list prices and need re-estimating before the paid comparison.
+> - Unit-test baseline now 557 pass, 4 known failures.
 
 ## 1. In short
 
@@ -28,6 +36,7 @@
 |---|---|---|
 | `outline_planner` ([outline_planner.py](../src/agents/outline_planner.py), [schema](../src/agents/outline_planner_schema.py), [prompt](../src/prompts/outline_planner/system.j2)) | 1 call over the raw brief; `slide_title` ≤ 8 words; `key_messages` retype the data as prose; the schema and prompt say to invent a plausible number when data is missing | headline lost; data flattened; invention allowed |
 | `slide_component_planner` ([`plan_single_slide`](../src/agents/slide_component_planner.py:133)) | 1 call per slide via `Send` from `fan_out_slide_plans`; sees only its outline slide (and `supplied_content` filtered by keywords), **never the brief**; 6.8k-token system prompt; `design_hint` mandatory; temperature 0.3. `repair_context` already exists (used by the repairer's REGENERATE tier) | numbers dropped when the outline dropped them; decoration on every component; a different plan on every run |
+| Failed slide plan (added 2026-10-05) | `plan_single_slide` raising is caught in both `slide_plan_serial_node` and `slide_component_planner_node`, which return `components: []` and log an error ([slide_component_planner.py](../src/agents/slide_component_planner.py)) | a silently empty slide: the generator invents content for it (XTSY gpt-5-mini slide 7, launch 5 in the hold-out) or code draws nothing; CHEFFIN r1 slide 3 lost its chart and table. Fixed in §14.6 step 0: re-ask instead |
 | Fan-in | `assembled_slide_plans: Annotated[list, operator.add]` ([state.py:145](../src/state.py:145)) → `slide_plan_sorter` | a re-planned slide would be **appended**, giving duplicates |
 | `plan_reviewer` ([plan_reviewer.py](../src/agents/plan_reviewer.py)) | 1 LLM call; score + issues (5 types); [`route_after_plan_review`](../src/graph.py:158) always goes to `style_resolver` | a paid call per deck that changes nothing |
 | API `/plan/*` ([api.py:642–794](../src/api.py:642)) | `/plan/outline` (elicitor + outline); `PUT /plan/{id}/outline` (edited outline → the graph skips the outline planner); `/plan/outline/regenerate-slide` (`outline_replanner`, whose prompt also says "derive a plausible number"); `/plan/review` (standalone reviewer) | human review at the outline already exists, with no checkpointer |
@@ -129,7 +138,12 @@ Deterministic, free, and run on every review. "Reuse" means it is already in [`s
 | C12 | the same KPI label with different values on two slides; the same table shown in full twice | outline | medium | new (partial: labels only, no fact store yet) |
 | C13 | slides in one parallel group plan different component kinds | slide (outliers) | medium | new |
 | C14 | below the intent's richness floor (§7), e.g. an executive summary without a KPI strip or a deep-dive without an evidence component | slide | medium | new |
-| C15 | a narrative or bullet repeats the headline or sub-headline | slide | medium | reuse |
+| C15 | a narrative or bullet repeats the headline or sub-headline; a card body repeats its card title (added 2026-10-05, hold-out agency 4) | slide | medium | reuse + new |
+| C16 | planner instructions or speaker notes written as slide content ("Deepen the growth story by showing…", hold-out QBR 3–4; notes planned as a narrative, agency 2, 4–6) | slide | high | new (2026-10-05; built in §14.6 step 0) |
+| C17 | two components on one slide whose item labels overlap ≥ 70% (phase cards + chevrons of the same items, 1 Oct decks slide 4) → keep the hero, report the other | slide | medium | new (2026-10-05; design doc §5) |
+
+C14 also receives the renderer's `SLIDE_SPARSE` (content fills < ~55% of the body, design
+doc §10f) once blocks are built; before that it is the plan-side estimate.
 
 C1, C4 and C5 also run inside each slide branch (step B), so the reviewer usually finds them already fixed. It re-runs them because a revision can break them.
 
@@ -188,7 +202,7 @@ review 3  (only if round 2 ran)          → keep the best version of each slide
 |---|---|
 | Inconsistent judge | closed yes/no checklist; temperature 0; evidence required; code drops a "no" whose quoted evidence is not in the plan. Measured once in the paid run (the same plan reviewed 3×, ≈ $0.16) |
 | Over-criticism | only listed items; at most 3 routed issues per slide; medium issues route only in round 1; low issues never route |
-| Pressure to invent | a fix that needs a number that is not in the brief is not routed; it becomes a named gap (D2). Derived numbers wait for D13 |
+| Pressure to invent | a fix that needs a number that is not in the brief is not routed; it becomes a named gap (D2). Derived numbers wait for D13 — *2026-10-05: D13 settled by the content policy (design doc §12): derived values are allowed once code computes them; until that code exists the rule above stands* |
 | Oscillation / moving goalposts | round 2 raises no new items on slides that were not revised; each slide is re-planned at most 2 times |
 | A revision makes a slide worse | **keep-best per slide**: versions compared by (code high, code medium, LLM high, LLM medium); a tie keeps the earlier version (stability). The outline slide and its plan are kept as a pair; slides whose patch moved blocks between them are kept or reverted together, so coverage (C2) holds |
 | Runaway cost or latency | hard caps: 2 fix rounds, 1 in-branch re-ask, `max_concurrency` 6; every call is recorded in `generation_history` |
@@ -200,7 +214,7 @@ review 3  (only if round 2 ran)          → keep the best version of each slide
 | F1 | The brief is indexed into numbered blocks by code (`brief_index.py`), and the outline planner reads the blocks instead of the raw text | `outline_planner.py`, `user.j2` |
 | F2 | The outline slide gains `intent`, `label` (kicker), `headline_block`, `subtitle`, `block_ids`, `emphasis` (≤ 2), `parallel_group`. The deck gains `audience_and_use`, `gaps`, `style_directives`, `set_aside`, with reasoning fields first (schema order). `slide_title` becomes the headline (key kept for API and frontend; the ≤ 8-word limit goes). `key_messages` stay as *the points the slide makes*, not the data carrier | `outline_planner_schema.py`, `state.OutlineSlide` (additive) |
 | F3 | Code copies the brief's headline verbatim when the outline points at one (`apply_headline_blocks`) | reuse |
-| F4 | Never invent (D2): remove the invent instructions from the outline schema, the outline prompt and `outline_replanner`. Missing data → `gaps` | 3 prompt / schema spots. The generator's own invent lines (north-star §3.4) are a separate small change |
+| F4 | Never invent (D2): remove the invent instructions from the outline schema, the outline prompt and `outline_replanner`. Missing data → `gaps` | 3 prompt / schema spots. The generator's own invent lines (north-star §3.4) are a separate small change. *Done in planner batch A (2026-09-29). Refined 2026-10-04 by the content policy (design doc §12): "invented" stays forbidden, "inferred" qualitative lines are allowed and flagged* |
 | F5 | The slide planner sees its blocks verbatim, plus the header that has already been decided (label / headline / subtitle, so it never writes its own title). Components can bind a parsed `[T#]` / `[C#]` block and code fills `content_data` from it (`fill_component`). `reading` comes first in `PlannerSlide` | `slide_component_planner.py`, `planner_schema.py`, `user.j2` |
 | F6 | `design_hint` becomes optional: only for the slide's `emphasis` items, ≤ 2 per slide. The "mandatory" section is removed; the treatment list stays as reference | `system.j2`, `planner_schema.py` |
 | F7 | The planned kicker reaches the slide: the title component carries `kicker` (the adapter already does this), and the generator uses it instead of deriving one ([generator/system.j2:102](../src/prompts/generator/system.j2:102)) | one line in the generator prompt |
@@ -209,6 +223,9 @@ review 3  (only if round 2 ran)          → keep the best version of each slide
 The slide planner's rich guidance stays: the routing table, the structure + detail pairing, the visual fitness guide and the worked examples. Only references to "key_messages are the source of truth for data" change to "the blocks are". That guidance is why the old planner produced more components (D14).
 
 ## 7. Stability and richness: the code skeleton
+
+> *Naming (2026-10-05): "skeleton" here = code-suggested components for the planner. It is
+> unrelated to the XML skeleton with slots in `docs/derived-nodes-design.md` §14.6.*
 
 Before each slide call, code proposes default components from the slide's blocks and intent. The LLM receives them as *"SUGGESTED COMPONENTS — keep them unless the slide's purpose needs otherwise; say why in `reading`"*.
 
@@ -252,6 +269,7 @@ Before each slide call, code proposes default components from the slide's blocks
   - the LLM reviewer loop costs ≈ $0.25.
 - **Cache discount:** OpenAI's automatic prompt cache (75% off repeated prefixes on gpt-4.1) should hit the shared 6.8k-token slide-planner prompt on re-asks and re-plans. We don't record cached tokens (`unpack_raw`), so the real bill should come in lower than this table.
 - **Latency:** about +1–2 minutes per deck, from two extra sync points and the reviewer's output.
+- **Model change (2026-10-05 note):** since 2026-10-01 `outline_planner`, `slide_component_planner` and `plan_reviewer` run on gpt-5-mini with `reasoning_effort: medium` (`models.yaml`). Reasoning tokens are billed as output, so this table is not valid for them; re-estimate from a recorded run's `tokens_reasoning` before asking for the paid comparison.
 
 ## 9. Topology
 
@@ -350,6 +368,7 @@ Each step is verified LLM-free before the next. Unit tests use a scripted LLM (a
 6. **User-edited outline slides:** locked. The reviewer only advises on the outline and still re-plans slides. Confirm.
 7. **Kicker on every content slide** (C10, F7): the planner decides it, from the brief or its section, and the generator stops inventing one. North-star §11 dropped the *generator's* mandatory kicker; this makes it a planned field instead. Confirm.
 8. **Derived numbers (D13)** are the biggest richness lever for thin briefs (CHEFFIN's "2.9×", ACOS). They stay out of this build: the reviewer routes such fixes to "gaps" for now. Confirm.
+   *2026-10-05: the principle is decided (content policy, design doc §12: derived values allowed, computed by code, marked). What remains open is only timing: the derivation code (ratio, difference, share, rank, count, range split + provenance tag) is step 4 or later of §14.6, so until then the reviewer still routes such fixes to "gaps".*
 
 Test 1 code that only serves its own path (`src/planning/graph.py`, `schemas.py`, the `storyline/` and `slide_designer/` prompts, their `models.yaml` steps) stays until arm C is no longer needed. I'll ask before deleting any of it.
 

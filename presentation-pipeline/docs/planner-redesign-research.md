@@ -15,6 +15,16 @@
 - Ask before any paid run, with the case list and a cost estimate.
 - Keep changes small and measurable.
 
+**Status (2026-10-05).** Batch A is built (§9.1). Since then the user decided two things
+that change this plan's order and some items; the mapping is in §9.2:
+- **Content policy (2026-10-04, `docs/derived-nodes-design.md` §12):** copied / derived
+  (computed by code, marked) / inferred (qualitative, flagged Keep / Remove) / invented
+  (never). Settles Q4; refines Q3.
+- **Render route (2026-10-05, design doc §14.6):** the generator LLM writes each slide's
+  layout with slots, code blocks draw the components from the plan, then a measured
+  checking loop. Planner fixes come first (§14.6 step 0). Because blocks draw exactly what
+  the plan holds, plan fidelity matters more than before: a thin or empty plan now shows.
+
 ---
 
 ## Contents
@@ -765,6 +775,34 @@ Unit tests after batch A: 483 pass, the same 4 known failures (baseline 464). Fo
 
 **File order within batch A:** `outline_planner` (+ schema, prompts and the matching `state.py` fields) → generator prompts → `models.yaml`. Then `slide_component_planner` (batch B), and `outline_replanner` last (it only runs on a user's per-slide regenerate).
 
+### 9.2 Alignment with the render route (`docs/derived-nodes-design.md` §14.6, 2026-10-05)
+
+§14.6 build order: **0** planner fixes + font embedding + shrink guard → **1a** slot test
+(≈ $0.5, kill criteria in design doc §14.5) → **1** blocks in `src/compiler/blocks/` →
+**2** generator writes skeleton + slots, checking loop → **3** paid check → **4** more blocks,
+plan reviewer loop. How the open §9.1 items sit in that order:
+
+| §9.1 item | Status under §14.6 |
+|---|---|
+| **New, step 0** (from the hold-out test, design doc §14.3b) | re-ask instead of the silent empty plan in `slide_component_planner.py` (both `except` branches return `components: []`); reject planner instructions / speaker notes as slide text; `SLIDE_SPARSE` for thin slides; reject card bodies that repeat the title. These are the in-branch part of planner 4 |
+| Planner 3 (content by reference) | unchanged, batch B; more important now, since blocks copy plan content verbatim |
+| Planner 4 (code checks + re-ask) | split: the step 0 checks above first; coverage / invented numbers / capacity checks stay batch B (= `plan-reviewer-loop.md` step B) |
+| Planner 6 (richness without invention) | unchanged; its gap is what `SLIDE_SPARSE` reports. Inferred card lines now allowed and flagged (§12 content policy) |
+| Planner 11 (keyed merge + reviewer loop) | §14.6 step 4 (`docs/plan-reviewer-loop.md`) |
+| Planner 12 (derived numbers) | principle decided (Q4); code later |
+| Planner 14 (one entity's metrics → KPI tiles) | largely done in code by the 2026-09-29 layout batch (2-column label / number table → KPI tiers, L5); the KpiRow block draws 6+ tiles as tiers |
+| Planner 17 (branching flow) | a flow block is step 4; linear flows are drawn as process steps (Phase 0b, uncommitted 2026-10-05) |
+| Planners 5, 7, 8, 10, 18, 19 | unchanged |
+| Generator 3 (only the slide's own data) | for kinds with a block: done by design (the prompt gets a slot line, not the data); still needed for kinds without a block |
+| Generator 4 (brief colours) | unchanged; the theme override must also reach the blocks' style pack |
+| Generator 6 (code layout checks on by default) | becomes the §14.6 checking loop (step 2) |
+| Generator 11 (theme tokens in diagram examples) | blocks use tokens; still needed for diagrams without a block (timeline, pyramid, tree, layer, matrix) |
+| Generator 12 (card shells) | card grids drawn by the block; the rule stays in the skeleton prompt |
+| Generators 7–10 | unchanged |
+| R1 (chart options) | unchanged; the chart block uses native `<Chart>` |
+| R2 (contrast per palette) | unchanged; also applies to the style packs |
+| R3 (broken-word checks) | shrink guard (step 0) + checking loop (step 2) |
+
 ---
 
 ## 10. Open decisions
@@ -773,8 +811,8 @@ Unit tests after batch A: 483 pass, the same 4 known failures (baseline 464). Fo
 |---|---|---|---|---|
 | Q1 | Keep two planning stages? | A / B / C / D / E / F in RQ1 | B + C + D: the outline assigns content and writes the argument; code builds spec outlines; single-slide skips the outline | open |
 | Q2 | How content travels | prose / references / hybrid / fact store | hybrid now; a fact store when derived numbers are needed | open |
-| Q3 | Missing data (RQ10) | ask / qualitative + gap / labelled samples | ask when the purpose needs data; otherwise qualitative + gap | open (you said "never invent numbers" on 2026-09-27; confirm it applies to topic-only requests too) |
-| Q4 | Derived numbers (ratios, shares, multiples) | not allowed / computed by code with the formula recorded | computed by code, later phase | open |
+| Q3 | Missing data (RQ10) | ask / qualitative + gap / labelled samples | ask when the purpose needs data; otherwise qualitative + gap | open (you said "never invent numbers" on 2026-09-27; confirm it applies to topic-only requests too). 2026-10-04: refined by the content policy (design doc §12): invented never; inferred qualitative lines allowed and flagged. Still open: ask vs qualitative + gap |
+| Q4 | Derived numbers (ratios, shares, multiples) | not allowed / computed by code with the formula recorded | computed by code, later phase | **decided 2026-10-04**: computed by code, marked as derived (design doc §12); build later |
 | Q5 | Targets and projections | not allowed / allowed when labelled and tied to facts | — | open |
 | Q6 | LLM reviewer call (≈ +$0.25 per 14 slides) | on / off / setting | on for decks ≥ 6 slides | open |
 | Q7 | Stronger model for outline + reviewer | yes / no / test first | test once, if the key allows it | open |
@@ -784,7 +822,8 @@ Unit tests after batch A: 483 pass, the same 4 known failures (baseline 464). Fo
 | Q11 | Budget for the comparison | full / 2 repeats / staged | staged | open |
 | Q12 | Show `assumptions` / `not_covered` to the user | outline review only / also in the final report / off | both (§3.6 L2) | open |
 | Q13 | Visual form decided in the outline (RQ4-E) | yes / no / test first | test first on xtsy + agency takeover (outline-only runs) | open |
-| Q14 | Post-render checks on by default, first slide checked before the rest | yes / setting / no | yes; outside the planners but part of the generator contract (§3.6 L9) | open |
+| Q14 | Post-render checks on by default, first slide checked before the rest | yes / setting / no | yes; outside the planners but part of the generator contract (§3.6 L9) | **direction decided 2026-10-05**: the §14.6 checking loop (measured, ≤ 2 rounds, keep best); "first slide before the rest" still open |
+| Q15 | Batch B timing under §14.6 | with step 0 / after the slot test (1a) / after step 3 | with step 0 for planners 3 and 4 (both free, both raise plan fidelity, which blocks now expose) | open (2026-10-05) |
 
 ---
 
@@ -800,6 +839,7 @@ Unit tests after batch A: 483 pass, the same 4 known failures (baseline 464). Fo
 | 2026-09-28 | RQ2, RQ4, RQ6, RQ7, RQ9, RQ10 | Read five Genspark traces (3 AI Slides, 2 Super Agent) on the CHEFFIN, XTSY and agency-takeover briefs; checked our code for brief style handling (`style_resolver.resolve_theme()` reads only a named palette) and for any assumptions / gaps field (none) | §3.6–3.7: brief-as-spec, stated assumptions and gaps, colour roles, deck-level visual forms, code-computed numbers that still drift when retyped; new P15–P17, RQ4-E, RQ6-E/F, RQ10-(d), Q12–Q14 |
 | 2026-09-29 | §9.1 batch A | Built batch A (planners 1, 2, 9, 13, 15, 16, 20; generator 1, 2, 5, 12; R4) with LLM-free checks: prompt renders on 6 briefs, a replay of the 14 saved gj-h1 generator prompts, the slide-count parse over all 53 cases, an Angular build and a stubbed browser check of the plan editor; 483 unit tests pass, 4 known failures | Three invention sources outside the §9.1 list reached every generator prompt (`design-language.yaml` `content_invention`, house-style "ADD a band", the golden `Source:` template); the default settings bucket told gj-h1 "EXACTLY 8" slides for a 14-slide brief. Status table under §9.1 |
 | 2026-09-29 | RQ4, RQ5, RQ9 | Reviewed three of our decks against their briefs and Genspark's slides: `tables-check` (CHEFFIN short brief, commit 9b668e1), `1b306e1de67f` (CHEFFIN full brief, 2026-09-28, theme `saascolor`), `189ac04f3584` (XTSY); mapped every finding to §9.1 | 14 items were missing and are now in §9.1 (planners 13–20, generator 11–12, R1–R4); L1 / L5 corrected with G17: a named visual is kept when it suits the data, otherwise switched with a recorded reason |
+| 2026-10-05 | §9, Q3, Q4, Q14 | Aligned with the content policy (2026-10-04) and the render route the user chose (`derived-nodes-design.md` §14.6); hold-out test on 3 new briefs (§14.3b) | §9.2: step 0 adds four planner fixes (empty-plan re-ask, no instruction / notes text, `SLIDE_SPARSE`, card body ≠ title); generator 3 / 6 / R3 absorbed by blocks and the checking loop; Q4 decided, Q3 refined, Q14 direction set, Q15 added |
 
 ---
 
