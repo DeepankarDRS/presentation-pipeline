@@ -926,6 +926,36 @@ Replaces 14.1's "route A first". Reasons:
 route B had. Fallback if it doesn't: the composer with a planner-chosen `arrangement`
 field (14.1 option 2).
 
+### 14.7 Caption and linear-flow blocks (2026-10-05)
+
+The two easy fallback kinds from 14.3b, built in `scripts/phase0b/` (composer + slot
+expander):
+- **Linear flow:** a `flow` whose plan holds only `flow_steps` (2–8 steps, every saved
+  flow so far) is drawn by the process-steps block (`render.linear_flow`). A flow with
+  nodes / connections / branches stays a fallback.
+- **Caption on a content slide:** the saved captions were three different things, so the
+  rule follows the planner's own weight. A `minor` caption is a source / footnote line
+  (11 px, muted) above the footer, with its height taken out of the body budget. A heavier
+  caption (`supporting`; in saved plans these were full-sentence insights) becomes an
+  insight line in the body. Captions that are empty or that repeat the slide's kicker
+  or headline ("SEGMENT BREAKDOWN") are skipped. Before the weight rule, two insights
+  came out at 11 px (gj-h1 `5a9e2d` slide 11).
+
+Replay of the 8 R2 decks + 3 hold-out decks (105 slides, `--fit`, scored as before;
+`output/blocks3/`, sheets `output/blocks2/sheets/caption-flow-*.png`):
+
+| 105 slides | before | after |
+|---|---|---|
+| Components with a block | 89% (R2) / 91% (hold-out) | **95%** (355 / 374) |
+| Slides fully code-drawn | 76 | **86** (hold-out 12 → 16 of 17) |
+| Broken words · KPI wraps · blank headings | 1 · 0 · 0 | 1 · 0 · 0 |
+| Slides with overlapping text | 5 | 5 (the same slides; none new) |
+| Plan words missing · words not in plan | 6 · 0 | 6 · 0 |
+
+Still a fallback: timeline (13), matrix (3), layer (2) and group (1), the last two with
+empty plans. Launch slide 5 counts as code-drawn but stays empty: its whole plan is `{}`
+(planner fix).
+
 ### 14.4 What the user decides
 
 1. **The 14.6 design** (LLM layout + code blocks in slots + a checking loop, planner fixes

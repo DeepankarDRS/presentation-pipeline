@@ -539,8 +539,19 @@ def bullets_block(comp: dict, p: Pack, grow: str = "", width: float = INNER) -> 
     return bullet_panel(items, p, grow)
 
 
+def linear_flow(comp: dict) -> list[str] | None:
+    """A flow that is a plain sequence (only `flow_steps`, 2-8 short steps) is drawn like
+    process steps; a flow with nodes / connections / branches is not a sequence (None)."""
+    cd = comp.get("content_data") or {}
+    steps = cd.get("flow_steps")
+    if set(cd) - {"flow_steps", "direction"} or not isinstance(steps, list) or not 2 <= len(steps) <= 8:
+        return None
+    return [str(s) for s in steps] if all(isinstance(s, (str, int, float)) for s in steps) else None
+
+
 def process_steps(comp: dict, p: Pack) -> str:
-    steps = [str(s) for s in comp["content_data"].get("process_steps", [])]
+    cd = comp["content_data"]
+    steps = [str(s) for s in (cd.get("process_steps") or cd.get("flow_steps") or [])]
     out = []
     for i, s in enumerate(steps):
         last = i == len(steps) - 1
@@ -841,7 +852,7 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
             i += 2
             continue
         k = c["kind"]
-        if k == "process_arrow":
+        if k == "process_arrow" or (k == "flow" and linear_flow(c)):
             fixed(process_steps(c, p), 50)
         elif k == "bullet_list":
             items = [str(b) for b in c["content_data"].get("bullets", [])]
@@ -857,6 +868,8 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
                    if not (k == "kpi_row" and c.get("weight") == "supporting") else 1.4, cap_of(c))
         i += 1
 
+    for text in captions(plan, minor=False):  # weighted captions read as insights, not footnotes
+        fixed(insight(text, p), _lines(text, 16, INNER - 20) * 23)
     for j, n in enumerate(narr):
         text = n["content_data"]["text"]
         if j == len(narr) - 1:
@@ -936,6 +949,26 @@ def headline_runs(plan: dict, p: Pack) -> str:
     return x(" ".join(w[:-3]) + " ") + "<B>" + x(" ".join(w[-3:])) + "</B>" if len(w) > 4 else "<B>" + x(t) + "</B>"
 
 
+NOTE_FS = 11  # caption / source line above the footer
+
+
+def captions(plan: dict, minor: bool = True) -> list[str]:
+    """Caption texts to draw on a content slide: not empty, and not a repeat of the slide's
+    kicker or headline (planners often put the label in a caption: "SEGMENT BREAKDOWN").
+    minor=True: the planner's minor captions (source / footnote) -> the note line above the
+    footer; minor=False: heavier captions (the planner's own weight; in saved plans these are
+    full-sentence insights) -> insight lines in the body."""
+    seen = {re.sub(r"\W+", " ", str(plan.get(k) or "")).strip().lower() for k in ("label", "slide_title")}
+    out = []
+    for c in plan["components"]:
+        if c["kind"] != "caption" or ((c.get("weight") or "minor") == "minor") != minor:
+            continue
+        text = str((c.get("content_data") or {}).get("text") or "").strip()
+        if text and re.sub(r"\W+", " ", text).strip().lower() not in seen:
+            out.append(text)
+    return out
+
+
 def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
     bar = ('<HStack h="6"><Shape shapeType="rect" w="1" grow="1" h="6" fill.color="$dark" />'
            '<Shape shapeType="rect" w="180" h="6" fill.color="$accent2" /></HStack>') if p.top_bar else ""
@@ -957,8 +990,16 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
     sub_lines = (drawn_lines(plan["subtitle"], p.sans, 14, INNER, bold=False) or _lines(plan["subtitle"], 14, INNER)
                  ) if plan.get("subtitle") else 0
     sub_h = (8 + sub_lines * 19) if plan.get("subtitle") else 0
+    notes = captions(plan)
+    note_xml = "".join(f'<Text fontSize="{NOTE_FS}" fontFamily="{p.sans}" color="$muted" lineHeight="1.35">{x(t)}</Text>'
+                       for t in notes)
+    note_h = sum((drawn_lines(t, p.sans, NOTE_FS, INNER, bold=False) or _lines(t, NOTE_FS, INNER))
+                 * NOTE_FS * 1.35 + 4 for t in notes)
+    if notes:
+        note_xml = f'<VStack margin.top="12" gap="4">{note_xml}</VStack>'
+        note_h += 12
     body_h = (H - (6 if p.top_bar else 0) - 26 - 20 - 14 - 14 - head_h - sub_h - (16 if p.rule else 0)
-              - 20 - 14 - 12)
+              - 20 - 14 - 12 - note_h)
     body_xml, body_gap = compose_body(plan, p, body_h)
     return f'''<Slide>
   <VStack w="{W}" h="{H}" backgroundColor="$bg" alignItems="stretch">
@@ -971,6 +1012,7 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
       <VStack margin.top="14" h="{head_h}"><Text maxW="{p.head_max_w}" fontSize="{p.t["headline"]}" fontFamily="{p.sans}"{"" if p.headline == "two_tone" else ' bold="true"'} color="$ink" lineHeight="1.15">{headline_runs(plan, p)}</Text></VStack>
       {sub}{rule}
       <VStack margin.top="20" grow="1" gap="{round(body_gap)}" alignItems="stretch">{body_xml}</VStack>
+      {note_xml}
       <HStack margin.top="14" alignItems="center" justifyContent="spaceBetween">
         {p.label(deck["brand"], "$ink" if p.fills == "rhythm" else "$muted", 9, ' bold="true"' if p.fills == "rhythm" else "")}
         {p.label(f"{n:02d} / {total:02d}", "$muted", 9, ' textAlign="right"')}

@@ -43,8 +43,14 @@ def draw(comp: dict, p: R.Pack, w: float, h: float) -> str:
         return f'<VStack gap="12"{g}>{head}{R.chart_block(comp, p, w, h - (24 if title else 0))}</VStack>'
     if k == "bullet_list":
         return R.bullets_block(comp, p, g, width=w)
-    if k == "process_arrow":
+    if k == "process_arrow" or (k == "flow" and R.linear_flow(comp)):
         return R.process_steps(comp, p)
+    if k == "caption":
+        text = str((comp.get("content_data") or {}).get("text") or "").strip()
+        if not text:  # POM rejects an empty <Text>
+            return "<VStack />"
+        return (f'<Text fontSize="{R.NOTE_FS}" fontFamily="{p.sans}" color="$muted" lineHeight="1.35">'
+                f'{R.x(text)}</Text>')
     if k == "narrative":
         return R.insight(comp["content_data"]["text"], p)
     raise ValueError(f"no block for {k}")

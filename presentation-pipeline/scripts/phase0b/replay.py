@@ -31,8 +31,10 @@ BLOCKS = {"title", "narrative", "kpi_row", "table", "chart", "bullet_list", "pro
 
 def classify(comp: dict, slide_type: str | None) -> str:
     k = comp.get("kind")
-    if k == "caption":
-        return "block" if slide_type == "cover" else "fallback"
+    if k == "caption":  # cover: in the cover; content slide: the note line above the footer
+        return "block"
+    if k == "flow":  # a plain sequence of steps is drawn as process steps; branching flows are not
+        return "block" if R.linear_flow(comp) else "fallback"
     if k not in BLOCKS:
         return "fallback"
     return "block"  # charts: ranked bars, or POM's native chart for line / doughnut / area / many series
