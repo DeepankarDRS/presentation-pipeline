@@ -1,6 +1,6 @@
 # Design: derived nodes that take their content from the plan
 
-Status: **proposal, 2026-10-04** — nothing built. Decisions for the user in §10.
+Status: **proposal, 2026-10-04** — nothing built. Research gate §13 done; build route and decisions for the user in §14 (2026-10-05).
 Reopens Phase 4 of `docs/roadmap-derived-components.md` (halted 2026-09-24) with one
 change: a derived node gets its content **from the plan by reference**, not retyped
 by the generator.
@@ -677,6 +677,104 @@ blocks expand to plain POM so the layer can be removed; one paid run (≈ $2) af
 first block, against the 1 Oct UI decks — the only way to learn LLM tag compliance.
 The 6 decisions in §10 are answered before the build starts (1, 2, 6 have evidence;
 4, 5 provisional; 3 is a design call).
+
+## 14. Build route and decisions (proposal, 2026-10-05)
+
+Written after the research gate (§13), for the user's go / no-go. Nothing here is
+decided. Each item gives the **assumption** it rests on, the **evidence** for and against,
+and a **recommendation**. "Free" = no API cost.
+
+### 14.1 Route: code composer first (recommended), LLM skeleton + tags later if needed
+
+**The two routes**
+
+| | A. Code composer (Phase 0b, proven) | B. LLM skeleton + tags (§2, as designed) |
+|---|---|---|
+| Who lays out the slide | code, from the plan (kinds, weights, item counts) | the generator LLM writes the skeleton and places `<CardGrid ref=…/>` tags |
+| Who draws each component | code (blocks) | code (blocks) |
+| Free text beside blocks | none; only plan strings and frame labels | the LLM may add text |
+| Generator LLM call | **skipped** for a slide whose components all have a block | every slide |
+| Slides with a component without a block | today's LLM path, whole slide | the LLM draws that component in its skeleton |
+| Tested | R2: 88 slides, R3: dense slides with two-pass sizing | R3 Phase 0c: 4 hand-written skeletons only |
+| Unknown before a paid run | how fallback slides sit beside code-drawn ones | whether the LLM writes tags correctly (wrong `ref`, odd variant, hand-builds the block anyway) |
+
+**Assumptions behind recommending A first**
+1. *The layout choices that matter are already in the plan.* The planner sets each
+   component's kind and weight (hero / peer / supporting) and writes a `layout_hint`. The
+   Phase 0b composer turns kinds and weights into a layout with fixed rules: order,
+   table + chart side by side, KPI tiers, height by weight. Evidence: CHEFFIN and XTSY
+   (§10c–10e) and the 88 R2 slides render without a generator call. Against: the
+   composer **ignores the `layout_hint` text**. Saved hints say things like "cpc_table
+   sits below *or beside*", and the composer doesn't read them.
+2. *Tag compliance is the largest risk we cannot test for free* (§13 risk table, "found
+   before building? no"). Route A doesn't have it. Route B needs a paid run before we
+   know whether the design works at all.
+3. *Fallback per slide is good enough to start.* R2: 56 / 88 slides (64%) have a block for
+   every component. CHEFFIN 8 / 8, gj-h1 38 / 56, XTSY 10 / 24. The rest go through
+   today's path unchanged. A timeline block alone moves 12 components (§13 R2).
+4. *Skipping the generator call is a real gain.* It costs less and runs faster. A code
+   slide has no compile errors from LLM XML, so it never enters the repair loop
+   (R2: 88 / 88 compiled; the LLM versions of the same plans were 86 / 88).
+
+**The main cost: the LLM loses layout freedom on code-drawn slides.** On 2026-09-10 the
+user chose "the LLM free to generate any kind of slide". Archetypes and the enforced
+layout patterns were removed then, because constraints added by code had caused overlap
+and dead space. Route A goes back on that choice for covered slides, so it needs the
+user's explicit agreement. Differences from 10 Sep:
+- the 10 Sep regression came from code *contradicting* the LLM's layout (a swapped pattern
+  plus a prescriptive example). Route A doesn't mix the two: on a slide, either code
+  draws all of it or the LLM does;
+- the fixed rules are measured against POM (two-pass sizing, §13 R3), not hand-written
+  pixel budgets;
+- the risk that remains is **sameness**: decks drawn by one composer may look templated.
+  Not measured yet.
+
+**Ways to give layout choice back to the LLM within route A, if sameness shows up**
+(in order of cost):
+1. More arrangements in the composer, chosen from content (free; code only).
+2. A small structured field in the plan, e.g. `arrangement: stacked | side_by_side |
+   hero_left | grid`, that the composer obeys. This is a one-enum planner prompt change,
+   so it needs a paid check. Compliance risk is much smaller than for XML tags.
+3. Route B: skeleton + tags, using the R3 slot code (`scripts/phase0b/expand.py`) as
+   built.
+
+**Recommendation:** A, behind a setting (`render_mode: llm | code_first`), per-slide
+fallback to today's path. Add a free **variety metric** with the first block: distinct
+layout signatures per deck (block kinds × arrangement), code-drawn vs the LLM decks of
+the same plans. Move to 2 or B only if that metric or the user's review shows sameness.
+
+### 14.2 The six decisions of §10, revisited for route A
+
+| # | Decision | Assumption | Evidence | Recommendation |
+|---|---|---|---|---|
+| 1 | Order vs the plan reviewer loop | render failures are the most visible problem; thin plans are a planner problem that blocks expose but don't cause | §1: broken words, invented cards, duplicates all happen after the planner. R2: broken words 32 → 2. **Against:** code draws exactly what the plan holds, so thin plans *look* thinner. gj-h1 "What Worked" rendered a near-empty body. Today the generator pads thin plans, partly with invented content (§1, §12) | **Blocks first**, but bring two small pieces of the loop forward into step 1: stop `slide_component_planner`'s silent `{}` fallback (re-ask instead), and report `SLIDE_SPARSE` (§10f). The full reviewer loop (`docs/plan-reviewer-loop.md`) follows |
+| 2 | Builders: Python vs Jinja templates | the hard part is measuring, not markup | everything that fixed Phase 0b is measuring code: `fill_card_text`, `pin_h`, KPI glyph sizing, two-pass `fit.py`. A template can't measure. Style values already live in YAML (`style_packs.yaml`) | **Python builders, style in YAML** |
+| 3 | Source of truth for repair / edit | in route A there is no node-level XML from the LLM | a code slide is a function of (plan, style pack); its compile failures are code bugs, caught by tests (R2: none) | **The plan.** Edits change the plan and the slide is re-drawn, with no LLM call: the review screen's Keep / Remove already edits the plan. Fallback slides keep today's XML repair / edit. Route B would reopen this |
+| 4 | Label tier below 14 px | small mono labels read well and don't hurt legibility | Phase 0 (4 Oct): 10–12 px mono labels read well. Phase 0b uses 9–11 px. R4: PowerPoint draws them the same. **Against:** `house-style.yaml` `min_font: 14` and `FONT_TOO_SMALL` reject them, and nobody has judged them on a projector or a laptop at normal size | **Allow a `label` role at ≥ 10 px** (mono, uppercase, ≤ 4 words, never body text). Body stays ≥ 14 px, and `FONT_TOO_SMALL` exempts the role. Provisional until the user has looked at a projected slide |
+| 5 | How much look the LLM controls | in route A, the LLM controls no look directly | one switch restyles a deck (§10d: CHEFFIN in studio, no other change). Per-component emphasis already comes from the plan's `design_hint` (inverted tile, highlighted row, bold phrase) | **One look per block per style pack**, plus the plan-driven switches above. No per-node variants for the LLM. Revisit with 14.1's variety metric. Provisional |
+| 6 | `SlideHeader` + deck footer | a deck needs one frame; slide-to-slide header drift reads as amateur | §10c criterion 3: same frame on every slide, code yes, ours no. In route A the frame comes with the composer (label, headline, subtitle, footer with brand + n / N) | **In scope from step 1.** Open: fallback slides still have LLM-drawn headers, so a mixed deck shows two header styles. First fix (free): code draws the frame on fallback slides too and the LLM draws only the body. That's a generator prompt change, so it goes in the paid check |
+
+### 14.3 Build order for route A
+
+Each step is free unless marked. Unit-test baseline before each change (557 pass, 4
+known failures as of 2026-10-05).
+
+| Step | What | Accepted when |
+|---|---|---|
+| 0 | Prerequisites: subset font embedding in `pptx-post.js`; pipeline style switched to Inter + JetBrains Mono for code slides; shrink guard for words wider than their box (§13 R1) | embedded deck opens in PowerPoint without the fonts (as R4); pptx size growth small (target: ≤ 300 KB per deck, to be confirmed) |
+| 1 | `src/compiler/compose/`: Phase 0b blocks + composer + two-pass sizing (`measure.mjs`, `fit.py`) moved from `scripts/phase0b/` into pipeline code with tests; setting `render_mode`; per-slide fallback; `SLIDE_OVERFULL` / `SLIDE_SPARSE` reported; silent empty-plan fallback removed; variety metric in eval | replay of the 8 R2 decks: same or better than §13 R3 (overlap ≤ 3, broken words ≤ 1, text check 0 extra words); fallback slides identical to today |
+| 2 | Timeline block, then native `Chart` for line / doughnut / area (built in R3), flow, matrix | coverage ≥ 85% of slides fully code-drawn on the R2 decks |
+| 3 | **Paid check (≈ $2):** `gate-deck-xtsy-qcomm` + `gate-deck-cheffin-full` × 2, `render_mode: code_first` vs `llm` | word breaks ↓, invented text 0, first-pass compile ≥ 96%, generator calls ↓; user's side-by-side review including sameness |
+| 4 | Frame on fallback slides (14.2 #6); plan reviewer loop | per `docs/plan-reviewer-loop.md` |
+
+### 14.4 What the user decides
+
+1. **Route A first** (code composer, LLM free-layout given up on covered slides) or
+   route B as designed. This is the main question; 14.1 has the trade-off.
+2. The six rows of 14.2. The research supports #2, #3 and #6; #1 and #4 need the user's
+   judgement; #5 is provisional.
+3. Whether `gate-deck-all-nodes-dense` gets a paid planner run before step 1, or
+   the gj-h1 dense plans keep standing in (§13 R3 "not covered"). Cost to be estimated before asking.
 
 ## 11. Risks
 
