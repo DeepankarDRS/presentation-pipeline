@@ -355,6 +355,6 @@ tuned in step 1 on the nodes demo render (free).
 | D4 | `gj-h1-regen` joins step 0's run (≈ +$0.7) | yes | **decided 2026-10-05: no, six cases only** (37 slides, ≈ $1.8). Within-deck variety is judged on 5–8 slide decks; a long deck can be added to step 3 only if its plans are generated then |
 | D5 | Slot contract §3 | as written | **decided 2026-10-05: approved as written** (no `highlight` attribute until 1a shows it is needed) |
 | D6 | 1a protocol §4 | as written | **decided 2026-10-05: approved as written** (slide list still needs the user's approval once step 0's plans exist) |
-| D7 | Checking-loop principle §5.1 | as written | awaiting user |
-| D8 | Label tier (§5.2) | view the test slide first | scheduled, before step 1 |
-| D9 | Default-switch gates (§5.3) | as written | awaiting user |
+| D7 | Checking-loop principle §5.1 | as written | **decided 2026-10-05: principle approved**; thresholds, code-fix list and tier-2 promotion scheduled for step 2 from 1a's data |
+| D8 | Label tier (§5.2) | view the test slide first | **decided 2026-10-05: scheduled.** The free 10 / 11 / 12 / 14 px test slide is built in the step 0 build session; the user views it (100% and projected) and the tier is recorded before step 1. Starting recommendation 12 px labels, 10 px source lines only |
+| D9 | Default-switch gates (§5.3) and fill contract (§5.4) | as written | **decided 2026-10-05: both approved.** `slots` stays opt-in until the five gates hold (a separate decision after step 4); step 2 gains "the edit service re-expands blocks after every edit"; fill numbers tuned in step 1 |

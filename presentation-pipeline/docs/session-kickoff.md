@@ -95,7 +95,7 @@ Then the run for the step (the build session gives the exact command; these are 
 
 | Step | Command | Email back |
 |---|---|---|
-| **0 (step-end run, ≈ $1.8)** | `python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label step0 --compose --bundle` | the bundle zip it prints (`decks/<case>__r1/` holds `llm.pptx`, `composed.pptx`, `slides.json`). Until step 0 adds `run-manifest.json` to `decks/`, also zip the six `output/runs/<run_id>/` folders: step 1a and step 3 reuse these plans, and the token analysis needs the manifests |
+| **0 (step-end run, ≈ $1.8)** | `python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label step0 --compose --bundle` | the bundle zip it prints (`decks/<case>__r1/` holds `llm.pptx`, `composed.pptx`, `slides.json` and, from step 0 item 0.1, `run-manifest.json`: the zip is all that is needed; back it up, 1a and step 3 reuse these plans). Plus one line: did `composed.pptx` open in PowerPoint with Inter drawn (embedding check). Decisions of 2026-10-05: six cases, no `gj-h1-regen` |
 | **1a slot test (≈ $0.5)** | from-plans runner, generator only, on step 0's saved plans (command written in step 1a) | its output folder (skeleton XML per slide, run manifests) |
 | **3 paid check (≈ $1.2–1.5)** | from-plans runner, `blocks: slots`, all six cases on step 0's plans (command written in step 2) | bundle + run folders |
 
@@ -111,16 +111,16 @@ from the prompts that were run.
 
 | Step | Build device | Test device runs | Email back → build device |
 |---|---|---|---|
-| **0 Planner fixes + prerequisites** | empty-plan re-ask; instruction / notes text and card body = title rejected; `SLIDE_SPARSE`; duplicate items (C17); usage logging (step names, slide index, reasoning + cached tokens; `run-manifest.json` in the bundle); subset font embedding in `pptx-post.js`; shrink guard | the step-end run (§2) | bundle + run folders → `docs/eval/step0/`; its plans become the input of 1a and step 3; its `llm.pptx` decks are step 3's `off` arm |
+| **0 Planner fixes + prerequisites** | empty-plan re-ask; instruction / notes text and card body = title rejected; `SLIDE_SPARSE`; duplicate items (C17); usage logging (step names, slide index, reasoning + cached tokens; `run-manifest.json` in the bundle); subset font embedding **at deck level in Python** (after the merge, `src/compiler/font_embed.py`; not `pptx-post.js`, which runs per slide); shrink guard (`fit-grow.js`). Order and acceptance: `docs/derived-blocks-planning-2026-10-06.md` §2 | the step-end run (§2) | bundle + run folders → `docs/eval/step0/`; its plans become the input of 1a and step 3; its `llm.pptx` decks are step 3's `off` arm |
 | **1a Slot test (gate)** | from-plans runner; slot prompt; expansion with `scripts/phase0b/expand.py`; scoring (kill criteria §14.5, tokens vs step 0) | generator-only run (§2) | skeletons → scored here. **Fail → stop slots; composer + planner `arrangement` field (§14.1 option 2)** |
 | **1 Blocks into the pipeline** | `src/compiler/blocks/` from `scripts/phase0b/`; hold-out failures fixed; slot expansion in the validator behind `blocks: off \| slots`; `SlideHeader`; attribute check vs pom-jsx `types.ts` + `attributes.yaml` | nothing | — |
-| **2 Generator + checking loop** | skeleton prompt (only under `blocks: slots`); checking loop ≤ 2 rounds; repair / edit on the skeleton; scripted-LLM dry run of step 3 | nothing | — |
+| **2 Generator + checking loop** | skeleton prompt (only under `blocks: slots`); checking loop ≤ 2 rounds (principle approved 2026-10-05, thresholds from 1a's data); repair / edit on the skeleton; **edit service re-expands blocks after every edit**; outline `look` picker (palette); scripted-LLM dry run of step 3 | nothing | — |
 | **3 Paid check** | scoring, side-by-side sheets, token report | slots arm on step 0's plans (§2) | bundle + run folders → user's review |
 | **4 Breadth** | remaining blocks (matrix, pyramid, tree, layer, branching flow); plan reviewer loop; §12 content policy | step-end run | as above |
 | **Then: planner 3** | the parked redesign (`docs/planner-redesign-research.md` §9.3), its own project | its own comparison | — |
 
-Specs that must be approved before their step: slot contract + 1a protocol (before 1a), theme ↔
-style-pack source and the #4 label tier (before step 1), checking-loop spec (before step 2).
+Specs that must be approved before their step: slot contract + 1a protocol (**approved 2026-10-05**, `docs/derived-blocks-planning-2026-10-06.md` §3–4; the 1a slide list still needs approval once step 0's plans exist), theme ↔
+style-pack source (**decided 2026-10-05**) and the #4 label tier (test slide, before step 1), checking-loop spec (principle approved; thresholds before step 2).
 
 ## 4. Rules
 
