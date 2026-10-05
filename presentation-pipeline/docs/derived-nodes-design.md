@@ -16,8 +16,8 @@ as research code in `scripts/phase0b/` (R1–R4, 14.7). Started 2026-10-04 as a 
 >   build order and decisions), §14.1–14.3 (composer-first route). Kept as the record;
 >   where they disagree with §14.6, §14.6 wins.
 > - Related: `docs/plan-reviewer-loop.md` (2026-10-05 note), `docs/planner-redesign-research.md` §9.2, Q15.
-> - Variant evidence for the slot contract: `docs/eval/genspark-variants/summary.md` (2026-10-06:
->   four Genspark runs, learnings, a draft variant shortlist per block).
+> - Variant evidence for the slot contract: §14.8 learnings and `docs/eval/genspark-variants/summary.md`
+>   (2026-10-06: four Genspark runs, a draft variant shortlist per block).
 Reopens Phase 4 of `docs/roadmap-derived-components.md` (halted 2026-09-24) with one
 change: a derived node gets its content **from the plan by reference**, not retyped
 by the generator.
@@ -1135,6 +1135,36 @@ versions are legible and fill their cards. Weak spots: a short-label timeline on
 with nothing else (launch 6) sits in empty space (thin plan); dates are small mono labels.
 Left as fallbacks: matrix (3) and layer / group (3, empty plans). Launch slide 5 counts as code-drawn but stays empty: its whole plan is `{}`
 (planner fix).
+
+### 14.8 Learnings from the Genspark variant runs (2026-10-06)
+
+Four runs of two variant-gallery prompts (AI Slides and Super Agent; full record in
+`docs/eval/genspark-variants/summary.md`). What they mean for §14.6:
+
+1. **Fidelity and design trade off in both engines.** Super Agent copied content exactly but
+   drew plainly with empty space; AI Slides designed well but shortened and added text,
+   unchecked. Blocks aim at both: AI Slides' variety, text copied from the plan.
+2. **Blocks never reword to fit.** Rewording was how the free design engine broke content
+   ("No gaps.", "Refill plan"). A block that does not fit grows or steps type, re-flows (rows,
+   columns, vertical) or switches variant.
+3. **Fill the slot.** Neither engine does it reliably (thin bands in tall panels; clipped
+   edges). Process steps and timeline must grow into a tall slot (step 1; seen first in the
+   nodes demo, 2026-10-05).
+4. **Embed fonts.** The same design system gave Inter on one account and Noto / DejaVu on
+   another (step 0).
+5. **Long labels get room, not smaller text:** vertical timeline, columns, one card per item,
+   labels alternating above and below a line.
+6. **No captions or descriptions the brief did not give.** They are "inferred" content (§12):
+   blocks never create them; a planner may propose them, flagged for Keep / Remove.
+7. **The frame needs planned headlines.** Without them one engine repeated the cover header on
+   every slide (`SlideHeader` block + planned headlines).
+8. **Transferable ideas** (compositions of primitives): dark hero tile with a pill, one
+   inverted tile, featured card, faint numerals, dark table header with an accent column,
+   labelled bars with one highlight, engine card grouping middle steps, quadrant cards,
+   stacked bars instead of a pyramid, chips for tree leaves, dark hub centre, progress bar over
+   columns. Avoid default shape shadows.
+9. **Variants per block:** a draft shortlist of 3–4 per block is in the summary; it feeds the
+   slot contract (variant names the LLM may choose).
 
 ### 14.4 What the user decides
 
