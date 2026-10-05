@@ -562,6 +562,94 @@ def process_steps(comp: dict, p: Pack) -> str:
     return f'<HStack gap="8" alignItems="stretch">{arrow.join(out)}</HStack>'
 
 
+# "Head — detail", "Head—detail" (em dash, spaces optional), "Head – detail" / "Head: detail" (spaced);
+# an unspaced en dash is a range ("6–11 AM"), not a split
+_HEAD = re.compile(r"^(.{2,60}?)(?:\s*—\s*|\s+–\s+|:\s+)(.+)$", re.S)
+TL_SHORT = 6       # every label <= this many words: rail + dots + labels, no cards
+TL_DOT = 12
+
+
+def timeline_items(comp: dict) -> list[tuple[str, str, str]]:
+    """(date, head, body) per item. A label written "Head — detail" / "Head: detail" (head of
+    <= 6 words) splits at the planner's own dash; otherwise head is "" and the label is the body.
+    Nothing is reworded."""
+    out = []
+    for it in (comp.get("content_data") or {}).get("timeline_items") or []:
+        date, label = (str(it.get("date") or ""), str(it.get("label") or "")) if isinstance(it, dict) else ("", str(it))
+        m = _HEAD.match(label.strip())
+        if m and len(m.group(1).split()) <= 6 and len(label.split()) > TL_SHORT:
+            out.append((date, m.group(1).strip(), m.group(2).strip()))
+        else:
+            out.append((date, "", label.strip()))
+    return out
+
+
+def timeline_need(comp: dict, p: Pack) -> float:
+    """Natural height of a short-label timeline (the long one grows into its slot)."""
+    return 16 + 8 + TL_DOT + 12 + 2 * 20 * 1.25
+
+
+def timeline_block(comp: dict, p: Pack, width: float, h: float | None = None, grow: str = "") -> str:
+    """A horizontal timeline: one column per item, a continuous rail (dot + line to the next
+    column), the date above the rail. Short labels sit under their dot as a title; long ones
+    get a card under the dot (head bold, detail below), type sized to fill the cards. The item
+    a design hint calls "inverted" gets a dark card."""
+    items = timeline_items(comp)
+    n = max(1, len(items))
+    col_w = width / n
+    short = all(not hd and len(b.split()) <= TL_SHORT for _, hd, b in items)
+    hi = _named_in_hint(comp, [b for _, _, b in items] + [hd for _, hd, _ in items if hd], "inverted")
+    lab_fs = int(min(13, max(p.t["label"], (h or 0) / 30)))
+    head_h = lab_fs * 1.3 + 8 + TL_DOT + 12  # date + gap + rail + gap
+    inner_w = col_w - 14 - 32                # card: margin.right 14, padding 16 x 2
+    free = (h or 260) - head_h - 32 - 4
+    def lines(t: str, fs: float, w: float, bold: bool) -> int:
+        """Lines for the height budget: drawn at 97% of the width (a break near the edge counts
+        as the extra line), never fewer than POM reserves. Long texts almost always have one
+        borderline break, so the strict text_lines() would reject every size."""
+        return max(drawn_lines(t, p.sans, fs, w * 0.97, bold) or 99, pom_lines(t, p.sans, fs, w, bold))
+
+    if short:
+        avail = max(24.0, (h or 120) - head_h - 12)
+        tfs = next((fs for fs in range(32, p.t["title"] - 1, -1)
+                    if all(lines(b, fs, col_w - 14, True) * fs * 1.25 <= avail for _, _, b in items)), p.t["title"])
+    else:
+        heads = any(hd for _, hd, _ in items)
+        tfs, bfs = p.t["title"], 11
+        for b_fs in range(24, 10, -1):  # the largest detail size first, then the largest head (>= 1.25x)
+            t_lo = max(p.t["title"], math.ceil(b_fs * 1.25))
+            t_fs = next((t for t in range(max(26, t_lo), t_lo - 1, -1)
+                         if all((lines(hd, t, inner_w, True) * t * 1.2 + 6 if hd else 0)
+                                + lines(b, b_fs, inner_w, False) * b_fs * 1.4 <= free for _, hd, b in items)), None)
+            if t_fs is not None or not heads and all(lines(b, b_fs, inner_w, False) * b_fs * 1.4 <= free for _, _, b in items):
+                tfs, bfs = (t_fs or p.t["title"]), b_fs
+                break
+
+    cols = []
+    for i, (date, hd, body) in enumerate(items):
+        last = i == len(items) - 1
+        inv = hi is not None and hi in (hd, body)
+        dot = f'<Shape shapeType="ellipse" w="{TL_DOT}" h="{TL_DOT}" fill.color="{"$accent2" if inv else "$accent"}" />'
+        line = '' if last else '<Shape shapeType="rect" w="1" grow="1" h="2" fill.color="$line" />'
+        rail = f'<HStack alignItems="center" margin.top="8">{dot}{line}</HStack>'
+        date_xml = p.label(date, "$accent" if p.fills != "rhythm" else "$muted", lab_fs) if date else ""
+        if short:
+            under = (f'<Text margin.top="12" margin.right="14" fontSize="{tfs}" fontFamily="{p.sans}" bold="true" '
+                     f'color="$ink" lineHeight="1.25"{pin_h(body, p.sans, tfs, col_w - 14, 1.25)}>{x(body)}</Text>')
+        else:
+            bg, ink, _, border = card_role(p, "dark" if inv else "normal")
+            parts = []
+            if hd:
+                parts.append(f'<Text fontSize="{tfs}" fontFamily="{p.sans}" bold="true" color="{ink}" lineHeight="1.2"'
+                             f'{pin_h(hd, p.sans, tfs, inner_w, 1.2)}>{x(hd)}</Text>')
+            parts.append(f'<Text fontSize="{bfs}" fontFamily="{p.sans}" color="{ink if inv else "$muted"}" lineHeight="1.4"'
+                         f'{pin_h(body, p.sans, bfs, inner_w, 1.4, bold=False)}>{x(body)}</Text>')
+            under = (f'<VStack margin.top="12" margin.right="14" grow="1" padding="16" gap="6" backgroundColor="{bg}"{border}>'
+                     + "".join(parts) + "</VStack>")
+        cols.append(f'<VStack w="1" grow="1" alignItems="stretch">{date_xml}{rail}{under}</VStack>')
+    return f'<HStack alignItems="stretch"{grow}>{"".join(cols)}</HStack>'
+
+
 def data_table(comp: dict, p: Pack, width: float, h: float | None = None) -> str:
     cd = comp["content_data"]
     cols, rows = cd.get("table_columns", []), cd.get("table_rows", [])
@@ -788,6 +876,9 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
             return len(cd.get("chart_labels", [])) * (len(series) * 34 + 40) + 34
         if k == "bullet_list":
             return 36 + len(cd.get("bullets", [])) * 34
+        if k == "timeline":  # short labels: rail + one title line or two; long ones grow into cards
+            items = timeline_items(c)
+            return timeline_need(c, p) * 2.0 if all(not hd and len(b.split()) <= TL_SHORT for _, hd, b in items) else 1e9
         return 1e9
 
     def draw(c: dict, width: float, h: float, g: str) -> str:
@@ -809,6 +900,8 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
             return f'<VStack gap="12"{g}>{head}{chart_block(c, p, width, h - (24 if title else 0))}</VStack>'
         if k == "bullet_list":
             return bullets_block(c, p, g)
+        if k == "timeline":
+            return timeline_block(c, p, width, h, g)
         return ""
 
     i = 0

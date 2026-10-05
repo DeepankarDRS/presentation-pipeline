@@ -45,6 +45,8 @@ def draw(comp: dict, p: R.Pack, w: float, h: float) -> str:
         return R.bullets_block(comp, p, g, width=w)
     if k == "process_arrow" or (k == "flow" and R.linear_flow(comp)):
         return R.process_steps(comp, p)
+    if k == "timeline":
+        return R.timeline_block(comp, p, w, h, g)
     if k == "caption":
         text = str((comp.get("content_data") or {}).get("text") or "").strip()
         if not text:  # POM rejects an empty <Text>

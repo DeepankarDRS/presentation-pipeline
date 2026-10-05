@@ -926,7 +926,7 @@ Replaces 14.1's "route A first". Reasons:
 route B had. Fallback if it doesn't: the composer with a planner-chosen `arrangement`
 field (14.1 option 2).
 
-### 14.7 Caption and linear-flow blocks (2026-10-05)
+### 14.7 Caption, linear-flow and timeline blocks (2026-10-05)
 
 The two easy fallback kinds from 14.3b, built in `scripts/phase0b/` (composer + slot
 expander):
@@ -952,8 +952,39 @@ Replay of the 8 R2 decks + 3 hold-out decks (105 slides, `--fit`, scored as befo
 | Slides with overlapping text | 5 | 5 (the same slides; none new) |
 | Plan words missing · words not in plan | 6 · 0 | 6 · 0 |
 
-Still a fallback: timeline (13), matrix (3), layer (2) and group (1), the last two with
-empty plans. Launch slide 5 counts as code-drawn but stays empty: its whole plan is `{}`
+Still a fallback after this step: timeline (13), matrix (3), layer (2) and group (1), the
+last two with empty plans.
+
+**Timeline block** (same day, `render.timeline_block`). Every saved timeline is
+`timeline_items` of `{date, label}`, 3–6 items, horizontal, in two regimes: short labels
+(1–5 words: launch milestones, XTSY time-of-day occasions) and long ones (9–49 words,
+mostly "Head — detail"). Drawn as one column per item: the date (mono label) above a
+continuous rail (dot + line to the next column), then
+- short labels: the label under its dot, sized to the column (≤ 32 px); the block is capped
+  at 2× its natural height so a thin slide isn't inflated;
+- long labels: a card under the dot; a label written "Head — detail" / "Head—detail" (em
+  dash) / "Head – detail" / "Head: detail" (head ≤ 6 words) splits at the planner's own
+  dash into a bold head and the detail; nothing is reworded. An unspaced en dash is a range
+  ("6–11 AM"), not a split. Detail type fills the card (≤ 24 px), heads ≥ 1.25× the detail.
+  Line counts for the height budget are conservative (97% width, never fewer than POM's),
+  because the strict "unambiguous breaks" rule rejected every size for 40-word texts
+  (first version: 11 px detail in near-empty cards).
+- the item a design hint calls "inverted" gets a dark card.
+
+| 105 slides | after captions + flow | after timeline |
+|---|---|---|
+| Components with a block | 95% | **98%** (368 / 374) |
+| Slides with overlapping text | 5 | **4** (XTSY-3 slide 2, which has a timeline, no longer overlaps) |
+| Broken words · KPI wraps · blank headings | 1 · 0 · 0 | 1 · 0 · 0 |
+| `SLIDE_OVERFULL` | 1 | 2 (+ gj-h1 `bf396b` 13: 6-item timeline + 6-row table + narrative, 15 px, reported not squashed) |
+| Plan words missing · not in plan | 6 · 0 | 6 · 0 |
+
+All 13 timeline slides, LLM-drawn vs code-drawn (`output/blocks6/sheets/timeline-*.png`): the
+LLM versions show text spilling out of the timeline (`69af33` 9), literal `<B>` tags
+(`bf396b` 9) and labels drawn over the detail text (the three XTSY roadmaps); the code
+versions are legible and fill their cards. Weak spots: a short-label timeline on a slide
+with nothing else (launch 6) sits in empty space (thin plan); dates are small mono labels.
+Left as fallbacks: matrix (3) and layer / group (3, empty plans). Launch slide 5 counts as code-drawn but stays empty: its whole plan is `{}`
 (planner fix).
 
 ### 14.4 What the user decides

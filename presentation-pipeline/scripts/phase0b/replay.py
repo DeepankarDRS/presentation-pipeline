@@ -26,7 +26,8 @@ from pathlib import Path
 from scripts.phase0b import render as R
 from scripts.phase0b.fit import Measurer, fit_frame
 
-BLOCKS = {"title", "narrative", "kpi_row", "table", "chart", "bullet_list", "process_arrow", "card_grid"}
+BLOCKS = {"title", "narrative", "kpi_row", "table", "chart", "bullet_list", "process_arrow", "card_grid",
+          "timeline"}
 
 
 def classify(comp: dict, slide_type: str | None) -> str:
