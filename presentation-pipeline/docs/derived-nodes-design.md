@@ -501,7 +501,7 @@ broken words and invented cards).
 | R1 | Font experiment (§10g step 1; **done 2026-10-05**, result below: `94367ac`, `c4b9c13`) | does POM measuring the real fonts remove broken words / blank heading lines / KPI overflow? | no API |
 | R2 | Replay saved decks (`llm_test/` zips: gj-h1, tables-check, baseline, layout-batch, layout-fixes — those with full plans) through the Phase 0b renderer | share of components with a block vs LLM fallback; broken words; text check | no API |
 | R3 | Phase 0c: hand-written mixed slides (LLM-style skeleton + tags, half-width slots, free text beside blocks, 3–4 components per slide) + `gate-deck-all-nodes-dense`; two-pass slot measurement; per-block minimum readable size → `SLIDE_OVERFULL` instead of squashing; per-block fit-grow opt-out | overlap, squashing, broken words, text check on mixed and dense slides | no API |
-| R4 | PowerPoint check: the user opens 3–4 rendered `.pptx` (Phase 0b studio / editorial) in PowerPoint and compares with the LibreOffice PNGs | does PowerPoint match? | ~15 min of the user's time |
+| R4 | PowerPoint check: the user opens 3–4 rendered `.pptx` (Phase 0b studio / editorial) in PowerPoint and compares with the LibreOffice PNGs (**done 2026-10-05, passed**, result below) | does PowerPoint match? | ~15 min of the user's time |
 
 #### R1 result (2026-10-05): done — fonts measure true; embedding works in LibreOffice
 
@@ -534,6 +534,22 @@ broken words and invented cards).
 
 Follow-ups (not R1): shrink guard for words wider than their box; ProcessArrow width
 growth without height growth; subset embedded fonts; embed in `pptx-post.js` if R4 passes.
+
+#### R4 result (2026-10-05): passed — PowerPoint matches LibreOffice
+
+Four decks (34 slides), built by merging the compiled slides (`src/compiler/pptx_merge.py`)
+and embedding fonts (`scripts/embed_fonts.py --font …`): Phase 0b XTSY and CHEFFIN in
+studio_inter (Inter + JetBrains Mono embedded), CHEFFIN in editorial (Segoe UI + Consolas,
+system fonts), and the gj-h1 LLM deck in Inter (fit-grow on; charts and diagrams keep the
+default font). The user opened them on the company test PC: Microsoft 365 for enterprise,
+**neither Inter nor JetBrains Mono installed** (checked in the Windows font folders).
+Result: **all slides match** the LibreOffice renders (line breaks, words, boxes, sizes),
+and PowerPoint draws the embedded Inter / JetBrains Mono. An earlier one-slide check on the
+build PC showed the plain (not embedded) file drawn ~6% narrower, i.e. substituted, so
+**embedding is required** for decks measured in Inter.
+
+Consequence: LibreOffice renders remain a valid stand-in for PowerPoint in the checks,
+provided the fonts are embedded. Follow-up: embed (subset) fonts in `pptx-post.js`.
 
 **Go** if: fonts measure true (R1), blocks cover most components of real decks (R2),
 mixed and dense slides neither overlap nor squash (R3), PowerPoint matches (R4).
