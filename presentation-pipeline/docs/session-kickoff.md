@@ -15,7 +15,9 @@ roadmap phases 0–4 (`docs/roadmap-derived-components.md`) are history; their e
   (`tests/unit/test_py311_syntax.py`).
 - **Channel back:** the user emails the eval bundle (and anything else requested) to the
   build device; the build session imports it and commits the summary.
-- One Claude/Cursor session per step on the build device. Branch: `test-1-planning`.
+- One Claude/Cursor session per step on the build device. Branch: **`feat/derived-blocks`** (created
+  2026-10-06 from `test-1-planning` at `2e5f0ab`; all §14.6 work goes here, `test-1-planning` stays as
+  the record up to the plan).
 
 ---
 
@@ -56,7 +58,7 @@ write decisions into the docs with dates; one topic at a time, recommend rather 
 ### 1b. Build session (one per step; change the step)
 
 ```text
-Build §14.6 step <0 | 1a | 1 | 2> of docs/derived-nodes-design.md on branch test-1-planning.
+Build §14.6 step <0 | 1a | 1 | 2> of docs/derived-nodes-design.md on branch feat/derived-blocks.
 Read first: AGENTS.md, docs/session-kickoff.md, docs/derived-nodes-design.md ("Current plan" box, §14.6
 and the specs approved for this step). This device has NO OpenAI key and is the ONLY device that commits.
 
@@ -75,7 +77,7 @@ and the exact test-device commands plus the list of files to email back.
 
 ```bash
 git pull
-git checkout test-1-planning
+git checkout feat/derived-blocks
 senv\Scripts\activate
 pip install -r requirements.txt
 npm install --prefix src/node
