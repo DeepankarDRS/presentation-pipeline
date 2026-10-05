@@ -27,11 +27,13 @@ roadmap phases 0–4 (`docs/roadmap-derived-components.md`) are history; their e
 
 ```text
 Planning session for the derived design (docs/derived-nodes-design.md §14.6). No code yet: we plan and settle
-the open items, then I approve before anything is built.
+the open items, then I approve before anything is built. Work on branch feat/derived-blocks (already created
+and pushed): git fetch, git checkout feat/derived-blocks, git pull, and confirm the branch before anything else.
 
 Read first: AGENTS.md ("Where work stands"), docs/session-kickoff.md, docs/derived-nodes-design.md (the
 "Current plan" box at the top, then §14.4–14.7 and the LLM calls / tokens subsection),
-docs/plan-reviewer-loop.md (2026-10-05 note), docs/planner-redesign-research.md §9.2–9.3.
+docs/plan-reviewer-loop.md (2026-10-05 note), docs/planner-redesign-research.md §9.2–9.3,
+docs/eval/genspark-variants/summary.md (variant shortlist per block; learnings in §14.8).
 Decided, don't reopen: §14.6 route; Q15 = planner batch B after step 3 (planner 3 parked in §9.3);
 step 3 runs from step 0's saved plans, slots arm only; CHEFFIN stays in.
 
@@ -42,8 +44,8 @@ Goals for this session, in order:
    run-manifest.json into the eval bundle's decks/<case>__rN/), subset font embedding in pptx-post.js,
    shrink guard; acceptance checks; the step-end paid run (6 cases, ≈ $1.8) and what the test PC must
    send back. Also: should gj-h1-regen (14 slides) join that run as the long-brief case?
-2. Draft for my approval: (a) the slot contract (one syntax, attributes the LLM may set, prompt line per
-   kind, error codes); (b) the 1a protocol (exact slides, variety metric definition, blind side-by-side
+2. Draft for my approval: (a) the slot contract (one syntax, attributes the LLM may set incl. the variant
+   names from the Genspark shortlist, prompt line per kind, error codes); (b) the 1a protocol (exact slides, variety metric definition, blind side-by-side
    sheet, scoring scripts, from-plans runner, token comparison vs step 0).
 3. Open questions to settle or schedule: theme colours / fonts — one source for blocks (style_packs.yaml)
    and the LLM skeleton (palettes.yaml via <Theme>); the checking-loop spec (triggers, code vs LLM fixes,
