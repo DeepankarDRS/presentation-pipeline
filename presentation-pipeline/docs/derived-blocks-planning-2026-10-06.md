@@ -160,7 +160,7 @@ golden deck for per-slide scoring. Its plans cannot be regenerated identically l
 made now; whether it also runs in step 3 (≈ +$0.4, slots arm only) is decided later from 1a.
 
 ```bash
-python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense gj-h1-regen --repeat 1 --label step0 --compose --bundle
+python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label step0 --compose --bundle
 ```
 
 **The test PC sends back one file: the bundle zip.** After 0.1 it carries, per case,
