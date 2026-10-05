@@ -1,6 +1,21 @@
 # Design: derived nodes that take their content from the plan
 
-Status: **proposal, 2026-10-04** — nothing built. Research gate §13 done; hold-out test §14.3b; current recommendation §14.6 (LLM layout + code blocks in slots + a checking loop, planner fixes first), decisions for the user in §14.4 (2026-10-05). **User chose §14.6 (2026-10-05)**; evidence per part and kill criteria in §14.5; the slot test (step 1a) runs before the build.
+Status: **§14.6 chosen by the user (2026-10-05); pipeline code not started.** Blocks exist
+as research code in `scripts/phase0b/` (R1–R4, 14.7). Started 2026-10-04 as a proposal.
+
+> **Current plan — read this first** (2026-10-05)
+> - **Design:** §14.6 — the generator LLM writes each slide's layout with slots; code blocks
+>   draw the components inside them from the plan; a measured checking loop; planner
+>   fixes first. Which components have a block and what "can't invent" covers: §14.6 item 3.
+> - **Build order and costs:** the table in §14.6 (steps 0 → 1a slot test → 1 → 2 → 3 → 4),
+>   the LLM calls / tokens subsection after it, paid runs ≈ $3.5–3.8 in total.
+> - **Evidence and kill criteria:** §14.5. **Decisions:** §14.4 (status per item).
+> - **Results behind it:** §13 (research gate R1–R4), §14.3b (hold-out), §14.7 (timeline,
+>   caption, linear-flow blocks). §12 content policy (decided).
+> - **History, superseded:** §2–§10 (the first node design: `CardGrid ref=…` tags, its
+>   build order and decisions), §14.1–14.3 (composer-first route). Kept as the record;
+>   where they disagree with §14.6, §14.6 wins.
+> - Related: `docs/plan-reviewer-loop.md` (2026-10-05 note), `docs/planner-redesign-research.md` §9.2, Q15.
 Reopens Phase 4 of `docs/roadmap-derived-components.md` (halted 2026-09-24) with one
 change: a derived node gets its content **from the plan by reference**, not retyped
 by the generator.
@@ -150,6 +165,8 @@ Changed: `validator.py`, `context_builder.py`, `prompts/generator/*`, `recipes.y
 
 ## 9. Build order and acceptance
 
+*Superseded by the §14.6 build order (2026-10-05); kept as history.*
+
 | Step | What | Accepted when | API |
 |---|---|---|---|
 | 1 | Spec + expander + `CardGrid` (grid / steps / matrix) + tests + `render_plan.py` | all `card_grid` plans from the 29 Sep and 1 Oct decks render with 0 broken words, every plan string present, side by side with Phase 0 | no |
@@ -162,6 +179,8 @@ New eval metrics: `card_text_not_in_plan` (target 0), `duplicate_items_per_slide
 `node_bypassed`, plus the existing `word_breaks_per_slide`, `low_fill_pct`.
 
 ## 10. Decisions for the user
+
+*Revisited in §14.2 and changed by §14.6; current status in §14.4.*
 
 1. **Order vs the plan reviewer loop (D14, `docs/plan-reviewer-loop.md`).** Recommended:
    nodes steps 1–3 first (they fix what the renders show), reviewer loop next; the
@@ -997,7 +1016,7 @@ Replaces 14.1's "route A first". Reasons:
 | 1 | Only if 1a passes: blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block; every attribute a block writes checked against pom-jsx `types.ts` + `attributes.yaml` | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
 | 2 | Generator prompt: skeleton + slots for kinds with a block; checking loop (item 4) | replay on saved skeletons; unit tests | no |
 | 3 | **Paid check (≈ $1.2–1.5, revised 2026-10-05):** the from-plans runner on step 0's saved plans of all six cases (≈ 40 slides), `blocks: slots` only, × 1. The `off` arm is step 0's `llm.pptx` on the same plans (no extra cost), so the two arms differ only by the slot route. Before paying: a dry run with a scripted LLM replaying 1a's skeletons through the real pipeline, so the paid run is not repeated for a pipeline bug. Exact cost re-estimated from 1a's per-slide figure before asking | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
-| 4 | Blocks still missing: 2×2 matrix, pyramid, tree, layer, branching flow (timeline and linear flow are done in Phase 0b, 14.7, and move in with step 1); plan reviewer loop | coverage, per `docs/plan-reviewer-loop.md` | step-end |
+| 4 | Blocks still missing: 2×2 matrix, pyramid, tree, layer, branching flow (timeline and linear flow are done in Phase 0b, 14.7, and move in with step 1); plan reviewer loop; **§12 content policy:** derived values computed by code with a provenance tag (ratio, difference, share, rank, count, range split), inferred lines flagged for Keep / Remove (extends `written_lines`), and the three-way text check (copied / derived / inferred, anything else an error) | coverage, per `docs/plan-reviewer-loop.md` | step-end |
 
 **LLM calls and tokens: baseline, expected change, method (2026-10-05).**
 
@@ -1050,7 +1069,7 @@ estimates come from the 2026-10-05 hold-out run ($0.78 / 17 slides, gpt-5-mini p
 Precondition for reusing step 0's decks as the `off` arm: step 2's prompt and loop changes
 apply only under `blocks: slots`, so `off` stays the step 0 path.
 
-**Main risk now:** whether the LLM writes slots correctly (step 3), the same unknown as
+**Main risk now:** whether the LLM writes slots correctly (answered first by the 1a slot test, confirmed in step 3), the same unknown as
 route B had. Fallback if it doesn't: the composer with a planner-chosen `arrangement`
 field (14.1 option 2).
 
@@ -1119,20 +1138,41 @@ Left as fallbacks: matrix (3) and layer / group (3, empty plans). Launch slide 5
 
 1. **The 14.6 design** (LLM layout + code blocks in slots + a checking loop, planner fixes
    first), or the first proposal (14.1, composer first).
+   **Decided 2026-10-05: §14.6.**
 2. The 14.2 rows as changed in 14.6. The research supports #2; #1 changed with the hold-out
    (planner fixes first); #3, #5, #6 follow from 14.6; #4 needs the user's judgement.
+   **Accepted with §14.6 (2026-10-05): #1 planner fixes first, #2 Python builders + YAML
+   style, #3 plan for block content / skeleton XML for layout, #5 LLM picks layout and a
+   variant per slot, #6 `SlideHeader` block. Open: #4 label tier ≥ 10 px** (the user
+   looks at a studio deck projected or at 100% on a laptop; needed before step 1).
 3. Whether `gate-deck-all-nodes-dense` gets a paid planner run before step 1, or
    the gj-h1 dense plans keep standing in (§13 R3 "not covered"). Cost to be estimated
    before asking.
+   **Decided 2026-10-05: no separate run.** The case joins step 0's step-end run and step 3
+   (pyramid, tree, layer and matrix there have no block, so a planner-only run would
+   not test the blocks).
 4. The long-run comparison on the test PC (`compose_deck.py`, LLM vs composer on the same
    runs) continues to feed this. It measures the composer's ceiling, not 14.6's.
+   **Continues** (`eval_run … --compose`). Read it as a report on block quality, coverage
+   and plan quality (the blocks are the same code in both); it cannot show slot
+   compliance, the look of skeleton + blocks, variety or the checking loop.
+5. **Q15, planner batch B timing** (`docs/planner-redesign-research.md` §10): with step 0
+   (recommended), after 1a, after step 3, or split. **Open.**
 
 ## 11. Risks
 
-- **Templated sameness** (why archetypes were removed 2026-09-10): nodes cover card
-  internals only; layout, weights, variants and emphasis stay with the LLM. Measure
-  variety on the renders.
-- **Owning a small DSL:** cap ≈ 10 nodes, versioned spec, every node render-tested.
-- **The LLM ignores nodes:** raw POM still compiles; `node_bypassed` shows it in evals;
-  replaced recipes are removed so the node is the easy path.
-- **Two-level debugging:** keep node-level and expanded XML side by side in every run.
+*Written for the first node design; terms updated for §14.6 on 2026-10-05 (node → block,
+node tag → slot). The full risk list for §14.6 is §13's table plus §14.5's evidence table.*
+
+- **Templated sameness** (why archetypes were removed 2026-09-10): blocks cover component
+  internals only; layout, weights, variants and emphasis stay with the LLM. Measured by
+  the variety metric (a kill criterion in 1a) and the user's side-by-side.
+- **Owning a component kit:** cap ≈ 10 blocks, style values in YAML, every block
+  render-tested; the measuring code depends on POM 10.3.0 internals (`measure.mjs`), so a
+  POM upgrade means re-running the block tests.
+- **The LLM ignores slots:** raw POM still compiles; `node_bypassed` shows it in evals;
+  recipes for block kinds are removed so the slot is the easy path; 1a measures it.
+- **Two-level debugging:** keep the skeleton (`input.xml`) and the expanded XML
+  (`expanded.xml`) side by side in every run.
+- **Mixed look** on slides whose kinds have no block yet (2×2 matrix, pyramid, tree,
+  layer, branching flow) until step 4.
