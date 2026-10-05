@@ -471,6 +471,49 @@ Consequences for the build:
   derived values (recomputed), inferred lines (on the review list); anything else is
   an error.
 
+## 13. Research gate before building (decided 2026-10-05)
+
+The design is **not** built from this doc yet. Moving to it brings new risks; most can
+be found cheaply first, so the build waits on a go / no-go gate.
+
+**New risks of the design** (and whether research can find them first):
+
+| Risk | Likelihood | Found before building? |
+|---|---|---|
+| Mixed styles in one deck — polished code-drawn slides next to LLM-drawn kinds without a block (timeline, flow, pyramid, tree, 2×2 matrix, line / pie charts, layer) | high until coverage is broad | yes — R2 replay measures coverage |
+| A block does not know its slot width (needs two-pass expansion: lay out the skeleton, measure each tag's slot, then expand) | medium | yes — R3 |
+| Dense slides squashed (POM autoFit shrinks the whole slide) or over-full | medium–high on dense briefs | yes — R3 |
+| **PowerPoint draws differently from LibreOffice** (every check so far is LibreOffice; clients open PowerPoint) | unknown, possibly significant | yes — R4 |
+| Fonts: licence, embedding, missing on the viewer's machine | medium | partly — R1 + an embedding test |
+| The LLM does not follow tags (wrong `ref`, odd variant, hand-builds the block anyway) | medium | **no** — only a paid run after wiring one block (≈ $2) |
+| Repair / editor / critic must learn the tags | certain work, low risk | design question |
+| Upkeep: ~10 blocks × variants × packs; POM internals pinned to 10.3.0 | certain, ongoing | known cost |
+| A wrong plan drawn faithfully (swapped matrix, empty plan) | happens today | reviewer loop + §12, not blocks |
+
+The current path is not risk-free either: its problems recur (layout batch, capacity
+rules, borders, fit-grow, grow fallbacks since 2026-09-24; the 1 Oct decks still had
+broken words and invented cards).
+
+**Research (free or cheap), then decide:**
+
+| # | Research | Answers | Cost |
+|---|---|---|---|
+| R1 | Font experiment (§10g step 1; started 2026-10-05 in another session: `94367ac`, `c4b9c13`) | does POM measuring the real fonts remove broken words / blank heading lines / KPI overflow? | no API |
+| R2 | Replay saved decks (`llm_test/` zips: gj-h1, tables-check, baseline, layout-batch, layout-fixes — those with full plans) through the Phase 0b renderer | share of components with a block vs LLM fallback; broken words; text check | no API |
+| R3 | Phase 0c: hand-written mixed slides (LLM-style skeleton + tags, half-width slots, free text beside blocks, 3–4 components per slide) + `gate-deck-all-nodes-dense`; two-pass slot measurement; per-block minimum readable size → `SLIDE_OVERFULL` instead of squashing; per-block fit-grow opt-out | overlap, squashing, broken words, text check on mixed and dense slides | no API |
+| R4 | PowerPoint check: the user opens 3–4 rendered `.pptx` (Phase 0b studio / editorial) in PowerPoint and compares with the LibreOffice PNGs | does PowerPoint match? | ~15 min of the user's time |
+
+**Go** if: fonts measure true (R1), blocks cover most components of real decks (R2),
+mixed and dense slides neither overlap nor squash (R3), PowerPoint matches (R4).
+**No-go / rethink** if any fails — we learn which part before touching the pipeline.
+
+**If go — build to contain risk:** one block at a time (`CardGrid` first) behind a
+setting; automatic fallback to today's LLM path for a slide whose expansion fails;
+blocks expand to plain POM so the layer can be removed; one paid run (≈ $2) after the
+first block, against the 1 Oct UI decks — the only way to learn LLM tag compliance.
+The 6 decisions in §10 are answered before the build starts (1, 2, 6 have evidence;
+4, 5 provisional; 3 is a design call).
+
 ## 11. Risks
 
 - **Templated sameness** (why archetypes were removed 2026-09-10): nodes cover card
