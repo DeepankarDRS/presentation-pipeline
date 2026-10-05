@@ -767,6 +767,59 @@ known failures as of 2026-10-05).
 | 3 | **Paid check (≈ $2):** `gate-deck-xtsy-qcomm` + `gate-deck-cheffin-full` × 2, `render_mode: code_first` vs `llm` | word breaks ↓, invented text 0, first-pass compile ≥ 96%, generator calls ↓; user's side-by-side review including sameness |
 | 4 | Frame on fallback slides (14.2 #6); plan reviewer loop | per `docs/plan-reviewer-loop.md` |
 
+### 14.3b Hold-out test (2026-10-05): new briefs, code frozen at `a866137`
+
+The R2 / R3 numbers are in-sample: every renderer fix was made while looking at CHEFFIN,
+XTSY and gj-h1 plans. So three briefs the renderer had never seen were run through the
+normal pipeline on the test PC (`eval_run … --label holdout`, 1 repeat, $0.78, 17
+slides): `deck-qbr-data` (SaaS QBR), `deck-product-launch-data` (API product launch),
+`gate-deck-agency-takeover` (agency pitch, 6.8k-char brief). These plans are newer than
+R2's: kickers, planned headlines, `card_grid`. Their plans were replayed through the
+renderer **without any change to it** (`replay.py --fit`, studio_inter), and both sides
+were scored the same way on the LibreOffice render (`fontcheck.py`, `check.py`).
+Files: `output/holdout/` (gitignored), sheets `output/holdout/sheets/holdout-*.png`.
+
+| 17 slides | LLM-drawn (pipeline today) | Code-drawn (same plans) |
+|---|---|---|
+| Renderer crashes / compile | — / 17 of 17 (94% first pass) | 0 / 17 of 17 |
+| Components with a block · slides fully code-drawn | — | 50 / 55 (91%) · 12 / 17 (one of them has an empty plan) |
+| Broken words (render) | 0 | 0 |
+| Blank heading lines · KPI numbers wrapped | 4 · 1 | 0 · 0 |
+| Slides with overlapping text | 1 (agency 2: headline over subtitle) | 2 (QBR 2: KPI note touches; agency 6: last line runs into the footer) |
+| Words not in the plan | 15 + labels ("why it matters", "speaker notes"); launch 5 drawn from the brief because its plan was empty | 0 |
+| Plan words missing | 15 (launch 6 timeline, text check reads it partly) | 1 (agency 2, "62.0" chart value) |
+
+**New failures the in-sample decks never showed** (renderer, all fixable in code):
+1. Ranked-bar colouring on a **time series**: the oldest quarter is drawn red as
+   "worst" (QBR 3). Best / worst colour only fits a ranking, not a trend.
+2. A card body with commas is **split into bullets** ("SKU / city / and inventory-aware
+   …", agency 4; `_split_list`).
+3. The replay's fix for pre-batch-A plans (headline taken from the title component) picks
+   the **label as the headline** when the title component holds it ("GROWTH SYSTEM",
+   agency 4). Replay code, but the same ambiguity exists in the plans.
+4. Two-pass sizing left small deficits unreported (agency 2: 8 px at scale 0.72;
+   agency 5: 5 px) and missed agency 6's overflow into the footer.
+5. Known: duplicate chart title (agency 2); the brand is guessed from the first slide title
+   ("CAMPAIGN-PURPOSE"); thin slides drawn as a small strip in empty space (QBR 5,
+   launch 2).
+
+**Planner problems both versions share** (blocks can't fix them):
+- **Empty plan** (launch 5: `kpi_row` and caption `{}`). Code draws an empty slide. The
+  LLM drew the KPIs from the brief, unchecked against any plan. This is the silent `{}`
+  fallback (§5, 14.2 #1).
+- Planner **instructions printed as content** ("Deepen the growth story by showing…", QBR 3;
+  "Break down ARR by segment to show…", QBR 4). Speaker notes planned as a narrative
+  (agency 2, 4, 5, 6). A card body that repeats its title (agency 4).
+- Timeline (launch 6) has no block: an empty slide in the replay, LLM fallback in a build.
+
+**Reading:** on brand-new plans the renderer held up mechanically: no crash, 0 broken
+words, 0 invented words, fewer blank headings and KPI wraps. Overlap was slightly worse
+(2 vs 1). It also showed 4 failure types the in-sample decks never had, so in-sample
+results overstate readiness. Per slide (author's read; the user judges): code clearly
+better on agency 1 (the LLM fills whole table rows red / green), equal on data slides (QBR 2
+and 4; launch 3 and 4; agency 3 and 5), worse where the plan is thin or empty (QBR 5;
+launch 2, 5 and 6). The biggest visible gaps come from the plan, not the renderer.
+
 ### 14.4 What the user decides
 
 1. **Route A first** (code composer, LLM free-layout given up on covered slides) or
