@@ -1117,3 +1117,7 @@ export async function fitGrow(inputXml) {
   parts.push(inputXml.slice(last));
   return { xml: report.some((r) => !r.includes("skipped")) ? prefix + parts.join("") : inputXml, report };
 }
+
+// Layout helpers for measuring tools (scripts/phase0b/measure.mjs); fit-grow itself
+// does not use these exports.
+export { layout, natural, squeezes, contentHeight, tagNodes, walk, rowsSum, SLIDE };

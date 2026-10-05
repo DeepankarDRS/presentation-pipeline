@@ -1,0 +1,15 @@
+<!-- plan: scripts/phase0b/plans/cheffin.json#3 -->
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$bg" padding="48" gap="18" alignItems="stretch">
+    <Text fontSize="12" fontFamily="JetBrains Mono" color="$muted" letterSpacing="1.6">CORE ECONOMICS PROBLEM</Text>
+    <Text fontSize="34" fontFamily="Inter" bold="true" color="$ink" lineHeight="1.15">CPC is nearly 3x higher than what current conversion economics can support.</Text>
+    <HStack grow="1" gap="28" alignItems="stretch">
+      <VStack id="slot-cpc_table" w="50%" />
+      <VStack id="slot-cpc_chart" grow="1" />
+    </HStack>
+    <HStack padding="18" gap="14" backgroundColor="$dark" alignItems="center">
+      <Text fontSize="12" fontFamily="JetBrains Mono" color="$accent2" letterSpacing="1.6">SO WHAT</Text>
+      <Text grow="1" fontSize="15" fontFamily="Inter" color="$white" lineHeight="1.4">At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together.</Text>
+    </HStack>
+  </VStack>
+</Slide>

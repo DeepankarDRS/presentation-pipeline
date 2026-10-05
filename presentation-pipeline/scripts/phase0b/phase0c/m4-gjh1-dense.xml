@@ -1,0 +1,16 @@
+<!-- plan: output/r2/inputs/gj-h1-regen-bf396b/slides.json#2 -->
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$bg" padding="40" gap="14" alignItems="stretch">
+    <Text fontSize="12" fontFamily="JetBrains Mono" color="$muted" letterSpacing="1.6">PERFORMANCE OVERVIEW</Text>
+    <Text fontSize="30" fontFamily="Inter" bold="true" color="$ink" lineHeight="1.15">H1 2026 Snapshot</Text>
+    <VStack id="slot-headline_kpis" h="120" />
+    <HStack grow="1" gap="20" alignItems="stretch">
+      <VStack id="slot-platform_table" w="55%" />
+      <VStack id="slot-monthly_trend_chart" grow="1" />
+    </HStack>
+    <HStack h="110" gap="20" alignItems="stretch">
+      <VStack id="slot-growth_kpi" w="34%" />
+      <VStack id="slot-platform_callouts" grow="1" />
+    </HStack>
+  </VStack>
+</Slide>

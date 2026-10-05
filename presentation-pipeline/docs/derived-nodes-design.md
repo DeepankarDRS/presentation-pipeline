@@ -500,7 +500,7 @@ broken words and invented cards).
 |---|---|---|---|
 | R1 | Font experiment (§10g step 1; **done 2026-10-05**, result below: `94367ac`, `c4b9c13`) | does POM measuring the real fonts remove broken words / blank heading lines / KPI overflow? | no API |
 | R2 | Replay saved decks (`llm_test/` zips: gj-h1, tables-check, baseline, layout-batch, layout-fixes — those with full plans) through the Phase 0b renderer (**done 2026-10-05**, result below) | share of components with a block vs LLM fallback; broken words; text check | no API |
-| R3 | Phase 0c: hand-written mixed slides (LLM-style skeleton + tags, half-width slots, free text beside blocks, 3–4 components per slide) + `gate-deck-all-nodes-dense`; two-pass slot measurement; per-block minimum readable size → `SLIDE_OVERFULL` instead of squashing; per-block fit-grow opt-out | overlap, squashing, broken words, text check on mixed and dense slides | no API |
+| R3 | (**done 2026-10-05**, result below) Phase 0c: hand-written mixed slides (LLM-style skeleton + tags, half-width slots, free text beside blocks, 3–4 components per slide) + `gate-deck-all-nodes-dense`; two-pass slot measurement; per-block minimum readable size → `SLIDE_OVERFULL` instead of squashing; per-block fit-grow opt-out | overlap, squashing, broken words, text check on mixed and dense slides | no API |
 | R4 | PowerPoint check: the user opens 3–4 rendered `.pptx` (Phase 0b studio / editorial) in PowerPoint and compares with the LibreOffice PNGs (**done 2026-10-05, passed**, result below) | does PowerPoint match? | ~15 min of the user's time |
 
 #### R1 result (2026-10-05): done — fonts measure true; embedding works in LibreOffice
@@ -604,6 +604,68 @@ chart series shorter than its labels or with null values (crash, "None" printed)
 null KPI notes; chart titles on single charts; covers whose subtitle lives in the
 title component or in a second narrative; KPI numbers sized and boxed by glyph height
 (`GLYPH_H` 1.2, cap 120 px).
+
+#### R3 result (2026-10-05): two-pass sizing removes the overlap; mixed slides work
+
+Built (all in `scripts/phase0b/`, nothing wired into the pipeline):
+- `measure.mjs`: a long-running Node helper on POM's own layout (fit-grow's `layout` /
+  `natural` / `squeezes`, now exported): per slide the natural height, squashed boxes
+  (content taller than its box, i.e. Yoga shrank it), and the boxes of `slot-…` ids.
+- `fit.py`: **two-pass sizing** for the composer. It composes, measures every block
+  (`blk-N` ids) and recomposes with fixed blocks at their real height and each grower given
+  at least its content's height. If anything is still squashed it steps the body type down
+  (×0.92 … 0.68; labels keep their size, text ≥ 11 px, table rows ≥ 24 px). At the
+  smallest step it reports **`SLIDE_OVERFULL`** (with the deficit) instead of drawing
+  squashed. `replay.py --fit` uses it.
+- `expand.py`: **slots in an LLM-style skeleton** (Phase 0c). Free text plus
+  `<VStack id="slot-<component_id>" w="50%" grow="1" />` placeholders. Pass 1 lays out
+  the skeleton and reads each slot's box; pass 2 draws the block for that box, re-measures,
+  and steps type down or reports over-full. The skeleton's own text is never changed.
+- Blocks made slot-aware: KPI rows take the slot width (`kpi_block`: tiers in a slot,
+  tiles < 170 px wrap to two rows); bullet tiles / note columns only when every tile fits
+  its longest word; native POM `<Chart>` for line / doughnut / area / multi-series /
+  > 8 points (scales to any slot, where 18 shape bars could not; R2's "form changed" gone).
+- Composer bug fixed: the centring spacers are children of the gapped body stack, so
+  each cost one more gap; on paper every slide was ~70 px over-full (Yoga hid it by
+  shrinking the spacers).
+
+**Dense slides** (R2's 88 slides, `replay.py --fit`):
+
+| | R2 (estimates) | R3 (two-pass) |
+|---|---|---|
+| Slides with overlapping text | 14 | **3** (one is a false positive: digit and note boxes touch, ink does not; two small touches: a table cell, two chart labels) |
+| Type scale used | — | 1.0 on 74 slides, 0.92 / 0.85 on 5, 0.68 on 2 |
+| `SLIDE_OVERFULL` reported | — | **1** (gj-h1 `69af33` slide 6, 51 px: too much content at the minimum sizes) |
+| Broken words · KPI wraps · blank headings | 2 · 0 · 0 | 1 · 0 · 0 |
+| Compile · plan words missing | 88 / 88 · 3 | 88 / 88 · 5 (the 3 of R2 + 2 numbers on the over-full slide) |
+
+**Mixed slides** (`scripts/phase0b/phase0c/`: CHEFFIN exec summary with the KPI row in a 62 %
+slot beside free text; CHEFFIN CPC with table and chart in two half slots; XTSY automation
+with cards in a 58 % slot and a bullet slot inside a free-text column; gj-h1 snapshot with
+5 slots, dense): **4 / 4 compile, 0 broken words, 0 overlapping text, 0 block words
+missing**; the dense one at type 0.92. First attempt showed the slot-width risk exactly as
+predicted (bullet tiles in a 469 px slot broke 6 words; 5 KPI tiles in one row of a 734 px
+slot); fixed in the blocks.
+
+Not covered: `gate-deck-all-nodes-dense` has only a brief, no saved plans, so it would need
+a paid planner run; gj-h1's dense plans stood in. Still open: a grower's type does not grow
+to fill a tall slot in every block (bullet panel); LLM compliance with slot tags is unknown
+until a paid run.
+
+#### Gate reading (2026-10-05, for the user's decision)
+
+| Criterion | Result |
+|---|---|
+| Fonts measure true (R1) | yes; embedding required and works |
+| Blocks cover most components of real decks (R2) | yes, 92%; timeline is the main gap (POM has a native `<Timeline>`) |
+| Mixed and dense slides neither overlap nor squash (R3) | yes for mixed (0 / 4); dense 14 → 2 real touches + 1 reported over-full |
+| PowerPoint matches (R4) | yes, with embedded fonts |
+
+Author's reading: **go**, built as §13 says (one block at a time behind a setting, with
+fallback, a paid run after `CardGrid` to learn tag compliance). Prerequisites carried
+from the research: the measuring helper + two-pass sizing in the validator, font
+embedding in `pptx-post.js`, a timeline block, a shrink guard for words wider than
+their box. The decision is the user's.
 
 **Go** if: fonts measure true (R1), blocks cover most components of real decks (R2),
 mixed and dense slides neither overlap nor squash (R3), PowerPoint matches (R4).

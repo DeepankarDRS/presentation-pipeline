@@ -1,0 +1,15 @@
+<!-- plan: scripts/phase0b/plans/cheffin.json#2 -->
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$bg" padding="48" gap="20" alignItems="stretch">
+    <Text fontSize="12" fontFamily="JetBrains Mono" color="$muted" letterSpacing="1.6">EXECUTIVE SUMMARY</Text>
+    <Text fontSize="36" fontFamily="Inter" bold="true" color="$ink" lineHeight="1.15">The account is spending at scale, but not yet buying profitable demand.</Text>
+    <HStack grow="1" gap="24" alignItems="stretch">
+      <VStack id="slot-key_numbers" w="62%" />
+      <VStack grow="1" gap="14" padding="24" backgroundColor="$panel" border.color="$line" border.width="1">
+        <Text fontSize="12" fontFamily="JetBrains Mono" color="$accent" letterSpacing="1.6">WHAT IT MEANS</Text>
+        <Text fontSize="17" fontFamily="Inter" color="$ink" lineHeight="1.4">Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR.</Text>
+        <Text fontSize="15" fontFamily="Inter" italic="true" color="$muted" lineHeight="1.4">This is a media economics problem, not just a campaign hygiene problem.</Text>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

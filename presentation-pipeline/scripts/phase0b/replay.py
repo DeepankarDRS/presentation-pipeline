@@ -8,8 +8,6 @@ components the blocks drew, for scripts.phase0b.check) and <out>/coverage.json.
 
 Coverage, per component:
   block        drawn by a Phase 0b block
-  form_changed drawn by a block in another visual form (a line / doughnut / area chart
-               drawn as ranked bars)
   fallback     no block: the real design would leave it to the LLM (timeline, flow,
                matrix, layer, group, a caption on a content slide, ...). It is removed
                before rendering, so the slide shows a gap there.
@@ -26,9 +24,9 @@ import re
 from pathlib import Path
 
 from scripts.phase0b import render as R
+from scripts.phase0b.fit import Measurer, fit_frame
 
 BLOCKS = {"title", "narrative", "kpi_row", "table", "chart", "bullet_list", "process_arrow", "card_grid"}
-BAR_CHARTS = {None, "", "bar", "column", "horizontal_bar"}
 
 
 def classify(comp: dict, slide_type: str | None) -> str:
@@ -37,16 +35,14 @@ def classify(comp: dict, slide_type: str | None) -> str:
         return "block" if slide_type == "cover" else "fallback"
     if k not in BLOCKS:
         return "fallback"
-    if k == "chart" and (comp.get("content_data") or {}).get("chart_type") not in BAR_CHARTS:
-        return "form_changed"
-    return "block"
+    return "block"  # charts: ranked bars, or POM's native chart for line / doughnut / area / many series
 
 
 def deck_name(path: Path) -> str:
     return path.parent.name if path.name == "slides.json" else re.sub(r"\W+", "-", path.stem).strip("-")
 
 
-def replay(path: Path, out: Path, pack: str) -> dict:
+def replay(path: Path, out: Path, pack: str, measure=None) -> dict:
     name = deck_name(path)
     saved = json.loads(path.read_text(encoding="utf-8"))
     plans = [s["slide_plan"] for s in saved if s.get("slide_plan")]
@@ -69,10 +65,14 @@ def replay(path: Path, out: Path, pack: str) -> dict:
         plan["components"] = [c for c, (_, cls) in zip(plan["components"], kinds) if cls != "fallback"]
         try:
             p.is_dark = R._dark_slide(plan, p)
-            body = (R.cover(plan, deck, p, len(plans)) if plan.get("slide_type") == "cover"
-                    else R.frame(plan, deck, p, i, len(plans)))
-            (src / f"slide-{i:02d}.xml").write_text(p.theme() + "\n<!-- fit-grow: off -->\n" + body + "\n",
-                                                   encoding="utf-8")
+            fit = None
+            if plan.get("slide_type") == "cover":
+                xml = p.theme() + "\n<!-- fit-grow: off -->\n" + R.cover(plan, deck, p, len(plans)) + "\n"
+            elif measure:  # two-pass sizing against POM's layout (fit.py)
+                xml, fit = fit_frame(plan, deck, p, i, len(plans), measure)
+            else:
+                xml = p.theme() + "\n<!-- fit-grow: off -->\n" + R.frame(plan, deck, p, i, len(plans)) + "\n"
+            (src / f"slide-{i:02d}.xml").write_text(xml, encoding="utf-8")
             status = "ok"
         except Exception as error:  # a renderer gap is a finding, not a stop
             status = f"error: {type(error).__name__}: {error}"
@@ -82,7 +82,8 @@ def replay(path: Path, out: Path, pack: str) -> dict:
                                                    encoding="utf-8")
         counts.update(cls for _, cls in kinds)
         drawn_plans.append(plan)
-        rows.append({"slide": i, "status": status, "components": [f"{k}:{cls}" for k, cls in kinds]})
+        rows.append({"slide": i, "status": status, "components": [f"{k}:{cls}" for k, cls in kinds],
+                     "fit": fit if status == "ok" else None})
     (out / f"plans-{name}.json").write_text(json.dumps({"deck": deck, "slides": drawn_plans}, ensure_ascii=False,
                                                        indent=1), encoding="utf-8")
     full = sum(1 for r in rows if r["status"] == "ok" and all(c.endswith(":block") for c in r["components"]))
@@ -95,9 +96,15 @@ def main() -> None:
     ap.add_argument("inputs", nargs="+", type=Path)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--pack", default="studio_inter")
+    ap.add_argument("--fit", action="store_true", help="two-pass sizing against POM's layout (R3)")
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
-    decks = [replay(f, a.out, a.pack) for f in a.inputs]
+    measure = Measurer() if a.fit else None
+    try:
+        decks = [replay(f, a.out, a.pack, measure) for f in a.inputs]
+    finally:
+        if measure:
+            measure.close()
     (a.out / "coverage.json").write_text(json.dumps(decks, ensure_ascii=False, indent=1), encoding="utf-8")
     total = collections.Counter()
     for d in decks:
@@ -105,11 +112,17 @@ def main() -> None:
         c = d["components"]
         n = sum(c.values())
         print(f"{d['deck']:28} {d['slides']:3} slides, all-block {d['slides_all_blocks']:2} | "
-              f"block {c.get('block', 0)}/{n}, form changed {c.get('form_changed', 0)}, "
-              f"fallback {c.get('fallback', 0)}, failed {c.get('failed', 0)}")
+              f"block {c.get('block', 0)}/{n}, fallback {c.get('fallback', 0)}, failed {c.get('failed', 0)}")
     n = sum(total.values())
-    print(f"TOTAL components {n}: block {total['block']} ({total['block'] / n:.0%}), form changed "
-          f"{total['form_changed']}, fallback {total['fallback']} ({total['fallback'] / n:.0%}), failed {total['failed']}")
+    print(f"TOTAL components {n}: block {total['block']} ({total['block'] / n:.0%}), "
+          f"fallback {total['fallback']} ({total['fallback'] / n:.0%}), failed {total['failed']}")
+    fits = [r["fit"] for d in decks for r in d["per_slide"] if r.get("fit")]
+    if fits:
+        scales = collections.Counter(f["scale"] for f in fits)
+        over = [f"{d['deck']} {r['slide']} ({r['fit']['deficit']} px)" for d in decks for r in d["per_slide"]
+                if r.get("fit") and r["fit"]["code"]]
+        print(f"FIT {len(fits)} slides: type scale {dict(sorted(scales.items(), reverse=True))}; "
+              f"SLIDE_OVERFULL {len(over)}: {', '.join(over)}")
 
 
 if __name__ == "__main__":

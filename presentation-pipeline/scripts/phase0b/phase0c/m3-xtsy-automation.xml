@@ -1,0 +1,14 @@
+<!-- plan: scripts/phase0b/plans/xtsy.json#6 -->
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$bg" padding="48" gap="20" alignItems="stretch">
+    <Text fontSize="12" fontFamily="JetBrains Mono" color="$muted" letterSpacing="1.6">PERFORMANCE AUTOMATION</Text>
+    <Text fontSize="38" fontFamily="Inter" bold="true" color="$ink" lineHeight="1.15">Ads Automation Engine Designed for Quick Commerce</Text>
+    <HStack grow="1" gap="28" alignItems="stretch">
+      <VStack id="slot-automation_workflow" w="58%" />
+      <VStack grow="1" gap="16">
+        <Text fontSize="18" fontFamily="Inter" italic="true" color="$ink" lineHeight="1.4">Automation allows brands to react in hours instead of weeks.</Text>
+        <VStack id="slot-automation_benefits" grow="1" />
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

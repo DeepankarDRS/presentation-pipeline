@@ -46,6 +46,12 @@ class Pack:
         self.dark_c = spec.get("colors_dark")
         self.headline = spec.get("headline", "bold")
         self.head_max_w = spec.get("headline_max_w", INNER)
+        # two-pass sizing (scripts/phase0b/fit.py): measured heights of fixed blocks by index,
+        # a type scale for the body, and the kinds of the last composed blocks
+        self.measured: dict[int, float] = {}
+        self.min_h: dict[int, float] = {}   # growers: the height their content measured at
+        self.scale = 1.0
+        self.block_kinds: list[str] = []
         self.card_titles = spec.get("card_titles", "plain")
         self.fills = spec.get("fills", "flat")
         self.card_border = spec.get("card_border", False)
@@ -254,10 +260,10 @@ def kpi_label_fs(p: Pack, h: float | None) -> int:
     return int(min(14, max(p.t["label"], (h or 0) / 17)))
 
 
-def kpi_width_fs(comp: dict, p: Pack) -> int:
+def kpi_width_fs(comp: dict, p: Pack, width: float = INNER) -> int:
     """Largest number size at which every value fits its tile's width (5% margin)."""
     values = comp["content_data"].get("kpi_values", [])
-    tile_w = (INNER - 12 * (len(values) - 1)) / max(1, len(values)) - 40
+    tile_w = (width - 12 * (len(values) - 1)) / max(1, len(values)) - 40
     return int(tile_w * 0.95 / max((_value_em(v, p) for v in values), default=1))
 
 
@@ -271,12 +277,12 @@ def kpi_need(comp: dict, p: Pack, h: float) -> float:
     return 40 + kpi_label_fs(p, h) * 1.3 + 12 + min(KPI_CAP, kpi_width_fs(comp, p)) * GLYPH_H + notes
 
 
-def kpi_row(comp: dict, p: Pack, hero: bool, h: float | None = None, grow: str = "") -> str:
+def kpi_row(comp: dict, p: Pack, hero: bool, h: float | None = None, grow: str = "", width: float = INNER) -> str:
     cd = comp["content_data"]
     labels, values = cd.get("kpi_labels", []), cd.get("kpi_values", [])
     notes = [n or "" for n in (cd.get("kpi_deltas") or [])] + [""] * len(values)  # null notes show nothing
     dark = _named_in_hint(comp, labels, "inverted")
-    width_fs = kpi_width_fs(comp, p)
+    width_fs = kpi_width_fs(comp, p, width)  # the slot's width (a half-width slot on a mixed slide)
     fs = min(p.t["big"] if hero else p.t["mid"], width_fs)
     lfs = kpi_label_fs(p, h)
     if h:  # sized to the slot: the number fills what the tile's width and height allow
@@ -520,11 +526,15 @@ def bullet_panel(items: list[str], p: Pack, grow: str = "") -> str:
     return f'<VStack padding="18" gap="10" backgroundColor="$panel"{p.border}{grow}{spread}>{rows}</VStack>'
 
 
-def bullets_block(comp: dict, p: Pack, grow: str = "") -> str:
+def bullets_block(comp: dict, p: Pack, grow: str = "", width: float = INNER) -> str:
+    """Short items -> one tile row, long ones -> note columns, else a bullet panel; the row and
+    columns only when the slot is wide enough (a 469 px slot broke "optimiza/tion" in tiles)."""
     items = [str(b) for b in comp["content_data"].get("bullets", [])]
     if 2 <= len(items) <= 6 and all(len(i.split()) <= 5 for i in items):
-        return tile_row(items, p)
-    if 2 <= len(items) <= 3 and all(len(i.split()) >= 8 for i in items):
+        tile_inner = (width - 10 * (len(items) - 1)) / len(items) - 28
+        if all(em(w_, p.sans) * 13 <= tile_inner for i in items for w_ in i.split()):
+            return tile_row(items, p)
+    if 2 <= len(items) <= 3 and all(len(i.split()) >= 8 for i in items) and width >= 300 * len(items):
         return note_columns(items, p)
     return bullet_panel(items, p, grow)
 
@@ -568,6 +578,14 @@ def data_table(comp: dict, p: Pack, width: float, h: float | None = None) -> str
         out.append("<Tr>" + "".join(cells) + "</Tr>")
     out.append("</Table>")
     return "".join(out)
+
+
+def _signed(v: Any) -> float:
+    m = re.search(r"-?[\d.]+", str(v).replace(",", ""))
+    try:
+        return float(m.group()) if m else 0.0
+    except ValueError:
+        return 0.0
 
 
 def _num(v: Any) -> float | None:
@@ -615,10 +633,32 @@ def bar_list(labels: list[str], series: list[tuple[str, list[str]]], p: Pack, wi
 
 
 def chart_block(comp: dict, p: Pack, width: float, h: float | None = None) -> str:
+    """Ranked bars (shapes) for a short single-series bar chart; POM's native chart for
+    everything else (line / doughnut / area, several series, many points): it scales to any
+    slot, where 18 shape bars for 3 series x 6 months cannot (R2/R3)."""
     cd = comp["content_data"]
     labels = cd.get("chart_labels", [])
     series = [(s["name"], s["values"]) for s in cd.get("chart_series", [])] or [(cd.get("chart_title", ""), cd.get("chart_values", []))]
-    return bar_list(labels, series, p, width, h)
+    kind = cd.get("chart_type") or "bar"
+    if kind in ("bar", "column", "horizontal_bar") and len(series) <= 2 and len(labels) <= 8:
+        return bar_list(labels, series, p, width, h)
+    kind = {"column": "bar", "horizontal_bar": "bar"}.get(kind, kind)
+    if kind not in ("bar", "line", "pie", "area", "doughnut", "radar"):
+        kind = "bar"
+    ents = [p.entity(name) for name, _ in series]
+    named = [list(p.entities.values())[int(e[0][2:])] if e else None for e in ents]  # "$e0" -> entity colour
+    palette = [p.c.get(k) for k in ("ink", "accent", "muted", "accent2", "negative") if p.c.get(k)]
+    colors = [n or palette[i % len(palette)] for i, n in enumerate(named)]
+    if kind in ("pie", "doughnut"):
+        colors = palette
+    pts = "".join(
+        f'<ChartSeries name="{x(name)}">' + "".join(
+            f'<ChartDataPoint label="{x(lab)}" value="{_signed(v):g}" />'
+            for lab, v in zip(labels, vs) if v is not None) + "</ChartSeries>"
+        for name, vs in series)
+    ch = round(h) if h else 260
+    return (f'<Chart chartType="{kind}" w="{round(width)}" h="{max(120, ch)}" showLegend="{"true" if len(series) > 1 or kind in ("pie", "doughnut") else "false"}" '
+            f"chartColors='{json.dumps(colors)}'>{pts}</Chart>")
 
 
 def panel(title: str | None, body: str, p: Pack, grows: bool = False) -> str:
@@ -654,6 +694,27 @@ WEIGHT = {"hero": 3, "peer": 3, "supporting": 1, "minor": 1}
 GAP = 16
 
 
+def kpi_block(comp: dict, p: Pack, width: float, h: float, grow: str = "") -> str:
+    """A KPI row for a w x h slot: mixed totals / entity values -> two tiers (as the composer
+    does), and tiles narrower than ~170 px wrap into two rows; rows share the height."""
+    rows = _split_kpi_tiers([comp], p)
+    if len(rows) == 1:
+        cd = comp["content_data"]
+        n = len(cd.get("kpi_values") or [])
+        if n >= 4 and (width - 12 * (n - 1)) / n < 170:
+            half = math.ceil(n / 2)
+            rows = [dict(comp, content_data={k: (v[a:b] if isinstance(v, list) and len(v) == n else v)
+                                             for k, v in cd.items()})
+                    for a, b in ((0, half), (half, n))]
+    if len(rows) == 1:
+        return kpi_row(comp, p, hero=comp.get("weight") != "supporting", h=h, grow=grow, width=width)
+    share = [0.58, 0.42] if rows[0].get("weight") != rows[-1].get("weight") else [0.5, 0.5]
+    inner = h - 12 * (len(rows) - 1)
+    body = "".join(kpi_row(r, p, hero=r.get("weight") != "supporting", h=inner * share[i], width=width)
+                   for i, r in enumerate(rows))
+    return f'<VStack gap="12" alignItems="stretch"{grow}>{body}</VStack>'
+
+
 def _split_kpi_tiers(comps: list[dict], p: Pack) -> list[dict]:
     """5+ tiles mixing combined and per-entity values -> combined tier + entity tier
     (Genspark CHEFFIN slide 2). Same content, laid out to fit."""
@@ -684,7 +745,7 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
     blocks: list[tuple] = []
 
     def fixed(xml: str, h: float) -> None:
-        blocks.append(("fixed", xml, h))
+        blocks.append(("fixed", xml, p.measured.get(len(blocks), h)))  # POM's height once measured
 
     def grower(fn, weight: float, cap: float = 1e9) -> None:
         blocks.append(("grow", fn, weight, cap))
@@ -812,9 +873,10 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
     gaps = GAP * (len(blocks) - 1)
     spare = max(120.0, body_h - fixed_h - gaps)
     growers = [i for i, b in enumerate(blocks) if b[0] == "grow"]
-    alloc = {i: 0.0 for i in growers}
-    open_ = set(growers)
-    left = spare
+    # a grower first gets what its content measured at (fit.py), then shares the rest by weight
+    alloc = {i: p.min_h.get(i, 0.0) for i in growers}
+    open_ = {i for i in growers if alloc[i] < blocks[i][3]}
+    left = max(0.0, spare - sum(alloc.values()))
     while open_ and left > 1:
         wsum = sum(blocks[i][2] for i in open_)
         step = {i: left * blocks[i][2] / wsum for i in open_}
@@ -830,16 +892,27 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
     slack = max(0.0, left)
     out = []
     for i, blk in enumerate(blocks):
-        if blk[0] == "fixed":
-            out.append(blk[1])
-        else:
-            h = alloc[i]
-            out.append(blk[1](h, f' h="{round(h)}"'))
+        xml = blk[1] if blk[0] == "fixed" else blk[1](alloc[i], f' h="{round(alloc[i])}"')
+        out.append(re.sub(r"^\s*<(\w+)", rf'<\1 id="blk-{i}"', xml, count=1))  # measured by fit.py
+    p.block_kinds = [b[0] for b in blocks]
+    out = [scale_type(o, p.scale) for o in out]
     # slack: widen the gaps (up to +32px) and centre what remains, never one empty band
     extra = min(32.0, slack / max(1, len(blocks) + 1))
     rest = slack - extra * max(0, len(blocks) - 1)
-    pad = '<VStack h="%d" />' % round(rest / 2) if rest > 8 else ""
+    # each centring spacer is a child of the gapped stack too: it costs one more gap
+    pad_h = rest / 2 - (GAP + extra)
+    pad = '<VStack h="%d" />' % round(pad_h) if pad_h > 8 else ""
     return pad + "".join(out) + pad, GAP + extra
+
+
+def scale_type(xml: str, s: float) -> str:
+    """Body type at scale s (two-pass fit): labels (<= 11px) keep their size, other text never
+    below 11px, table rows never below 24px."""
+    if s >= 0.999:
+        return xml
+    xml = re.sub(r'fontSize="(\d+(?:\.\d+)?)"',
+                 lambda m: f'fontSize="{m.group(1) if float(m.group(1)) <= 11 else max(11, round(float(m.group(1)) * s))}"', xml)
+    return re.sub(r'(<Tr\b[^>]*\bheight=")(\d+)"', lambda m: f'{m.group(1)}{max(24, round(int(m.group(2)) * s))}"', xml)
 
 
 _PHRASE = re.compile(r"phrase\s+['\"‘“](.+?)['\"’”]")
@@ -877,9 +950,13 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
     sub = (f'<Text margin.top="8" fontSize="14" fontFamily="{p.sans}" color="$muted" lineHeight="1.35">'
            f'{x(plan["subtitle"])}</Text>') if plan.get("subtitle") else ""
     rule = '<Shape margin.top="14" shapeType="rect" w="36" h="2" fill.color="$ink" />' if p.rule else ""
-    lines = math.ceil(len(plan["slide_title"]) * p.t["headline"] * 0.56 / p.head_max_w)
+    # header heights from the real glyph widths (bold for the headline: two-tone mixes weights)
+    lines = drawn_lines(plan["slide_title"], p.sans, p.t["headline"], p.head_max_w) or math.ceil(
+        len(plan["slide_title"]) * p.t["headline"] * 0.56 / p.head_max_w)
     head_h = round(lines * p.t["headline"] * 1.15 + 6)
-    sub_h = (8 + _lines(plan["subtitle"], 14, INNER) * 19) if plan.get("subtitle") else 0
+    sub_lines = (drawn_lines(plan["subtitle"], p.sans, 14, INNER, bold=False) or _lines(plan["subtitle"], 14, INNER)
+                 ) if plan.get("subtitle") else 0
+    sub_h = (8 + sub_lines * 19) if plan.get("subtitle") else 0
     body_h = (H - (6 if p.top_bar else 0) - 26 - 20 - 14 - 14 - head_h - sub_h - (16 if p.rule else 0)
               - 20 - 14 - 12)
     body_xml, body_gap = compose_body(plan, p, body_h)

@@ -47,6 +47,9 @@ def plan_strings(plan: dict) -> list[str]:
 def visible_text(xml: str) -> str:
     xml = re.sub(r"<Theme[^>]*/>", "", xml)
     attrs = " ".join(re.findall(r'\btext="([^"]*)"', xml))
+    # a native chart draws its series names, point labels and values from attributes
+    for tag in re.findall(r"<Chart(?:Series|DataPoint)\b[^>]*>", xml):
+        attrs += " " + " ".join(re.findall(r'\b(?:name|label|value)="([^"]*)"', tag))
     xml = re.sub(r"</?Span[^>]*>", "", xml)  # inline runs: "₹114.9<Span>L</Span>" is one word
     body = re.sub(r"<[^>]+>", " ", xml)
     return attrs + " " + body
