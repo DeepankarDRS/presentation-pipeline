@@ -57,7 +57,7 @@ Goals for this session, in order:
    best-version score, cost per round, how it relates to critic / visual_repairer); #4 label tier ≥ 10 px
    (I still have to view a projected deck); when blocks: slots becomes the default.
 
-Rules: record the unit-test baseline before any change (last known 557 pass / 4 known failures); code must
+Rules: record the unit-test baseline before any change (last known 572 pass / 4 known failures); code must
 parse on Python 3.11 (test PC); verify LLM-free on this PC; ask before any paid run with cases + cost;
 write decisions into the docs with dates; one topic at a time, recommend rather than list options.
 ```
@@ -71,7 +71,7 @@ Read first: AGENTS.md, docs/session-kickoff.md, docs/derived-nodes-design.md ("C
 and the specs approved for this step). This device has NO OpenAI key and is the ONLY device that commits.
 
 Before coding:
-1. git pull; record the unit-test baseline (pytest tests/unit -q; last known 557 pass / 4 known failures).
+1. git pull; record the unit-test baseline (pytest tests/unit -q; last known 572 pass / 4 known failures).
 2. Summarise the step, its acceptance checks and any open point with your recommendation; show me a plan
    and the file list. Do not edit until I approve.
 
