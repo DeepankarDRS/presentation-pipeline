@@ -88,6 +88,7 @@ def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm") -> dic
     merged = merge_pptx_files(pptx, out / "merged.pptx")
     final = out / "composed.pptx"
     embed(merged, final, {f: {k: FONTS_DIR / v for k, v in faces.items()} for f, faces in FONTS.items()})
+    merged.unlink()  # same slides without the fonts: only an intermediate step
     fits = [r.get("fit") or {} for r in report["per_slide"]]
     return {
         "pptx": str(final),
