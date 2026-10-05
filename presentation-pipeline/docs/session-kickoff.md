@@ -31,7 +31,7 @@ the open items, then I approve before anything is built. Work on branch feat/der
 and pushed): git fetch, git checkout feat/derived-blocks, git pull, and confirm the branch before anything else.
 
 Read first: AGENTS.md ("Where work stands"), docs/session-kickoff.md, docs/derived-nodes-design.md (the
-"Current plan" box at the top, then §14.4–14.7 and the LLM calls / tokens subsection),
+"Current plan" box at the top, then §14.4–14.9 and the LLM calls / tokens subsection),
 docs/plan-reviewer-loop.md (2026-10-05 note), docs/planner-redesign-research.md §9.2–9.3,
 docs/eval/genspark-variants/summary.md (variant shortlist per block; learnings in §14.8).
 Decided, don't reopen: §14.6 route; Q15 = planner batch B after step 3 (planner 3 parked in §9.3);
