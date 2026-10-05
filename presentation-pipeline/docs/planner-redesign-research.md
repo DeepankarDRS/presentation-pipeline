@@ -784,7 +784,7 @@ plan reviewer loop. How the open §9.1 items sit in that order:
 
 | §9.1 item | Status under §14.6 |
 |---|---|
-| **New, step 0** (from the hold-out test, design doc §14.3b) | re-ask instead of the silent empty plan in `slide_component_planner.py` (both `except` branches return `components: []`); reject planner instructions / speaker notes as slide text; `SLIDE_SPARSE` for thin slides; reject card bodies that repeat the title. These are the in-branch part of planner 4 |
+| **New, step 0** (from the hold-out test, design doc §14.3b) | re-ask instead of the silent empty plan in `slide_component_planner.py` (both `except` branches return `components: []`); reject planner instructions / speaker notes as slide text; `SLIDE_SPARSE` for thin slides; reject card bodies that repeat the title; duplicate items on one slide (≥ 70% overlap, reviewer check C17, moved forward). These are the in-branch part of planner 4 |
 | Planner 3 (content by reference) | unchanged, batch B; more important now, since blocks copy plan content verbatim |
 | Planner 4 (code checks + re-ask) | split: the step 0 checks above first; coverage / invented numbers / capacity checks stay batch B (= `plan-reviewer-loop.md` step B) |
 | Planner 6 (richness without invention) | unchanged; its gap is what `SLIDE_SPARSE` reports. Inferred card lines now allowed and flagged (§12 content policy) |
@@ -823,7 +823,7 @@ plan reviewer loop. How the open §9.1 items sit in that order:
 | Q12 | Show `assumptions` / `not_covered` to the user | outline review only / also in the final report / off | both (§3.6 L2) | open |
 | Q13 | Visual form decided in the outline (RQ4-E) | yes / no / test first | test first on xtsy + agency takeover (outline-only runs) | open |
 | Q14 | Post-render checks on by default, first slide checked before the rest | yes / setting / no | yes; outside the planners but part of the generator contract (§3.6 L9) | **direction decided 2026-10-05**: the §14.6 checking loop (measured, ≤ 2 rounds, keep best); "first slide before the rest" still open |
-| Q15 | Batch B timing under §14.6 | with step 0 / after the slot test (1a) / after step 3 | with step 0 for planners 3 and 4 (both free, both raise plan fidelity, which blocks now expose) | open (2026-10-05) |
+| Q15 | Batch B timing under §14.6 | with step 0 / after the slot test (1a) / after step 3 / split: planner 4 with step 0, planner 3 after 1a | with step 0 for planners 3 and 4: both free to build and useful whatever 1a shows; step 0's paid run then measures all planner fixes at once, and **its saved plans are the input 1a and step 3 reuse**, so batch B later means those plans are stale (a fresh planning run ≈ +$1.8) or step 3 runs on weaker plans; after step 3 means 7–13% of brief numbers keep dropping in planning for the whole build. Cost of "with step 0": a longer step 0 and more files at once (schema, `state.py`, both planners). The split gets the slot answer sooner for ≈ +$1.8 | open (2026-10-05) |
 
 ---
 

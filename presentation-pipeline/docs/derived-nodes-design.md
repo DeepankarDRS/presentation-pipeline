@@ -939,17 +939,35 @@ Replaces 14.1's "route A first". Reasons:
 1. **Planner fixes first** (they help every route; the hold-out's biggest visible gaps):
    re-ask instead of the silent `{}` plan; never print planner instructions or speaker
    notes as slide text; `SLIDE_SPARSE` for thin slides; card bodies that repeat titles
-   rejected. These are the in-branch part of planner item 4 in
-   `docs/planner-redesign-research.md` §9.1 and checks C14–C16 of
-   `docs/plan-reviewer-loop.md`; both docs carry the 2026-10-05 alignment (§9.2 and the
-   status note). Batch B timing (planners 3, 4) is open there as Q15.
+   rejected; **duplicate items on one slide** (two components whose item labels overlap
+   ≥ 70%, e.g. phase cards + chevrons of the same items, 1 Oct decks slide 4: keep the
+   hero, report the other; moved forward from the reviewer loop, 2026-10-05). These are
+   the in-branch part of planner item 4 in `docs/planner-redesign-research.md` §9.1 and
+   checks C14–C17 of `docs/plan-reviewer-loop.md`; both docs carry the 2026-10-05
+   alignment (§9.2 and the status note). Batch B timing (planners 3, 4) is open there as
+   Q15.
 2. **The generator LLM keeps writing the slide's POM XML** (layout, bands, free text,
    emphasis), with **slots for blocks**: `<VStack id="slot-<component_id>" …/>` or the §2
    tag form.
-3. **Code blocks draw inside the slots** (component kit): KPI row, table, card grid,
-   chart, bullets, process steps, later timeline. Content comes from the plan by `ref`,
-   sized to the slot by two-pass measurement (`expand.py`, `fit.py`, built in R3), the
-   4 hold-out failures fixed and unit-tested.
+3. **Code blocks draw inside the slots** (component kit): KPI row (hero, tiers), table,
+   card grid (grid / steps), chart (bar; line / doughnut / area as native `<Chart>`),
+   bullets, process steps, linear flow, timeline, caption, narrative (timeline, caption
+   and linear flow added in 14.7); `SlideHeader` in step 1. **No block yet:** 2×2 matrix,
+   pyramid, tree, layer, group, branching flow, so the LLM draws those as today. Coverage
+   on saved plans is 98% of components (368 / 374, 105 slides, 14.7), but pyramid and tree
+   never occur there; the dense case asks for all six. Content comes from the plan by
+   `ref`, sized to the slot by two-pass measurement (`expand.py`, `fit.py`, built in R3),
+   the 4 hold-out failures fixed and unit-tested.
+
+   **What "the LLM can't invent or drop block text" covers** (2026-10-05): the text
+   *inside* a block. Measured on the 105 slides: 0 words not in the plan; 6 plan words
+   missing, all reported (3 = the series name of a chart left without data, 2 numbers on
+   an over-full slide, 1 chart value). It does **not** cover (a) an empty plan: the block
+   draws nothing, so the step 0 re-ask is needed (the XTSY slide 7 case needs both fixes);
+   (b) a plan that itself invents: planner checks (`written_lines.py`, planner 4, §12);
+   (c) free text the LLM writes beside a block: the three-way text check of §12, not
+   built; (d) an LLM that hand-builds the block instead of leaving a slot: counted
+   (`node_bypassed`), measured in 1a.
 4. **A checking loop after the slide is drawn**, the part we lack: measured feedback from
    POM's layout and the real fonts (squashed boxes, words wider than their box, overflow
    into the footer, broken words on the render), stated precisely ("the KPI tile is 24 px
@@ -974,12 +992,12 @@ Replaces 14.1's "route A first". Reasons:
 
 | Step | What | Accepted when | API |
 |---|---|---|---|
-| 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard. **Step-end run** (2026-10-05): full pipeline, × 1, on every step 3 case (`deck-qbr-data`, `deck-product-launch-data`, `gate-deck-agency-takeover`, `gate-deck-xtsy-qcomm`, `gate-deck-cheffin-full`, `gate-deck-all-nodes-dense`) with `--compose`, **run folders kept** (bundles lack `slides.json`). Its plans are reused by 1a and step 3; its `llm.pptx` decks are step 3's `off` arm | no `{}` components and no instruction / notes text in any plan | ≈ $1.8 |
+| 0 | Planner fixes (item 1); subset font embedding in `pptx-post.js`; shrink guard. **Step-end run** (2026-10-05): full pipeline, × 1, on every step 3 case (`deck-qbr-data`, `deck-product-launch-data`, `gate-deck-agency-takeover`, `gate-deck-xtsy-qcomm`, `gate-deck-cheffin-full`, `gate-deck-all-nodes-dense`) with `--compose`, **run folders kept** (bundles lack `slides.json`). Its plans are reused by 1a and step 3; its `llm.pptx` decks are step 3's `off` arm | no `{}` components, no instruction / notes text and no duplicate items on a slide in any plan | ≈ $1.8 |
 | 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on step 0's saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/phase0b/expand.py`. Builds the **from-plans runner** (≈ 30 lines: loads a run's `slides.json` into `state["slide_plans"]`; the graph already skips planning then, `route_after_start`, as `/generate-from-plan` does; Python 3.11-safe). Records the real cost per slide with the slot prompt | the kill criteria in 14.5 | ≈ $0.5 |
 | 1 | Only if 1a passes: blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block; every attribute a block writes checked against pom-jsx `types.ts` + `attributes.yaml` | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
 | 2 | Generator prompt: skeleton + slots for kinds with a block; checking loop (item 4) | replay on saved skeletons; unit tests | no |
 | 3 | **Paid check (≈ $1.2–1.5, revised 2026-10-05):** the from-plans runner on step 0's saved plans of all six cases (≈ 40 slides), `blocks: slots` only, × 1. The `off` arm is step 0's `llm.pptx` on the same plans (no extra cost), so the two arms differ only by the slot route. Before paying: a dry run with a scripted LLM replaying 1a's skeletons through the real pipeline, so the paid run is not repeated for a pipeline bug. Exact cost re-estimated from 1a's per-slide figure before asking | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
-| 4 | Timeline, flow, matrix blocks; plan reviewer loop | coverage, per `docs/plan-reviewer-loop.md` | step-end |
+| 4 | Blocks still missing: 2×2 matrix, pyramid, tree, layer, branching flow (timeline and linear flow are done in Phase 0b, 14.7, and move in with step 1); plan reviewer loop | coverage, per `docs/plan-reviewer-loop.md` | step-end |
 
 **Paid runs, total (2026-10-05):** step 0 ≈ $1.8 + 1a ≈ $0.5 + step 3 ≈ $1.2–1.5 ≈ **$3.5–3.8**
 (was ≈ $3.6–4.6), with like-for-like arms in step 3. A failed 1a stops at ≈ $2.3. Per-slide

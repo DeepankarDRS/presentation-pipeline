@@ -7,7 +7,7 @@
 > **Update 2026-10-05 (alignment with `docs/derived-nodes-design.md` §14.6, chosen by the user):**
 > - **Order.** The full loop here is **step 4** of the §14.6 build order (after planner fixes, the slot test, blocks and the generator change). Three small pieces of it move to **step 0** ("planner fixes first"): the in-branch re-ask for an empty plan (new row in §2), rejecting planner instructions / speaker notes as slide text (C16), and the thin-slide report (C14 ⇄ the renderer's `SLIDE_SPARSE`). Card bodies that repeat their title join C15.
 > - **Content policy (user, 2026-10-04, design doc §12)** replaces the blanket D2 "never invent": copied / **derived** (allowed, computed by code, marked; settles D13) / **inferred** (allowed, qualitative, flagged Keep / Remove) / invented (never). Affects F4, §5.4 and decision 8.
-> - **New input from the renderer:** blocks draw exactly what the plan holds, so thin or empty plans now *show* (hold-out test, design doc §14.3b). The renderer reports `SLIDE_SPARSE` / `SLIDE_OVERFULL`, and the duplicate check (two components on a slide with ≥ 70% overlapping items, design doc §5) becomes C17.
+> - **New input from the renderer:** blocks draw exactly what the plan holds, so thin or empty plans now *show* (hold-out test, design doc §14.3b). The renderer reports `SLIDE_SPARSE` / `SLIDE_OVERFULL`, and the duplicate check (two components on a slide with ≥ 70% overlapping items, design doc §5) becomes C17, also built in step 0.
 > - **Naming.** "Skeleton" in §7 means *suggested components*, not the §14.6 XML skeleton with slots.
 > - **Models.** Since 2026-10-01 the planners and the reviewer run on gpt-5-mini (`models.yaml`); the §8 costs are gpt-4.1 list prices and need re-estimating before the paid comparison.
 > - Unit-test baseline now 557 pass, 4 known failures.
@@ -140,7 +140,7 @@ Deterministic, free, and run on every review. "Reuse" means it is already in [`s
 | C14 | below the intent's richness floor (§7), e.g. an executive summary without a KPI strip or a deep-dive without an evidence component | slide | medium | new |
 | C15 | a narrative or bullet repeats the headline or sub-headline; a card body repeats its card title (added 2026-10-05, hold-out agency 4) | slide | medium | reuse + new |
 | C16 | planner instructions or speaker notes written as slide content ("Deepen the growth story by showing…", hold-out QBR 3–4; notes planned as a narrative, agency 2, 4–6) | slide | high | new (2026-10-05; built in §14.6 step 0) |
-| C17 | two components on one slide whose item labels overlap ≥ 70% (phase cards + chevrons of the same items, 1 Oct decks slide 4) → keep the hero, report the other | slide | medium | new (2026-10-05; design doc §5) |
+| C17 | two components on one slide whose item labels overlap ≥ 70% (phase cards + chevrons of the same items, 1 Oct decks slide 4) → keep the hero, report the other | slide | medium | new (2026-10-05; design doc §5; built in §14.6 step 0) |
 
 C14 also receives the renderer's `SLIDE_SPARSE` (content fills < ~55% of the body, design
 doc §10f) once blocks are built; before that it is the plan-side estimate.
