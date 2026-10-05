@@ -353,8 +353,8 @@ tuned in step 1 on the nodes demo render (free).
 | D2 | §1b cross-deck check in the 1a kill criteria (content-controlled definition) | kill criterion | **decided 2026-10-05: within-deck only is the kill criterion; cross-deck measured and reported, informational** |
 | D3 | Step 0 plan §2 incl. embedding at deck level in Python | as written | **decided 2026-10-05: approved as written** (`SLIDE_SPARSE` report-only; one re-ask max; `fonttools` added) |
 | D4 | `gj-h1-regen` joins step 0's run (≈ +$0.7) | yes | **decided 2026-10-05: no, six cases only** (37 slides, ≈ $1.8). Within-deck variety is judged on 5–8 slide decks; a long deck can be added to step 3 only if its plans are generated then |
-| D5 | Slot contract §3 | as written | awaiting user |
-| D6 | 1a protocol §4 | as written | awaiting user |
+| D5 | Slot contract §3 | as written | **decided 2026-10-05: approved as written** (no `highlight` attribute until 1a shows it is needed) |
+| D6 | 1a protocol §4 | as written | **decided 2026-10-05: approved as written** (slide list still needs the user's approval once step 0's plans exist) |
 | D7 | Checking-loop principle §5.1 | as written | awaiting user |
 | D8 | Label tier (§5.2) | view the test slide first | scheduled, before step 1 |
 | D9 | Default-switch gates (§5.3) | as written | awaiting user |
