@@ -499,7 +499,7 @@ broken words and invented cards).
 | # | Research | Answers | Cost |
 |---|---|---|---|
 | R1 | Font experiment (§10g step 1; **done 2026-10-05**, result below: `94367ac`, `c4b9c13`) | does POM measuring the real fonts remove broken words / blank heading lines / KPI overflow? | no API |
-| R2 | Replay saved decks (`llm_test/` zips: gj-h1, tables-check, baseline, layout-batch, layout-fixes — those with full plans) through the Phase 0b renderer | share of components with a block vs LLM fallback; broken words; text check | no API |
+| R2 | Replay saved decks (`llm_test/` zips: gj-h1, tables-check, baseline, layout-batch, layout-fixes — those with full plans) through the Phase 0b renderer (**done 2026-10-05**, result below) | share of components with a block vs LLM fallback; broken words; text check | no API |
 | R3 | Phase 0c: hand-written mixed slides (LLM-style skeleton + tags, half-width slots, free text beside blocks, 3–4 components per slide) + `gate-deck-all-nodes-dense`; two-pass slot measurement; per-block minimum readable size → `SLIDE_OVERFULL` instead of squashing; per-block fit-grow opt-out | overlap, squashing, broken words, text check on mixed and dense slides | no API |
 | R4 | PowerPoint check: the user opens 3–4 rendered `.pptx` (Phase 0b studio / editorial) in PowerPoint and compares with the LibreOffice PNGs (**done 2026-10-05, passed**, result below) | does PowerPoint match? | ~15 min of the user's time |
 
@@ -550,6 +550,60 @@ build PC showed the plain (not embedded) file drawn ~6% narrower, i.e. substitut
 
 Consequence: LibreOffice renders remain a valid stand-in for PowerPoint in the checks,
 provided the fonts are embedded. Follow-up: embed (subset) fonts in `pptx-post.js`.
+
+#### R2 result (2026-10-05): coverage high, density is the open problem
+
+Input: every saved run with full production-planner plans on the build PC. Those are 8
+decks, 88 slides, 319 components: CHEFFIN `1b306e1de67f` (29 Sep), gj-h1 `5a9e2d` /
+`69af33` / `7293ef` / `bf396b` (23–24 Sep), and three XTSY UI exports (23 Sep,
+`llm_test/slides*.txt`). The layout-batch / layout-fixes runs are not on this PC; the
+Test 1 plans (new path) were left out. Tool: `scripts/phase0b/replay.py` (pack
+studio_inter, fonts loaded), then render_check, LibreOffice and
+`scripts/phase0b/fontcheck.py` + `check.py`. "LLM" = the same slides as the pipeline drew
+them (the `xml` saved in each slides.json, run's theme, fit-grow on).
+
+**Coverage** (plans from before `card_grid` existed):
+
+| Component | Count | Phase 0b |
+|---|---|---|
+| narrative, title, table, bullet_list, kpi_row, process_arrow | 272 | block |
+| chart, bar | 13 | block |
+| chart, line / doughnut / area | 9 | block, but drawn as ranked bars (form changed) |
+| timeline 12, flow 4, matrix 3, layer 2, group 1, caption on a content slide 3 | 25 | **no block** (LLM fallback) |
+
+→ 89% of components drawn by a block (92% counting changed forms); 56 / 88 slides
+entirely code-drawn; 24 slides have at least one fallback component. Blocks still needed
+for most coverage: **timeline** (12), then line / doughnut charts, flow, matrix.
+
+**Quality, same plans:**
+
+| 88 slides | LLM-drawn (as generated) | Code-drawn (Phase 0b) |
+|---|---|---|
+| Compile | 86 / 88 | **88 / 88** |
+| Broken words (LibreOffice render) | 32 | **2** ("Recommendation" in a narrow table column, twice) |
+| Blank heading lines | 2 | **0** |
+| KPI numbers wrapped | 3 | **0** |
+| Plan words missing / words not in plan | not comparable* | **3 / 0** (the 3 = the series name of a chart the planner left without data) |
+| Slides with overlapping text | 19 | **14** |
+
+\* the LLM decks' chart values live in chart data (invisible to the text check) and they
+add their own source / kicker lines.
+
+**Overlap is the real gap.** Code-drawn overlaps sit on dense gj-h1 slides (4–5 components:
+KPI row + table + chart + bullets + notes) and two XTSY KPI slides. Root cause, seen in the
+pptx geometry: the composer's height *estimates* for fixed blocks are below what POM lays
+out, so the slide is over-full and Yoga shrinks boxes below their text (a 120 px KPI
+number got a 120 px box instead of 144, and its note was drawn across the digits; table
+rows and bullet panels ran into the block below). This is exactly R3's two-pass slot
+measurement and minimum-size / `SLIDE_OVERFULL` work. A slide whose only big component
+has no block (gj-h1 "What Worked", a timeline) shows a near-empty body.
+
+**Renderer fixes made during R2** (all plan shapes the hand-written Phase 0b plans never
+had): cover with no subtitle (POM rejects an empty `<Text>`); empty table cells → "–";
+chart series shorter than its labels or with null values (crash, "None" printed);
+null KPI notes; chart titles on single charts; covers whose subtitle lives in the
+title component or in a second narrative; KPI numbers sized and boxed by glyph height
+(`GLYPH_H` 1.2, cap 120 px).
 
 **Go** if: fonts measure true (R1), blocks cover most components of real decks (R2),
 mixed and dense slides neither overlap nor squash (R3), PowerPoint matches (R4).

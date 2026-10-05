@@ -234,10 +234,12 @@ _NUM = re.compile(r"^(?P<pre>[₹$€£]?)(?P<num>[\d.,]+)(?P<unit>[A-Za-z%]*)$"
 
 
 def big_number(value: str, fs: int, color: str, p: Pack) -> str:
+    # line box = the glyphs' height (GLYPH_H): at lineHeight 1 a big number hung below its box
+    # onto the note under it (POM writes exact spacing and centres with Noto metrics)
     m = _NUM.match(value.strip())
     if not m or not m["unit"]:
-        return f'<Text fontSize="{fs}" fontFamily="{p.sans}" bold="true" color="{color}" lineHeight="1">{x(value)}</Text>'
-    return (f'<Text fontSize="{fs}" fontFamily="{p.sans}" bold="true" color="{color}" lineHeight="1">'
+        return f'<Text fontSize="{fs}" fontFamily="{p.sans}" bold="true" color="{color}" lineHeight="{GLYPH_H}">{x(value)}</Text>'
+    return (f'<Text fontSize="{fs}" fontFamily="{p.sans}" bold="true" color="{color}" lineHeight="{GLYPH_H}">'
             f'{x(m["pre"] + m["num"])}<Span fontSize="{round(fs * 0.45)}">{x(m["unit"])}</Span></Text>')
 
 
@@ -259,22 +261,28 @@ def kpi_width_fs(comp: dict, p: Pack) -> int:
     return int(tile_w * 0.95 / max((_value_em(v, p) for v in values), default=1))
 
 
+GLYPH_H = 1.2   # a number's drawn height per px of font size (Inter ascent + descent ~1.21)
+KPI_CAP = 120   # largest KPI number (fit-grow's hero cap)
+
+
 def kpi_need(comp: dict, p: Pack, h: float) -> float:
     """Tile height when the number fills the width: padding + label + gap + number (+ note)."""
     notes = 22 if any(comp["content_data"].get("kpi_deltas") or []) else 0
-    return 40 + kpi_label_fs(p, h) * 1.3 + 12 + kpi_width_fs(comp, p) + notes
+    return 40 + kpi_label_fs(p, h) * 1.3 + 12 + min(KPI_CAP, kpi_width_fs(comp, p)) * GLYPH_H + notes
 
 
 def kpi_row(comp: dict, p: Pack, hero: bool, h: float | None = None, grow: str = "") -> str:
     cd = comp["content_data"]
     labels, values = cd.get("kpi_labels", []), cd.get("kpi_values", [])
-    notes = cd.get("kpi_deltas") or [""] * len(values)
+    notes = [n or "" for n in (cd.get("kpi_deltas") or [])] + [""] * len(values)  # null notes show nothing
     dark = _named_in_hint(comp, labels, "inverted")
     width_fs = kpi_width_fs(comp, p)
     fs = min(p.t["big"] if hero else p.t["mid"], width_fs)
     lfs = kpi_label_fs(p, h)
     if h:  # sized to the slot: the number fills what the tile's width and height allow
-        fs = max(24, min(width_fs, int(h - 40 - lfs * 1.3 - 12 - (22 if any(notes) else 0))))
+        # the glyphs are ~1.2x the size tall: sized by 1.0 a 147px "70%+" ran into its note
+        free = h - 40 - lfs * 1.3 - 12 - (22 if any(notes) else 0)
+        fs = max(24, min(width_fs, KPI_CAP, int(free / GLYPH_H)))
     tiles = []
     for label, value, note in zip(labels, values, notes):
         ent = p.entity(label)
@@ -555,7 +563,8 @@ def data_table(comp: dict, p: Pack, width: float, h: float | None = None) -> str
         for i, v in enumerate(r):
             color = ent[2] if (i == 0 and ent) else ("$accent" if str(r[0]) == hi and i else "$ink")
             bold = ' bold="true"' if i == 0 or str(r[0]) == hi else ""
-            cells.append(f'<Td fontSize="{fs}" fontFamily="{p.sans}" color="{color}"{bold}{bg}>{x(v)}</Td>')
+            shown = x(v) if str(v).strip() else "–"  # POM rejects an empty cell; a dash marks the missing value
+            cells.append(f'<Td fontSize="{fs}" fontFamily="{p.sans}" color="{color}"{bold}{bg}>{shown}</Td>')
         out.append("<Tr>" + "".join(cells) + "</Tr>")
     out.append("</Table>")
     return "".join(out)
@@ -582,6 +591,8 @@ def bar_list(labels: list[str], series: list[tuple[str, list[str]]], p: Pack, wi
         ent = p.entity(label)
         bars = []
         for si, (name, vs) in enumerate(series):
+            if li >= len(vs) or vs[li] is None:  # missing / null value (malformed plan): no bar, no "None"
+                continue
             v = _num(vs[li]) or 0
             if len(series) == 1:
                 col = "$accent" if v == max(vals) else ("$negative" if v == min(vals) else "$ink")
@@ -720,8 +731,10 @@ def compose_body(plan: dict, p: Pack, body_h: float) -> str:
                 return (f'<VStack gap="12"{g}>{p.label(" · ".join(map(str, cols)))}'
                         + bar_list([str(r[0]) for r in rows], [(cols[1], [r[1] for r in rows])], p, width, h - 24) + "</VStack>")
             return f'<VStack{g}>{data_table(c, p, width, h)}</VStack>'
-        if k == "chart":
-            return f'<VStack{g}>{chart_block(c, p, width, h)}</VStack>'
+        if k == "chart":  # a chart on its own row keeps its title as a label
+            title = c["content_data"].get("chart_title")
+            head = p.label(title) if title else ""
+            return f'<VStack gap="12"{g}>{head}{chart_block(c, p, width, h - (24 if title else 0))}</VStack>'
         if k == "bullet_list":
             return bullets_block(c, p, g)
         return ""
@@ -891,9 +904,19 @@ def frame(plan: dict, deck: dict, p: Pack, n: int, total: int) -> str:
 
 
 def cover(plan: dict, deck: dict, p: Pack, total: int) -> str:
+    # POM rejects an empty <Text>: a plan without a subtitle / caption drops that line
+    return re.sub(r"\n?[ \t]*<Text[^>]*>\s*</Text>", "", _cover(plan, deck, p, total))
+
+
+def _cover(plan: dict, deck: dict, p: Pack, total: int) -> str:
     comps = {c["kind"]: c for c in plan["components"]}
     caption = comps.get("caption", {}).get("content_data", {}).get("text", "")
-    narr = comps.get("narrative", {}).get("content_data", {}).get("text", "")
+    narrs = [c["content_data"].get("text", "") for c in plan["components"] if c["kind"] == "narrative"]
+    # no planned subtitle (plans before batch A): the first narrative is the subtitle, the rest the key message
+    if not plan.get("subtitle") and len(narrs) > 1:
+        plan = dict(plan, subtitle=narrs[0])
+        narrs = narrs[1:]
+    narr = " ".join(t for t in narrs if t)
     title, brand = plan["slide_title"], deck["brand"]
     sub = plan.get("subtitle") or ""
     if p.fills == "rhythm":  # studio: dark hero, brand word italic lime in the title

@@ -51,6 +51,24 @@ def pdf_words(pdf):
     return page.get_text("words")  # x0,y0,x1,y1,word,block,line,wno
 
 
+def overlaps(words):
+    """Word pairs from different lines whose boxes overlap by > 30% of the smaller box: text
+    drawn over other text (a squashed or over-full block)."""
+    hits = []
+    for i, a in enumerate(words):
+        for b in words[i + 1:]:
+            if (a[5], a[6]) == (b[5], b[6]) or not a[4].strip() or not b[4].strip():
+                continue
+            w = min(a[2], b[2]) - max(a[0], b[0])
+            h = min(a[3], b[3]) - max(a[1], b[1])
+            if w <= 0 or h <= 0:
+                continue
+            small = min((a[2] - a[0]) * (a[3] - a[1]), (b[2] - b[0]) * (b[3] - b[1])) or 1
+            if w * h > 0.3 * small:
+                hits.append(f"{a[4]}~{b[4]}")
+    return hits
+
+
 def broken(words, vocab):
     hits = []
     for a, b in zip(words, words[1:]):
@@ -60,7 +78,8 @@ def broken(words, vocab):
             continue
         ta, tb = norm(a[4]), norm(b[4])
         joined = norm(a[4] + b[4])
-        if joined in vocab and ta not in vocab and not a[4].endswith("-"):
+        # a break after a hyphen, dash or slash is a normal line break; so is a lone bracket
+        if joined in vocab and ta and ta not in vocab and not a[4].endswith(("-", "—", "–", "/")):
             hits.append(f"{a[4]}|{b[4]}")
     return hits
 
@@ -93,7 +112,8 @@ def kpi_boxes(pptx, pdf):
         if sh["kind"] != "sp" or px < 30 or len(sh["text"]) > 12 or not re.search(r"\d", sh["text"]):
             continue
         x0, y0, x1, y1 = (sh["x"] * k, sh["y"] * k, (sh["x"] + sh["w"]) * k, (sh["y"] + sh["h"]) * k)
-        inside = [w for w in words if x0 - 2 <= (w[0] + w[2]) / 2 <= x1 + 2 and y0 - 4 <= (w[1] + w[3]) / 2 <= y1 + 4]
+        inside = [w for w in words if x0 - 2 <= (w[0] + w[2]) / 2 <= x1 + 2 and y0 - 4 <= (w[1] + w[3]) / 2 <= y1 + 4
+                  and (w[3] - w[1]) >= 0.45 * px * k]  # the number's own size, not a note line beside it
         ys = sorted({round(w[3]) for w in inside})  # baselines: a smaller unit span ("Cr") sits higher
         lines = 1 + sum(q - p > 4 for p, q in zip(ys, ys[1:])) if ys else 0
         right = max((w[2] for w in inside), default=x0)
@@ -110,7 +130,10 @@ for variant in VARIANTS:
             src = (ROOT / f"src-{deck}" / f"{name}.xml").read_text(encoding="utf-8")
             fitted_p = sdir / "fitted.xml"
             fitted = fitted_p.read_text(encoding="utf-8") if fitted_p.exists() else src
-            words = pdf_words(ROOT / "pdf" / f"{variant}-{deck}-{name}.pdf")
+            pdf = ROOT / "pdf" / f"{variant}-{deck}-{name}.pdf"
+            if not pdf.exists():  # the slide did not compile
+                continue
+            words = pdf_words(pdf)
             vocab = slide_words(src)
             res = json.loads((sdir / "compile-result.json").read_text(encoding="utf-8"))
             reserved = [int(m.group(2)) for e in res.get("fitGrow") or []
@@ -123,18 +146,21 @@ for variant in VARIANTS:
                 for (a, t), r in zip(gained, reserved):
                     heads.append({"text": t[:60], "reserved": r, "drawn": drawn_lines(words, t)})
             kpis = kpi_boxes(sdir / "presentation.pptx", ROOT / "pdf" / f"{variant}-{deck}-{name}.pdf")
-            rows[f"{variant}-{deck}-{name}"] = {"broken": broken(words, vocab), "headings": heads, "kpi": kpis}
+            rows[f"{variant}-{deck}-{name}"] = {"broken": broken(words, vocab), "headings": heads, "kpi": kpis,
+                                                "overlap": overlaps(words)}
 
 json.dump(rows, open(ROOT / "fontcheck.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
 for variant in VARIANTS:
     br = sum(len(r["broken"]) for k, r in rows.items() if k.startswith(variant + "-"))
+    ov = [k for k, r in rows.items() if k.startswith(variant + "-") and r["overlap"]]
     hs = [h for k, r in rows.items() if k.startswith(variant + "-") for h in r["headings"]]
     blank = sum(1 for h in hs if h["drawn"] is not None and h["reserved"] > h["drawn"])
     ks = [x for k, r in rows.items() if k.startswith(variant + "-") for x in r["kpi"]]
     kwrap = sum(1 for x in ks if x["drawn"] > 1)
     kover = sum(1 for x in ks if x["over_px"] > 1)
     print(f"{variant}: broken words {br}; headings reserved {len(hs)}, blank line drawn {blank}; "
-          f"KPI numbers {len(ks)} (mean {sum(x['px'] for x in ks)/max(1,len(ks)):.0f}px), wrapped {kwrap}, past box {kover}")
+          f"KPI numbers {len(ks)} (mean {sum(x['px'] for x in ks)/max(1,len(ks)):.0f}px), wrapped {kwrap}, past box {kover}; "
+          f"slides with overlapping text {len(ov)}: {', '.join(k.split('-slide-')[0][len(variant) + 1:] + ' ' + k.split('-slide-')[1] for k in ov)}")
 for k, r in rows.items():
     if r["broken"] or r["headings"] or r["kpi"]:
         print(k, "broken:", r["broken"], "| heads:", [(h["text"][:30], h["reserved"], h["drawn"]) for h in r["headings"]],
