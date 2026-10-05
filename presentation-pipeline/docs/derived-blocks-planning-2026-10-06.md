@@ -1,7 +1,8 @@
 # §14.6 planning session — drafts for approval (2026-10-06)
 
 Branch `feat/derived-blocks-step0`. **No pipeline code changed in this session.** This file holds the
-drafts the session produced; nothing here is decided until a row in §6 says so, with a date.
+drafts the session produced; nothing here is decided until a row in §6 says so, with a date (the machine
+clock, 2026-10-05; the file name keeps the kickoff's 10-06).
 Unit-test baseline recorded before any change (build PC, `uv run pytest tests/unit -q`):
 **572 pass, 4 known failures** (`test_critic_medium_only_passes`, `test_font_at_minimum_ok`, the two
 `*_budget_exhausted*` routing tests). The 557 in older notes is stale.
@@ -9,6 +10,8 @@ Unit-test baseline recorded before any change (build PC, `uv run pytest tests/un
 ## 1. Theme source and cross-deck variety (§14.9 proposals)
 
 ### 1a. Theme source — recommendation: one palette, derived role tokens, a contrast check
+
+**Decided by the user, 2026-10-05 (D1): adopted as written below.**
 
 **Today there are two colour sources that cannot agree on one slide:** the LLM skeleton uses the deck's
 `<Theme>` (`palettes.yaml`, 16 palettes, 12 tokens, picked by `style_resolver` from the brief / UI
@@ -46,7 +49,13 @@ Cost: nothing paid. Risk: gpt-5-mini picks an odd palette → logged, user overr
 light-only default. *Rejected:* choosing by hash or keyword (arbitrary / brittle); a separate LLM call
 (extra latency for a one-word decision).
 
-### 1b. Cross-deck variety — recommendation: add it to the 1a kill criteria, content-controlled
+### 1b. Cross-deck variety — recommendation was a kill criterion; decided: within-deck only, cross-deck informational
+
+**Decided by the user, 2026-10-05 (D2): the kill criterion stays within-deck only** (slots not more than 0.05
+below the off arm). The cross-deck sameness and house-template numbers below are still computed and
+reported in 1a and step 3, informational, with their counts; they are not a pass / fail. If they show a
+house look, that goes back to the user as a finding. The recommendation as drafted (kill criterion) is
+kept below for the record.
 
 Equal layouts across decks are expected when the *content* is the same shape (a KPI row over a table is
 the natural layout twice). So the metric must hold content fixed. Definitions (script
@@ -258,11 +267,11 @@ so the blind comparison judges layout and fill, not palette.
 | 3 | Broken words, overlapping text | LibreOffice render of the expanded deck vs step 0's `llm.pptx` (`fontcheck.py`, `check.py`) | ≤ off arm |
 | 4 | **Blind side-by-side** | `scripts/slot_test_sheet.py`: per slide two images, left / right randomised by a fixed seed, no labels, 4 slides per sheet; you mark 1 / 2 / equal and a reason (readability, fill, overlap, empty, designed); key kept in a separate file | (slot wins + ½ ties) / N ≥ 0.6 |
 | 5 | Within-deck variety | §1b | not > 0.05 below off |
-| 6 | **Cross-deck variety** | §1b | no worse than off + 10 points; house-template share ≤ max(off, 25%) |
+| 6 | Cross-deck variety (informational, D2) | §1b | reported, not a kill criterion |
 | 7 | Tokens and cost per slide | generator calls in the manifests: slots vs step 0's generator calls on the same plans (like-for-like) | informational; flag if input per slide is > 10% above off |
 | 8 | Fallback rate | slides with a compile repair, an error code, a retry, `SLIDE_OVERFULL` | reported; used to size step 2 |
 
-Fail on 1, 2, 3, 4 or 5/6 → stop slots, keep blocks: composer + planner `arrangement` field (§14.1
+Fail on 1, 2, 3, 4 or 5 → stop slots, keep blocks: composer + planner `arrangement` field (§14.1
 option 2). With ≈ 50 components the compliance estimate has a ±8-point margin, so a result near 90% is a
 re-run decision, not a verdict (stated in the report next to the number).
 
@@ -337,8 +346,8 @@ tuned in step 1 on the nodes demo render (free).
 
 | # | Decision | Recommendation | Status |
 |---|---|---|---|
-| D1 | §1a theme source: `palettes.yaml` only, derived role tokens + contrast test, packs carry structure, Inter + JetBrains Mono, `look` picked by the outline planner in step 2 | as written | **awaiting user** |
-| D2 | §1b cross-deck check in the 1a kill criteria (content-controlled definition) | as written | **awaiting user** |
+| D1 | §1a theme source: `palettes.yaml` only, derived role tokens + contrast test, packs carry structure, Inter + JetBrains Mono, `look` picked by the outline planner in step 2 | as written | **decided 2026-10-05: adopted as written** |
+| D2 | §1b cross-deck check in the 1a kill criteria (content-controlled definition) | kill criterion | **decided 2026-10-05: within-deck only is the kill criterion; cross-deck measured and reported, informational** |
 | D3 | Step 0 plan §2 incl. embedding at deck level in Python | as written | awaiting user |
 | D4 | `gj-h1-regen` joins step 0's run (≈ +$0.7) | yes | awaiting user |
 | D5 | Slot contract §3 | as written | awaiting user |

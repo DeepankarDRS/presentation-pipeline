@@ -1194,7 +1194,7 @@ Findings:
 5. **Packs do not fix plan or chart problems:** QBR 5 and launch 5 (empty plan) stay near-empty;
    QBR 3 still colours the oldest quarter red as "worst" (hold-out failure 1, §14.3b).
 
-**Proposed (not decided; drafted in full in `docs/derived-blocks-planning-2026-10-06.md` §1, awaiting the user):**
+**Proposed, then decided by the user 2026-10-05 (full text in `docs/derived-blocks-planning-2026-10-06.md` §1):** theme source = adopted as written (one palette from `palettes.yaml`, role tokens + contrast test, packs carry structure, the outline planner picks a palette when the brief names none); cross-deck check = **not a kill criterion** (within-deck only), measured and reported as information. As proposed:
 - **Theme source:** blocks take the deck's palette with role-based text colours (on dark, on
   accent, on panel) and a contrast check; when the brief names no colours, a style pack is chosen
   per deck rather than always the default. Feeds the open theme ↔ style-pack decision.
