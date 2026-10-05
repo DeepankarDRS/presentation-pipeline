@@ -1,7 +1,8 @@
 """Embed TrueType fonts in a .pptx the way PowerPoint does (font embedding test, §13 R1).
 
-    python -m scripts.embed_fonts in.pptx out.pptx --family Inter \
-        --regular src/node/fonts/Inter-Regular.ttf --bold src/node/fonts/Inter-Bold.ttf
+    python -m scripts.embed_fonts in.pptx out.pptx \
+        --font "Inter:regular=src/node/fonts/Inter-Regular.ttf,bold=src/node/fonts/Inter-Bold.ttf" \
+        --font "JetBrains Mono:regular=src/node/fonts/JetBrainsMono-Regular.ttf"
 
 PowerPoint keeps embedded fonts as Embedded OpenType parts (ppt/fonts/*.fntdata,
 content type application/x-fontdata) listed in presentation.xml <p:embeddedFontLst>.
@@ -67,23 +68,28 @@ def eot(ttf: bytes) -> bytes:
     return struct.pack("<IIII", header_size + len(ttf), len(ttf), 0x00020001, 0) + body + ttf
 
 
-def embed(src: Path, dst: Path, family: str, faces: dict[str, Path]) -> None:
+def embed(src: Path, dst: Path, fonts: dict[str, dict[str, Path]]) -> None:
+    """fonts: {family: {face: ttf path}}, face in regular / bold / italic / boldItalic."""
     with zipfile.ZipFile(src) as z:
         parts = {n: z.read(n) for n in z.namelist()}
     pres = parts["ppt/presentation.xml"].decode("utf-8")
     rels = parts["ppt/_rels/presentation.xml.rels"].decode("utf-8")
     ids = [int(i) for i in re.findall(r'Id="rId(\d+)"', rels)]
     nxt = max(ids, default=0) + 1
-    face_xml = ""
-    for k, (face, path) in enumerate(faces.items(), start=1):
-        name = f"font{k}.fntdata"
-        parts[f"ppt/fonts/{name}"] = eot(path.read_bytes())
-        rid = f"rId{nxt}"
-        nxt += 1
-        rels = rels.replace("</Relationships>", f'<Relationship Id="{rid}" Type="{REL_FONT}" Target="fonts/{name}"/></Relationships>')
-        face_xml += f'<p:{face} r:id="{rid}"/>'
-    lst = (f'<p:embeddedFontLst><p:embeddedFont><p:font typeface="{family}" pitchFamily="2" charset="0"/>'
-           f"{face_xml}</p:embeddedFont></p:embeddedFontLst>")
+    entries, k = "", 0
+    for family, faces in fonts.items():
+        face_xml = ""
+        for face, path in faces.items():
+            k += 1
+            name = f"font{k}.fntdata"
+            parts[f"ppt/fonts/{name}"] = eot(path.read_bytes())
+            rid = f"rId{nxt}"
+            nxt += 1
+            rels = rels.replace("</Relationships>", f'<Relationship Id="{rid}" Type="{REL_FONT}" Target="fonts/{name}"/></Relationships>')
+            face_xml += f'<p:{face} r:id="{rid}"/>'
+        pitch = 1 if "mono" in family.lower() else 2  # fixed / variable pitch
+        entries += f'<p:embeddedFont><p:font typeface="{family}" pitchFamily="{pitch}" charset="0"/>{face_xml}</p:embeddedFont>'
+    lst = f"<p:embeddedFontLst>{entries}</p:embeddedFontLst>"
     # schema order: ... sldSz, notesSz, smartTags?, embeddedFontLst, custShowLst?, ..., defaultTextStyle
     m = re.search(r"<p:notesSz[^>]*/>", pres)
     pres = pres[: m.end()] + lst + pres[m.end():]
@@ -104,13 +110,15 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("src", type=Path)
     ap.add_argument("dst", type=Path)
-    ap.add_argument("--family", required=True)
-    for face in ("regular", "bold", "italic", "boldItalic"):
-        ap.add_argument(f"--{face}", type=Path)
+    ap.add_argument("--font", action="append", required=True,
+                    help='"Family:regular=path,bold=path,italic=path,boldItalic=path" (repeatable)')
     a = ap.parse_args()
-    faces = {f: getattr(a, f) for f in ("regular", "bold", "italic", "boldItalic") if getattr(a, f)}
-    embed(a.src, a.dst, a.family, faces)
-    print(f"{a.dst}: embedded {a.family} ({', '.join(faces)})")
+    fonts = {}
+    for spec in a.font:
+        family, faces = spec.split(":", 1)
+        fonts[family] = {k: Path(v) for k, v in (f.split("=", 1) for f in faces.split(","))}
+    embed(a.src, a.dst, fonts)
+    print(f"{a.dst}: embedded " + "; ".join(f"{f} ({', '.join(v)})" for f, v in fonts.items()))
 
 
 if __name__ == "__main__":
