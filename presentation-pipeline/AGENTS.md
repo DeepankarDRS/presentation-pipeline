@@ -43,9 +43,11 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Paid eval, bundle for email (test device) | `python -m scripts.eval_run gj-h1-regen --repeat 1 --label <label> --bundle` (no case names = the 12-case gate) |
 | Where a deck loses the brief's headlines / numbers (saved runs, no API) | `python -m scripts.eval_lineage <run zips> --case tests/cases/<case>.yaml` (north-star Appendix C) |
 | Planning-only runs of the Test 1 path + scoring (paid; `--rescore` is free) | `python -m scripts.plan_only <cases> --repeat 1 --label <label> --bundle` |
+| LLM deck vs code-composer deck on the same runs (paid run, compose is free) | `python -m scripts.eval_run deck-qbr-data gate-deck-agency-takeover --repeat 1 --label longrun --compose --bundle` — `decks/<case>__rN/` holds `llm.pptx`, `composed.pptx`, `slides.json` (also in the bundle); one run folder: `python -m scripts.phase0b.compose_deck output/runs/<run_id>` (needs Pillow) |
 
 Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-10-04: 556 pass, 4 fail — not regressions):
 `test_critic.py::test_critic_medium_only_passes`, `test_layout_audit.py::test_font_at_minimum_ok`, and two routing tests in `test_graph.py` (`*_budget_exhausted*`: expect `evaluator`/`slide_router`, code now routes to `visual_repairer` — tests or routing are stale).
+Code must parse on **Python 3.11** (the test PC runs 3.11.9; this PC may run newer): `tests/unit/test_py311_syntax.py` flags f-string forms only 3.12+ accepts (backslash or the same quote inside `{...}`) and newer grammar.
 Always record your own baseline (`pytest tests/unit -q`) before a change and compare against it.
 
 When judging slide quality, open the `.pptx` (or render via LibreOffice, see `.cursor/rules/offline-render-loop.mdc`) — don't trust pass/fail alone.

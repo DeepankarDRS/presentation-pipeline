@@ -120,7 +120,10 @@ def _font(family: str, bold: bool, italic: bool = False):
     try:
         from PIL import ImageFont
         return ImageFont.truetype(str(HERE.parent.parent / "src" / "node" / "fonts" / name), 100)
-    except Exception:  # no Pillow / no font file: estimate
+    except Exception as e:  # no Pillow / no font file: estimate, but say so (sizes will differ)
+        import sys
+        print(f"phase0b: cannot load {name} ({type(e).__name__}: {e}); text widths are estimated",
+              file=sys.stderr)
         return None
 
 
@@ -777,9 +780,9 @@ def strip(text: str, label: str, p: Pack) -> str:
         body = f"<B>{x(parts[0])}</B> {x(parts[1])}" if len(parts) == 2 else x(text)
         return (f'<HStack gap="16" alignItems="start"><Shape margin.top="13" shapeType="rect" w="36" h="2" fill.color="$ink" />'
                 f'<Text grow="1" fontSize="19" fontFamily="{p.sans}" italic="true" color="$ink" lineHeight="1.35">{body}</Text></HStack>')
+    tag = p.label(label, "$accent2", extra=' w="120"')
     return (f'<HStack padding="18" gap="16" backgroundColor="$dark" alignItems="center" '
-            f'borderLeft.color="$accent2" borderLeft.width="4">'
-            f'{p.label(label, "$accent2", extra=" w=\"120\"")}'
+            f'borderLeft.color="$accent2" borderLeft.width="4">{tag}'
             f'<Text grow="1" fontSize="15" fontFamily="{p.sans}" color="$white" lineHeight="1.4">{x(text)}</Text></HStack>')
 
 

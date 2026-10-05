@@ -356,6 +356,49 @@ def _copy_slides(case: dict[str, Any], out_dir: Path) -> None:
         render_screenshots(deck, str(out_dir / "renders" / f"{case['name']}__r{case['repeat']}"))
 
 
+def _collect_run(case: dict[str, Any], deck: str | None, out_dir: Path, compose: bool) -> None:
+    """Copy the run's plans (slides.json) and LLM deck into decks/<case>__rN/ so a bundle carries
+    them; with compose, also draw the same plans with the code composer (scripts/phase0b,
+    derived-nodes-design §14) -> composed.pptx. A compose failure is recorded, never fatal."""
+    if not deck or not Path(deck).exists():
+        return
+    from scripts.phase0b.compose_deck import compose as compose_run, run_folder
+    dst = out_dir / "decks" / f"{case['name']}__r{case['repeat']}"
+    dst.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(deck, dst / "llm.pptx")
+    try:
+        run = run_folder(Path(deck))
+    except FileNotFoundError:
+        return
+    shutil.copy2(run / "slides.json", dst / "slides.json")
+    if not compose:
+        return
+    print(f"   composing {case['name']} run {case['repeat']} with the code composer ...", flush=True)
+    try:
+        info = compose_run(run)
+        shutil.copy2(info["pptx"], dst / "composed.pptx")
+        case["composed"] = {k: v for k, v in info.items() if k != "pptx"}
+    except Exception as e:  # research tool: report, keep the eval
+        case["composed"] = {"error": f"{type(e).__name__}: {e}"}
+        print(f"   compose failed: {case['composed']['error']}")
+
+
+def _composed_summary(cases: list[dict[str, Any]]) -> str:
+    lines = ["", "## Composed decks (code composer, same plans)", "",
+             "decks/<case>__rN/: llm.pptx (pipeline), composed.pptx (code-drawn), slides.json", "",
+             "| case | slides | code-drawn | LLM fallback | smaller type | over-full | error |",
+             "|---|---|---|---|---|---|---|"]
+    for c in cases:
+        k = c.get("composed")
+        if k is None:
+            continue
+        lines.append(f"| {c['name']} r{c['repeat']} | {k.get('slides', '')} | {len(k.get('code', []))} | "
+                     f"{', '.join(map(str, k.get('llm', []))) or '-'} | "
+                     f"{', '.join(f'{n} (x{v})' for n, v in (k.get('smaller_type') or {}).items()) or '-'} | "
+                     f"{', '.join(map(str, k.get('overfull', []))) or '-'} | {k.get('error', '')} |")
+    return "\n".join(lines) + "\n"
+
+
 def make_bundle(out_dir: Path) -> Path:
     zip_path = out_dir.with_suffix(".zip")
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
@@ -372,6 +415,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repeat", type=int, default=2, help="runs per case (LLM variance; gate = 2)")
     parser.add_argument("--fixtures", type=Path, help="LLM-free: score a folder of POM XML instead of cases")
     parser.add_argument("--bundle", action="store_true", help="also write <out>.zip for email")
+    parser.add_argument("--compose", action="store_true",
+                        help="also draw each run's plans with the code composer -> decks/<case>__rN/composed.pptx (no API)")
     parser.add_argument("--out", type=Path, default=_PIPELINE_ROOT / "output" / "eval")
     args = parser.parse_args(argv)
 
@@ -394,7 +439,9 @@ def main(argv: list[str] | None = None) -> int:
                     score_against_golden(result, golden)
                 cases.append(result)
     for case in cases:
+        deck = case.get("_deck_pptx")
         _copy_slides(case, out_dir)
+        _collect_run(case, deck, out_dir, args.compose)
 
     results = {
         "label": args.label,
@@ -407,6 +454,9 @@ def main(argv: list[str] | None = None) -> int:
     }
     (out_dir / "results.json").write_text(json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8")
     write_summary(results, out_dir / "summary.md")
+    if any("composed" in c for c in cases):
+        with open(out_dir / "summary.md", "a", encoding="utf-8") as f:
+            f.write(_composed_summary(cases))
     print(f"\n{out_dir / 'summary.md'}")
     if args.bundle:
         print(f"EMAIL THIS FILE: {make_bundle(out_dir)}")

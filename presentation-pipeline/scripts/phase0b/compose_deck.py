@@ -41,7 +41,63 @@ def run_folder(path: Path) -> Path:
     for p in [path, *path.parents]:
         if (p / "slides.json").exists():
             return p
-    sys.exit(f"{path}: no slides.json here or above (pass output/runs/<run_id>)")
+    raise FileNotFoundError(f"{path}: no slides.json here or above (pass output/runs/<run_id>)")
+
+
+def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm") -> dict:
+    """Draw the run's plans; returns {pptx, slides, code, llm, left_out, smaller_type, overfull}.
+    Writes <run>/composed/composed.pptx."""
+    try:  # the blocks measure text with the real font files; without Pillow they silently estimate
+        from PIL import ImageFont  # noqa: F401
+    except ImportError as e:
+        raise RuntimeError("Pillow is required to draw composed decks (real text widths): "
+                           "uv pip install pillow  (or pip install pillow)") from e
+    run = run_folder(run.resolve())
+    out = run / "composed"
+    saved = json.loads((run / "slides.json").read_text(encoding="utf-8"))
+    deck_xml = run / "deck" / "input.xml"
+    m = re.search(r"<Theme[^>]*/>", deck_xml.read_text(encoding="utf-8")) if deck_xml.exists() else None
+    theme = m.group() if m else ""
+
+    measure = Measurer()
+    try:
+        report = replay(run / "slides.json", out, pack, measure)
+    finally:
+        measure.close()
+    code_dir = out / f"src-{deck_name(run / 'slides.json')}"
+
+    pptx, kinds, left_out = [], [], []
+    for row, s in zip(report["per_slide"], saved):
+        n = row["slide"]
+        all_blocks = row["status"] == "ok" and all(c.endswith(":block") for c in row["components"])
+        src = code_dir / f"slide-{n:02d}.xml"
+        if not all_blocks and fallback == "llm" and s.get("xml"):
+            src = out / "llm" / f"slide-{n:02d}.xml"
+            src.parent.mkdir(parents=True, exist_ok=True)
+            xml = s["xml"] if "<Theme" in s["xml"] else theme + "\n" + s["xml"]
+            src.write_text(xml, encoding="utf-8")
+        kinds.append("code" if src.parent == code_dir else "llm")
+        res = _compile(src, out / "build" / f"slide-{n:02d}")
+        if res.get("status") != "success":
+            left_out.append(n)
+            continue
+        pptx.append(out / "build" / f"slide-{n:02d}" / "presentation.pptx")
+    if not pptx:
+        raise RuntimeError(f"{run}: no slide compiled")
+
+    merged = merge_pptx_files(pptx, out / "merged.pptx")
+    final = out / "composed.pptx"
+    embed(merged, final, {f: {k: FONTS_DIR / v for k, v in faces.items()} for f, faces in FONTS.items()})
+    fits = [r.get("fit") or {} for r in report["per_slide"]]
+    return {
+        "pptx": str(final),
+        "slides": len(kinds),
+        "code": [i + 1 for i, k in enumerate(kinds) if k == "code"],
+        "llm": [i + 1 for i, k in enumerate(kinds) if k == "llm"],
+        "left_out": left_out,
+        "smaller_type": {i + 1: f["scale"] for i, f in enumerate(fits) if f.get("scale", 1) < 1},
+        "overfull": [i + 1 for i, f in enumerate(fits) if f.get("code")],
+    }
 
 
 def main() -> None:
@@ -50,52 +106,21 @@ def main() -> None:
     ap.add_argument("--pack", default="studio_inter", help="style pack (scripts/phase0b/style_packs.yaml)")
     ap.add_argument("--fallback", choices=["llm", "gap"], default="llm")
     a = ap.parse_args()
-
-    run = run_folder(a.run.resolve())
-    out = run / "composed"
-    saved = json.loads((run / "slides.json").read_text(encoding="utf-8"))
-    deck_xml = run / "deck" / "input.xml"
-    theme = re.search(r"<Theme[^>]*/>", deck_xml.read_text(encoding="utf-8")).group() if deck_xml.exists() else ""
-
-    measure = Measurer()
     try:
-        report = replay(run / "slides.json", out, a.pack, measure)
-    finally:
-        measure.close()
-    code_dir = out / f"src-{deck_name(run / 'slides.json')}"
-
-    pptx, kinds = [], []
-    for row, s in zip(report["per_slide"], saved):
-        n = row["slide"]
-        all_blocks = row["status"] == "ok" and all(c.endswith(":block") for c in row["components"])
-        src = code_dir / f"slide-{n:02d}.xml"
-        if not all_blocks and a.fallback == "llm" and s.get("xml"):
-            src = out / "llm" / f"slide-{n:02d}.xml"
-            src.parent.mkdir(parents=True, exist_ok=True)
-            xml = s["xml"] if "<Theme" in s["xml"] else theme + "\n" + s["xml"]
-            src.write_text(xml, encoding="utf-8")
-        kinds.append("code" if src.parent == code_dir else "llm")
-        res = _compile(src, out / "build" / f"slide-{n:02d}")
-        if res.get("status") != "success":
-            print(f"slide {n}: compile {res.get('status')} — left out", file=sys.stderr)
-            continue
-        pptx.append(out / "build" / f"slide-{n:02d}" / "presentation.pptx")
-
-    merged = merge_pptx_files(pptx, out / "merged.pptx")
-    final = out / "composed.pptx"
-    embed(merged, final, {f: {k: FONTS_DIR / v for k, v in faces.items()} for f, faces in FONTS.items()})
-
-    fits = [r.get("fit") or {} for r in report["per_slide"]]
-    print(f"slides: {kinds.count('code')} code-drawn, {kinds.count('llm')} LLM fallback "
-          f"({', '.join(str(i + 1) for i, k in enumerate(kinds) if k == 'llm') or 'none'})")
-    print("smaller type on: " + (", ".join(f"{i + 1} (x{f['scale']})" for i, f in enumerate(fits)
-                                            if f.get("scale", 1) < 1) or "none"))
-    over = [str(i + 1) for i, f in enumerate(fits) if f.get("code")]
-    if over:
-        print("SLIDE_OVERFULL: " + ", ".join(over))
-    print(f"composed deck: {final}")
-    if (run / "deck" / "presentation.pptx").exists():
-        print(f"LLM deck (same run): {run / 'deck' / 'presentation.pptx'}")
+        r = compose(a.run, a.pack, a.fallback)
+    except FileNotFoundError as e:
+        sys.exit(str(e))
+    print(f"slides: {len(r['code'])} code-drawn, {len(r['llm'])} LLM fallback "
+          f"({', '.join(map(str, r['llm'])) or 'none'})")
+    if r["left_out"]:
+        print(f"left out (did not compile): {', '.join(map(str, r['left_out']))}")
+    print("smaller type on: " + (", ".join(f"{n} (x{s})" for n, s in r["smaller_type"].items()) or "none"))
+    if r["overfull"]:
+        print("SLIDE_OVERFULL: " + ", ".join(map(str, r["overfull"])))
+    print(f"composed deck: {r['pptx']}")
+    llm = run_folder(a.run.resolve()) / "deck" / "presentation.pptx"
+    if llm.exists():
+        print(f"LLM deck (same run): {llm}")
 
 
 if __name__ == "__main__":
