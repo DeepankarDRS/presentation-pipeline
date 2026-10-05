@@ -78,6 +78,9 @@ of the off arm):
 
 ## 2. Step 0 plan
 
+**Approved by the user 2026-10-05 (D3), run set decided in D4: six cases.** The `gj-h1-regen` recommendation below
+was declined; read the run block as six cases, ≈ $1.8.
+
 **Goal:** make the plans the blocks will read trustworthy, and measure what every call costs.
 Everything is verified LLM-free first; one paid run at the end.
 
@@ -348,8 +351,8 @@ tuned in step 1 on the nodes demo render (free).
 |---|---|---|---|
 | D1 | §1a theme source: `palettes.yaml` only, derived role tokens + contrast test, packs carry structure, Inter + JetBrains Mono, `look` picked by the outline planner in step 2 | as written | **decided 2026-10-05: adopted as written** |
 | D2 | §1b cross-deck check in the 1a kill criteria (content-controlled definition) | kill criterion | **decided 2026-10-05: within-deck only is the kill criterion; cross-deck measured and reported, informational** |
-| D3 | Step 0 plan §2 incl. embedding at deck level in Python | as written | awaiting user |
-| D4 | `gj-h1-regen` joins step 0's run (≈ +$0.7) | yes | awaiting user |
+| D3 | Step 0 plan §2 incl. embedding at deck level in Python | as written | **decided 2026-10-05: approved as written** (`SLIDE_SPARSE` report-only; one re-ask max; `fonttools` added) |
+| D4 | `gj-h1-regen` joins step 0's run (≈ +$0.7) | yes | **decided 2026-10-05: no, six cases only** (37 slides, ≈ $1.8). Within-deck variety is judged on 5–8 slide decks; a long deck can be added to step 3 only if its plans are generated then |
 | D5 | Slot contract §3 | as written | awaiting user |
 | D6 | 1a protocol §4 | as written | awaiting user |
 | D7 | Checking-loop principle §5.1 | as written | awaiting user |
