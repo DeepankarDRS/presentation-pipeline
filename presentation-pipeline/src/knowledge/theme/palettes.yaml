@@ -238,6 +238,23 @@ palettes:
     border: "E8E6E3"
     chartColors: ["F7941D", "673AB7", "B39DDB", "95A5B6", "2E7D32", "A84531"]
 
+  # The gj-h1 golden deck's own <Theme> (tests/fixtures/golden/gj-h1-deck, same on all 14
+  # slides). chartColors are the literals its Chart nodes use: emerald, blue, amber, slate grey.
+  gj-h1:
+    tone: "Mint-grey with deep emerald, tomato-red and amber (gj-h1 deck)"
+    mode: light
+    surface: "F0F5F3"
+    surfaceAlt: "FFFFFF"
+    accent: "0D6B4E"
+    accentAlt: "34D399"
+    positive: "0D6B4E"
+    negative: "E54D2E"
+    warning: "F59E0B"
+    textMain: "141F1C"
+    textMuted: "5F706B"
+    border: "D5DDD9"
+    chartColors: ["0D6B4E", "3B82F6", "F59E0B", "94A3B8", "34D399"]
+
   graphite-mono:
     tone: "Pure white and charcoal, electric blue pop"
     mode: light
