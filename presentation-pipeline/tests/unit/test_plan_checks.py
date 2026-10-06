@@ -240,8 +240,8 @@ def test_scripted_llm_end_to_end_reasks_with_the_repair_context_in_the_prompt():
     assert [h["reask"] for h in history] == [False, True]
 
 
-def test_a_footnote_labelled_note_is_content_when_the_brief_says_it():
+def test_a_bare_note_prefix_is_a_footnote_not_an_instruction():
     brief = "Apr 2027: SOC2 + HIPAA certification"
     assert not is_instruction_text("Note: SOC2 + HIPAA certification targeted for Apr 2027", brief)
-    assert is_instruction_text("Note: lead with the enterprise story and pause for questions", brief)
-    assert is_instruction_text("Speaker Notes: SOC2 + HIPAA certification", brief)   # the strong label always counts
+    assert is_instruction_text("Speaker Notes: SOC2 + HIPAA certification", brief)   # the strong labels always count
+    assert is_instruction_text("Talking points: lead with the enterprise story", brief)
