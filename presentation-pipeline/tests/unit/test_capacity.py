@@ -51,7 +51,7 @@ def test_knowledge_files_agree_with_capacity():
     assert f"Max {t_max} items" in recipes and f"max {t_max} items" in house
     assert f"{m_max} items max" in recipes
     assert f'"{span("timeline")} items' in timeline and f'"{span("matrix")} items' in matrix
-    # no kpi tile cap anywhere in the knowledge: tiers replace it
+    # no kpi tile cap anywhere in the knowledge: rows of tiles replace it
     assert not re.search(r"Max 3-4 tiles|Max 4 tiles|more than 5 tiles", recipes + house, re.I)
 
 
@@ -121,18 +121,20 @@ def test_seven_steps_become_a_grid_and_a_long_flow_stays_a_flow():
     assert flow[0]["kind"] == "flow" and "over its capacity" in n2[0] and "kept as a flow" in n2[0]
 
 
-def test_metric_value_table_of_one_entity_becomes_kpi_tiers():
-    """CHEFFIN slide 5: the brief's 'Show table: Metric | Value' (user decision L5: switch, record why)."""
+def test_metric_value_table_of_one_entity_becomes_one_kpi_row():
+    """CHEFFIN slide 5: the brief's 'Show table: Metric | Value' (user decision L5: switch, record why).
+    One kpi_row in the table's order and weight, no hero / detail tiers (user, 2026-10-06)."""
     rows = [["Spend", "₹29.4L"], ["Ad sales", "₹10.1L"], ["ROAS", "0.34x"], ["CPC", "₹31.1"],
             ["CVR", "5.5%"], ["AOV", "₹195"], ["Allowable CPC for 1.0x ROAS", "₹10.7"]]
     comps = [{"component_id": "flip", "kind": "table", "weight": "hero", "design_hint": "shade the CPC row",
               "content_data": {"table_columns": ["Metric", "Value"], "table_rows": rows}},
              {"kind": "narrative", "content_data": {"text": "x"}}]
     notes = enforce_capacity(comps)
-    assert [c["kind"] for c in comps] == ["kpi_row", "kpi_row", "narrative"]
-    assert comps[0]["content_data"]["kpi_labels"] == ["Spend", "Ad sales", "ROAS"] and comps[0]["weight"] == "hero"
-    assert comps[1]["content_data"]["kpi_values"] == ["₹31.1", "5.5%", "₹195", "₹10.7"] and comps[1]["weight"] == "supporting"
-    assert "3 + 4" in notes[0] and "switched" in notes[0]
+    assert [c["kind"] for c in comps] == ["kpi_row", "narrative"]
+    kpis = comps[0]
+    assert kpis["content_data"]["kpi_labels"] == [r[0] for r in rows] and kpis["weight"] == "hero"
+    assert kpis["count"] == 7 and kpis["content_data"]["per_row"] == 4
+    assert "7 tiles" in notes[0] and "switched" in notes[0]
 
 
 def test_one_measure_across_entities_stays_a_table():

@@ -69,5 +69,7 @@ def test_single_kpi_gets_the_hero_stat_recipe_and_planner_explains_it():
     many = {"kind": "kpi_row", "content_data": {"kpi_values": ["₹114.9L", "₹37.4L"]}}
     assert _recipe_kind(one) == "hero_stat" and _recipe_kind(many) == "kpi_row"
     assert "# hero_stat\n" in _render_component_recipes(["hero_stat"])
+    # The planner is not told to split a hero out of a KPI set (user, 2026-10-06: no
+    # KPI-shape biases); a one-value kpi_row only appears when the brief has one number.
     p = _prompt()
-    assert "ONE number the headline rests on" in p and "kpi_row count=1 (hero: drawn very large)" in p
+    assert "ONE number the headline rests on" not in p and "kpi_row tiers" not in p

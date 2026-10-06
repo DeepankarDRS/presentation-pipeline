@@ -22,8 +22,7 @@ Read the SHAPE of each key_message to decide which component type fits:
 | Message Pattern | Component Kind | Example |
 |----------------|---------------|---------|
 | Single metric with delta | kpi_row | "ARR reached $42.8M (+18% QoQ)" |
-| ONE number the headline rests on, with supporting metrics | kpi_row count=1 (hero: drawn very large) + the supporting metrics as a second kpi_row (supporting) | "Combined ROAS 0.33x · spend ₹114.9L · revenue ₹37.4L" |
-| Multiple standalone metrics (same entity) | kpi_row (count=N); 6+ metrics → two kpi_rows: a headline tier (the 2-4 metrics the headline rests on, hero) and a detail tier (the rest, supporting) | "ARR $42.8M · NRR 114% · Margin 72.1%" |
+| Multiple standalone metrics (same entity) | kpi_row (count=N), tiles in the brief's order | "ARR $42.8M · NRR 114% · Margin 72.1%" |
 | Time-series or labeled values (one entity, many points) | chart | "Revenue by quarter: Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M" |
 | Multiple entities compared on same metrics | table | "Phrase: Spend ₹45L, ROAS 0.32x · Exact: Spend ₹21L, ROAS 0.41x" |
 | Parallel items each with multiple attributes or sub-detail | table | "Gap 1: Platform B ₹31 vs Platform A ₹46, Fix: bidding model" |
@@ -73,7 +72,7 @@ When in doubt between cover and data, choose data.
 | title | Text, Span | 1 per slide max | Slide headline, optional subtitle |
 | narrative | Text, Span, B, I | ~3-5 lines each | Explanatory paragraphs, callouts |
 | caption | Text | 1 per slide, bottom | Footnotes, source attribution |
-| kpi_row | HStack, VStack, Text, Span, Shape | count = tiles ({{ span('kpi_row', 'per_row') }} per row; more metrics → a second kpi_row tier) | Metric dashboards: label + value + delta or short note per tile |
+| kpi_row | HStack, VStack, Text, Span, Shape | count = tiles ({{ span('kpi_row', 'per_row') }} per row; more metrics → a second kpi_row) | Metric dashboards: label + value + delta or short note per tile |
 | bullet_list | Ul, Li, B, I, Span | items = bullet count | Qualitative lists, takeaways, action items |
 | chart | Chart, ChartSeries, ChartDataPoint | chart_type + series_count | Data visualization: bar, line, pie, area, doughnut, radar |
 | table | Table, Col, Tr, Td | columns × rows | Structured multi-column data grids |
@@ -94,7 +93,7 @@ Each component renders as a SPECIFIC visual shape. Choosing the wrong one for yo
 
 **table** — Grid of cells (Col/Tr/Td) with independent styling per cell (backgroundColor, color, bold, textAlign). Best for: multi-column structured data where the audience needs to compare across rows AND columns — segment breakdowns, feature comparisons, pricing tiers. Breaks when: used for single-column lists (use bullet_list) or when body rows exceed {{ cap.table.max_rows }} or columns exceed {{ cap.table.max_cols }} (split the table or the slide).
 
-**kpi_row** — Horizontal row of metric tiles, each showing label + large value + delta. Built from HStack of VStack cards with Text/Span. Best for: standalone metrics of one entity that the audience should absorb at a glance — any number of them. The generator renders each tile as a card with the value prominent; a kpi_row that is the slide's main content fills the slide with large tiles. With 6+ metrics, split them into two kpi_row tiers: the headline tier (hero weight, 2-4 tiles) and the detail tier (supporting weight). To make one tile the read-out (the metric the headline rests on), give that kpi_row the design_hint "inverted panel on the <label> tile". When the headline rests on ONE number ("not yet buying profitable demand" → ROAS 0.33x; "CPC is 3x higher"), make that number its own kpi_row with count 1 and weight hero — it is drawn as a hero stat, far larger than tiles — with a short context line from the key_messages in kpi_deltas, and put the supporting metrics in a second kpi_row (supporting). Breaks when: several entities share the metrics (use table), or metrics need explanation (pair with narrative).
+**kpi_row** — Horizontal row of metric tiles, each showing label + large value + delta. Built from HStack of VStack cards with Text/Span. Best for: standalone metrics of one entity that the audience should absorb at a glance — any number of them. The generator renders each tile as a card with the value prominent; a kpi_row that is the slide's main content fills the slide with large tiles. Keep the tiles in the brief's order. Breaks when: several entities share the metrics (use table), or metrics need explanation (pair with narrative).
 
 **bullet_list** — Vertical list with bullet markers (Ul/Li). Supports inline formatting (bold, italic, spans). Best for: qualitative insights, action items, takeaways, tactical detail — any content that is a list of parallel statements. Very flexible on text length per item. Pair with a structural component (process_arrow, flow) to add visual hierarchy above the detail.
 
@@ -264,7 +263,7 @@ These complete input→output pairs show correct routing for the most-confused p
 
 ---
 
-### Example 1 — One entity's metrics → kpi_row tiers (NOT a two-column "Metric | Value" table)
+### Example 1 — One entity's metrics → kpi_row (NOT a two-column "Metric | Value" table)
 
 **Input brief:**
 Headline: The app grew its base and kept it
@@ -294,8 +293,8 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
       "component_id": "headline_kpis",
       "kind": "kpi_row",
       "count": 3,
-      "weight": "hero",
-      "design_hint": "inverted panel on the Day-30 retention tile; QoQ deltas in positive color",
+      "weight": "peer",
+      "design_hint": "QoQ deltas in positive color",
       "content_data_json": {
         "kpi_labels": ["Monthly active users", "Day-30 retention", "Store rating"],
         "kpi_values": ["2.4M", "38%", "4.6"],
@@ -307,8 +306,8 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
       "component_id": "usage_kpis",
       "kind": "kpi_row",
       "count": 4,
-      "weight": "supporting",
-      "design_hint": "accent border on the crash-free sessions tile",
+      "weight": "peer",
+      "design_hint": "lift the tiles slightly",
       "content_data_json": {
         "kpi_labels": ["Crash-free sessions", "Sessions per user per day", "Average session length", "Support tickets per 1,000 users"],
         "kpi_values": ["99.2%", "3.1", "6m 40s", "4.2"],
@@ -317,11 +316,11 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
       }
     }
   ],
-  "layout_hint": "headline_kpis fills the slide under the header as three large tiles; usage_kpis is a compact row of four below"
+  "layout_hint": "headline_kpis under the header; usage_kpis below it, as the brief orders them"
 }
 ```
 
-**Why kpi_row tiers and not a table:** all seven metrics describe ONE entity (the app). A "Metric | Value" table spends a column on labels and hides the numbers in small cells; tiles make each value large and scannable. Seven tiles in one row would be cramped, so the metrics the headline rests on form the large tier and the rest a compact tier. Use a table when several entities share the metrics (Example 3).
+**Why kpi_row and not a table:** all seven metrics describe ONE entity (the app). A "Metric | Value" table spends a column on labels and hides the numbers in small cells; tiles make each value large and scannable. Seven tiles in one row would be cramped, so they take two rows, in the order the brief gives them. Use a table when several entities share the metrics (Example 3).
 
 ---
 

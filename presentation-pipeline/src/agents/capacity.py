@@ -95,7 +95,8 @@ def _unit(value: str) -> str:
 
 def _metric_table_to_kpis(comp: dict[str, Any]) -> list[dict[str, Any]] | None:
     """A 2-column label | number table whose values mix units (₹, %, x: one entity's
-    metrics, not one measure across entities) -> kpi_row tiers. None if not such a table."""
+    metrics, not one measure across entities) -> one kpi_row, in the table's order, keeping
+    the table's weight. None if not such a table."""
     data = comp.get("content_data") or {}
     cols, rows = data.get("table_columns") or [], data.get("table_rows") or []
     if len(cols) != 2 or len(rows) < 3 or any(not isinstance(r, list) or len(r) != 2 for r in rows):
@@ -103,22 +104,14 @@ def _metric_table_to_kpis(comp: dict[str, Any]) -> list[dict[str, Any]] | None:
     labels, values = [str(r[0]) for r in rows], [str(r[1]) for r in rows]
     if not all(re.search(r"\d", v) for v in values) or len({_unit(v) for v in values}) < 2:
         return None
-    most = max_of("kpi_row", "per_row")
-    split = [(0, len(rows))] if len(rows) <= most else [(0, 3), (3, len(rows))]
-    tiers = []
-    for n, (a, b) in enumerate(split):
-        tier = {k: v for k, v in comp.items() if k not in ("content_data", "columns", "rows", "chart_type")}
-        tier["kind"] = "kpi_row"
-        tier["count"] = b - a
-        if n:
-            tier["component_id"] = f"{comp.get('component_id') or 'kpis'}_detail"
-            tier["weight"] = "supporting"
-        tier["content_data"] = {"kpi_labels": labels[a:b], "kpi_values": values[a:b],
-                                "kpi_deltas": [""] * (b - a), "kpi_directions": [""] * (b - a)}
-        if b - a > most:
-            tier["content_data"]["per_row"] = per_row(b - a, most)
-        tiers.append(tier)
-    return tiers
+    n, most = len(rows), max_of("kpi_row", "per_row")
+    kpis = {k: v for k, v in comp.items() if k not in ("content_data", "columns", "rows", "chart_type")}
+    kpis["kind"], kpis["count"] = "kpi_row", n
+    kpis["content_data"] = {"kpi_labels": labels, "kpi_values": values,
+                            "kpi_deltas": [""] * n, "kpi_directions": [""] * n}
+    if n > most:
+        kpis["content_data"]["per_row"] = per_row(n, most)
+    return kpis
 
 
 def _placeholder_matrix(cd: dict[str, Any]) -> bool:
@@ -159,11 +152,10 @@ def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
             if len(steps) > max_of("flow"):
                 notes.append(f"{cid}: flow with {len(steps)} nodes is over its capacity ({max_of('flow')}); kept as a flow")
         elif kind == "table":
-            tiers = _metric_table_to_kpis(comp)
-            if tiers:
-                out.extend(tiers)
-                sizes = " + ".join(str(t["count"]) for t in tiers)
-                notes.append(f"{cid}: 2-column metric table of one entity -> kpi_row tiers ({sizes}); "
+            kpis = _metric_table_to_kpis(comp)
+            if kpis:
+                out.append(kpis)
+                notes.append(f"{cid}: 2-column metric table of one entity -> kpi_row ({kpis['count']} tiles); "
                              "the brief's table switched because the metrics read better as tiles")
                 continue
         # every grid knows its cards per row; a steps row past its capacity becomes a grid

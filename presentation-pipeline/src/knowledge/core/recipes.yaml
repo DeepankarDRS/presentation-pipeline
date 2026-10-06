@@ -22,11 +22,8 @@ kpi_row: |
   # justifyContent="center" (NOT spaceBetween). Unit in a <Span> inside the value <Text>.
   # EVERY font in the tile must be >= 14. Labels=14, values=28-34, deltas/notes=14.
   # 2-5 tiles per row (the data's per_row when given: rows of that many tiles).
-  # A second tier (the plan's detail kpi_row) goes in its own
-  # row below, sized to content (compact_kpi_strip).
-  # Read-out tile (design_hint "inverted panel on the X tile"): that one tile uses the
-  # hero_panel colours - light theme backgroundColor="$textMain" with label/value
-  # color="$surfaceAlt"; dark theme $surfaceAlt + borderLeft.color="$accent".
+  # Each kpi_row of the plan is its own row; tiles keep the plan's order. A tile
+  # looks different only when the plan's design_hint names it.
   <HStack gap="14" alignItems="stretch">
     <VStack w="max" padding="16" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="14" color="$textMuted">Annual recurring revenue</Text>
@@ -288,8 +285,8 @@ tree: |
   </VStack>
 
 compact_kpi_strip: |
-  # Compact KPI strip: the detail tier under a headline kpi_row, or 3-5 tiles above
-  # a chart / table. ALL fonts >= 14. Labels=14, values=24-28, deltas=14. No h — sizes
+  # Compact KPI strip: a kpi_row that is not the slide's main content (e.g. 3-5
+  # tiles above a chart / table). ALL fonts >= 14. Labels=14, values=24-28, deltas=14. No h — sizes
   # to its tiles. 6+ tiles: two rows — never shrink fonts below 14.
   <HStack gap="10" alignItems="stretch">
     <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
@@ -455,28 +452,13 @@ card_matrix: |
   </VStack>
 
 hero_stat: |
-  # Hero stat: the ONE number the headline rests on (a kpi_row with a single tile),
-  # drawn far larger than tiles, with its supporting metrics (the plan's second
-  # kpi_row) as small stats beside it. The band takes grow from its weight; the
-  # hero number starts at 72 and is enlarged to fill after generation (up to 120).
-  # Label 14 muted uppercase, number 72 bold, context line 16 (the plan's kpi_deltas
-  # text; omit when empty). Unit in a <Span> at half the number's size.
-  # Emphasised hero (design_hint "inverted panel"): light theme backgroundColor=
-  # "$textMain" with $surfaceAlt text; otherwise the card below.
-  <HStack grow="3" gap="16" alignItems="stretch">
-    <VStack w="56%" padding="28" gap="8" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1" justifyContent="center">
-      <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="2">COMBINED RETURN ON AD SPEND</Text>
-      <Text fontSize="72" color="$negative" bold="true">0.33<Span fontSize="36" color="$textMuted">x</Span></Text>
-      <Text fontSize="16" color="$textMain" lineHeight="1.45">Both platforms return a third of what they spend</Text>
-    </VStack>
-    <VStack w="max" gap="12">
-      <VStack grow="1" padding="18" gap="4" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
-        <Text fontSize="14" color="$textMuted">Combined spend</Text>
-        <Text fontSize="30" color="$textMain" bold="true">₹114.9<Span fontSize="16" color="$textMuted">L</Span></Text>
-      </VStack>
-      <VStack grow="1" padding="18" gap="4" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
-        <Text fontSize="14" color="$textMuted">Combined revenue</Text>
-        <Text fontSize="30" color="$textMain" bold="true">₹37.4<Span fontSize="16" color="$textMuted">L</Span></Text>
-      </VStack>
-    </VStack>
-  </HStack>
+  # Single stat: a kpi_row with one value, drawn as one large card. The band takes
+  # grow from its weight; the number starts at 72 and is enlarged to fill after
+  # generation (up to 120). Label 14 muted uppercase, number 72 bold, context line
+  # 16 (the plan's kpi_deltas text; omit when empty). Unit in a <Span> at half the
+  # number's size. Other components on the slide are laid out as the plan says.
+  <VStack grow="3" padding="28" gap="8" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1" justifyContent="center">
+    <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="2">MONTHLY ACTIVE USERS</Text>
+    <Text fontSize="72" color="$textMain" bold="true">2.4<Span fontSize="36" color="$textMuted">M</Span></Text>
+    <Text fontSize="16" color="$textMain" lineHeight="1.45">+12% QoQ</Text>
+  </VStack>
