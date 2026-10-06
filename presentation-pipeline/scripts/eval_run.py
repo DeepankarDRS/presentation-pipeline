@@ -141,6 +141,17 @@ def text_metrics(slide_dir: Path, brief: str | None) -> dict[str, Any]:
             "invented_numbers": len(invented), "invented_examples": invented[:8]}
 
 
+def _scored(pptx: str | None, brief: str | None) -> dict[str, Any]:
+    """The pptx-derived metrics of one slide. A slide file that cannot be read (step 0 run: a NUL character
+    in a slide's XML) is recorded as `score_error` and costs that slide its metrics, not the whole eval."""
+    if not pptx:
+        return {"cards": []}
+    try:
+        return {"cards": card_metrics(pptx), **text_metrics(Path(pptx).parent, brief)}
+    except Exception as exc:  # zipfile.BadZipFile, xml ParseError, ...
+        return {"cards": [], "score_error": f"{type(exc).__name__}: {exc}"}
+
+
 def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any], brief: str) -> dict[str, Any]:
     first, last = tries[0], tries[-1]
     ok = bool((last.get("compile_result") or {}).get("ok"))
@@ -161,8 +172,7 @@ def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any], br
         "fit_grow": _read_json(Path(pptx).parent / "compile-result.json").get("fitGrow", []) if pptx else [],
         "components": [{k: c.get(k, "") for k in ("kind", "weight", "design_hint")}
                        for c in plan.get("components", [])],
-        "cards": card_metrics(pptx) if pptx else [],
-        **(text_metrics(Path(pptx).parent, brief) if pptx else {}),
+        **_scored(pptx, brief),
         "_dir": str(Path(pptx).parent) if pptx else None,
     }
 
