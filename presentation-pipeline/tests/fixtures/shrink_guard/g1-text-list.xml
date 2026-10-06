@@ -1,0 +1,21 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$surface" padding="40" gap="16" alignItems="stretch">
+    <Text fontSize="30" bold="true" fontFamily="Inter" color="$textMain">Guard: text and list</Text>
+    <HStack gap="12" grow="1" alignItems="stretch">
+      <VStack w="160" backgroundColor="$surfaceAlt" padding="10" gap="8">
+        <Text id="rec" fontSize="22" fontFamily="Inter" color="$textMain">Recommendation</Text>
+        <Text id="fits" fontSize="22" fontFamily="Inter" color="$textMain">Fits well</Text>
+        <Text id="narrow-num" fontSize="60" bold="true" fontFamily="Inter" color="$accent">₹1,114.9L</Text>
+        <Text id="unsized" fontFamily="Inter" color="$textMain">Implementation</Text>
+        <Text id="hyphen" fontSize="22" fontFamily="Inter" color="$textMain">Cost-per-acquisition</Text>
+      </VStack>
+      <VStack w="160" backgroundColor="$surfaceAlt" padding="10">
+        <Ul id="list" fontSize="20" fontFamily="Inter"><Li>Internationalization</Li><Li>Short</Li></Ul>
+      </VStack>
+      <VStack grow="1" backgroundColor="$surfaceAlt" padding="10">
+        <Text fontSize="16" fontFamily="Inter" color="$textMain">A wide box: every word fits.</Text>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

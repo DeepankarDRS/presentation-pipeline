@@ -1,0 +1,12 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$surface" padding="40" gap="16" alignItems="stretch">
+    <Text fontSize="30" bold="true" fontFamily="Inter" color="$textMain">Guard: chevrons</Text>
+    <ProcessArrow id="fits-smaller" itemWidth="190" itemHeight="80" fontSize="18" fontFamily="Inter">
+      <ProcessArrowStep label="Discovery" /><ProcessArrowStep label="Implementation" /><ProcessArrowStep label="Go-live" />
+    </ProcessArrow>
+    <ProcessArrow id="cannot-fit" itemWidth="120" itemHeight="60" fontSize="16" fontFamily="Inter">
+      <ProcessArrowStep label="Discovery" /><ProcessArrowStep label="Implementation" /><ProcessArrowStep label="Go-live" />
+    </ProcessArrow>
+  </VStack>
+</Slide>

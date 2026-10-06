@@ -1057,10 +1057,212 @@ async function search(xml, ids, apply, max, keepLines = []) {
   return { best, ratio };
 }
 
+// --- phase 6: shrink guard -------------------------------------------------------
+// fit-grow only grows, so a word wider than its box (a long header in a narrow table
+// column, "Recommendation" at 18px in a 110px cell, "₹114.9L" in a narrow KPI tile, a
+// long label in a narrow chevron) stayed a word the renderer breaks mid-word (§10g R1:
+// 7 left in the real-font run). For every text / list / table / processArrow label whose
+// longest unbreakable piece (a word, or the part after a hyphen) is wider than the space
+// it gets, at the size it has now:
+//   1. widen   — a table column takes width from the columns that have spare;
+//   2. shrink  — the type goes down to the largest size at which the piece fits, never
+//                below its floor (14px; a number or title >= 28px keeps >= 28);
+//   3. report  — a piece still too wide becomes a WORD_TOO_WIDE warning
+//                (compile-result.json warnings), which the critic / checking loop sees.
+// Every edit is tried and kept only if the slide's total overflow is lower afterwards: a
+// smaller label can narrow a tile that was sized by it and break the number beside it
+// (R1 replay, gj-h1 slide 14). It never grows anything and runs after every growing phase,
+// so a size the growers chose is checked too. Running it twice changes nothing. A font that
+// is not loaded from src/node/fonts/ is measured by POM in another font than the renderer
+// draws, so it gets 8% of slack; a loaded font is exact.
+
+const GUARD_FLOOR_BODY = 14;
+const GUARD_FLOOR_BIG = 28;
+const GUARD_SLACK = 0.92;       // share of the box an unloaded font may fill
+const GUARD_TABLE_SAFE = 0.85;  // share of a table column a word may fill (as planTable: cell insets)
+const GUARD_ROUNDS = 4;
+const GUARD_MAX_WARNINGS = 5;
+
+const guardFloor = (fs) => (fs >= GUARD_FLOOR_BIG ? GUARD_FLOOR_BIG : Math.min(fs, GUARD_FLOOR_BODY));
+const pieces = (text) => String(text ?? "").split(/\s+/).flatMap((w) => w.split(/(?<=[-–—])/)).filter(Boolean);
+
+/** The widest unbreakable piece of the texts at font size `fs`: { word, w }. */
+function widestPiece(texts, family, fs, bold, spacing, ctx) {
+  let widest = { word: "", w: 0 };
+  for (const word of texts.flatMap(pieces)) {
+    const w = measureText(word, Infinity, { fontFamily: family, fontSizePx: fs, lineHeight: 1.3,
+      fontWeight: bold ? "bold" : "normal", letterSpacingPx: spacing },
+    ctx.textMeasurementMode, ctx.fontRegistry).widthPx;
+    if (w > widest.w) widest = { word, w };
+  }
+  return widest;
+}
+
+const exact = (ctx, family, bold) => ctx.fontRegistry.hasFont(family, bold ? "bold" : "normal");
+
+/**
+ * The largest size <= fs at which the piece (`at(f)` -> { w }) fits `room`; the floor when none does.
+ * Widths are not exactly linear in the size, so the estimate is checked and nudged either way:
+ * the answer does not depend on where it started, which keeps a second pass from changing it.
+ */
+function guardSize(fs, at, room) {
+  const floor = guardFloor(fs);
+  let f = Math.max(floor, Math.min(fs, Math.floor(fs * (room / at(fs).w))));
+  while (f < fs && at(f + 1).w <= room + 0.5) f += 1;
+  while (f > floor && at(f).w > room + 0.5) f -= 1;
+  return f;
+}
+
+/** Every text / list / chevron / table on the slide with a piece wider than its box. */
+async function scanWords(xml) {
+  const L = await layout(xml);
+  const ctx = L.ctx;
+  const found = [];   // { id, kind, fs, own, room, at(f) -> widest piece, table? }
+  try {
+    for (const root of L.slides) walk(root, (n) => {
+      if (!n.id) return;
+      const family = n.fontFamily ?? "Noto Sans JP";
+      const slack = (bold) => (exact(ctx, family, bold) ? 1 : GUARD_SLACK);
+      if (n.type === "text") {
+        const runs = n.runs ?? [];
+        const fs = Math.max(n.fontSize ?? 24, ...runs.map((r) => r.fontSize ?? n.fontSize ?? 24));
+        const b = L.box(n);
+        const room = (b.w - b.pl - b.pr) * slack(n.bold);
+        const text = n.text ?? runs.map((r) => r.text).join("");
+        const at = (f) => widestPiece([text], family, f, n.bold, n.letterSpacing, ctx);
+        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "text", fs, own: n.fontSize, room, at });
+      } else if (n.type === "ul" || n.type === "ol") {
+        if (n.items.some((i) => i.fontSize !== undefined || (i.runs ?? []).some((r) => r.fontSize !== undefined))) return;
+        const fs = n.fontSize ?? 24;
+        const b = L.box(n);
+        const room = (b.w - b.pl - b.pr - 36) * slack(n.bold);
+        const texts = n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""));
+        const at = (f) => widestPiece(texts, family, f, n.bold, undefined, ctx);
+        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "list item", fs, own: fs, room, at });
+      } else if (n.type === "processArrow") {
+        if (!n.steps.length) return;
+        const fs = n.fontSize ?? 14;
+        const depth = (n.itemHeight ?? 80) * ARROW_DEPTH_RATIO;   // POM's text box: width - depth on each side
+        const room = ((n.itemWidth ?? 150) - 2 * depth) * slack(false);
+        const at = (f) => widestPiece(n.steps.map((s) => s.label), family, f, n.bold, undefined, ctx);
+        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "process step", fs, own: fs, room, at });
+      } else if (n.type === "table") {
+        const grid = cellGrid(n);
+        if (!grid || !n.rows.length) return;
+        const W = L.box(n).w;
+        const widths = resolveColumnWidths(n, W);
+        const cells = grid.flat().filter(({ span }) => span === 1);
+        const needAt = (fontOf) => {   // per column: the width its longest piece needs
+          const need = widths.map(() => 0), word = widths.map(() => "");
+          for (const { c, col } of cells) {
+            const wide = widestPiece([cellText(c)], c.fontFamily ?? "Noto Sans JP", fontOf(c), c.bold, undefined, ctx);
+            if (wide.w / GUARD_TABLE_SAFE > need[col]) { need[col] = wide.w / GUARD_TABLE_SAFE; word[col] = wide.word; }
+          }
+          return { need, word };
+        };
+        const now = needAt((c) => c.fontSize ?? TD_FONT);
+        if (now.need.some((x, i) => x > widths[i] + 0.5)) {
+          found.push({ id: n.id, kind: "table cell", table: true, widths, need: now.need, W, needAt,
+            fs0: Math.max(...cells.map(({ c }) => c.fontSize ?? TD_FONT)) });
+        }
+      }
+    });
+  } finally { L.free(); }
+  return found;
+}
+
+/** The XML with one finding fixed as far as the rules allow (the same XML when nothing can be done). */
+function guardEdit(xml, t) {
+  if (t.table) {
+    const { widths, need, W } = t;
+    const deficit = widths.map((w, i) => Math.max(0, need[i] - w));
+    const spare = widths.map((w, i) => Math.max(0, w - Math.max(need[i], 20)));
+    if (sum(spare) >= sum(deficit)) {
+      const give = sum(deficit) / sum(spare);
+      const next = intWidths(widths.map((w, i) => (deficit[i] > 0 ? w + deficit[i] : w - spare[i] * give)), W);
+      return { xml: writeTable(xml, t.id, { widths: next }), note: `table columns widened for words wider than their column -> [${next.join(", ")}]` };
+    }
+    // shrink: the largest table type size (every cell scaled with it) at which every column's longest
+    // piece fits its unchanged width; the floor when none does
+    const fontAt = (f) => (c) => {
+      const own = c.fontSize ?? TD_FONT;
+      return Math.max(guardFloor(own), Math.min(own, Math.round(own * f / t.fs0)));
+    };
+    const fits = (f) => { const n = t.needAt(fontAt(f)).need; return n.every((x, i) => x <= widths[i] + 0.5); };
+    let fs = t.fs0;
+    while (fs > guardFloor(t.fs0) && !fits(fs)) fs -= 1;
+    if (fs >= t.fs0) return { xml, note: null };
+    return { xml: writeTable(xml, t.id, { fontOf: fontAt(fs) }), note: `table cell text ${t.fs0} -> ${fs}px (a word is wider than its column)` };
+  }
+  const fs = guardSize(t.fs, t.at, t.room);
+  if (fs >= t.fs) return { xml, note: null };
+  let out;
+  if (t.kind === "text") {
+    out = scaleTextFont(xml, t.id, fs / t.fs, Infinity);   // the open tag's size and every <Span fontSize>
+    if (t.own === undefined) out = setAttrs(out, t.id, { fontSize: Math.round(24 * fs / t.fs) });  // POM's default is 24
+  } else {
+    out = setAttrs(xml, t.id, { fontSize: fs });
+  }
+  return { xml: out, note: `word "${t.at(t.fs).word}" wider than its box: ${t.kind} ${t.fs} -> ${fs}px` };
+}
+
+/** Total px the findings run past their boxes (a table: past its columns). */
+function overflow(found) {
+  return found.reduce((total, t) => total + (t.table
+    ? sum(t.need.map((x, i) => Math.max(0, x - t.widths[i])))
+    : Math.max(0, t.at(t.fs).w - t.room)), 0);
+}
+
+async function guardWords(xml, report, warnings) {
+  let found = await scanWords(xml);
+  for (let round = 0; round < GUARD_ROUNDS && found.length; round++) {
+    let progress = false;
+    for (const t of found) {
+      const edit = guardEdit(xml, t);
+      if (!edit.note) continue;
+      const after = await scanWords(edit.xml);
+      // keep an edit only when the slide's total overflow (px) goes down and no piece elsewhere is newly
+      // too wide: a smaller label can narrow the tile that was sized by it and break the number beside
+      // it (R1 replay: "Projected" -> "₹59.8"), which the total shows even when the count does not
+      const before = new Set(found.map((f) => f.id));
+      if (overflow(after) >= overflow(found) - 0.5 || after.some((f) => !before.has(f.id))) continue;
+      xml = edit.xml;
+      found = after;
+      report.push(edit.note);
+      progress = true;
+      break;   // the findings changed: take them again from the new layout
+    }
+    if (!progress) break;
+  }
+  const out = [];
+  for (const t of found) {
+    if (t.table) {
+      const i = t.need.findIndex((x, j) => x > t.widths[j] + 0.5);
+      const now = t.needAt((c) => c.fontSize ?? TD_FONT);
+      out.push({ code: "WORD_TOO_WIDE", message: `table cell: "${now.word[i]}" is ${Math.round(now.need[i] * GUARD_TABLE_SAFE)}px wide at`
+        + ` ${t.fs0}px and needs ${Math.round(now.need[i])}px of column with cell insets, its column has ${Math.round(t.widths[i])}px`
+        + ` (the renderer may break it; no other column has room and the type is at its smallest)` });
+    } else {
+      const wide = t.at(t.fs);
+      const smallest = guardSize(t.fs, t.at, t.room);
+      const why = t.at(smallest).w > t.room + 0.5 ? `it does not fit even at ${smallest}px, the smallest allowed`
+        : "a smaller size would break another word";
+      out.push({ code: "WORD_TOO_WIDE", message: `${t.kind}: "${wide.word}" is ${Math.round(wide.w)}px wide at ${t.fs}px, its box has ${Math.round(t.room)}px`
+        + ` (the renderer will break it; ${why})` });
+    }
+  }
+  // the critic reads these: five per slide is enough to see the problem
+  warnings.push(...out.slice(0, GUARD_MAX_WARNINGS));
+  if (out.length > GUARD_MAX_WARNINGS) {
+    warnings.push({ code: "WORD_TOO_WIDE", message: `and ${out.length - GUARD_MAX_WARNINGS} more words wider than their boxes on this slide` });
+  }
+  return xml;
+}
+
 // --- entry ----------------------------------------------------------------------
 
 /** One slide (with the document's <Theme> prefix) through every phase. */
-async function fitSlide(inputXml, report) {
+async function fitSlide(inputXml, report, warnings = []) {
   let xml = tagNodes(inputXml);
   xml = await respectHeights(xml, report);
   xml = await splitLists(xml, report);
@@ -1070,6 +1272,7 @@ async function fitSlide(inputXml, report) {
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
+  xml = await guardWords(xml, report, warnings);
   return report.length ? untag(xml) : inputXml;
 }
 
@@ -1079,17 +1282,19 @@ async function fitSlide(inputXml, report) {
 const BUDGET_MS = Number(process.env.POM_FIT_GROW_BUDGET_MS ?? 60000);
 
 /**
- * Returns { xml, report }. `report` lists every change made (prefixed with the
- * slide number); empty when every slide was already full. Slides are fitted
+ * Returns { xml, report, warnings }. `report` lists every change made (prefixed with the
+ * slide number); empty when every slide was already full. `warnings` are {code, message}
+ * the guard could not fix (WORD_TOO_WIDE); compile-pom.js adds them to the compile warnings. Slides are fitted
  * one at a time — each measurement only lays out its own slide. Throws only on
  * programmer error — callers should fall back to the input XML.
  */
 export async function fitGrow(inputXml) {
   const first = inputXml.search(/<Slide\b/);
-  if (first < 0) return { xml: inputXml, report: [] };
+  if (first < 0) return { xml: inputXml, report: [], warnings: [] };
   const prefix = inputXml.slice(0, first);
   const started = Date.now();
   const report = [];
+  const warnings = [];
   let index = 0;
   const parts = [];
   let last = first;
@@ -1104,9 +1309,11 @@ export async function fitGrow(inputXml) {
       // one slide failing must not cost the other slides their fitting
       try {
         const slideReport = [];
-        const out = await fitSlide(prefix + slide, slideReport);
+        const slideWarnings = [];
+        const out = await fitSlide(prefix + slide, slideReport, slideWarnings);
         slide = out.slice(out.search(/<Slide\b/));
         report.push(...slideReport.map((r) => `slide ${index}: ${r}`));
+        warnings.push(...slideWarnings.map((w) => ({ ...w, message: `slide ${index}: ${w.message}` })));
       } catch (error) {
         report.push(`slide ${index}: skipped (${error && error.message ? error.message : String(error)})`);
       }
@@ -1115,7 +1322,7 @@ export async function fitGrow(inputXml) {
     last = start + m[0].length;
   }
   parts.push(inputXml.slice(last));
-  return { xml: report.some((r) => !r.includes("skipped")) ? prefix + parts.join("") : inputXml, report };
+  return { xml: report.some((r) => !r.includes("skipped")) ? prefix + parts.join("") : inputXml, report, warnings };
 }
 
 // Layout helpers for measuring tools (scripts/phase0b/measure.mjs); fit-grow itself

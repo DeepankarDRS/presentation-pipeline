@@ -221,11 +221,13 @@ async function compile() {
   // <!-- fit-grow: off --> in a slide that code already sized (derived nodes): fit-grow
   // measures in another font than the renderer and would undo that sizing.
   const originalXml = xml;
+  let guardWarnings = [];  // WORD_TOO_WIDE from fit-grow's shrink guard
   if (process.env.POM_FIT_GROW !== "0" && !xml.includes("<!-- fit-grow: off -->")) {
     try {
       const { fitGrow } = await import("./fit-grow.js");
       const fitted = await fitGrow(xml);
       result.fitGrow = fitted.report;
+      guardWarnings = fitted.warnings ?? [];
       if (fitted.report.length > 0) {
         xml = fitted.xml;
         await writeFile(path.join(outputDir, "fitted.xml"), xml, "utf8");
@@ -255,6 +257,8 @@ async function compile() {
         message: d.message,
       }));
     }
+
+    if (guardWarnings.length > 0) result.warnings = [...(result.warnings ?? []), ...guardWarnings];
 
     const pptxPath = path.join(outputDir, "presentation.pptx");
     // table cells vertically centred (POM writes them top-anchored; see pptx-post.js)

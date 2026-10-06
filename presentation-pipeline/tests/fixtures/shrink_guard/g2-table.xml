@@ -1,0 +1,16 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$surface" padding="40" gap="16" alignItems="stretch">
+    <Text fontSize="30" bold="true" fontFamily="Inter" color="$textMain">Guard: tables</Text>
+    <Table id="wide-spare" w="700" h="80" defaultRowHeight="40">
+      <Col width="110" /><Col width="400" /><Col width="190" />
+      <Tr height="40"><Td fontSize="18" bold="true" fontFamily="Inter">Recommendation</Td><Td fontSize="18" bold="true" fontFamily="Inter">What to do</Td><Td fontSize="18" bold="true" fontFamily="Inter">Value</Td></Tr>
+      <Tr height="40"><Td fontSize="18" fontFamily="Inter">Scale</Td><Td fontSize="18" fontFamily="Inter">Scale exact winners</Td><Td fontSize="18" fontFamily="Inter">1.2x</Td></Tr>
+    </Table>
+    <Table id="no-spare" w="300" defaultRowHeight="40">
+      <Col width="100" /><Col width="100" /><Col width="100" />
+      <Tr height="40"><Td fontSize="18" bold="true" fontFamily="Inter">Recommendation</Td><Td fontSize="18" bold="true" fontFamily="Inter">Optimization</Td><Td fontSize="18" bold="true" fontFamily="Inter">Value</Td></Tr>
+      <Tr height="40"><Td fontSize="18" fontFamily="Inter">Scale</Td><Td fontSize="18" fontFamily="Inter">Hold</Td><Td fontSize="18" fontFamily="Inter">1.2x</Td></Tr>
+    </Table>
+  </VStack>
+</Slide>
