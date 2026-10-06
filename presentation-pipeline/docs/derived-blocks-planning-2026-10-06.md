@@ -309,65 +309,142 @@ manifest and the `node_bypassed` counter; reports go to the checking loop (§5.1
 | `NODE_OVERFULL` | report | smallest type step still short (as `SLIDE_OVERFULL` today) → checking loop |
 | `NODE_UNDERFILLED` | report | the node fills < 60% of its box (§5.4) → checking loop |
 
-## 4. 1a protocol (revised 2026-10-06 for the node form)
+## 4. 1a protocol (revised 2026-10-06 for the node form; made exact 2026-10-06 on step 0's plans)
 
 **Question:** does the LLM place ref nodes correctly, and does the node route not lose on mistakes or
 variety?
 
-**Inputs:** step 0's `slides.json` (plans + the off arm's XML) and its manifests. Models, temperature and
-`max_tokens` fixed as in `models.yaml` (generator = gpt-4.1); one run, ×1.
+**Status (2026-10-06, follow-up session):** protocol written against step 0's real plans; nothing built,
+nothing spent. The proposals that change the earlier text are collected as **D11** in §6 for approval.
 
-**Slides (≈ 24; the exact list cannot exist before step 0's plans do).** A script
-`scripts/node_test_select.py` picks them by rule from step 0's plans and writes
-`docs/eval/step0/1a-slides.json`; **you approve the list before any paid call**. Rule:
-1. Pool = the three hold-out decks (qbr, launch, agency) + `gate-deck-all-nodes-dense` + XTSY.
-2. Exclude every slide the node prompt's examples were built from (Phase 0c skeletons: CHEFFIN 2 and
-   the CPC slide, XTSY "automation", gj-h1 dense). The prompt must not be tested on its own examples.
-3. Cover every kind ≥ 3 times: derived (kpi_row, card_grid grid / steps / matrix, narrative) and native
-   (table, chart, bullet_list, timeline, process_arrow / flow, caption, and pyramid / tree / matrix ≥ 3
-   together); ≥ 3 slides with 3+ components; ≥ 3 slides holding a `layer` if step 0's plans have them
-   (tests `NODE_KIND_NO_REF`); ≥ 3 slides from each deck. Fill to ≈ 24 by lowest-numbered slide first.
+**Inputs:** step 0's four bundles, extracted at `output/step0/{b1,b2x,b3x,b4x}/<bundle>/decks/<case>__r1/`
+(`slides.json` = every slide's plan + the off arm's XML; `run-manifest.json` = theme, per-call usage).
+Not `output/step0/nk/` (the neutral-KPI side run, not a step 0 deck). Models, temperature and `max_tokens`
+as in `models.yaml` (generator = gpt-4.1); one run, ×1. The zips (`Downloads\step0-20261006-*.zip`) are the
+only copy of these plans: back them up before 1a.
 
-(Hold-out plans were seen while fixing blocks, so they are no longer pristine for *block* behaviour, but the
-LLM never saw them with a node prompt, which is what 1a tests.)
+**`ref` value = the plan's `component_id`** (`summary_kpis`, `cpc_comparison_chart`), as Phase 0c's slots
+used; §3's `c2` / `c3` are placeholders. The ids are already unique per slide in all 37 plans.
 
-**Arms:** (A) *off* = step 0's saved XML for the slide, no new call; (B) *nodes* = the generator with the
-§3 node prompt on the same plan. Derived nodes are drawn by the Phase 0b blocks (`expand.py`, extended to
-read ref tags), native nodes are filled by the new native fillers (POM's own look, as in the off arm).
-Same `<Theme>` in both: B's blocks are recoloured from the deck's palette with role-based text colours
-(the §1a research-renderer change), so the blind comparison judges layout and fill, not palette.
+### 4.1 Slide selection (exact rule; replaces "fill to ≈ 24")
 
-**Measures and kill criteria (§14.5 + the new cross-deck one):**
+`scripts/node_test_select.py` (replaces the planned `slot_test_select.py`, never built) reads the four
+bundles and writes `docs/eval/step0/1a-slides.json` (case, slide number, title, component ids + kinds, and
+the reason any slide is left out). **Rule:**
+1. **Pool:** all six step 0 decks (37 slides). CHEFFIN joins the pool (the earlier rule left it out
+   wholesale because its slides were the examples; now only the example slides themselves are excluded).
+2. **Exclude the prompt's own examples.** The node prompt's examples are Phase 0c's skeletons rewritten to
+   ref tags (`scripts/phase0b/phase0c/m1`–`m4`). They were drawn from CHEFFIN slide 2 (exec summary),
+   CHEFFIN slide 3 (CPC), XTSY slide 6 (automation) and gj-h1 slide 2 (not in step 0). So CHEFFIN 2, CHEFFIN 3
+   and XTSY 6 are out. The rule is "by title of the source slide", so it also holds if the examples change.
+3. **Exclude slides with nothing to place:** every component is `title` or `layer` (QBR 1, launch 1).
+4. **Take every slide left: 32 slides, 78 ref components** (17 slides with 3+ components). No sampling,
+   so no judgement in the list.
 
-| # | Measure | How | Pass |
+Why all 32 rather than ≈ 24: the rule needs no tie-breaks, compliance is measured on 78 components instead of
+≈ 60 (margin ±7 points instead of ±8), and the within-deck variety (measure 5) is computed on near-whole decks
+(4–7 slides each) instead of 3-slide fragments. Cost ≈ +$0.2 (§4.5).
+
+**Coverage this gives** (slides holding the kind; the old rule asked ≥ 3 each):
+
+| Kind | Slides | | Kind | Slides |
+|---|---|---|---|---|
+| narrative | 15 | | table | 5 |
+| card_grid grid | 11 | | kpi_row | 4 |
+| bullet_list | 10 | | chart, timeline | 3 each |
+| caption | 9 | | process_arrow + flow | 3 (2 + 1) |
+| card_grid steps | 4 | | pyramid + tree + matrix | 2 slides, 3 components |
+| layer (tests `NODE_KIND_NO_REF`) | 2 (all there are) | | **card_grid matrix** | **0** |
+
+Per deck: XTSY 7, agency 6, all-nodes-dense 6, launch 5, QBR 4, CHEFFIN 4. **Gaps, stated, not filled:**
+no `card_grid` matrix in step 0's plans; pyramid / tree / matrix, flow and layer appear once or twice, so
+their results are anecdotes. Filling them needs new plans (a paid planner run), which the paid-run rule
+argues against for 1a; they are covered by the scripted dry run (§4.6) and by step 3.
+
+### 4.2 Arms
+
+- **(A) off** = step 0's saved XML for the slide, **recompiled on the 1a commit** (free). Step 0 compiled
+  at `3caf03e`; fit-grow has changed since (card text fill, KPI tile sharing). Both arms go through the
+  same compiler, fit-grow and shrink guard, so measure 3 compares layouts, not compiler versions.
+- **(B) nodes** = the generator with the §3.5 node prompt on the same plan, then the node pass (§3.4):
+  derived nodes drawn by the Phase 0b blocks (`expand.py`, extended to read ref tags), native nodes filled
+  by the native fillers (POM's own look, as in A). Same `<Theme>` in both, from the manifest's theme; B's
+  blocks are recoloured from that palette with role-based text colours (§1a) so the blind comparison
+  judges layout and fill, not palette. The palette file is read, not edited (the palette session owns it).
+- B uses the normal validator → compile-repair loop with today's budget; first-try compliance (measure 1)
+  is taken **before** any repair, the repairs are counted in measure 8.
+
+### 4.3 Measures and kill criteria (unchanged criteria; how each is computed)
+
+| # | Measure | How (script) | Pass |
 |---|---|---|---|
-| 1 | **Node compliance, first try** | classify every component: ok / unknown ref / missing / duplicate / kind mismatch / children / bypassed / attr / variant; reported for derived and native separately; slide-level "all ok" reported too | component-level ≥ 90% |
-| 2 | Invented words inside nodes | words in rendered node text (derived and native) not in the plan | 0 |
-| 3 | Broken words, overlapping text | LibreOffice render of the expanded deck vs step 0's `llm.pptx` (`fontcheck.py`, `check.py`) | ≤ off arm |
-| 4 | **Blind side-by-side** | `scripts/node_test_sheet.py`: per slide two images, left / right randomised by a fixed seed, no labels, 4 slides per sheet; you mark 1 / 2 / equal and a reason (readability, fill, overlap, empty, designed); key kept in a separate file | (nodes win + ½ ties) / N ≥ 0.6 |
-| 5 | Within-deck variety | §1b | not > 0.05 below off |
-| 6 | Cross-deck variety (informational, D2) | §1b | reported, not a kill criterion |
-| 7 | Tokens and cost per slide | generator calls in the manifests, input and output separately, vs step 0's generator calls on the same plans (like-for-like). Expected from the 64-slide measurement: output −50 to −67%, input −6 to −9% | informational; flag if input per slide is above off, or output falls < 30% |
-| 8 | Fallback rate | slides with a compile repair, an error code, a retry, `SLIDE_OVERFULL` / `NODE_OVERFULL` | reported; used to size step 2 |
-| 9 | Variant choice (informational) | the variant per node, the default share, the fallback rate per `requires` check | reported |
+| 1 | **Node compliance, first try** | `node_test_score.py` classifies each of the 78 components on B's first XML: ok / unknown ref / missing / duplicate / kind mismatch / children / bypassed / attr / variant (the §3.6 codes, from the validator's own classifier). Derived and native reported separately; slide-level "all ok" too | component-level ≥ 90% (≥ 71 of 78); 86–93% is a re-run decision, not a verdict |
+| 2 | Invented words inside nodes | every word in the drawn text of a node (derived and native) must occur in that component's `content_data` (case- and punctuation-folded; numbers as in the step 0 invented-number check) | 0 |
+| 3 | Broken words, overlapping text | LibreOffice render of both arms, `fontcheck.py` (broken words) + `check.py` (overlaps), per slide | B ≤ A, totals over the 32 slides |
+| 4 | **Blind side-by-side** | `node_test_sheet.py`: per slide A and B images, left / right by a fixed seed (`1a`), no labels, 4 slides per sheet, 8 sheets; you mark 1 / 2 / equal + a reason (readability, fill, overlap, empty, designed); key in a separate file | (B wins + ½ ties) / 32 ≥ 0.6 |
+| 5 | Within-deck variety | `variety.py` (§1b), fine signatures, per deck on its selected slides, averaged over the six decks | B not > 0.05 below A |
+| 6 | Cross-deck variety (D2) | `variety.py`, cross-deck sameness + house-template share | informational |
+| 7 | Tokens and cost per slide | B's generator calls (manifest `steps`, `step == "generator"`, first attempt) vs A's on the same 32 slides from step 0's manifests: input, output, cached separately; repairs separately. **A's baseline on these 32 slides: 11.7k input, 1.04k output tokens per slide, ≈ $0.032 per slide for the generator** (whole step 0: 11.5k / 1.0k, $0.047 per slide all steps) | informational; flag if B's input per slide is above A's, or output falls < 30% |
+| 8 | Fallback rate | slides with a compile repair, a `NODE_*` error, a retry, `SLIDE_OVERFULL` / `NODE_OVERFULL` | reported; sizes step 2 |
+| 9 | Variant choice | variant per node, default share, `requires` fallbacks | informational |
 
-Fail on 1, 2, 3, 4 or 5 → stop nodes, keep blocks: composer + planner `arrangement` field (§14.1
-option 2). With ≈ 60 components the compliance estimate has a ±8-point margin, so a result near 90% is a
-re-run decision, not a verdict (stated in the report next to the number).
+Fail on 1, 2, 3, 4 or 5 → stop nodes, keep blocks: composer + planner `arrangement` field (§14.1 option 2).
 
-**Build before the paid call (all LLM-free):** `scripts/from_plans.py` (the ≈ 30-line loader: a run's
-`slides.json` → `state["slide_plans"]`; the graph's `route_after_start` already skips planning; also
-reads the manifest's theme; Python 3.11-safe), `scripts/node_test.py` (generator-only runner, writes
-skeleton XML + manifest per slide), `src/prompts/generator/nodes_system.j2` (the §3.5 rules) and the
-per-component line renderer, the **native fillers** (one small function per native kind in §3.1, from
-`content_data` to POM children; LLM-free tests per kind), `expand.py` reading ref tags,
-`scripts/node_test_select.py`, `scripts/node_test_score.py`, `scripts/node_test_sheet.py`,
-`scripts/variety.py`, the role-based recolouring in the research renderer. The paid path is exercised
-first by a scripted LLM that returns Phase 0c's 4 skeletons (rewritten to ref tags) plus one deliberately
-broken skeleton per `NODE_*` error, so every classifier branch runs before money is spent. Cost
-≈ **$0.5** (≈ $0.02 per slide, 24 slides). Test PC command (written when built):
-`python -m scripts.node_test --run <step0 folders> --slides docs/eval/step0/1a-slides.json --label 1a`.
-It sends back its output folder (skeleton XML per slide, manifests).
+### 4.4 Files
+
+New (all LLM-free to test; Python 3.11-safe; `test_py311_syntax` covers them):
+
+| File | What |
+|---|---|
+| `src/compiler/nodes/validate.py` | the node pass's checks: parse ref tags, classify each component (§3.6 codes), strip `ref` / `variant` / derived tags' extra attributes, drop children. Used by the scorer, so measure 1 and the pipeline share one classifier |
+| `src/compiler/nodes/native.py` | one filler per native kind (Table, Chart, Ul, Timeline, ProcessArrow, Flow, Pyramid, Tree, Matrix, Text): `content_data` → POM children, verbatim text |
+| `src/compiler/nodes/prompt_lines.py` | one prompt line per component (§3.5: tag, shape hint in lengths, weight, variants whose `requires` hold, from `block-variants.yaml`) |
+| `src/prompts/generator/nodes_system.j2` | the §3.5 rules + the derived tags in the node list + the rewritten examples |
+| `scripts/from_plans.py` | a run's `slides.json` + manifest → `state["slide_plans"]` and theme (`route_after_start` already skips planning) |
+| `scripts/node_test_select.py` | §4.1 → `docs/eval/step0/1a-slides.json` |
+| `scripts/node_test.py` | generator-only runner for arm B: per slide the node prompt, first XML, node pass, compile; writes `output/1a/<label>/<case>/slide-N/{skeleton.xml, expanded.xml, compile-result.json}` + one manifest; `--llm scripted:<dir>` replays fixed responses instead of calling the API; `--off` recompiles arm A |
+| `scripts/node_test_score.py` | measures 1, 2, 3, 7, 8, 9 → `docs/eval/1a/summary.md` + `results.json` |
+| `scripts/node_test_sheet.py` | measure 4 sheets + key |
+| `scripts/variety.py` | measures 5, 6 (§1b), shared with step 3 |
+| `tests/fixtures/nodes/` | m1–m4 rewritten to ref tags; one broken skeleton per `NODE_*` code (§4.6) |
+| `tests/unit/test_nodes_validate.py`, `test_nodes_native.py`, `test_nodes_prompt_lines.py`, `test_node_test_select.py`, `test_variety.py`, `test_node_test_dryrun.py` | per file above |
+
+Changed: `scripts/phase0b/expand.py` (reads ref tags instead of `slot-` ids; native kinds go to `native.py`),
+`scripts/phase0b/render.py` (role-based recolouring from the deck palette), this doc, AGENTS.md.
+Not touched: the graph, `src/node/fit-grow.js`, `palettes.yaml`. The node code sits in `src/compiler/nodes/`
+**unwired** (no `blocks:` setting yet): step 1 wires it if 1a passes; if 1a fails it is removed.
+
+### 4.5 Cost and run order
+
+Per slide for B: input ≈ 11.7k × 0.92 ≈ 10.8k tokens, output ≈ 0.45k (−55%), at gpt-4.1 list price ≈ **$0.026**;
++ ≈ 10% repairs. **32 slides ≈ $0.9** (the $0.5 estimate assumed $0.02 per slide on 24 slides; $0.02 was
+below step 0's measured generator cost). Run order (one case first): `deck-qbr-data` (4 slides, ≈ $0.11),
+check its folder and scores, then the other five in one command. Test PC commands (final form when built):
+
+```bash
+python -m scripts.node_test --run output/step0 --slides docs/eval/step0/1a-slides.json --cases deck-qbr-data --label 1a
+python -m scripts.node_test --run output/step0 --slides docs/eval/step0/1a-slides.json --label 1a --bundle
+```
+
+The test PC needs the four step 0 bundles extracted at the same paths (copy the zips across). It sends back
+the bundle zip (skeleton + expanded XML per slide, manifests). Scoring, renders and sheets run on this PC, free.
+
+### 4.6 Scripted-LLM dry run (before any paid call; all on this PC)
+
+`node_test.py --llm scripted:tests/fixtures/nodes/` swaps the generator's model for a stub that returns a
+fixed XML per (case, slide) and a fixed usage record, so the whole path runs: prompt render → "call" →
+validator → node pass → compile → manifest → scorer → sheets → variety.
+
+| # | Run | Pass when |
+|---|---|---|
+| 1 | **Mechanical skeleton for all 32 slides**: code writes the header copied from the plan + one ref tag per component in a VStack (`grow="1"` each) | every slide expands and compiles; 78 / 78 components ok; measure 2 = 0 (nothing invented by fillers or blocks); every native kind drawn at least once; renders and sheets produced |
+| 2 | **m1–m4 rewritten** (the prompt examples), on their own Phase 0b plans | compile, 100% ok; render matches Phase 0c's (no new overlap / broken word) |
+| 3 | **One broken skeleton per code**: unknown ref, duplicate ref, missing node, missing but hand-built (bypassed), kind mismatch, `ref` on a layer, children inside, content attribute (`chartType`), unknown variant, no size, empty plan, a filler that raises | the scorer reports exactly that code on exactly that component; errors reach the repair path (stub returns the fixed XML on retry), warnings are kept; `NODE_EXPAND_FAILED` leaves an empty box and the slide compiles |
+| 4 | **Prompt size**: render the node prompt for the 32 slides, count tokens (`tiktoken`, gpt-4.1 encoding) | input per slide ≤ A's 11.7k; the printed estimate replaces §4.5's |
+| 5 | **Off arm recompile**: A's 32 saved XML on the current compiler | all compile; broken words / overlaps recorded as A's numbers |
+| 6 | Unit tests | baseline + the new tests, no new failure, `test_py311_syntax` passes |
+
+Only after all six: ask for the paid run with the case list and cost.
 
 ## 5. Open questions: recommendations
 
@@ -441,6 +518,7 @@ tuned in step 1 on the nodes demo render (free).
 | D8 | Label tier (§5.2) | view the test slide first | **decided 2026-10-05: 12 px label floor that grows into spare room, 10 px source lines only, body >= 14 px (user, after viewing the test deck).** Earlier note: scheduled. The free 10 / 11 / 12 / 14 px test slide is built in the step 0 build session; the user views it (100% and projected) and the tier is recorded before step 1. Starting recommendation 12 px labels, 10 px source lines only |
 | D9 | Default-switch gates (§5.3) and fill contract (§5.4) | as written | **decided 2026-10-05: both approved.** `slots` stays opt-in until the five gates hold (a separate decision after step 4); step 2 gains "the edit service re-expands blocks after every edit"; fill numbers tuned in step 1 |
 | D10 | Contract form (§3, §4): named self-closing tags with `ref` for every plan kind except `layer` (derived `KpiRow` / `CardGrid` / `Callout` / `SlideHeader`; native `Table` / `Chart` / `Ul` / `Timeline` / `ProcessArrow` / `Flow` / `Pyramid` / `Tree` / `Matrix` / `Text`, code fills their children), content by reference only, shape hints in each component's prompt line, `NODE_*` codes, setting `blocks: off / nodes` | as written | **decided 2026-10-06 (user): rewrite the contract into the node form** |
+| D11 | 1a made exact on step 0's plans (§4, 2026-10-06 follow-up session): `ref` = the plan's `component_id`; all 32 eligible slides (six decks; CHEFFIN 2, CHEFFIN 3, XTSY 6 out as prompt-example sources; QBR 1, launch 1 out, nothing to place), not ≈ 24; arm A recompiled on the 1a commit; node code in `src/compiler/nodes/`, unwired until step 1; cost ≈ $0.9 (was ≈ $0.5), `deck-qbr-data` first (≈ $0.11); scripted dry run §4.6 before any paid call; card_grid matrix not covered (no such plan in step 0) | as written | **open: waiting for the user** |
 
 ## 7. Step 0 build log (build session 2026-10-06, branch `feat/derived-blocks-step0`)
 
@@ -539,3 +617,14 @@ once after the fix).
 the input cached because the prompt differs per slide), slide planner 25% ($0.43; 85% of its input cached), outline
 3%, reviewer 3%, repairs 1%, elicitor 2%. Baseline for 1a and step 3: **≈ $0.047 per slide, generator input ≈ 11.5k
 tokens per slide** (the step 3 cache comparison starts from 5%). The plan reviewer's confidence score still changes nothing.
+
+### Follow-up session (2026-10-06): merge check, still on hold
+
+Baseline on this PC (`.venv/Scripts/python.exe -m pytest tests/unit -q`; the system `python` lacks `fonttools`):
+**630 pass, 5 fail**: the 4 known plus `test_fit_grow_text.py::test_kpi_row_shares_the_height_a_sparse_callout_took`,
+measured with the font-size session's **uncommitted** `fit-grow.js` edits in the working tree (new phases
+`equalTiles` and `evenStats`; `evenStats` runs after the shrink guard and re-runs it). The test's message string is
+stale ("KPI row takes a share" vs the code's "KPI row beside a sparse text band takes a share") and its KPI number
+comes out 41 px (< 48). Both belong to that session; not edited here. The guard checks (runs last, idempotent, floors)
+and the `fontexp_replay` numbers wait until that work is committed; then the step 0 merge (a fast-forward,
+`feat/derived-blocks` is an ancestor) goes to the user.
