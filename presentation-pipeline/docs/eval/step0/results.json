@@ -1,63 +1,79 @@
 {
   "label": "step0",
-  "created": "2026-10-06T20:29:06",
-  "git_commit": "9191296",
+  "created": "2026-10-06T22:00:43",
+  "git_commit": "3caf03e",
   "models_sha": "2518d873",
   "fit_grow": "1",
   "aggregate": {
-    "runs": 1,
-    "runs_passed": 1,
+    "runs": 6,
+    "runs_passed": 6,
     "runs_errored": 0,
-    "slides": 5,
+    "slides": 37,
     "slide_count_off": 0,
     "compiled_pct": 100.0,
-    "first_pass_pct": 80.0,
-    "mean_retries": 0.2,
-    "cards": 11,
-    "mean_fill": 0.735,
-    "low_fill_pct": 36.4,
-    "auto_fixes_per_slide": 0.8,
-    "layout_issues_per_slide": 0.4,
-    "fit_grow_changes_per_slide": 2.0,
-    "word_breaks_per_slide": 0.0,
+    "first_pass_pct": 94.6,
+    "mean_retries": 0.05,
+    "cards": 156,
+    "mean_fill": 0.831,
+    "low_fill_pct": 20.5,
+    "auto_fixes_per_slide": 1.03,
+    "layout_issues_per_slide": 0.73,
+    "fit_grow_changes_per_slide": 2.86,
+    "word_breaks_per_slide": 0.16,
     "text_overflows_per_slide": 0.0,
     "table_spill_slides": 0,
     "table_spill_px": 0,
     "tables_overfull_slides": 0,
     "empty_cells": 0,
     "invented_numbers": 0,
-    "tokens_in": 130640,
-    "tokens_out": 24950,
-    "cost_usd": 0.2036,
-    "elapsed_s": 254.1,
+    "tokens_in": 967699,
+    "tokens_out": 243157,
+    "cost_usd": 1.7357,
+    "elapsed_s": 2457.8,
     "auto_fix_codes": {
-      "TEXT_WHITESPACE_TRIMMED": 3,
-      "ATTR_CONFLICT_FIXED": 1
+      "TEXT_WHITESPACE_TRIMMED": 12,
+      "ATTR_CONFLICT_FIXED": 10,
+      "GROW_ROWS_ADDED": 6,
+      "ZERO_SPACING": 5,
+      "AMPERSAND_ESCAPED": 4,
+      "UNKNOWN_ICON_REMOVED": 1
     },
     "blocking_codes": {
+      "INVALID_VALUE": 4,
       "PARSE_ERROR": 1
     },
     "blocking_messages": {
-      "PARSE_ERROR: <Shape>: Cannot parse JSON value: \"2563EB\"": 1
+      "PARSE_ERROR: <Shape>: Cannot parse JSON value: \"2563EB\"": 1,
+      "INVALID_VALUE: <Shape>: Invalid value for attribute \"shapeType\". Expected: \"accentBorderCallout1\", \"accentBorderCallout2\", \"accentBorderCallout3\", \"accentCallout1\", \"accentCallout2\", \"accentCallout3\", \"actionButtonB": 1
     },
     "layout_codes": {
-      "LOW_CONTRAST": 2
+      "LOW_CONTRAST": 14,
+      "DEEP_NESTING": 12,
+      "COL_WIDTH_SUM": 1
     },
     "card_patterns": {
-      "text_card": 4,
-      "kpi_tile": 3,
-      "dark_panel": 2,
-      "chart_card": 1,
-      "table_card": 1
+      "text_card": 95,
+      "dark_panel": 26,
+      "kpi_tile": 24,
+      "table_card": 7,
+      "chart_card": 4
     },
     "component_kinds": {
-      "title": 5,
-      "kpi_row": 2,
-      "narrative": 2,
-      "chart": 1,
-      "table": 1,
-      "caption": 1,
-      "card_grid": 1
+      "title": 37,
+      "narrative": 19,
+      "card_grid": 16,
+      "bullet_list": 12,
+      "caption": 10,
+      "kpi_row": 8,
+      "table": 7,
+      "chart": 4,
+      "timeline": 3,
+      "process_arrow": 2,
+      "layer": 2,
+      "flow": 2,
+      "pyramid": 1,
+      "matrix": 1,
+      "tree": 1
     }
   },
   "cases": [
@@ -404,6 +420,3092 @@
         "overfull": []
       },
       "bundle": "step0-20261006-202429"
+    },
+    {
+      "name": "deck-product-launch-data",
+      "repeat": 1,
+      "run_id": "deck-product-launch-data-dbee2f",
+      "passed": true,
+      "error": null,
+      "tokens_in": 149736,
+      "tokens_out": 31504,
+      "cost": 0.235879,
+      "elapsed": 357.9,
+      "expected_slides": 6,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "hero",
+              "design_hint": "color the key phrase 'Zero downtime' in the accent (positive) color to emphasize the promise"
+            }
+          ],
+          "cards": [],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "GROW_ROWS_ADDED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 16 -> 22pt), spacing x1.40, fill 20% -> 34%",
+            "slide 1: text x1.00 (e.g. 22 -> 22pt), spacing x1.40, fill 24% -> 24%",
+            "slide 1: text x1.99 (e.g. 23 -> 24pt), spacing x1.40, fill 25% -> 26%",
+            "slide 1: text x1.00 (e.g. 22 -> 22pt), spacing x1.40, fill 25% -> 25%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'blind spots' in warning (amber) to draw attention"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "hero",
+              "design_hint": "color-code by meaning: emphasize the outage bullet (\"68% of outages last quarter traced to gateway misconfiguration\") in negative (red) and bold it; add a small problem icon beside each bullet"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.782,
+              "frame": [
+                38,
+                143,
+                1204,
+                539
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 14 -> 22pt), spacing x1.40, fill 30% -> 55%",
+            "slide 1: text x1.00 (e.g. 22 -> 22pt), spacing x1.40, fill 52% -> 56%",
+            "slide 1: heading 4 -> 5 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 4 -> 5 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 4 -> 6 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase \"single pipeline\" in the headline to emphasize consolidation"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "steps layout; show numbered tags (Step 1..5) and an icon in each card; use an inverted/dark panel treatment on the Scale card to signal production readiness"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.552,
+              "frame": [
+                38,
+                118,
+                198,
+                564
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.552,
+              "frame": [
+                255,
+                118,
+                235,
+                564
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.552,
+              "frame": [
+                509,
+                118,
+                198,
+                564
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.62,
+              "frame": [
+                726,
+                118,
+                246,
+                564
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.552,
+              "frame": [
+                991,
+                118,
+                251,
+                564
+              ]
+            }
+          ],
+          "word_breaks": 1,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: KPI values x1.72 (34 -> 58px), fill 20% -> 27%",
+            "slide 1: text x1.99 (e.g. 14 -> 22pt), spacing x1.40, fill 32% -> 43%",
+            "slide 1: text x1.99 (e.g. 22 -> 22pt), spacing x1.40, fill 39% -> 42%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'sharp reductions' in the subtitle with the positive/accent color to reinforce impact"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "color-code by meaning: decreases (Config Time, Outages, API Latency) in negative color, Dev NPS increase in positive color; emphasize (bold) the delta strings and make the delta visually prominent next to each value"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.629,
+              "frame": [
+                36,
+                156,
+                377,
+                528
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.435,
+              "frame": [
+                442,
+                156,
+                349,
+                528
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.435,
+              "frame": [
+                820,
+                156,
+                231,
+                528
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.435,
+              "frame": [
+                1080,
+                156,
+                164,
+                528
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 16 -> 23pt), spacing x1.40, fill 37% -> 42%"
+          ],
+          "components": [
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "Emphasize the caption 'TIMELINE' as a subtle eyebrow above the title"
+            },
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "Color the phrase 'GA and compliance' to emphasize enterprise focus"
+            },
+            {
+              "kind": "timeline",
+              "weight": "hero",
+              "design_hint": "Horizontal timeline with milestone callouts; emphasize the Feb 2027 GA launch milestone with a larger callout and color-code the Apr 2027 SOC2 + HIPAA milestone as the compliance/enterprise milestone"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.361,
+              "frame": [
+                38,
+                143,
+                1204,
+                539
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 5,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 16 -> 22pt), spacing x1.40, fill 19% -> 31%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "emphasize the phrase 'Get started with Nexus' (title); keep subtitle smaller and muted"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "hero",
+              "design_hint": "icon beside each point; color the dates (Dec 2026, Feb 2027) as accent and bold the action verbs (Request, Join, Contact)"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize the phrase 'SOC2 + HIPAA certification' subtly (muted footnote style) so it reads as supporting context"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.314,
+              "frame": [
+                40,
+                119,
+                1200,
+                525
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        }
+      ],
+      "composed": {
+        "slides": 6,
+        "code": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "llm": [],
+        "left_out": [],
+        "smaller_type": {},
+        "overfull": []
+      },
+      "bundle": "step0-20261006-205449"
+    },
+    {
+      "name": "gate-deck-agency-takeover",
+      "repeat": 1,
+      "run_id": "gate-deck-agency-takeover-9e546e",
+      "passed": true,
+      "error": null,
+      "tokens_in": 161381,
+      "tokens_out": 48974,
+      "cost": 0.315545,
+      "elapsed": 513.7,
+      "expected_slides": 6,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 15 -> 22pt), spacing x1.40, fill 26% -> 47%",
+            "slide 1: text x1.99 (e.g. 15 -> 22pt), fill 58% -> 71%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'Campaign-purpose governance' in the title to draw focus"
+            },
+            {
+              "kind": "chart",
+              "weight": "hero",
+              "design_hint": "accent the Generic search bar (primary leak) and the Brand bar; mute the other bars"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "emphasize the two values (₹10.0L and ₹9.7K); mark the spend (₹10.0L) in negative color to show the leak"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "bold the opening phrase and use a positive accent for the recommended action"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "chart_card",
+              "fill": 1.0,
+              "frame": [
+                36,
+                137,
+                715,
+                359
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.964,
+              "frame": [
+                767,
+                137,
+                477,
+                180
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.77,
+              "frame": [
+                36,
+                514,
+                1208,
+                170
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "GROW_ROWS_ADDED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 3
+          },
+          "fit_grow": [
+            "slide 1: table columns -> [77, 72, 69, 56, 62, 62] (fewest wrapped lines)",
+            "slide 1: main table into spare height: cell text x1.25 (14 -> 17px), rows 160 -> 236px",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: table cell text 17 -> 14px (a word is wider than its column)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'Exact match outperforms' to draw attention"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize the kicker label as a compact identifier"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "color-code ROAS <0.4 in the table as negative (shade Phrase Match and Broad Match rows); accent the Exact Match row as the best performer"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "supporting",
+              "design_hint": "present city cards in a heatmap tone; invert/highlight the Bengaluru card to show its ~0.45x ROAS"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "peer",
+              "design_hint": "color-code winners green and weak terms red; bold the winners line to call out where to scale"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on this recommendation card and color the phrase 'Scale exact winners' as the positive action"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize the '0.5x ROAS' value in the caption"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.591,
+              "frame": [
+                36,
+                183,
+                320,
+                311
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.989,
+              "frame": [
+                372,
+                183,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.989,
+              "frame": [
+                663,
+                183,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.989,
+              "frame": [
+                954,
+                183,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.989,
+              "frame": [
+                372,
+                276,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.989,
+              "frame": [
+                663,
+                276,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.989,
+              "frame": [
+                954,
+                276,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.99,
+              "frame": [
+                372,
+                369,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.99,
+              "frame": [
+                663,
+                369,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.99,
+              "frame": [
+                954,
+                369,
+                279,
+                83
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.905,
+              "frame": [
+                36,
+                510,
+                623,
+                174
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.996,
+              "frame": [
+                675,
+                510,
+                569,
+                174
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "GROW_ROWS_ADDED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: main table into spare height: cell text x1.20 (15 -> 18px), rows 140 -> 192px",
+            "slide 1: text x1.99 (e.g. 16 -> 23pt), spacing x1.40, fill 48% -> 53%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase \"not governed tightly enough by economics\" in a warning color to call out the headline"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "shade the CPC column and color the CPC cells (₹31.1, ₹46.2) in negative color to emphasize they exceed allowable; accent border on the card"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "supporting",
+              "design_hint": "color platform leakage text (the platform lines) in negative color and color each card's Fix phrase in positive; include a small icon in each card to denote 'gap' vs 'fix'"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.323,
+              "frame": [
+                38,
+                181,
+                451,
+                501
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.994,
+              "frame": [
+                507,
+                181,
+                235,
+                244
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.96,
+              "frame": [
+                756,
+                181,
+                235,
+                244
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.994,
+              "frame": [
+                1006,
+                181,
+                236,
+                244
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.867,
+              "frame": [
+                507,
+                439,
+                235,
+                241
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.989,
+              "frame": [
+                756,
+                439,
+                235,
+                241
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "TEXT_WHITESPACE_TRIMMED": 1,
+            "GROW_ROWS_ADDED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.30 (e.g. 18 -> 20pt), spacing x1.40, fill 50% -> 67%",
+            "slide 1: text x1.00 (e.g. 20 -> 20pt), spacing x1.24, fill 60% -> 62%",
+            "slide 1: text x1.00 (e.g. 20 -> 20pt), spacing x1.40, fill 54% -> 58%",
+            "slide 1: text x1.15 (e.g. 20 -> 21pt), spacing x1.40, fill 66% -> 70%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color a key phrase — highlight the words 'profit-led' in the title to tie the visual theme to the pillars"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "six equal cards in a balanced 3x2 grid; icon in each tile; color a key phrase via the title treatment (tie to the highlighted 'profit-led' in the slide_title); lift / elevate the card grid"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.615,
+              "frame": [
+                40,
+                123,
+                377,
+                234
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.615,
+              "frame": [
+                452,
+                123,
+                376,
+                234
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.615,
+              "frame": [
+                863,
+                123,
+                377,
+                234
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.579,
+              "frame": [
+                40,
+                383,
+                383,
+                297
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.579,
+              "frame": [
+                449,
+                383,
+                382,
+                297
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.712,
+              "frame": [
+                857,
+                383,
+                383,
+                297
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: text x1.17 (e.g. 14 -> 16pt), fill 76% -> 86%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize the '30/60/90-Day Takeover Roadmap' kicker"
+            },
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase \"stop leakage\" for emphasis"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "steps layout; visually pair the two Days 0–7 cards as Stabilize platform callouts (platform tag in each card); color-code reduction actions in negative color and protections in positive color; dark/inverted panel on the Days 31–90 (Scale) card to highlight the scaling phase"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the component card to separate the tactical summary from the steps"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.988,
+              "frame": [
+                36,
+                186,
+                1208,
+                102
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.762,
+              "frame": [
+                36,
+                304,
+                332,
+                380
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.957,
+              "frame": [
+                382,
+                304,
+                278,
+                380
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.861,
+              "frame": [
+                674,
+                304,
+                281,
+                380
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.861,
+              "frame": [
+                969,
+                304,
+                275,
+                380
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 5,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 16 -> 22pt), spacing x1.40, fill 45% -> 85%",
+            "slide 1: text x1.00 (e.g. 22 -> 22pt), spacing x1.40, fill 66% -> 66%",
+            "slide 1: heading 8 -> 10 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase \"sharper operator\" in the title for emphasis"
+            },
+            {
+              "kind": "narrative",
+              "weight": "hero",
+              "design_hint": "dark / inverted panel for a big quoted block; color the phrase \"structured, data-led marketplace growth system\" in positive/accent"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point; color-code the platform names ([Platform B], [Platform A]) as accent; bold the \"Recommended next step\" line to stand out"
+            },
+            {
+              "kind": "narrative",
+              "weight": "minor",
+              "design_hint": "accent border on this card; color the phrase \"immediate improvement areas\" for emphasis"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.791,
+              "frame": [
+                40,
+                117,
+                543,
+                493
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.833,
+              "frame": [
+                621,
+                117,
+                619,
+                493
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.972,
+              "frame": [
+                40,
+                628,
+                1200,
+                52
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        }
+      ],
+      "composed": {
+        "slides": 6,
+        "code": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "llm": [],
+        "left_out": [],
+        "smaller_type": {
+          "2": 0.68,
+          "3": 0.92,
+          "5": 0.92
+        },
+        "overfull": [
+          2
+        ]
+      },
+      "bundle": "step0-20261006-205449"
+    },
+    {
+      "name": "gate-deck-xtsy-qcomm",
+      "repeat": 1,
+      "run_id": "gate-deck-xtsy-qcomm-e0b808",
+      "passed": true,
+      "error": null,
+      "tokens_in": 218167,
+      "tokens_out": 65792,
+      "cost": 0.424086,
+      "elapsed": 623.0,
+      "expected_slides": 8,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 18 -> 24pt), spacing x1.40, fill 23% -> 27%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'XTSY' in the headline to draw attention"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "icon in each tile; lift the cards slightly and add an accent border to mark this as the ecosystem hero"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the card and color the phrase 'significant opportunity for XTSY to scale' to emphasize the strategic point"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize the label as a small, distinct kicker above the headline"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.962,
+              "frame": [
+                36,
+                137,
+                383,
+                123
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.962,
+              "frame": [
+                448,
+                137,
+                384,
+                123
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.962,
+              "frame": [
+                861,
+                137,
+                383,
+                123
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.979,
+              "frame": [
+                36,
+                605,
+                1208,
+                79
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1,
+            "GROW_ROWS_ADDED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.59 (e.g. 14 -> 18pt), spacing x1.40, fill 57% -> 74%",
+            "slide 1: text x1.25 (e.g. 18 -> 20pt), spacing x1.40, fill 67% -> 74%",
+            "slide 1: text x1.99 (e.g. 15 -> 22pt), fill 55% -> 81%",
+            "slide 1: heading 2 -> 3 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "emphasize the phrase 'Why the Energy Drink Category is Built for Quick Commerce' with the kicker understated"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "emphasize the 'Late-night work/study' node; color-code impulse occasions (Gaming sessions, Late-night work/study, Party & social occasions, Instant energy requirements) in the accent color and mute the rest"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "color the phrase 'highly compatible with Quick Commerce' in the positive accent color and add an accent border to this supporting card"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "peer",
+              "design_hint": "icon beside each bullet; color 'Impulse purchase behaviour' in the accent color to draw attention"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.831,
+              "frame": [
+                36,
+                115,
+                385,
+                208
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.831,
+              "frame": [
+                447,
+                115,
+                386,
+                208
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.831,
+              "frame": [
+                859,
+                115,
+                385,
+                208
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.805,
+              "frame": [
+                36,
+                349,
+                385,
+                185
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.805,
+              "frame": [
+                447,
+                349,
+                386,
+                185
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.805,
+              "frame": [
+                859,
+                349,
+                385,
+                185
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.975,
+              "frame": [
+                36,
+                552,
+                733,
+                132
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.896,
+              "frame": [
+                785,
+                552,
+                459,
+                132
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ZERO_SPACING": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "DEEP_NESTING": 12
+          },
+          "fit_grow": [
+            "slide 1: text x1.30 (e.g. 14 -> 18pt), spacing x1.04, fill 67% -> 72%",
+            "slide 1: text x1.00 (e.g. 18 -> 18pt), spacing x1.04, fill 69% -> 71%",
+            "slide 1: text x1.00 (e.g. 20 -> 20pt), spacing x1.04, fill 70% -> 72%",
+            "slide 1: text x1.99 (e.g. 18 -> 22pt), fill 65% -> 87%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: word \"Zepto\" wider than its box: text 18 -> 16px",
+            "slide 1: word \"Blinkit\" wider than its box: text 18 -> 16px",
+            "slide 1: word \"Blinkit\" wider than its box: text 16 -> 14px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the subtitle 'OPPORTUNITY MATRIX' in accent to read as a kicker"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "render a 4x3 matrix grid background with column headers (Zepto · Blinkit · Instamart); show one card per row with the row title; accent border on the matrix panel and an icon in each row card header; treat the separate opportunity_areas bullet_list as callouts anchored to the matrix"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point; treat each bullet as an external callout annotation to the matrix (neutral color-coded callouts)"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the narrative card; color the phrase \"visibility, availability, discoverability and repeat purchase\" to tie it visually to the matrix rows"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.999,
+              "frame": [
+                38,
+                117,
+                853,
+                495
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.714,
+              "frame": [
+                60,
+                186,
+                267,
+                90
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.714,
+              "frame": [
+                327,
+                291,
+                267,
+                90
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.732,
+              "frame": [
+                594,
+                395,
+                267,
+                89
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.714,
+              "frame": [
+                594,
+                500,
+                267,
+                90
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.998,
+              "frame": [
+                910,
+                135,
+                332,
+                459
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.972,
+              "frame": [
+                38,
+                630,
+                1204,
+                52
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": false,
+          "retries": 1,
+          "max_tier": 1,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1
+          },
+          "blocking": {
+            "INVALID_VALUE": 4
+          },
+          "blocking_msgs": [
+            "INVALID_VALUE: <Shape>: Invalid value for attribute \"shapeType\". Expected: \"accentBorderCallout1\", \"accentBorderCallout2\", \"accentBorderCallout3\", \"accentCallout1\", \"accentCallout2\", \"accentCallout3\", \"actionButtonB"
+          ],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.05 (e.g. 14 -> 15pt), spacing x1.07, fill 62% -> 68%",
+            "slide 1: word \"Profitability\" wider than its box: process step 15 -> 14px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase \"4-Phase Framework\" for emphasis"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "steps layout with numbered Phase tags; icon in each card; dark/inverted panel on the \"Phase 4: Scale & Profitability\" card to emphasize the destination"
+            },
+            {
+              "kind": "process_arrow",
+              "weight": "supporting",
+              "design_hint": "color-code the steps to show forward progression and accent the final \"Profitability\" step"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.996,
+              "frame": [
+                38,
+                123,
+                270,
+                283
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.996,
+              "frame": [
+                323,
+                123,
+                280,
+                283
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.868,
+              "frame": [
+                618,
+                123,
+                293,
+                283
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.868,
+              "frame": [
+                926,
+                123,
+                316,
+                283
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 1.0,
+              "frame": [
+                38,
+                560,
+                1204,
+                122
+              ]
+            }
+          ],
+          "word_breaks": 1,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: word \"performance\" wider than its box: text 16 -> 14px",
+            "slide 1: word \"opportunity\" wider than its box: text 16 -> 14px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'Commerce Intelligence' in the headline"
+            },
+            {
+              "kind": "layer",
+              "weight": "hero",
+              "design_hint": "lift the dashboard panel; accent border on the component; emphasize the KPI tiles inside the dashboard"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "peer",
+              "design_hint": "icon in each tile; lift the card to separate from the page background"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "peer",
+              "design_hint": "icon in each tile; emphasize the 'City-level opportunity mapping' card"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "color the word 'measured' in accent to emphasize the principle"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.997,
+              "frame": [
+                36,
+                111,
+                1208,
+                173
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.986,
+              "frame": [
+                60,
+                175,
+                336,
+                85
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.986,
+              "frame": [
+                414,
+                175,
+                404,
+                85
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.986,
+              "frame": [
+                836,
+                175,
+                384,
+                85
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.831,
+              "frame": [
+                36,
+                300,
+                189,
+                171
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.994,
+              "frame": [
+                237,
+                300,
+                190,
+                171
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.999,
+              "frame": [
+                439,
+                300,
+                189,
+                171
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.981,
+              "frame": [
+                36,
+                483,
+                290,
+                132
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.981,
+              "frame": [
+                338,
+                483,
+                290,
+                132
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.923,
+              "frame": [
+                646,
+                300,
+                139,
+                240
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.913,
+              "frame": [
+                797,
+                300,
+                139,
+                240
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.996,
+              "frame": [
+                948,
+                300,
+                139,
+                240
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.855,
+              "frame": [
+                1099,
+                300,
+                139,
+                240
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 1.0,
+              "frame": [
+                36,
+                631,
+                1208,
+                53
+              ]
+            }
+          ],
+          "word_breaks": 4,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 5,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: flow nodes -> {\"nodeWidth\":150,\"nodeHeight\":127,\"nodeGap\":24}",
+            "slide 1: text x1.99 (e.g. 14 -> 22pt), spacing x1.40, fill 35% -> 57%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the word \"Automation\" in the headline with the deck's accent color"
+            },
+            {
+              "kind": "flow",
+              "weight": "hero",
+              "design_hint": "accent the 'Decision Engine' node; color the optimization nodes (the 'Bid Optimization Budget Reallocation Keyword Expansion Placement Optimization' node) in positive color and emphasize branching arrows from Decision Engine to those optimizations"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "color-code these benefits in the positive color; put an icon beside each point and visually emphasize the 'Improved ROAS' bullet"
+            },
+            {
+              "kind": "narrative",
+              "weight": "minor",
+              "design_hint": "color the phrase 'hours instead of weeks' in the positive color and lift/elevate this card as a short callout"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.693,
+              "frame": [
+                36,
+                115,
+                738,
+                467
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.988,
+              "frame": [
+                36,
+                598,
+                738,
+                86
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.988,
+              "frame": [
+                792,
+                236,
+                452,
+                327
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 6,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ZERO_SPACING": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 14 -> 22pt), spacing x1.40, fill 40% -> 67%",
+            "slide 1: text x1.00 (e.g. 22 -> 22pt), spacing x1.40, fill 44% -> 45%",
+            "slide 1: text x1.00 (e.g. 22 -> 22pt), spacing x1.40, fill 67% -> 78%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the word \"BUSINESS IMPACT\" in the accent color to read as the kicker"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "dark / inverted panel on the Growth Impact Framework card; upward-arrow icon in the card header; color positive growth lanes in the positive color to emphasize upward motion"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "icon beside each point (up-arrow); color-code each item with an upward arrow in the positive color"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the card; color the phrase \"scalable growth engine\" in the positive accent color to stand out"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.928,
+              "frame": [
+                36,
+                261,
+                731,
+                156
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.937,
+              "frame": [
+                36,
+                435,
+                731,
+                102
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.991,
+              "frame": [
+                796,
+                160,
+                448,
+                478
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 7,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "AMPERSAND_ESCAPED": 1,
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 15 -> 22pt), fill 69% -> 84%",
+            "slide 1: heading 3 -> 4 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 3 -> 4 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the subtitle '90-DAY ROADMAP' in accent"
+            },
+            {
+              "kind": "timeline",
+              "weight": "hero",
+              "design_hint": "emphasize Month 3 as the outcome; apply a color progression from Month 1 → Month 3 and lift the timeline card"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the card; color the phrase 'Winning Quick Commerce' to draw attention"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.894,
+              "frame": [
+                40,
+                119,
+                1200,
+                449
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.929,
+              "frame": [
+                40,
+                586,
+                1200,
+                94
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        }
+      ],
+      "composed": {
+        "slides": 8,
+        "code": [
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8
+        ],
+        "llm": [
+          5
+        ],
+        "left_out": [],
+        "smaller_type": {
+          "3": 0.92
+        },
+        "overfull": []
+      },
+      "bundle": "step0-20261006-212134"
+    },
+    {
+      "name": "gate-deck-all-nodes-dense",
+      "repeat": 1,
+      "run_id": "gate-deck-all-nodes-dense-19de34",
+      "passed": true,
+      "error": null,
+      "tokens_in": 149763,
+      "tokens_out": 33558,
+      "cost": 0.274839,
+      "elapsed": 312.8,
+      "expected_slides": 6,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "hero",
+              "design_hint": "emphasize the subtitle; color the phrase '90-day plan' as an accent"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize 'October 2026' in the caption"
+            }
+          ],
+          "cards": [],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: hero stat x1.87 (64 -> 120px), fill 44% -> 66%",
+            "slide 1: text x1.99 (e.g. 14 -> 20pt), fill 66% -> 72%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'Repeat customers' in the headline to draw attention"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "peer",
+              "design_hint": "highlight the 'Revenue growth' tile in positive color and keep the 'Customer acquisition cost' tile visually muted"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "emphasize the 'Repeat revenue share' tile as the hero: color the 62% in positive and bold the delta 'up from 41% a year ago'"
+            },
+            {
+              "kind": "chart",
+              "weight": "supporting",
+              "design_hint": "accent the latest bar (Q2 FY27) with the deck accent color; mute earlier bars to show upward trend"
+            },
+            {
+              "kind": "narrative",
+              "weight": "minor",
+              "design_hint": "color the phrase 'retention and pricing' to link it visually to the hero number; lift the card slightly"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                36,
+                135,
+                287,
+                93
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                337,
+                135,
+                277,
+                93
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                628,
+                135,
+                263,
+                93
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.988,
+              "frame": [
+                905,
+                135,
+                339,
+                93
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.714,
+              "frame": [
+                36,
+                244,
+                715,
+                376
+              ]
+            },
+            {
+              "pattern": "chart_card",
+              "fill": 0.999,
+              "frame": [
+                767,
+                244,
+                477,
+                376
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.972,
+              "frame": [
+                36,
+                636,
+                1208,
+                48
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "ZERO_SPACING": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: table squeezed 25px: rows 190 -> 129px, box protected (minH)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color a key phrase: emphasize 'website' in the subtitle with the positive color"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "shade the Website row and emphasize the 64% Gross Margin cell in the positive color; lift the card slightly"
+            },
+            {
+              "kind": "pyramid",
+              "weight": "supporting",
+              "design_hint": "emphasize the top level 'Category leadership' with the positive color and lift the pyramid card"
+            },
+            {
+              "kind": "matrix",
+              "weight": "supporting",
+              "design_hint": "color-code low-effort, high-impact items (Bundle offers, Referral program) in the positive color; mark 'Loyalty app' (high effort, low impact) with a warning tone; add an accent border on the card"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.976,
+              "frame": [
+                36,
+                134,
+                1208,
+                196
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.954,
+              "frame": [
+                36,
+                348,
+                685,
+                292
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.894,
+              "frame": [
+                739,
+                348,
+                505,
+                336
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ZERO_SPACING": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: processArrow nodes -> {\"itemHeight\":120,\"itemWidth\":312,\"fontSize\":20}",
+            "slide 1: tree nodes -> {\"nodeWidth\":175,\"nodeHeight\":62,\"levelGap\":70,\"siblingGap\":29}"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'one platform' to emphasize the single-platform constraint"
+            },
+            {
+              "kind": "process_arrow",
+              "weight": "hero",
+              "design_hint": "emphasize the Roast → Pack → Dispatch → Deliver flow and highlight the 'Dispatch' step; accent border on the component's card"
+            },
+            {
+              "kind": "tree",
+              "weight": "supporting",
+              "design_hint": "emphasize the 'Head of Growth' node; lift / elevate the card"
+            },
+            {
+              "kind": "layer",
+              "weight": "supporting",
+              "design_hint": "show layers stacked top-to-bottom; color-code the Channels layer with the accent color and use an accent border on the component's card"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.899,
+              "frame": [
+                38,
+                141,
+                1204,
+                237
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.948,
+              "frame": [
+                38,
+                396,
+                715,
+                286
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 1.0,
+              "frame": [
+                771,
+                396,
+                471,
+                286
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.864,
+              "frame": [
+                789,
+                444,
+                340,
+                220
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "UNKNOWN_ICON_REMOVED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: flow nodes -> {\"nodeWidth\":141,\"nodeHeight\":119,\"nodeGap\":29}",
+            "slide 1: text x1.00 (e.g. 15 -> 15pt), spacing x1.40, fill 62% -> 72%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'one decision flow' in accent to draw attention"
+            },
+            {
+              "kind": "timeline",
+              "weight": "hero",
+              "design_hint": "emphasize the 2025: DASHCART listing marker; lift / elevate the card"
+            },
+            {
+              "kind": "flow",
+              "weight": "supporting",
+              "design_hint": "emphasize the 'Bought before?' decision node; color the 'Yes: Subscription offer' branch positive and the 'No: Trial pack' branch neutral"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "minor",
+              "design_hint": "bold the 'Returning buyers never see the trial pack' bullet as the primary rule; accent border on the card to make this a compact callout"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.745,
+              "frame": [
+                38,
+                143,
+                1204,
+                244
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.804,
+              "frame": [
+                38,
+                405,
+                832,
+                277
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.772,
+              "frame": [
+                888,
+                405,
+                354,
+                277
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 5,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ZERO_SPACING": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 14 -> 22pt), spacing x1.40, fill 45% -> 64%",
+            "slide 1: text x1.99 (e.g. 14 -> 22pt), fill 64% -> 83%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase '90-day plan' as an accent in the title"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize the kicker 'ROADMAP' so it reads as a small, strong label"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "icon in each tile; dark / inverted panel for the pillars band to mark it as the hero row"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "supporting",
+              "design_hint": "steps layout with connecting arrows; accent border on the 'Month 3 Scale' card to show the execution focus"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.72,
+              "frame": [
+                38,
+                143,
+                1204,
+                319
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.982,
+              "frame": [
+                56,
+                205,
+                273,
+                195
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.837,
+              "frame": [
+                355,
+                205,
+                272,
+                195
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.982,
+              "frame": [
+                653,
+                205,
+                273,
+                195
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.982,
+              "frame": [
+                952,
+                205,
+                272,
+                195
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.825,
+              "frame": [
+                38,
+                480,
+                339,
+                202
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.825,
+              "frame": [
+                417,
+                480,
+                308,
+                202
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.825,
+              "frame": [
+                765,
+                480,
+                477,
+                202
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        }
+      ],
+      "composed": {
+        "slides": 6,
+        "code": [
+          1,
+          2,
+          5,
+          6
+        ],
+        "llm": [
+          3,
+          4
+        ],
+        "left_out": [],
+        "smaller_type": {},
+        "overfull": []
+      },
+      "bundle": "step0-20261006-212134"
+    },
+    {
+      "name": "gate-deck-cheffin-full",
+      "repeat": 1,
+      "run_id": "gate-deck-cheffin-full-cdfc75",
+      "passed": true,
+      "error": null,
+      "tokens_in": 158012,
+      "tokens_out": 38379,
+      "cost": 0.281727,
+      "elapsed": 396.3,
+      "expected_slides": 6,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 2
+          },
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 18 -> 22pt), spacing x1.40, fill 16% -> 23%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "hero",
+              "design_hint": "Color the phrase \"FLIPCART & ZAROMA\" using brand accents (FLIPCART orange, ZAROMA purple) and include a marketplace growth visual cue integrated with the title text"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "Emphasize the single-line author note 'Prepared by our agency' as a subtle caption (small, subdued) aligned bottom-right"
+            }
+          ],
+          "cards": [],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: KPI values x1.87 (32 -> 60px), fill 34% -> 45%",
+            "slide 1: text x1.55 (e.g. 14 -> 17pt), spacing x1.23, fill 51% -> 58%",
+            "slide 1: text x1.00 (e.g. 17 -> 17pt), spacing x1.40, fill 53% -> 56%",
+            "slide 1: text x1.99 (e.g. 15 -> 22pt), spacing x1.40, fill 52% -> 69%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: word \"₹114.9L\" wider than its box: text 60 -> 51px",
+            "slide 1: word \"₹114.9L\" wider than its box: text 51 -> 45px",
+            "slide 1: word \"₹114.9L\" wider than its box: text 45 -> 41px",
+            "slide 1: word \"₹114.9L\" wider than its box: text 41 -> 38px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'spending at scale' to emphasize the scale problem"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "highlight the Combined ROAS tile as the primary concern; color-code the ROAS tiles (Combined ROAS, FLIPCART ROAS, ZAROMA ROAS) in the negative color palette; lift the KPI card"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on the card and lift it; color the phrase 'media economics' to draw attention"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.554,
+              "frame": [
+                36,
+                176,
+                215,
+                290
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.682,
+              "frame": [
+                272,
+                176,
+                273,
+                290
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.682,
+              "frame": [
+                566,
+                176,
+                212,
+                290
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.682,
+              "frame": [
+                799,
+                176,
+                212,
+                290
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.682,
+              "frame": [
+                1032,
+                176,
+                212,
+                290
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.723,
+              "frame": [
+                36,
+                484,
+                1208,
+                200
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1,
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: main table into spare height: cell text x1.20 (15 -> 18px), rows 120 -> 288px",
+            "slide 1: table columns widened for words wider than their column -> [108, 74, 109, 122]"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'CPC is nearly 3x higher' in the negative color to emphasize the problem; keep 'CORE ECONOMICS' as a subtle kicker"
+            },
+            {
+              "kind": "chart",
+              "weight": "hero",
+              "design_hint": "highlight the 'Actual CPC' series in negative color and use a muted color for 'Allowable CPC'; lift the card so the chart reads as the hero visual"
+            },
+            {
+              "kind": "table",
+              "weight": "supporting",
+              "design_hint": "shade the 'Multiple of allowable' column and color the '~2.9x allowable' and '~3.1x allowable' cells in negative color to call out the gap"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "accent border on this insight card; color the phrase 'CPC reduction, CVR improvement, AOV improvement' as the recommended fixes"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "chart_card",
+              "fill": 1.0,
+              "frame": [
+                36,
+                139,
+                738,
+                469
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.366,
+              "frame": [
+                792,
+                139,
+                452,
+                469
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.94,
+              "frame": [
+                36,
+                626,
+                1208,
+                58
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "GROW_ROWS_ADDED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'raw performance data' to emphasize provenance"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "inverted panel on the ZAROMA campaign-level card (primary totals); icon in each tile"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "accent border on the component card; color the phrases 'unreliable or zeroed' and 'primary platform total source' in warning"
+            },
+            {
+              "kind": "bullet_list",
+              "weight": "supporting",
+              "design_hint": "accent border on the component card; color the phrase 'Allowable CPC for 1.0x ROAS' to draw attention"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "text_card",
+              "fill": 0.56,
+              "frame": [
+                36,
+                115,
+                387,
+                145
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.982,
+              "frame": [
+                437,
+                115,
+                386,
+                145
+              ]
+            },
+            {
+              "pattern": "dark_panel",
+              "fill": 0.827,
+              "frame": [
+                837,
+                115,
+                387,
+                145
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.978,
+              "frame": [
+                36,
+                274,
+                387,
+                125
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.978,
+              "frame": [
+                437,
+                274,
+                386,
+                125
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.781,
+              "frame": [
+                36,
+                417,
+                592,
+                267
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.996,
+              "frame": [
+                646,
+                417,
+                592,
+                267
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: KPI values x1.87 (32 -> 60px), fill 33% -> 46%",
+            "slide 1: KPI values x2.30 (26 -> 60px), fill 38% -> 61%",
+            "slide 1: text x1.99 (e.g. 14 -> 20pt), spacing x1.40, fill 59% -> 68%",
+            "slide 1: text x1.99 (e.g. 20 -> 24pt), spacing x1.40, fill 63% -> 67%",
+            "slide 1: text x1.22 (e.g. 14 -> 15pt), spacing x1.12, fill 68% -> 72%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'weak revenue efficiency' in warning color to draw attention"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "make this the hero KPI row; highlight the ROAS tile in negative color and add a small status dot on the ROAS tile; include an icon in each tile"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "supporting",
+              "design_hint": "color-code CPC tile in negative and Allowable CPC tile in positive to show the gap; include an icon in each tile"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "color the phrase 'almost 3x higher' in negative and lift/elevate the card as an insight callout"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.709,
+              "frame": [
+                36,
+                139,
+                408,
+                260
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.709,
+              "frame": [
+                466,
+                139,
+                409,
+                260
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.709,
+              "frame": [
+                897,
+                139,
+                347,
+                260
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.806,
+              "frame": [
+                36,
+                417,
+                306,
+                191
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.806,
+              "frame": [
+                356,
+                417,
+                268,
+                191
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.806,
+              "frame": [
+                638,
+                417,
+                286,
+                191
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.806,
+              "frame": [
+                938,
+                417,
+                306,
+                191
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.928,
+              "frame": [
+                36,
+                626,
+                1208,
+                58
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 5,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "COL_WIDTH_SUM": 1
+          },
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: table columns -> [288, 111] (fewest wrapped lines)",
+            "slide 1: text x1.99 (e.g. 16 -> 23pt), spacing x1.40, fill 61% -> 67%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'SBT' in positive color and emphasize the kicker 'DIAGNOSIS · FLIPCART' as a small prefix"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "shade the SBT row in positive color (best); mark the SP row in negative color (inefficient); emphasize the ROAS column"
+            },
+            {
+              "kind": "table",
+              "weight": "supporting",
+              "design_hint": "color-code ROAS by meaning: highlight Exact in positive color and mark Broad and Audience in negative color; bold the Exact row"
+            },
+            {
+              "kind": "narrative",
+              "weight": "minor",
+              "design_hint": "color the key phrase 'Exact match and SBT' in positive color and lift/elevate the card for emphasis"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.568,
+              "frame": [
+                36,
+                174,
+                661,
+                414
+              ]
+            },
+            {
+              "pattern": "table_card",
+              "fill": 0.672,
+              "frame": [
+                715,
+                174,
+                529,
+                414
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.987,
+              "frame": [
+                36,
+                606,
+                1208,
+                78
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        }
+      ],
+      "composed": {
+        "slides": 6,
+        "code": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "llm": [],
+        "left_out": [],
+        "smaller_type": {
+          "4": 0.85
+        },
+        "overfull": []
+      },
+      "bundle": "step0-20261006-215340"
     }
   ]
 }

@@ -515,3 +515,27 @@ twice, between whitespace) becomes "·" again, any other XML-illegal character i
 planner's output, the slide planner's `content_data` and every generator / repair XML in `normalize_xml`
 (`ILLEGAL_CHARS_REMOVED` issue). `eval_run` scoring survives an unreadable slide (`score_error`). Lesson for the
 runs: one case at a time, `find_nul` before re-running.
+
+### Step-end run result (test PC, 2026-10-06; imported to `docs/eval/step0/`)
+
+Six cases, 37 slides, **$1.74** (estimate $1.8), no run errored, 6 of 6 passed, compiled 100%, first pass 94.6% (hold-out
+was 94%), invented numbers 0, mean card fill 0.83, `find_nul` 0 on all six decks, composed decks 204-319 KB with 4-6
+subset font parts. Run in three terminals at once (the output-folder collision fix made that safe). Order of events:
+the first attempt of `deck-qbr-data` crashed on NUL characters from the outline planner (see above; $0.19 spent, re-run
+once after the fix).
+
+| Check (§2 acceptance) | Result |
+|---|---|
+| no empty component, instruction text or duplicate item left in any plan | **yes, all six** (`plan_flags_report --recheck`: 0 plans with problems) |
+| every manifest step named, with slide index, reasoning and cached tokens | **yes** (100 calls: generator 37, slide planner 43, outline 6, reviewer 6, elicitor 6, repairer 2) |
+| re-asks | **6 in 37 slides, $0.062 in total** (3.6% of cost); reasons: instruction / speaker-notes text (agency, xtsy, qbr), a footnote false positive (launch 6, fixed) |
+| thin slides reported (`SLIDE_SPARSE`) | qbr 1, launch 2, xtsy 1, others 0; report only |
+| duplicate dropped | launch 3 (chevrons vs cards, as on the hold-out) |
+| shrink guard | `WORD_TOO_WIDE` warnings reach the critic; xtsy has 5 word breaks on 8 slides, the rest 0-1 |
+| font embedding | active on the composed decks (6 faces, ≤ 319 KB); the LLM decks name no font, so none embedded, as designed |
+| PowerPoint opens `composed.pptx` with Inter drawn (the user's check, also covers `saveSubsetFonts`) | **still to confirm** |
+
+**Where the money goes (all six, list price):** generator 66% ($1.15; 11.5k tokens in and 1.0k out per slide, only 5% of
+the input cached because the prompt differs per slide), slide planner 25% ($0.43; 85% of its input cached), outline
+3%, reviewer 3%, repairs 1%, elicitor 2%. Baseline for 1a and step 3: **≈ $0.047 per slide, generator input ≈ 11.5k
+tokens per slide** (the step 3 cache comparison starts from 5%). The plan reviewer's confidence score still changes nothing.
