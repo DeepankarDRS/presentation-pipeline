@@ -123,11 +123,14 @@ text node, using the real font widths (`fontRegistry.hasFont`; other fonts keep 
 
 ### 0.4 finding that changes the stated plan: embed at deck level, in Python
 
-The kickoff says "in `pptx-post.js`". `pptx-post.js` runs once **per slide** (each slide compiles to
-its own one-slide pptx); `deck_assembler` then merges them with `merge_pptx_files`, which keeps only
-the first file's `presentation.xml`. Per-slide embedding would put fonts in slide 1 only and could
-not subset by the deck's characters. So embedding happens **after the merge** (and for a one-slide
-run, on that file). Details:
+The kickoff says "in `pptx-post.js`". **Correction (2026-10-06, build session):** the first version of this
+paragraph said `pptx-post.js` runs only per slide. That was wrong for the main path: `deck_assembler`
+compiles the combined deck XML in one `buildPptx`, so `pptx-post.js` does see the whole deck there. What is
+still true: every slide also compiles to its own one-slide pptx (critic screenshots), and the ZIP-merge
+fallback (`merge_pptx_files`) keeps only the first file's `presentation.xml`. Embedding **after assembly,
+in Python** (`src/compiler/font_embed.py`, called by `deck_assembler` for the final file whichever path made
+it, and by the evaluator for a one-slide run) covers both paths in one place, leaves the per-slide files
+alone, and needs only `fonttools` for subsetting (the Node side would need a new subsetting library). Details:
 - Embed only families the deck's slide XML names and whose files exist in `src/node/fonts/`; faces
   regular / bold (the folder's italics are skipped like in POM's registry, since JetBrains Mono has none).
 - **Subset** to Basic Latin + Latin-1 + General Punctuation + ₹ € £ + the arrows / maths the blocks
@@ -358,3 +361,66 @@ tuned in step 1 on the nodes demo render (free).
 | D7 | Checking-loop principle §5.1 | as written | **decided 2026-10-05: principle approved**; thresholds, code-fix list and tier-2 promotion scheduled for step 2 from 1a's data |
 | D8 | Label tier (§5.2) | view the test slide first | **decided 2026-10-05: scheduled.** The free 10 / 11 / 12 / 14 px test slide is built in the step 0 build session; the user views it (100% and projected) and the tier is recorded before step 1. Starting recommendation 12 px labels, 10 px source lines only |
 | D9 | Default-switch gates (§5.3) and fill contract (§5.4) | as written | **decided 2026-10-05: both approved.** `slots` stays opt-in until the five gates hold (a separate decision after step 4); step 2 gains "the edit service re-expands blocks after every edit"; fill numbers tuned in step 1 |
+
+## 7. Step 0 build log (build session 2026-10-06, branch `feat/derived-blocks-step0`)
+
+All LLM-free; one paid run still to do (§2). Baseline before the first change: **572 pass, 4 known failures**
+(the same four). **After step 0: 619 pass, the same 4 known failures** (47 new tests: usage logging 7, plan checks 20,
+shrink guard 11, font embedding 9; one existing test, `test_extract_usage_reads_reasoning_tokens`, pinned the
+exact usage dict and now expects `tokens_cached`). Commits: 0.1 `178244b`, 0.2 `e57fb9b`, 0.3 `fa43cc4`,
+0.4 + docs in the commit after it.
+
+**0.1 Usage logging.** `llm_client.usage_record(usage, step, slide_index)` + `tokens_cached`
+(`prompt_tokens_details.cached_tokens`); `AttemptRecord` carries `step`, `slide_index`, `tokens_reasoning`,
+`tokens_cached`, `reask`; the 12 `generation_history` writers use it. Two calls that were not recorded at all
+now are: the planner re-plan inside the compile repairer's REGENERATE and inside the visual repairer's
+REGENERATE. Manifest `steps` entries and `tokens.total_reasoning` / `total_cached`;
+`python -m scripts.usage_report <folders>` (`--per-slide`); the eval bundle copies `run-manifest.json` into
+`decks/<case>__rN/`. Old manifests read as step "unknown".
+
+**0.2 Plan checks and one re-ask** (`src/agents/plan_checks.py`, `plan_with_reask` in
+`slide_component_planner.py`, `scripts/plan_flags_report.py`). As §2, with these differences found while
+calibrating on the 17 hold-out plans:
+- **C17 keeps the component with more text, not the hero** (launch 3: chevrons with 5 words vs cards with 53
+  words of descriptions; keeping the hero would have thrown the descriptions away). The kept one takes the
+  better weight. Rule recorded here because §14.6 / the reviewer doc say "keep the hero".
+- Thin-slide estimate in units: KPI tile 3, card 2, chart 10, a table at least the limit (so a table slide is
+  never thin), list items 1 + words / 12; limit 9. On the hold-out it flags QBR 5, launch 2, launch 6 and agency 5
+  (after its speaker-notes narrative is dropped), not QBR 2–4, launch 3–4, agency 1–4 or 6.
+- Hold-out result: instruction text found on 8 of 17 slides (QBR 3, 4; agency 1–6, all of them speaker notes
+  or "Walk through…" paragraphs), card bodies repeating the title on agency 4, the empty `kpi_row` on launch 5
+  (the empty caption beside it is dropped without a re-ask), the chevron / card duplicate on launch 3.
+- **False-positive pass:** 169 unique saved slides with content (every `slides.json` under `output/runs/` and the
+  `llm_test/` zips): 0 instruction text, 0 duplicates, 0 repeated bodies, 6 empty components (single-component
+  test runs that never went through the planner), 6 thin slides (3.6%).
+- A planner that fails twice gives `plan_source: "fallback"`: the outline's own content lines as one bullet list
+  (copied), or no components when there are none, flagged `PLAN_EMPTY`; never the silent `components: []`.
+- Found, not fixed (outside step 0): `slide_replanner.resolve_slide_plan` unpacks `plan_single_slide`'s return as
+  a plan, but it returns `(plan, usage)`; the unit tests mock the function, so the UI "revise with feedback" path
+  that replans a slide would raise a `TypeError` for a real call.
+
+**0.3 Shrink guard** (`src/node/fit-grow.js`, last phase; fixtures `tests/fixtures/shrink_guard/`). As §2 with
+these rules, found by replaying R1's 28 saved LLM slides (Inter added, fit-grow on, scored with `fontcheck.py`
+on the LibreOffice render; `output/fontexp3/`, replay script in the session scratchpad):
+- First version (shrink every too-wide word to the floor): broken words 7 → 6, but it **moved** a break: shrinking
+  "Projected" narrowed its content-sized KPI tile and broke "₹59.8" beside it (gj-h1 slide 14).
+- Final rule: every edit is tried and kept only if the slide's **total overflow in px goes down** and no piece
+  elsewhere is newly too wide. Table columns use the existing 85% inset margin (a 95% first try broke "Type" /
+  "Search" in a 6-column table). Floors: 14 px, 28 px for a number or title. Scope: text, `Ul` / `Ol`,
+  `ProcessArrow` labels, table cells. Not covered: Flow, Tree, Timeline, Pyramid, Matrix labels.
+- **Result: broken words 7 → 5, none new** (fixed: "Economics", "Diagnostics"; left: "Governance", "Recalculation",
+  "Recommendation" in a 6-column table, "₹1.80", "Projected"). The plan's "≤ 2 left" is **not met**: the five left
+  are boxes too narrow for the word at the floor size (the layout, not the type, is wrong); each carries a
+  `WORD_TOO_WIDE` compile warning (≤ 5 per slide, read by the critic), which the checking loop of step 2 will act on.
+  Some warnings are conservative (the 85% table margin): 12 on the 28 slides for 5 real breaks.
+
+**0.4 Font embedding** (`src/compiler/font_embed.py`; deck_assembler and the evaluator call it; compose_deck uses
+it; `scripts/embed_fonts.py` keeps its CLI). See the correction in §2. Three faces (Inter regular + bold,
+JetBrains Mono regular) add **148 KB** to a deck zipped (323 KB of raw EOT, 94–116 KB per subset face; the full
+fonts are 411 / 420 / 274 KB). LibreOffice opens the result. `saveSubsetFonts="1"` is set next to
+`embedTrueTypeFonts="1"` (as PowerPoint's own subset embedding); R4 passed without it, so the PowerPoint check
+below also covers it. Not embedded: the per-slide files; fonts the deck does not name (the LLM path names none).
+
+**Label tier (D8).** `python -m scripts.label_sizes` builds `output/label-test/label-sizes.pptx` (light and dark
+slide, the same mono label at 10 / 11 / 12 / 14 px as a kicker, a KPI tile label and a table caption); sent to
+the user for the projected view. The decision is the user's, recorded here when given.

@@ -11,6 +11,7 @@ fastapi>=0.115,<1
 uvicorn[standard]>=0.30,<1
 lxml>=5,<7
 pillow>=10,<13       # real text widths for the code composer (scripts/phase0b)
+fonttools>=4.50,<5   # subset-embed the open fonts a deck names (src/compiler/font_embed.py)
 
 # screenshot rendering fallback (Windows + PowerPoint only)
 comtypes>=1.4,<2; sys_platform == "win32"

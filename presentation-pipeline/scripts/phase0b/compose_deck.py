@@ -22,18 +22,11 @@ import re
 import sys
 from pathlib import Path
 
-from scripts.embed_fonts import embed
 from scripts.phase0b.fit import Measurer
 from scripts.phase0b.replay import deck_name, replay
 from scripts.render_check import _compile
+from src.compiler.font_embed import embed_deck_fonts
 from src.compiler.pptx_merge import merge_pptx_files
-
-FONTS_DIR = Path(__file__).resolve().parents[2] / "src" / "node" / "fonts"
-FONTS = {
-    "Inter": {"regular": "Inter-Regular.ttf", "bold": "Inter-Bold.ttf",
-              "italic": "Inter-Italic.ttf", "boldItalic": "Inter-BoldItalic.ttf"},
-    "JetBrains Mono": {"regular": "JetBrainsMono-Regular.ttf", "bold": "JetBrainsMono-Bold.ttf"},
-}
 
 
 def run_folder(path: Path) -> Path:
@@ -87,7 +80,7 @@ def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm") -> dic
 
     merged = merge_pptx_files(pptx, out / "merged.pptx")
     final = out / "composed.pptx"
-    embed(merged, final, {f: {k: FONTS_DIR / v for k, v in faces.items()} for f, faces in FONTS.items()})
+    embed_deck_fonts(merged, final)  # the open fonts the slides name, subset (src/compiler/font_embed.py)
     merged.unlink()  # same slides without the fonts: only an intermediate step
     fits = [r.get("fit") or {} for r in report["per_slide"]]
     return {

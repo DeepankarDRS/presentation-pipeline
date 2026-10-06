@@ -15,57 +15,12 @@ from __future__ import annotations
 
 import argparse
 import re
-import struct
 import zipfile
 from pathlib import Path
 
+from src.compiler.font_embed import eot
+
 REL_FONT = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font"
-
-
-def _tables(ttf: bytes) -> dict[str, bytes]:
-    num = struct.unpack(">H", ttf[4:6])[0]
-    out = {}
-    for i in range(num):
-        tag, _, off, length = struct.unpack(">4sIII", ttf[12 + 16 * i: 28 + 16 * i])
-        out[tag.decode("latin1")] = ttf[off: off + length]
-    return out
-
-
-def _name(names: bytes, name_id: int) -> str:
-    count, start = struct.unpack(">HH", names[2:6])
-    for i in range(count):
-        pid, eid, lid, nid, length, off = struct.unpack(">HHHHHH", names[6 + 12 * i: 18 + 12 * i])
-        if nid == name_id and pid == 3 and eid in (0, 1, 10):
-            return names[start + off: start + off + length].decode("utf-16-be")
-    return ""
-
-
-def eot(ttf: bytes) -> bytes:
-    """Uncompressed EOT (spec version 0x00020001) wrapping a TrueType file."""
-    t = _tables(ttf)
-    os2, head, names = t["OS/2"], t["head"], t["name"]
-    panose = os2[32:42]
-    weight = struct.unpack(">H", os2[4:6])[0]
-    fs_type = struct.unpack(">H", os2[8:10])[0]
-    ur = struct.unpack(">IIII", os2[42:58])
-    fs_selection = struct.unpack(">H", os2[62:64])[0]
-    cpr = struct.unpack(">II", os2[78:86]) if len(os2) >= 86 else (0, 0)
-    checksum_adj = struct.unpack(">I", head[8:12])[0]
-
-    def s(text: str) -> bytes:
-        raw = text.encode("utf-16-le")
-        return struct.pack("<H", len(raw)) + raw
-
-    body = (panose + struct.pack("<BBI", 1, 1 if fs_selection & 1 else 0, weight)
-            + struct.pack("<HH", fs_type, 0x504C) + struct.pack("<IIII", *ur) + struct.pack("<II", *cpr)
-            + struct.pack("<I", checksum_adj) + struct.pack("<IIII", 0, 0, 0, 0)
-            + struct.pack("<H", 0) + s(_name(names, 1))
-            + struct.pack("<H", 0) + s(_name(names, 2))
-            + struct.pack("<H", 0) + s(_name(names, 5))
-            + struct.pack("<H", 0) + s(_name(names, 4))
-            + struct.pack("<H", 0) + s(""))
-    header_size = 4 * 4 + len(body)  # EOTSize, FontDataSize, Version, Flags
-    return struct.pack("<IIII", header_size + len(ttf), len(ttf), 0x00020001, 0) + body + ttf
 
 
 def embed(src: Path, dst: Path, fonts: dict[str, dict[str, Path]]) -> None:

@@ -61,7 +61,7 @@ def test_extract_usage_reads_reasoning_tokens():
         },
     })
     assert extract_usage(response) == {
-        "tokens_in": 1200, "tokens_out": 3000, "tokens_reasoning": 2500, "model": "gpt-5-mini",
+        "tokens_in": 1200, "tokens_out": 3000, "tokens_reasoning": 2500, "tokens_cached": 0, "model": "gpt-5-mini",
     }
 
 

@@ -19,6 +19,7 @@ from typing import Any
 
 from src.compiler.compiler_client import CompilerError, compile_xml
 from src.compiler.normalizer import ensure_single_theme, normalize_xml, strip_theme
+from src.compiler.font_embed import embed_deck_fonts, embed_warnings
 from src.compiler.pptx_merge import merge_pptx_files
 from src.state import PresentationState
 
@@ -226,6 +227,15 @@ def deck_assembler_node(state: PresentationState) -> dict[str, Any]:
         merge_result = _zip_merge_fallback(good_slides, output_dir)
         if merge_result:
             compile_result = merge_result
+
+    if compile_result.get("ok", False) and compile_result.get("pptx_path"):
+        # the final deck file (combined compile or ZIP merge): the per-slide files are not embedded
+        fonts = embed_deck_fonts(Path(compile_result["pptx_path"]))
+        if fonts["embedded"]:
+            logger.info("deck_assembler: embedded " + ", ".join(f"{e['family']} {e['face']}" for e in fonts["embedded"])
+                        + f" (+{fonts['added_bytes'] // 1024} KB)")
+        if fonts["skipped"]:
+            compile_result = {**compile_result, "warnings": [*compile_result.get("warnings", []), *embed_warnings(fonts)]}
 
     status = "OK" if compile_result.get("ok", False) else "FAILED"
     logger.info(f"deck_assembler: final {status}")

@@ -87,7 +87,7 @@ and the exact test-device commands plus the list of files to email back.
 git pull
 git checkout feat/derived-blocks-step0        # the session branch named by the build session
 senv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements.txt     # step 0 added fonttools
 npm install --prefix src/node
 ```
 

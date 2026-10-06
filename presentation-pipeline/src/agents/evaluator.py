@@ -22,6 +22,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from src.compiler.font_embed import embed_deck_fonts
 from src.compiler.screenshot import render_screenshots
 from src.state import PresentationState
 from src.utils.llm_client import get_pricing
@@ -193,6 +194,10 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
     run_id = state.get("run_id", "")
     compile_result = state.get("compile_result") or {}
     history = state.get("generation_history", [])
+
+    # a one-slide run ends here with the slide's own file (decks are embedded by deck_assembler)
+    if not state.get("completed_slides") and compile_result.get("ok") and compile_result.get("pptx_path"):
+        embed_deck_fonts(Path(compile_result["pptx_path"]))
 
     # Deck path: the critic runs per-slide and slide_router captures each verdict.
     # Single-slide path: the critic's verdict is on state directly.
