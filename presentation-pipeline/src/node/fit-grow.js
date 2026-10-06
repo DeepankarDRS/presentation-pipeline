@@ -811,6 +811,13 @@ function statRow(n) {
   return tiles.length >= 2 && tiles.every(statAnchor);
 }
 
+// The other way round too: when the KPI row is the one growing band, its tiles stretch to
+// the slide's spare height around a label and a number while the callout under it stays one
+// cramped line (2026-10-06 neutral-kpi run: tiles ~400px tall, ~90px of content). A boxed
+// text band without grow / h beside it gets the same grow; growStats and growText fill both.
+const textBand = (c) => c.id && STACKS.has(c.type) && hasBoxStyle(c) && !hasRigid(c) && !statRow(c)
+  && textTargets(c).length && c.h === undefined && c.grow === undefined;
+
 async function shareHeight(xml, report) {
   const L = await layout(xml);
   const edits = [];
@@ -821,16 +828,23 @@ async function shareHeight(xml, report) {
       const growing = kids.filter((c) => c.grow !== undefined);
       if (growing.length !== 1) return;
       const g = growing[0];
-      if (!g.id || !STACKS.has(g.type) || hasRigid(g) || statRow(g) || !textTargets(g).length) return;
+      if (!g.id || !STACKS.has(g.type) || hasRigid(g) || !textTargets(g).length) return;
       if (fill(g, L).ratio >= LOW_FILL) return;
+      if (statRow(g)) {
+        for (const r of kids) if (r !== g && textBand(r)) edits.push([r.id, g.grow, "text"]);
+        return;
+      }
       for (const r of kids) {
-        if (r !== g && r.id && statRow(r) && r.h === undefined && r.grow === undefined) edits.push([r.id, g.grow]);
+        if (r !== g && r.id && statRow(r) && r.h === undefined && r.grow === undefined) edits.push([r.id, g.grow, "kpi"]);
       }
     });
   } finally { L.free(); }
-  for (const [id, grow] of edits) {
-    xml = setAttrs(xml, id, { grow });
-    report.push(`KPI row takes a share of the spare height (grow=${grow}) beside a sparse text band`);
+  for (const [id, grow, what] of edits) {
+    // a text band's type stops at its cap: centred, the rest of its share is even padding
+    const band = what === "text" && !/\sjustifyContent\s*=/.test(xml.slice(findElement(xml, id).start, findElement(xml, id).openEnd));
+    xml = setAttrs(xml, id, band ? { grow, justifyContent: "center" } : { grow });
+    report.push(what === "text" ? `text band takes a share of the spare height (grow=${grow}) beside a sparse KPI row`
+      : `KPI row takes a share of the spare height (grow=${grow}) beside a sparse text band`);
   }
   return xml;
 }
@@ -1528,6 +1542,29 @@ async function guardWords(xml, report, warnings) {
   return xml;
 }
 
+// --- phase 6: the numbers of a KPI row keep one size ---------------------------
+// The guard shrinks one word at a time, so one tile's number could end smaller than its
+// peers' ("₹114.9L" 41px beside four at 60px). Peer numbers take the smallest size in the row
+// (user, 2026-10-04: peers share a size); a smaller size never makes a word wider.
+
+async function evenStats(xml, report) {
+  const L = await layout(xml);
+  const rows = [];
+  try {
+    for (const root of L.slides) walk(root, (n) => {
+      if (!statRow(n)) return;
+      const anchors = n.children.filter((c) => STACKS.has(c.type) && c.id).map(statAnchor);
+      const fs = anchors.map((a) => a.fontSize ?? 24);
+      if (Math.max(...fs) - Math.min(...fs) >= 1) rows.push({ anchors, fs, min: Math.min(...fs) });
+    });
+  } finally { L.free(); }
+  for (const r of rows) {
+    r.anchors.forEach((a, i) => { if (r.fs[i] > r.min) xml = scaleTextFont(xml, a.id, r.min / r.fs[i], Infinity); });
+    report.push(`KPI values share one size (${Math.max(...r.fs)} -> ${r.min}px)`);
+  }
+  return xml;
+}
+
 // --- entry ----------------------------------------------------------------------
 
 /** One slide (with the document's <Theme> prefix) through every phase. */
@@ -1543,7 +1580,14 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
+  const w0 = warnings.length;
   xml = await guardWords(xml, report, warnings);
+  const evened = await evenStats(xml, report);
+  if (evened !== xml) {
+    // the guard's findings were taken at the old sizes: take them again
+    warnings.length = w0;
+    xml = await guardWords(evened, report, warnings);
+  }
   return report.length ? untag(xml) : inputXml;
 }
 
