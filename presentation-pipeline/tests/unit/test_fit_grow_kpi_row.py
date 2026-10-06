@@ -35,3 +35,21 @@ def test_kpi_values_of_a_row_are_evened_after_the_guard(tmp_path):
     values = {int(v) for v in re.findall(r'<Text[^>]*\sfontSize="(\d+)" color="\$textMain" bold="true">', on["xml"])}
     assert len(values) == 1 and values.pop() < 60, on["fitGrow"]
     assert any("KPI values share one size" in r for r in on["fitGrow"]), on["fitGrow"]
+
+
+def test_a_kpi_row_is_evened_even_when_the_guard_takes_a_number_below_24px(tmp_path):
+    """gj-h1 Blinkit (6 narrow tiles): the guard took "₹7.31" 24 -> 17px; a tile whose number is
+    under 24px no longer counts as a stat tile, so the row was found too late and stayed
+    23 / 17 / 24 / 24 / 24 / 24px. Rows are now found before the guard."""
+    tile = ('<VStack w="104" padding="12" gap="4" backgroundColor="$surfaceAlt">'
+            '<Text fontSize="12" color="$textMuted">{label}</Text>'
+            '<Text fontSize="24" color="$textMain" bold="true">{value}</Text></VStack>')
+    tiles = "".join(tile.format(label=l, value=v) for l, v in
+                    [("Sales", "₹1.32Cr"), ("Spend", "₹7.31L"), ("CPM", "₹36"), ("ROAS", "6.3x"), ("ACOS", "15%")])
+    xml = tmp_path / "t.xml"
+    xml.write_text('<Theme surfaceAlt="FFFFFF" textMain="16202E" textMuted="55627A" /><Slide>'
+                   f'<VStack w="1280" h="720" padding="36" gap="18"><HStack gap="10">{tiles}</HStack></VStack></Slide>',
+                   encoding="utf-8")
+    on = _compile(xml, tmp_path / "on")
+    values = [int(v) for v in re.findall(r'<Text[^>]*\sfontSize="(\d+)" color="\$textMain" bold="true">', on["xml"])]
+    assert len(values) == 5 and len(set(values)) == 1 and values[0] < 24, (values, on["fitGrow"])

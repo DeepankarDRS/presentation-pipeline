@@ -1547,19 +1547,38 @@ async function guardWords(xml, report, warnings) {
 // peers' ("₹114.9L" 41px beside four at 60px). Peer numbers take the smallest size in the row
 // (user, 2026-10-04: peers share a size); a smaller size never makes a word wider.
 
-async function evenStats(xml, report) {
+// The rows are found BEFORE the guard: statRow needs each tile's number >= 24px, and the guard
+// can take one below it (gj-h1 Blinkit: "₹7.31" 24 -> 17px), after which the row was no longer
+// recognised and stayed 23 / 17 / 24 / 24 / 24 / 24px.
+
+/** The KPI rows of the slide: per row, its tiles' ids and their numbers' ids. */
+async function statRows(xml) {
   const L = await layout(xml);
   const rows = [];
   try {
     for (const root of L.slides) walk(root, (n) => {
       if (!statRow(n)) return;
-      const anchors = n.children.filter((c) => STACKS.has(c.type) && c.id).map(statAnchor);
-      const fs = anchors.map((a) => a.fontSize ?? 24);
-      if (Math.max(...fs) - Math.min(...fs) >= 1) rows.push({ anchors, fs, min: Math.min(...fs) });
+      const tiles = n.children.filter((c) => STACKS.has(c.type) && c.id);
+      rows.push({ tiles: tiles.map((c) => c.id), ids: tiles.map((c) => statAnchor(c).id) });
     });
   } finally { L.free(); }
-  for (const r of rows) {
-    r.anchors.forEach((a, i) => { if (r.fs[i] > r.min) xml = scaleTextFont(xml, a.id, r.min / r.fs[i], Infinity); });
+  return rows;
+}
+
+async function evenStats(xml, report, rows) {
+  const L = await layout(xml);
+  const uneven = [];
+  try {
+    for (const { tiles, ids } of rows) {
+      const fs = ids.map((id) => L.byId.get(id)?.fontSize ?? 24);
+      if (Math.max(...fs) - Math.min(...fs) >= 1) uneven.push({ tiles, ids, fs, min: Math.min(...fs) });
+    }
+  } finally { L.free(); }
+  for (const r of uneven) {
+    // tiles sized by their content narrow when their number shrinks and squeeze their labels
+    // ("ACOS" broke at 17px): they keep the width they have
+    xml = await pinWidths(xml, r.tiles);
+    r.ids.forEach((id, i) => { if (r.fs[i] > r.min) xml = scaleTextFont(xml, id, r.min / r.fs[i], Infinity); });
     report.push(`KPI values share one size (${Math.max(...r.fs)} -> ${r.min}px)`);
   }
   return xml;
@@ -1581,10 +1600,13 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
   const w0 = warnings.length;
+  const rows = await statRows(xml);
   xml = await guardWords(xml, report, warnings);
-  const evened = await evenStats(xml, report);
-  if (evened !== xml) {
-    // the guard's findings were taken at the old sizes: take them again
+  // even, then guard again (its findings were taken at the old sizes); the guard can shrink
+  // one number a step further, so repeat until nothing changes (sizes only go down)
+  for (let round = 0; round < 4; round++) {
+    const evened = await evenStats(xml, report, rows);
+    if (evened === xml) break;
     warnings.length = w0;
     xml = await guardWords(evened, report, warnings);
   }
