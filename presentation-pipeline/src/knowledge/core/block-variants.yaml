@@ -1,0 +1,243 @@
+# pom-knowledge/core/block-variants.yaml   (DRAFT 2026-10-06, not read by code yet)
+# The ONE place the ref-node tags and their `variant` names are stated (node contract,
+# docs/derived-blocks-planning-2026-10-06.md §3, decision D10). The generator prompt
+# renders each component's line from it, and the node pass reads it. A test fails when a
+# prompt or knowledge file names a tag or variant that is not here (the same pattern as
+# capacity.yaml). What each variant LOOKS like: docs/block-variants-look-spec.md.
+#
+# The LLM writes one self-closing tag per plan component: <KpiRow ref="c2" variant="inverted" />.
+# Content always comes from the plan by `ref`; code writes the inside of the node.
+#
+# Per block:
+#   tag        the tag the LLM writes (derived tags are not POM; native tags are POM nodes
+#              whose children code fills in)
+#   family     derived (code draws a block) | native (POM draws; code fills children)
+#   plan_kind  the plan kind(s) this block takes
+#
+# A variant is a STYLE the LLM picks. Fitting the content (number size, columns,
+# rows, tiers, re-flow) is the block's job and never a variant: blocks never reword
+# or drop text to fit (Genspark learnings 2, 5).
+#
+# Per variant:
+#   prompt    one short phrase shown to the generator after the name
+#   draw      native (POM's own drawing, code-filled children) | block (code draws).
+#             Default: block on a derived tag, native on a native tag. A block variant on a
+#             native tag replaces the native node with a block of the same box (step 1 on).
+#   requires  named checks on the plan component (list below); all must hold.
+#             A variant whose requires fail is left out of that component's prompt line,
+#             and if the LLM writes it anyway the node pass uses `fallback`
+#             (warning NODE_VARIANT_UNMET, with the failed check).
+#   fallback  next variant to try; the chain ends at the block's default
+#   emphasis  the variant draws ONE item differently; which item comes from the
+#             `emphasis_from` sources of the block, in order, never from the LLM
+#
+# The first variant of a block is its default (no `variant`, or an unknown name).
+#
+# Checks used in `requires` (implemented once in the node pass):
+#   count_eq_1        the component has exactly one item
+#   count_ge_3        three or more items
+#   one_singled_out   an emphasis source names exactly one item
+#   not_matrix        card_layout is not "matrix"
+#   all_titles_numbered_ok   no card already starts with its own number or phase tag
+#                            ("Phase 1: ..."), which the numerals would repeat
+#   has_tones         at least one item carries a non-neutral tone (see Tones)
+#
+# Emphasis sources (in order; the first that names an item wins):
+#   design_hint   the planner's hint names the item next to inverted / featured /
+#                 highlight (today's `_named_in_hint`, hint-capabilities inverted_panel)
+#   headline      the slide headline contains the item's value or label (KPI only)
+#   destination   the last step of an ordered sequence (user rule 2026-09-29)
+#   priority      matrix cells the plan marks as priority (user rule 2026-09-29)
+#
+# Tones (added 2026-10-06): the slide component planner writes one tone per item,
+# from the meaning of the number, not its direction (churn down = good):
+#   kpi_row    content_data.kpi_tones: ["good" | "bad" | "watch" | "", ...]
+#   card_grid  cards[i].tone:          "good" | "bad" | "watch" | ""
+# Code maps them to palette roles (good -> positive, bad -> negative, watch -> warning,
+# "" -> neutral) in EVERY variant: the KPI note line takes the tone colour. Only the
+# `toned` card variant also tints the card. A tone is never shown as a word: a card's
+# label is its plan `tag` ("GROWTH", "WATCH") or nothing.
+
+version: 1
+
+blocks:
+
+  # ── derived tags: code draws the block ────────────────────────────────────────
+
+  kpi_row:
+    tag: KpiRow
+    family: derived
+    plan_kind: kpi_row
+    emphasis_from: [design_hint, headline]
+    variants:
+      plain:
+        prompt: "light tiles, numbers in ink"
+      filled:
+        prompt: "every tile tinted with the accent"
+      inverted:
+        prompt: "one dark tile for the number the slide is about"
+        requires: [count_ge_3, one_singled_out]   # with 2 tiles an inverted one reads as a pair, not a focus
+        emphasis: true
+        fallback: plain
+      hero:
+        prompt: "one large dark tile, the change in a pill"
+        requires: [count_eq_1]
+        fallback: inverted
+      bare:
+        prompt: "numbers and labels only, no tiles (a supporting row, a dark band)"
+
+  card_grid:
+    tag: CardGrid
+    family: derived
+    plan_kind: card_grid
+    layouts: [grid, matrix]
+    emphasis_from: [design_hint, priority]
+    variants:
+      outline:
+        prompt: "hairline cards on the background"
+      filled:
+        prompt: "cards on a light panel, no border"
+      featured:
+        prompt: "one large dark card, the rest beside it"
+        requires: [count_ge_3, one_singled_out, not_matrix]
+        emphasis: true
+        fallback: filled
+      numerals:
+        prompt: "large faint 01 02 03 above each title"
+        requires: [not_matrix, all_titles_numbered_ok]
+        fallback: outline
+      toned:
+        prompt: "each card tinted by its tone (good / bad / watch), coloured left edge"
+        requires: [has_tones]
+        fallback: filled
+      accent_top:
+        prompt: "accent bar on top of each card (pillars, workstreams)"
+        emphasis: optional    # a singled-out card is drawn as the contrast card; none is fine
+
+  card_steps:
+    tag: CardGrid             # same tag; the plan's card_layout "steps" selects these variants
+    family: derived
+    plan_kind: card_grid
+    layouts: [steps]
+    emphasis_from: [design_hint, destination]
+    variants:
+      cards:
+        prompt: "numbered cards in a row with arrows, destination dark"
+        emphasis: true
+      rail:
+        prompt: "vertical rail with a dot per phase, text to the right"
+      columns:
+        prompt: "columns under a segmented progress bar"
+        emphasis: true
+
+  callout:
+    tag: Callout              # narrative as a panel; plain narrative text uses <Text ref> (below)
+    family: derived
+    plan_kind: narrative
+    variants:
+      rule:   {prompt: "accent rule on the left"}
+      tinted: {prompt: "tinted panel with an accent edge"}
+      dark:   {prompt: "dark panel"}
+      quote:  {prompt: "large quotation, italic"}
+
+  header:
+    tag: SlideHeader          # ref="header"; step 1 (in 1a the LLM writes the header text)
+    family: derived
+    plan_kind: title
+    variants:
+      standard: {prompt: "kicker, headline, sub-headline on the background"}
+      inverted: {prompt: "dark band behind the header"}
+
+  # ── native tags: POM draws; code fills the children from the plan ─────────────
+  # (looks of the block variants below come after the KPI / card blocks)
+
+  text:
+    tag: Text                 # body copied verbatim; the LLM may style it (fontSize, color, bold)
+    family: native
+    plan_kind: [narrative, caption]
+    variants:
+      plain: {prompt: "the text as written"}
+
+  table:
+    tag: Table                # every table variant stays a native Table: code sets cell fills
+    family: native
+    plan_kind: table
+    emphasis_from: [design_hint]
+    variants:
+      plain:         {prompt: "header rule, hairline rows"}
+      zebra:         {prompt: "alternate rows shaded"}
+      highlight_row: {prompt: "one row tinted", requires: [one_singled_out], emphasis: true, fallback: plain}
+      dark_header:   {prompt: "dark header band, accent first column"}
+
+  chart:
+    tag: Chart                # chartType comes from the plan, not the variant
+    family: native
+    plan_kind: chart
+    variants:
+      native:     {prompt: "the chart as drawn"}
+      labelled:   {prompt: "values on the bars, one bar highlighted", draw: block}   # POM's Chart has no data labels
+      horizontal: {prompt: "horizontal bars for long category names", draw: block}   # nor horizontal bars
+
+  bullet_list:
+    tag: Ul
+    family: native
+    plan_kind: bullet_list
+    variants:
+      plain:   {prompt: "plain bullets"}
+      icon:    {prompt: "an icon per point", draw: block}
+      tiles:   {prompt: "each point in its own tile", draw: block}
+      columns: {prompt: "points in two columns", draw: block}
+
+  timeline:
+    tag: Timeline
+    family: native
+    plan_kind: timeline
+    variants:
+      rail:     {prompt: "line with dots, short labels"}             # native, direction horizontal
+      vertical: {prompt: "vertical line, text to the right"}         # native, direction vertical
+      cards:    {prompt: "line with one card per point", draw: block}
+      columns:  {prompt: "columns under a progress bar", draw: block}
+
+  process_arrow:
+    tag: ProcessArrow
+    family: native
+    plan_kind: process_arrow
+    emphasis_from: [design_hint, destination]
+    variants:
+      chevrons:    {prompt: "chevron arrows"}
+      numbered:    {prompt: "numbered circles over boxes", draw: block}
+      alternating: {prompt: "circles on a line, labels above and below", draw: block}
+      step_cards:  {prompt: "step cards, destination dark", draw: block, emphasis: true}
+
+  flow:
+    tag: Flow                 # the plan holds a linear list: one FlowConnection per consecutive pair
+    family: native
+    plan_kind: flow
+    emphasis_from: [design_hint, destination]
+    variants:
+      boxes:       {prompt: "boxes joined by arrows"}
+      numbered:    {prompt: "numbered circles over boxes", draw: block}
+      step_cards:  {prompt: "step cards, destination dark", draw: block, emphasis: true}
+
+  pyramid:
+    tag: Pyramid
+    family: native
+    plan_kind: pyramid
+    variants:
+      native: {prompt: "the pyramid as drawn"}
+
+  tree:
+    tag: Tree
+    family: native
+    plan_kind: tree
+    variants:
+      native: {prompt: "the tree as drawn"}
+
+  matrix:
+    tag: Matrix               # low / mid / high -> 0.2 / 0.5 / 0.8 (derived by code)
+    family: native
+    plan_kind: matrix
+    variants:
+      native: {prompt: "the 2x2 map as drawn"}
+
+# `layer` has no tag: it carries no content shape, so the LLM draws it (NODE_KIND_NO_REF).

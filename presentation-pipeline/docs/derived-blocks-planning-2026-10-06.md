@@ -173,139 +173,216 @@ is unnecessary). `slides.json` holds every slide's plan **and** XML, which is wh
 Plus a one-line reply: did `composed.pptx` open in PowerPoint with Inter drawn. Back up the bundle:
 1a and step 3 depend on it. Import: `python -m scripts.eval_import <zip>` → `docs/eval/step0/`.
 
-## 3. Slot contract (draft for approval)
+## 3. Node contract (rewritten 2026-10-06 from the slot form; decision D10)
 
-**One syntax:** `<VStack id="slot-<component_id>" … />`, self-closing. It is valid POM (an unexpanded slot
-compiles to an empty box, so a missed expansion is visible, not a crash), takes layout attributes
-naturally, and the id is the reference. The §2 tag form (`<CardGrid ref=…>`) is dropped. The header
-uses the reserved id `slot-header` (step 1). Kinds without a block (pyramid, tree, layer, group,
-branching flow, matrix until step 4) get **no slot**; the LLM draws them as today.
+**Why the change** (user, 2026-10-06, after the variant gallery):
+- The slot form's advantage is gone. `<VStack id="slot-…">` was chosen because an unexpanded slot is
+  valid POM, but `<VStack variant="…">` fails with `UNKNOWN_ATTRIBUTE` (verified), so a pass that strips
+  the extra attributes must run in either form.
+- A named tag reads like every other node in the generator's node list (`<Table>`, `<Chart>`). An
+  anonymous VStack with a magic id invites children, styling and forgetting it is special.
+- The same `ref` mechanism gives the **native** nodes (Table, Timeline, Pyramid, Tree, …) the content
+  fidelity the blocks have, at small build cost: code only fills in their children.
+- Content stays **by reference**, never typed into attributes (the 2026-09-23 `<KpiTile label value>`
+  form): retyped content is how numbers were dropped (Test 1: 7–13% before pointers) and card text
+  invented.
 
-**Attributes the LLM may set on a slot:** `w`, `h`, `grow`, `alignSelf` (POM's layout attributes) and
-`variant`. Nothing else: the block owns padding, gap, fills, borders and type. Any other attribute is
-removed with `SLOT_ATTR_IGNORED`. The highlighted item (inverted tile, featured card, highlighted
-row) comes from the plan's `design_hint` / `weight`, as the blocks do now; a `highlight` attribute is
-added only if 1a shows the LLM needs it (simplicity).
+Terms: a **node** is the tag the LLM writes; its **box** (called "slot" in older sections and docs) is the
+space the layout gives it.
 
-**Variants** live in one file, `src/knowledge/core/block-variants.yaml` (the prompt renders it and the
-validator reads it; a test fails on drift, like `capacity.yaml`). From the Genspark shortlist
-(`docs/eval/genspark-variants/summary.md`); the first name is the default:
+### 3.1 One rule: every plan component is placed by one self-closing tag with `ref`
 
-| Block (plan kind) | `variant` values | Code decides, not a variant |
-|---|---|---|
-| KPI row (`kpi_row`) | `plain`, `filled`, `inverted`, `hero` | two tiers at 6+ metrics; number size |
-| Card grid (`card_grid`, grid / matrix) | `outline`, `filled`, `featured`, `numerals` | 3 items → stacked rows; titles only → ruled list; no orphan last row |
-| Card steps (`card_grid`, steps) | `cards`, `rail`, `columns` | — |
-| Table (`table`) | `plain`, `zebra`, `highlight_row`, `dark_header` | column widths |
-| Chart (`chart`) | `labelled`, `horizontal`, `native` (line / doughnut / area stay the planner's `chart_type`) | — |
-| Bullets (`bullet_list`) | `plain`, `icon`, `tiles`, `columns` | tiles only when every word fits |
-| Callout (`narrative`) | `rule`, `tinted`, `dark`, `quote` | — |
-| Header (`slot-header`) | `standard`, `inverted` | — |
-| Timeline (`timeline`) | `rail`, `cards`, `vertical`, `columns` | long labels → `cards` / `vertical` when no variant is set |
-| Process steps (`process_arrow`, linear `flow`) | `chevrons`, `numbered`, `alternating`, `step_cards` | grows to fill a tall slot (§5.4) |
+The tag follows the plan kind (`ComponentKindLiteral`, `src/agents/planner_schema.py`):
 
-In **1a** the blocks have only their current single look: `variant` is accepted, validated and
-counted, but not rendered. The look and the variants arrive in step 1.
+| Plan kind | Tag the LLM writes | Family | Code writes |
+|---|---|---|---|
+| `kpi_row` | `<KpiRow ref="c2" />` | derived | the block (look spec §4) |
+| `card_grid` (grid / matrix / steps) | `<CardGrid ref="c3" />` | derived | the block (look spec §5, §6); layout from the plan's `card_layout` |
+| `narrative` | `<Callout ref="c6" />` or `<Text ref="c6" />` | derived / native | Callout: the panel block; Text: the text, verbatim |
+| `caption` | `<Text ref="c7" />` | native | the text, verbatim (source-line tier) |
+| `bullet_list` | `<Ul ref="c4" />` | native | one `<Li>` per bullet |
+| `table` | `<Table ref="c3" />` | native | `<Col>` widths (measured), `<Tr>` / `<Td>`, first row the header; variant cell fills |
+| `chart` | `<Chart ref="c5" />` | native | `chartType` and title from the plan, `<ChartSeries>` / `<ChartDataPoint>`, palette `chartColors` |
+| `timeline` | `<Timeline ref="c4" />` | native | `<TimelineItem date title>` per item |
+| `process_arrow` | `<ProcessArrow ref="c4" />` | native | `<ProcessArrowStep label>` per step |
+| `flow` | `<Flow ref="c4" />` | native | a `<FlowNode>` per step and a `<FlowConnection>` between consecutive steps (the plan holds a linear list) |
+| `pyramid` | `<Pyramid ref="c4" />` | native | `<PyramidLevel label>` per level |
+| `tree` | `<Tree ref="c4" />` | native | nested `<TreeItem label>` from `tree_nodes` |
+| `matrix` | `<Matrix ref="c4" />` | native | `<MatrixAxes>`, `<MatrixQuadrants>`, `<MatrixItem>`; positions low / mid / high → 0.2 / 0.5 / 0.8 (derived by code) |
+| `title` (slide header) | `<SlideHeader ref="header" />` from step 1 | derived | kicker, headline, sub-headline; in 1a the LLM still writes them, copying the HEADER block |
+| `layer` | — no ref | LLM | free-form; drawn by the LLM as today (no content shape in the plan) |
 
-**System-prompt rules (rendered once, ≈ 10 lines; recipes for block kinds are removed):**
-1. For every component in the SLOTS list, write exactly one empty `<VStack id="slot-<id>" … />`. Never
-   write its content and never put children in it.
-2. Size a slot with `w`, `h`, `grow` like any box; set `variant` only from its listed names.
-3. Components not in the SLOTS list (pyramid, tree, …) are drawn as before.
-4. Text beside slots (headline, takeaway, labels) copies the plan's text; do not add facts.
-5. Do not draw a component that has a slot.
+Everything else stays the LLM's: VStack / HStack bands and panels, Shapes, Icons, dividers, and the free
+Text around the nodes (headline, takeaway, labels).
 
-**Prompt line per slot** (rendered from the plan; the data itself is not sent):
-`slot-c2 · kpi_row · 4 tiles · weight hero · variants: plain|filled|inverted|hero`
-`slot-c3 · table · 7 rows × 5 columns · weight supporting · variants: plain|zebra|highlight_row|dark_header`
-`slot-c5 · card_grid(steps) · 4 phases with detail · weight hero`
-Minimum-size hints per kind are left out of v1; 1a measures how often `SLOT_OVERFULL` happens first.
+### 3.2 Attributes
 
-**Error codes** (validator diagnostics; errors go to the existing compile repairer with guidance text,
-warnings go to the manifest and the `node_bypassed` counter):
+- **Every ref tag:** `ref` (required), `w`, `h`, `grow`, `alignSelf` (POM's layout attributes) and `variant`.
+- **Derived tags** (`KpiRow`, `CardGrid`, `Callout`, `SlideHeader`): nothing else. The block owns
+  padding, gap, fills, borders and type.
+- **Native tags:** also that node's own presentation attributes from `nodes.yaml`, e.g. Timeline
+  `direction`, `connectorColor`; Flow `direction`, `connectorStyle`, `nodeGap`; Tree `layout`, `nodeShape`;
+  Table `cellBorder.*`; Chart `showLegend`; Ul `fontSize`, `color`. Colours as `$tokens`. The plan's
+  `direction` / `orientation` is the default when the LLM sets none. **Content attributes are code's**
+  and are overwritten (`NODE_ATTR_IGNORED`): Chart `chartType` and `title`, a Text's body, and every
+  per-item attribute (items are children, which code writes).
+- **No children.** Anything inside a ref tag is dropped (`NODE_CHILDREN_DROPPED`).
+- The emphasised item (inverted tile, featured card, highlighted row) and each item's tone come from the
+  plan (`design_hint`, `weight`, `kpi_tones` / card `tone`), not from attributes. A `highlight`
+  attribute is added only if 1a shows the LLM needs it.
+
+### 3.3 Variants
+
+Names, conditions and fallbacks live in `src/knowledge/core/block-variants.yaml` (each block names its
+tag; each variant says whether it is drawn `native` or as a `block`). Look: `docs/block-variants-look-spec.md`.
+
+- On a **derived** tag every variant is a block look.
+- On a **native** tag the `native` variants keep POM's own drawing with code-filled children (Timeline
+  `rail` / `vertical`, ProcessArrow `chevrons`, Flow `boxes`, Ul `plain`, Text, Chart `native`, every
+  Table variant, which only sets cell fills). A `block` variant (Timeline `cards` / `columns`,
+  ProcessArrow and Flow `numbered` / `step_cards`, Ul `icon` / `tiles` / `columns`, Chart `labelled` / `horizontal`, which POM's Chart cannot draw: it has no data labels or
+  horizontal bars) makes code replace the native node with a block of the same box.
+- Kinds with no variants yet (pyramid, tree, matrix) are drawn native only.
+- Who chooses: the generator picks `variant` from its component's line; the planner supplies tones and
+  emphasis; code checks `requires` and falls back (look spec §7).
+- **In 1a** derived nodes have their single current look and native nodes POM's look: `variant` is
+  validated and counted, not drawn. Block looks arrive in step 1.
+
+### 3.4 Validity and where the pass runs
+
+`ref`, `variant` and the derived tags are not POM. The **node pass** runs in the validator, before
+`normalize_xml` (which never sees the plan), on every slide under `blocks: nodes` (the setting was
+`off | slots`), and always strips them. Two layout passes as in `scripts/phase0b/expand.py`: lay out
+with empty boxes, draw each node for its box, lay out again. If code cannot draw a node (an exception),
+it leaves an empty VStack with the node's size attributes and logs `NODE_EXPAND_FAILED`: the slide still
+compiles and the gap is visible.
+
+### 3.5 Prompt
+
+**System prompt (fixed, ≈ 140 tokens of rules + ≈ 60 for the derived tags in the node list; the recipes
+of every ref kind are removed):**
+1. Place every component listed under COMPONENTS with its tag, self-closing, `ref="<id>"`, exactly once.
+   Never write its content, items or children.
+2. Size it with `w` / `h` / `grow` / `alignSelf` like any box; set `variant` only to a name on its line
+   (omit it for the first).
+3. On a native tag you may set its own presentation attributes (direction, connector, legend); colours
+   as `$tokens`.
+4. Choose the variant from the slide's purpose and the room the node gets.
+5. Text you write beside the nodes (headline, takeaway, labels) copies the plan's text; add no facts and
+   do not repeat a node's content.
+
+**One line per component (user prompt), rendered from the plan and `block-variants.yaml`.** It replaces
+the component's data and recipe. Only variants whose `requires` hold are listed, each with its short
+phrase. A shape hint is included from v1 (the slot draft left it out), because the LLM no longer sees the
+data and must size the box from something; lengths, not the text itself, so nothing invites retyping:
+
+```
+c2 · <KpiRow ref="c2"/> · 4 tiles, longest value 7 chars · weight hero · variants: plain = light tiles, numbers in ink; inverted = one dark tile for the number the slide is about; …
+c3 · <Table ref="c3"/> · 7 rows × 5 cols, longest cell 18 chars · weight supporting · variants: plain | zebra | highlight_row | dark_header
+c4 · <Timeline ref="c4"/> · 5 items, longest label 6 words · weight peer · variants: rail = …; vertical = …; cards = …
+c5 · <Tree ref="c5"/> · 7 nodes, 3 levels, widest level 4 · weight hero
+```
+
+The planner's `content_summary` line stays, for context. Measured cost (look spec §7, 64 saved slides):
+output ≈ −50 to −67% (1,830 → ≈ 600–900 tokens per slide), input ≈ −6 to −9%.
+
+### 3.6 Error codes
+
+Validator diagnostics. Errors go to the existing compile repairer with guidance text; warnings go to the
+manifest and the `node_bypassed` counter; reports go to the checking loop (§5.1).
 
 | Code | Severity | Meaning → handling |
 |---|---|---|
-| `SLOT_UNKNOWN_REF` | error | id names no component → repair |
-| `SLOT_DUPLICATE` | error | same ref twice → repair |
-| `SLOT_MISSING` | error | a block-kind component has no slot and its text is not in the XML → repair (content would vanish) |
-| `SLOT_BYPASSED` | warning | no slot, but ≥ 50% of its item text is hand-built in the XML → kept, counted (`node_bypassed`); the policy for step 2 is decided from 1a's rate |
-| `SLOT_KIND_NO_BLOCK` | error | a slot for a kind without a block → "draw it yourself" |
-| `SLOT_CHILDREN_DROPPED` | warning | the slot had children → replaced by the block |
-| `SLOT_ATTR_IGNORED` | warning | attribute outside the allowed set removed |
-| `SLOT_VARIANT_UNKNOWN` | warning | default variant used |
-| `SLOT_NO_SIZE` | warning | no `w` / `h` / `grow` and none inherited → `grow="1"` |
-| `SLOT_EMPTY_PLAN` | warning | the component has no content (step 0's re-ask failed) → nothing drawn, `plan_flags` |
-| `SLOT_OVERFULL` | report | smallest type step still short (as `SLIDE_OVERFULL` today) → checking loop |
-| `SLOT_UNDERFILLED` | report | block fills < 60% of its slot (§5.4) → checking loop |
+| `NODE_REF_UNKNOWN` | error | `ref` names no component of this slide → repair |
+| `NODE_REF_DUPLICATE` | error | the same `ref` twice → repair |
+| `NODE_MISSING` | error | a component has no node and its text is not in the XML → repair (content would vanish) |
+| `NODE_BYPASSED` | warning | no node, but ≥ 50% of its item text is hand-built in the XML → kept, counted (`node_bypassed`); the policy for step 2 is decided from 1a's rate |
+| `NODE_KIND_MISMATCH` | warning | the tag does not match the plan kind (`<Table ref="c2">` for a kpi_row) → the plan kind's tag is used |
+| `NODE_KIND_NO_REF` | error | `ref` on a kind without content (`layer`) → "draw it yourself" |
+| `NODE_CHILDREN_DROPPED` | warning | children inside a ref tag → replaced by code's |
+| `NODE_ATTR_IGNORED` | warning | an attribute outside §3.2, or a content attribute, removed / overwritten |
+| `NODE_VARIANT_UNKNOWN` | warning | not a name of this tag → default used |
+| `NODE_VARIANT_UNMET` | warning | the variant's `requires` failed, or the block re-flowed → fallback used, check named |
+| `NODE_NO_SIZE` | warning | no `w` / `h` / `grow` and none inherited → `grow="1"` |
+| `NODE_EMPTY_PLAN` | warning | the component has no content (step 0's re-ask failed) → nothing drawn, `plan_flags` |
+| `NODE_EXPAND_FAILED` | error (code bug) | drawing raised → empty box of the same size, logged, no repair call |
+| `NODE_OVERFULL` | report | smallest type step still short (as `SLIDE_OVERFULL` today) → checking loop |
+| `NODE_UNDERFILLED` | report | the node fills < 60% of its box (§5.4) → checking loop |
 
-## 4. 1a protocol (draft for approval)
+## 4. 1a protocol (revised 2026-10-06 for the node form)
 
-**Question:** does the LLM write slots correctly, and does the slot route not lose on mistakes or variety?
+**Question:** does the LLM place ref nodes correctly, and does the node route not lose on mistakes or
+variety?
 
 **Inputs:** step 0's `slides.json` (plans + the off arm's XML) and its manifests. Models, temperature and
 `max_tokens` fixed as in `models.yaml` (generator = gpt-4.1); one run, ×1.
 
 **Slides (≈ 24; the exact list cannot exist before step 0's plans do).** A script
-`scripts/slot_test_select.py` picks them by rule from step 0's plans and writes
+`scripts/node_test_select.py` picks them by rule from step 0's plans and writes
 `docs/eval/step0/1a-slides.json`; **you approve the list before any paid call**. Rule:
 1. Pool = the three hold-out decks (qbr, launch, agency) + `gate-deck-all-nodes-dense` + XTSY.
-2. Exclude every slide the slot prompt's examples were built from (Phase 0c skeletons: CHEFFIN 2 and
+2. Exclude every slide the node prompt's examples were built from (Phase 0c skeletons: CHEFFIN 2 and
    the CPC slide, XTSY "automation", gj-h1 dense). The prompt must not be tested on its own examples.
-3. Cover every block kind ≥ 3 times (kpi_row, card_grid grid / steps / matrix, table, chart, bullets,
-   process_arrow / flow, timeline, narrative, caption), ≥ 3 slides with 3+ components, ≥ 3 slides holding
-   a kind without a block (pyramid / tree / matrix → tests `SLOT_KIND_NO_BLOCK` and "draw it yourself"),
-   ≥ 3 slides from each deck. Fill to ≈ 24 by lowest-numbered slide first.
-(Hold-out plans were seen while fixing blocks, so they are no longer pristine for *block* behaviour, but the
-LLM never saw them with a slot prompt, which is what 1a tests.)
+3. Cover every kind ≥ 3 times: derived (kpi_row, card_grid grid / steps / matrix, narrative) and native
+   (table, chart, bullet_list, timeline, process_arrow / flow, caption, and pyramid / tree / matrix ≥ 3
+   together); ≥ 3 slides with 3+ components; ≥ 3 slides holding a `layer` if step 0's plans have them
+   (tests `NODE_KIND_NO_REF`); ≥ 3 slides from each deck. Fill to ≈ 24 by lowest-numbered slide first.
 
-**Arms:** (A) *off* = step 0's saved XML for the slide, no new call; (B) *slots* = the generator with the §3
-slot prompt on the same plan, expanded by `scripts/phase0b/expand.py`. Same `<Theme>` in both: B's blocks
-are recoloured from the deck's palette with role-based text colours (the §1a research-renderer change),
-so the blind comparison judges layout and fill, not palette.
+(Hold-out plans were seen while fixing blocks, so they are no longer pristine for *block* behaviour, but the
+LLM never saw them with a node prompt, which is what 1a tests.)
+
+**Arms:** (A) *off* = step 0's saved XML for the slide, no new call; (B) *nodes* = the generator with the
+§3 node prompt on the same plan. Derived nodes are drawn by the Phase 0b blocks (`expand.py`, extended to
+read ref tags), native nodes are filled by the new native fillers (POM's own look, as in the off arm).
+Same `<Theme>` in both: B's blocks are recoloured from the deck's palette with role-based text colours
+(the §1a research-renderer change), so the blind comparison judges layout and fill, not palette.
 
 **Measures and kill criteria (§14.5 + the new cross-deck one):**
 
 | # | Measure | How | Pass |
 |---|---|---|---|
-| 1 | **Slot compliance, first try** | classify every component of a block kind: ok / wrong ref / missing / duplicate / children / bypassed / attr / variant; slide-level "all ok" reported too | component-level ≥ 90% |
-| 2 | Invented words inside blocks | words in rendered block text not in the plan | 0 |
+| 1 | **Node compliance, first try** | classify every component: ok / unknown ref / missing / duplicate / kind mismatch / children / bypassed / attr / variant; reported for derived and native separately; slide-level "all ok" reported too | component-level ≥ 90% |
+| 2 | Invented words inside nodes | words in rendered node text (derived and native) not in the plan | 0 |
 | 3 | Broken words, overlapping text | LibreOffice render of the expanded deck vs step 0's `llm.pptx` (`fontcheck.py`, `check.py`) | ≤ off arm |
-| 4 | **Blind side-by-side** | `scripts/slot_test_sheet.py`: per slide two images, left / right randomised by a fixed seed, no labels, 4 slides per sheet; you mark 1 / 2 / equal and a reason (readability, fill, overlap, empty, designed); key kept in a separate file | (slot wins + ½ ties) / N ≥ 0.6 |
+| 4 | **Blind side-by-side** | `scripts/node_test_sheet.py`: per slide two images, left / right randomised by a fixed seed, no labels, 4 slides per sheet; you mark 1 / 2 / equal and a reason (readability, fill, overlap, empty, designed); key kept in a separate file | (nodes win + ½ ties) / N ≥ 0.6 |
 | 5 | Within-deck variety | §1b | not > 0.05 below off |
 | 6 | Cross-deck variety (informational, D2) | §1b | reported, not a kill criterion |
-| 7 | Tokens and cost per slide | generator calls in the manifests: slots vs step 0's generator calls on the same plans (like-for-like) | informational; flag if input per slide is > 10% above off |
-| 8 | Fallback rate | slides with a compile repair, an error code, a retry, `SLIDE_OVERFULL` | reported; used to size step 2 |
+| 7 | Tokens and cost per slide | generator calls in the manifests, input and output separately, vs step 0's generator calls on the same plans (like-for-like). Expected from the 64-slide measurement: output −50 to −67%, input −6 to −9% | informational; flag if input per slide is above off, or output falls < 30% |
+| 8 | Fallback rate | slides with a compile repair, an error code, a retry, `SLIDE_OVERFULL` / `NODE_OVERFULL` | reported; used to size step 2 |
+| 9 | Variant choice (informational) | the variant per node, the default share, the fallback rate per `requires` check | reported |
 
-Fail on 1, 2, 3, 4 or 5 → stop slots, keep blocks: composer + planner `arrangement` field (§14.1
-option 2). With ≈ 50 components the compliance estimate has a ±8-point margin, so a result near 90% is a
+Fail on 1, 2, 3, 4 or 5 → stop nodes, keep blocks: composer + planner `arrangement` field (§14.1
+option 2). With ≈ 60 components the compliance estimate has a ±8-point margin, so a result near 90% is a
 re-run decision, not a verdict (stated in the report next to the number).
 
 **Build before the paid call (all LLM-free):** `scripts/from_plans.py` (the ≈ 30-line loader: a run's
 `slides.json` → `state["slide_plans"]`; the graph's `route_after_start` already skips planning; also
-reads the manifest's theme; Python 3.11-safe), `scripts/slot_test.py` (generator-only runner, writes
-skeleton XML + manifest per slide), `src/prompts/generator/slots_system.j2` (the §3 rules),
-`scripts/slot_test_select.py`, `scripts/slot_test_score.py`, `scripts/slot_test_sheet.py`,
+reads the manifest's theme; Python 3.11-safe), `scripts/node_test.py` (generator-only runner, writes
+skeleton XML + manifest per slide), `src/prompts/generator/nodes_system.j2` (the §3.5 rules) and the
+per-component line renderer, the **native fillers** (one small function per native kind in §3.1, from
+`content_data` to POM children; LLM-free tests per kind), `expand.py` reading ref tags,
+`scripts/node_test_select.py`, `scripts/node_test_score.py`, `scripts/node_test_sheet.py`,
 `scripts/variety.py`, the role-based recolouring in the research renderer. The paid path is exercised
-first by a scripted LLM that returns Phase 0c's 4 skeletons plus 6 deliberately broken ones (one per
-`SLOT_*` error) so every classifier branch runs before money is spent. Cost ≈ **$0.5** (≈ $0.02 per slide,
-24 slides). Test PC command (written when built): `python -m scripts.slot_test --run <step0 folders> --slides docs/eval/step0/1a-slides.json --label 1a`.
+first by a scripted LLM that returns Phase 0c's 4 skeletons (rewritten to ref tags) plus one deliberately
+broken skeleton per `NODE_*` error, so every classifier branch runs before money is spent. Cost
+≈ **$0.5** (≈ $0.02 per slide, 24 slides). Test PC command (written when built):
+`python -m scripts.node_test --run <step0 folders> --slides docs/eval/step0/1a-slides.json --label 1a`.
 It sends back its output folder (skeleton XML per slide, manifests).
 
 ## 5. Open questions: recommendations
 
 ### 5.1 Checking-loop spec (for step 2; principle now, thresholds after 1a)
 
-- **Trigger and place:** a graph node `layout_checker` after the validator succeeds (compile + slot
-  expansion), before the visual critic. Only under `blocks: slots`; `off` stays the step 0 path.
+- **Trigger and place:** a graph node `layout_checker` after the validator succeeds (compile + node
+  expansion), before the visual critic. Only under `blocks: nodes`; `off` stays the step 0 path.
 - **Tier 1 (always, free, ≈ 1 s):** POM's own layout (`measure.mjs`): squashed boxes, overfull, words
-  wider than their box (`WORD_TOO_WIDE`), `SLOT_OVERFULL`, `SLOT_UNDERFILLED`, text under its floor.
+  wider than their box (`WORD_TOO_WIDE`), `NODE_OVERFULL`, `NODE_UNDERFILLED`, text under its floor.
   **Tier 2 (render facts: broken words, overlaps, past-footer text)** only where a renderer exists, from
   the render the critic already makes; promoted to a loop trigger only if 1a / step 3 show tier 1
   missing things (both are computed there, so agreement is free to measure).
 - **Fixes, code first:** for a block problem the code acts (switch to the next more compact variant, re-flow
   rows / columns, split KPI tiers). For a layout problem (slot too small, free text overflowing) one **LLM
-  patch of the skeleton only** (≈ 600 tokens of XML + the issues stated in px: "slot-c3 needs 320 px, has
+  patch of the skeleton only** (≈ 600 tokens of XML + the issues stated in px: "c3 needs 320 px, has
   240"), then re-expand, re-measure.
 - **Best version:** lexicographic tuple (errors, squashed px, overfull px, broken words, overlaps, below-floor
   text); lower wins, a tie keeps the earlier version. ≤ 2 rounds; round 2 only if round 1 improved and a
@@ -315,7 +392,7 @@ It sends back its output folder (skeleton XML per slide, manifests).
 - **Relation to today's nodes:** the compile `repairer` is unchanged (compile errors). The loop runs before
   the visual `critic`, which keeps judging what code cannot measure (hierarchy, balance); measured codes
   join `REPORT_ONLY_CODES`-style filtering so the critic never re-reports them; `visual_repairer`
-  patches the skeleton (not whole XML) under slots.
+  patches the skeleton (not whole XML) under nodes.
 - **Decide now:** the principle above. **Schedule for step 2:** thresholds, the code-fix list, tier 2 promotion.
 
 ### 5.2 #4 label tier ≥ 10 px
@@ -330,14 +407,14 @@ You still have to look: before step 1 I produce one free test slide with the sam
 projected. Rule: the smallest tier you can read comfortably from the back of the room. Needed before step 1
 (blocks bake the tier in).
 
-### 5.3 When `blocks: slots` becomes the default
+### 5.3 When `blocks: nodes` becomes the default
 
 Not after step 3: kinds without a block (matrix, pyramid, tree, layer, branching flow) would give a mixed
 look, and the UI edit path is not planned. Recommended gates, all required: (1) step 3 passes the 1a criteria
 on all six (seven) cases; (2) step 4 blocks are in; (3) **the edit service re-expands blocks after every edit**
 (plan edit → re-draw; layout edit → XML edit → re-expand), which no step covers yet and which I add to
 step 2's list; (4) fallback rate (slides sent to the composer or `off`) ≤ 10%; (5) cost per deck within ±20%
-of off. Until then `slots` is opt-in per run (setting + UI advanced switch); `off` stays available.
+of off. Until then `nodes` is opt-in per run (setting + UI advanced switch); `off` stays available.
 
 ### 5.4 Fill contract: blocks grow into a tall slot (for step 1)
 
@@ -346,7 +423,7 @@ Measure `fill = drawn height ÷ slot height`. Order, all within the plan's own t
 text ≤ 28); (2) item boxes taller up to ×1.6 natural; (3) if `fill` < 0.6, **switch arrangement**:
 process steps `chevrons` → `step_cards` / vertical, timeline `rail` → `cards` / `columns`, a ≤ 4-item list →
 `tiles`; (4) otherwise centre the block in the slot (never a thin band hung at the top) and report
-`SLOT_UNDERFILLED`, which the checking loop turns into a layout fix ("give slot-c3's height to slot-c2").
+`NODE_UNDERFILLED`, which the checking loop turns into a layout fix ("give c3's height to c2").
 Caps follow the 2026-10-04 decision "fill the card, don't shrink it" (type grows, boxes do not balloon). Numbers
 tuned in step 1 on the nodes demo render (free).
 
@@ -358,11 +435,12 @@ tuned in step 1 on the nodes demo render (free).
 | D2 | §1b cross-deck check in the 1a kill criteria (content-controlled definition) | kill criterion | **decided 2026-10-05: within-deck only is the kill criterion; cross-deck measured and reported, informational** |
 | D3 | Step 0 plan §2 incl. embedding at deck level in Python | as written | **decided 2026-10-05: approved as written** (`SLIDE_SPARSE` report-only; one re-ask max; `fonttools` added) |
 | D4 | `gj-h1-regen` joins step 0's run (≈ +$0.7) | yes | **decided 2026-10-05: no, six cases only** (37 slides, ≈ $1.8). Within-deck variety is judged on 5–8 slide decks; a long deck can be added to step 3 only if its plans are generated then |
-| D5 | Slot contract §3 | as written | **decided 2026-10-05: approved as written** (no `highlight` attribute until 1a shows it is needed) |
-| D6 | 1a protocol §4 | as written | **decided 2026-10-05: approved as written** (slide list still needs the user's approval once step 0's plans exist) |
+| D5 | Slot contract §3 | as written | **decided 2026-10-05: approved as written** (no `highlight` attribute until 1a shows it is needed); **superseded 2026-10-06 by D10** |
+| D6 | 1a protocol §4 | as written | **decided 2026-10-05: approved as written** (slide list still needs the user's approval once step 0's plans exist); revised 2026-10-06 for the node form (D10) |
 | D7 | Checking-loop principle §5.1 | as written | **decided 2026-10-05: principle approved**; thresholds, code-fix list and tier-2 promotion scheduled for step 2 from 1a's data |
 | D8 | Label tier (§5.2) | view the test slide first | **decided 2026-10-05: 12 px label floor that grows into spare room, 10 px source lines only, body >= 14 px (user, after viewing the test deck).** Earlier note: scheduled. The free 10 / 11 / 12 / 14 px test slide is built in the step 0 build session; the user views it (100% and projected) and the tier is recorded before step 1. Starting recommendation 12 px labels, 10 px source lines only |
 | D9 | Default-switch gates (§5.3) and fill contract (§5.4) | as written | **decided 2026-10-05: both approved.** `slots` stays opt-in until the five gates hold (a separate decision after step 4); step 2 gains "the edit service re-expands blocks after every edit"; fill numbers tuned in step 1 |
+| D10 | Contract form (§3, §4): named self-closing tags with `ref` for every plan kind except `layer` (derived `KpiRow` / `CardGrid` / `Callout` / `SlideHeader`; native `Table` / `Chart` / `Ul` / `Timeline` / `ProcessArrow` / `Flow` / `Pyramid` / `Tree` / `Matrix` / `Text`, code fills their children), content by reference only, shape hints in each component's prompt line, `NODE_*` codes, setting `blocks: off / nodes` | as written | **decided 2026-10-06 (user): rewrite the contract into the node form** |
 
 ## 7. Step 0 build log (build session 2026-10-06, branch `feat/derived-blocks-step0`)
 
