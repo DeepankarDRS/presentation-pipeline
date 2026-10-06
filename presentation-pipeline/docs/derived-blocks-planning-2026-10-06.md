@@ -320,6 +320,8 @@ It sends back its output folder (skeleton XML per slide, manifests).
 
 ### 5.2 #4 label tier ≥ 10 px
 
+**Label tier decided by the user 2026-10-05 (D8), after viewing the test deck:** label-role text (kickers, KPI labels, table captions) has a **floor of 12 px (9 pt)**; 10 px (7.5 pt) only for the source / footnote line; body text stays >= 14 px. **The floor is not a fixed size: when a slot has room left, label type grows into it** (up to the role's maximum, §5.4 fill contract), as with every other type role ("fill the card, don't shrink it", 2026-10-04). Blocks bake in the floor in step 1.
+
 At 1280×720 one px = 0.75 pt (720 px = a 7.5 in slide), so 10 px is **7.5 pt**, 12 px is 9 pt (Genspark's
 Super Agent spec used 9 pt tags), 14 px (the house floor) is 10.5 pt. **Recommendation: label-role text
 (kickers, KPI labels, table captions) 12 px; 10 px only for the source / footnote line;** body stays ≥ 14.
@@ -359,7 +361,7 @@ tuned in step 1 on the nodes demo render (free).
 | D5 | Slot contract §3 | as written | **decided 2026-10-05: approved as written** (no `highlight` attribute until 1a shows it is needed) |
 | D6 | 1a protocol §4 | as written | **decided 2026-10-05: approved as written** (slide list still needs the user's approval once step 0's plans exist) |
 | D7 | Checking-loop principle §5.1 | as written | **decided 2026-10-05: principle approved**; thresholds, code-fix list and tier-2 promotion scheduled for step 2 from 1a's data |
-| D8 | Label tier (§5.2) | view the test slide first | **decided 2026-10-05: scheduled.** The free 10 / 11 / 12 / 14 px test slide is built in the step 0 build session; the user views it (100% and projected) and the tier is recorded before step 1. Starting recommendation 12 px labels, 10 px source lines only |
+| D8 | Label tier (§5.2) | view the test slide first | **decided 2026-10-05: 12 px label floor that grows into spare room, 10 px source lines only, body >= 14 px (user, after viewing the test deck).** Earlier note: scheduled. The free 10 / 11 / 12 / 14 px test slide is built in the step 0 build session; the user views it (100% and projected) and the tier is recorded before step 1. Starting recommendation 12 px labels, 10 px source lines only |
 | D9 | Default-switch gates (§5.3) and fill contract (§5.4) | as written | **decided 2026-10-05: both approved.** `slots` stays opt-in until the five gates hold (a separate decision after step 4); step 2 gains "the edit service re-expands blocks after every edit"; fill numbers tuned in step 1 |
 
 ## 7. Step 0 build log (build session 2026-10-06, branch `feat/derived-blocks-step0`)

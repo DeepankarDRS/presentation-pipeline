@@ -1212,7 +1212,7 @@ Findings:
    (planner fixes first); #3, #5, #6 follow from 14.6; #4 needs the user's judgement.
    **Accepted with §14.6 (2026-10-05): #1 planner fixes first, #2 Python builders + YAML
    style, #3 plan for block content / skeleton XML for layout, #5 LLM picks layout and a
-   variant per slot, #6 `SlideHeader` block. Open: #4 label tier ≥ 10 px** (the user
+   variant per slot, #6 `SlideHeader` block. #4 label tier decided 2026-10-05: 12 px floor that grows into spare room, 10 px for source lines only, body >= 14 px (planning doc §5.2). Was open: label tier ≥ 10 px** (the user
    looks at a studio deck projected or at 100% on a laptop; needed before step 1).
 3. Whether `gate-deck-all-nodes-dense` gets a paid planner run before step 1, or
    the gj-h1 dense plans keep standing in (§13 R3 "not covered"). Cost to be estimated
