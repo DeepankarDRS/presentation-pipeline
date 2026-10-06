@@ -256,7 +256,7 @@ checklist:
   - "No pixel h on a band or card; grow by weight on the band that holds the slide's
      main content (at least one, unless the only content is a table). Data nodes
      sized per DATA NODE SIZING."
-  - "KPI row: no pixel h; grow when it is the slide's main content. Tiles: w=\"max\", justifyContent=\"center\". Labels 14pt, values 28-36pt (hero tiles 40-56pt)."
+  - "KPI row: no pixel h; grow when it is the slide's main content. Tiles: w=\"max\", justifyContent=\"center\". Labels 14pt, values 28-36pt, the same size on every tile of the row."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
   - "An HStack inside a VStack gets its width by stretch (no w); inside an HStack, w=\"max\" or %."
   - "No fixed-px width on a text or chart column."
