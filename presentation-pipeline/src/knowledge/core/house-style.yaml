@@ -177,7 +177,7 @@ type_ramp:
   label: "14 $textMuted. NEVER below 14."
   body: "14-16, $textMain or $textMuted, lineHeight 1.4-1.55. NEVER below 14."
   stat_value: "26-36 bold"
-  hero_number: "36-64 bold ($accent or $surface on a hero_panel)"
+  single_stat: "72 bold, $textMain - only a kpi_row with one value (enlarged to fill after generation)"
   caption: "14 $textMuted. NEVER below 14."
 
 font_floor: >
