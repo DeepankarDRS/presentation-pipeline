@@ -37,6 +37,7 @@ from src.agents.written_lines import (content_line_list, content_lines, drop_vis
                                       flag_written_lines, visual_directions)
 from src.state import ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, unpack_raw, usage_record
+from src.utils.text_clean import clean_data
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ def _planner_slide_to_state(
             comp["weight"] = c.weight
 
         try:
-            comp_data = json.loads(c.content_data_json) if c.content_data_json else {}
+            comp_data = clean_data(json.loads(c.content_data_json)) if c.content_data_json else {}
         except (json.JSONDecodeError, TypeError):
             logger.warning(
                 f"slide_component_planner: invalid content_data_json for "

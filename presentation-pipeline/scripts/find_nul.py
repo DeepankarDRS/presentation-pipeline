@@ -22,7 +22,7 @@ ILLEGAL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
 def around(text: str, m: re.Match) -> str:
     a, b = max(0, m.start() - 50), min(len(text), m.end() + 50)
-    return repr(text[a:b])
+    return ascii(text[a:b])   # ascii(): a non-ASCII character such as the middle dot shows as \xb7, not as a letter
 
 
 def scan_text(label: str, text: str) -> int:
@@ -30,6 +30,20 @@ def scan_text(label: str, text: str) -> int:
     for m in hits[:3]:
         print(f"  {label}: U+{ord(m.group()):04X} at {m.start()} in ...{around(text, m)}...")
     return len(hits)
+
+
+def scan_json(path: str, value, trail: str = "") -> int:
+    """Walk parsed JSON and report illegal characters with the key path they sit under."""
+    found = 0
+    if isinstance(value, str):
+        return scan_text(f"{path}{trail}", value)
+    if isinstance(value, list):
+        for i, v in enumerate(value):
+            found += scan_json(path, v, f"{trail}[{i}]")
+    elif isinstance(value, dict):
+        for k, v in value.items():
+            found += scan_json(path, v, f"{trail}.{k}")
+    return found
 
 
 def scan_pptx(label: str, path: Path) -> int:
@@ -63,8 +77,8 @@ def main() -> int:
         total += scan_pptx("deck/presentation.pptx", deck)
     sj = a.run / "slides.json"
     if sj.exists():
-        print("slides.json")
-        total += scan_text("slides.json", json.dumps(json.loads(sj.read_text(encoding="utf-8")), ensure_ascii=False))
+        print("slides.json (parsed: a NUL in the plan means the planner wrote it, only in the xml means the generator)")
+        total += scan_json("slides.json", json.loads(sj.read_text(encoding="utf-8")))
     print("illegal characters found:", total)
     return 0 if total == 0 else 1
 

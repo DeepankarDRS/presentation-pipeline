@@ -13,6 +13,7 @@ from typing import Any
 from src.compiler.content_model import find_violations, flatten_text_containers
 from src.compiler.grow_fallback import ensure_growing_band, share_row_height
 from src.compiler.icons import fix_icon_names
+from src.utils.text_clean import strip_illegal
 
 
 FORBIDDEN_TAGS: set[str] = {
@@ -521,7 +522,13 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     blocking (bool — True if any non-auto-fixed issue found).
     """
     issues: list[dict[str, Any]] = []
-    xml = raw_xml
+    xml, illegal = strip_illegal(raw_xml)
+    if illegal:
+        issues.append({
+            "code": "ILLEGAL_CHARS_REMOVED",
+            "message": f"Removed {illegal} character(s) XML cannot hold (NUL / control characters) from the model's text.",
+            "auto_fixed": True,
+        })
 
     xml, had_fence = _strip_fences(xml)
     if had_fence:
