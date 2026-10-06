@@ -1,0 +1,34 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" chartSurface="FFFFFF" chartInk="334155" />
+<Slide>
+  <VStack w="1280" h="720" padding="36" gap="18" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="4">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EXECUTIVE SUMMARY</Text>
+      <Text fontSize="30" color="$textMain" bold="true">Growth strong; <Span color="$warning">margins and payback</Span> need focus</Text>
+    </VStack>
+    <HStack gap="16" alignItems="stretch">
+      <VStack w="max" padding="18" gap="6" backgroundColor="$textMain" borderRadius="14" justifyContent="center">
+        <Text fontSize="14" color="$surfaceAlt">ARR</Text>
+        <Text fontSize="34" bold="true" color="$surfaceAlt">$48.2<Span fontSize="18" color="$surfaceAlt">M</Span></Text>
+        <Text fontSize="14" bold="true" color="$positive">+18% QoQ</Text>
+      </VStack>
+      <VStack w="max" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">NRR</Text>
+        <Text fontSize="34" bold="true" color="$textMain">114<Span fontSize="18" color="$textMuted">%</Span></Text>
+        <Text fontSize="14" bold="true" color="$positive">+2 pts</Text>
+      </VStack>
+      <VStack w="max" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">Gross Margin</Text>
+        <Text fontSize="34" bold="true" color="$textMain">72.1<Span fontSize="18" color="$textMuted">%</Span></Text>
+        <Text fontSize="14" bold="true" color="$negative">-1.4 pts</Text>
+      </VStack>
+      <VStack w="max" padding="18" gap="6" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+        <Text fontSize="14" color="$textMuted">CAC Payback</Text>
+        <Text fontSize="34" bold="true" color="$textMain">14<Span fontSize="18" color="$textMuted"> months</Span></Text>
+        <Text fontSize="14" bold="true" color="$warning">-2 months</Text>
+      </VStack>
+    </HStack>
+    <VStack grow="1" padding="20" gap="13" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="18" color="$textMain">ARR and retention improvements create runway, while <Span color="$warning">Gross Margin decline</Span> and a 14-month CAC payback signal the need for operational and product actions.</Text>
+    </VStack>
+  </VStack>
+</Slide>

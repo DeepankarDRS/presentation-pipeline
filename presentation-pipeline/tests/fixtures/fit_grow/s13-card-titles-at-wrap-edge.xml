@@ -1,0 +1,26 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" chartSurface="FFFFFF" chartInk="334155" />
+<Slide>
+  <VStack w="1280" h="720" padding="38" gap="18" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="5">
+      <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">LOOKING AHEAD</Text>
+      <Text fontSize="31" color="$textMain" bold="true"><Span color="$accent">Q4</Span> Priorities</Text>
+    </VStack>
+    <HStack grow="2" gap="22" alignItems="stretch">
+      <VStack w="max" padding="22" gap="12" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1" justifyContent="center">
+        <Icon name="briefcase" size="28" color="$accent" alignSelf="start" />
+        <Text fontSize="20" color="$textMain" bold="true">Close <Span color="$accent" bold="true">3</Span> enterprise logos</Text>
+        <Text fontSize="16" color="$textMuted">Close <Span color="$accent" bold="true">3</Span> enterprise logos worth <Span color="$accent" bold="true">$4M+</Span> combined ARR</Text>
+      </VStack>
+      <VStack w="max" padding="22" gap="12" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1" justifyContent="center">
+        <Icon name="rocket" size="28" color="$accent" alignSelf="start" />
+        <Text fontSize="20" color="$textMain" bold="true">Launch self-serve onboarding</Text>
+        <Text fontSize="16" color="$textMuted">Launch self-serve onboarding to reduce CAC payback to <Span color="$accent" bold="true">10 months</Span></Text>
+      </VStack>
+      <VStack w="max" padding="22" gap="12" backgroundColor="$surfaceAlt" borderRadius="16" border.color="$border" border.width="1" justifyContent="center">
+        <Icon name="chart-column" size="28" color="$accent" alignSelf="start" />
+        <Text fontSize="20" color="$textMain" bold="true">Ship analytics v2 dashboard</Text>
+        <Text fontSize="16" color="$textMuted">Ship analytics v2 dashboard before <Span color="$accent" bold="true">Jan board meeting</Span></Text>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

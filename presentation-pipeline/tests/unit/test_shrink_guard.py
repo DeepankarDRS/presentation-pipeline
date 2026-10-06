@@ -48,8 +48,8 @@ def test_a_word_wider_than_its_box_shrinks_to_fit_and_a_fitting_word_is_left_alo
     # "Recommendation" at 22px is ~180px in a ~140px box: the largest size that fits, above the 14px floor
     assert 14 < _size(r["xml"], "rec") < 22
     assert not any("Recommendation" in w for w in _warnings(r))
-    assert _size(r["xml"], "fits") == 22
-    assert _size(r["xml"], "hyphen") == 22   # "Cost-per-acquisition" breaks at its hyphens, so no piece is too wide
+    assert _size(r["xml"], "fits") >= 22     # never shrunk (text growth may enlarge a word that still fits)
+    assert _size(r["xml"], "hyphen") >= 22   # "Cost-per-acquisition" breaks at its hyphens, so no piece is too wide
 
 
 def test_a_text_without_fontsize_gets_one_written(tmp_path):

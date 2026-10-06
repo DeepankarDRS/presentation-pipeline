@@ -23,15 +23,19 @@
 //   3. diagrams     — a Chart/Flow/Tree/ProcessArrow absorbs the spare height of
 //                     its card, then Flow/Tree/ProcessArrow nodes are enlarged
 //                     to fill their box.
+//   3a. share height — a KPI row beside a sparse growing text band gets the same
+//                     grow, so both have room to fill.
 //   3b. KPI values  — a sparse row of stat tiles grows its hero numbers (and
-//                     their inline unit <Span>s) together, up to 60px; a lone hero
+//                     their inline unit <Span>s) together, up to 96px; a lone hero
 //                     stat card (short number >= 48px) up to 120px.
-//   4. text         — in each stack under ~70% full, fonts grow together (body
-//                     by s, headings/labels by sqrt(s); titles and each box's
-//                     stat/hero number untouched) until ~88% full; past the size
-//                     caps the rest goes into line height and gaps. Peer cards
-//                     in a row scale as one group; headings never gain a line;
-//                     text with an inline <Span fontSize> keeps its size.
+//   4. text         — in each stack under ~70% full, fonts grow together until
+//                     ~88% full, as the composer sizes cards: titles and body by
+//                     s, labels and icons by sqrt(s); card title <= 48px, body
+//                     <= 28px and <= title / 1.3; each box's stat number and
+//                     slide headlines outside cards untouched. Past the caps the
+//                     rest goes into gaps and line height (<= 1.45). Peer cards
+//                     in a row scale as one group; a card title may wrap onto two
+//                     more lines; text with an inline <Span fontSize> keeps its size.
 //   5. headings     — a heading that wraps one line more at 85% of its width
 //                     (the renderer's font runs wider) gets minH for that line;
 //                     a heading in a loaded font (src/node/fonts/) is measured at
@@ -80,10 +84,21 @@ const SLIDE = { w: 1280, h: 720 };
 const LOW_FILL = 0.7;       // a stack below this is "sparse" (POM measure runs ~15% wide)
 const TARGET_FILL = 0.88;   // grow until this full (slack for renderer wrap drift)
 const MIN_SLACK = 30;       // px — ignore smaller gaps
-const MAX_SCALE = 2.0;
-const FIXED_FONT = 24;      // >= this is a title / KPI number: not grown as text (KPI numbers: growStats)
-const BODY_CAP = 22;
-const HEADING_CAP = 24;
+const MAX_SCALE = 3.0;
+const FIXED_FONT = 24;      // >= this outside a card is a title / KPI number: not grown as text (KPI numbers: growStats)
+// Card text fills its card the way the composer does (scripts/phase0b/render.py
+// fill_card_text; user, 2026-10-04 and 2026-10-06: grow the type into the empty space,
+// don't shrink the card): a card title up to 48px, body up to 28px and at most
+// title / 1.3, labels (caps / letter-spaced) by sqrt(s); icons grow by sqrt(s) up to 56px.
+// In a KPI tile only the number is big: its label / delta lines stay <= 0.45x the number.
+const TITLE_CAP = 48;
+const BODY_CAP = 28;
+const LABEL_CAP = 24;
+const TITLE_RATIO = 1.3;
+const ICON_CAP = 56;
+const STAT_SIDE = 0.45;
+const ANCHOR_TEXT_MAX = 12;  // a box's stat anchor is a short number ("$48.2M", "0.33x")
+const LINE_HEIGHT_MAX = 1.45; // spare space past the font caps goes to gaps first, line height stays readable
 const STACKS = new Set(["vstack", "hstack"]);
 const RIGID = new Set(["chart", "table", "matrix", "processArrow", "flow", "pyramid",
   "tree", "timeline", "image", "svg", "layer"]);
@@ -759,7 +774,7 @@ function diagramEdit(n, W, H) {
 // together (one type size across the row), inline <Span fontSize> units with them,
 // up to STAT_CAP, without wrapping a number or changing any width.
 
-const STAT_CAP = 60;
+const STAT_CAP = 96;          // composer: a KPI number takes the largest size its tile allows
 // A lone hero stat: Genspark draws the headline's number at 120-244 px on 1920 (80-160
 // on our 1280). Only a short numeric anchor ("0.33x", "₹114.9L") in a card qualifies,
 // so a headline or title in a card never grows here.
@@ -780,6 +795,44 @@ function statAnchor(tile) {
   const top = Math.max(...texts.map(size));
   const tops = texts.filter((t) => size(t) === top);
   return top >= FIXED_FONT && tops.length === 1 ? tops[0] : null;
+}
+
+// --- phase 3a: a KPI row shares the spare height of a sparse text band ------------
+// The generator gives grow to one band. When that band is a callout of two lines, it takes
+// all the spare height while the KPI tiles beside it stay at content height: the callout
+// text stops at its cap below the headline and the tiles count as full, so their numbers
+// never grow (2026-10-06 exec summary: callout 18% full, tiles untouched). A row of stat
+// tiles without grow / h next to such a band gets the same grow; growStats and growText
+// then fill both.
+
+function statRow(n) {
+  if (n.type !== "hstack") return false;
+  const tiles = (n.children ?? []).filter((c) => STACKS.has(c.type) && c.id);
+  return tiles.length >= 2 && tiles.every(statAnchor);
+}
+
+async function shareHeight(xml, report) {
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const root of L.slides) walk(root, (p) => {
+      if (p.type !== "vstack") return;
+      const kids = p.children ?? [];
+      const growing = kids.filter((c) => c.grow !== undefined);
+      if (growing.length !== 1) return;
+      const g = growing[0];
+      if (!g.id || !STACKS.has(g.type) || hasRigid(g) || statRow(g) || !textTargets(g).length) return;
+      if (fill(g, L).ratio >= LOW_FILL) return;
+      for (const r of kids) {
+        if (r !== g && r.id && statRow(r) && r.h === undefined && r.grow === undefined) edits.push([r.id, g.grow]);
+      }
+    });
+  } finally { L.free(); }
+  for (const [id, grow] of edits) {
+    xml = setAttrs(xml, id, { grow });
+    report.push(`KPI row takes a share of the spare height (grow=${grow}) beside a sparse text band`);
+  }
+  return xml;
 }
 
 /** Scale fontSize on one element's open tag and on every <Span fontSize> inside it. */
@@ -822,8 +875,10 @@ async function growStats(xml, report) {
   } finally { L.free(); }
   for (const g of groups) {
     const apply = (src, s) => g.anchors.reduce((x, id) => scaleTextFont(x, id, s, g.cap), src);
-    const r = await search(xml, g.ids, apply, g.cap / g.f0, g.anchors);
-    if (r.best <= 1.05) continue;
+    const unpinned = xml;
+    xml = await pinWidths(xml, g.ids);
+    const r = await search(xml, g.ids, apply, g.cap / g.f0, g.anchors, 0, g.anchors);
+    if (r.best <= 1.05) { xml = unpinned; continue; }
     xml = apply(xml, r.best);
     report.push(`${g.hero ? "hero stat" : "KPI values"} x${r.best.toFixed(2)} (${g.f0} -> ${Math.min(Math.round(g.f0 * r.best), g.cap)}px), `
       + `fill ${Math.round(g.ratio * 100)}% -> ${Math.round(r.ratio * 100)}%`);
@@ -834,36 +889,77 @@ async function growStats(xml, report) {
 // --- phase 3b: grow text inside sparse text-only stacks ------------------------
 
 function textTargets(stack) {
+  // inside a card (a box with background / border / padding) every text may grow, even one
+  // the LLM wrote at >= 24px; outside one, >= 24px is a slide headline and stays
+  const boxed = hasBoxStyle(stack);
+  // next to a diagram / table / chart, a card's text is its header: header-sized at most
+  // ("Optimization Timeline" grew to ~40px and pushed its timeline out of the card)
+  const beside = hasRigid(stack) ? LABEL_CAP : Infinity;
   const out = [];
+  const frozen = [];   // sizes of texts in the box that do not grow here
   let smallestFixed = Infinity;
-  walk(stack, (n) => {
+  walk(stack, (n, parent) => {
     if (!n.id || !["text", "ul", "ol"].includes(n.type)) return;
     const f = n.fontSize ?? 24;
-    if (f >= FIXED_FONT) { smallestFixed = Math.min(smallestFixed, f); return; }
     // inline <Span fontSize> / <Li fontSize> keep their own size: growing only
     // the outer size would break the proportion, so leave these nodes alone
     const sized = (runs) => (runs ?? []).some((r) => r.fontSize !== undefined);
-    if (n.type === "text" && sized(n.runs)) return;
-    if (n.type !== "text" && n.items.some((i) => i.fontSize !== undefined || sized(i.runs))) return;
-    const text = n.text ?? "";
-    const label = /[A-Z]/.test(text) && text === text.toUpperCase();
-    out.push({ id: n.id, f, heading: n.type === "text" && (n.bold || n.letterSpacing !== undefined || label) });
+    const spans = n.type === "text" ? sized(n.runs) : n.items.some((i) => i.fontSize !== undefined || sized(i.runs));
+    if (spans || (f >= FIXED_FONT && !boxed)) {
+      if (f >= FIXED_FONT) smallestFixed = Math.min(smallestFixed, f);
+      frozen.push(n.type === "text" ? Math.max(f, ...(n.runs ?? []).map((r) => r.fontSize ?? 0)) : f);
+      return;
+    }
+    const text = n.text ?? (n.runs ?? []).map((r) => r.text).join("");
+    const label = /[A-Z]/.test(text) && text === text.toUpperCase() || n.letterSpacing !== undefined;
+    const title = n.type === "text" && !!n.bold && !label;
+    const sig = parent ? `${parent.type}(${(parent.children ?? []).map((k) => k.type).join(",")})` : "";
+    out.push({ id: n.id, f, text, sig, title, label: n.type === "text" && label, heading: title || (n.type === "text" && label) });
   });
-  // a stat value / hero number (>= 1.5x the smallest text in the box) is the
-  // box's anchor: frozen, like a title
+  // a stat value / hero number (a short number >= 1.5x the smallest text in the box) is
+  // the box's anchor: frozen here (growStats sizes it)
   const sizes = out.map((t) => t.f);
   const anchor = Math.max(...sizes);
-  if (out.length > 1 && anchor >= 1.5 * Math.min(...sizes)) {
+  const isAnchor = (t) => t.f === anchor && shortNumber(t.text);
+  // a stat tile: a card whose one big text is a short number ("₹59.8 Cr"; not a header
+  // stack's headline, nor a sentence with a digit in it: "Unlocking H2 growth ...")
+  const big = boxed ? statAnchor(stack) : null;
+  const shortNumber = (t) => /\d/.test(t) && t.trim().length <= ANCHOR_TEXT_MAX;
+  let stat = big !== null && shortNumber(big.text ?? (big.runs ?? []).map((r) => r.text).join(""));
+  if (out.length > 1 && anchor >= 1.5 * Math.min(...sizes) && out.some(isAnchor)) {
     smallestFixed = Math.min(smallestFixed, anchor);
-    for (let i = out.length - 1; i >= 0; i--) if (out[i].f === anchor) out.splice(i, 1);
+    stat = boxed;
+    for (let i = out.length - 1; i >= 0; i--) if (isAnchor(out[i])) { frozen.push(out[i].f); out.splice(i, 1); }
   }
-  // keep hierarchy: grown labels stay well below the KPI number / title they sit with
-  const ceiling = Math.floor(smallestFixed * 0.62);
-  for (const t of out) t.cap = Math.max(t.f, Math.min(t.heading ? HEADING_CAP : BODY_CAP, ceiling));
+  // keep hierarchy: grown text stays well below the KPI number / title it sits with; in a
+  // stat tile nothing but the number is a title ("+18% QoQ" is bold, not a heading)
+  // (0.62x a small number: labels of a 22px number may reach 13px; 0.45x a big one: the
+  // delta under a 55px number stays 24px, not 34)
+  const ceiling = Math.floor(stat ? Math.min(smallestFixed * 0.62, Math.max(smallestFixed * STAT_SIDE, 16))
+    : smallestFixed * 0.62);
+  for (const t of out) {
+    if (stat && t.title) Object.assign(t, { title: false, label: true });
+    const cap = t.title ? TITLE_CAP : t.label ? LABEL_CAP : BODY_CAP;
+    // grown text stays 2px below every bigger text in the box that does not grow (a label
+    // under a "₹59.8 Cr" with an inline unit size never passes the number)
+    const above = Math.min(...frozen.filter((f) => f > t.f)) - 2;
+    t.cap = Math.max(t.f, Math.min(cap, ceiling, above, beside));
+  }
   return out;
 }
 
-const scaled = (t, s) => Math.min(Math.round(t.f * (t.heading ? Math.sqrt(s) : s)), t.cap);
+// titles and body grow by s (the LLM's proportion), labels by sqrt(s)
+const scaled = (t, s) => Math.min(Math.round(t.f * (t.label ? Math.sqrt(s) : s)), t.cap);
+
+/** Sizes at factor s; a body stays at most 1/1.3 of every larger card title (composer rule). */
+function sizesAt(targets, s) {
+  const titles = targets.filter((t) => t.title);
+  return targets.map((t) => {
+    let size = scaled(t, s);
+    if (!t.heading) for (const h of titles) if (h.f > t.f) size = Math.min(size, Math.max(t.f, Math.floor(scaled(h, s) / TITLE_RATIO)));
+    return size;
+  });
+}
 
 function hasRigid(node) {
   let hit = false;
@@ -880,25 +976,80 @@ async function nextCandidate(xml, done) {
   const L = await layout(xml);
   try {
     let found = null;
-    const visit = (n, parent) => {
+    const visit = (n, parent, root) => {
       if (found || !STACKS.has(n.type)) return;
       // the slide root is not a card: its spare height belongs to its bands
       if (parent && n.id && !done.has(n.id)) {
         const targets = textTargets(n);
         const f = targets.length ? fill(n, L) : null;
         if (f && f.ratio < LOW_FILL && f.inner - f.content > MIN_SLACK) {
-          const peer = (m) => STACKS.has(m.type) && m.id && m.w === n.w && !hasRigid(m) && textTargets(m).length;
-          const members = parent?.type === "hstack" && peer(n) ? parent.children.filter(peer) : [n];
-          found = { ids: members.map((m) => m.id), targets: members.flatMap(textTargets),
+          const sameW = (m, ref) => m.w === ref.w || (PINNED.has(m.id) && PINNED.has(ref.id));
+          const peerOf = (ref) => (m) => STACKS.has(m.type) && m.id && sameW(m, ref) && !hasRigid(m) && textTargets(m).length;
+          let members = parent?.type === "hstack" && peerOf(n)(n) ? parent.children.filter(peerOf(n)) : [n];
+          // a sparse row of peer tiles grows as its tiles, in one group: grown as one
+          // block first, "ARR" (caps = label) and "Gross Margin" (body) got different
+          // sizes, and a label grown to 24px then counted as a frozen title
+          const tiles = n.type === "hstack" ? (n.children ?? []).filter((c) => STACKS.has(c.type)) : [];
+          if (tiles.length >= 2 && tiles.every(peerOf(tiles[0]))) members = tiles;
+          const ids = members.map((m) => m.id);
+          const lists = members.map((m) => textTargets(m));
+          // peer tiles: the same text slot has the same role in every tile
+          if (lists.length > 1 && lists.every((l) => l.length === lists[0].length)) {
+            lists[0].forEach((_, i) => {
+              const role = lists.find((l) => l[i].heading)?.[i];
+              if (role) for (const l of lists) Object.assign(l[i], { heading: true, title: role.title, label: role.label, cap: Math.max(l[i].f, role.cap) });
+            });
+          }
+          const icons = [], texts = [];
+          for (const m of members) walk(m, (d) => {
+            if (d.type === "icon" && d.id) icons.push({ id: d.id, f: d.size ?? 24 });
+            if (["text", "ul", "ol"].includes(d.type) && d.id) texts.push(d.id);
+          });
+          // a text whose word is already wider than its box does not grow (the guard shrinks it)
+          const over = wordsOver(L, texts);
+          // rows of the same shape (icon + text, ...) at the same size are peers: one role, so
+          // a bold first item ("Milk 500ml: 12.4") does not grow while its siblings are held
+          const bySlot = new Map();
+          for (const t of lists.flat()) if (t.sig.startsWith("hstack")) bySlot.set(`${t.sig}:${t.f}`, [...(bySlot.get(`${t.sig}:${t.f}`) ?? []), t]);
+          for (const group of bySlot.values()) {
+            const role = group.length > 1 && group.find((t) => t.title);
+            if (role) for (const t of group) Object.assign(t, { title: true, heading: true, label: false, cap: Math.max(...group.map((g) => g.cap)) });
+          }
+          found = { ids, seen: [n.id, ...ids], targets: lists.flat().filter((t) => !over.has(t.id)), icons, texts,
             ratio: Math.max(...members.map((m) => fill(m, L).ratio)) };
           return;
         }
       }
-      (n.children ?? []).forEach((c) => visit(c, n));
+      (n.children ?? []).forEach((c) => visit(c, n, root));
     };
-    L.slides.forEach((r) => visit(r, null));
+    L.slides.forEach((r) => visit(r, null, r));
     return found;
   } finally { L.free(); }
+}
+
+/**
+ * Pin each stack in a row (HStack child) to its current width. A card's width in a row
+ * follows its text, so growing its text moves the boundary with its neighbour (CHEFFIN
+ * "Closing Statement" beside a table card: every size changed the table's width, nothing grew;
+ * peer KPI tiles re-balanced as their labels grew). Pinned, text grows into the box it has.
+ * growStats pins too, so every phase measures the same layout (a flexible card gives its
+ * children a pixel more than a pinned one: a number grown to the edge was then 1px over).
+ */
+// ids this pass pinned (pinWidths): their w is fit-grow's, not the generator's, so pinned
+// tiles that were peers (w="max" each) stay peers
+const PINNED = new Set();
+
+async function pinWidths(xml, ids) {
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const root of L.slides) walk(root, (n, parent) => {
+      // flexible widths only (none / "max"): a "56%" or "160" is the author's width
+      if (parent?.type === "hstack" && n.id && ids.includes(n.id) && (n.w === undefined || n.w === "max")) edits.push([n.id, Math.round(L.box(n).w * 100) / 100]);
+    });
+  } finally { L.free(); }
+  edits.forEach(([id]) => PINNED.add(id));
+  return edits.reduce((x, [id, w]) => setAttrs(x, id, { w }), xml);
 }
 
 async function growText(xml, report) {
@@ -906,29 +1057,58 @@ async function growText(xml, report) {
   // already fill its children, or leave one of them still sparse.
   const done = new Set();
   for (let c; done.size < 24 && (c = await nextCandidate(xml, done));) {
-    c.ids.forEach((id) => done.add(id));
+    c.seen.forEach((id) => done.add(id));
     // stage 1: font sizes
-    const applyFont = (src, s) => c.targets.reduce((x, t) => setAttrs(x, t.id, { fontSize: scaled(t, s) }), src);
+    const applyFont = (src, s) => {
+      const sizes = sizesAt(c.targets, s);
+      const x = c.targets.reduce((acc, t, i) => setAttrs(acc, t.id, { fontSize: sizes[i] }), src);
+      return c.icons.reduce((acc, ic) => setAttrs(acc, ic.id,
+        { size: Math.max(ic.f, Math.min(Math.round(ic.f * Math.sqrt(s)), ICON_CAP)) }), x);
+    };
     const headings = c.targets.filter((t) => t.heading).map((t) => t.id);
-    const font = await search(xml, c.ids, applyFont, MAX_SCALE, headings);
-    if (!c.targets.some((t) => scaled(t, font.best) !== t.f)) font.best = 1; // all already at their caps
+    // a card title may wrap onto up to two more lines, as in the composer (its card has the
+    // room; fill / overflow are still checked): at 85% of its width a title at the wrap edge
+    // otherwise held every text in its card group at x1.05 (slide "Q4 Priorities", 2026-10-06)
+    if (!c.targets.length && !c.icons.length) continue;
+    const unpinned = xml;
+    xml = await pinWidths(xml, c.ids);
+    // every text in the group is checked: peer tiles re-balance their widths as labels grow,
+    // and a KPI number that fitted could lose its room (s11: one tile's number shrunk by the guard)
+    let font = await search(xml, c.ids, applyFont, MAX_SCALE, headings, 2, c.texts);
+    // growing everything together blocked early (a title in a row beside an icon cannot wrap,
+    // so it widens its card and squeezes a neighbour: CHEFFIN "Closing Statement" stayed x1.03):
+    // grow the rest with the titles kept at their size
+    if (font.best < 1.2 && font.ratio < LOW_FILL && c.targets.some((t) => t.title) && c.targets.some((t) => !t.title)) {
+      const kept = c.targets.map((t) => (t.title ? { ...t, cap: t.f } : t));
+      const applyKept = (src, sc) => {
+        const sizes = sizesAt(kept, sc);
+        return kept.reduce((acc, t, i) => setAttrs(acc, t.id, { fontSize: sizes[i] }), src);
+      };
+      const rest = await search(xml, c.ids, applyKept, MAX_SCALE, headings, 2, c.texts);
+      if (rest.best > font.best) { c.targets = kept; c.icons = []; font = rest; }  // icons sit in the title row
+    }
+    if (sizesAt(c.targets, font.best).every((f, i) => f === c.targets[i].f)) font.best = 1; // all already at their caps
     if (font.best > 1) xml = applyFont(xml, font.best);
 
-    // stage 2: once fonts hit their caps, spread the rest into line height + gaps
+    // stage 2: once fonts hit their caps, spread the rest into gaps and line height
     let spacing = { best: 1, ratio: font.ratio };
     if (font.ratio < LOW_FILL) {
       const T = await layout(xml);
       const lines = [], gaps = [];
+      // body text only: titles / labels / KPI numbers keep their line height (composer: titles 1.2)
+      const grown = new Set(c.targets.filter((t) => !t.heading).map((t) => t.id));
       try {
         for (const id of c.ids) walk(T.byId.get(id), (n) => {
           if (!n.id) return;
-          if (["text", "ul", "ol"].includes(n.type)) lines.push({ id: n.id, lh: n.lineHeight ?? 1.3 });
-          if (STACKS.has(n.type) && typeof n.gap === "number" && n.gap > 0) gaps.push({ id: n.id, g: n.gap });
+          if (grown.has(n.id)) lines.push({ id: n.id, lh: n.lineHeight ?? 1.3 });
+          // vertical gaps only: an HStack's gap adds no height, it takes width from the cards
+          // in the row (a second pass grew a row's gap 12 -> 19 -> 30 and shrank its words)
+          if (n.type === "vstack" && typeof n.gap === "number" && n.gap > 0) gaps.push({ id: n.id, g: n.gap });
         });
       } finally { T.free(); }
       const applySpacing = (src, t) => {
         let x = lines.reduce((acc, l) => setAttrs(acc, l.id,
-          { lineHeight: Math.min(Math.round(l.lh * t * 100) / 100, 1.6) }), src);
+          { lineHeight: Math.min(Math.round(l.lh * t * 100) / 100, Math.max(l.lh, LINE_HEIGHT_MAX)) }), src);
         x = gaps.reduce((acc, g) => setAttrs(acc, g.id, { gap: Math.round(g.g * (1 + 1.5 * (t - 1))) }), x);
         return x;
       };
@@ -936,9 +1116,9 @@ async function growText(xml, report) {
       if (spacing.best > 1) xml = applySpacing(xml, spacing.best);
     }
 
-    if (font.best === 1 && spacing.best === 1) continue;
-    const body = c.targets.find((t) => !t.heading) ?? c.targets[0];
-    report.push(`text x${font.best.toFixed(2)} (e.g. ${body.f} -> ${scaled(body, font.best)}pt)`
+    if (font.best === 1 && spacing.best === 1) { xml = unpinned; continue; }
+    const bodyAt = Math.max(0, c.targets.findIndex((t) => !t.heading));
+    report.push(`text x${font.best.toFixed(2)} (e.g. ${c.targets[bodyAt].f} -> ${sizesAt(c.targets, font.best)[bodyAt]}pt)`
       + (spacing.best > 1 ? `, spacing x${spacing.best.toFixed(2)}` : "")
       + `, fill ${Math.round(c.ratio * 100)}% -> ${Math.round(spacing.ratio * 100)}%`);
   }
@@ -961,13 +1141,13 @@ function overflows(L) {
  * A font loaded from src/node/fonts/ is measured with its real widths, so no
  * margin: 85% there reserved lines the renderer never draws (§10g-1).
  */
-function lineCount(n, L) {
+function lineCount(n, L, margin = 0.85) {
   const b = L.box(n);
   const fs = n.fontSize ?? 24, lh = n.lineHeight ?? 1.3;
   const family = n.fontFamily ?? "Noto Sans JP";
   const real = L.ctx.fontRegistry.hasFont(family, n.bold ? "bold" : "normal");
   const { heightPx } = measureText(n.text ?? (n.runs ?? []).map((r) => r.text).join(""),
-    Math.max(0, b.w - b.pl - b.pr) * (real ? 1 : 0.85), { fontFamily: family, fontSizePx: fs,
+    Math.max(0, b.w - b.pl - b.pr) * (real ? 1 : margin), { fontFamily: family, fontSizePx: fs,
       lineHeight: lh, fontWeight: n.bold ? "bold" : "normal", letterSpacingPx: n.letterSpacing },
     L.ctx.textMeasurementMode, L.ctx.fontRegistry);
   return Math.round(heightPx / (fs * lh));
@@ -982,21 +1162,53 @@ function lineCount(n, L) {
 // so they only get minH if POM itself would wrap them, i.e. never.
 
 const HEADING_PX = 20;
+const CHIP_PX = 12;
+
+/** A card whose width is its content's: no w of its own, in a VStack that does not stretch it. */
+function chip(card, up) {
+  const p = up.get(card);
+  return !!p && STACKS.has(card.type) && card.w === undefined && p.type === "vstack"
+    && ["start", "end", "center"].includes(p.alignItems);
+}
 
 async function reserveWrap(xml, report) {
   const L = await layout(xml);
   const edits = [];
   try {
     for (const root of L.slides) {
-      let spare = SLIDE.h - natural(root, L);
+      // the room a heading may take: its card's free height when it sits in a card (a slide
+      // whose bands fill it has no spare, yet a grown card title has room inside its card:
+      // "Q4 Priorities" 2026-10-06, a 3-line title drawn in a 2-line box over the body),
+      // else the slide's
+      const spare = new Map([[root, SLIDE.h - natural(root, L)]]);
+      const roomOf = (n, up) => {
+        for (let a = up.get(n); a; a = up.get(a)) {
+          if (a === root) return a;
+          if (STACKS.has(a.type) && hasBoxStyle(a)) {
+            if (!spare.has(a)) { const f = fill(a, L); spare.set(a, Math.max(0, f.inner - f.content)); }
+            return a;
+          }
+        }
+        return root;
+      };
+      const up = new Map();
+      walk(root, (n, parent) => { if (parent) up.set(n, parent); });
       walk(root, (n) => {
-        if (!n.id || n.type !== "text" || (n.fontSize ?? 24) < HEADING_PX) return;
+        // headings; and any text in a card sized to its content (a chip): the renderer wraps it
+        // and then shrinks it to fit the one-line box (cover "Prepared by Paxcom India." at 14px)
+        if (!n.id || n.type !== "text") return;
+        if ((n.fontSize ?? 24) < (chip(roomOf(n, up), up) ? CHIP_PX : HEADING_PX)) return;
         const fs = n.fontSize ?? 24, lh = n.lineHeight ?? 1.3;
         const have = Math.round(L.box(n).h / (fs * lh));
         const need = lineCount(n, L);
         const extra = Math.ceil((need - have) * fs * lh);
-        if (need > have && extra <= spare) {
-          spare -= extra;
+        // the card's own free height first; a card sized to its content (a chip) grows with
+        // its text, so the rest may come from the slide's spare height, as before
+        const box = roomOf(n, up);
+        const own = box === root ? 0 : Math.min(extra, spare.get(box));
+        if (need > have && extra - own <= Math.max(0, spare.get(root))) {   // an over-full slide has none to lend
+          if (box !== root) spare.set(box, spare.get(box) - own);
+          spare.set(root, spare.get(root) - (extra - own));
           edits.push([n.id, Math.ceil(need * fs * lh), have, need]);
         }
       });
@@ -1022,14 +1234,59 @@ function outsideWidths(L, ids) {
  * Binary-search the largest factor in [1, max] for `apply` such that the
  * fullest candidate stays <= TARGET_FILL, no stack on the slide overflows more than it
  * already did (flex boxes may resize; nothing may overrun), no heading in
- * `keepLines` wraps onto an extra line, and nothing outside the candidates changes
+ * `keepLines` wraps onto more than `lineSlack` extra lines, and nothing outside the candidates changes
  * width (a w="max" card whose text grows takes width from its neighbour: gj-h1
  * slide 12's summary panel squeezed the KPI table beside it until its rows spilled).
  */
-async function search(xml, ids, apply, max, keepLines = []) {
+const GROW_WRAP_MARGIN = 0.8;
+
+/** Per card id: the height the renderer's extra heading lines need (85%-width lines beyond POM's). */
+function wrapNeed(L, ids) {
+  const need = new Map();
+  for (const id of ids) {
+    const n = L.byId.get(id);
+    if (!n || n.type !== "text") continue;
+    const fs = n.fontSize ?? 24, lh = n.lineHeight ?? 1.3;
+    // a stricter margin than reserveWrap's 85%: big bold text in a narrow card wraps more on the
+    // slide than 85% predicts (CHEFFIN closing note at 42px: 5 lines drawn, 4 predicted)
+    const extra = (lineCount(n, L, GROW_WRAP_MARGIN) - Math.round(L.box(n).h / (fs * lh))) * fs * lh;
+    if (extra > 0) { const card = cardOf(L, n); need.set(card.id, (need.get(card.id) ?? 0) + extra); }
+  }
+  return need;
+}
+
+/** The nearest box-styled stack around n (its card), else the slide root. */
+function cardOf(L, n) {
+  if (!L.up) {
+    L.up = new Map();
+    for (const root of L.slides) walk(root, (d, parent) => { if (parent) L.up.set(d, parent); });
+  }
+  let a = L.up.get(n), last = n;
+  for (; a; last = a, a = L.up.get(a)) if (STACKS.has(a.type) && hasBoxStyle(a)) return a;
+  return last;
+}
+
+/** Ids (text / list) whose longest word is wider than their box (renderer slack for an unloaded font). */
+function wordsOver(L, ids) {
+  const over = new Set();
+  for (const id of ids) {
+    const n = L.byId.get(id);
+    if (!n || !["text", "ul", "ol"].includes(n.type)) continue;
+    const family = n.fontFamily ?? "Noto Sans JP";
+    const b = L.box(n);
+    const list = n.type !== "text";
+    const room = (b.w - b.pl - b.pr - (list ? 36 : 0)) * (exact(L.ctx, family, n.bold) ? 1 : GUARD_SLACK);
+    const texts = list ? n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""))
+      : [n.text ?? (n.runs ?? []).map((r) => r.text).join("")];
+    if (room > 0 && widestPiece(texts, family, n.fontSize ?? 24, n.bold, n.letterSpacing, L.ctx).w > room + 0.5) over.add(id);
+  }
+  return over;
+}
+
+async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words = []) {
   const fullest = (L) => Math.max(...ids.map((id) => fill(L.byId.get(id), L).ratio));
   const B = await layout(xml);
-  let before, ratio, lines0, slideMax, widths;
+  let before, ratio, lines0, slideMax, widths, over0, need0;
   try {
     before = overflows(B);
     widths = outsideWidths(B, ids);
@@ -1040,6 +1297,8 @@ async function search(xml, ids, apply, max, keepLines = []) {
     slideMax = B.slides.map((r) => Math.max(natural(r, B), SLIDE.h) + 1);
     // a heading only 1 line in POM counts as 1 even if the 85% margin wraps it
     lines0 = new Map(keepLines.map((k) => [k, lineCount(B.byId.get(k), B)]));
+    over0 = wordsOver(B, words);
+    need0 = wrapNeed(B, keepLines);
   } finally { B.free(); }
   let lo = 1, hi = max, best = 1;
   for (let i = 0; i < 7; i++) {
@@ -1049,8 +1308,18 @@ async function search(xml, ids, apply, max, keepLines = []) {
       const r = fullest(T);
       let ok = r <= TARGET_FILL && T.slides.every((r, j) => natural(r, T) <= slideMax[j]);
       for (const [k, o] of overflows(T)) if (o > Math.max(before.get(k) ?? 0, 0) + 1) ok = false;
-      for (const [k, l0] of lines0) if (lineCount(T.byId.get(k), T) > Math.max(l0, 1)) ok = false;
+      for (const [k, l0] of lines0) if (lineCount(T.byId.get(k), T) > Math.max(l0, 1) + lineSlack) ok = false;
+      // the lines the renderer draws beyond POM's (85% width) need height in their card: a
+      // phase may not take it (cover 2026-10-06: a chip title's second line ran out of the chip;
+      // CHEFFIN closing note: the spacing phase took the room of the statement's 5th line, which
+      // then ran into "+18%"). A card already short of it at the start may not get shorter.
+      for (const [id, h] of wrapNeed(T, keepLines)) {
+        const f = fill(T.byId.get(id), T);
+        if (h > f.inner - f.content + 1 && h > (need0.get(id) ?? 0) + 1) ok = false;
+      }
       for (const [k, w] of widths) if (Math.abs(T.box(T.byId.get(k)).w - w) > 1) ok = false;
+      // growing never makes a word wider than its box (composer: never past the longest word)
+      for (const k of wordsOver(T, words)) if (!over0.has(k)) ok = false;
       if (ok) { best = s; ratio = r; lo = s; } else hi = s;
     } finally { T.free(); }
   }
@@ -1263,12 +1532,14 @@ async function guardWords(xml, report, warnings) {
 
 /** One slide (with the document's <Theme> prefix) through every phase. */
 async function fitSlide(inputXml, report, warnings = []) {
+  PINNED.clear();
   let xml = tagNodes(inputXml);
   xml = await respectHeights(xml, report);
   xml = await splitLists(xml, report);
   xml = await fitTables(xml, report);
   xml = await sizeTables(xml, report);
   xml = await growDiagrams(xml, report);
+  xml = await shareHeight(xml, report);
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
