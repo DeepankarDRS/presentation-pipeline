@@ -533,7 +533,7 @@ once after the fix).
 | duplicate dropped | launch 3 (chevrons vs cards, as on the hold-out) |
 | shrink guard | `WORD_TOO_WIDE` warnings reach the critic; xtsy has 5 word breaks on 8 slides, the rest 0-1 |
 | font embedding | active on the composed decks (6 faces, ≤ 319 KB); the LLM decks name no font, so none embedded, as designed |
-| PowerPoint opens `composed.pptx` with Inter drawn (the user's check, also covers `saveSubsetFonts`) | **still to confirm** |
+| PowerPoint opens `composed.pptx` with Inter drawn (the user's check, also covers `saveSubsetFonts`) | **yes (user, 2026-10-06): opens, Inter drawn** (subset embedding + `saveSubsetFonts` accepted) |
 
 **Where the money goes (all six, list price):** generator 66% ($1.15; 11.5k tokens in and 1.0k out per slide, only 5% of
 the input cached because the prompt differs per slide), slide planner 25% ($0.43; 85% of its input cached), outline
