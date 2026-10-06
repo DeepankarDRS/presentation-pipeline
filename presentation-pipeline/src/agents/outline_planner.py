@@ -29,7 +29,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from src.agents.outline_planner_schema import OutlinePlannerOutput
 from src.agents.settings_mapper import DeckSettings, settings_to_constraints
 from src.state import PresentationState
-from src.utils.llm_client import get_llm, unpack_raw
+from src.utils.llm_client import get_llm, unpack_raw, usage_record
 
 logger = logging.getLogger(__name__)
 
@@ -134,5 +134,5 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
 
     return {
         "outline_plan": outline,
-        "generation_history": [{"attempt": 0, "tier": 0, **usage}],
+        "generation_history": [usage_record(usage, "outline_planner")],
     }

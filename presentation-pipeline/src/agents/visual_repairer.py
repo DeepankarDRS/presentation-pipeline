@@ -27,7 +27,7 @@ from src.agents.slide_component_planner import plan_single_slide
 from src.agents.validator import normalize_and_compile
 from src.compiler.repair_guidance import cap_diag_msg
 from src.state import AttemptRecord, PresentationState
-from src.utils.llm_client import extract_usage, get_llm
+from src.utils.llm_client import extract_usage, get_llm, usage_record
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ def _do_regenerate(state, plan, problems, contract, theme_el, idx):
     outline_slide = _plan_to_outline_slide(plan)
     outline_plan = {"core_hook": state.get("core_hook", ""), "slides": [outline_slide]}
 
-    new_plan, _ = plan_single_slide(
+    new_plan, plan_usage = plan_single_slide(
         outline_slide,
         outline_plan=outline_plan,
         deck_settings=state.get("deck_settings"),
@@ -123,7 +123,7 @@ def _do_regenerate(state, plan, problems, contract, theme_el, idx):
     slide_plans[idx] = new_plan
 
     return response.content, extract_usage(response), response, {
-        "slide_plans": slide_plans, "contract": new_contract,
+        "slide_plans": slide_plans, "contract": new_contract, "plan_usage": plan_usage,
     }
 
 
@@ -160,9 +160,14 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
         logger.error(f"visual_repairer: {strategy} failed: {exc}")
         return {"visual_repair_count": count, "visual_repair_outcome": "error"}
 
+    # REGENERATE re-planned the slide: that call is spend too, whatever happens next
+    plan_usage = extra.pop("plan_usage", None)
+    plan_history = [usage_record(plan_usage, "slide_component_planner", idx)] if plan_usage else []
+
     if response.response_metadata.get("finish_reason") == "length":
         logger.warning("visual_repairer: output truncated — discarding")
-        return {"visual_repair_count": count, "visual_repair_outcome": "error"}
+        return {"visual_repair_count": count, "visual_repair_outcome": "error",
+                "generation_history": plan_history}
 
     if strategy != "regenerate" and xml.strip() == original_xml.strip():
         logger.warning("visual_repairer: identical XML — no progress")
@@ -179,12 +184,14 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
         errors_in=problems, errors_out=[], error_sigs=[],
         stalled=False, truncated=False, noop=False,
         tokens_in=usage["tokens_in"], tokens_out=usage["tokens_out"],
-        model=usage["model"],
+        tokens_reasoning=usage["tokens_reasoning"], tokens_cached=usage["tokens_cached"],
+        model=usage["model"], step="visual_repairer", slide_index=idx,
     )
+    history = [*plan_history, record]
 
     if not compile_ok:
         logger.warning("visual_repairer: repair broke compilation — discarding")
-        return {"visual_repair_count": count, "visual_repair_outcome": "error", "generation_history": [record]}
+        return {"visual_repair_count": count, "visual_repair_outcome": "error", "generation_history": history}
 
     logger.info(f"visual_repairer: compiled OK — accepting ({usage['model']})")
     result = {
@@ -192,7 +199,7 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
         "compile_result": new_cr,
         "visual_repair_count": count,
         "visual_repair_outcome": "improved",
-        "generation_history": [record],
+        "generation_history": history,
     }
     result.update(extra)
     return result

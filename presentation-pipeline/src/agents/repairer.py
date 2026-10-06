@@ -40,7 +40,7 @@ from src.compiler.repair_guidance import (
     select_repair_knowledge,
 )
 from src.state import AttemptRecord, PresentationState
-from src.utils.llm_client import extract_usage, get_llm
+from src.utils.llm_client import extract_usage, get_llm, usage_record
 
 logger = logging.getLogger(__name__)
 
@@ -295,6 +295,7 @@ def _call_llm_and_return(
     failing_xml: str,
     system_prompt: str,
     user_prompt: str,
+    slide_index: int | None = None,
 ) -> dict[str, Any]:
     """Call the repairer LLM and build the return dict (used by PATCH)."""
     llm = get_llm("repairer")
@@ -329,7 +330,11 @@ def _call_llm_and_return(
         noop=noop,
         tokens_in=tokens_in,
         tokens_out=tokens_out,
+        tokens_reasoning=usage["tokens_reasoning"],
+        tokens_cached=usage["tokens_cached"],
         model=model,
+        step="repairer",
+        slide_index=slide_index,
     )
 
     return {
@@ -357,6 +362,7 @@ def repairer_node(state: PresentationState) -> dict[str, Any]:
                 errors_in=[], errors_out=[], error_sigs=[],
                 stalled=True, truncated=False, noop=True,
                 tokens_in=0, tokens_out=0, model="error",
+                step="repairer", slide_index=state.get("current_slide_index", 0),
             )],
         }
 
@@ -477,7 +483,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
 
         logger.info(f"repairer: REGENERATE — re-planning slide {idx} with repair context")
         try:
-            new_plan, _usage = plan_single_slide(
+            new_plan, plan_usage = plan_single_slide(
                 outline_slide,
                 outline_plan=outline_plan,
                 deck_settings=state.get("deck_settings"),
@@ -502,7 +508,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             strategy = PATCH
             return _call_llm_and_return(
                 strategy, current_count, problems, curr_sigs, stalled,
-                failing_xml, system_prompt, user_prompt,
+                failing_xml, system_prompt, user_prompt, slide_index=idx,
             )
 
         new_plan["slide_index"] = plan.get("slide_index", 0)
@@ -563,7 +569,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             )
             return _call_llm_and_return(
                 PATCH, current_count, problems, curr_sigs, stalled,
-                failing_xml, patch_sys, patch_user,
+                failing_xml, patch_sys, patch_user, slide_index=idx,
             )
 
         regenerated_xml = response.content
@@ -589,14 +595,19 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             noop=truncated,
             tokens_in=tokens_in,
             tokens_out=tokens_out,
+            tokens_reasoning=usage["tokens_reasoning"],
+            tokens_cached=usage["tokens_cached"],
             model=model,
+            step="repairer",
+            slide_index=idx,
         )
 
         result = {
             "retry_tier": strategy,
             "retry_count": current_count + 1,
             "stall_detected": stalled,
-            "generation_history": [record],
+            # the re-plan call is real spend: record it next to the regenerate call
+            "generation_history": [usage_record(plan_usage, "slide_component_planner", idx), record],
         }
         if not truncated:
             result["current_xml"] = regenerated_xml
@@ -606,5 +617,5 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
 
     return _call_llm_and_return(
         strategy, current_count, problems, curr_sigs, stalled,
-        failing_xml, system_prompt, user_prompt,
+        failing_xml, system_prompt, user_prompt, slide_index=idx,
     )

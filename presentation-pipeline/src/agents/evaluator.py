@@ -74,11 +74,16 @@ def _build_step_summary(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
         cost = _compute_cost(tokens_in, tokens_out, model)
 
         steps.append({
+            "step": record.get("step", "unknown"),
+            "slide_index": record.get("slide_index"),
             "attempt": record.get("attempt", 0),
             "tier": record.get("tier", 0),
             "model": model,
             "tokens_in": tokens_in,
             "tokens_out": tokens_out,
+            "tokens_reasoning": record.get("tokens_reasoning", 0),
+            "tokens_cached": record.get("tokens_cached", 0),
+            "reask": bool(record.get("reask", False)),
             "cost": cost,
             "stalled": record.get("stalled", False),
             "errors_in_count": len(record.get("errors_in", [])),
@@ -246,6 +251,9 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
             "total_in": total_tokens_in,
             "total_out": total_tokens_out,
             "total": total_tokens_in + total_tokens_out,
+            # parts of total_out / total_in, for reading only (cost uses total_in / total_out)
+            "total_reasoning": sum(r.get("tokens_reasoning", 0) for r in history),
+            "total_cached": sum(r.get("tokens_cached", 0) for r in history),
         },
         "cost": {
             "total_usd": round(total_cost, 6),

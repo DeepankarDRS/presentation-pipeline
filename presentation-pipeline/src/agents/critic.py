@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 from src.agents.visual_critic import run_visual_critic
+from src.utils.llm_client import usage_record
 from src.compiler.layout_audit import REPORT_ONLY_CODES
 from src.compiler.screenshot import render_screenshots
 from src.state import CriticResult, PresentationState, VisualCriticResult
@@ -201,6 +202,6 @@ def _critic_inner(state: PresentationState, idx: int) -> dict[str, Any]:
     )
 
     if usage.get("tokens_in", 0) > 0:
-        updates["generation_history"] = [{"attempt": 0, "tier": 0, **usage}]
+        updates["generation_history"] = [usage_record(usage, "critic", state.get("current_slide_index", 0))]
 
     return updates

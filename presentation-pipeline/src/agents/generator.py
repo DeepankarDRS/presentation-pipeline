@@ -115,7 +115,11 @@ def _generator_inner(state: PresentationState) -> dict[str, Any]:
         truncated=truncated,
         tokens_in=tokens_in,
         tokens_out=tokens_out,
+        tokens_reasoning=usage["tokens_reasoning"],
+        tokens_cached=usage["tokens_cached"],
         model=model,
+        step="generator",
+        slide_index=state.get("current_slide_index", 0),
     )
 
     return {

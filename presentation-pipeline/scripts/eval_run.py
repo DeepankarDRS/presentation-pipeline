@@ -371,6 +371,8 @@ def _collect_run(case: dict[str, Any], deck: str | None, out_dir: Path, compose:
     except FileNotFoundError:
         return
     shutil.copy2(run / "slides.json", dst / "slides.json")
+    if (run / "run-manifest.json").exists():  # step names + tokens per call: the usage report reads it
+        shutil.copy2(run / "run-manifest.json", dst / "run-manifest.json")
     if not compose:
         return
     print(f"   composing {case['name']} run {case['repeat']} with the code composer ...", flush=True)

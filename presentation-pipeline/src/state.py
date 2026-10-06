@@ -88,7 +88,12 @@ class AttemptRecord(TypedDict, total=False):
     noop: bool              # PATCH returned XML identical to its input
     tokens_in: int
     tokens_out: int
+    tokens_reasoning: int   # part of tokens_out (reasoning models)
+    tokens_cached: int      # part of tokens_in served from the prompt cache
     model: str
+    step: str               # pipeline step that made the call (llm_client.usage_record)
+    slide_index: int | None  # 0-based; None for a deck-level call
+    reask: bool             # a planner re-ask after a failed plan (step 0)
 
 
 class ValidateResult(TypedDict, total=False):

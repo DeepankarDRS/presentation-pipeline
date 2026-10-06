@@ -19,7 +19,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.elicitor_schema import ElicitorOutput
 from src.state import PresentationState
-from src.utils.llm_client import get_llm, unpack_raw
+from src.utils.llm_client import get_llm, unpack_raw, usage_record
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ def _elicitor_inner(state: PresentationState) -> dict[str, Any]:
         supplied_content=state.get("supplied_content"),
     )
 
-    history = [{"attempt": 0, "tier": 0, **usage}]
+    history = [usage_record(usage, "elicitor")]
 
     if result.is_sufficient:
         return {

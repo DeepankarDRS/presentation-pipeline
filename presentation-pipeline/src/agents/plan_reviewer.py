@@ -23,7 +23,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.plan_reviewer_schema import PlanReviewerOutput
 from src.state import PresentationState
-from src.utils.llm_client import get_llm, unpack_raw
+from src.utils.llm_client import get_llm, unpack_raw, usage_record
 
 logger = logging.getLogger(__name__)
 
@@ -103,5 +103,5 @@ def _plan_reviewer_inner(state: PresentationState, slide_plans: list) -> dict[st
             "summary": result.summary,
             "issues": [i.model_dump() for i in result.issues],
         },
-        "generation_history": [{"attempt": 0, "tier": 0, **usage}],
+        "generation_history": [usage_record(usage, "plan_reviewer")],
     }

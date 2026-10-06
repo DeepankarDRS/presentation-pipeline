@@ -93,24 +93,38 @@ def get_llm(step: str, **overrides: Any) -> ChatOpenAI | AzureChatOpenAI:
     )
 
 
-_ZERO_USAGE: dict[str, Any] = {"tokens_in": 0, "tokens_out": 0, "tokens_reasoning": 0, "model": "unknown"}
+_ZERO_USAGE: dict[str, Any] = {"tokens_in": 0, "tokens_out": 0, "tokens_reasoning": 0, "tokens_cached": 0,
+                               "model": "unknown"}
 
 
 def extract_usage(response) -> dict[str, Any]:
-    """Extract tokens_in, tokens_out, tokens_reasoning, model from an AIMessage's metadata.
+    """Extract tokens_in, tokens_out, tokens_reasoning, tokens_cached, model from an AIMessage's metadata.
 
-    tokens_out already includes tokens_reasoning (OpenAI bills them as output),
-    so cost stays tokens_in / tokens_out; tokens_reasoning is for reading only.
+    tokens_out already includes tokens_reasoning (OpenAI bills them as output) and tokens_in
+    already includes tokens_cached (billed at a discount), so cost stays tokens_in / tokens_out;
+    tokens_reasoning and tokens_cached are for reading only.
     """
     meta = getattr(response, "response_metadata", None) or {}
     token_usage = meta.get("token_usage") or {}
     details = token_usage.get("completion_tokens_details") or {}
+    prompt_details = token_usage.get("prompt_tokens_details") or {}
     return {
         "tokens_in": token_usage.get("prompt_tokens", 0),
         "tokens_out": token_usage.get("completion_tokens", 0),
         "tokens_reasoning": details.get("reasoning_tokens") or 0,
+        "tokens_cached": prompt_details.get("cached_tokens") or 0,
         "model": meta.get("model_name", "unknown"),
     }
+
+
+def usage_record(usage: dict[str, Any], step: str, slide_index: int | None = None, **extra: Any) -> dict[str, Any]:
+    """One generation_history entry for an LLM call, named by pipeline step and slide.
+
+    `step` is the pipeline step (elicitor, outline_planner, slide_component_planner,
+    plan_reviewer, generator, repairer, critic, visual_repairer); `slide_index` is 0-based,
+    None for a deck-level call. The run manifest and scripts/usage_report.py read these.
+    """
+    return {"attempt": 0, "tier": 0, **usage, "step": step, "slide_index": slide_index, **extra}
 
 
 def unpack_raw(result) -> tuple[Any, dict[str, Any]]:
