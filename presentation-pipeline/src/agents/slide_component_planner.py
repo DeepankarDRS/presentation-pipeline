@@ -282,6 +282,7 @@ def plan_with_reask(
     best: SlidePlan | None = None
     best_count = 0
     problems: list[dict[str, str]] = []
+    first_problems: list[dict[str, str]] = []
     for attempt in range(2):
         try:
             plan, usage = plan_single_slide(
@@ -300,6 +301,7 @@ def plan_with_reask(
         if not problems:
             break
         if attempt == 0:
+            first_problems = problems
             logger.info(f"slide_component_planner: slide {idx + 1} re-ask: "
                         + "; ".join(p["detail"] for p in problems))
     if best is None:
@@ -309,7 +311,7 @@ def plan_with_reask(
     if best.get("plan_source") == "fallback":
         notes.append("planner failed twice: fallback plan")
     elif len(history) > 1:
-        notes.append("planner re-asked")
+        notes.append("planner re-asked because: " + "; ".join(p["detail"] for p in first_problems))
     for note in notes:
         logger.info(f"slide_component_planner: slide {idx + 1} {note}")
     if notes:

@@ -39,7 +39,7 @@ def report(paths: list[Path], recheck: bool = False) -> str:
         slides = json.loads(f.read_text(encoding="utf-8"))
         plans = [(s or {}).get("slide_plan") or {} for s in slides]
         flags = Counter(fl["code"] for p in plans for fl in p.get("plan_flags", []))
-        reasked = sum("planner re-asked" in p.get("capacity_fixes", []) for p in plans)
+        reasked = sum(any(str(n).startswith("planner re-asked") for n in p.get("capacity_fixes", [])) for p in plans)
         fallback = sum(p.get("plan_source") == "fallback" for p in plans)
         row = (f"| {case_of(f)} | {len(plans)} | {reasked} | {fallback} | {flags['PLAN_EMPTY']} | "
                f"{flags['PLAN_INSTRUCTION_TEXT']} | {flags['PLAN_DUPLICATE_ITEMS']} | {flags['SLIDE_SPARSE']} |")

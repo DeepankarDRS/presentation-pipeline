@@ -178,7 +178,7 @@ def test_an_empty_plan_is_asked_again_once_and_the_better_plan_wins():
     assert m.call_count == 2
     assert [h["reask"] for h in history] == [False, True]
     assert p["components"][0]["content_data"]["kpi_values"] == ["$48.2M"]
-    assert "planner re-asked" in p["capacity_fixes"]
+    assert any(n.startswith("planner re-asked because: kpi_row") for n in p["capacity_fixes"])
     ctx = m.call_args_list[1].kwargs["repair_context"]
     assert ctx["failed_kinds"] == ["kpi_row"]
 

@@ -25,6 +25,10 @@ def test_the_mangled_separators_seen_in_the_step_0_run_become_a_middle_dot_again
     }
     for raw, want in seen.items():
         assert strip_illegal(raw)[0] == want, raw
+    # other shapes of the same glitch (NUL alone, NUL + hex digit, three control characters)
+    assert strip_illegal(f"A {NUL} B")[0] == "A \u00b7 B"
+    assert strip_illegal(f"A {NUL}7 B")[0] == "A \u00b7 B"
+    assert strip_illegal(f"A {chr(1)}{chr(2)}{chr(3)} B")[0] == "A \u00b7 B"
     # a NUL that is not between spaces is just removed, never turned into a dot
     assert strip_illegal(f"x{NUL}y")[0] == "xy"
 

@@ -1,0 +1,409 @@
+{
+  "label": "step0",
+  "created": "2026-10-06T20:29:06",
+  "git_commit": "9191296",
+  "models_sha": "2518d873",
+  "fit_grow": "1",
+  "aggregate": {
+    "runs": 1,
+    "runs_passed": 1,
+    "runs_errored": 0,
+    "slides": 5,
+    "slide_count_off": 0,
+    "compiled_pct": 100.0,
+    "first_pass_pct": 80.0,
+    "mean_retries": 0.2,
+    "cards": 11,
+    "mean_fill": 0.735,
+    "low_fill_pct": 36.4,
+    "auto_fixes_per_slide": 0.8,
+    "layout_issues_per_slide": 0.4,
+    "fit_grow_changes_per_slide": 2.0,
+    "word_breaks_per_slide": 0.0,
+    "text_overflows_per_slide": 0.0,
+    "table_spill_slides": 0,
+    "table_spill_px": 0,
+    "tables_overfull_slides": 0,
+    "empty_cells": 0,
+    "invented_numbers": 0,
+    "tokens_in": 130640,
+    "tokens_out": 24950,
+    "cost_usd": 0.2036,
+    "elapsed_s": 254.1,
+    "auto_fix_codes": {
+      "TEXT_WHITESPACE_TRIMMED": 3,
+      "ATTR_CONFLICT_FIXED": 1
+    },
+    "blocking_codes": {
+      "PARSE_ERROR": 1
+    },
+    "blocking_messages": {
+      "PARSE_ERROR: <Shape>: Cannot parse JSON value: \"2563EB\"": 1
+    },
+    "layout_codes": {
+      "LOW_CONTRAST": 2
+    },
+    "card_patterns": {
+      "text_card": 4,
+      "kpi_tile": 3,
+      "dark_panel": 2,
+      "chart_card": 1,
+      "table_card": 1
+    },
+    "component_kinds": {
+      "title": 5,
+      "kpi_row": 2,
+      "narrative": 2,
+      "chart": 1,
+      "table": 1,
+      "caption": 1,
+      "card_grid": 1
+    }
+  },
+  "cases": [
+    {
+      "name": "deck-qbr-data",
+      "repeat": 1,
+      "run_id": "deck-qbr-data-d50304",
+      "passed": true,
+      "error": null,
+      "tokens_in": 130640,
+      "tokens_out": 24950,
+      "cost": 0.203587,
+      "elapsed": 254.1,
+      "expected_slides": 5,
+      "slides": [
+        {
+          "index": 0,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.00 (e.g. 22 -> 22pt), spacing x1.40, fill 15% -> 21%",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)",
+            "slide 1: heading 1 -> 2 lines reserved (renderer wraps wider than POM)"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "hero",
+              "design_hint": "emphasize the title as the hero element; color the phrase \"Q3 FY26\" as an accent and render the subtitle smaller and muted"
+            }
+          ],
+          "cards": [],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 1,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {},
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: hero stat x1.66 (72 -> 120px), fill 42% -> 60%",
+            "slide 1: text x1.99 (e.g. 14 -> 20pt), spacing x1.40, fill 66% -> 84%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the phrase 'EXECUTIVE SUMMARY' in the accent color to mark the kicker"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "hero",
+              "design_hint": "inverted panel on the ARR tile; color the +18% QoQ delta in positive color and visually emphasize the $48.2M value"
+            },
+            {
+              "kind": "kpi_row",
+              "weight": "supporting",
+              "design_hint": "color-code by meaning: NRR in positive color, Gross Margin and CAC Payback in negative/warning color; accent border on the Gross Margin tile"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.803,
+              "frame": [
+                36,
+                141,
+                1208,
+                406
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.983,
+              "frame": [
+                36,
+                565,
+                365,
+                119
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.983,
+              "frame": [
+                415,
+                565,
+                376,
+                119
+              ]
+            },
+            {
+              "pattern": "kpi_tile",
+              "fill": 0.983,
+              "frame": [
+                805,
+                565,
+                439,
+                119
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 2,
+          "compiled": true,
+          "first_pass_ok": false,
+          "retries": 1,
+          "max_tier": 1,
+          "auto_fixes": {
+            "ATTR_CONFLICT_FIXED": 1
+          },
+          "blocking": {
+            "PARSE_ERROR": 1
+          },
+          "blocking_msgs": [
+            "PARSE_ERROR: <Shape>: Cannot parse JSON value: \"2563EB\""
+          ],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: text x1.99 (e.g. 16 -> 23pt), spacing x1.40, fill 64% -> 70%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the \"$48.2M\" value to emphasize Q3 FY26"
+            },
+            {
+              "kind": "chart",
+              "weight": "hero",
+              "design_hint": "accent color and a callout on the Q3 FY26 bar (label the callout 'Q3 FY26 $48.2M'); use muted color for all other bars"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "emphasize the phrase \"largest absolute jump\" in the text; place the narrative on a supporting band with an accent border"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "chart_card",
+              "fill": 0.99,
+              "frame": [
+                36,
+                137,
+                1208,
+                339
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.901,
+              "frame": [
+                36,
+                631,
+                1208,
+                53
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 3,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {},
+          "fit_grow": [
+            "slide 1: table cells without fontSize -> 14px (POM default 18)",
+            "slide 1: main table into spare height: cell text x1.28 (14 -> 18px), rows 160 -> 256px"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color the word 'ARR' in the title to draw attention"
+            },
+            {
+              "kind": "table",
+              "weight": "hero",
+              "design_hint": "shade the Enterprise row to highlight it; accent border on the component card"
+            },
+            {
+              "kind": "narrative",
+              "weight": "supporting",
+              "design_hint": "color a key phrase: emphasize the phrase 'Enterprise is the largest segment' in the positive color"
+            },
+            {
+              "kind": "caption",
+              "weight": "minor",
+              "design_hint": "emphasize the word 'SEGMENTS' as the slide kicker"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "table_card",
+              "fill": 0.553,
+              "frame": [
+                36,
+                144,
+                1208,
+                322
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.901,
+              "frame": [
+                36,
+                482,
+                1208,
+                53
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        },
+        {
+          "index": 4,
+          "compiled": true,
+          "first_pass_ok": true,
+          "retries": 0,
+          "max_tier": 0,
+          "auto_fixes": {
+            "TEXT_WHITESPACE_TRIMMED": 1
+          },
+          "blocking": {},
+          "blocking_msgs": [],
+          "layout_issues": {
+            "LOW_CONTRAST": 1
+          },
+          "fit_grow": [
+            "slide 1: text x1.17 (e.g. 14 -> 16pt), spacing x1.40, fill 30% -> 35%",
+            "slide 1: text x1.05 (e.g. 16 -> 17pt), spacing x1.40, fill 29% -> 34%"
+          ],
+          "components": [
+            {
+              "kind": "title",
+              "weight": "minor",
+              "design_hint": "color a key phrase in the subtitle (PRIORITIES) to link to the hero cards"
+            },
+            {
+              "kind": "card_grid",
+              "weight": "hero",
+              "design_hint": "icon in each card; three equal-weight cards side-by-side; color-code by outcome (growth = positive color for Close 3 enterprise logos, warning color for Launch self-serve onboarding, accent color for Ship analytics v2 dashboard); color the key phrase \"10 months\" in the self-serve card"
+            }
+          ],
+          "cards": [
+            {
+              "pattern": "dark_panel",
+              "fill": 0.331,
+              "frame": [
+                38,
+                143,
+                345,
+                539
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.331,
+              "frame": [
+                412,
+                143,
+                437,
+                539
+              ]
+            },
+            {
+              "pattern": "text_card",
+              "fill": 0.331,
+              "frame": [
+                878,
+                143,
+                364,
+                539
+              ]
+            }
+          ],
+          "word_breaks": 0,
+          "text_overflows": 0,
+          "table_spill": 0,
+          "empty_cells": 0,
+          "invented_numbers": 0,
+          "invented_examples": []
+        }
+      ],
+      "composed": {
+        "slides": 5,
+        "code": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "llm": [],
+        "left_out": [],
+        "smaller_type": {},
+        "overfull": []
+      },
+      "bundle": "step0-20261006-202429"
+    }
+  ]
+}

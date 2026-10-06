@@ -19,8 +19,10 @@ from typing import Any
 ILLEGAL_XML_CHARS = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f￾￿]")
 
 
-# the mangled "·" seen in the run: NUL+"b" or a vertical tab, once or twice, between whitespace
-_MANGLED_SEPARATOR = re.compile(r"(?<=\s)(?:\x00b|\x0b){1,2}(?=\s)")
+# a mangled "·": a whitespace-delimited token made of control characters, each optionally followed by one hex
+# character (seen: NUL+"b" twice, a vertical tab twice; the second run's shape was not kept, it came back as two
+# spaces after the first fix, so the match is wide on purpose)
+_MANGLED_SEPARATOR = re.compile(r"(?<=\s)(?:[\x00-\x08\x0b\x0c\x0e-\x1f][0-9a-fA-F]?){1,4}(?=\s)")
 
 
 def strip_illegal(text: str) -> tuple[str, int]:

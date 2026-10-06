@@ -121,11 +121,15 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
     ])
     result, usage = unpack_raw(raw_result)
 
-    outline = clean_data({  # gpt-5-mini wrote NULs where a "·" belongs (step 0 run): clean what it returns
+    outline = {
         "deck_title": result.deck_title,
         "core_hook": result.core_hook,
         "slides": [s.model_dump() for s in result.slides],
-    })
+    }
+    cleaned = clean_data(outline)  # gpt-5-mini wrote control characters where a "·" belongs (step 0 run)
+    if cleaned != outline:
+        logger.warning("outline_planner: the model's text had XML-illegal characters (a mangled separator); cleaned")
+    outline = cleaned
 
     logger.info(
         f"outline_planner: {len(result.slides)} slide(s), "
