@@ -66,3 +66,56 @@ def test_missing_deck_is_skipped(tmp_path: Path) -> None:
     case = _case()
     eval_run._collect_run(case, None, tmp_path / "eval", compose=True)
     assert not (tmp_path / "eval").exists() and "composed" not in case
+
+
+# ── a paid run must never be lost to a scoring / copying error (step 0: one case crashed the whole eval) ──
+
+def test_a_scoring_error_is_reported_on_the_case_not_raised(monkeypatch: pytest.MonkeyPatch) -> None:
+    final = {"slide_plans": [{}], "passed": True, "evaluation": {"cost": {"total_usd": 0.2}}, "pptx_path": "x.pptx"}
+    monkeypatch.setattr(eval_run, "_stream_case", lambda case, run_id: (final, [{"slide": 0, "retry": 0, "tier": 0}]))
+
+    def boom(*a, **k):
+        raise ValueError("not well-formed (invalid token)")
+
+    monkeypatch.setattr(eval_run, "_slide_row", boom)
+    result = eval_run.evaluate_case({"name": "case", "request": "r", "slide_count": 1}, 1)
+    assert result["slides"] == [] and result["cost"] == 0.2 and result["passed"] is True
+    assert "scoring failed" in result["error"] and "output/runs/case-" in result["error"]
+
+
+def test_a_copy_error_in_one_case_does_not_stop_the_bundle(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    good = {"name": "good", "repeat": 1, "run_id": "g", "passed": True, "error": None, "tokens_in": 1, "tokens_out": 1,
+            "cost": 0.1, "elapsed": 1.0, "expected_slides": 1, "slides": [], "_deck_pptx": None}
+    bad = {**good, "name": "bad", "run_id": "b"}
+    results = iter([bad, good])
+    monkeypatch.setattr(eval_run, "evaluate_case", lambda case, r: next(results))
+    monkeypatch.setattr(eval_run, "load_case", lambda name: {"name": name})
+    monkeypatch.setattr("src.utils.logging_config.setup_logging", lambda: None, raising=False)
+    copied = []
+
+    def copy(case, out_dir):
+        if case["name"] == "bad":
+            raise OSError("disk full")
+        copied.append(case["name"])
+
+    monkeypatch.setattr(eval_run, "_copy_slides", copy)
+    assert eval_run.main(["bad", "good", "--label", "t", "--repeat", "1", "--bundle", "--out", str(tmp_path)]) == 0
+    assert copied == ["good"]
+    assert list(tmp_path.glob("t-*.zip"))                      # the bundle was still written
+    summary = next(tmp_path.glob("t-*/results.json")).read_text(encoding="utf-8")
+    assert "collecting its files failed" in summary
+
+
+def test_two_runs_started_in_the_same_second_get_their_own_folders(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    class Fixed:
+        @staticmethod
+        def now():
+            import datetime
+            return datetime.datetime(2026, 10, 7, 9, 0, 0)
+
+    monkeypatch.setattr(eval_run, "datetime", Fixed)
+    fixtures = tmp_path / "fx"
+    fixtures.mkdir()
+    for _ in range(2):
+        assert eval_run.main(["--fixtures", str(fixtures), "--label", "same", "--out", str(tmp_path / "o")]) == 0
+    assert sorted(p.name for p in (tmp_path / "o").iterdir()) == ["same-20261007-090000", "same-20261007-090000-2"]

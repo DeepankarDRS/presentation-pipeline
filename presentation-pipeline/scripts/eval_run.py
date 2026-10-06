@@ -193,6 +193,14 @@ def evaluate_case(case: dict[str, Any], repeat: int) -> dict[str, Any]:
         by_slide.setdefault(a["slide"], []).append(a)
     plans = final.get("slide_plans") or []
     evaluation = final.get("evaluation") or {}
+    print(f"   run folder: output/runs/{run_id}", flush=True)
+    try:
+        rows = [_slide_row(i, by_slide[i], plans[i] if i < len(plans) else {}, brief_of(case))
+                for i in sorted(by_slide)]
+    except Exception as e:  # the run is paid for and saved on disk: scoring may fail, the case must still be reported
+        rows = []
+        error = error or f"scoring failed: {type(e).__name__}: {e} (re-score from output/runs/{run_id})"
+        print(f"   SCORING ERROR: {error}", flush=True)
     return {
         "name": name,
         "repeat": repeat,
@@ -204,8 +212,7 @@ def evaluate_case(case: dict[str, Any], repeat: int) -> dict[str, Any]:
         "cost": (evaluation.get("cost") or {}).get("total_usd", 0.0),
         "elapsed": round(time.time() - t0, 1),
         "expected_slides": _slide_target(case),
-        "slides": [_slide_row(i, by_slide[i], plans[i] if i < len(plans) else {}, brief_of(case))
-                   for i in sorted(by_slide)],
+        "slides": rows,
         "_deck_pptx": final.get("pptx_path"),
     }
 
@@ -432,8 +439,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=_PIPELINE_ROOT / "output" / "eval")
     args = parser.parse_args(argv)
 
-    out_dir = args.out / f"{args.label}-{datetime.now():%Y%m%d-%H%M%S}"
-    out_dir.mkdir(parents=True)
+    stamp = f"{datetime.now():%Y%m%d-%H%M%S}"
+    out_dir = args.out / f"{args.label}-{stamp}"
+    for n in range(2, 100):  # parallel terminals started in the same second
+        try:
+            out_dir.mkdir(parents=True)
+            break
+        except FileExistsError:
+            out_dir = args.out / f"{args.label}-{stamp}-{n}"
 
     if args.fixtures:
         cases = [evaluate_fixtures(args.fixtures, out_dir / "slides" / f"{args.fixtures.name}__r1")]
@@ -452,8 +465,12 @@ def main(argv: list[str] | None = None) -> int:
                 cases.append(result)
     for case in cases:
         deck = case.get("_deck_pptx")
-        _copy_slides(case, out_dir)
-        _collect_run(case, deck, out_dir, args.compose)
+        try:
+            _copy_slides(case, out_dir)
+            _collect_run(case, deck, out_dir, args.compose)
+        except Exception as e:  # keep the other cases and the bundle
+            print(f"   COPY ERROR for {case.get('name')} run {case.get('repeat')}: {type(e).__name__}: {e}", flush=True)
+            case["error"] = case.get("error") or f"collecting its files failed: {type(e).__name__}: {e}"
 
     results = {
         "label": args.label,
