@@ -48,8 +48,11 @@ _WEIGHT_RANK = {"hero": 0, "peer": 1, "supporting": 2, "minor": 3}
 
 # ── instruction text ────────────────────────────────────────────────────────
 
-# a label that marks presenter notes ("Speaker Notes: Lead with ...")
-_NOTES_LABEL = re.compile(r"^\W*(speaker|presenter|slide)?\s*(notes?|talking points?)\s*[:\-–—]", re.I)
+# a label that marks presenter notes ("Speaker Notes: Lead with ...", "Talking points: ..."): always instruction text
+_NOTES_LABEL = re.compile(r"^\W*((speaker|presenter|slide)\s+notes?|talking points?)\s*[:\-–—]", re.I)
+# a bare "Note: ..." is a normal footnote when the brief says it (launch 6: "Note: SOC2 + HIPAA certification ..."),
+# so it counts only when its content is not in the brief
+_BARE_NOTE = re.compile(r"^\W*notes?\s*[:\-–—]", re.I)
 # verbs that only address a presenter: always instruction text at the start of slide text
 _PRESENTER_VERB = re.compile(
     r"^\W*(walk (?:the audience |them |everyone )?through|talk (?:the audience )?through|lead with|"
@@ -71,7 +74,7 @@ def is_instruction_text(text: str, brief_text: str) -> bool:
         return False
     if _NOTES_LABEL.match(t) or _PRESENTER_VERB.match(t) or _ADDRESSES_SLIDE.search(t):
         return True
-    return bool(_PLANNER_VERB.match(t)) and not from_brief(t, brief_text)
+    return bool(_PLANNER_VERB.match(t) or _BARE_NOTE.match(t)) and not from_brief(t, brief_text)
 
 
 def _text_items(comp: dict[str, Any]) -> list[str]:
