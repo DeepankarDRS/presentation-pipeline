@@ -49,10 +49,14 @@ def _component_text(comp: dict[str, Any]) -> str:
     return " ".join(str(x) for x in [data.get("text", ""), *(data.get("bullets") or [])])
 
 
-def content_lines(slide: dict[str, Any], directions: list[str]) -> str:
+def content_line_list(slide: dict[str, Any], directions: list[str]) -> list[str]:
     """The slide's brief lines that are content: not labelled as, or copied from, a design direction."""
-    return " ".join(m for m in slide.get("key_messages") or []
-                    if m and not _DIRECTION.match(m) and not any(from_brief(m, d) for d in directions))
+    return [m for m in slide.get("key_messages") or []
+            if m and not _DIRECTION.match(m) and not any(from_brief(m, d) for d in directions)]
+
+
+def content_lines(slide: dict[str, Any], directions: list[str]) -> str:
+    return " ".join(content_line_list(slide, directions))
 
 
 def drop_visual_directions(plan: dict[str, Any], directions: list[str], content: str = "") -> list[str]:
@@ -98,4 +102,23 @@ def flag_written_lines(plan: dict[str, Any], brief_text: str) -> list[str]:
             written.append(body)
     if written:
         plan["written_lines"] = written
+    return notes
+
+
+def drop_repeated_bodies(plan: dict[str, Any]) -> list[str]:
+    """Remove a card body that only repeats its title (hold-out agency 4: "Intent-layer campaign
+    structure" / "Intent-layer campaign structure."): same words, or every body word is in the title.
+    A body that adds words ("Raw-data reporting" / "... and weekly diagnostics") stays."""
+    notes: list[str] = []
+    for comp in plan.get("components", []):
+        if comp.get("kind") != "card_grid":
+            continue
+        for card in (comp.get("content_data") or {}).get("cards", []):
+            if not isinstance(card, dict) or not card.get("body"):
+                continue
+            title, body = set(re.findall(r"[a-z0-9₹%]+", str(card.get("title", "")).lower())),                 set(re.findall(r"[a-z0-9₹%]+", str(card["body"]).lower()))
+            if title and body and (body <= title or len(body & title) / len(body | title) >= 0.8):
+                notes.append(f"removed card body that repeats its title: {card['body']}")
+                card.pop("body", None)
+                card.pop("body_source", None)
     return notes

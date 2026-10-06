@@ -68,6 +68,8 @@ class SlidePlan(TypedDict, total=False):
     data_provenance: dict[str, str]  # key → "user" | "sample"
     capacity_fixes: list[str]        # components converted past capacity.yaml (plan check)
     written_lines: list[str]         # card lines the planner wrote (not in the brief), for review
+    plan_flags: list[dict[str, str]]  # plan_checks findings: {code, component_id, detail} (SLIDE_SPARSE, PLAN_EMPTY ...)
+    plan_source: str                 # "fallback" when the planner failed twice (outline lines as a bullet list)
 
 
 class DeckPlan(TypedDict, total=False):

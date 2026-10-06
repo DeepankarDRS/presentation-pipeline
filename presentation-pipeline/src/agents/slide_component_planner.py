@@ -32,10 +32,11 @@ from src.agents.capacity import capacity, enforce_capacity, span
 from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
-from src.agents.written_lines import (content_lines, drop_visual_directions, flag_written_lines,
-                                      visual_directions)
+from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, reask_context
+from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
+                                      flag_written_lines, visual_directions)
 from src.state import ComponentPlan, PresentationState, SlidePlan
-from src.utils.llm_client import get_llm, unpack_raw
+from src.utils.llm_client import get_llm, unpack_raw, usage_record
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +148,14 @@ def _filter_supplied_content_for_slide(
     return {k: v for k, v in supplied_content.items() if k in suggested} if suggested else {}
 
 
+def brief_text_for(slide: dict[str, Any], supplied_content: dict[str, Any] | None) -> str:
+    """Everything the brief says for this slide: what a plan line has to come from."""
+    supplied_for_slide = _filter_supplied_content_for_slide(supplied_content, slide)
+    return " ".join([*(slide.get("key_messages") or []), slide.get("slide_title", ""),
+                     slide.get("subtitle", ""), slide.get("visual_emphasis", ""),
+                     json.dumps(supplied_for_slide or {}, ensure_ascii=False)])
+
+
 def plan_single_slide(
     slide: dict[str, Any],
     *,
@@ -154,10 +163,13 @@ def plan_single_slide(
     deck_settings: dict[str, Any] | None = None,
     supplied_content: dict[str, Any] | None = None,
     repair_context: dict[str, Any] | None = None,
-) -> SlidePlan:
-    """Plan one slide and return a SlidePlan TypedDict.
+    finalize: bool = True,
+) -> tuple[SlidePlan, dict[str, Any]]:
+    """Plan one slide; returns (SlidePlan, usage).
 
     Can be called directly (e.g. for serial batch planning) or via the graph node.
+    `finalize=False` leaves out the plan checks' code fixes so `plan_with_reask` can look at the
+    raw plan first (step 0); every other caller gets the fixes.
     """
     constraints: dict[str, Any] = {}
     if deck_settings:
@@ -210,17 +222,98 @@ def plan_single_slide(
         label=slide.get("label", ""),
         subtitle=slide.get("subtitle", ""),
     )
-    brief_text = " ".join([*(slide.get("key_messages") or []), slide.get("slide_title", ""),
-                           slide.get("subtitle", ""), slide.get("visual_emphasis", ""),
-                           json.dumps(supplied_for_slide or {}, ensure_ascii=False)])
+    brief_text = brief_text_for(slide, supplied_content)
     directions = visual_directions(slide)
     notes = (drop_visual_directions(plan, directions, content_lines(slide, directions))
              + flag_written_lines(plan, brief_text))
+    if finalize:
+        notes += finalize_plan(plan, brief_text)
     for note in notes:
         logger.info(f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} {note}")
     if notes:
         plan["capacity_fixes"] = [*plan.get("capacity_fixes", []), *notes]
     return plan, usage
+
+
+# ── Re-ask ──────────────────────────────────────────────────────────────────
+
+def fallback_plan(slide: dict[str, Any]) -> SlidePlan:
+    """What a slide gets when the planner failed twice: the outline's own content lines as one
+    bullet list (copied, nothing written), or no components when it has none. Replaces the silent
+    `components: []` of before, which let the generator invent the slide."""
+    lines = content_line_list(slide, visual_directions(slide))
+    comps: list[ComponentPlan] = []
+    if lines:
+        comps = [ComponentPlan(
+            component_id="fallback_points", kind="bullet_list", count=len(lines),
+            content_summary="the slide's own brief lines (the planner failed twice)",
+            items=len(lines), weight="hero", content_data={"bullets": lines},
+        )]
+    return SlidePlan(
+        slide_index=slide.get("slide_index", 0),
+        slide_title=slide.get("slide_title", "Slide"),
+        label=slide.get("label", ""),
+        subtitle=slide.get("subtitle", ""),
+        slide_type="content",
+        components=comps,
+        layout_hint="",
+        content_data={"bullets": lines} if lines else {},
+        plan_source="fallback",
+    )
+
+
+def plan_with_reask(
+    slide: dict[str, Any],
+    *,
+    outline_plan: dict[str, Any],
+    deck_settings: dict[str, Any] | None = None,
+    supplied_content: dict[str, Any] | None = None,
+) -> tuple[SlidePlan, list[dict[str, Any]]]:
+    """Plan one slide, asking once more when the plan is empty or holds instruction text.
+
+    Returns (plan, history records). Never raises: when both calls fail the plan is
+    `fallback_plan`. Of the two plans the one with fewer problems wins (a tie keeps the first),
+    then the code fixes of `finalize_plan` run on it.
+    """
+    idx = slide.get("slide_index", 0)
+    brief_text = brief_text_for(slide, supplied_content)
+    history: list[dict[str, Any]] = []
+    best: SlidePlan | None = None
+    best_count = 0
+    problems: list[dict[str, str]] = []
+    for attempt in range(2):
+        try:
+            plan, usage = plan_single_slide(
+                slide, outline_plan=outline_plan, deck_settings=deck_settings,
+                supplied_content=supplied_content,
+                repair_context=reask_context(problems) if attempt else None, finalize=False,
+            )
+        except Exception as exc:
+            logger.error(f"slide_component_planner: slide {idx + 1} attempt {attempt + 1} failed: {exc}")
+            problems = [{"code": PLAN_EMPTY, "component_id": "", "detail": "the previous planner call failed"}]
+            continue
+        history.append(usage_record(usage, "slide_component_planner", idx, reask=bool(attempt)))
+        problems = find_problems(plan, brief_text)
+        if best is None or len(problems) < best_count:
+            best, best_count = plan, len(problems)
+        if not problems:
+            break
+        if attempt == 0:
+            logger.info(f"slide_component_planner: slide {idx + 1} re-ask: "
+                        + "; ".join(p["detail"] for p in problems))
+    if best is None:
+        logger.error(f"slide_component_planner: slide {idx + 1} failed twice, using the fallback plan")
+        best = fallback_plan(slide)
+    notes = finalize_plan(best, brief_text)
+    if best.get("plan_source") == "fallback":
+        notes.append("planner failed twice: fallback plan")
+    elif len(history) > 1:
+        notes.append("planner re-asked")
+    for note in notes:
+        logger.info(f"slide_component_planner: slide {idx + 1} {note}")
+    if notes:
+        best["capacity_fixes"] = [*best.get("capacity_fixes", []), *notes]
+    return best, history
 
 
 # ── Serial batch node (used when SERIALIZE_SLIDES=True) ────────────────────
@@ -237,24 +330,10 @@ def slide_plan_serial_node(state: PresentationState) -> dict[str, Any]:
     assembled: list[SlidePlan] = []
     history: list[dict[str, Any]] = []
     for slide in slides:
-        try:
-            plan, usage = plan_single_slide(
-                slide,
-                outline_plan=outline,
-                deck_settings=deck_settings,
-                supplied_content=supplied_content,
-            )
-            history.append({"attempt": 0, "tier": 0, **usage})
-        except Exception as exc:
-            logger.error(
-                f"slide_plan_serial: failed for slide {slide.get('slide_index', 0) + 1}: {exc}"
-            )
-            plan = {
-                "slide_index": slide.get("slide_index", 0),
-                "slide_title": slide.get("slide_title", "Slide"),
-                "slide_type": "content",
-                "components": [],
-            }
+        plan, records = plan_with_reask(
+            slide, outline_plan=outline, deck_settings=deck_settings, supplied_content=supplied_content,
+        )
+        history.extend(records)
         assembled.append(plan)
         logger.info(
             f"slide_plan_serial: slide {slide.get('slide_index', 0) + 1}/{len(slides)} done "
@@ -287,29 +366,13 @@ def slide_component_planner_node(state: PresentationState) -> dict[str, Any]:
         f"'{slide.get('slide_title', '')}'"
     )
 
-    try:
-        plan, usage = plan_single_slide(
-            slide,
-            outline_plan=outline,
-            deck_settings=deck_settings,
-            supplied_content=supplied_content,
-        )
-    except Exception as exc:
-        logger.error(f"slide_component_planner: failed for slide {slide.get('slide_index', 0) + 1}: {exc}")
-        plan = {
-            "slide_index": slide.get("slide_index", 0),
-            "slide_title": slide.get("slide_title", "Slide"),
-            "slide_type": "content",
-            "components": [],
-        }
-        return {"assembled_slide_plans": [plan]}
+    plan, history = plan_with_reask(
+        slide, outline_plan=outline, deck_settings=deck_settings, supplied_content=supplied_content,
+    )
 
     logger.info(
         f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} done "
         f"({len(plan.get('components', []))} components)"
     )
 
-    return {
-        "assembled_slide_plans": [plan],
-        "generation_history": [{"attempt": 0, "tier": 0, **usage}],
-    }
+    return {"assembled_slide_plans": [plan], "generation_history": history}
