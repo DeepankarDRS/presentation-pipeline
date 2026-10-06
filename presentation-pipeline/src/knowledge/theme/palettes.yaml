@@ -255,6 +255,25 @@ palettes:
     border: "D5DDD9"
     chartColors: ["0D6B4E", "3B82F6", "F59E0B", "94A3B8", "34D399"]
 
+  # Claude-style editorial: warm cream paper, near-black slate ink, one clay accent. Values are
+  # approximations of Anthropic's brand colours (not checked against an official source). The
+  # brand clay D97757 is only 2.7:1 on this cream, below contrast_targets.accent_on_surface (3.0),
+  # so `accent` is a deeper clay (3.5:1) and D97757 stays as accentAlt.
+  claude-cream:
+    tone: "Warm cream paper, slate ink and a single clay accent (Claude-style)"
+    mode: light
+    surface: "F0EEE6"
+    surfaceAlt: "FFFFFF"
+    accent: "C4623F"
+    accentAlt: "D97757"
+    positive: "3F7D4E"
+    negative: "B03A2E"
+    warning: "A86310"
+    textMain: "141413"
+    textMuted: "6B6A62"
+    border: "DDD9CC"
+    chartColors: ["C4623F", "141413", "B0AEA5", "D4A27F", "3F7D4E"]
+
   graphite-mono:
     tone: "Pure white and charcoal, electric blue pop"
     mode: light
