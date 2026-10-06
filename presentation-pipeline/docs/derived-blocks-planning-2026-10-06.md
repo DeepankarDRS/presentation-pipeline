@@ -426,3 +426,14 @@ below also covers it. Not embedded: the per-slide files; fonts the deck does not
 **Label tier (D8).** `python -m scripts.label_sizes` builds `output/label-test/label-sizes.pptx` (light and dark
 slide, the same mono label at 10 / 11 / 12 / 14 px as a kicker, a KPI tile label and a table caption); sent to
 the user for the projected view. The decision is the user's, recorded here when given.
+
+**First paid run (test PC, 2026-10-06): `deck-qbr-data` ($0.19) broke on a NUL character.** Not caused by step 0's code.
+`scripts/find_nul.py` on the run folder showed the garbage already in the **outline planner's `subtitle`** (the
+evidence line, gpt-5-mini): "Acme Analytics  Executive Update", "$28.1M  b b +22%  b b 142",
+on slides 1-4, each run sitting between spaces where a middle dot belongs. The generator copied it into the slide
+XML; POM wrote it into the pptx, PowerPoint refused the deck, `font_embed` skipped it (as designed) and `eval_run`
+crashed reading the slide. Fix (`src/utils/text_clean.py`): a mangled separator (`NUL b`, or a vertical tab, once or
+twice, between whitespace) becomes "·" again, any other XML-illegal character is removed; applied to the outline
+planner's output, the slide planner's `content_data` and every generator / repair XML in `normalize_xml`
+(`ILLEGAL_CHARS_REMOVED` issue). `eval_run` scoring survives an unreadable slide (`score_error`). Lesson for the
+runs: one case at a time, `find_nul` before re-running.

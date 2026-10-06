@@ -1,9 +1,13 @@
 """Remove characters that cannot appear in XML from LLM output (found in the step 0 test-PC run).
 
 A QBR slide came back with "$28.1M \\x00b\\x00b +22%": NUL characters in the model's text. POM wrote them into
-the slide XML, PowerPoint refused to open the deck and every XML reader failed on it. A slide must survive one
-bad character, so text from a model is cleaned where it enters the pipeline (the planner's content_data and the
-generator's / repairers' XML in `normalize_xml`).
+the slide XML, PowerPoint refused to open the deck and every XML reader failed on it. `find_nul` on the run showed
+where they start: the outline planner's `subtitle` (the evidence line, gpt-5-mini), as "Acme Analytics \\x0b\\x0b
+Executive Update" on one slide and "$28.1M \\x00b\\x00b +22% \\x00b\\x00b 142" on others. Every run sits between
+spaces where a middle dot "·" belongs, so it is a mangled separator. A slide must survive one bad character, so
+model text is cleaned where it enters the pipeline: the outline, the planner's content_data and the XML of the
+generator / repairers (`normalize_xml`). A mangled separator becomes "·" again; any other illegal character is
+removed.
 """
 
 from __future__ import annotations
@@ -15,10 +19,15 @@ from typing import Any
 ILLEGAL_XML_CHARS = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f￾￿]")
 
 
+# the mangled "·" seen in the run: NUL+"b" or a vertical tab, once or twice, between whitespace
+_MANGLED_SEPARATOR = re.compile(r"(?<=\s)(?:\x00b|\x0b){1,2}(?=\s)")
+
+
 def strip_illegal(text: str) -> tuple[str, int]:
-    """(text without XML-illegal characters, how many were removed)."""
-    cleaned, n = ILLEGAL_XML_CHARS.subn("", text)
-    return cleaned, n
+    """(text with a mangled separator restored and every other XML-illegal character removed, how many fixed)."""
+    text, restored = _MANGLED_SEPARATOR.subn("\u00b7", text)
+    cleaned, removed = ILLEGAL_XML_CHARS.subn("", text)
+    return cleaned, restored + removed
 
 
 def clean_data(value: Any) -> Any:

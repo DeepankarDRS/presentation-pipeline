@@ -30,6 +30,7 @@ from src.agents.outline_planner_schema import OutlinePlannerOutput
 from src.agents.settings_mapper import DeckSettings, settings_to_constraints
 from src.state import PresentationState
 from src.utils.llm_client import get_llm, unpack_raw, usage_record
+from src.utils.text_clean import clean_data
 
 logger = logging.getLogger(__name__)
 
@@ -120,11 +121,11 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
     ])
     result, usage = unpack_raw(raw_result)
 
-    outline = {
+    outline = clean_data({  # gpt-5-mini wrote NULs where a "·" belongs (step 0 run): clean what it returns
         "deck_title": result.deck_title,
         "core_hook": result.core_hook,
         "slides": [s.model_dump() for s in result.slides],
-    }
+    })
 
     logger.info(
         f"outline_planner: {len(result.slides)} slide(s), "
