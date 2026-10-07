@@ -315,7 +315,7 @@ manifest and the `node_bypassed` counter; reports go to the checking loop (§5.1
 variety?
 
 **Status (2026-10-06, follow-up session):** protocol written against step 0's real plans; nothing built,
-nothing spent. The proposals that change the earlier text are collected as **D11** in §6 for approval.
+nothing spent. The changes to the earlier text are **D11** in §6, approved as written by the user 2026-10-07.
 
 **Inputs:** step 0's four bundles, extracted at `output/step0/{b1,b2x,b3x,b4x}/<bundle>/decks/<case>__r1/`
 (`slides.json` = every slide's plan + the off arm's XML; `run-manifest.json` = theme, per-call usage).
@@ -518,7 +518,7 @@ tuned in step 1 on the nodes demo render (free).
 | D8 | Label tier (§5.2) | view the test slide first | **decided 2026-10-05: 12 px label floor that grows into spare room, 10 px source lines only, body >= 14 px (user, after viewing the test deck).** Earlier note: scheduled. The free 10 / 11 / 12 / 14 px test slide is built in the step 0 build session; the user views it (100% and projected) and the tier is recorded before step 1. Starting recommendation 12 px labels, 10 px source lines only |
 | D9 | Default-switch gates (§5.3) and fill contract (§5.4) | as written | **decided 2026-10-05: both approved.** `slots` stays opt-in until the five gates hold (a separate decision after step 4); step 2 gains "the edit service re-expands blocks after every edit"; fill numbers tuned in step 1 |
 | D10 | Contract form (§3, §4): named self-closing tags with `ref` for every plan kind except `layer` (derived `KpiRow` / `CardGrid` / `Callout` / `SlideHeader`; native `Table` / `Chart` / `Ul` / `Timeline` / `ProcessArrow` / `Flow` / `Pyramid` / `Tree` / `Matrix` / `Text`, code fills their children), content by reference only, shape hints in each component's prompt line, `NODE_*` codes, setting `blocks: off / nodes` | as written | **decided 2026-10-06 (user): rewrite the contract into the node form** |
-| D11 | 1a made exact on step 0's plans (§4, 2026-10-06 follow-up session): `ref` = the plan's `component_id`; all 32 eligible slides (six decks; CHEFFIN 2, CHEFFIN 3, XTSY 6 out as prompt-example sources; QBR 1, launch 1 out, nothing to place), not ≈ 24; arm A recompiled on the 1a commit; node code in `src/compiler/nodes/`, unwired until step 1; cost ≈ $0.9 (was ≈ $0.5), `deck-qbr-data` first (≈ $0.11); scripted dry run §4.6 before any paid call; card_grid matrix not covered (no such plan in step 0) | as written | **open: waiting for the user** |
+| D11 | 1a made exact on step 0's plans (§4, 2026-10-06 follow-up session): `ref` = the plan's `component_id`; all 32 eligible slides (six decks; CHEFFIN 2, CHEFFIN 3, XTSY 6 out as prompt-example sources; QBR 1, launch 1 out, nothing to place), not ≈ 24; arm A recompiled on the 1a commit; node code in `src/compiler/nodes/`, unwired until step 1; cost ≈ $0.9 (was ≈ $0.5), `deck-qbr-data` first (≈ $0.11); scripted dry run §4.6 before any paid call; card_grid matrix not covered (no such plan in step 0) | as written | **decided 2026-10-07 (user): approved as written** |
 
 ## 7. Step 0 build log (build session 2026-10-06, branch `feat/derived-blocks-step0`)
 
