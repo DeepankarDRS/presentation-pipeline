@@ -21,7 +21,7 @@
 - {{ w.type }}: {{ w.message }}
 {% endfor %}
 {% endif %}
-{% if layout_issues %}## LAYOUT AUDIT WARNINGS (verify visually)
+{% if layout_issues %}## LAYOUT AUDIT WARNINGS (verify visually: a GEOM_ finding is borderline, 4-10 px - report it only if you SEE the overlap or clipping on the screenshot)
 {% for issue in layout_issues %}
 - {{ issue.code }}: {{ issue.message }}
 {% endfor %}

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import base64
 import logging
+import re
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +45,20 @@ def _filter_visual_notes(notes: list[str]) -> list[str]:
 
 def _empty_repair_hints() -> dict[str, Any]:
     return {"strategy": "none", "assessment": "good", "affected_nodes": []}
+
+
+# Size, spacing and fill are set by code after generation (fit-grow: growth, spill fix,
+# centring) and re-applied after every repair, so an LLM fix there is undone or fights it
+# (2026-10-07). A visible defect (overlap, clipping, unreadable text) is still kept.
+_SIZE_TALK = re.compile(r"font ?size|fontsize|padding|\bgap\b|\bgrow\b|minh|\bmargin|spacing|white ?space"
+                        r"|empty (space|area|band)|under-?filled|oversized|too (large|big|small)", re.IGNORECASE)
+_DEFECT_TALK = re.compile(r"overlap|overflow|clip|cut ?off|truncat|collid|off the slide|outside|missing"
+                          r"|invisible|contrast|unreadable|illegible", re.IGNORECASE)
+
+
+def code_owned(description: str, fix: str) -> bool:
+    text = f"{description} {fix}"
+    return bool(_SIZE_TALK.search(text)) and not _DEFECT_TALK.search(text)
 
 
 def run_visual_critic(
@@ -118,7 +133,11 @@ def run_visual_critic(
 
     issues = []
     all_affected_nodes: list[str] = []
+    dropped = 0
     for issue in result.issues:
+        if code_owned(issue.description, issue.fix):
+            dropped += 1
+            continue
         issues.append({
             "severity": issue.severity,
             "type": issue.type,
@@ -135,6 +154,8 @@ def run_visual_critic(
         "affected_nodes": sorted(set(all_affected_nodes)),
     }
 
+    if dropped:
+        logger.info(f"visual_critic: dropped {dropped} size / spacing issue(s): code owns them (fit-grow)")
     logger.info(
         f"visual_critic: {len(issues)} issue(s), "
         f"assessment={result.overall_assessment}, strategy={result.repair_strategy}"

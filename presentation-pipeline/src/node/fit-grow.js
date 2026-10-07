@@ -677,7 +677,7 @@ async function sizeTables(xml, report) {
 }
 
 /** Spare height -> the main table's cell text (<= 18 px), then its rows (capped). */
-async function growMainTable(xml, id, report, onlyTable) {
+async function growMainTable(xml, id, report, onlyTable, caps = { font: TD_FONT_CAP, row: ROW_CAP, grow: ROW_GROW }) {
   const L = await layout(xml);
   let n, W, grid, before, keep, declared;
   try {
@@ -701,13 +701,13 @@ async function growMainTable(xml, id, report, onlyTable) {
   const cells = grid.flat().map(({ c }) => c);
   const f0 = Math.max(...cells.map((c) => c.fontSize ?? TD_FONT));
   const sized = cells.some((c) => (c.runs ?? []).some((r) => r.fontSize !== undefined));
-  const fontFor = (k) => (c) => Math.min(Math.round((c.fontSize ?? TD_FONT) * k), Math.max(c.fontSize ?? TD_FONT, TD_FONT_CAP));
+  const fontFor = (k) => (c) => Math.min(Math.round((c.fontSize ?? TD_FONT) * k), Math.max(c.fontSize ?? TD_FONT, caps.font));
   const atFont = (k) => {
     const plan = planTable(n, grid, W, fontFor(k), L.ctx, declared);
     const rows = declared.map((d, i) => rowFor(d, plan.need[i]));
     return { plan, rows, xml: writeTable(xml, id, { widths: plan.widths, rows, fontOf: k > 1 ? fontFor(k) : null }) };
   };
-  const kMax = sized || !onlyTable ? 1 : Math.max(1, TD_FONT_CAP / f0);
+  const kMax = sized || !onlyTable ? 1 : Math.max(1, caps.font / f0);
   const k = kMax > 1 ? await bisect(1, kMax, (x) => {
     const a = atFont(x);
     return a.plan.valid && tableFits(a.xml, id, before, keep);
@@ -716,7 +716,7 @@ async function growMainTable(xml, id, report, onlyTable) {
   const K = atFont(grownFont ? k : 1);
 
   // then rows, each up to min(ROW_CAP, ROW_GROW x its text) (never below where it is)
-  const cap = K.rows.map((r, i) => Math.max(r, Math.min(ROW_CAP, Math.round(ROW_GROW * K.plan.need[i]))));
+  const cap = K.rows.map((r, i) => Math.max(r, Math.min(caps.row, Math.round(caps.grow * K.plan.need[i]))));
   const rowsAt = (t) => K.rows.map((r, i) => Math.round(r + t * (cap[i] - r)));
   const rowXml = (t) => writeTable(K.xml, id, { rows: rowsAt(t) });
   const t = sum(cap) > sum(K.rows) && await tableFits(rowXml(0), id, before, keep)
@@ -1644,6 +1644,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
   if (process.env.POM_FIT_SPILL !== "0") xml = await fixSpills(xml, report, warnings);
+  if (process.env.POM_FIT_CENTRE !== "0") xml = await centreBody(xml, report);
   const w0 = warnings.length;
   const rows = await statRows(xml);
   xml = await guardWords(xml, report, warnings);
@@ -1795,6 +1796,76 @@ async function fixSpills(xml, report, warnings) {
     + `fonts down to 14px; left as generated: ${named(first)}` });
   report.push(`spill left (slide too dense): ${named(first)}`);
   return xml;
+}
+
+// --- phase 8: centre a sparse body (slide-quality item 2 step 3, 2026-10-07) -----
+//
+// After every growth phase (type, KPI numbers, tables, diagrams at their caps) a
+// slide whose bands do not grow can still end well above the bottom: a blank band
+// reads as unfinished. Cards are not shrunk and nothing is added (user,
+// 2026-10-04 / 2026-10-07): the body block (everything below the header texts,
+// above a trailing source line) moves down by half the free height, the source line
+// to the bottom. Accepted only if nothing then spills and the slide still fits.
+
+const CENTRE_MIN = 48;   // px of free height below which the slide is left alone
+// a sparse slide's only table takes the space first (main component before centring)
+const SPARSE_TABLE_CAPS = { font: 24, row: 140, grow: 2.5 };
+
+// eyebrow / title / subtitle, alone or in plain stacks (an eyebrow row with a badge)
+const headerLike = (n) => n.type === "text" || ["icon", "shape"].includes(n.type)
+  || (STACKS.has(n.type) && !hasBoxStyle(n) && (n.children ?? []).every(headerLike));
+
+function headerCount(kids, L) {
+  let i = 0;
+  while (i < kids.length - 1 && (kids[i].type === "text"
+    || (STACKS.has(kids[i].type) && !hasBoxStyle(kids[i]) && L.box(kids[i]).h < 200
+      && headerLike(kids[i])))) i++;
+  return i;
+}
+
+async function centreBody(xml, report) {
+  // the slide's only table grows past the normal caps into a sparse slide first
+  let L = await layout(xml);
+  let tableId = null, spare = 0;
+  try {
+    const root = L.slides[0];
+    const tables = [];
+    walk(root, (n) => n.type === "table" && tables.push(n));
+    if (root && tables.length === 1 && tables[0].id && !(root.children ?? []).some((c) => c.grow)) {
+      tableId = tables[0].id;
+      spare = L.box(root).h - contentHeight(root, L);
+    }
+  } finally { L.free(); }
+  if (tableId && spare >= CENTRE_MIN) xml = await growMainTable(xml, tableId, report, true, SPARSE_TABLE_CAPS);
+
+  L = await layout(xml);
+  let edits = null;
+  try {
+    const root = L.slides[0];
+    if (!root || root.type !== "vstack" || root.justifyContent) return xml;
+    const kids = root.children ?? [];
+    if (kids.some((c) => c.grow)) return xml; // a growing band already takes the space
+    const head = headerCount(kids, L);
+    const last = kids[kids.length - 1];
+    const caption = kids.length - head >= 2 && last.type === "text" && (last.fontSize ?? 24) <= 16
+      && L.box(last).h < 50 ? last : null;
+    const body = kids.slice(head, caption ? -1 : undefined);
+    if (!body.length || body.some((c) => c.margin !== undefined || !c.id)) return xml;
+    const rb = L.box(root);
+    const free = rb.h - rb.pb - contentHeight(root, L) + rb.pb;
+    if (free < CENTRE_MIN) return xml;
+    const half = Math.round(free / 2);
+    edits = [[body[0].id, half]];
+    if (caption && caption.id && caption.margin === undefined) edits.push([caption.id, free - half]);
+  } finally { L.free(); }
+  let out = xml;
+  for (const [id, top] of edits) out = setAttrs(out, id, { "margin.top": top });
+  const T = await layout(out);
+  try {
+    if (spillsOf(T).length || overSlide(T) > 0) return xml;
+  } finally { T.free(); }
+  report.push(`sparse body centred: ${edits[0][1]}px above` + (edits[1] ? `, source line to the bottom` : ""));
+  return out;
 }
 
 // Whole-pass time budget. Each slide takes ~1-3s; a deck is compiled in one

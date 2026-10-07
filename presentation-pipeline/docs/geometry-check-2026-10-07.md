@@ -128,3 +128,37 @@ screenshot; `info` = fill codes, owned by code. **`PLACEHOLDER_TEXT`** (report o
 "X.XX" / "XX", `TBD` / `lorem`, "Insight 1 —", "METRIC A", a bracketed name the brief does not use (the brief's own
 "[Platform B]" is content). 0 hits on the 79 saved slides: a guard. Later (rare in our renders): text over a card
 that is not its own, collapsed line height.
+
+## Step 3 built: sparse slides + critic hand-off (2026-10-07)
+
+User decisions (2026-10-07): **grow the type, don't shrink the card** stays (a card can hold a chart or table
+that uses the space); no big faint numeral as filler (1a marks: "the 01 02 03 is not helpful"); centre the
+body block as the default. Sizes / spacing / fill belong to code, the visual critic judges what code cannot
+measure and confirms borderline geometry warnings (as in Genspark's split of layout check vs visual check).
+
+**fit-grow phase 8 `centreBody`** (after `fixSpills`; `POM_FIT_CENTRE=0` turns it off). Only when no root band
+grows and ≥ 48 px are free: (1) the slide's only table grows past the normal caps (cell text ≤ 24 px, rows
+≤ 140 px and ≤ 2.5 × their text — `growMainTable` takes the caps as a parameter now); (2) the body (below the
+header texts, above a trailing source line) moves down by half the free height (`margin.top`), the source line
+to the bottom. Kept only if nothing spills and the slide fits.
+
+**Audit:** `GEOM_SLIDE_SPARSE` = more than a quarter of the usable height (inside the slide padding) empty
+below the content; a card reaching down counts as filled (its inside is `GEOM_CARD_EMPTY`). A table box counts
+its drawn rows as filled (rows grown on purpose are not "empty").
+
+**Replay (79 slides):** sparse slides 2 → 1 (the one left is a cover; the pipeline skips covers by slide type);
+QBR table slide: table text 18 → 24 px, rows 256 → 400 px, body centred with 57 px above (checked by eye: the
+first try centred a small table under a 129 px gap and also moved the header — fixed). `GEOM_CARD_EMPTY`
+stays at 7: KPI tiles stretched by a growing band, numbers already width-bound (QBR "$48.2M" stops at 50 px
+in a ~280 px tile). Not shrinking them is the user's rule; the cause is upstream (which band gets `grow`:
+the normalizer's `GROW_BAND_ADDED` or the generator) — a decision for the user.
+
+**Visual critic** (`src/agents/critic.py`, `visual_critic.py`, `prompts/visual_critic/`):
+- gets the **fitted XML** (what the screenshot shows), not the pre-fit XML;
+- sees geometry **warnings** (borderline 4-10 px) to confirm on the screenshot; errors and fill findings are not
+  sent (code fixes them / they are code's) — `critic_layout_issues`;
+- prompt: a CODE-OWNED section (no issue about font size, gaps, padding, margins, grow, empty space; no patch of
+  those attributes; visible overlap / clipping / unreadable text stays the critic's); the "under-filled →
+  `grow="2"`" rule is replaced by a flag-only "unbalanced composition";
+- issues that still talk only about size / space are dropped before repair and logged (`code_owned`).
+Not measured yet with the critic on (paid; ask first). Unit tests 803 pass, the 4 known failures.

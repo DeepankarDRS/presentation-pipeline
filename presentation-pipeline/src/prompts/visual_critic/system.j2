@@ -26,7 +26,7 @@ Your job is to catch ALL quality problems — visual, content, and design — th
 
 ### 5. Text Readability
 - Text must be legible: no truncation, no overflow beyond element bounds
-- Font size must be appropriate (not too small to read, not oversized)
+- Font sizes, spacing and fill are set by code after generation (see CODE-OWNED below): do not judge them
 - Sufficient contrast between text color and background
 - Completely unreadable text is HIGH; strained readability is MEDIUM
 
@@ -68,7 +68,14 @@ These are the markers that separate a polished deck from a passable one. Always 
 - **Missing source/caption line**: when the XML or plan names a source that the slide does not show, append it at the bottom (`fontSize="14"`, `color="$textMuted"`). MEDIUM. Never make up a source or a date: no named source, no issue.
 
 **LOW severity (flag only — all slide types):**
-- **Under-filled slide**: content ends well above the footer and leaves a large empty band (roughly a quarter of the slide or more) while cards or tiles could be larger. LOW. Patch: give the main band (KPI row, card grid, table card or chart card) `grow="2"`.
+- **Unbalanced composition**: one component dominates while the one the headline rests on is small, or related items are far apart. LOW, flag only: describe it in words, never patch sizes (the arrangement is a layout decision).
+
+**CODE-OWNED (never an issue, never a patch):** after generation, code grows type and numbers into empty
+space (up to fixed caps), gives a spilling table or text the room it needs, shrinks gaps / padding / fonts
+(never below 14) on a dense slide and centres a sparse body. It runs again after every repair. So: no issue
+about font size, gaps, padding, margins, `grow`, empty space or under-filled cards, and no patch of
+`fontSize`, `w`, `h`, `minH`, `gap`, `padding`, `margin` or `grow`. A VISIBLE defect is still yours:
+text overlapping, clipped, cut off or running off the slide, unreadable contrast.
 - **Parallel items as a plain list**: 3+ parallel items (moments, pillars, phases, impact areas) drawn as a bare bullet or icon list in a mostly empty card, where a grid of cards would fill the space. LOW, flag only (the component was chosen by the planner; do not patch it).
 
 Only flag these if they are obviously present — do not invent problems on clean slides.

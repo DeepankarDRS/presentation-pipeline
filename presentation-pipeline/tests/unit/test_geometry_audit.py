@@ -162,3 +162,19 @@ def test_invisible_text_is_tier_error():
            '<Text color="F8F8F8">white on white</Text><Text color="9A9A9A">grey on white</Text></VStack></Slide>')
     tiers = {i["message"].split(" on ")[0].split()[-1]: i["tier"] for i in audit_layout(xml) if i["code"] == "LOW_CONTRAST"}
     assert tiers == {"F8F8F8": "error", "9A9A9A": "warning"}
+
+
+def test_sparse_table_slide_grows_the_table_then_centres(tmp_path):
+    rows = "".join(f"<Tr><Td>Segment {i}</Td><Td>${i}.2M</Td><Td>+{i}%</Td></Tr>" for i in range(3))
+    xml = ('<Slide><VStack w="1280" h="720" padding="40" gap="16">'
+           '<VStack gap="4"><Text fontSize="14" bold="true">SEGMENTS</Text>'
+           '<Text fontSize="28" bold="true">Enterprise leads ARR</Text></VStack>'
+           f'<VStack padding="16" backgroundColor="FFFFFF"><Table>{rows}</Table></VStack>'
+           '</VStack></Slide>')
+    found, result = _fit(xml, tmp_path)
+    log = " ".join(result["fitGrow"])
+    assert "main table into spare height" in log
+    assert "GEOM_SLIDE_SPARSE" not in found
+    import json
+    geo = json.loads((tmp_path / "out" / "geometry.json").read_text(encoding="utf-8"))
+    assert geo["slides"][0]["children"][0]["y"] == 40  # the header stays at the top

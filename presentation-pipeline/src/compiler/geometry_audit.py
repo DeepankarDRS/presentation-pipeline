@@ -71,31 +71,6 @@ def _table_rows(tbl: ET.Element) -> float:
     return sum(int(tr.get("h")) for tr in tbl.findall("a:tr", _NS)) / _EMU
 
 
-def _table_text_height(tbl: ET.Element) -> float:
-    """Height the table's text needs (POM stretches rows to fill a tall frame; the text stays
-    at the top). Same estimate as scripts/eval_metrics.py: lines from characters x column
-    width, 1.2 line height, cell margins, at least POM's default 32px row."""
-    cols = [int(g.get("w")) / _EMU for g in tbl.iter(f"{{{_NS['a']}}}gridCol")]
-    total = 0.0
-    for tr in tbl.findall("a:tr", _NS):
-        need, col = 0.0, 0
-        for tc in tr.findall("a:tc", _NS):
-            span = int(tc.get("gridSpan", 1))
-            width = sum(cols[col:col + span])
-            col += span
-            lines, line_px = 0, 0.0
-            for p in tc.iter(f"{{{_NS['a']}}}p"):
-                text = "".join(t.text or "" for t in p.iter(f"{{{_NS['a']}}}t"))
-                sizes = [int(r.get("sz")) for r in p.iter(f"{{{_NS['a']}}}rPr") if r.get("sz")]
-                px = max(sizes, default=1800) / 100 * 4 / 3
-                per_line = max(1.0, (width - 9.6) / (0.55 * px))
-                lines += max(1, -(-len(text) // int(per_line)))
-                line_px = max(line_px, 1.2 * px)
-            need = max(need, lines * line_px + 9.6)
-        total += min(int(tr.get("h")) / _EMU, max(need, 32.0))
-    return total
-
-
 def _text_need(sp: ET.Element, w: float) -> tuple[float, float]:
     """(estimated text height, one line) — ~0.5 em per character, 1.2 line height."""
     need, line = 0.0, 0.0
@@ -136,8 +111,6 @@ def _drawn(slide_xml: bytes) -> list[dict]:
         # ... and every column, whatever its frame width
         shape["dw"] = max(w, sum(int(g.get("w")) for g in tbl.iter(f"{{{_NS['a']}}}gridCol")) / _EMU) \
             if tbl is not None else w
-        if tbl is not None:
-            shape["text_h"] = _table_text_height(tbl)
         if tag == "sp" and text:
             shape["need"], shape["line"] = _text_need(el, w)
             if shape["need"] > h + 2 * shape["line"]:
@@ -328,26 +301,27 @@ def audit_geometry(geometry: dict[str, Any], pptx_path: str | Path, slide: int =
         if leaf["type"] in ("text", "shape", "icon", "image", "line", "arrow") or leaf["h"] < TALL:
             continue
         members = owned.get(id(leaf), [])
-        if leaf["type"] == "table":
-            used = sum(_table_text_rows(m) for m in members) or content_span(members)
-        else:
-            used = content_span(members)
+        # a table's rows (borders, fills, centred text) are what the reader sees as filled
+        used = content_span(members)
         if members and used / leaf["h"] < BOX_FILL_MIN:
             add("GEOM_BOX_EMPTY", "low", (leaf["path"],),
                 f'{leaf["type"]} {_label(leaf)} has a {leaf["h"]:.0f}px box, its content uses '
                 f'{used:.0f}px ({used / leaf["h"]:.0%})')
     content = [s for ss in owned.values() for s in ss]
     if content and slide_type not in SPARSE_BY_DESIGN:
-        bottom = max(s["y"] + s["dh"] for s in content)
-        if bottom < SLIDE_BOTTOM_MIN * sh:
+        # usable height = inside the slide's padding (the root's first child starts at it);
+        # sparse = more than a quarter of it empty below the content (a centred body is not)
+        pad = min((c["y"] for c in tree.get("children", [])), default=0.0)
+        usable = sh - 2 * pad
+        # a card reaching down fills the slide (its own empty inside is GEOM_CARD_EMPTY)
+        bottom = max([s["y"] + s["dh"] for s in content]
+                     + [f["y"] + f["h"] for f in frames if f.get("frame") and f["parent"] is not None])
+        empty = sh - pad - bottom
+        if usable > 0 and empty > (1 - SLIDE_BOTTOM_MIN) * usable:
             add("GEOM_SLIDE_SPARSE", "low", ("slide",),
-                f"the slide's content ends at {bottom:.0f}px ({bottom / sh:.0%} of the height)")
+                f"the slide's content ends at {bottom:.0f}px: {empty:.0f}px ({empty / usable:.0%}) of the usable "
+                f"height is empty below it")
     return issues
-
-
-def _table_text_rows(shape: dict) -> float:
-    # a table frame that POM stretched: its text, not its rows, is the content (set by _drawn callers)
-    return shape.get("text_h", 0.0)
 
 
 def audit_run_folder(folder: str | Path, slide_type: str = "", brief: str = "") -> list[dict[str, str]]:

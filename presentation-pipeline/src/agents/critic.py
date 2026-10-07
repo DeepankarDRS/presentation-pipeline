@@ -58,6 +58,14 @@ def _constrain_round2_strategy(repair_hints: dict[str, Any]) -> dict[str, Any]:
     return repair_hints
 
 
+def critic_layout_issues(issues: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Layout findings the visual critic sees: the ones that may trigger a repair, plus the
+    geometry WARNINGS (borderline 4-10 px) for it to confirm on the screenshot (2026-10-07).
+    Errors are fixed by code or passed to the repairer as they are; fill findings are code's."""
+    return [i for i in issues if i.get("code") not in REPORT_ONLY_CODES
+            or (str(i.get("code", "")).startswith("GEOM_") and i.get("tier") == "warning")]
+
+
 def _run_visual_review(
     state: PresentationState,
     previous_issues: list[dict[str, Any]] | None = None,
@@ -94,14 +102,17 @@ def _run_visual_review(
     plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
     compile_warnings = cr.get("warnings", [])
 
+    # the XML the screenshot was drawn from: fit-grow changes sizes after generation (2026-10-07)
+    fitted = Path(pptx_path).parent / "fitted.xml"
+    drawn_xml = fitted.read_text(encoding="utf-8") if fitted.exists() else state.get("current_xml", "")
     visual_issues, visual_usage, repair_hints = run_visual_critic(
         screenshot_path=screenshot_path,
-        current_xml=state.get("current_xml", ""),
+        current_xml=drawn_xml,
         slide_plan=plan,
         theme_element=state.get("theme_element", ""),
         contract=state.get("contract"),
         compile_warnings=compile_warnings,
-        layout_issues=[i for i in state.get("layout_issues", []) if i.get("code") not in REPORT_ONLY_CODES],
+        layout_issues=critic_layout_issues(state.get("layout_issues", [])),
         previous_issues=previous_issues,
     )
 
