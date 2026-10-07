@@ -1,0 +1,55 @@
+{
+ "rule": "scripted dry-run fixture (one NODE_* code per slide)",
+ "slides": [
+  {
+   "case": "deck-qbr-data",
+   "slide": 2,
+   "run": "tests/fixtures/nodes/runs/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 3,
+   "run": "tests/fixtures/nodes/runs/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 4,
+   "run": "tests/fixtures/nodes/runs/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 5,
+   "run": "tests/fixtures/nodes/runs/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 1,
+   "run": "tests/fixtures/nodes/runs/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 2,
+   "run": "tests/fixtures/nodes/runs/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 3,
+   "run": "tests/fixtures/nodes/runs/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 4,
+   "run": "tests/fixtures/nodes/runs/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 5,
+   "run": "tests/fixtures/nodes/runs/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 6,
+   "run": "tests/fixtures/nodes/runs/decks/gate-deck-all-nodes-dense__r1"
+  }
+ ]
+}

@@ -1,0 +1,73 @@
+
+## REF NODES (every component under COMPONENTS)
+Code draws each component from the plan. You place it and give it room.
+1. Place every component listed under COMPONENTS with its tag, self-closing, ref="<id>", exactly once:
+   <KpiRow ref="summary_kpis" w="62%" />. Never write its content, items or children.
+2. Size it with w / h / grow / alignSelf / minH like any box; set variant only to a name on its line
+   (omit it for the first).
+3. On a native tag (Table, Chart, Ul, Timeline, ProcessArrow, Flow, Pyramid, Tree, Matrix, Text) you may set
+   its own presentation attributes (direction, connector, legend); colours as $tokens.
+4. Choose the variant from the slide's purpose and the room the node gets.
+5. Text you write beside the nodes (kicker, headline, subtitle, labels) copies the plan's text; add no facts
+   and do not repeat a node's content.
+Derived tags (not POM; code expands them): <KpiRow ref />, <CardGrid ref />, <Callout ref />.
+A component marked "draw it yourself" has no ref: build it with POM nodes from its data.
+
+### Examples (skeletons; the plans behind them are not this slide's)
+Hero KPI row beside a reading panel:
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$surface" padding="48" gap="20" alignItems="stretch">
+    <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">EXECUTIVE SUMMARY</Text>
+    <Text fontSize="36" bold="true" color="$textMain">The account is spending at scale, but not yet buying profitable demand.</Text>
+    <HStack grow="1" gap="24" alignItems="stretch">
+      <KpiRow ref="key_numbers" w="62%" />
+      <VStack grow="1" gap="14" padding="24" backgroundColor="$surfaceAlt" border.color="$border" border.width="1">
+        <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">WHAT IT MEANS</Text>
+        <Text ref="main_insight" fontSize="17" />
+        <Text ref="callout" fontSize="15" italic="true" color="$textMuted" />
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>
+Table and chart side by side, the takeaway in a band:
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$surface" padding="48" gap="18" alignItems="stretch">
+    <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">CORE ECONOMICS PROBLEM</Text>
+    <Text fontSize="34" bold="true" color="$textMain">CPC is nearly 3x higher than what current conversion economics can support.</Text>
+    <HStack grow="1" gap="28" alignItems="stretch">
+      <Table ref="cpc_table" w="50%" />
+      <Chart ref="cpc_chart" grow="1" h="max" minH="200" />
+    </HStack>
+    <Callout ref="main_insight" variant="dark" />
+  </VStack>
+</Slide>
+Cards beside a list:
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$surface" padding="48" gap="20" alignItems="stretch">
+    <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PERFORMANCE AUTOMATION</Text>
+    <Text fontSize="38" bold="true" color="$textMain">Ads Automation Engine Designed for Quick Commerce</Text>
+    <HStack grow="1" gap="28" alignItems="stretch">
+      <CardGrid ref="automation_workflow" w="58%" />
+      <VStack grow="1" gap="16">
+        <Text ref="automation_highlight" fontSize="18" italic="true" />
+        <Ul ref="automation_benefits" grow="1" />
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>
+A dense slide in three bands:
+<Slide>
+  <VStack w="1280" h="720" backgroundColor="$surface" padding="40" gap="14" alignItems="stretch">
+    <Text fontSize="14" color="$accent" bold="true" letterSpacing="2">PERFORMANCE OVERVIEW</Text>
+    <Text fontSize="30" bold="true" color="$textMain">H1 2026 Snapshot</Text>
+    <KpiRow ref="headline_kpis" h="120" />
+    <HStack grow="1" gap="20" alignItems="stretch">
+      <Table ref="platform_table" w="55%" />
+      <Chart ref="monthly_trend_chart" grow="1" h="max" minH="180" />
+    </HStack>
+    <HStack h="110" gap="20" alignItems="stretch">
+      <KpiRow ref="growth_kpi" w="34%" />
+      <Ul ref="platform_callouts" grow="1" />
+    </HStack>
+  </VStack>
+</Slide>

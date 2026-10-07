@@ -1,0 +1,459 @@
+[
+ {
+  "slide_index": 0,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"40\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\" justifyContent=\"center\">\n    <VStack gap=\"14\" alignItems=\"center\" justifyContent=\"center\" grow=\"1\">\n      <Text fontSize=\"48\" color=\"$textMain\" bold=\"true\" textAlign=\"center\" lineHeight=\"1.13\"><Span color=\"$accent\">Q3 FY26</Span> Business Review</Text>\n      <Text fontSize=\"22\" color=\"$textMuted\" textAlign=\"center\" margin.top=\"8\">Acme Analytics — Executive Update</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 0,
+   "slide_title": "Q3 FY26 Business Review",
+   "label": "",
+   "subtitle": "Acme Analytics  Executive Update",
+   "slide_type": "cover",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle for the executive update",
+     "design_hint": "emphasize the title as the hero element; color the phrase \"Q3 FY26\" as an accent and render the subtitle smaller and muted",
+     "weight": "hero",
+     "content_data": {
+      "title": "Q3 FY26 Business Review",
+      "subtitle": "Acme Analytics  Executive Update"
+     }
+    }
+   ],
+   "layout_hint": "slide_title is the hero and centered: large headline with the subtitle directly beneath it, generous whitespace around the title.",
+   "content_data": {
+    "title": "Q3 FY26 Business Review",
+    "subtitle": "Acme Analytics  Executive Update"
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user"
+   }
+  }
+ },
+ {
+  "slide_index": 1,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"5\">\n        <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">EXECUTIVE SUMMARY</Text>\n        <Text fontSize=\"30\" color=\"$textMain\" bold=\"true\">Headline KPIs</Text>\n        <Text fontSize=\"15\" color=\"$textMuted\">$48.2M  114%  72.1%  14 months</Text>\n      </VStack>\n    </HStack>\n    <HStack gap=\"16\" alignItems=\"stretch\" grow=\"3\">\n      <VStack w=\"max\" padding=\"28\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$surfaceAlt\" bold=\"true\" letterSpacing=\"2\">ARR</Text>\n        <Text fontSize=\"72\" color=\"$surfaceAlt\" bold=\"true\">$48.2<Span fontSize=\"36\" color=\"$surfaceAlt\">M</Span></Text>\n        <Text fontSize=\"16\" color=\"$positive\" bold=\"true\">+18% QoQ</Text>\n      </VStack>\n    </HStack>\n    <HStack gap=\"14\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\">NRR</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$positive\">114<Span fontSize=\"16\" color=\"$textMuted\">%</Span></Text>\n        <Text fontSize=\"14\" bold=\"true\" color=\"$positive\">+2 pts</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\">Gross Margin</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$negative\">72.1<Span fontSize=\"16\" color=\"$textMuted\">%</Span></Text>\n        <Text fontSize=\"14\" bold=\"true\" color=\"$negative\">-1.4 pts</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\">CAC Payback</Text>\n        <Text fontSize=\"30\" bold=\"true\" color=\"$warning\">14<Span fontSize=\"16\" color=\"$textMuted\"> months</Span></Text>\n        <Text fontSize=\"14\" bold=\"true\" color=\"$positive\">-2 months</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 1,
+   "slide_title": "Headline KPIs",
+   "label": "EXECUTIVE SUMMARY",
+   "subtitle": "$48.2M  114%  72.1%  14 months",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide header with kicker and compact subtitle showing the four headline metrics",
+     "design_hint": "color the phrase 'EXECUTIVE SUMMARY' in the accent color to mark the kicker",
+     "weight": "minor",
+     "content_data": {
+      "title": "Headline KPIs",
+      "subtitle": "EXECUTIVE SUMMARY · $48.2M  114%  72.1%  14 months"
+     }
+    },
+    {
+     "component_id": "arr_hero_kpi",
+     "kind": "kpi_row",
+     "count": 1,
+     "content_summary": "Hero KPI tile showing ARR with QoQ delta",
+     "design_hint": "inverted panel on the ARR tile; color the +18% QoQ delta in positive color and visually emphasize the $48.2M value",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "ARR"
+      ],
+      "kpi_values": [
+       "$48.2M"
+      ],
+      "kpi_deltas": [
+       "+18% QoQ"
+      ],
+      "kpi_directions": [
+       "up"
+      ]
+     }
+    },
+    {
+     "component_id": "supporting_kpis",
+     "kind": "kpi_row",
+     "count": 3,
+     "content_summary": "Supporting KPI tiles: NRR, Gross Margin, CAC Payback with deltas",
+     "design_hint": "color-code by meaning: NRR in positive color, Gross Margin and CAC Payback in negative/warning color; accent border on the Gross Margin tile",
+     "weight": "supporting",
+     "content_data": {
+      "kpi_labels": [
+       "NRR",
+       "Gross Margin",
+       "CAC Payback"
+      ],
+      "kpi_values": [
+       "114%",
+       "72.1%",
+       "14 months"
+      ],
+      "kpi_deltas": [
+       "+2 pts",
+       "-1.4 pts",
+       "-2 months"
+      ],
+      "kpi_directions": [
+       "up",
+       "down",
+       "down"
+      ]
+     }
+    }
+   ],
+   "layout_hint": "arr_hero_kpi is the primary element under the header; slide_title sits at the top (minor); supporting_kpis sits directly below the ARR hero as supporting context.",
+   "content_data": {
+    "title": "Headline KPIs",
+    "subtitle": "EXECUTIVE SUMMARY · $48.2M  114%  72.1%  14 months",
+    "kpi_labels": [
+     "NRR",
+     "Gross Margin",
+     "CAC Payback"
+    ],
+    "kpi_values": [
+     "114%",
+     "72.1%",
+     "14 months"
+    ],
+    "kpi_deltas": [
+     "+2 pts",
+     "-1.4 pts",
+     "-2 months"
+    ],
+    "kpi_directions": [
+     "up",
+     "down",
+     "down"
+    ]
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "kpi_labels": "user",
+    "kpi_values": "user",
+    "kpi_deltas": "user",
+    "kpi_directions": "user"
+   },
+   "capacity_fixes": [
+    "planner re-asked"
+   ]
+  }
+ },
+ {
+  "slide_index": 2,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"4\">\n        <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">PERFORMANCE</Text>\n        <Text fontSize=\"30\" color=\"$textMain\" bold=\"true\">Revenue Trend ($M)</Text>\n        <Text fontSize=\"14\" color=\"$textMuted\">Q3 FY26 <Span color=\"$accent\" bold=\"true\">$48.2M</Span>  Q2 FY26 $42.3M</Text>\n      </VStack>\n    </HStack>\n    <VStack grow=\"3\" gap=\"18\">\n      <VStack padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"chart-column\" size=\"20\" color=\"$accent\" />\n          <Text fontSize=\"16\" color=\"$textMain\" bold=\"true\">Revenue by quarter</Text>\n        </HStack>\n        <Chart h=\"max\" minH=\"200\" chartType=\"bar\" showLegend=\"false\" chartColors='[\"2563EB\",\"B6C6E6\",\"B6C6E6\",\"B6C6E6\",\"B6C6E6\",\"2563EB\"]'>\n          <ChartSeries name=\"Revenue\">\n            <ChartDataPoint label=\"Q2 FY25\" value=\"28.4\" />\n            <ChartDataPoint label=\"Q3 FY25\" value=\"31.2\" />\n            <ChartDataPoint label=\"Q4 FY25\" value=\"36.1\" />\n            <ChartDataPoint label=\"Q1 FY26\" value=\"39.1\" />\n            <ChartDataPoint label=\"Q2 FY26\" value=\"42.3\" />\n            <ChartDataPoint label=\"Q3 FY26\" value=\"48.2\" />\n          </ChartSeries>\n        </Chart>\n        <VStack alignItems=\"end\" margin.top=\"4\">\n          <Shape shapeType=\"roundRect\" w=\"180\" h=\"30\" fill.color=\"2563EB\" text=\"Q3 FY26 $48.2M\" />\n        </VStack>\n      </VStack>\n    </VStack>\n    <VStack padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" justifyContent=\"center\">\n      <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.5\">Revenue has increased each quarter across this six-quarter sequence, with the <Span color=\"$accent\" bold=\"true\">largest absolute jump</Span> occurring in Q3 FY26.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 2,
+   "slide_title": "Revenue Trend ($M)",
+   "label": "PERFORMANCE",
+   "subtitle": "Q3 FY26 $48.2M  Q2 FY26 $42.3M",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline, kicker and subtitle with latest and prior quarter revenue",
+     "design_hint": "color the \"$48.2M\" value to emphasize Q3 FY26",
+     "weight": "minor",
+     "content_data": {
+      "title": "Revenue Trend ($M)",
+      "subtitle": "Q3 FY26 $48.2M  Q2 FY26 $42.3M"
+     }
+    },
+    {
+     "component_id": "revenue_chart",
+     "kind": "chart",
+     "count": 1,
+     "content_summary": "Six-quarter bar chart of revenue showing acceleration into Q3 FY26",
+     "chart_type": "bar",
+     "series_count": 1,
+     "design_hint": "accent color and a callout on the Q3 FY26 bar (label the callout 'Q3 FY26 $48.2M'); use muted color for all other bars",
+     "weight": "hero",
+     "content_data": {
+      "chart_type": "bar",
+      "chart_title": "Revenue by quarter",
+      "chart_labels": [
+       "Q2 FY25",
+       "Q3 FY25",
+       "Q4 FY25",
+       "Q1 FY26",
+       "Q2 FY26",
+       "Q3 FY26"
+      ],
+      "chart_values": [
+       28.4,
+       31.2,
+       36.1,
+       39.1,
+       42.3,
+       48.2
+      ]
+     }
+    },
+    {
+     "component_id": "trend_note",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Sentence noting consistent quarterly increases and largest jump in Q3 FY26",
+     "design_hint": "emphasize the phrase \"largest absolute jump\" in the text; place the narrative on a supporting band with an accent border",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Revenue has increased each quarter across this six-quarter sequence, with the largest absolute jump occurring in Q3 FY26."
+     }
+    }
+   ],
+   "layout_hint": "revenue_chart is the primary element (hero) centered below the header; slide_title is a minor header across the top; trend_note sits as a supporting band beneath the chart calling out the insight.",
+   "content_data": {
+    "title": "Revenue Trend ($M)",
+    "subtitle": "Q3 FY26 $48.2M  Q2 FY26 $42.3M",
+    "chart_type": "bar",
+    "chart_title": "Revenue by quarter",
+    "chart_labels": [
+     "Q2 FY25",
+     "Q3 FY25",
+     "Q4 FY25",
+     "Q1 FY26",
+     "Q2 FY26",
+     "Q3 FY26"
+    ],
+    "chart_values": [
+     28.4,
+     31.2,
+     36.1,
+     39.1,
+     42.3,
+     48.2
+    ],
+    "text": "Revenue has increased each quarter across this six-quarter sequence, with the largest absolute jump occurring in Q3 FY26."
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "chart_type": "user",
+    "chart_title": "user",
+    "chart_labels": "user",
+    "chart_values": "user",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "slide_index": 3,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"16\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack justifyContent=\"start\" alignItems=\"start\" gap=\"12\">\n      <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">SEGMENTS</Text>\n    </HStack>\n    <VStack gap=\"4\">\n      <Text fontSize=\"27\" color=\"$textMain\" bold=\"true\"><Span color=\"$accent\">ARR</Span> by Segment</Text>\n      <Text fontSize=\"14\" color=\"$textMuted\">Enterprise $28.1M  Mid-Market $14.4M  SMB $5.7M</Text>\n    </VStack>\n    <VStack padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" border.color=\"$border\" border.width=\"1\">\n      <Text fontSize=\"16\" bold=\"true\" color=\"$textMain\">ARR, Growth &amp; Customers by Segment</Text>\n      <Table defaultRowHeight=\"40\" cellBorder.color=\"$border\" cellBorder.width=\"1\">\n        <Col width=\"180\" />\n        <Col />\n        <Col />\n        <Col />\n        <Tr height=\"40\">\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Segment</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">ARR</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">QoQ Growth</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">Customers</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"EEF2FD\" color=\"$textMain\">Enterprise</Td>\n          <Td backgroundColor=\"EEF2FD\" color=\"$textMain\" textAlign=\"right\">$28.1M</Td>\n          <Td backgroundColor=\"EEF2FD\" color=\"$positive\" textAlign=\"right\">+22%</Td>\n          <Td backgroundColor=\"EEF2FD\" color=\"$textMain\" textAlign=\"right\">142</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\">Mid-Market</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">$14.4M</Td>\n          <Td backgroundColor=\"$surface\" color=\"$positive\" textAlign=\"right\">+14%</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">487</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\">SMB</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">$5.7M</Td>\n          <Td backgroundColor=\"$surface\" color=\"$positive\" textAlign=\"right\">+8%</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">2,341</Td>\n        </Tr>\n      </Table>\n    </VStack>\n    <VStack padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n      <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.5\"><Span color=\"$positive\" bold=\"true\">Enterprise is the largest segment</Span> by ARR and shows the strongest QoQ growth; SMB has the highest customer count but lower ARR contribution.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 3,
+   "slide_title": "ARR by Segment",
+   "label": "SEGMENTS",
+   "subtitle": "Enterprise $28.1M  Mid-Market $14.4M  SMB $5.7M",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline and subtitle summarising ARR by segment",
+     "design_hint": "color the word 'ARR' in the title to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "ARR by Segment",
+      "subtitle": "Enterprise $28.1M  Mid-Market $14.4M  SMB $5.7M"
+     }
+    },
+    {
+     "component_id": "segment_table",
+     "kind": "table",
+     "count": 1,
+     "content_summary": "ARR, QoQ Growth and Customer count by segment (Enterprise highlighted)",
+     "columns": 4,
+     "rows": 3,
+     "design_hint": "shade the Enterprise row to highlight it; accent border on the component card",
+     "weight": "hero",
+     "content_data": {
+      "table_columns": [
+       "Segment",
+       "ARR",
+       "QoQ Growth",
+       "Customers"
+      ],
+      "table_rows": [
+       [
+        "Enterprise",
+        "$28.1M",
+        "+22%",
+        "142"
+       ],
+       [
+        "Mid-Market",
+        "$14.4M",
+        "+14%",
+        "487"
+       ],
+       [
+        "SMB",
+        "$5.7M",
+        "+8%",
+        "2,341"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "segment_insight",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Qualitative takeaway about which segments drive ARR and customer counts",
+     "design_hint": "color a key phrase: emphasize the phrase 'Enterprise is the largest segment' in the positive color",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Enterprise is the largest segment by ARR and shows the strongest QoQ growth; SMB has the highest customer count but lower ARR contribution."
+     }
+    },
+    {
+     "component_id": "kicker_caption",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Slide kicker label",
+     "design_hint": "emphasize the word 'SEGMENTS' as the slide kicker",
+     "weight": "minor",
+     "content_data": {
+      "text": "SEGMENTS"
+     }
+    }
+   ],
+   "layout_hint": "segment_table is the primary element (hero) centered across the slide; slide_title sits above as a minor header; segment_insight is a supporting band beneath the table; kicker_caption appears as a small label near the top-left.",
+   "content_data": {
+    "title": "ARR by Segment",
+    "subtitle": "Enterprise $28.1M  Mid-Market $14.4M  SMB $5.7M",
+    "table_columns": [
+     "Segment",
+     "ARR",
+     "QoQ Growth",
+     "Customers"
+    ],
+    "table_rows": [
+     [
+      "Enterprise",
+      "$28.1M",
+      "+22%",
+      "142"
+     ],
+     [
+      "Mid-Market",
+      "$14.4M",
+      "+14%",
+      "487"
+     ],
+     [
+      "SMB",
+      "$5.7M",
+      "+8%",
+      "2,341"
+     ]
+    ],
+    "text": "SEGMENTS"
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "table_columns": "user",
+    "table_rows": "user",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "slide_index": 4,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"5\">\n      <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">PRIORITIES</Text>\n      <Text fontSize=\"31\" color=\"$textMain\" bold=\"true\">Q4 Priorities</Text>\n      <Text fontSize=\"14\" color=\"$textMuted\"><Span color=\"$accent\">PRIORITIES</Span> · Recommendation</Text>\n    </VStack>\n    <HStack grow=\"2\" gap=\"18\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"24\" gap=\"10\" backgroundColor=\"$positive\" borderRadius=\"16\" justifyContent=\"center\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Icon name=\"handshake\" size=\"28\" color=\"$surfaceAlt\" alignSelf=\"start\" />\n        <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">Close 3 enterprise logos</Text>\n        <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.5\">Close 3 enterprise logos worth $4M+ combined ARR</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"24\" gap=\"10\" backgroundColor=\"$warning\" borderRadius=\"16\" justifyContent=\"center\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Icon name=\"rocket\" size=\"28\" color=\"$surfaceAlt\" alignSelf=\"start\" />\n        <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">Launch self-serve onboarding</Text>\n        <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.5\">Launch self-serve onboarding to reduce CAC payback to <Span color=\"$accent\" bold=\"true\">10 months</Span></Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"24\" gap=\"10\" backgroundColor=\"$accent\" borderRadius=\"16\" justifyContent=\"center\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Icon name=\"chart-column\" size=\"28\" color=\"$surfaceAlt\" alignSelf=\"start\" />\n        <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">Ship analytics v2 dashboard</Text>\n        <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.5\">Ship analytics v2 dashboard before Jan board meeting</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 4,
+   "slide_title": "Q4 Priorities",
+   "label": "PRIORITIES",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide header and kicker",
+     "design_hint": "color a key phrase in the subtitle (PRIORITIES) to link to the hero cards",
+     "weight": "minor",
+     "content_data": {
+      "title": "Q4 Priorities",
+      "subtitle": "PRIORITIES · Recommendation"
+     }
+    },
+    {
+     "component_id": "priorities_cards",
+     "kind": "card_grid",
+     "count": 3,
+     "content_summary": "Three priority action cards: enterprise logos, self-serve onboarding, analytics v2",
+     "items": 3,
+     "design_hint": "icon in each card; three equal-weight cards side-by-side; color-code by outcome (growth = positive color for Close 3 enterprise logos, warning color for Launch self-serve onboarding, accent color for Ship analytics v2 dashboard); color the key phrase \"10 months\" in the self-serve card",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Close 3 enterprise logos",
+        "body": "Close 3 enterprise logos worth $4M+ combined ARR"
+       },
+       {
+        "title": "Launch self-serve onboarding",
+        "body": "Launch self-serve onboarding to reduce CAC payback to 10 months"
+       },
+       {
+        "title": "Ship analytics v2 dashboard",
+        "body": "Ship analytics v2 dashboard before Jan board meeting"
+       }
+      ],
+      "per_row": 3
+     }
+    }
+   ],
+   "layout_hint": "slide_title sits as a narrow header at top (minor); priorities_cards is the hero and fills the main area as three equal cards side-by-side.",
+   "content_data": {
+    "title": "Q4 Priorities",
+    "subtitle": "PRIORITIES · Recommendation",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Close 3 enterprise logos",
+      "body": "Close 3 enterprise logos worth $4M+ combined ARR"
+     },
+     {
+      "title": "Launch self-serve onboarding",
+      "body": "Launch self-serve onboarding to reduce CAC payback to 10 months"
+     },
+     {
+      "title": "Ship analytics v2 dashboard",
+      "body": "Ship analytics v2 dashboard before Jan board meeting"
+     }
+    ],
+    "per_row": 3
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 6.0 units of content (limit 9)"
+    }
+   ]
+  }
+ }
+]

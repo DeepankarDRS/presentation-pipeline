@@ -180,7 +180,9 @@ band(s) that should fill (SIZING BY WEIGHT) -> size the data nodes (DATA NODE
 SIZING) -> fill with content.
 {{ house_style }}
 {% endif %}
-{% if component_recipes %}
+{% if nodes %}
+{% include "nodes_rules.j2" %}
+{% elif component_recipes %}
 
 ## COMPONENT RECIPES
 {{ component_recipes }}
@@ -221,6 +223,7 @@ rhythm) to the slide you are building.
 - More bands, each sized to its content - fewer growing bands
 {% endif %}
 
+{% if not nodes %}
 ## VISUAL-INTENT TRANSLATION
 
 A component may carry a `visual-intent` and a `scope` (its allowed treatments). Build each intent with the technique below. Core nodes keep fixed syntax: <Text>/<Td>/<Li> hold text + inline tags only; data-node items take no child nodes. Icons, dots, sparklines go AROUND them in VStack/HStack. Intent outside scope: use the closest allowed treatment or skip it.
@@ -230,6 +233,7 @@ A component may carry a `visual-intent` and a `scope` (its allowed treatments). 
 {% endif %}
 
 When no visual-intent is given, use default rendering — no embellishment needed.
+{% endif %}
 
 ## NOTES
 {% for note in notes %}

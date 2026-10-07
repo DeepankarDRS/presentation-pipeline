@@ -1,0 +1,865 @@
+[
+ {
+  "slide_index": 0,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"40\" gap=\"20\" alignItems=\"stretch\" backgroundColor=\"$surface\" justifyContent=\"center\">\n    <VStack gap=\"18\" alignItems=\"center\" justifyContent=\"center\">\n      <Text fontSize=\"48\" color=\"$textMain\" bold=\"true\" textAlign=\"center\">BREWLY Growth Strategy FY27</Text>\n      <Text fontSize=\"22\" color=\"$textMuted\" textAlign=\"center\" lineHeight=\"1.4\">Where we stand, what is working, and the <Span color=\"$accent\">90-day plan</Span> to scale profitably</Text>\n    </VStack>\n    <Text fontSize=\"16\" color=\"$textMuted\" textAlign=\"center\" margin.top=\"24\">Prepared by the Growth Team | <Span color=\"$accent\" bold=\"true\">October 2026</Span></Text>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 0,
+   "slide_title": "BREWLY Growth Strategy FY27",
+   "label": "",
+   "subtitle": "Where we stand, what is working, and the 90-day plan to scale profitably",
+   "slide_type": "cover",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Main headline and subtitle",
+     "design_hint": "emphasize the subtitle; color the phrase '90-day plan' as an accent",
+     "weight": "hero",
+     "content_data": {
+      "title": "BREWLY Growth Strategy FY27",
+      "subtitle": "Where we stand, what is working, and the 90-day plan to scale profitably"
+     }
+    },
+    {
+     "component_id": "author_caption",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Authorship and date",
+     "design_hint": "emphasize 'October 2026' in the caption",
+     "weight": "minor",
+     "content_data": {
+      "text": "Prepared by the Growth Team | October 2026"
+     }
+    }
+   ],
+   "layout_hint": "slide_title is the hero element; author_caption sits directly beneath it as a single-line positioning note.",
+   "content_data": {
+    "title": "BREWLY Growth Strategy FY27",
+    "subtitle": "Where we stand, what is working, and the 90-day plan to scale profitably",
+    "text": "Prepared by the Growth Team | October 2026"
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "slide_index": 1,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"16\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"4\">\n        <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">PERFORMANCE</Text>\n        <Text fontSize=\"30\" color=\"$textMain\" bold=\"true\"><Span color=\"$accent\">Repeat customers</Span> now drive most of BREWLY's revenue.</Text>\n        <Text fontSize=\"14\" color=\"$textMuted\">Annual revenue: ₹14.2Cr · Revenue growth: +38% · Blended ROAS: 2.4x</Text>\n      </VStack>\n    </HStack>\n    <HStack gap=\"14\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\">Annual revenue</Text>\n        <Text fontSize=\"28\" bold=\"true\" color=\"$textMain\">₹14.2<Span fontSize=\"16\" color=\"$textMuted\">Cr</Span></Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$positive\" borderLeft.width=\"4\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\">Revenue growth</Text>\n        <Text fontSize=\"28\" bold=\"true\" color=\"$positive\">+38%</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\">Blended ROAS</Text>\n        <Text fontSize=\"28\" bold=\"true\" color=\"$textMain\">2.4<Span fontSize=\"16\" color=\"$textMuted\">x</Span></Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" opacity=\"0.6\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\">Customer acquisition cost</Text>\n        <Text fontSize=\"28\" bold=\"true\" color=\"$textMuted\">₹410</Text>\n      </VStack>\n    </HStack>\n    <HStack grow=\"2\" gap=\"16\" alignItems=\"stretch\">\n      <VStack w=\"60%\" grow=\"1\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">REPEAT REVENUE SHARE</Text>\n        <Text fontSize=\"64\" color=\"$positive\" bold=\"true\">62<Span fontSize=\"32\" color=\"$textMuted\">%</Span></Text>\n        <Text fontSize=\"16\" color=\"$positive\" bold=\"true\" lineHeight=\"1.45\">up from 41% a year ago</Text>\n      </VStack>\n      <VStack w=\"40%\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Quarterly revenue (₹ Cr)</Text>\n        <Chart h=\"max\" minH=\"180\" chartType=\"bar\" showLegend=\"false\" chartColors='[\"B6CCF7\",\"B6CCF7\",\"B6CCF7\",\"B6CCF7\",\"B6CCF7\",\"2563EB\"]'>\n          <ChartSeries name=\"Revenue\">\n            <ChartDataPoint label=\"Q1 FY26\" value=\"2.6\" />\n            <ChartDataPoint label=\"Q2 FY26\" value=\"2.9\" />\n            <ChartDataPoint label=\"Q3 FY26\" value=\"3.3\" />\n            <ChartDataPoint label=\"Q4 FY26\" value=\"3.6\" />\n            <ChartDataPoint label=\"Q1 FY27\" value=\"3.9\" />\n            <ChartDataPoint label=\"Q2 FY27\" value=\"4.4\" />\n          </ChartSeries>\n        </Chart>\n      </VStack>\n    </HStack>\n    <VStack padding=\"14\" gap=\"4\" backgroundColor=\"$surfaceAlt\" borderRadius=\"10\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">Growth came from <Span color=\"$positive\">retention and pricing</Span>, not from buying more traffic.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 1,
+   "slide_title": "Repeat customers now drive most of BREWLY's revenue.",
+   "label": "PERFORMANCE",
+   "subtitle": "Annual revenue: ₹14.2Cr · Revenue growth: +38% · Blended ROAS: 2.4x",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline, kicker and subtitle with top-level metrics",
+     "design_hint": "color the phrase 'Repeat customers' in the headline to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "Repeat customers now drive most of BREWLY's revenue.",
+      "subtitle": "PERFORMANCE · Annual revenue: ₹14.2Cr · Revenue growth: +38% · Blended ROAS: 2.4x"
+     }
+    },
+    {
+     "component_id": "top_kpis",
+     "kind": "kpi_row",
+     "count": 4,
+     "content_summary": "Top-row metric tiles: revenue, growth, ROAS, CAC",
+     "items": 4,
+     "design_hint": "highlight the 'Revenue growth' tile in positive color and keep the 'Customer acquisition cost' tile visually muted",
+     "weight": "peer",
+     "content_data": {
+      "kpi_labels": [
+       "Annual revenue",
+       "Revenue growth",
+       "Blended ROAS",
+       "Customer acquisition cost"
+      ],
+      "kpi_values": [
+       "₹14.2Cr",
+       "+38%",
+       "2.4x",
+       "₹410"
+      ],
+      "kpi_deltas": [
+       "",
+       "",
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       "",
+       "",
+       ""
+      ]
+     }
+    },
+    {
+     "component_id": "repeat_revenue_kpi",
+     "kind": "kpi_row",
+     "count": 1,
+     "content_summary": "Hero number showing share of revenue from repeat customers with prior-year comparison",
+     "items": 1,
+     "design_hint": "emphasize the 'Repeat revenue share' tile as the hero: color the 62% in positive and bold the delta 'up from 41% a year ago'",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "Repeat revenue share"
+      ],
+      "kpi_values": [
+       "62%"
+      ],
+      "kpi_deltas": [
+       "up from 41% a year ago"
+      ],
+      "kpi_directions": [
+       "up"
+      ]
+     }
+    },
+    {
+     "component_id": "quarterly_revenue_chart",
+     "kind": "chart",
+     "count": 1,
+     "content_summary": "Bar chart of quarterly revenue in ₹ Cr showing trend across six quarters",
+     "chart_type": "bar",
+     "series_count": 1,
+     "items": 6,
+     "design_hint": "accent the latest bar (Q2 FY27) with the deck accent color; mute earlier bars to show upward trend",
+     "weight": "supporting",
+     "content_data": {
+      "chart_type": "bar",
+      "chart_title": "Quarterly revenue (₹ Cr)",
+      "chart_labels": [
+       "Q1 FY26",
+       "Q2 FY26",
+       "Q3 FY26",
+       "Q4 FY26",
+       "Q1 FY27",
+       "Q2 FY27"
+      ],
+      "chart_values": [
+       2.6,
+       2.9,
+       3.3,
+       3.6,
+       3.9,
+       4.4
+      ]
+     }
+    },
+    {
+     "component_id": "insight_note",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Qualitative insight about source of growth",
+     "design_hint": "color the phrase 'retention and pricing' to link it visually to the hero number; lift the card slightly",
+     "weight": "minor",
+     "content_data": {
+      "text": "Growth came from retention and pricing, not from buying more traffic."
+     }
+    }
+   ],
+   "layout_hint": "kpi_top_row (top_kpis) spans across the top; below that, a two-column band with repeat_revenue_kpi on the left (hero) and quarterly_revenue_chart on the right (supporting); place insight_note as a slim caption band beneath the two-column band.",
+   "content_data": {
+    "title": "Repeat customers now drive most of BREWLY's revenue.",
+    "subtitle": "PERFORMANCE · Annual revenue: ₹14.2Cr · Revenue growth: +38% · Blended ROAS: 2.4x",
+    "kpi_labels": [
+     "Repeat revenue share"
+    ],
+    "kpi_values": [
+     "62%"
+    ],
+    "kpi_deltas": [
+     "up from 41% a year ago"
+    ],
+    "kpi_directions": [
+     "up"
+    ],
+    "chart_type": "bar",
+    "chart_title": "Quarterly revenue (₹ Cr)",
+    "chart_labels": [
+     "Q1 FY26",
+     "Q2 FY26",
+     "Q3 FY26",
+     "Q4 FY26",
+     "Q1 FY27",
+     "Q2 FY27"
+    ],
+    "chart_values": [
+     2.6,
+     2.9,
+     3.3,
+     3.6,
+     3.9,
+     4.4
+    ],
+    "text": "Growth came from retention and pricing, not from buying more traffic."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "kpi_labels": "sample",
+    "kpi_values": "sample",
+    "kpi_deltas": "sample",
+    "kpi_directions": "sample",
+    "chart_type": "sample",
+    "chart_title": "sample",
+    "chart_labels": "sample",
+    "chart_values": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "slide_index": 2,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"4\">\n        <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">CHANNELS</Text>\n        <Text fontSize=\"29\" color=\"$textMain\" bold=\"true\">The website earns the best margin; bundles and referrals are the quick wins.</Text>\n        <Text fontSize=\"14\" color=\"$textMuted\">Website: <Span color=\"$positive\">₹7.1Cr</Span> · QUIKMART: ₹4.3Cr · DASHCART: ₹2.8Cr</Text>\n      </VStack>\n    </HStack>\n    <VStack padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <Text fontSize=\"16\" bold=\"true\" color=\"$textMain\">Channel-level economics</Text>\n      <Table defaultRowHeight=\"50\" cellBorder.color=\"$border\" cellBorder.width=\"1\">\n        <Col width=\"180\" />\n        <Col />\n        <Col />\n        <Col />\n        <Tr height=\"40\">\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" fontSize=\"14\">Channel</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">Revenue</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">ROAS</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">Gross Margin</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"E6F4EA\" color=\"$textMain\" fontSize=\"14\" bold=\"true\">Website</Td>\n          <Td backgroundColor=\"E6F4EA\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">₹7.1Cr</Td>\n          <Td backgroundColor=\"E6F4EA\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">3.1x</Td>\n          <Td backgroundColor=\"E6F4EA\" color=\"$positive\" fontSize=\"14\" textAlign=\"right\" bold=\"true\">64%</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\" fontSize=\"14\">QUIKMART</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">₹4.3Cr</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">2.2x</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">55%</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\" fontSize=\"14\">DASHCART</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">₹2.8Cr</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">1.4x</Td>\n          <Td backgroundColor=\"$surface\" color=\"$textMain\" fontSize=\"14\" textAlign=\"right\">47%</Td>\n        </Tr>\n      </Table>\n    </VStack>\n    <HStack gap=\"18\" alignItems=\"stretch\">\n      <VStack w=\"max\">\n        <VStack padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" borderLeft.color=\"$positive\" borderLeft.width=\"4\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n          <Text fontSize=\"15\" bold=\"true\" color=\"$textMain\">Brand priorities</Text>\n          <Pyramid direction=\"up\" h=\"228\" fontSize=\"15\" bold=\"true\">\n            <PyramidLevel label=\"Category leadership\" color=\"15803D\" textColor=\"FFFFFF\" />\n            <PyramidLevel label=\"Loyal subscribers\" color=\"2563EB\" textColor=\"FFFFFF\" />\n            <PyramidLevel label=\"Consistent experience\" color=\"3B82F6\" textColor=\"FFFFFF\" />\n            <PyramidLevel label=\"Fresh roast quality\" color=\"1D4ED8\" textColor=\"FFFFFF\" />\n          </Pyramid>\n        </VStack>\n      </VStack>\n      <VStack w=\"max\">\n        <VStack padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n          <HStack justifyContent=\"spaceBetween\" alignItems=\"center\">\n            <Text fontSize=\"15\" bold=\"true\" color=\"$textMain\">Activation ideas: Effort vs Impact</Text>\n            <Text fontSize=\"14\" color=\"$textMuted\">2x2 matrix</Text>\n          </HStack>\n          <Matrix h=\"max\" minH=\"260\" axisLabelColor=\"$textMuted\" quadrantLabelColor=\"$textMuted\" itemLabelColor=\"$textMain\">\n            <MatrixAxes x=\"Effort\" y=\"Impact\" />\n            <MatrixQuadrants topLeft=\"Quick wins (low effort, high impact)\" topRight=\"Strategic bets (high effort, high impact)\" bottomLeft=\"Low priority (low effort, low impact)\" bottomRight=\"Avoid / deprioritise (high effort, low impact)\" />\n            <MatrixItem label=\"Bundle offers\" x=\"0.18\" y=\"0.85\" color=\"$positive\" />\n            <MatrixItem label=\"Referral program\" x=\"0.32\" y=\"0.78\" color=\"$positive\" />\n            <MatrixItem label=\"Own delivery fleet\" x=\"0.82\" y=\"0.82\" color=\"2563EB\" />\n            <MatrixItem label=\"Loyalty app\" x=\"0.82\" y=\"0.18\" color=\"$warning\" />\n          </Matrix>\n        </VStack>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 2,
+   "slide_title": "The website earns the best margin; bundles and referrals are the quick wins.",
+   "label": "CHANNELS",
+   "subtitle": "Website: ₹7.1Cr · QUIKMART: ₹4.3Cr · DASHCART: ₹2.8Cr",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Kicker + headline + channel subtitle",
+     "design_hint": "color a key phrase: emphasize 'website' in the subtitle with the positive color",
+     "weight": "minor",
+     "content_data": {
+      "title": "The website earns the best margin; bundles and referrals are the quick wins.",
+      "subtitle": "CHANNELS · Website: ₹7.1Cr · QUIKMART: ₹4.3Cr · DASHCART: ₹2.8Cr"
+     }
+    },
+    {
+     "component_id": "channel_table",
+     "kind": "table",
+     "count": 1,
+     "content_summary": "Channel-level economics: revenue, ROAS, gross margin",
+     "columns": 4,
+     "rows": 3,
+     "design_hint": "shade the Website row and emphasize the 64% Gross Margin cell in the positive color; lift the card slightly",
+     "weight": "hero",
+     "content_data": {
+      "table_columns": [
+       "Channel",
+       "Revenue",
+       "ROAS",
+       "Gross Margin"
+      ],
+      "table_rows": [
+       [
+        "Website",
+        "₹7.1Cr",
+        "3.1x",
+        "64%"
+       ],
+       [
+        "QUIKMART",
+        "₹4.3Cr",
+        "2.2x",
+        "55%"
+       ],
+       [
+        "DASHCART",
+        "₹2.8Cr",
+        "1.4x",
+        "47%"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "priorities_pyramid",
+     "kind": "pyramid",
+     "count": 4,
+     "content_summary": "Brand priorities from top to bottom",
+     "items": 4,
+     "design_hint": "emphasize the top level 'Category leadership' with the positive color and lift the pyramid card",
+     "weight": "supporting",
+     "content_data": {
+      "direction": "up",
+      "pyramid_levels": [
+       "Category leadership",
+       "Loyal subscribers",
+       "Consistent experience",
+       "Fresh roast quality"
+      ]
+     }
+    },
+    {
+     "component_id": "activation_matrix",
+     "kind": "matrix",
+     "count": 4,
+     "content_summary": "2x2 effort vs impact placement for activation ideas",
+     "items": 4,
+     "design_hint": "color-code low-effort, high-impact items (Bundle offers, Referral program) in the positive color; mark 'Loyalty app' (high effort, low impact) with a warning tone; add an accent border on the card",
+     "weight": "supporting",
+     "content_data": {
+      "x_axis": "Effort",
+      "y_axis": "Impact",
+      "quadrants": {
+       "top_left": "Quick wins (low effort, high impact)",
+       "top_right": "Strategic bets (high effort, high impact)",
+       "bottom_left": "Low priority (low effort, low impact)",
+       "bottom_right": "Avoid / deprioritise (high effort, low impact)"
+      },
+      "matrix_items": [
+       {
+        "label": "Bundle offers",
+        "x": "low",
+        "y": "high"
+       },
+       {
+        "label": "Referral program",
+        "x": "low",
+        "y": "high"
+       },
+       {
+        "label": "Own delivery fleet",
+        "x": "high",
+        "y": "high"
+       },
+       {
+        "label": "Loyalty app",
+        "x": "high",
+        "y": "low"
+       }
+      ]
+     }
+    }
+   ],
+   "layout_hint": "channel_table is the primary element, full-width at the top; below it, priorities_pyramid sits bottom-left and activation_matrix sits bottom-right as supporting visuals.",
+   "content_data": {
+    "title": "The website earns the best margin; bundles and referrals are the quick wins.",
+    "subtitle": "CHANNELS · Website: ₹7.1Cr · QUIKMART: ₹4.3Cr · DASHCART: ₹2.8Cr",
+    "table_columns": [
+     "Channel",
+     "Revenue",
+     "ROAS",
+     "Gross Margin"
+    ],
+    "table_rows": [
+     [
+      "Website",
+      "₹7.1Cr",
+      "3.1x",
+      "64%"
+     ],
+     [
+      "QUIKMART",
+      "₹4.3Cr",
+      "2.2x",
+      "55%"
+     ],
+     [
+      "DASHCART",
+      "₹2.8Cr",
+      "1.4x",
+      "47%"
+     ]
+    ],
+    "direction": "up",
+    "pyramid_levels": [
+     "Category leadership",
+     "Loyal subscribers",
+     "Consistent experience",
+     "Fresh roast quality"
+    ],
+    "x_axis": "Effort",
+    "y_axis": "Impact",
+    "quadrants": {
+     "top_left": "Quick wins (low effort, high impact)",
+     "top_right": "Strategic bets (high effort, high impact)",
+     "bottom_left": "Low priority (low effort, low impact)",
+     "bottom_right": "Avoid / deprioritise (high effort, low impact)"
+    },
+    "matrix_items": [
+     {
+      "label": "Bundle offers",
+      "x": "low",
+      "y": "high"
+     },
+     {
+      "label": "Referral program",
+      "x": "low",
+      "y": "high"
+     },
+     {
+      "label": "Own delivery fleet",
+      "x": "high",
+      "y": "high"
+     },
+     {
+      "label": "Loyalty app",
+      "x": "high",
+      "y": "low"
+     }
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "table_columns": "sample",
+    "table_rows": "sample",
+    "direction": "sample",
+    "pyramid_levels": "sample",
+    "x_axis": "sample",
+    "y_axis": "sample",
+    "quadrants": "sample",
+    "matrix_items": "sample"
+   }
+  }
+ },
+ {
+  "slide_index": 3,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack justifyContent=\"start\" alignItems=\"start\">\n      <VStack gap=\"5\">\n        <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">OPERATIONS</Text>\n        <Text fontSize=\"30\" color=\"$textMain\" bold=\"true\">One team and <Span color=\"$accent\">one platform</Span> run a four-stage fulfilment chain.</Text>\n        <Text fontSize=\"14\" color=\"$textMuted\">OPERATIONS · How We Operate</Text>\n      </VStack>\n    </HStack>\n    <VStack grow=\"3\" alignItems=\"stretch\">\n      <VStack grow=\"1\" padding=\"22\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"truck\" size=\"22\" color=\"$accent\" />\n          <Text fontSize=\"16\" bold=\"true\" color=\"$textMain\">Fulfilment flow</Text>\n        </HStack>\n        <ProcessArrow h=\"max\" minH=\"90\" direction=\"horizontal\" fontSize=\"16\" bold=\"true\">\n          <ProcessArrowStep label=\"Roast\" color=\"BFD3F7\" textColor=\"16202E\" />\n          <ProcessArrowStep label=\"Pack\" color=\"60A5FA\" textColor=\"FFFFFF\" />\n          <ProcessArrowStep label=\"Dispatch\" color=\"2563EB\" textColor=\"FFFFFF\" />\n          <ProcessArrowStep label=\"Deliver\" color=\"1E3A8A\" textColor=\"FFFFFF\" />\n        </ProcessArrow>\n      </VStack>\n    </VStack>\n    <HStack gap=\"18\" alignItems=\"stretch\">\n      <VStack w=\"max\" grow=\"1\" alignItems=\"stretch\">\n        <VStack grow=\"1\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n          <HStack gap=\"8\" alignItems=\"center\">\n            <Icon name=\"users\" size=\"20\" color=\"$accent\" />\n            <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Org chart</Text>\n          </HStack>\n          <Tree layout=\"vertical\" h=\"max\" minH=\"200\" nodeShape=\"roundRect\" textColor=\"FFFFFF\" nodeWidth=\"130\" nodeHeight=\"46\" levelGap=\"52\" siblingGap=\"22\" connectorStyle.color=\"94A3B8\" connectorStyle.width=\"2\">\n            <TreeItem label=\"Head of Growth\" color=\"2563EB\">\n              <TreeItem label=\"Performance Lead\" color=\"60A5FA\" />\n              <TreeItem label=\"Retention Lead\" color=\"60A5FA\" />\n              <TreeItem label=\"Marketplace Lead\" color=\"60A5FA\" />\n            </TreeItem>\n          </Tree>\n        </VStack>\n      </VStack>\n      <VStack w=\"max\" grow=\"1\" alignItems=\"stretch\">\n        <VStack grow=\"1\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n          <HStack gap=\"8\" alignItems=\"center\">\n            <Icon name=\"settings\" size=\"20\" color=\"$accent\" />\n            <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Architecture layers</Text>\n          </HStack>\n          <Layer w=\"340\" h=\"220\" backgroundColor=\"$surfaceAlt\" borderRadius=\"10\">\n            <Shape shapeType=\"roundRect\" x=\"0\" y=\"0\" w=\"340\" h=\"54\" fill.color=\"$accent\" color=\"$surfaceAlt\" fontSize=\"16\" bold=\"true\" textAlign=\"left\" borderRadius=\"10\" text=\"Channels\" />\n            <Text x=\"18\" y=\"22\" fontSize=\"14\" color=\"$surfaceAlt\">Website</Text>\n            <Text x=\"120\" y=\"22\" fontSize=\"14\" color=\"$surfaceAlt\">QUIKMART</Text>\n            <Text x=\"240\" y=\"22\" fontSize=\"14\" color=\"$surfaceAlt\">DASHCART</Text>\n            <Shape shapeType=\"roundRect\" x=\"0\" y=\"68\" w=\"340\" h=\"54\" fill.color=\"E2E8F0\" color=\"$textMain\" fontSize=\"16\" bold=\"true\" textAlign=\"left\" borderRadius=\"10\" text=\"Customer data\" />\n            <Text x=\"18\" y=\"90\" fontSize=\"14\" color=\"$textMain\">profiles</Text>\n            <Text x=\"140\" y=\"90\" fontSize=\"14\" color=\"$textMain\">purchase history</Text>\n            <Shape shapeType=\"roundRect\" x=\"0\" y=\"136\" w=\"340\" h=\"54\" fill.color=\"F7F9FC\" color=\"$textMain\" fontSize=\"16\" bold=\"true\" textAlign=\"left\" borderRadius=\"10\" text=\"Operations\" />\n            <Text x=\"18\" y=\"158\" fontSize=\"14\" color=\"$textMain\">roastery</Text>\n            <Text x=\"120\" y=\"158\" fontSize=\"14\" color=\"$textMain\">inventory</Text>\n            <Text x=\"240\" y=\"158\" fontSize=\"14\" color=\"$textMain\">delivery</Text>\n          </Layer>\n        </VStack>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 3,
+   "slide_title": "One team and one platform run a four-stage fulfilment chain.",
+   "label": "OPERATIONS",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and kicker",
+     "design_hint": "color the phrase 'one platform' to emphasize the single-platform constraint",
+     "weight": "minor",
+     "content_data": {
+      "title": "One team and one platform run a four-stage fulfilment chain.",
+      "subtitle": "OPERATIONS · How We Operate"
+     }
+    },
+    {
+     "component_id": "fulfilment_flow",
+     "kind": "process_arrow",
+     "count": 4,
+     "content_summary": "Four-stage fulfilment chain: Roast → Pack → Dispatch → Deliver",
+     "items": 4,
+     "orientation": "horizontal",
+     "design_hint": "emphasize the Roast → Pack → Dispatch → Deliver flow and highlight the 'Dispatch' step; accent border on the component's card",
+     "weight": "hero",
+     "content_data": {
+      "direction": "horizontal",
+      "process_steps": [
+       "Roast",
+       "Pack",
+       "Dispatch",
+       "Deliver"
+      ]
+     }
+    },
+    {
+     "component_id": "org_chart",
+     "kind": "tree",
+     "count": 1,
+     "content_summary": "Org chart: Head of Growth with three direct reports",
+     "items": 4,
+     "orientation": "vertical",
+     "design_hint": "emphasize the 'Head of Growth' node; lift / elevate the card",
+     "weight": "supporting",
+     "content_data": {
+      "layout": "vertical",
+      "tree_nodes": [
+       {
+        "label": "Head of Growth",
+        "children": [
+         {
+          "label": "Performance Lead"
+         },
+         {
+          "label": "Retention Lead"
+         },
+         {
+          "label": "Marketplace Lead"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "architecture_layers",
+     "kind": "layer",
+     "count": 3,
+     "content_summary": "Architecture layers top-to-bottom: Channels; Customer data; Operations",
+     "items": 3,
+     "design_hint": "show layers stacked top-to-bottom; color-code the Channels layer with the accent color and use an accent border on the component's card",
+     "weight": "supporting",
+     "content_data": {
+      "order": "top-to-bottom",
+      "layers": [
+       {
+        "title": "Channels",
+        "items": [
+         "Website",
+         "QUIKMART",
+         "DASHCART"
+        ]
+       },
+       {
+        "title": "Customer data",
+        "items": [
+         "profiles",
+         "purchase history"
+        ]
+       },
+       {
+        "title": "Operations",
+        "items": [
+         "roastery",
+         "inventory",
+         "delivery"
+        ]
+       }
+      ]
+     }
+    }
+   ],
+   "layout_hint": "fulfilment_flow is the primary element, full-width at the top; slide_title sits in the header as a minor element; org_chart sits bottom-left as supporting context and architecture_layers sits bottom-right as supporting context.",
+   "content_data": {
+    "title": "One team and one platform run a four-stage fulfilment chain.",
+    "subtitle": "OPERATIONS · How We Operate",
+    "direction": "horizontal",
+    "process_steps": [
+     "Roast",
+     "Pack",
+     "Dispatch",
+     "Deliver"
+    ],
+    "layout": "vertical",
+    "tree_nodes": [
+     {
+      "label": "Head of Growth",
+      "children": [
+       {
+        "label": "Performance Lead"
+       },
+       {
+        "label": "Retention Lead"
+       },
+       {
+        "label": "Marketplace Lead"
+       }
+      ]
+     }
+    ],
+    "order": "top-to-bottom",
+    "layers": [
+     {
+      "title": "Channels",
+      "items": [
+       "Website",
+       "QUIKMART",
+       "DASHCART"
+      ]
+     },
+     {
+      "title": "Customer data",
+      "items": [
+       "profiles",
+       "purchase history"
+      ]
+     },
+     {
+      "title": "Operations",
+      "items": [
+       "roastery",
+       "inventory",
+       "delivery"
+      ]
+     }
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "direction": "sample",
+    "process_steps": "sample",
+    "layout": "sample",
+    "tree_nodes": "sample",
+    "order": "sample",
+    "layers": "sample"
+   }
+  }
+ },
+ {
+  "slide_index": 4,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"6\">\n      <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">JOURNEY</Text>\n      <Text fontSize=\"30\" color=\"$textMain\" bold=\"true\">Five milestones built the brand; <Span color=\"$accent\">one decision flow</Span> now converts each visitor.</Text>\n      <Text fontSize=\"14\" color=\"$textMuted\">2021: Café opens · 2022: Website launch · 2023: Subscriptions live · 2024: QUIKMART listing · 2025: DASHCART listing</Text>\n    </VStack>\n    <VStack grow=\"2\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <HStack gap=\"8\" alignItems=\"center\">\n        <Icon name=\"star\" size=\"20\" color=\"$accent\" />\n        <Text fontSize=\"16\" color=\"$textMain\" bold=\"true\">Brand milestones</Text>\n      </HStack>\n      <Timeline direction=\"horizontal\" h=\"150\" dateColor=\"$textMuted\" titleColor=\"$textMain\" connectorColor=\"$accent\">\n        <TimelineItem date=\"2021\" title=\"Café opens\" color=\"2563EB\" />\n        <TimelineItem date=\"2022\" title=\"Website launch\" color=\"0EA5E9\" />\n        <TimelineItem date=\"2023\" title=\"Subscriptions live\" color=\"15803D\" />\n        <TimelineItem date=\"2024\" title=\"QUIKMART listing\" color=\"B45309\" />\n        <TimelineItem date=\"2025\" title=\"DASHCART listing\" color=\"$accent\" />\n      </Timeline>\n    </VStack>\n    <HStack grow=\"1\" gap=\"18\" alignItems=\"stretch\">\n      <VStack w=\"max\" grow=\"1\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          \n          <Text fontSize=\"14\" color=\"$textMain\" bold=\"true\">Conversion decision flow</Text>\n        </HStack>\n        <Flow direction=\"horizontal\" h=\"max\" minH=\"200\" nodeWidth=\"170\" nodeHeight=\"56\" nodeGap=\"54\">\n          <FlowNode id=\"v1\" shape=\"flowChartTerminator\" text=\"Visitor lands\" color=\"2563EB\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"v2\" shape=\"flowChartDecision\" text=\"Bought before?\" color=\"$accent\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"v3a\" shape=\"flowChartProcess\" text=\"Yes: Subscription offer\" color=\"15803D\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"v3b\" shape=\"flowChartProcess\" text=\"No: Trial pack\" color=\"2563EB\" textColor=\"FFFFFF\" />\n          <FlowNode id=\"v4\" shape=\"flowChartTerminator\" text=\"Checkout\" color=\"0EA5E9\" textColor=\"FFFFFF\" />\n          <FlowConnection from=\"v1\" to=\"v2\" />\n          <FlowConnection from=\"v2\" to=\"v3a\" label=\"Yes\" color=\"15803D\" labelColor=\"15803D\" />\n          <FlowConnection from=\"v2\" to=\"v3b\" label=\"No\" color=\"$accent\" labelColor=\"$accent\" />\n          <FlowConnection from=\"v3a\" to=\"v4\" />\n          <FlowConnection from=\"v3b\" to=\"v4\" />\n        </Flow>\n      </VStack>\n      <VStack w=\"max\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" justifyContent=\"center\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"settings\" size=\"20\" color=\"$accent\" />\n          <Text fontSize=\"14\" color=\"$textMain\" bold=\"true\">Conversion rules</Text>\n        </HStack>\n        <Ul fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.4\">\n          <Li bold=\"true\">Returning buyers never see the trial pack</Li>\n          <Li>First-time visitors get one offer</Li>\n          <Li>Every offer ends at one checkout</Li>\n        </Ul>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 4,
+   "slide_title": "Five milestones built the brand; one decision flow now converts each visitor.",
+   "label": "JOURNEY",
+   "subtitle": "2021: Café opens · 2022: Website launch · 2023: Subscriptions live · 2024: QUIKMART listing · 2025: DASHCART listing",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle with milestone years",
+     "design_hint": "color the phrase 'one decision flow' in accent to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "Five milestones built the brand; one decision flow now converts each visitor.",
+      "subtitle": "2021: Café opens · 2022: Website launch · 2023: Subscriptions live · 2024: QUIKMART listing · 2025: DASHCART listing"
+     }
+    },
+    {
+     "component_id": "brand_timeline",
+     "kind": "timeline",
+     "count": 5,
+     "content_summary": "Chronological brand milestones from 2021 to 2025",
+     "items": 5,
+     "orientation": "horizontal",
+     "design_hint": "emphasize the 2025: DASHCART listing marker; lift / elevate the card",
+     "weight": "hero",
+     "content_data": {
+      "direction": "horizontal",
+      "timeline_items": [
+       {
+        "date": "2021",
+        "label": "Café opens"
+       },
+       {
+        "date": "2022",
+        "label": "Website launch"
+       },
+       {
+        "date": "2023",
+        "label": "Subscriptions live"
+       },
+       {
+        "date": "2024",
+        "label": "QUIKMART listing"
+       },
+       {
+        "date": "2025",
+        "label": "DASHCART listing"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "conversion_flow",
+     "kind": "flow",
+     "count": 4,
+     "content_summary": "Decision flow showing branching offer based on returning buyer status",
+     "items": 4,
+     "orientation": "horizontal",
+     "design_hint": "emphasize the 'Bought before?' decision node; color the 'Yes: Subscription offer' branch positive and the 'No: Trial pack' branch neutral",
+     "weight": "supporting",
+     "content_data": {
+      "direction": "horizontal",
+      "flow_steps": [
+       "Visitor lands",
+       "Bought before?",
+       "Yes: Subscription offer / No: Trial pack",
+       "Checkout"
+      ]
+     }
+    },
+    {
+     "component_id": "conversion_rules",
+     "kind": "bullet_list",
+     "count": 3,
+     "content_summary": "Plain rules that govern which offer a visitor sees and checkout behavior",
+     "items": 3,
+     "design_hint": "bold the 'Returning buyers never see the trial pack' bullet as the primary rule; accent border on the card to make this a compact callout",
+     "weight": "minor",
+     "content_data": {
+      "bullets": [
+       "Returning buyers never see the trial pack",
+       "First-time visitors get one offer",
+       "Every offer ends at one checkout"
+      ]
+     }
+    }
+   ],
+   "layout_hint": "brand_timeline is the hero across the top full width; slide_title is a minor header above it. Below, conversion_flow occupies the lower-left wide band as supporting context; conversion_rules sits in the lower-right as a compact callout.",
+   "content_data": {
+    "title": "Five milestones built the brand; one decision flow now converts each visitor.",
+    "subtitle": "2021: Café opens · 2022: Website launch · 2023: Subscriptions live · 2024: QUIKMART listing · 2025: DASHCART listing",
+    "direction": "horizontal",
+    "timeline_items": [
+     {
+      "date": "2021",
+      "label": "Café opens"
+     },
+     {
+      "date": "2022",
+      "label": "Website launch"
+     },
+     {
+      "date": "2023",
+      "label": "Subscriptions live"
+     },
+     {
+      "date": "2024",
+      "label": "QUIKMART listing"
+     },
+     {
+      "date": "2025",
+      "label": "DASHCART listing"
+     }
+    ],
+    "flow_steps": [
+     "Visitor lands",
+     "Bought before?",
+     "Yes: Subscription offer / No: Trial pack",
+     "Checkout"
+    ],
+    "bullets": [
+     "Returning buyers never see the trial pack",
+     "First-time visitors get one offer",
+     "Every offer ends at one checkout"
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "direction": "sample",
+    "timeline_items": "sample",
+    "flow_steps": "sample",
+    "bullets": "sample"
+   }
+  }
+ },
+ {
+  "slide_index": 5,
+  "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"38\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"5\">\n      <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">ROADMAP</Text>\n      <Text fontSize=\"31\" color=\"$textMain\" bold=\"true\">Four pillars and a <Span color=\"$accent\">90-day plan</Span> take BREWLY from audit to scale.</Text>\n      <Text fontSize=\"14\" color=\"$textMuted\">Subscriptions · Bundles · Gifting · Content</Text>\n    </VStack>\n    <VStack grow=\"3\" backgroundColor=\"$textMain\" borderRadius=\"16\" justifyContent=\"center\">\n      <HStack gap=\"16\" alignItems=\"stretch\" padding=\"18\">\n        <VStack w=\"24%\" padding=\"18\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"14\" justifyContent=\"center\">\n          <Icon name=\"users\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">Subscriptions</Text>\n          <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.45\">deepen repeat buying</Text>\n        </VStack>\n        <VStack w=\"24%\" padding=\"18\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"14\" justifyContent=\"center\">\n          <Icon name=\"package\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">Bundles</Text>\n          <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.45\">lift order value</Text>\n        </VStack>\n        <VStack w=\"24%\" padding=\"18\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"14\" justifyContent=\"center\">\n          <Icon name=\"gift\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">Gifting</Text>\n          <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.45\">open corporate demand</Text>\n        </VStack>\n        <VStack w=\"24%\" padding=\"18\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"14\" justifyContent=\"center\">\n          <Icon name=\"lightbulb\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">Content</Text>\n          <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.45\">build the community</Text>\n        </VStack>\n      </HStack>\n    </VStack>\n    <HStack grow=\"1\" gap=\"10\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">Month 1 Audit</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Audit</Text>\n        <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">channel economics review, offer audit</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">Month 2 Activate</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Activate</Text>\n        <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">launch bundles, start referral pilot</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" borderRadius=\"14\">\n        <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"1\">Month 3 Scale</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Scale</Text>\n        <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">shift budget to winning channels, expand subscriptions</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+  "slide_plan": {
+   "slide_index": 5,
+   "slide_title": "Four pillars and a 90-day plan take BREWLY from audit to scale.",
+   "label": "ROADMAP",
+   "subtitle": "Subscriptions · Bundles · Gifting · Content",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle with the four pillars listed",
+     "design_hint": "color the phrase '90-day plan' as an accent in the title",
+     "weight": "minor",
+     "content_data": {
+      "title": "Four pillars and a 90-day plan take BREWLY from audit to scale.",
+      "subtitle": "Subscriptions · Bundles · Gifting · Content"
+     }
+    },
+    {
+     "component_id": "kicker_caption",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Slide kicker",
+     "design_hint": "emphasize the kicker 'ROADMAP' so it reads as a small, strong label",
+     "weight": "minor",
+     "content_data": {
+      "text": "ROADMAP"
+     }
+    },
+    {
+     "component_id": "pillars_cards",
+     "kind": "card_grid",
+     "count": 4,
+     "content_summary": "Four strategic pillars: Subscriptions, Bundles, Gifting, Content",
+     "items": 4,
+     "design_hint": "icon in each tile; dark / inverted panel for the pillars band to mark it as the hero row",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Subscriptions",
+        "body": "deepen repeat buying"
+       },
+       {
+        "title": "Bundles",
+        "body": "lift order value"
+       },
+       {
+        "title": "Gifting",
+        "body": "open corporate demand"
+       },
+       {
+        "title": "Content",
+        "body": "build the community"
+       }
+      ],
+      "per_row": 4
+     }
+    },
+    {
+     "component_id": "plan_90_days",
+     "kind": "card_grid",
+     "count": 3,
+     "content_summary": "Ordered 90-day execution phases: Audit, Activate, Scale",
+     "items": 3,
+     "design_hint": "steps layout with connecting arrows; accent border on the 'Month 3 Scale' card to show the execution focus",
+     "weight": "supporting",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Month 1 Audit",
+        "body": "channel economics review, offer audit"
+       },
+       {
+        "title": "Month 2 Activate",
+        "body": "launch bundles, start referral pilot"
+       },
+       {
+        "title": "Month 3 Scale",
+        "body": "shift budget to winning channels, expand subscriptions"
+       }
+      ]
+     }
+    }
+   ],
+   "layout_hint": "pillars_cards is the primary, full-width hero band across the top; below it, plan_90_days runs as an ordered steps row (left-to-right) as the execution band; slide_title and kicker_caption sit above the pillars as minor header elements.",
+   "content_data": {
+    "title": "Four pillars and a 90-day plan take BREWLY from audit to scale.",
+    "subtitle": "Subscriptions · Bundles · Gifting · Content",
+    "text": "ROADMAP",
+    "card_layout": "steps",
+    "cards": [
+     {
+      "title": "Month 1 Audit",
+      "body": "channel economics review, offer audit"
+     },
+     {
+      "title": "Month 2 Activate",
+      "body": "launch bundles, start referral pilot"
+     },
+     {
+      "title": "Month 3 Scale",
+      "body": "shift budget to winning channels, expand subscriptions"
+     }
+    ],
+    "per_row": 4
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "text": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample"
+   }
+  }
+ }
+]

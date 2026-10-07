@@ -88,6 +88,32 @@ class Pack:
                 f'letterSpacing="1.6"{extra}>{x(text.upper())}</Text>')
 
 
+def _luma(hex_color: str) -> float:
+    r, g, b = (int(hex_color[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def deck_pack(theme_element: str, base: str = "studio_inter") -> Pack:
+    """A pack drawn in a deck's palette (1a arm B, §1a role-based colours): the base pack's fonts
+    and structure, every colour from the deck's <Theme> by role, type at the D8 floors
+    (body >= 14 px, labels >= 12 px). Use with `retoken`: the slide keeps the deck's <Theme>."""
+    t = dict(re.findall(r'(\w+)="([0-9A-Fa-f]{6})"', theme_element))
+    p = Pack(base)
+    on = lambda bg: "FFFFFF" if _luma(bg) < 0.5 else t["textMain"]   # noqa: E731 - text on a fill
+    p.c = {"bg": t["surface"], "ink": t["textMain"], "muted": t["textMuted"], "line": t["border"],
+           "panel": t["surfaceAlt"], "dark": t["textMain"], "white": t["surface"],
+           "accent": t["accent"], "accent2": t.get("accentAlt", t["accent"]),
+           "negative": t["negative"], "onAccent": on(t["accent"])}
+    p.dark_c = None
+    p.t = {**p.t, "body": max(14, p.t["body"]), "label": max(12, p.t["label"])}
+    return p
+
+
+def retoken(xml: str, p: Pack) -> str:
+    """Block XML with the pack's $tokens written as the colours they stand for."""
+    return re.sub(r"\$(\w+)", lambda m: p.c.get(m.group(1), m.group(0)), xml)
+
+
 def shade(hex_color: str, amount: float = 0.25) -> str:
     r, g, b = (int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
     return "".join(f"{round(c * (1 - amount)):02X}" for c in (r, g, b))

@@ -1,0 +1,1 @@
+<Slide><VStack w="1280" h="720" padding="40" gap="16" alignItems="stretch" backgroundColor="$surface"><Text fontSize="30" bold="true" color="$textMain">Headline</Text><Text ref="kicker_caption" /><HStack grow="1" gap="20" alignItems="stretch"><CardGrid ref="pillars_cards" w="50%" /><CardGrid ref="plan_90_days" grow="1" /></HStack></VStack></Slide>

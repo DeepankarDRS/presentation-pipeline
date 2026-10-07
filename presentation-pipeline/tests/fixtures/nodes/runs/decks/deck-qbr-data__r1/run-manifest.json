@@ -1,0 +1,66 @@
+{
+ "theme": "corporate-slate",
+ "theme_element": "<Theme surface=\"F7F9FC\" surfaceAlt=\"FFFFFF\" accent=\"2563EB\" accentAlt=\"0EA5E9\" positive=\"15803D\" negative=\"DC2626\" warning=\"B45309\" textMain=\"16202E\" textMuted=\"55627A\" border=\"E2E8F0\" chartSurface=\"FFFFFF\" chartInk=\"334155\" />",
+ "resolved_theme": {
+  "name": "corporate-slate",
+  "mode": "light",
+  "is_dark": false,
+  "chart_colors": [
+   "2563EB",
+   "0EA5E9",
+   "10B981",
+   "F59E0B",
+   "EF4444",
+   "8B5CF6"
+  ],
+  "chart_colors_json": "[\"2563EB\",\"0EA5E9\",\"10B981\",\"F59E0B\",\"EF4444\",\"8B5CF6\"]",
+  "element": "<Theme surface=\"F7F9FC\" surfaceAlt=\"FFFFFF\" accent=\"2563EB\" accentAlt=\"0EA5E9\" positive=\"15803D\" negative=\"DC2626\" warning=\"B45309\" textMain=\"16202E\" textMuted=\"55627A\" border=\"E2E8F0\" chartSurface=\"FFFFFF\" chartInk=\"334155\" />"
+ },
+ "steps": [
+  {
+   "step": "generator",
+   "slide_index": 0,
+   "attempt": 0,
+   "model": "gpt-4.1-2025-04-14",
+   "tokens_in": 8830,
+   "tokens_out": 159,
+   "tokens_cached": 0
+  },
+  {
+   "step": "generator",
+   "slide_index": 1,
+   "attempt": 0,
+   "model": "gpt-4.1-2025-04-14",
+   "tokens_in": 11710,
+   "tokens_out": 716,
+   "tokens_cached": 0
+  },
+  {
+   "step": "generator",
+   "slide_index": 2,
+   "attempt": 0,
+   "model": "gpt-4.1-2025-04-14",
+   "tokens_in": 10392,
+   "tokens_out": 679,
+   "tokens_cached": 0
+  },
+  {
+   "step": "generator",
+   "slide_index": 3,
+   "attempt": 0,
+   "model": "gpt-4.1-2025-04-14",
+   "tokens_in": 10805,
+   "tokens_out": 814,
+   "tokens_cached": 0
+  },
+  {
+   "step": "generator",
+   "slide_index": 4,
+   "attempt": 0,
+   "model": "gpt-4.1-2025-04-14",
+   "tokens_in": 11514,
+   "tokens_out": 584,
+   "tokens_cached": 0
+  }
+ ]
+}

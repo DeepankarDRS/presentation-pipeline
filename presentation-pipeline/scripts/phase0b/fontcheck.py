@@ -15,9 +15,6 @@ import pymupdf, zipfile
 sys.path.insert(0, ".")
 from scripts.eval_metrics import _shapes
 
-ROOT = Path(sys.argv[1])
-VARIANTS = sys.argv[2:] or ["a", "b"]  # run folders <variant>-<deck>
-DECKS = sorted(p.name[4:] for p in ROOT.glob("src-*"))  # source XML folders src-<deck>
 EDGE = "\"'“”‘’,;:()[]!?"
 
 
@@ -122,46 +119,54 @@ def kpi_boxes(pptx, pdf):
     return out
 
 
-rows = {}
-for variant in VARIANTS:
-    for deck in DECKS:
-        for sdir in sorted((ROOT / f"{variant}-{deck}").glob("slide-*")):
-            name = sdir.name
-            src = (ROOT / f"src-{deck}" / f"{name}.xml").read_text(encoding="utf-8")
-            fitted_p = sdir / "fitted.xml"
-            fitted = fitted_p.read_text(encoding="utf-8") if fitted_p.exists() else src
-            pdf = ROOT / "pdf" / f"{variant}-{deck}-{name}.pdf"
-            if not pdf.exists():  # the slide did not compile
-                continue
-            words = pdf_words(pdf)
-            vocab = slide_words(src)
-            res = json.loads((sdir / "compile-result.json").read_text(encoding="utf-8"))
-            reserved = [int(m.group(2)) for e in res.get("fitGrow") or []
-                        for m in [re.search(r"heading (\d+) -> (\d+) lines", e)] if m]
-            src_t, fit_t = texts(src), texts(fitted)
-            heads = []
-            if len(src_t) == len(fit_t):
-                gained = [(a, t) for (sa, _), (a, t) in zip(src_t, fit_t)
-                          if attr(a, "minH") and not attr(sa, "minH")]
-                for (a, t), r in zip(gained, reserved):
-                    heads.append({"text": t[:60], "reserved": r, "drawn": drawn_lines(words, t)})
-            kpis = kpi_boxes(sdir / "presentation.pptx", ROOT / "pdf" / f"{variant}-{deck}-{name}.pdf")
-            rows[f"{variant}-{deck}-{name}"] = {"broken": broken(words, vocab), "headings": heads, "kpi": kpis,
-                                                "overlap": overlaps(words)}
+def main():
+    ROOT = Path(sys.argv[1])
+    VARIANTS = sys.argv[2:] or ["a", "b"]  # run folders <variant>-<deck>
+    DECKS = sorted(p.name[4:] for p in ROOT.glob("src-*"))  # source XML folders src-<deck>
+    rows = {}
+    for variant in VARIANTS:
+        for deck in DECKS:
+            for sdir in sorted((ROOT / f"{variant}-{deck}").glob("slide-*")):
+                name = sdir.name
+                src = (ROOT / f"src-{deck}" / f"{name}.xml").read_text(encoding="utf-8")
+                fitted_p = sdir / "fitted.xml"
+                fitted = fitted_p.read_text(encoding="utf-8") if fitted_p.exists() else src
+                pdf = ROOT / "pdf" / f"{variant}-{deck}-{name}.pdf"
+                if not pdf.exists():  # the slide did not compile
+                    continue
+                words = pdf_words(pdf)
+                vocab = slide_words(src)
+                res = json.loads((sdir / "compile-result.json").read_text(encoding="utf-8"))
+                reserved = [int(m.group(2)) for e in res.get("fitGrow") or []
+                            for m in [re.search(r"heading (\d+) -> (\d+) lines", e)] if m]
+                src_t, fit_t = texts(src), texts(fitted)
+                heads = []
+                if len(src_t) == len(fit_t):
+                    gained = [(a, t) for (sa, _), (a, t) in zip(src_t, fit_t)
+                              if attr(a, "minH") and not attr(sa, "minH")]
+                    for (a, t), r in zip(gained, reserved):
+                        heads.append({"text": t[:60], "reserved": r, "drawn": drawn_lines(words, t)})
+                kpis = kpi_boxes(sdir / "presentation.pptx", ROOT / "pdf" / f"{variant}-{deck}-{name}.pdf")
+                rows[f"{variant}-{deck}-{name}"] = {"broken": broken(words, vocab), "headings": heads, "kpi": kpis,
+                                                    "overlap": overlaps(words)}
 
-json.dump(rows, open(ROOT / "fontcheck.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-for variant in VARIANTS:
-    br = sum(len(r["broken"]) for k, r in rows.items() if k.startswith(variant + "-"))
-    ov = [k for k, r in rows.items() if k.startswith(variant + "-") and r["overlap"]]
-    hs = [h for k, r in rows.items() if k.startswith(variant + "-") for h in r["headings"]]
-    blank = sum(1 for h in hs if h["drawn"] is not None and h["reserved"] > h["drawn"])
-    ks = [x for k, r in rows.items() if k.startswith(variant + "-") for x in r["kpi"]]
-    kwrap = sum(1 for x in ks if x["drawn"] > 1)
-    kover = sum(1 for x in ks if x["over_px"] > 1)
-    print(f"{variant}: broken words {br}; headings reserved {len(hs)}, blank line drawn {blank}; "
-          f"KPI numbers {len(ks)} (mean {sum(x['px'] for x in ks)/max(1,len(ks)):.0f}px), wrapped {kwrap}, past box {kover}; "
-          f"slides with overlapping text {len(ov)}: {', '.join(k.split('-slide-')[0][len(variant) + 1:] + ' ' + k.split('-slide-')[1] for k in ov)}")
-for k, r in rows.items():
-    if r["broken"] or r["headings"] or r["kpi"]:
-        print(k, "broken:", r["broken"], "| heads:", [(h["text"][:30], h["reserved"], h["drawn"]) for h in r["headings"]],
-              "| kpi:", [(x["text"], x["px"], x["drawn"], x["over_px"]) for x in r["kpi"]])
+    json.dump(rows, open(ROOT / "fontcheck.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    for variant in VARIANTS:
+        br = sum(len(r["broken"]) for k, r in rows.items() if k.startswith(variant + "-"))
+        ov = [k for k, r in rows.items() if k.startswith(variant + "-") and r["overlap"]]
+        hs = [h for k, r in rows.items() if k.startswith(variant + "-") for h in r["headings"]]
+        blank = sum(1 for h in hs if h["drawn"] is not None and h["reserved"] > h["drawn"])
+        ks = [x for k, r in rows.items() if k.startswith(variant + "-") for x in r["kpi"]]
+        kwrap = sum(1 for x in ks if x["drawn"] > 1)
+        kover = sum(1 for x in ks if x["over_px"] > 1)
+        print(f"{variant}: broken words {br}; headings reserved {len(hs)}, blank line drawn {blank}; "
+              f"KPI numbers {len(ks)} (mean {sum(x['px'] for x in ks)/max(1,len(ks)):.0f}px), wrapped {kwrap}, past box {kover}; "
+              f"slides with overlapping text {len(ov)}: {', '.join(k.split('-slide-')[0][len(variant) + 1:] + ' ' + k.split('-slide-')[1] for k in ov)}")
+    for k, r in rows.items():
+        if r["broken"] or r["headings"] or r["kpi"]:
+            print(k, "broken:", r["broken"], "| heads:", [(h["text"][:30], h["reserved"], h["drawn"]) for h in r["headings"]],
+                  "| kpi:", [(x["text"], x["px"], x["drawn"], x["over_px"]) for x in r["kpi"]])
+
+
+if __name__ == "__main__":
+    main()

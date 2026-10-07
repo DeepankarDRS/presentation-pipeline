@@ -1,0 +1,808 @@
+{
+ "rule": "docs/derived-blocks-planning-2026-10-06.md §4.1 (D11)",
+ "slides": [
+  {
+   "case": "deck-product-launch-data",
+   "slide": 2,
+   "title": "Multiple gateways cause configuration overhead and blind spots",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "problem_bullets",
+     "kind": "bullet_list"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/deck-product-launch-data__r1"
+  },
+  {
+   "case": "deck-product-launch-data",
+   "slide": 3,
+   "title": "How Nexus works: a single pipeline for every API",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "pipeline_steps",
+     "kind": "card_grid"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/deck-product-launch-data__r1"
+  },
+  {
+   "case": "deck-product-launch-data",
+   "slide": 4,
+   "title": "Beta outcomes: sharp reductions in config time, outages, and latency",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "kpi_scorecards",
+     "kind": "kpi_row"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/deck-product-launch-data__r1"
+  },
+  {
+   "case": "deck-product-launch-data",
+   "slide": 5,
+   "title": "Launch timeline to GA and compliance",
+   "components": [
+    {
+     "id": "kicker_caption",
+     "kind": "caption"
+    },
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "launch_timeline",
+     "kind": "timeline"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/deck-product-launch-data__r1"
+  },
+  {
+   "case": "deck-product-launch-data",
+   "slide": 6,
+   "title": "Get started with Nexus",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "next_steps_ctas",
+     "kind": "bullet_list"
+    },
+    {
+     "id": "certification_caption",
+     "kind": "caption"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/deck-product-launch-data__r1"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 2,
+   "title": "Headline KPIs",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "arr_hero_kpi",
+     "kind": "kpi_row"
+    },
+    {
+     "id": "supporting_kpis",
+     "kind": "kpi_row"
+    }
+   ],
+   "run": "output/step0/b1/step0-20261006-202429/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 3,
+   "title": "Revenue Trend ($M)",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "revenue_chart",
+     "kind": "chart"
+    },
+    {
+     "id": "trend_note",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b1/step0-20261006-202429/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 4,
+   "title": "ARR by Segment",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "segment_table",
+     "kind": "table"
+    },
+    {
+     "id": "segment_insight",
+     "kind": "narrative"
+    },
+    {
+     "id": "kicker_caption",
+     "kind": "caption"
+    }
+   ],
+   "run": "output/step0/b1/step0-20261006-202429/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 5,
+   "title": "Q4 Priorities",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "priorities_cards",
+     "kind": "card_grid"
+    }
+   ],
+   "run": "output/step0/b1/step0-20261006-202429/decks/deck-qbr-data__r1"
+  },
+  {
+   "case": "gate-deck-agency-takeover",
+   "slide": 1,
+   "title": "Campaign-purpose governance is the biggest [Platform A] unlock.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "roas_chart",
+     "kind": "chart"
+    },
+    {
+     "id": "cpd_callout",
+     "kind": "narrative"
+    },
+    {
+     "id": "recommendation_list",
+     "kind": "bullet_list"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/gate-deck-agency-takeover__r1"
+  },
+  {
+   "case": "gate-deck-agency-takeover",
+   "slide": 2,
+   "title": "Exact match outperforms, but keyword and city governance are leaking budget.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "kicker_caption",
+     "kind": "caption"
+    },
+    {
+     "id": "match_type_table",
+     "kind": "table"
+    },
+    {
+     "id": "city_cards",
+     "kind": "card_grid"
+    },
+    {
+     "id": "winners_and_weak_terms",
+     "kind": "bullet_list"
+    },
+    {
+     "id": "recommendations",
+     "kind": "narrative"
+    },
+    {
+     "id": "city_note",
+     "kind": "caption"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/gate-deck-agency-takeover__r1"
+  },
+  {
+   "case": "gate-deck-agency-takeover",
+   "slide": 3,
+   "title": "[Platform B] and [Platform A] show the same operating gap: spend is not governed tightly enough by economics.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "cpc_comparison_table",
+     "kind": "table"
+    },
+    {
+     "id": "gaps_card_grid",
+     "kind": "card_grid"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/gate-deck-agency-takeover__r1"
+  },
+  {
+   "case": "gate-deck-agency-takeover",
+   "slide": 4,
+   "title": "We would run this as a profit-led marketplace growth system.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "pillars_grid",
+     "kind": "card_grid"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/gate-deck-agency-takeover__r1"
+  },
+  {
+   "case": "gate-deck-agency-takeover",
+   "slide": 5,
+   "title": "First stop leakage, then rebuild, then scale only where economics prove out.",
+   "components": [
+    {
+     "id": "kicker_caption",
+     "kind": "caption"
+    },
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "roadmap_steps",
+     "kind": "card_grid"
+    },
+    {
+     "id": "roadmap_narrative",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/gate-deck-agency-takeover__r1"
+  },
+  {
+   "case": "gate-deck-agency-takeover",
+   "slide": 6,
+   "title": "The current account needs a sharper operator, not just more spend.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "closing_quote",
+     "kind": "narrative"
+    },
+    {
+     "id": "data_checklist",
+     "kind": "bullet_list"
+    },
+    {
+     "id": "closing_note",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b2x/step0-20261006-205449/decks/gate-deck-agency-takeover__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 1,
+   "title": "BREWLY Growth Strategy FY27",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "author_caption",
+     "kind": "caption"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 2,
+   "title": "Repeat customers now drive most of BREWLY's revenue.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "top_kpis",
+     "kind": "kpi_row"
+    },
+    {
+     "id": "repeat_revenue_kpi",
+     "kind": "kpi_row"
+    },
+    {
+     "id": "quarterly_revenue_chart",
+     "kind": "chart"
+    },
+    {
+     "id": "insight_note",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 3,
+   "title": "The website earns the best margin; bundles and referrals are the quick wins.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "channel_table",
+     "kind": "table"
+    },
+    {
+     "id": "priorities_pyramid",
+     "kind": "pyramid"
+    },
+    {
+     "id": "activation_matrix",
+     "kind": "matrix"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 4,
+   "title": "One team and one platform run a four-stage fulfilment chain.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "fulfilment_flow",
+     "kind": "process_arrow"
+    },
+    {
+     "id": "org_chart",
+     "kind": "tree"
+    },
+    {
+     "id": "architecture_layers",
+     "kind": "layer"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 5,
+   "title": "Five milestones built the brand; one decision flow now converts each visitor.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "brand_timeline",
+     "kind": "timeline"
+    },
+    {
+     "id": "conversion_flow",
+     "kind": "flow"
+    },
+    {
+     "id": "conversion_rules",
+     "kind": "bullet_list"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "slide": 6,
+   "title": "Four pillars and a 90-day plan take BREWLY from audit to scale.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "kicker_caption",
+     "kind": "caption"
+    },
+    {
+     "id": "pillars_cards",
+     "kind": "card_grid"
+    },
+    {
+     "id": "plan_90_days",
+     "kind": "card_grid"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-all-nodes-dense__r1"
+  },
+  {
+   "case": "gate-deck-cheffin-full",
+   "slide": 1,
+   "title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "author_caption",
+     "kind": "caption"
+    }
+   ],
+   "run": "output/step0/b4x/step0-20261006-215340/decks/gate-deck-cheffin-full__r1"
+  },
+  {
+   "case": "gate-deck-cheffin-full",
+   "slide": 4,
+   "title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "dataset_cards",
+     "kind": "card_grid"
+    },
+    {
+     "id": "data_caveats",
+     "kind": "bullet_list"
+    },
+    {
+     "id": "key_formulas",
+     "kind": "bullet_list"
+    }
+   ],
+   "run": "output/step0/b4x/step0-20261006-215340/decks/gate-deck-cheffin-full__r1"
+  },
+  {
+   "case": "gate-deck-cheffin-full",
+   "slide": 5,
+   "title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "kpi_headline",
+     "kind": "kpi_row"
+    },
+    {
+     "id": "kpi_detail",
+     "kind": "kpi_row"
+    },
+    {
+     "id": "insight_callout",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b4x/step0-20261006-215340/decks/gate-deck-cheffin-full__r1"
+  },
+  {
+   "case": "gate-deck-cheffin-full",
+   "slide": 6,
+   "title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "adtype_table",
+     "kind": "table"
+    },
+    {
+     "id": "match_table",
+     "kind": "table"
+    },
+    {
+     "id": "main_insight_narrative",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b4x/step0-20261006-215340/decks/gate-deck-cheffin-full__r1"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 1,
+   "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "platforms_ecosystem",
+     "kind": "card_grid"
+    },
+    {
+     "id": "strategic_opportunity",
+     "kind": "narrative"
+    },
+    {
+     "id": "kicker_label",
+     "kind": "caption"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 2,
+   "title": "Why the Energy Drink Category is Built for Quick Commerce",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "daypart_timeline",
+     "kind": "card_grid"
+    },
+    {
+     "id": "key_insight",
+     "kind": "narrative"
+    },
+    {
+     "id": "growth_bullets",
+     "kind": "bullet_list"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 3,
+   "title": "Growth Opportunities for XTSY Across Quick Commerce Platforms",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "opportunity_matrix",
+     "kind": "card_grid"
+    },
+    {
+     "id": "opportunity_areas",
+     "kind": "bullet_list"
+    },
+    {
+     "id": "key_takeaway",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 4,
+   "title": "Our 4-Phase Framework to Build Category Share",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "framework_steps",
+     "kind": "card_grid"
+    },
+    {
+     "id": "progression_flow",
+     "kind": "process_arrow"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 5,
+   "title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "control_tower_visual",
+     "kind": "layer"
+    },
+    {
+     "id": "tracking_cards",
+     "kind": "card_grid"
+    },
+    {
+     "id": "insights_cards",
+     "kind": "card_grid"
+    },
+    {
+     "id": "measurement_tagline",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 7,
+   "title": "Expected Business Impact for XTSY",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "growth_framework",
+     "kind": "card_grid"
+    },
+    {
+     "id": "impact_areas_list",
+     "kind": "bullet_list"
+    },
+    {
+     "id": "engine_message",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 8,
+   "title": "Roadmap for the Next 90 Days",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "roadmap_timeline",
+     "kind": "timeline"
+    },
+    {
+     "id": "closing_statement",
+     "kind": "narrative"
+    }
+   ],
+   "run": "output/step0/b3x/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1"
+  }
+ ],
+ "left_out": [
+  {
+   "case": "deck-product-launch-data",
+   "slide": 1,
+   "title": "Nexus API Gateway",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    }
+   ],
+   "reason": "nothing to place (title / layer only)"
+  },
+  {
+   "case": "deck-qbr-data",
+   "slide": 1,
+   "title": "Q3 FY26 Business Review",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    }
+   ],
+   "reason": "nothing to place (title / layer only)"
+  },
+  {
+   "case": "gate-deck-cheffin-full",
+   "slide": 2,
+   "title": "The account is spending at scale, but not yet buying profitable demand.",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "summary_kpis",
+     "kind": "kpi_row"
+    },
+    {
+     "id": "insight_narrative",
+     "kind": "narrative"
+    }
+   ],
+   "reason": "prompt example source"
+  },
+  {
+   "case": "gate-deck-cheffin-full",
+   "slide": 3,
+   "title": "CPC is nearly 3x higher than what current conversion economics can support.",
+   "components": [
+    {
+     "id": "core_economics_title",
+     "kind": "title"
+    },
+    {
+     "id": "cpc_comparison_chart",
+     "kind": "chart"
+    },
+    {
+     "id": "gap_table",
+     "kind": "table"
+    },
+    {
+     "id": "main_insight",
+     "kind": "narrative"
+    }
+   ],
+   "reason": "prompt example source"
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "slide": 6,
+   "title": "Ads Automation Engine Designed for Quick Commerce",
+   "components": [
+    {
+     "id": "slide_title",
+     "kind": "title"
+    },
+    {
+     "id": "automation_flow",
+     "kind": "flow"
+    },
+    {
+     "id": "benefits_list",
+     "kind": "bullet_list"
+    },
+    {
+     "id": "reaction_highlight",
+     "kind": "narrative"
+    }
+   ],
+   "reason": "prompt example source"
+  }
+ ],
+ "counts": {
+  "slides": 32,
+  "components": 78,
+  "decks": 6
+ }
+}

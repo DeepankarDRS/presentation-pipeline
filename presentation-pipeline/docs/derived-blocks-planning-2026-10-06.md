@@ -446,6 +446,41 @@ validator → node pass → compile → manifest → scorer → sheets → varie
 
 Only after all six: ask for the paid run with the case list and cost.
 
+### 4.7 Build and dry-run log (2026-10-07, branch `feat/derived-blocks-step0`, LLM-free)
+
+**Built** (file list §4.4): `src/compiler/nodes/` (`spec.py`, `validate.py`, `native.py`, `prompt_lines.py`;
+unwired), `src/prompts/generator/nodes_rules.j2` + `nodes_user.j2` and a `nodes` flag in `system.j2` (off: the
+rendered prompt is byte-identical on all 37 step 0 plans), `scripts/from_plans.py`, `node_test_select.py`,
+`node_test.py`, `node_test_score.py`, `node_test_sheet.py`, `variety.py`; `scripts/phase0b/expand.py`
+(`expand_nodes`), `render.py` (`deck_pack`, `retoken`), `fontcheck.py` (CLI moved under `main()`, same output);
+fixtures `tests/fixtures/nodes/` (two fictional step 0 decks, one scripted broken skeleton per code); 46 new tests.
+
+**Choices made while building (for the user's check):**
+- Both arms are drawn in the deck font Inter (`--font`; code adds `fontFamily` where the XML names none) and
+  compiled with fit-grow on (`--fit-grow`): font-neutral comparison, D1's font, exact measurement.
+- Block text is clamped to the 12 px label floor (D8); the blocks' type is raised to body 14 / label 12.
+- Blocks take the deck palette by role (`deck_pack`): panel = surfaceAlt, dark tile = textMain, text on dark = surface.
+- **Repairs in arm B are a node-aware re-ask on the skeleton** (same prompts + the previous skeleton + the errors,
+  at most 2), not today's `repairer`: that one patches expanded XML and knows no ref tags (deviation from §4.2).
+- `ref_tags` sizes: layout attributes also `minW` / `maxW` / `minH` / `maxH`; `NODE_NO_SIZE` does not apply to
+  Text / Table / Ul (content-sized). Native nodes carry `id="node-<ref>"` for scoring.
+- The matrix filler spreads items that share a cell (two "low / high" items were drawn on one point).
+
+**Dry-run results:**
+
+| §4.6 | Result |
+|---|---|
+| 1 mechanical skeleton, 32 slides | 32 / 32 compile; 78 / 78 components ok; 0 invented words in nodes; broken words 0 (off arm 6); overlap slides 2 (off 4): CHEFFIN 6 (table without cell margins, as off), XTSY 8 (native Timeline, labels up to 20 words); overfull 2 (agency 2, dense 3). Variety 0.943 vs 1.0 is code's one-band layout, not a result |
+| 2 prompt examples m1–m4 on their own plans | all compile, all components ok, 0 invented; m2 overlap inside the native table (no cell margins) |
+| 3 one broken skeleton per code | each code reported on its slide; errors repaired in one re-ask; all 10 compile; `NODE_EMPTY_PLAN` / `NODE_EXPAND_FAILED` covered by unit tests |
+| 4 prompt size | 32 slides: 10,478 vs 11,539 tokens (tiktoken, −9.2%); est. input 10.6k per slide vs step 0's measured 11.7k; cost ≈ $0.025 per slide, ≈ $0.9 for 32 (as §4.5) |
+| 5 off arm recompile | 32 / 32 compile; broken words 6, overlap slides 4 |
+| 6 unit tests | **680 pass, the 4 known failures** (634 + 46 new); `test_py311_syntax` passes |
+
+**Open (user):** POM's native Timeline cannot fit long labels (XTSY 8), and in 1a variants are not drawn (§3.3), so a
+`cards` choice would still be drawn native. Recommendation: in 1a draw the block variants Phase 0b already has
+(Timeline cards / columns, ProcessArrow and Flow numbered / step_cards, Ul tiles / columns) when the LLM picks them.
+
 ## 5. Open questions: recommendations
 
 ### 5.1 Checking-loop spec (for step 2; principle now, thresholds after 1a)
@@ -628,3 +663,14 @@ stale ("KPI row takes a share" vs the code's "KPI row beside a sparse text band 
 comes out 41 px (< 48). Both belong to that session; not edited here. The guard checks (runs last, idempotent, floors)
 and the `fontexp_replay` numbers wait until that work is committed; then the step 0 merge (a fast-forward,
 `feat/derived-blocks` is an ancestor) goes to the user.
+
+**Merge check on the committed font-size work (2026-10-07, `a77dc23`):** unit tests **634 pass, the 4 known failures**
+(the KPI test passes once committed). Shrink guard: still the last phase (every growing phase runs before it;
+`evenStats` only shrinks and the guard runs again after it); no text under 14 px on R1's replay; a second compile
+never shrinks anything. A second compile still grows type on 3 of 24 fitted slides (step 0's fit-grow: 5 of 24), a
+grow-phase trait, not the guard. **R1 replay (`fontexp_replay`, `output/fontexp4`): broken words 5 → 6, overlap slides
+4 → 5** against step 0: "₹59.8" breaks again on gj-h1 slide 14. Cause: `growText` grows the left column's card titles
+(16 → 19 px) and icons, then pins both `w="max"` columns (789 / 405 px), so the KPI tiles on the right lose ~10 px; the
+growth search rejects a word that becomes too wide but lets a word that was already too wide get narrower room. Not a
+guard fault (the number is at its 28 px floor). Fix proposed (font-size code, `search()` in `fit-grow.js`): reject a step
+that adds > 1 px to any word's overflow. Waiting for the user.

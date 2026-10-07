@@ -1,0 +1,1 @@
+<Slide><VStack w="1280" h="720" padding="40" gap="16" alignItems="stretch" backgroundColor="$surface"><Text fontSize="30" bold="true" color="$textMain">Headline</Text><HStack grow="1" gap="20" alignItems="stretch"><Chart ref="channel_table" w="40%" /><Pyramid ref="priorities_pyramid" /><Matrix ref="activation_matrix" grow="1" h="max" minH="240" /></HStack></VStack></Slide>

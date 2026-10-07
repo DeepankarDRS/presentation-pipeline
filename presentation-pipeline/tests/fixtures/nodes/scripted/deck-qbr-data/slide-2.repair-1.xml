@@ -1,0 +1,1 @@
+<Slide><VStack w="1280" h="720" padding="40" gap="16" alignItems="stretch" backgroundColor="$surface"><Text fontSize="30" bold="true" color="$textMain">Headline</Text><KpiRow ref="arr_hero_kpi" h="200" /><KpiRow ref="supporting_kpis" grow="1" /></VStack></Slide>
