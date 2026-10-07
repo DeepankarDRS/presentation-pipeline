@@ -204,3 +204,17 @@ reference deck guide the user shared).
   so planner and generator state one number. Prompt +≈ 170 tokens.
 Replay of 48 slides with the new fit-grow and palette: no code got worse. Unit tests 826 pass, the 4 known failures.
 Not run with the API yet.
+
+## Paid check 2 (test PC, 2026-10-07, commit `3b03a4d`, `deck-qbr-data` × 1, critic on, $0.49)
+
+8 slides, all compiled first time (0 retries), critic 0 issues at the end, passed. Layout rules visible in the
+output: two equal 49 % cards (slide 6), two compared metrics as two equal cards (slide 5), a takeaway card beside a
+chart (slide 4); card edges visible; segment table 24 px. Critic repairs 3 slides, **1 of 3 useful**: slide 3
+(eyebrow drawn as a squeezed badge → plain eyebrow) good; slide 2 no visible change (wasted); slide 6 added a
+second eyebrow above the existing one (the "kicker missing" rule fired on a slide that had one) — worse. The
+repaired issues' texts are not in the manifest (it keeps the final round only).
+Open, for the next session: (1) keep every critic round's issues in the manifest; tighten "kicker missing";
+(2) chart focus colour on the first bar (Q2 FY25), not the latest (Q3 FY26) — consider a code rule for time
+series (focus = last period unless the headline names another); (3) `GEOM_CARD_EMPTY` on slide 1 (4 KPI tiles +
+a callout: `KPI_ROWS` only acts on a lone KPI row; numbers 38 px) and slide 7 (3 step cards, text not grown, no
+fit-grow entry — investigate why growText skipped them).
