@@ -35,11 +35,8 @@ _PALETTES = _ROOT / "src" / "knowledge" / "theme" / "palettes.yaml"
 _COMPILE = _ROOT / "src" / "node" / "compile-pom.js"
 _SOFFICE = Path("C:/Program Files/LibreOffice/program/soffice.exe")
 
-# §5.1 proposed palette fixes (one hex each), applied in the "after" arm only.
-PALETTE_FIXES = {
-    "navy-orange": {"warning": "B45309"},   # was identical to negative A84531
-    "saascolor": {"warning": "B45309"},     # was identical to negative A03B24
-}
+# §5.1 palette fixes now live in palettes.yaml (2026-10-07, P3); kept as a hook for trying more.
+PALETTE_FIXES: dict[str, dict[str, str]] = {}
 
 
 # --- colour maths -----------------------------------------------------------
@@ -114,6 +111,9 @@ def derive(p: dict) -> dict[str, str]:
     d["borderStrong"] = mix(p["border"], p["textMuted"], 0.35)
     for i, frac in enumerate((0.10, 0.25, 0.50, 0.75, 1.0), 1):
         d[f"ramp{i}"] = mix(p["surfaceAlt"], p["accent"], frac)
+    # the tokens the pipeline ships (2026-10-07) replace the prototype values
+    from src.compiler.palette_tokens import derive_tokens
+    d.update(derive_tokens(p))
     return d
 
 

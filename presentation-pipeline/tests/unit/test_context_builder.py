@@ -242,7 +242,7 @@ def test_prompt_few_components():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 8000, f"Prompt too large: {tokens} tokens"
+    assert tokens < 8500, f"Prompt too large: {tokens} tokens"  # +~500 for the palette colour roles (2026-10-07)
     assert "SHRINK CHECKLIST" not in prompt
     assert "LAYOUT FUNDAMENTALS" in prompt
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
@@ -253,7 +253,7 @@ def test_prompt_standard_components():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 9000, f"Prompt too large: {tokens} tokens"
+    assert tokens < 9800, f"Prompt too large: {tokens} tokens"  # +~500 for the palette colour roles (2026-10-07)
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "LAYOUT GRAMMAR" in prompt
     assert "COMPONENT RECIPES" in prompt
@@ -269,7 +269,7 @@ def test_prompt_many_components_includes_shrink_checklist():
     contract = build_contract(plan, DEFAULT_THEME)
     prompt = _render_system_prompt(contract)
     tokens = _estimate_tokens(prompt)
-    assert tokens < 12000, f"Prompt too large: {tokens} tokens"
+    assert tokens < 12600, f"Prompt too large: {tokens} tokens"  # +~500 for the palette colour roles (2026-10-07)
     assert "ALLOWED ATTRIBUTES PER NODE" in prompt
     assert "SHRINK CHECKLIST" in prompt
     assert "COMPONENT RECIPES" in prompt

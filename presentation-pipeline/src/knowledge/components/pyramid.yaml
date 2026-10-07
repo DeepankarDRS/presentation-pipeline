@@ -13,11 +13,11 @@ description: >
 
 structure: |
   <Pyramid direction="up" h="280" fontSize="14" bold="true">
-    <PyramidLevel label="Self-Actualization" color="6D28D9" textColor="FFFFFF" />
-    <PyramidLevel label="Esteem" color="7C3AED" textColor="FFFFFF" />
-    <PyramidLevel label="Belonging" color="8B5CF6" textColor="FFFFFF" />
-    <PyramidLevel label="Safety" color="A78BFA" textColor="FFFFFF" />
-    <PyramidLevel label="Physiological" color="C4B5FD" textColor="1E293B" />
+    <PyramidLevel label="Self-Actualization" color="$accent" textColor="$onAccent" />
+    <PyramidLevel label="Esteem" color="$accentSoft" textColor="$textMain" />
+    <PyramidLevel label="Belonging" color="$accentSoft" textColor="$textMain" />
+    <PyramidLevel label="Safety" color="$accentSoft" textColor="$textMain" />
+    <PyramidLevel label="Physiological" color="$accentSoft" textColor="$textMain" />
   </Pyramid>
 
 Pyramid_attributes:
@@ -50,15 +50,14 @@ sizing_rules: |
 
 text_color_rules: |
   textColor on each PyramidLevel MUST contrast with that level's fill color.
-  The default textColor="FFFFFF" (white) is INVISIBLE on light fill colors.
+  POM's default textColor is white, which is INVISIBLE on a pale fill.
 
-  Rule: compute perceived brightness of the fill color.
-    - Dark fill (brightness < 0.55): textColor="FFFFFF"
-    - Light fill (brightness >= 0.55): textColor="1E293B" (or $textMain equivalent)
+  Rule (2026-10-07, palette tokens only):
+    - fill $accent: textColor="$onAccent"
+    - fill $accentSoft (or any *Soft): textColor="$textMain"
 
-  Common failure: a deep-to-light gradient where the bottom/lightest levels
-  keep textColor="FFFFFF" — the text disappears. Always set textColor per
-  level based on each level's own color.
+  Common failure: a pale level that keeps the default white text — the text
+  disappears. Always set textColor on every level.
 
   On LIGHT themes (corporate-slate, sky-minimal, etc.), avoid very pale fill
   colors for levels — use medium-to-dark fills so white text is legible, or
@@ -76,5 +75,5 @@ pitfalls:
   - "Missing h on Pyramid — it needs a pixel h (52 x levels + 20); the width stretches."
   - "Direction 'up' vs 'down' controls which end is narrow — verify by reading the level order."
   - "fontSize='24' (Text node default) causes overflow — Pyramid default is 14, scale DOWN with levels."
-  - "textColor='FFFFFF' on light fills — text is invisible. Set per-level textColor based on fill darkness."
+  - "the default white textColor on a pale fill — text is invisible. Set textColor on every level ($onAccent on $accent, $textMain on a *Soft fill)."
   - "w='max' on a Pyramid in a VStack grows its HEIGHT, not its width — omit w."

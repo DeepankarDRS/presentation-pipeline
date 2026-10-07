@@ -117,17 +117,18 @@ icon_bullet_list: |
 
 badge: |
   # Badge: status pill / category tag. Inline accent, NOT a band.
-  # Variants: success=pale green, warning=pale amber, danger=pale red,
-  # info=pale blue, neutral=pale gray, accent=$accent tint.
+  # Variants (fill / text): good=$positiveSoft / $positiveText, watch=$warningSoft /
+  # $warningText, bad=$negativeSoft / $negativeText, focus=$accentSoft / $accentText,
+  # neutral=$surfaceAlt / $textMuted. Never a typed hex.
   # fontSize 14 minimum. Keep label SHORT (1-2 words).
-  <Shape shapeType="roundRect" w="120" h="28" fill.color="DCFCE7" color="15803D" fontSize="14" bold="true" borderRadius="999">ON TRACK</Shape>
+  <Shape shapeType="roundRect" w="120" h="28" fill.color="$positiveSoft" color="$positiveText" fontSize="14" bold="true" borderRadius="999">ON TRACK</Shape>
 
 callout: |
   # Callout / narrative strip: NO pixel h — sizes to its text (grow when it is the
   # slide's main content). Body = the plan's sentence(s), wrapping to 2-3 lines.
   # ALL fonts >= 14. Header=14 bold, body=14-16.
-  <VStack padding="16" gap="4" backgroundColor="EEF2FD" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
-    <Text fontSize="14" bold="true" color="$accent" letterSpacing="1">WHY IT MATTERS</Text>
+  <VStack padding="16" gap="4" backgroundColor="$accentSoft" borderLeft.color="$accent" borderLeft.width="5" justifyContent="center">
+    <Text fontSize="14" bold="true" color="$accentText" letterSpacing="1">WHY IT MATTERS</Text>
     <Text fontSize="14" color="$textMain" lineHeight="1.45">A large, measurable problem that targeted enforcement could meaningfully reduce.</Text>
   </VStack>
 
@@ -136,29 +137,31 @@ timeline: |
   # Horizontal <Timeline h="150">, no w (it never scales up). Max 5 items.
   # STRICT: date = 1-2 words, title = 1-2 words ONLY.
   # Full sentences WILL collide — each column is only w/N px wide.
+  # Colour: the item the headline names (now / the goal) $accent, the rest $neutral.
   <VStack padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Rollout timeline</Text>
     <Timeline direction="horizontal" h="150" dateColor="$textMuted" titleColor="$textMain" connectorColor="$accent">
-      <TimelineItem date="Q1 2026" title="Alpha" color="2563EB" />
-      <TimelineItem date="Q2 2026" title="Beta" color="0EA5E9" />
-      <TimelineItem date="Q3 2026" title="GA" color="15803D" />
-      <TimelineItem date="Q4 2026" title="Enterprise" color="7C3AED" />
+      <TimelineItem date="Q1 2026" title="Alpha" color="$neutral" />
+      <TimelineItem date="Q2 2026" title="Beta" color="$neutral" />
+      <TimelineItem date="Q3 2026" title="GA" color="$accent" />
+      <TimelineItem date="Q4 2026" title="Enterprise" color="$neutral" />
     </Timeline>
   </VStack>
 
 matrix: |
   # Matrix in a card: put it in a column >= 50% of the slide; the card takes its
   # weight's grow, the Matrix fills it (h="max" minH="260"). 4 items max, ONE-word labels, spread the x/y (no two within
-  # 0.18 on both axes). Never textColor="FFFFFF" on a light card.
+  # 0.18 on both axes). Never a white textColor on a light card.
+  # Colour: the item(s) the headline names $accent, the rest $neutral.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <HStack justifyContent="spaceBetween"><Text fontSize="14" bold="true" color="$textMain">Prioritisation</Text><Text fontSize="14" color="$textMuted">Impact x Effort</Text></HStack>
     <Matrix h="max" minH="260" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
       <MatrixAxes x="Effort" y="Impact" />
       <MatrixQuadrants topLeft="Plan" topRight="Do first" bottomLeft="Skip" bottomRight="Quick wins" />
       <MatrixItem label="Search" x="0.28" y="0.82" color="$accent" />
-      <MatrixItem label="Billing" x="0.72" y="0.7" color="8B5CF6" />
-      <MatrixItem label="Docs" x="0.34" y="0.36" color="0EA5E9" />
-      <MatrixItem label="Mobile" x="0.8" y="0.24" color="9AA6B8" />
+      <MatrixItem label="Billing" x="0.72" y="0.7" color="$neutral" />
+      <MatrixItem label="Docs" x="0.34" y="0.36" color="$neutral" />
+      <MatrixItem label="Mobile" x="0.8" y="0.24" color="$neutral" />
     </Matrix>
   </VStack>
 
@@ -167,13 +170,14 @@ process_arrow: |
   # (steps are enlarged to fill the box after generation). It is ONE row: give it
   # full width. Step labels are 1-2 SHORT words only (longer text clips inside the
   # chevron). 3-5 steps. fontSize MUST be >= 14. NEVER go below 14.
+  # Colour: steps $accentSoft + $textMain, the destination (or current) step $accent + $onAccent.
   <VStack grow="1" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Delivery process</Text>
     <ProcessArrow h="max" minH="90" direction="horizontal" fontSize="14" bold="true">
-      <ProcessArrowStep label="Discover" color="BFD3F7" textColor="16202E" />
-      <ProcessArrowStep label="Design" color="60A5FA" textColor="FFFFFF" />
-      <ProcessArrowStep label="Build" color="2563EB" textColor="FFFFFF" />
-      <ProcessArrowStep label="Ship" color="1E3A8A" textColor="FFFFFF" />
+      <ProcessArrowStep label="Discover" color="$accentSoft" textColor="$textMain" />
+      <ProcessArrowStep label="Design" color="$accentSoft" textColor="$textMain" />
+      <ProcessArrowStep label="Build" color="$accentSoft" textColor="$textMain" />
+      <ProcessArrowStep label="Ship" color="$accent" textColor="$onAccent" />
     </ProcessArrow>
   </VStack>
 
@@ -182,32 +186,34 @@ flow: |
   # enlarged to fill the box after generation). Keep to 4-5 nodes; short
   # node text (6+ overflows at default nodeWidth). Use ProcessArrow for a simple line.
   # FlowNode text MUST be >= 14pt. 1-2 word labels only.
+  # Colour: nodes $accentSoft + $textMain, the outcome node $accent + $onAccent,
+  # a decision $warningSoft + $textMain, a "no" path $negative.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Approval flow</Text>
     <Flow direction="horizontal" h="max" minH="200" nodeWidth="150" nodeHeight="56" nodeGap="64">
-      <FlowNode id="a" shape="flowChartTerminator" text="Request" color="2563EB" textColor="FFFFFF" />
-      <FlowNode id="b" shape="flowChartProcess" text="Review" color="0EA5E9" textColor="FFFFFF" />
-      <FlowNode id="c" shape="flowChartDecision" text="Approved?" color="F59E0B" textColor="FFFFFF" />
-      <FlowNode id="d" shape="flowChartTerminator" text="Done" color="15803D" textColor="FFFFFF" />
+      <FlowNode id="a" shape="flowChartTerminator" text="Request" color="$accentSoft" textColor="$textMain" />
+      <FlowNode id="b" shape="flowChartProcess" text="Review" color="$accentSoft" textColor="$textMain" />
+      <FlowNode id="c" shape="flowChartDecision" text="Approved?" color="$warningSoft" textColor="$textMain" />
+      <FlowNode id="d" shape="flowChartTerminator" text="Done" color="$accent" textColor="$onAccent" />
       <FlowConnection from="a" to="b" />
       <FlowConnection from="b" to="c" />
       <FlowConnection from="c" to="d" label="Yes" />
-      <FlowConnection from="c" to="b" label="No" color="DC2626" />
+      <FlowConnection from="c" to="b" label="No" color="$negative" />
     </Flow>
   </VStack>
 
 pyramid: |
   # Pyramid in a card: NO h, NO grow on the card; Pyramid h = 52 x levels + 20, no w
   # (it never scales up). Scale fontSize with level count.
-  # textColor MUST contrast with each level's fill — dark fills get FFFFFF, light fills get 1E293B.
+  # Colour: levels $accentSoft + textColor $textMain, the level the headline names $accent + $onAccent.
   # fontSize: 16 (3 levels), 15 (4), 14 (5+). NEVER below 14.
   <VStack padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Operating model</Text>
     <Pyramid direction="up" h="228" fontSize="14" bold="true">
-      <PyramidLevel label="Strategy" color="1E3A8A" textColor="FFFFFF" />
-      <PyramidLevel label="Capabilities" color="2563EB" textColor="FFFFFF" />
-      <PyramidLevel label="Operations" color="3B82F6" textColor="FFFFFF" />
-      <PyramidLevel label="Foundation" color="1D4ED8" textColor="FFFFFF" />
+      <PyramidLevel label="Strategy" color="$accent" textColor="$onAccent" />
+      <PyramidLevel label="Capabilities" color="$accentSoft" textColor="$textMain" />
+      <PyramidLevel label="Operations" color="$accentSoft" textColor="$textMain" />
+      <PyramidLevel label="Foundation" color="$accentSoft" textColor="$textMain" />
     </Pyramid>
   </VStack>
 
@@ -215,34 +221,34 @@ pyramid_with_annotations: |
   # 5+ level pyramid with side annotations. Two-column: pyramid left, descriptions right.
   # Use when each level needs an explanation beyond the label.
   # Pyramid gets 55% width, annotations get 45%. fontSize="14" for 5 levels.
-  # Level colors use medium-to-dark hues so text stays legible on both light and dark themes.
-  # Each annotation card has a borderLeft matching its pyramid level color.
+  # Level colours as in `pyramid`: one level $accent + $onAccent, the rest $accentSoft + $textMain.
+  # The annotation card of the $accent level has borderLeft $accent, the others $neutral.
   <HStack gap="24" alignItems="center">
     <Pyramid direction="up" w="55%" h="280" fontSize="14" bold="true">
-      <PyramidLevel label="Vision &amp; Strategy" color="BE185D" textColor="FFFFFF" />
-      <PyramidLevel label="Business Goals" color="C2410C" textColor="FFFFFF" />
-      <PyramidLevel label="Tactical Initiatives" color="A16207" textColor="FFFFFF" />
-      <PyramidLevel label="Operational Workflows" color="15803D" textColor="FFFFFF" />
-      <PyramidLevel label="Infrastructure &amp; Tech" color="0E7490" textColor="FFFFFF" />
+      <PyramidLevel label="Vision &amp; Strategy" color="$accent" textColor="$onAccent" />
+      <PyramidLevel label="Business Goals" color="$accentSoft" textColor="$textMain" />
+      <PyramidLevel label="Tactical Initiatives" color="$accentSoft" textColor="$textMain" />
+      <PyramidLevel label="Operational Workflows" color="$accentSoft" textColor="$textMain" />
+      <PyramidLevel label="Infrastructure &amp; Tech" color="$accentSoft" textColor="$textMain" />
     </Pyramid>
     <VStack w="45%" gap="8">
-      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="BE185D" borderLeft.width="4">
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="$accent" borderLeft.width="4">
         <Text fontSize="14" bold="true" color="$textMain">Vision &amp; Strategy</Text>
         <Text fontSize="14" color="$textMuted">Long-term mission and market positioning.</Text>
       </VStack>
-      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="C2410C" borderLeft.width="4">
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="$neutral" borderLeft.width="4">
         <Text fontSize="14" bold="true" color="$textMain">Business Goals</Text>
         <Text fontSize="14" color="$textMuted">Annual OKRs, financial targets, growth roadmaps.</Text>
       </VStack>
-      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="A16207" borderLeft.width="4">
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="$neutral" borderLeft.width="4">
         <Text fontSize="14" bold="true" color="$textMain">Tactical Initiatives</Text>
         <Text fontSize="14" color="$textMuted">Cross-functional programs and milestone tracking.</Text>
       </VStack>
-      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="15803D" borderLeft.width="4">
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="$neutral" borderLeft.width="4">
         <Text fontSize="14" bold="true" color="$textMain">Operational Workflows</Text>
         <Text fontSize="14" color="$textMuted">Sprint deliverables and process management.</Text>
       </VStack>
-      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="0E7490" borderLeft.width="4">
+      <VStack padding="10" backgroundColor="$surfaceAlt" borderRadius="8" borderLeft.color="$neutral" borderLeft.width="4">
         <Text fontSize="14" bold="true" color="$textMain">Infrastructure &amp; Tech</Text>
         <Text fontSize="14" color="$textMuted">Data architecture, security, platform tooling.</Text>
       </VStack>
@@ -268,17 +274,18 @@ layer_diagram: |
 tree: |
   # Tree in a card: card grow per weight, Tree h="max" minH="200" (nodes are
   # enlarged to fill the box after generation). One root. Keep depth <= 3 and total nodes
-  # <= ~10; short labels.
+  # <= ~10; short labels. Colour: root $accent + textColor $onAccent, the rest
+  # $accentSoft + $textMain.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Org structure</Text>
-    <Tree layout="vertical" h="max" minH="200" nodeShape="roundRect" textColor="FFFFFF" nodeWidth="130" nodeHeight="46" levelGap="52" siblingGap="22" connectorStyle.color="94A3B8" connectorStyle.width="2">
-      <TreeItem label="CEO" color="1E3A8A">
-        <TreeItem label="CTO" color="2563EB">
-          <TreeItem label="Eng" color="60A5FA" />
-          <TreeItem label="Product" color="60A5FA" />
+    <Tree layout="vertical" h="max" minH="200" nodeShape="roundRect" textColor="$textMain" nodeWidth="130" nodeHeight="46" levelGap="52" siblingGap="22" connectorStyle.color="$neutral" connectorStyle.width="2">
+      <TreeItem label="CEO" color="$accent" textColor="$onAccent">
+        <TreeItem label="CTO" color="$accentSoft">
+          <TreeItem label="Eng" color="$accentSoft" />
+          <TreeItem label="Product" color="$accentSoft" />
         </TreeItem>
-        <TreeItem label="CFO" color="2563EB">
-          <TreeItem label="Finance" color="60A5FA" />
+        <TreeItem label="CFO" color="$accentSoft">
+          <TreeItem label="Finance" color="$accentSoft" />
         </TreeItem>
       </TreeItem>
     </Tree>
@@ -292,7 +299,7 @@ compact_kpi_strip: |
     <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">METRIC A</Text>
       <Text fontSize="24" color="$textMain" bold="true">₹X.XX<Span fontSize="14" color="$textMuted"> Cr</Span></Text>
-      <Text fontSize="14" color="$negative" bold="true">▼ X.X% vs prior</Text>
+      <Text fontSize="14" color="$negativeText" bold="true">▼ X.X% vs prior</Text>
     </VStack>
     <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">METRIC B</Text>
@@ -302,19 +309,19 @@ compact_kpi_strip: |
     <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" borderRadius="10" border.color="$border" border.width="1" justifyContent="center">
       <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1">KEY RATIO</Text>
       <Text fontSize="24" color="$positive" bold="true">X.Xxx</Text>
-      <Text fontSize="14" color="$positive">Best of cohort</Text>
+      <Text fontSize="14" color="$positiveText">Best of cohort</Text>
     </VStack>
   </HStack>
 
 dark_callout_panel: |
   # Dark callout panel: inverted card for analyst read-outs or key takeaways.
   # backgroundColor="$textMain", header in $accentAlt (letterSpacing="1"),
-  # list items in a light muted color (D0DDD8 on dark backgrounds).
+  # list items in $surfaceAlt (the light card colour reads on the dark panel).
   # Use at bottom-right of a 2-col layout or as a full-width closing band.
   # ALL fonts >= 14. One item per plan read-out, in the plan's words.
   <VStack padding="14" gap="6" backgroundColor="$textMain" borderRadius="12">
     <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">KEY READ-OUTS</Text>
-    <Ul fontSize="14" color="D0DDD8" lineHeight="1.45">
+    <Ul fontSize="14" color="$surfaceAlt" lineHeight="1.45">
       <Li>Insight 1 — lead with the number, name the mechanism</Li>
       <Li>Insight 2 — contrast two segments with specific delta</Li>
       <Li>Insight 3 — flag the outlier or risk with the metric</Li>

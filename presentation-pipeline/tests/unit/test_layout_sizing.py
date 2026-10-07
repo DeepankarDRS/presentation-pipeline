@@ -14,13 +14,17 @@ import json
 import yaml
 
 from scripts.eval_metrics import card_metrics
+from src.agents.style_resolver import _build_theme
 from src.compiler.layout_audit import audit_layout
 
 _ROOT = Path(__file__).resolve().parents[2]
 _FIXTURES = _ROOT / "tests" / "fixtures" / "layout_sizing"
 _COMPILER = _ROOT / "src" / "node" / "compile-pom.js"
-_THEME = ('<Theme surface="F3F4F6" surfaceAlt="FFFFFF" accent="C2410C" accentAlt="1E3A5F" positive="15803D" '
-          'negative="B91C1C" warning="B45309" textMain="1F2937" textMuted="6B7280" border="E5E7EB" />')
+# the pipeline's <Theme>: authored colours + the derived roles ($accentSoft, $neutral, ... 2026-10-07)
+_THEME = _build_theme("test", {
+    "surface": "F3F4F6", "surfaceAlt": "FFFFFF", "accent": "C2410C", "accentAlt": "1E3A5F",
+    "positive": "15803D", "negative": "B91C1C", "warning": "B45309", "textMain": "1F2937",
+    "textMuted": "6B7280", "border": "E5E7EB"})["element"]
 
 
 def _references() -> dict[str, str]:
@@ -54,7 +58,8 @@ def _compile(name: str, out: Path) -> list[dict]:
 @pytest.mark.parametrize("name", sorted(p.name for p in _FIXTURES.glob("*.xml")))
 def test_fixture_is_audit_clean(name):
     xml = re.sub(r"<Theme\b[^>]*/>", "", (_FIXTURES / name).read_text(encoding="utf-8"))
-    assert audit_layout(xml) == []
+    # hand-written sizing fixtures keep their typed colours; LITERAL_COLOR is report-only
+    assert [i for i in audit_layout(xml) if i["code"] != "LITERAL_COLOR"] == []
 
 
 def test_recipes_are_audit_clean():

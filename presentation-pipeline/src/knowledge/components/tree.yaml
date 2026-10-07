@@ -13,23 +13,23 @@ description: >
 
 structure: |
   <Tree layout="vertical" w="1000" h="500"
-        nodeShape="roundRect" textColor="FFFFFF"
+        nodeShape="roundRect" textColor="$textMain"
         nodeWidth="140" nodeHeight="50"
         levelGap="60" siblingGap="24"
-        connectorStyle.color="94A3B8" connectorStyle.width="2">
-    <TreeItem label="CEO" color="1E3A8A">
-      <TreeItem label="CTO" color="2563EB">
-        <TreeItem label="Engineering" color="3B82F6" />
-        <TreeItem label="Product" color="3B82F6" />
-        <TreeItem label="Design" color="3B82F6" />
+        connectorStyle.color="$neutral" connectorStyle.width="2">
+    <TreeItem label="CEO" color="$accent" textColor="$onAccent">
+      <TreeItem label="CTO" color="$accentSoft">
+        <TreeItem label="Engineering" color="$accentSoft" />
+        <TreeItem label="Product" color="$accentSoft" />
+        <TreeItem label="Design" color="$accentSoft" />
       </TreeItem>
-      <TreeItem label="CFO" color="2563EB">
-        <TreeItem label="Finance" color="3B82F6" />
-        <TreeItem label="Legal" color="3B82F6" />
+      <TreeItem label="CFO" color="$accentSoft">
+        <TreeItem label="Finance" color="$accentSoft" />
+        <TreeItem label="Legal" color="$accentSoft" />
       </TreeItem>
-      <TreeItem label="COO" color="2563EB">
-        <TreeItem label="Operations" color="3B82F6" />
-        <TreeItem label="HR" color="3B82F6" />
+      <TreeItem label="COO" color="$accentSoft">
+        <TreeItem label="Operations" color="$accentSoft" />
+        <TreeItem label="HR" color="$accentSoft" />
       </TreeItem>
     </TreeItem>
   </Tree>

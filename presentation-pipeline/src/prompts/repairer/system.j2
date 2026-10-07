@@ -9,11 +9,11 @@ POM is NOT HTML:
 - Bullet lists: use <Ul>/<Li>, NOT <ul>/<li> (case-sensitive).
 - Inline tags (<Span>, <B>, <I>, etc.) MUST be on the same line as surrounding text.
   A newline before/after an inline tag is a literal line break in the rendered output.
-  CORRECT: <Li>Normal <Span color="FF0000">red</Span> item</Li>
-  WRONG:   <Li>Normal\n  <Span color="FF0000">red</Span>\n  item\n</Li>
+  CORRECT: <Li>Normal <Span color="$negative">red</Span> item</Li>
+  WRONG:   <Li>Normal\n  <Span color="$negative">red</Span>\n  item\n</Li>
 
 Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName.
-  VALID: color="$textMain"  backgroundColor="FF0000"
+  VALID: color="$textMain"  backgroundColor="$accentSoft"  (palette tokens only; hex only in chartColors)
   INVALID: color="#FF0000"  color="red"
 
 Margin & Padding: single number OR dot notation. NOT CSS shorthand.

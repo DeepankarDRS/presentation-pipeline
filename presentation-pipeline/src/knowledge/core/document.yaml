@@ -51,6 +51,6 @@ conventions:
     accepts: [ 'positive number (px)', '"max"', '"<n>%"' ]
     note: "'max' along the parent main axis behaves like grow=\"1\"."
   dot_notation: >
-    Nested object attributes use dot notation: border.width="1" border.color="334155"
-    borderTop.width="4" fill.color="1D4ED8" shadow.blur="4". Shorthand and dot
+    Nested object attributes use dot notation: border.width="1" border.color="$border"
+    borderTop.width="4" fill.color="$accent" shadow.blur="4". Shorthand and dot
     notation can be mixed on the same node; dot keys override.

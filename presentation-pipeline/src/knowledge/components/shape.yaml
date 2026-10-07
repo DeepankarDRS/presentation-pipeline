@@ -16,10 +16,10 @@ description: >
 attributes:
   shapeType:   { type: enum, required: true, note: "See phase_ab_subset below. 178 exist; stay in the subset." }
   text:        { type: string, note: "Centred text inside the shape." }
-  fill:        { type: object, note: 'fill.color="1D4ED8"  fill.transparency="0.5"' }
+  fill:        { type: object, note: 'fill.color="$accent"  fill.transparency="0.5"' }
   line:        { type: object, note: 'line.color="hex"  line.width="2"  line.dashType="dash". Width must be > 0 - for no outline, omit line entirely (the default).' }
   outline:     { type: object, note: 'Text-style alias for line: outline.size / outline.color.' }
-  glow:        { type: object, note: 'glow.size="10" glow.opacity="0.7" glow.color="3B82F6" (defaults 8 / 0.75 / FFFFFF). Use for a dot that pops on dark surfaces.' }
+  glow:        { type: object, note: 'glow.size="10" glow.opacity="0.7" glow.color="$accent" (defaults 8 / 0.75 / FFFFFF). Use for a dot that pops on dark surfaces.' }
   rotate:      { type: number, note: "degrees clockwise, render-only" }
   # inner-text styling: fontSize, color, textAlign, bold, italic, underline,
   # strike, subscript, superscript, fontFamily, lineHeight

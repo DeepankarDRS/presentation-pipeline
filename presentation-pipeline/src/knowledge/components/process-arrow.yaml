@@ -14,10 +14,10 @@ description: >
 structure: |
   <ProcessArrow direction="horizontal" w="1100" h="100"
                 itemWidth="200" itemHeight="80" gap="8" fontSize="14">
-    <ProcessArrowStep label="Discover" color="2563EB" textColor="FFFFFF" />
-    <ProcessArrowStep label="Define" color="1D4ED8" textColor="FFFFFF" />
-    <ProcessArrowStep label="Develop" color="1E40AF" textColor="FFFFFF" />
-    <ProcessArrowStep label="Deliver" color="1E3A8A" textColor="FFFFFF" />
+    <ProcessArrowStep label="Discover" color="$accentSoft" textColor="$textMain" />
+    <ProcessArrowStep label="Define" color="$accentSoft" textColor="$textMain" />
+    <ProcessArrowStep label="Develop" color="$accentSoft" textColor="$textMain" />
+    <ProcessArrowStep label="Deliver" color="$accent" textColor="$onAccent" />
   </ProcessArrow>
 
 ProcessArrow_attributes:

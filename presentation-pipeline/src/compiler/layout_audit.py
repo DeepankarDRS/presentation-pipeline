@@ -9,6 +9,7 @@ Issues are informational — they never block compilation.
 from __future__ import annotations
 
 import logging
+import re
 import xml.etree.ElementTree as ET
 from typing import Any
 
@@ -363,7 +364,7 @@ def _check_table_width(root: ET.Element, issues: list[dict[str, str]]) -> None:
 # of its own (inherits POM's default) is not judged, to keep false alarms out.
 MIN_CONTRAST = 4.5
 # codes recorded for scoring only: never shown to the critic, so they never trigger a repair
-REPORT_ONLY_CODES = {"LOW_CONTRAST"}
+REPORT_ONLY_CODES = {"LOW_CONTRAST", "LITERAL_COLOR"}
 MIN_CONTRAST_LARGE = 3.0
 _TEXT_TAGS = {"Text", "Li", "Td", "Shape"}
 
@@ -445,6 +446,36 @@ def _check_contrast(root: ET.Element, issues: list[dict[str, str]]) -> None:
         })
 
 
+# LITERAL_COLOR (report only, 2026-10-07): a colour typed as hex instead of a palette
+# token ignores the deck's palette (copied example tints, a fixed blue). Allowed:
+# chartColors (tokens do not resolve there), a black shadow, the <Theme> itself.
+# Gradients are not judged: their stops are written as hex.
+_HEX = re.compile(r"#?(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})")
+_COLOR_ATTR = re.compile(r"(?i)colou?r|fill")
+
+
+def _check_literal_colors(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    hits: dict[str, int] = {}
+    for el in root.iter():
+        if el.tag == "Theme":
+            continue
+        for attr, value in el.attrib.items():
+            if attr == "chartColors" or not _COLOR_ATTR.search(attr) or not _HEX.fullmatch(value.strip()):
+                continue
+            if attr.startswith("shadow") and set(value.strip().lstrip("#")) == {"0"}:
+                continue
+            key = value.strip().lstrip("#").upper()
+            hits[key] = hits.get(key, 0) + 1
+    if hits:
+        top = ", ".join(f"{v} x{n}" for v, n in sorted(hits.items(), key=lambda kv: -kv[1])[:5])
+        issues.append({
+            "severity": "low",
+            "code": "LITERAL_COLOR",
+            "message": f"{sum(hits.values())} colour(s) typed as hex instead of a palette token ({top}). "
+                       f"Fix: $accentSoft / $positiveText / $neutral / ... from the <Theme>.",
+        })
+
+
 def audit_layout(xml: str) -> list[dict[str, str]]:
     """Parse POM XML and check spatial/layout constraints.
 
@@ -470,5 +501,6 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_hstack_column_heights(root, issues)
     _check_table_width(root, issues)
     _check_contrast(root, issues)
+    _check_literal_colors(root, issues)
 
     return issues

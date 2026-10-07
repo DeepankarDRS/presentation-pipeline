@@ -282,3 +282,28 @@ arms in one palette; add one row of badge, callout and highlighted-row slides on
 - 60-30-10 for presentations: [Ethos3](https://ethos3.com/color-rules-for-presentation-design/), [Prezi](https://prezi.com/blog/designer-tips-volume-2-common-color-mistakes-and-the-60-30-10-rule/)
 - Anthropic published styling: [skills.sh brand-guidelines](https://www.skills.sh/anthropics/skills/brand-guidelines), [designpieces Claude palette](https://www.designpieces.com/palette/claude-color-palette-hex-and-rgb/)
 - Internal: `docs/derived-blocks-planning-2026-10-06.md` §1a (D1), `docs/planner-redesign-research.md` R2, `docs/derived-nodes-design.md` §14.3b and §14.8, `docs/frontend-redesign-changes.md`, `src/knowledge/theme/palettes.yaml`, `src/agents/style_resolver.py`, `src/knowledge/core/recipes.yaml`
+
+## 13. Built: slide-quality item 1 (2026-10-07, branch `feat/slide-quality`)
+
+User decisions (2026-10-07): build the colour roles for today's route (the LLM writes the whole slide);
+**P1** derived tokens built now, in the pipeline (not tied to derived blocks); **P2** `neutral` optional
+with a default; **P3** palette fixes now; **P5** only role tokens reach the LLM (`ramp*`, `borderStrong`,
+`hero*`, `info` not built).
+
+| Part | What |
+|---|---|
+| `src/compiler/palette_tokens.py` | derives `accentSoft` / `positiveSoft` / `negativeSoft` / `warningSoft` (13% mix into `surfaceAlt`, 22% dark), `*Text` (HLS lightness step, hue kept, ≥ 4.5:1 on `surface`, `surfaceAlt` and its own Soft), `onAccent` (white, else the palette ink), `neutral` (authored, else `textMain` 22% into `surface`, 32% dark) |
+| `src/agents/style_resolver.py` | every `<Theme>` carries the 10 derived tokens; a light palette gets `chartSurface` / `chartInk` = `surfaceAlt` / `textMain`; `DEFAULT_THEME` is built from the YAML entry (default chart colours now the YAML's 5); `chart_focus` = literal accent + neutral hex for a focus chart (prompt note in `context_builder`) |
+| `palettes.yaml` (P3) | `gj-h1` positive `2E7D32`, negative `B83A22`, warning `A15C00`; `forest-editorial` positive `1F6F5C`; `forest-dark` positive `5EEAD4`; `saascolor`, `navy-orange` warning `8A6A00` |
+| Roles (`house-style.yaml` `color_roles`, `hint-capabilities.yaml`) | good / bad / watch = `*Text` text, `*Soft` fill, base colour for dots / bars; ONE focus item = `$accentSoft` + `$accentText`; the rest `$neutral` / `$textMuted`; new treatment `focus` on kpi_row, table, card_grid, timeline, flow, process_arrow; every good / bad mark carries a sign or arrow |
+| Literal hex removed | recipes, blueprints, golden examples, component files, prompts: ≈ 200 → 0 outside `chartColors`, a black shadow, `<Theme>` and "wrong" examples (`tests/unit/test_literal_colors.py` fails on a new one) |
+| Audit | `LITERAL_COLOR` (report only, in `REPORT_ONLY_CODES`, never reaches the critic) |
+
+LLM-free checks (this PC): all 18 palettes pass contrast, hue and distinct-role tests
+(`tests/unit/test_palette_tokens.py`); unit tests 787 pass, the 4 known failures; the 43 saved step-0 slides
+recompile 43/43 with the new `<Theme>`; `python -m scripts.palette_preview` (now drawing the shipped tokens)
+checked by eye on `navy-orange`, `gj-h1`, `claude-cream`, `graphite-dark`: tints follow the palette, the focus
+series stands out from grey, the dark highlighted row is readable (before: white row, invisible text).
+Generator contract +≈ 490 tokens per slide (+5%; budgets in `test_context_builder.py` raised).
+Baseline for the paid check: step-0 LLM output has **117 literal colours on 18 of 43 slides**; target 0.
+Not done: chart lightness rule (§5.4), colour-blind lightness check (§5.5).

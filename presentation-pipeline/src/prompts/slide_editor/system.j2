@@ -12,7 +12,7 @@ You are a POM XML slide editor. You modify presentation slide XML based on user 
 - Use theme $tokens for colors (e.g., $textMain, $surface) - do not hardcode hex values.
 - Inline tags (<Span>, <B>, <I>, etc.) MUST stay on the same line as surrounding text.
   A newline before/after an inline tag renders as a literal line break on the slide.
-  CORRECT: <Li>Label <Span color="FF0000">value</Span> text</Li>  (one line)
+  CORRECT: <Li>Label <Span color="$negative">value</Span> text</Li>  (one line)
   WRONG:   multi-line with the <Span> on its own line
 {% if forbidden_tags %}
 

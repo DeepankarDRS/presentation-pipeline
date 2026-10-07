@@ -192,24 +192,32 @@ font_floor: >
 spacing_scale: "use 2, 4, 6, 8, 10, 12, 14, 16, 18, 22 - nothing in between."
 
 color_discipline: >
-  Every color is a $token or a 6-digit hex (NO #). Body text $textMain /
-  $textMuted only. $accent for the eyebrow, one figure, one edge - not whole
-  blocks. Card bg is $surfaceAlt;
+  Every color is a $token. Body text $textMain / $textMuted only. $accentText
+  for the eyebrow / kicker, $accent for one large figure or one edge - not
+  whole blocks. Pale fills are $accentSoft / $positiveSoft / $negativeSoft /
+  $warningSoft, never a typed hex. Card bg is $surfaceAlt;
   slide bg $surface; inverted panel $textMain. chartColors is literal hex,
   copied from the resolved palette - $tokens do NOT resolve inside it.
   Do NOT emit a <Theme> - the pipeline injects exactly one.
   COVER/HERO slides follow the SAME token rules — never hardcode raw hex
   for large backgrounds (use $surface, $surfaceAlt, $textMain, $accent).
-  Raw hex is acceptable ONLY for chartColors and small decorative accents.
+  Raw hex is acceptable ONLY in chartColors and a shadow colour (000).
 
 color_roles: >
   Colour carries meaning, the SAME on every slide of the deck, so the reader
-  learns it once: $negative = losses, leaks, underperformers, risks;
-  $positive = wins, fixes, recommended actions, what to protect or scale;
-  $warning = watch / breakeven; $accent = neutral emphasis (the eyebrow, the
-  number the headline rests on). Apply a role to a figure, a phrase, a row's
-  cell_fill, a card's accent edge or a tile - never to a whole slide. Never use
-  $negative / $positive for decoration, and never give one meaning two colours.
+  learns it once (2026-10-07, from the palette's own tokens - never a hex):
+  GOOD (wins, fixes, recommended actions, what to protect or scale) = $positiveText
+  as text, $positiveSoft as a chip / row fill, $positive as a dot or bar;
+  BAD (losses, leaks, underperformers, risks) = $negativeText / $negativeSoft /
+  $negative; WATCH (breakeven, at risk) = $warningText / $warningSoft / $warning;
+  the ONE highlighted item (the one the headline names) = $accentSoft fill with
+  its key figure in $accentText bold; EVERYTHING ELSE = $surfaceAlt cards,
+  $textMain values, $textMuted labels, $neutral marks (dots, bars, other chart
+  series), so the one item stands out. Text on an $accent fill is $onAccent.
+  Apply a role to a figure, a phrase, a row, a chip, a card's fill or edge -
+  never to a whole slide. Every good / bad mark also carries a sign or arrow.
+  Never use a role for decoration, never give one meaning two colours, never
+  more than one item in focus per component.
 
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:
@@ -227,7 +235,7 @@ render_gotchas:
      hero panels and cards SHORT and give panels/cards a little height slack.
      Never rely on a heading staying on N lines."
   - "MatrixItem: the label renders BESIDE the dot on the CARD background, not on
-     the dot. Do NOT set textColor=\"FFFFFF\" on a light card - the label
+     the dot. Do NOT set a white textColor on a light card - the label
      vanishes. Leave textColor unset (inherits itemLabelColor)."
   - "ProcessArrowStep label: 1-2 short words only at h<=70; longer text clips."
   - "Horizontal Timeline: max 5 items, 1-3 word labels. Sentences collide."

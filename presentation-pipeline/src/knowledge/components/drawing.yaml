@@ -16,11 +16,11 @@ description: >
 structure: |
   <Layer w="1280" h="720">
     <Text x="100" y="50" fontSize="24" color="$textMain">Positioned label</Text>
-    <Line x1="100" y1="90" x2="400" y2="90" color="2563EB" lineWidth="2" />
-    <Shape id="box1" x="100" y="120" shapeType="roundRect" w="200" h="80" text="Start" fill.color="2563EB" color="FFFFFF" fontSize="16" bold="true" />
-    <Shape id="box2" x="500" y="120" shapeType="roundRect" w="200" h="80" text="End" fill.color="0EA5E9" color="FFFFFF" fontSize="16" bold="true" />
-    <Arrow from="box1" to="box2" color="334155" lineWidth="2" endArrow="true" />
-    <Svg x="800" y="50" w="48" h="48" color="2563EB">
+    <Line x1="100" y1="90" x2="400" y2="90" color="$accent" lineWidth="2" />
+    <Shape id="box1" x="100" y="120" shapeType="roundRect" w="200" h="80" text="Start" fill.color="$accent" color="$onAccent" fontSize="16" bold="true" />
+    <Shape id="box2" x="500" y="120" shapeType="roundRect" w="200" h="80" text="End" fill.color="$accentSoft" color="$textMain" fontSize="16" bold="true" />
+    <Arrow from="box1" to="box2" color="$neutral" lineWidth="2" endArrow="true" />
+    <Svg x="800" y="50" w="48" h="48" color="$accent">
       <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
     </Svg>
   </Layer>

@@ -14,17 +14,17 @@ description: >
 
 structure: |
   <Flow direction="horizontal" w="1100" h="500" nodeWidth="140" nodeHeight="60" nodeGap="80">
-    <FlowNode id="start" shape="flowChartTerminator" text="Start" color="2563EB" textColor="FFFFFF" />
-    <FlowNode id="input" shape="flowChartInputOutput" text="Receive Data" color="0EA5E9" textColor="FFFFFF" />
-    <FlowNode id="process" shape="flowChartProcess" text="Process Data" color="14B8A6" textColor="FFFFFF" />
-    <FlowNode id="decision" shape="flowChartDecision" text="Valid?" color="F59E0B" textColor="FFFFFF" />
-    <FlowNode id="output" shape="flowChartProcess" text="Save Results" color="15803D" textColor="FFFFFF" />
-    <FlowNode id="end" shape="flowChartTerminator" text="End" color="2563EB" textColor="FFFFFF" />
+    <FlowNode id="start" shape="flowChartTerminator" text="Start" color="$accentSoft" textColor="$textMain" />
+    <FlowNode id="input" shape="flowChartInputOutput" text="Receive Data" color="$accentSoft" textColor="$textMain" />
+    <FlowNode id="process" shape="flowChartProcess" text="Process Data" color="$accentSoft" textColor="$textMain" />
+    <FlowNode id="decision" shape="flowChartDecision" text="Valid?" color="$warningSoft" textColor="$textMain" />
+    <FlowNode id="output" shape="flowChartProcess" text="Save Results" color="$accentSoft" textColor="$textMain" />
+    <FlowNode id="end" shape="flowChartTerminator" text="End" color="$accent" textColor="$onAccent" />
     <FlowConnection from="start" to="input" />
     <FlowConnection from="input" to="process" />
     <FlowConnection from="process" to="decision" />
     <FlowConnection from="decision" to="output" label="Yes" />
-    <FlowConnection from="decision" to="input" label="No" color="DC2626" />
+    <FlowConnection from="decision" to="input" label="No" color="$negative" />
     <FlowConnection from="output" to="end" />
   </Flow>
 

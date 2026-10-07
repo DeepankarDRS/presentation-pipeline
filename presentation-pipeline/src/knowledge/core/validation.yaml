@@ -67,14 +67,14 @@ translations:
   - { wrong: 'width="600"',            right: 'w="600"' }
   - { wrong: 'height="400"',           right: 'h="400"' }
   - { wrong: 'font-size: 24px',        right: 'fontSize="24"' }
-  - { wrong: 'style="color:#f00"',     right: 'color="FF0000"' }
+  - { wrong: 'style="color:#f00"',     right: 'color="$negative"  (a palette token)' }
   - { wrong: 'class="card"',           right: '(no equivalent — use explicit attributes)' }
   - { wrong: '<br/>',                  right: 'separate <Text> nodes in a <VStack>' }
   - { wrong: '<div>',                  right: '<VStack> or <HStack>' }
   - { wrong: '<p>',                    right: '<Text>' }
   - { wrong: '<span>',                 right: '<Span> (capital S), only inside <Text>' }
-  - { wrong: 'color="#FF0000"',        right: 'color="FF0000"  (# is tolerated in v10.3.0 but omit it)' }
-  - { wrong: 'color="red"',            right: 'color="FF0000"  (named colors throw at render)' }
+  - { wrong: 'color="#FF0000"',        right: 'color="$negative"  (a palette token, never a hex)' }
+  - { wrong: 'color="red"',            right: 'color="$negative"  (named colors throw at render)' }
   - { wrong: 'flex="1"',               right: 'grow="1"' }
   - { wrong: 'justifyContent="left"',  right: 'justifyContent="start"' }
   - { wrong: 'alignItems="right"',     right: 'alignItems="end"' }
@@ -87,10 +87,10 @@ translations:
   - { wrong: '<svg>',                 right: '<Svg> (capital S, Phase D) — wraps an inner <svg> child element' }
   - wrong: |
       <Li>Normal
-        <Span color="FF0000">red</Span>
+        <Span color="$negative">red</Span>
         item
       </Li>
-    right: "<Li>Normal <Span color=\"FF0000\">red</Span> item</Li>  — inline tags and surrounding text MUST be on one line; a newline before/after the tag renders as a literal line break"
+    right: "<Li>Normal <Span color=\"$negative\">red</Span> item</Li>  — inline tags and surrounding text MUST be on one line; a newline before/after the tag renders as a literal line break"
 
 # ── Value constraints (Type 3 render errors pass XML parsing then fail) ───────
 value_constraints:

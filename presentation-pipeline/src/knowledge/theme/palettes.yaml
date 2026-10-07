@@ -39,6 +39,18 @@ token_roles:
   chartSurface: "DARK palettes only — light card placed BEHIND a chart so POM's
                  hard-coded black axis text stays readable (see below)"
   chartInk:    "DARK palettes only — a dark ink for text drawn on $chartSurface"
+  # Derived by code (src/compiler/palette_tokens.py, 2026-10-07) and added to every <Theme>.
+  # A palette may author `neutral`; the others are always computed.
+  accentSoft:   "pale accent fill — the ONE highlighted row / card / callout background"
+  positiveSoft: "pale fill behind a good delta chip / badge / row"
+  negativeSoft: "pale fill behind a bad delta chip / badge / row"
+  warningSoft:  "pale fill behind a watch chip / badge / row"
+  accentText:   "accent as small text (eyebrow, kicker, key figure in a tint) — always >= 4.5:1"
+  positiveText: "good delta / figure as text"
+  negativeText: "bad delta / figure as text"
+  warningText:  "watch figure as text"
+  onAccent:     "text on an $accent fill (chip, step number)"
+  neutral:      "grey for everything that is NOT the focus: other bars / series / dots"
 
 usage:
   slide_background: 'backgroundColor="$surface" on the root VStack'
@@ -138,7 +150,7 @@ palettes:
     surfaceAlt: "FFFCF6"
     accent: "2D5016"
     accentAlt: "D4891A"
-    positive: "2D5016"
+    positive: "1F6F5C"   # 2026-10-07 P3: was the accent 2D5016
     negative: "A33A2A"
     warning: "A86310"
     textMain: "1E2612"
@@ -217,7 +229,7 @@ palettes:
     accentAlt: "673AB7"
     positive: "2E7D32"
     negative: "A03B24"
-    warning: "A03B24"
+    warning: "8A6A00"    # 2026-10-07 P3: was the same as negative
     textMain: "041E42"
     textMuted: "4E5D6E"
     border: "E4E2D8"
@@ -232,7 +244,7 @@ palettes:
     accentAlt: "673AB7"
     positive: "2E7D32"
     negative: "A84531"
-    warning: "A84531"
+    warning: "8A6A00"    # 2026-10-07 P3: was the same as negative
     textMain: "112340"
     textMuted: "5A6578"
     border: "E8E6E3"
@@ -240,6 +252,8 @@ palettes:
 
   # The gj-h1 golden deck's own <Theme> (tests/fixtures/golden/gj-h1-deck, same on all 14
   # slides). chartColors are the literals its Chart nodes use: emerald, blue, amber, slate grey.
+  # 2026-10-07 (user, P3): positive was the accent (0D6B4E), negative E54D2E and warning F59E0B
+  # failed as small text (3.5 / 1.95:1); now a distinct green, a deeper red and a dark amber.
   gj-h1:
     tone: "Mint-grey with deep emerald, tomato-red and amber (gj-h1 deck)"
     mode: light
@@ -247,9 +261,9 @@ palettes:
     surfaceAlt: "FFFFFF"
     accent: "0D6B4E"
     accentAlt: "34D399"
-    positive: "0D6B4E"
-    negative: "E54D2E"
-    warning: "F59E0B"
+    positive: "2E7D32"
+    negative: "B83A22"
+    warning: "A15C00"
     textMain: "141F1C"
     textMuted: "5F706B"
     border: "D5DDD9"
@@ -331,7 +345,7 @@ palettes:
     surfaceAlt: "172C22"
     accent: "4ADE80"
     accentAlt: "2DD4BF"
-    positive: "4ADE80"
+    positive: "5EEAD4"   # 2026-10-07 P3: was the accent 4ADE80
     negative: "F87171"
     warning: "FBBF24"
     textMain: "ECF5EF"

@@ -110,7 +110,7 @@ inline:
       fontFamily: "string (overrides parent fontFamily for this run)"
       fontSize: "number (overrides font size for this run)"
       letterSpacing: "number px (effective inside <Text> only)"
-    example: '<Text fontSize="52" bold="true" color="1D4ED8">$84.2<Span fontSize="20">M</Span></Text>'
+    example: '<Text fontSize="52" bold="true" color="$accent">$84.2<Span fontSize="20">M</Span></Text>'
   A:
     property: hyperlink
     attributes: [href]

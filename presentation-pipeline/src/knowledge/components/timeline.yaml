@@ -15,10 +15,10 @@ structure: |
   <Timeline direction="horizontal" w="1100" h="300"
             dateColor="$textMuted" titleColor="$textMain"
             connectorColor="$accent">
-    <TimelineItem date="Q1 2026" title="Alpha Launch" color="2563EB" />
-    <TimelineItem date="Q2 2026" title="Public Beta" color="0EA5E9" />
-    <TimelineItem date="Q3 2026" title="GA Release" color="15803D" />
-    <TimelineItem date="Q4 2026" title="Enterprise Tier" color="7C3AED" />
+    <TimelineItem date="Q1 2026" title="Alpha Launch" color="$neutral" />
+    <TimelineItem date="Q2 2026" title="Public Beta" color="$neutral" />
+    <TimelineItem date="Q3 2026" title="GA Release" color="$accent" />
+    <TimelineItem date="Q4 2026" title="Enterprise Tier" color="$neutral" />
   </Timeline>
 
 Timeline_attributes:

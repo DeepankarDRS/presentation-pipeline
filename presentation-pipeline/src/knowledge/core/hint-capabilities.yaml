@@ -18,19 +18,19 @@
 treatments:
   emphasis:
     intent: emphasize one value, row or item
-    technique: '$accent/$positive/$negative + bold on that element (Text/Td/Li color, or the item''s color=)'
+    technique: 'bold + $accentText on that element (Text/Td/Li color, or the item''s color=); a large figure (>= 24px) may use $accent'
   sentiment:
     intent: color-code by meaning (losses / fixes)
-    technique: '$negative = losses, leaks, risks; $positive = wins, fixes, actions to scale; $warning = watch; $accent neutral - the same meaning gets the same colour on every slide (same attributes as emphasis)'
+    technique: 'text: $negativeText = losses, leaks, risks; $positiveText = wins, fixes, actions to scale; $warningText = watch; a chip / badge / row behind it takes the matching $negativeSoft / $positiveSoft / $warningSoft; every good / bad mark also carries a sign or arrow (+ / - / ▲ / ▼); the same meaning gets the same colour on every slide'
   cell_fill:
     intent: shade a table row or column
-    technique: 'backgroundColor on that row''s/column''s <Td>s'
+    technique: 'backgroundColor="$accentSoft" on the ONE marked row''s/column''s <Td>s ($positiveSoft / $negativeSoft for a good / bad row), its key cell color="$accentText" bold; other rows keep the table''s normal fill'
   highlight_text:
     intent: color a key phrase
-    technique: '<Span color="$accent">phrase</Span> inside its Text on the same line, no newline or extra space around it (never <Mark> or highlight=: they paint a box behind the text)'
+    technique: '<Span color="$accent">phrase</Span> ($accentText when the Text is under 24px) inside its Text on the same line, no newline or extra space around it (never <Mark> or highlight=: they paint a box behind the text)'
   series_color:
     intent: highlight one chart series
-    technique: 'chartColors: accent hex for the focus series, muted hex for the rest (literal hex, no $tokens)'
+    technique: 'chartColors: the focus series gets the palette''s accent hex, every other series its neutral hex (literal hex, no $tokens; both are given in the notes)'
   inverted_panel:
     intent: dark / inverted panel
     technique: 'card VStack backgroundColor="$textMain", its Text color="$surface"'
@@ -57,7 +57,10 @@ treatments:
     technique: '<Chart chartType="line" sparkline="true" w="80" h="32"> beside the tile value'
   status_dots:
     intent: status dot beside each label
-    technique: '<HStack gap="8" alignItems="center"><Shape shapeType="ellipse" w="10" h="10" fill.color="C" /><Text>label</Text></HStack>'
+    technique: '<HStack gap="8" alignItems="center"><Shape shapeType="ellipse" w="10" h="10" fill.color="$positive" /><Text>label</Text></HStack> ($positive good, $negative bad, $warning watch, $neutral no status)'
+  focus:
+    intent: one item in focus, the rest recede
+    technique: 'the ONE item the headline names: backgroundColor="$accentSoft" on its card / tile / row (or the item''s color="$accent" on a timeline / flow / step) and its key figure color="$accentText" bold; every other item keeps $surfaceAlt, $textMain values and $neutral marks (dots, bars, icons); never two items in focus'
 
 kinds:
   title:
@@ -67,21 +70,21 @@ kinds:
   caption:
     treatments: [emphasis]
   kpi_row:
-    treatments: [emphasis, sentiment, icon_tiles, sparkline, status_dots, gradient, inverted_panel, accent_border, lift]
+    treatments: [emphasis, focus, sentiment, icon_tiles, sparkline, status_dots, gradient, inverted_panel, accent_border, lift]
   bullet_list:
     treatments: [emphasis, sentiment, highlight_text, icon_rows, accent_border, lift, header_icon]
     never: "icons, shapes, stacks or borders inside <Li> (for per-point icons use icon rows)"
   table:
-    treatments: [emphasis, sentiment, cell_fill, highlight_text, accent_border, lift, header_icon]
+    treatments: [emphasis, focus, sentiment, cell_fill, highlight_text, accent_border, lift, header_icon]
     never: "icons, logos, shapes, charts or stacks inside <Td> (cells hold text + inline tags only); borders on rows, cells or columns (mark a row with cell_fill)"
   chart:
     treatments: [series_color, accent_border, lift, header_icon]
     never: "anything inside <Chart> except its series"
   timeline:
-    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    treatments: [emphasis, focus, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on items (use the item's own color)"
   flow:
-    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    treatments: [emphasis, focus, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on items (use the item's own color)"
   tree:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
@@ -90,13 +93,13 @@ kinds:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on items (use the item's own color)"
   process_arrow:
-    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    treatments: [emphasis, focus, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on steps (use the step's own color)"
   pyramid:
     treatments: [emphasis, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on levels (use the level's own color)"
   card_grid:
-    treatments: [emphasis, sentiment, highlight_text, icon_tiles, inverted_panel, accent_border, lift]
+    treatments: [emphasis, focus, sentiment, highlight_text, icon_tiles, inverted_panel, accent_border, lift]
     never: "a bullet or icon list in place of the cards"
   layer:
     treatments: [emphasis, sentiment, accent_border, lift]

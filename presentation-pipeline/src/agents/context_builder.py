@@ -306,6 +306,13 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
             "Chart chartColors must be LITERAL hex (no $tokens). Use: "
             f"chartColors='{chart_colors}'"
         )
+        focus = theme_info.get("chart_focus")
+        if focus:
+            notes.append(
+                "One series or bar in focus (the one the headline names): give it "
+                f"{focus['focus']} and every other series {focus['rest']} (this palette's "
+                "accent and neutral grey)."
+            )
         if theme_info.get("is_dark"):
             notes.append(
                 "DARK theme: POM v10.3.0 draws chart axis text in black. Wrap "
