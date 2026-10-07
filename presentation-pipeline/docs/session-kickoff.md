@@ -21,6 +21,8 @@ roadmap phases 0–4 (`docs/roadmap-derived-components.md`) are history; their e
   named `feat/derived-blocks-<step>` (first one: `feat/derived-blocks-step0`, created 2026-10-06 for the
   planning session and step 0), and merges back into `feat/derived-blocks` only after the user approves
   the step. The test PC runs from the session branch until it is merged.
+  **Step 0 merged into `feat/derived-blocks` on 2026-10-07 (user; fast-forward to `2bf76d5`, which also carries the 1a
+  tooling, unwired).** 1a continues on `feat/derived-blocks-step0` or a new `feat/derived-blocks-1a` off the integration branch.
 
 ---
 

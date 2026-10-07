@@ -688,3 +688,12 @@ guard fault (the number is at its 28 px floor).
 **R1 replay (`output/fontexp6`): broken words 4, overlap slides 4** (step 0: 5 / 4; committed font-size work: 6 / 5):
 "₹59.8" and "Projected" now fit. Left: "Governance", "Recalculation", "Recommendation" (6-column table), "₹1.80".
 Fixture `tests/fixtures/shrink_guard/g4-pinned-columns.xml` + test; a second compile makes no guard edit.
+
+**Merged (user, 2026-10-07):** `feat/derived-blocks-step0` fast-forwarded into `feat/derived-blocks` at `2bf76d5` after a
+full unit run (690 pass, the 4 known failures). The merge carries step 0, the font-size work with the fit-grow fix, the
+node contract (D10) and variant commits of the parallel sessions, and the 1a tooling (unwired). The other sessions'
+uncommitted palette files were not part of it.
+
+**1a status (2026-10-07): built and dry-run, not complete.** Done: protocol (D11), choices (D12), all tooling, scripted and
+mechanical dry runs, prompt size. Open: the paid run (`deck-qbr-data` first, ≈ $0.11; then the other five, ≈ $0.8 in all;
+ask first), `node_test_score`, the blind marks (`node_test_sheet`), the verdict against the kill criteria.
