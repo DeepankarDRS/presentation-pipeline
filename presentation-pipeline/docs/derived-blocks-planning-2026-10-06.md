@@ -697,3 +697,24 @@ uncommitted palette files were not part of it.
 **1a status (2026-10-07): built and dry-run, not complete.** Done: protocol (D11), choices (D12), all tooling, scripted and
 mechanical dry runs, prompt size. Open: the paid run (`deck-qbr-data` first, ≈ $0.11; then the other five, ≈ $0.8 in all;
 ask first), `node_test_score`, the blind marks (`node_test_sheet`), the verdict against the kill criteria.
+
+### 1a paid run (test PC, 2026-10-07, commit `a2d0240`): measured, verdict waits for the blind marks
+
+32 slides, **$0.74** (estimate $0.8), first try only (D12); scored on this PC against arm A recompiled on the same compiler
+(`docs/eval/1a/summary.md`; raw run `output/1a-testpc2/`, gitignored).
+
+| # | Measure | Nodes | Off | Kill line | Result |
+|---|---|---|---|---|---|
+| 1 | Compliance, first try | **71 / 78 = 91.0%** counting dense 4's two components as failed (the scorer's 93% left them out); derived 97%, native 89%. Misses: 3 × `margin.*` on a ref tag (a spacing attribute the check is stricter about than it needs to be: 94.9% if allowed), 1 × `chartType` retyped, 1 × caption written by hand (bypassed), dense 4 (2) | – | ≥ 90% | pass, inside the ±7-point re-run zone |
+| 2 | Words inside nodes not in the plan | 0 | – | 0 | pass |
+| 3 | Broken words / overlap slides | 0 / 2 (dense 3 matrix labels, XTSY 8 native timeline with 20-word labels: the LLM kept `rail` though `cards` was offered) | 6 / 4 | ≤ off | pass |
+| 4 | Blind side-by-side | sheets `output/1a-testpc2/sheets` (30 pairs + 2 automatic losses) | | ≥ 0.6 | **waiting for the user's marks** |
+| 5 | Within-deck variety | 1.0 | 1.0 | ≥ off − 0.05 | pass |
+| 6 | Cross-deck sameness / house template (informational) | 0.6 (5 pairs) / 9.4% | 0.0 / 3.1% | – | reported: more alike across decks |
+| 7 | Tokens per slide (generator) | in 10,489, out 256, cached 2,396 | in 11,708, out 1,036, cached 724 | – | input −10%, output −75% |
+| 8 | Fallback | 2 of 32 did not compile: agency 2 (7 components, overfull, a box squashed to height 0), dense 4 (the LLM's hand-drawn layer used `fill="E2E8F0"` on a Shape, an error step 0 also needed a repair for; the normalizer does not fix it); 0 repairs by rule | – | – | counted as losses in measure 4 |
+| 9 | Variants | the LLM left the default on 73% of nodes; 4 × `cards`, 3 × `accent_top`, 2 × `tinted`, 1 × `quote` | – | – | – |
+
+Fairness note: arm A is step 0's final XML, after step 0's repairs; arm B is the first try only (D12). The asymmetry can
+only count against nodes. `NODE_NO_SIZE` (a ref tag without w / h / grow; code adds grow) appears on most slides:
+a prompt fix for step 2, not a compliance miss.
