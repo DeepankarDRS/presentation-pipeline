@@ -13,6 +13,8 @@ export const THEME_PALETTES: ThemePalette[] = [
   { id: 'violet-modern',    label: 'Violet Modern',    tone: 'Lavender with deep violet and coral',    mode: 'light', accent: '6D28D9', accentAlt: 'E8505B', surface: 'F5F2FF', surfaceAlt: 'FFFFFF', textMain: '2A1458', textMuted: '625A80', border: 'E4DDF7', chartColors: ['6D28D9', 'E8505B', 'A78BFA', '2A1458', 'F59E0B'] },
   { id: 'saascolor',        label: 'Saas Color',       tone: 'Navy on cream with orange + purple accents', mode: 'light', accent: 'F5821F', accentAlt: '673AB7', surface: 'F9F8F4', surfaceAlt: 'FFFFFF', textMain: '041E42', textMuted: '4E5D6E', border: 'E4E2D8', chartColors: ['F5821F', '673AB7', 'B39DDB', '2E7D32', 'A03B24'] },
   { id: 'navy-orange',      label: 'Navy Orange',      tone: 'Navy on white, orange + purple accents', mode: 'light', accent: 'F7941D', accentAlt: '673AB7', surface: 'FFFFFF', surfaceAlt: 'F4F3F0', textMain: '112340', textMuted: '5A6578', border: 'E8E6E3', chartColors: ['F7941D', '673AB7', 'B39DDB', '95A5B6', '2E7D32'] },
+  { id: 'gj-h1',            label: 'GJ H1 Deck',       tone: 'Mint-grey with deep emerald, tomato-red and amber', mode: 'light', accent: '0D6B4E', accentAlt: '34D399', surface: 'F0F5F3', surfaceAlt: 'FFFFFF', textMain: '141F1C', textMuted: '5F706B', border: 'D5DDD9', chartColors: ['0D6B4E', '3B82F6', 'F59E0B', '94A3B8', '34D399'] },
+  { id: 'claude-cream',     label: 'Claude Cream',     tone: 'Warm cream paper, slate ink and a single clay accent', mode: 'light', accent: 'C4623F', accentAlt: 'D97757', surface: 'F0EEE6', surfaceAlt: 'FFFFFF', textMain: '141413', textMuted: '6B6A62', border: 'DDD9CC', chartColors: ['C4623F', '141413', 'B0AEA5', 'D4A27F', '3F7D4E'] },
   { id: 'graphite-mono',    label: 'Graphite Mono',    tone: 'Pure white and charcoal, electric blue', mode: 'light', accent: '0066FF', accentAlt: '6B7280', surface: 'FFFFFF', surfaceAlt: 'F2F3F5', textMain: '2C2C2C', textMuted: '5F6368', border: 'E1E3E6', chartColors: ['0066FF', '2C2C2C', '9CA3AF', '60A5FA', '4B5563'] },
   { id: 'graphite-dark',    label: 'Graphite Dark',    tone: 'Neutral blue-dark executive',            mode: 'dark',  accent: '60A5FA', accentAlt: '38BDF8', surface: '0F1729', surfaceAlt: '1E2A44', textMain: 'F1F5F9', textMuted: 'AAB7C7', border: '36455F', chartColors: ['60A5FA', '34D399', 'FBBF24', 'A78BFA', 'F472B6'] },
   { id: 'midnight-indigo',  label: 'Midnight Indigo',  tone: 'Deep indigo dark',                       mode: 'dark',  accent: '818CF8', accentAlt: 'A5B4FC', surface: '12122A', surfaceAlt: '232346', textMain: 'EEF0FB', textMuted: 'AAAECF', border: '3A3A63', chartColors: ['818CF8', '34D399', 'FBBF24', 'F472B6', '38BDF8'] },
@@ -25,7 +27,8 @@ export const THEME_MOODS: Record<string, ThemeMood> = {
   'corporate-slate': 'cool', 'sky-minimal': 'cool', 'graphite-mono': 'cool',
   'teal-slate': 'warm', 'forest-editorial': 'warm', 'warm-editorial': 'warm', 'amber-mono': 'warm',
   'emerald-clean': 'bold', 'rose-report': 'bold', 'violet-modern': 'bold',
-  'saascolor': 'brand', 'navy-orange': 'brand',
+  'saascolor': 'brand', 'navy-orange': 'brand', 'gj-h1': 'brand',
+  'claude-cream': 'warm',
 };
 
 export const STEP_LABELS: Record<string, string> = {

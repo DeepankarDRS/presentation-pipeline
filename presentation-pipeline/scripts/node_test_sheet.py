@@ -83,7 +83,7 @@ def tally(folder: Path) -> dict:
     wins = ties = 0
     for m in marks:
         c = m["choice"].strip()
-        if c == "=":
+        if c.lower() in ("=", "same", "equal", "tie"):
             ties += 1
         elif c.isdigit() and int(c) == key[m["pair"]]["nodes_side"]:
             wins += 1
