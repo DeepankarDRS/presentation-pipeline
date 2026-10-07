@@ -41,13 +41,15 @@
 #   all_titles_numbered_ok   no card already starts with its own number or phase tag
 #                            ("Phase 1: ..."), which the numerals would repeat
 #   has_tones         at least one item carries a non-neutral tone (see Tones)
+#   chart_is_bar      the plan's chart_type is bar (POM's pie / doughnut / line / area / radar
+#                     have no bars to label or turn)
 #
 # Emphasis sources (in order; the first that names an item wins):
 #   design_hint   the planner's hint names the item next to inverted / featured /
 #                 highlight (today's `_named_in_hint`, hint-capabilities inverted_panel)
-#   headline      the slide headline contains the item's value or label (KPI only)
-#   destination   the last step of an ordered sequence (user rule 2026-09-29)
-#   priority      matrix cells the plan marks as priority (user rule 2026-09-29)
+#   destination   the last step of an ordered sequence (explicit user rule 2026-09-29)
+#   priority      matrix cells the plan marks as priority (explicit user rule 2026-09-29)
+#   Nothing else singles an item out: no headline matching, no position (2026-10-07, user).
 #
 # Tones (added 2026-10-06): the slide component planner writes one tone per item,
 # from the meaning of the number, not its direction (churn down = good):
@@ -68,7 +70,7 @@ blocks:
     tag: KpiRow
     family: derived
     plan_kind: kpi_row
-    emphasis_from: [design_hint, headline]
+    emphasis_from: [design_hint]
     variants:
       plain:
         prompt: "light tiles, numbers in ink"
@@ -175,8 +177,8 @@ blocks:
     plan_kind: chart
     variants:
       native:     {prompt: "the chart as drawn"}
-      labelled:   {prompt: "values on the bars, one bar highlighted", draw: block}   # POM's Chart has no data labels
-      horizontal: {prompt: "horizontal bars for long category names", draw: block}   # nor horizontal bars
+      labelled:   {prompt: "values on the bars, one bar highlighted", draw: block, requires: [chart_is_bar], fallback: native}   # POM's Chart has no data labels
+      horizontal: {prompt: "horizontal bars for long category names", draw: block, requires: [chart_is_bar], fallback: native}   # nor horizontal bars
 
   bullet_list:
     tag: Ul

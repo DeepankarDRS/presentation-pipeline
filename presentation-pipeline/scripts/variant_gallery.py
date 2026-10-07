@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -54,25 +55,55 @@ def first_ok(bg: str, candidates: list[str], need: float = 4.5) -> str:
     return next((c for c in candidates if contrast(c, bg) >= need), "FFFFFF" if _lum(bg) < 0.4 else "000000")
 
 
+def ink(color: str, toward: str, bgs: list[str], need: float = 4.5) -> str:
+    """color moved toward `toward` (a palette text colour) in 10% steps until it reads on every bg."""
+    for k in range(11):
+        c = mix(color, toward, k / 10)
+        if all(contrast(c, bg) >= need for bg in bgs):
+            return c
+    return toward
+
+
+def fill(color: str, base: str, readers: list[str], start: float = 0.88, need: float = 4.5) -> str:
+    """color mixed toward the slide colour `base` (from `start`) until every reader text reads on it."""
+    k = start
+    while k < 1 and any(contrast(r, mix(color, base, k)) < need for r in readers):
+        k = min(1.0, k + 0.02)
+    return mix(color, base, k)
+
+
 def tokens(name: str) -> dict[str, str]:
+    """The palette's colours plus the role colours the blocks use, all derived from that palette:
+    mixes of its own colours, moved until the text on them reaches 4.5:1 (D1, look spec §2)."""
     pal = yaml.safe_load((ROOT / "src/knowledge/theme/palettes.yaml").read_text(encoding="utf-8"))["palettes"][name]
     t = {k: pal[k] for k in ("surface", "surfaceAlt", "accent", "accentAlt", "positive", "negative",
                              "warning", "textMain", "textMuted", "border")}
-    # panelFill (finding V8): surfaceAlt when it shows against the slide, else surface stepped toward ink
-    t["panelFill"] = t["surfaceAlt"] if contrast(t["surfaceAlt"], t["surface"]) >= 1.12 else mix(t["surface"], t["textMain"], 0.06)
-    t["panelInk"] = first_ok(t["panelFill"], [t["textMain"], "000000"])
-    t["darkFill"] = t["textMain"] if pal.get("mode", "light") == "light" else mix(t["surface"], "FFFFFF", 0.08)
-    t["onDark"] = first_ok(t["darkFill"], [t["surface"], "FFFFFF"])
-    t["accentOnDark"] = first_ok(t["darkFill"], [t["accent"], t["accentAlt"], mix(t["accent"], "FFFFFF", 0.5), "FFFFFF"])
-    t["onAccent"] = first_ok(t["accent"], ["FFFFFF", t["textMain"], "000000"])
-    tint = mix(t["accent"], t["surface"], 0.88)  # accentTint (decision V1): darkened until labels read
-    while min(contrast(t["textMain"], tint), contrast(t["textMuted"], tint)) < 4.5 and _lum(tint) > 0.3:
-        tint = mix(tint, t["textMain"], 0.04)
-    t["accentTint"] = tint
-    # tone tints + tone ink (V9): a tinted card per tone, its label readable on the tint
+    dark = pal.get("mode", "light") == "dark"
+    # panelFill (V8): surfaceAlt when it shows against the slide, else surface stepped toward the
+    # text colour, as far as muted text on it still reads
+    if contrast(t["surfaceAlt"], t["surface"]) >= 1.12:
+        t["panelFill"] = t["surfaceAlt"]
+    else:
+        steps = [mix(t["surface"], t["textMain"], s / 100) for s in (8, 7, 6, 5, 4, 3)]
+        t["panelFill"] = next((c for c in steps if contrast(t["textMuted"], c) >= 4.5), t["surfaceAlt"])
+    t["panelInk"] = ink(t["textMain"], t["textMain"], [t["panelFill"]])
+    t["darkFill"] = mix(t["surface"], t["textMain"], 0.12) if dark else t["textMain"]
+    t["onDark"] = first_ok(t["darkFill"], [t["surface"], t["surfaceAlt"], t["textMain"]])
+    t["accentOnDark"] = ink(t["accent"], t["onDark"], [t["darkFill"]])
+    # accentSolid + onAccent: a solid accent fill with text on it (the hero pill). A mid-tone accent
+    # that neither light nor dark text reads on is darkened toward the text colour until light text reads
+    t["accentSolid"], t["onAccent"] = t["accent"], first_ok(t["accent"], [t["surface"], t["surfaceAlt"], t["textMain"]])
+    if contrast(t["onAccent"], t["accent"]) < 4.5:
+        t["onAccent"] = t["surface"] if not dark else t["textMain"]
+        t["accentSolid"] = ink(t["accent"], t["darkFill"] if not dark else t["surface"], [t["onAccent"]])
+    # accentInk: the accent as small text (tags, kickers) on the slide and on panels
+    t["accentInk"] = ink(t["accent"], t["textMain"], [t["surface"], t["panelFill"], t["surfaceAlt"]])
+    # accentTint (V1): the accent mixed toward the slide colour until body and muted text read on it
+    t["accentTint"] = fill(t["accent"], t["surface"], [t["textMain"], t["textMuted"]], 0.8 if dark else 0.88)
+    # tone tints + tone inks (V9): a tinted card per tone; the tone as text on its tint and on panels
     for tone in ("positive", "negative", "warning"):
-        t[tone + "Tint"] = mix(t[tone], t["surface"], 0.9)
-        t[tone + "Ink"] = first_ok(t[tone + "Tint"], [t[tone], mix(t[tone], t["textMain"], 0.35), t["textMain"]])
+        t[tone + "Tint"] = fill(t[tone], t["surface"], [t["textMain"], t["textMuted"]], 0.8 if dark else 0.9)
+        t[tone + "Ink"] = ink(t[tone], t["textMain"], [t[tone + "Tint"], t["panelFill"], t["surface"]])
     return t
 
 
@@ -95,10 +126,18 @@ def text(s: str, size: int, color: str, bold: bool = False, extra: str = "") -> 
     return f'<Text fontFamily="{SANS}" fontSize="{size}"{b} color="{color}" lineHeight="1.25"{extra}>{esc(s)}</Text>'
 
 
+VALUE = re.compile(r"^(?P<head>[+\-\u2212~<>\u2248]?[\u20b9$\u20ac\u00a3\u00a5]?\d[\d,]*(?:\.\d+)?)\s?(?P<unit>%|x|\u00d7|[A-Za-z]{1,3})?$")
+
+
+def split_value(value: str) -> tuple[str, str]:
+    """(number, unit) for a KPI value (look spec §7c, V15); no full match -> (value, "")."""
+    m = VALUE.match(value.strip())
+    return (m["head"], m["unit"] or "") if m else (value, "")
+
+
 def number(value: str, size: int, color: str) -> str:
-    """Bold number; a trailing unit (x, %, Cr, K) as a 0.45x span, as render.py big_number."""
-    head = value.rstrip("xX%CrK")
-    unit = value[len(head):]
+    """Bold number; its unit (%, x, ×, Cr, B, K …) as a 0.45x span; anything else drawn whole."""
+    head, unit = split_value(value)
     span = f'<Span fontSize="{round(size * 0.45)}">{esc(unit)}</Span>' if unit else ""
     return f'<Text fontFamily="{SANS}" fontSize="{size}" bold="true" color="{color}" lineHeight="1.2">{esc(head)}{span}</Text>'
 
@@ -110,7 +149,7 @@ def code(lines: str, size: int = 13) -> str:
 
 
 def header(kicker: str, headline: str, sub: str) -> str:
-    return (f'<VStack gap="6">{label(kicker, "$accent")}{text(headline, 30, "$textMain", True)}'
+    return (f'<VStack gap="6">{label(kicker, "$accentInk")}{text(headline, 30, "$textMain", True)}'
             f'{text(sub, 15, "$textMuted")}</VStack>')
 
 
@@ -121,7 +160,7 @@ def slide(t: dict, body: str) -> str:
 
 def variant_caption(name: str, slot: str, note: str) -> str:
     return (f'<Text fontFamily="{SANS}" fontSize="16" color="$textMain"><B>{esc(name)}</B>   '
-            f'<Span fontFamily="{MONO}" fontSize="12" color="$accent">{esc(slot)}</Span>   '
+            f'<Span fontFamily="{MONO}" fontSize="12" color="$accentInk">{esc(slot)}</Span>   '
             f'<Span fontSize="12" color="$textMuted">{esc(note)}</Span></Text>')
 
 
@@ -129,7 +168,7 @@ def variant_caption(name: str, slot: str, note: str) -> str:
 
 KPIS = [("Revenue", "₹4.2Cr", "+18% vs H2"), ("Blended ROAS", "0.33x", "Target 1.0x"),
         ("Ad spend", "₹12.7Cr", "+42% vs H2"), ("Orders", "18.4K", "")]
-FOCUS = "Blended ROAS"   # the headline names it (decision V3)
+FOCUS = "Blended ROAS"   # the design hint names it
 
 
 def kpi_tile(lab: str, val: str, note: str, fill: str, ink: str, lab_c: str, note_c: str, fs: int = 34,
@@ -153,7 +192,7 @@ def kpi_row(variant: str) -> str:
 
 def kpi_hero() -> str:
     pill = (f'<HStack padding.left="12" padding.right="12" padding.top="4" padding.bottom="4" '
-            f'backgroundColor="$accent" borderRadius="12">{label("Target 1.0x", "$onAccent")}</HStack>')
+            f'backgroundColor="$accentSolid" borderRadius="12">{label("Target 1.0x", "$onAccent")}</HStack>')
     return (f'<HStack grow="1" padding="18" gap="28" backgroundColor="$darkFill" alignItems="center">'
             f'<VStack gap="10" alignItems="start">{label("Blended ROAS · H1 FY27", "$accentOnDark")}{pill}</VStack>'
             f'{number("0.33x", 72, "$onDark")}'
@@ -170,7 +209,7 @@ def kpi_slide(t: dict) -> str:
                  + f'<VStack grow="1" gap="14" alignItems="stretch">'
                  + block("plain", "default · light tiles", kpi_row("plain"))
                  + block("filled", "every tile accent-tinted", kpi_row("filled"))
-                 + block("inverted", "3+ tiles · the tile the headline / hint names", kpi_row("inverted"))
+                 + block("inverted", "3+ tiles · the tile the design hint names", kpi_row("inverted"))
                  + block("hero", "exactly 1 value → else falls back to inverted", kpi_hero())
                  + "</VStack>")
 
@@ -225,7 +264,7 @@ EXPANDED = """\
 
 def syntax_slide(t: dict) -> str:
     def col(title: str, who: str, body: str, w: int) -> str:
-        return (f'<VStack w="{w}" grow="{w}" gap="8" alignItems="stretch">{label(who, "$accent")}'
+        return (f'<VStack w="{w}" grow="{w}" gap="8" alignItems="stretch">{label(who, "$accentInk")}'
                 f'{text(title, 17, "$textMain", True)}'
                 f'<VStack grow="1" padding="16" gap="0" backgroundColor="$darkFill">{code(body)}</VStack></VStack>')
     arrow = f'<VStack w="28" alignItems="center" justifyContent="center"><Icon name="arrow-right" size="24" color="$textMuted" /></VStack>'
@@ -271,9 +310,9 @@ def grid(variant: str) -> str:
     cards = []
     for i, (ti, bo) in enumerate(CARDS):
         if variant == "filled":
-            cards.append(card(i, ti, bo, "$panelFill", "$panelInk", "$textMuted", "$accent", False, title_fs=16))
+            cards.append(card(i, ti, bo, "$panelFill", "$panelInk", "$textMuted", "$accentInk", False, title_fs=16))
         else:
-            cards.append(card(i, ti, bo, "$surface", "$textMain", "$textMuted", "$accent", True,
+            cards.append(card(i, ti, bo, "$surface", "$textMain", "$textMuted", "$accentInk", True,
                               numeral=variant == "numerals", title_fs=16))
     return f'<HStack grow="1" gap="10" alignItems="stretch">{"".join(cards)}</HStack>'
 
@@ -308,7 +347,7 @@ def steps_cards() -> str:
     for k, (tag, ti, bo) in enumerate(STEPS):
         dest = k == len(STEPS) - 1
         fill, ink, body_c, tag_c = (("$darkFill", "$onDark", "$onDark", "$accentOnDark") if dest
-                                    else ("$panelFill", "$panelInk", "$textMuted", "$accent"))
+                                    else ("$panelFill", "$panelInk", "$textMuted", "$accentInk"))
         top = "$accentOnDark" if dest else "$accent"
         out.append(f'<VStack w="1" grow="1" padding="14" gap="6" backgroundColor="{fill}" '
                    f'borderTop.color="{top}" borderTop.width="3">{label(tag, tag_c)}{text(ti, 17, ink, True)}'
@@ -327,7 +366,7 @@ def steps_rail() -> str:
         rows.append(f'<HStack grow="1" gap="14" alignItems="stretch">'
                     f'<VStack w="16" alignItems="center"><Shape shapeType="ellipse" w="{dot}" h="{dot}" '
                     f'fill.color="$accent" />{line}</VStack>'
-                    f'<VStack grow="1" gap="2">{label(tag, "$accent")}'
+                    f'<VStack grow="1" gap="2">{label(tag, "$accentInk")}'
                     f'{text(ti, 15, "$textMain", True)}{text(bo, 13, "$textMuted")}'
                     f'</VStack></HStack>')
     return f'<VStack grow="1" gap="0" alignItems="stretch">{"".join(rows)}</VStack>'
@@ -337,7 +376,7 @@ def steps_columns() -> str:
     segs = "".join(f'<Shape shapeType="rect" w="1" grow="1" h="8" fill.color="{"$accent" if k == len(STEPS) - 1 else "$accentTint"}" />'
                    for k in range(len(STEPS)))
     cols = "".join(f'<VStack w="1" grow="1" gap="6">'
-                   f'<Text fontFamily="{SANS}" fontSize="30" bold="true" color="{"$accent" if k == len(STEPS) - 1 else "$border"}" lineHeight="1">{k + 1:02d}</Text>'
+                   f'<Text fontFamily="{SANS}" fontSize="30" bold="true" color="{"$accentInk" if k == len(STEPS) - 1 else "$border"}" lineHeight="1">{k + 1:02d}</Text>'
                    f'{text(ti, 15, "$textMain", True)}{text(bo, 13, "$textMuted")}</VStack>'
                    for k, (_, ti, bo) in enumerate(STEPS))
     return (f'<VStack grow="1" gap="12" alignItems="stretch"><HStack gap="4">{segs}</HStack>'
@@ -404,7 +443,7 @@ def cards_accent_top() -> str:
         b = "" if contrast_card else ' border.color="$border" border.width="1"'
         out.append(f'<VStack w="1" grow="1" padding="14" gap="6" backgroundColor="{fill}"{b} '
                    f'borderTop.color="{top}" borderTop.width="4">'
-                   f'{label(tag, "$textMain" if contrast_card else "$accent")}{text(ti, 20, "$textMain", True)}</VStack>')
+                   f'{label(tag, "$textMain" if contrast_card else "$accentInk")}{text(ti, 20, "$textMain", True)}</VStack>')
     return f'<HStack grow="1" gap="10" alignItems="stretch">{"".join(out)}</HStack>'
 
 
