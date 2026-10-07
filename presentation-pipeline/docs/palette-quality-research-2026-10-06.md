@@ -307,3 +307,10 @@ series stands out from grey, the dark highlighted row is readable (before: white
 Generator contract +≈ 490 tokens per slide (+5%; budgets in `test_context_builder.py` raised).
 Baseline for the paid check: step-0 LLM output has **117 literal colours on 18 of 43 slides**; target 0.
 Not done: chart lightness rule (§5.4), colour-blind lightness check (§5.5).
+
+**Paid check (test PC, 2026-10-07, commit `3e336e7`, `deck-qbr-data` × 1 on `corporate-slate`, $0.19, estimate was $0.11):**
+5/5 compiled first time, 0 repairs, 0 invented numbers. Typed hex colours **0** (same case in step 0: 5 on 2 slides,
+`EEF2FD` callout tint and `2563EB`). New tokens used: `$accentSoft` ×5, `$accentText` ×8, `$positiveText` ×1; one focus
+item per component (ARR tile, Enterprise row). One `LOW_CONTRAST`: `$positive` (not `$positiveText`) on the
+`$accentSoft` tile, 4.19:1. Seen by eye, not colour: KPI tiles stretched to 540 px with the content in the middle and the
+table slide half empty (`low_fill_pct` 45.5) — for items 2 and 5. Raw bundle `output/colour-roles/` (gitignored).
