@@ -23,6 +23,7 @@ from typing import Any
 
 from src.compiler.compiler_client import CompilerError, compile_xml, validate_xml
 from src.compiler.content_model import nesting_compile_failure
+from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
 from src.compiler.normalizer import ensure_single_theme, normalize_xml, pre_validate
 from src.state import PresentationState
@@ -142,6 +143,15 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     except Exception as exc:
         logger.warning(f"validator: layout audit crashed, skipping: {exc}")
         layout_issues = []
+    if compile_result["ok"]:
+        # what is drawn vs the box that owns it (report only, 2026-10-07)
+        try:
+            plans = state.get("slide_plans") or []
+            idx = state.get("current_slide_index", 0)
+            slide_type = (plans[idx] or {}).get("slide_type", "") if idx < len(plans) else ""
+            layout_issues = layout_issues + audit_run_folder(output_dir, slide_type=slide_type)
+        except Exception as exc:
+            logger.warning(f"validator: geometry audit crashed, skipping: {exc}")
     if layout_issues:
         logger.info(f"validator: layout audit — {len(layout_issues)} issue(s)")
 

@@ -241,6 +241,7 @@ async function compile() {
   const fonts = loadFonts();
   try {
     let built;
+    let builtXml = xml;
     try {
       built = await buildPptx(xml, SLIDE_SIZE, { fonts });
     } catch (error) {
@@ -248,6 +249,7 @@ async function compile() {
       // the fitted XML failed: a fit-grow bug must not cost a retry
       result.fitGrow.push(`fitted XML failed to build (${error && error.message ? error.message : String(error)}); compiled the original`);
       built = await buildPptx(originalXml, SLIDE_SIZE, { fonts });
+      builtXml = originalXml;
     }
     const { pptx, diagnostics } = built;
 
@@ -274,6 +276,22 @@ async function compile() {
     }
     await writeFile(pptxPath, buffer);
 
+    // the boxes POM drew into, for the component-level check (src/compiler/geometry_audit.py).
+    // Never fatal: a missing geometry.json only skips that report.
+    if (process.env.POM_GEOMETRY !== "0") {
+      try {
+        const { geometry } = await import("./geometry.js");
+        const geoPath = path.join(outputDir, "geometry.json");
+        await writeFile(geoPath, JSON.stringify(await geometry(builtXml)), "utf8");
+        result.geometryPath = path.resolve(geoPath);
+      } catch (error) {
+        result.warnings = [...(result.warnings ?? []), {
+          code: "GEOMETRY_SKIPPED",
+          message: `geometry dump failed (${error && error.message ? error.message : String(error)})`,
+        }];
+      }
+    }
+
     result.status = "success";
     result.pptxPath = path.resolve(pptxPath);
   } catch (error) {
@@ -283,7 +301,9 @@ async function compile() {
   }
 
   await writeResult();
-  process.exit(result.status === "success" ? 0 : 1);
+  // exitCode, not exit(): a forced exit while POM's layout handles close crashes Node on Windows
+  // (UV_HANDLE_CLOSING assertion, seen after the geometry pass, 2026-10-07)
+  process.exitCode = result.status === "success" ? 0 : 1;
 }
 
 const main = validateOnly ? validate : compile;

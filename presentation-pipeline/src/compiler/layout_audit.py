@@ -364,7 +364,10 @@ def _check_table_width(root: ET.Element, issues: list[dict[str, str]]) -> None:
 # of its own (inherits POM's default) is not judged, to keep false alarms out.
 MIN_CONTRAST = 4.5
 # codes recorded for scoring only: never shown to the critic, so they never trigger a repair
-REPORT_ONLY_CODES = {"LOW_CONTRAST", "LITERAL_COLOR"}
+REPORT_ONLY_CODES = {"LOW_CONTRAST", "LITERAL_COLOR",
+                     # what is drawn vs its box (src/compiler/geometry_audit.py, 2026-10-07)
+                     "GEOM_SPILL", "GEOM_COLLISION", "GEOM_OFF_SLIDE", "GEOM_TEXT_OVERFLOW",
+                     "GEOM_CARD_EMPTY", "GEOM_BOX_EMPTY", "GEOM_SLIDE_SPARSE"}
 MIN_CONTRAST_LARGE = 3.0
 _TEXT_TAGS = {"Text", "Li", "Td", "Shape"}
 
