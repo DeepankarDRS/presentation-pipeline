@@ -260,8 +260,18 @@ def main() -> None:
                 "git_commit": _git("rev-parse", "--short", "HEAD"), "git_dirty": bool(_git("status", "--porcelain")),
                 "font": font, "fit_grow": fit_grow, "repairs": a.repairs, "slides_file": str(a.slides), "elapsed_s": round(time.time() - t0, 1),
                 "calls": calls, "cost_usd": round(sum(c["cost"] for c in calls), 4), "results": results}
-    (out_root / "node-test-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"{len(results)} slides, {sum(r['compiled'] for r in results)} compiled, ${manifest['cost_usd']} -> {out_root}")
+    mf = out_root / "node-test-manifest.json"
+    if mf.exists():   # a run of some cases (one case first, then the rest) adds to the label's earlier runs
+        old = json.loads(mf.read_text(encoding="utf-8"))
+        ran = {r["case"] for r in results}
+        manifest["results"] = [r for r in old.get("results", []) if r["case"] not in ran] + results
+        manifest["calls"] = [c for c in old.get("calls", []) if c["case"] not in ran] + calls
+        manifest["cost_usd"] = round(sum(c["cost"] for c in manifest["calls"]), 4)
+        manifest["runs"] = old.get("runs", [{"git_commit": old.get("git_commit"), "cases": sorted({r["case"] for r in old.get("results", [])})}])
+    manifest.setdefault("runs", []).append({"git_commit": manifest["git_commit"], "cases": sorted({r["case"] for r in results})})
+    mf.write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"{len(results)} slides, {sum(r['compiled'] for r in results)} compiled, ${round(sum(c['cost'] for c in calls), 4)} this run, "
+          f"${manifest['cost_usd']} for the label ({len(manifest['results'])} slides) -> {out_root}")
     if a.bundle:
         z = out_root.with_suffix(".zip")
         with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as zf:
