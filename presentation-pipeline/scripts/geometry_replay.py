@@ -41,6 +41,15 @@ def _pom_codes(result: dict) -> list[dict]:
     return out
 
 
+def _brief(case: str) -> str:
+    """The case's request (tests/cases/<case>.yaml), for the placeholder check; '' when unknown."""
+    import yaml
+    path = ROOT / "tests" / "cases" / f"{case.split('__r')[0]}.yaml"
+    if not path.exists():
+        return ""
+    return str((yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("request", ""))
+
+
 def _render_for(xml: Path) -> str:
     # <bundle>/slides/<case>/slide-N/input.xml -> <bundle>/renders/<case>/slide-N.png
     bundle, case, slide = xml.parents[3], xml.parents[1].name, xml.parent.name
@@ -58,7 +67,7 @@ def run(roots: list[Path], out: Path) -> list[dict]:
         subprocess.run(["node", str(ROOT / "src" / "node" / "compile-pom.js"), str(xml), str(dest)],
                        capture_output=True, timeout=300)
         result = json.loads((dest / "compile-result.json").read_text(encoding="utf-8"))
-        issues = audit_run_folder(dest) if result.get("status") == "success" else []
+        issues = audit_run_folder(dest, brief=_brief(case)) if result.get("status") == "success" else []
         rows.append({"bundle": bundle, "case": case, "slide": slide, "compiled": result.get("status") == "success",
                      "render": _render_for(xml), "issues": issues + _pom_codes(result)})
         print(f"{case}/{slide}: {Counter(i['code'] for i in rows[-1]['issues']) or 'clean'}")
@@ -69,7 +78,8 @@ def reaudit(out: Path) -> list[dict]:
     rows = json.loads((out / "results.json").read_text(encoding="utf-8"))
     for r in rows:
         pom = [i for i in r["issues"] if i["severity"] == "pom"]
-        r["issues"] = audit_run_folder(out / "slides" / r["bundle"] / r["case"] / r["slide"]) + pom
+        r["issues"] = audit_run_folder(out / "slides" / r["bundle"] / r["case"] / r["slide"],
+                                       brief=_brief(r["case"])) + pom
     return rows
 
 

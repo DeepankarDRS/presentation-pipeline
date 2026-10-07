@@ -149,7 +149,8 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             plans = state.get("slide_plans") or []
             idx = state.get("current_slide_index", 0)
             slide_type = (plans[idx] or {}).get("slide_type", "") if idx < len(plans) else ""
-            layout_issues = layout_issues + audit_run_folder(output_dir, slide_type=slide_type)
+            layout_issues = layout_issues + audit_run_folder(
+                output_dir, slide_type=slide_type, brief=state.get("raw_request") or "")
         except Exception as exc:
             logger.warning(f"validator: geometry audit crashed, skipping: {exc}")
     if layout_issues:

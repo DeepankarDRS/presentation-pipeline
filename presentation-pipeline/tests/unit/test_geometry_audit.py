@@ -132,3 +132,33 @@ def test_too_dense_slide_is_left_and_reported(tmp_path):
     xml = f'<Slide><VStack w="1280" h="720" padding="40" gap="20">{body}</VStack></Slide>'
     _, result = _fit(xml, tmp_path)
     assert any(w["code"] == "SLIDE_DENSE" for w in result.get("warnings") or [])
+
+
+def test_placeholders_and_tiers():
+    from src.compiler.geometry_audit import _placeholders
+    brief = "compare [Platform B] and [Platform A]"
+    assert _placeholders("₹X.XX Cr", brief) == ["X.XX"]
+    assert _placeholders("[Platform B] CPC", brief) == []          # the brief's own anonymised name
+    assert _placeholders("[Insert chart here]", brief) == ["[Insert chart here]"]
+    assert _placeholders("Insight 1 — lead with the number", brief) == ["Insight 1"]
+    assert _placeholders("XTSY growth, ROAS 0.33x, XXL", brief) == []
+
+
+def test_squeezed_table_spill_is_tier_error(tmp_path):
+    xml = (f'<Slide><VStack w="1280" h="720" padding="40" gap="20">'
+           f'<VStack h="120" backgroundColor="FFFFFF"><Table>{_rows(5)}</Table></VStack>'
+           f'<VStack h="80" backgroundColor="FFFFFF"><Text>next</Text></VStack></VStack></Slide>')
+    src = tmp_path / "in.xml"
+    src.write_text(xml, encoding="utf-8")
+    subprocess.run(["node", str(COMPILER), str(src), str(tmp_path / "out")], capture_output=True,
+                   timeout=120, check=True, env={**os.environ, "POM_FIT_GROW": "0"})
+    spill = [i for i in audit_run_folder(tmp_path / "out") if i["code"] == "GEOM_SPILL"]
+    assert spill and spill[0]["tier"] == "error"
+
+
+def test_invisible_text_is_tier_error():
+    from src.compiler.layout_audit import audit_layout
+    xml = ('<Theme surface="FFFFFF" /><Slide><VStack w="1280" h="720" backgroundColor="FFFFFF">'
+           '<Text color="F8F8F8">white on white</Text><Text color="9A9A9A">grey on white</Text></VStack></Slide>')
+    tiers = {i["message"].split(" on ")[0].split()[-1]: i["tier"] for i in audit_layout(xml) if i["code"] == "LOW_CONTRAST"}
+    assert tiers == {"F8F8F8": "error", "9A9A9A": "warning"}

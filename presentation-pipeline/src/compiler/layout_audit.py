@@ -367,8 +367,9 @@ MIN_CONTRAST = 4.5
 REPORT_ONLY_CODES = {"LOW_CONTRAST", "LITERAL_COLOR",
                      # what is drawn vs its box (src/compiler/geometry_audit.py, 2026-10-07)
                      "GEOM_SPILL", "GEOM_COLLISION", "GEOM_OFF_SLIDE", "GEOM_TEXT_OVERFLOW",
-                     "GEOM_CARD_EMPTY", "GEOM_BOX_EMPTY", "GEOM_SLIDE_SPARSE"}
+                     "GEOM_CARD_EMPTY", "GEOM_BOX_EMPTY", "GEOM_SLIDE_SPARSE", "PLACEHOLDER_TEXT"}
 MIN_CONTRAST_LARGE = 3.0
+INVISIBLE_CONTRAST = 1.5  # below this the text cannot be read at all (tier error, 2026-10-07)
 _TEXT_TAGS = {"Text", "Li", "Td", "Shape"}
 
 
@@ -443,6 +444,8 @@ def _check_contrast(root: ET.Element, issues: list[dict[str, str]]) -> None:
         issues.append({
             "severity": "medium",
             "code": "LOW_CONTRAST",
+            # near-invisible text (dark on dark, white on a white card) is a measured defect
+            "tier": "error" if hit["ratio"] < INVISIBLE_CONTRAST else "warning",
             "message": f'{hit["n"]} text(s) in {fg} on #{"".join(f"{c:02X}" for c in _bg)} '
                        f'at contrast {hit["ratio"]:.2f} (e.g. "{hit["sample"]}"). '
                        f"Fix: a darker or lighter text colour, or another background.",

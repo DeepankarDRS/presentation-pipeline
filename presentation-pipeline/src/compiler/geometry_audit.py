@@ -26,6 +26,7 @@ Report only (layout_audit.REPORT_ONLY_CODES): measured first, no repair.
 from __future__ import annotations
 
 import json
+import re
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,8 @@ _EMU = 9525
 TOL = 2.0                 # px: rounding between layout and pptx
 OWN_TOL = 4.0             # px: a drawn shape may start this far outside its box (text insets, rounding)
 COLLIDE_MIN = 4.0         # px: smaller overlaps are not visible (checked by eye, 2026-10-07)
+ERROR_PX = 10.0           # px: above this a spill / collision is a measured defect (tier error);
+                          # 4-10 px were borderline by eye -> tier warning, the critic confirms
 CARD_FILL_MIN = 0.55
 BOX_FILL_MIN = 0.5
 SLIDE_BOTTOM_MIN = 0.75
@@ -179,8 +182,32 @@ def _label(n: dict) -> str:
 
 # --- the audit ----------------------------------------------------------------------
 
+_PLACEHOLDER = re.compile(
+    r"\[[^\[\]\n]{1,40}\]"                       # [Platform B], [Brand], [Insert chart]
+    r"|(?<![\w])X+[.,]X+(?![\w])"                # X.XX, XX,XXX
+    r"|(?<![\w])XX+(?![\w])"                     # XX, XXX
+    r"|\b(?:TBD|TBC|TODO|lorem ipsum|placeholder)\b"
+    r"|\b(?:Insight|Metric|Point|Item) [0-9A-C]\b(?= ?[—:-])"
+    r"|\bMETRIC [A-C]\b",
+    re.IGNORECASE)
+
+
+def _placeholders(text: str, brief: str) -> list[str]:
+    """Placeholder-looking runs in drawn text; a bracketed name the brief itself uses
+    (an anonymised client: "[Platform B]") is content, not a placeholder."""
+    out = []
+    for m in _PLACEHOLDER.finditer(text or ""):
+        hit = m.group(0)
+        if hit.startswith("[") and hit.lower() in (brief or "").lower():
+            continue
+        if not hit.startswith("[") and hit.isupper() and hit.strip("X.,") and len(hit) > 3:
+            continue  # an acronym, not X-filler
+        out.append(hit)
+    return out
+
+
 def audit_geometry(geometry: dict[str, Any], pptx_path: str | Path, slide: int = 1,
-                   slide_type: str = "") -> list[dict[str, str]]:
+                   slide_type: str = "", brief: str = "") -> list[dict[str, str]]:
     tree = geometry["slides"][slide - 1]
     sw, sh = geometry["slideSize"]["w"], geometry["slideSize"]["h"]
     nodes: list[dict] = []
@@ -193,11 +220,19 @@ def audit_geometry(geometry: dict[str, Any], pptx_path: str | Path, slide: int =
     issues: list[dict[str, str]] = []
     seen: set[tuple] = set()
 
-    def add(code: str, severity: str, key: tuple, message: str) -> None:
+    def add(code: str, severity: str, key: tuple, message: str, px: float | None = None) -> None:
+        """tier: error = measured defect (> ERROR_PX, or always for PLACEHOLDER_TEXT): code fix or repair;
+        warning = borderline: the visual critic confirms it on the screenshot; info = fill, owned by code."""
         if (code,) + key in seen:
             return
         seen.add((code,) + key)
-        issues.append({"severity": severity, "code": code, "message": message})
+        if code in ("GEOM_CARD_EMPTY", "GEOM_BOX_EMPTY", "GEOM_SLIDE_SPARSE"):
+            tier = "info"
+        elif code == "PLACEHOLDER_TEXT" or (px is not None and px > ERROR_PX):
+            tier = "error"
+        else:
+            tier = "warning"
+        issues.append({"severity": severity, "code": code, "message": message, "tier": tier})
 
     owned: dict[int, list[dict]] = {}
     for s in shapes:
@@ -234,7 +269,8 @@ def audit_geometry(geometry: dict[str, Any], pptx_path: str | Path, slide: int =
                 add("GEOM_SPILL", "high", (owner["path"],),
                     f'{owner["type"]} {_label(owner)} draws past its card '
                     + ", ".join(f"{k} by {v}px" for k, v in past.items())
-                    + (f' (rows {s["dh"]:.0f}px in a {s["h"]:.0f}px frame)' if s["kind"] == "table" and s["dh"] > s["h"] + TOL else ""))
+                    + (f' (rows {s["dh"]:.0f}px in a {s["h"]:.0f}px frame)' if s["kind"] == "table" and s["dh"] > s["h"] + TOL else ""),
+                    px=max(past.values()))
         # R2: over another component's box
         for other in leaves:
             if other is owner or (owner["layer"] is not None and other["layer"] is owner["layer"]):
@@ -243,13 +279,13 @@ def audit_geometry(geometry: dict[str, Any], pptx_path: str | Path, slide: int =
             if ow > COLLIDE_MIN and oh > COLLIDE_MIN:
                 add("GEOM_COLLISION", "high", tuple(sorted((owner["path"], other["path"]))),
                     f'{owner["type"]} {_label(owner)} draws over {other["type"]} {_label(other)} '
-                    f"by {ow:.0f}x{oh:.0f}px")
+                    f"by {ow:.0f}x{oh:.0f}px", px=min(ow, oh))
         # R3: off the slide
         past = _past(drawn, (0, 0, sw, sh))
         if past:
             add("GEOM_OFF_SLIDE", "high", (owner["path"],),
                 f'{owner["type"]} {_label(owner)} draws off the slide '
-                + ", ".join(f"{k} by {v}px" for k, v in past.items()))
+                + ", ".join(f"{k} by {v}px" for k, v in past.items()), px=max(past.values()))
         # R4: text needs more lines than its frame holds
         if s.get("need") and s["need"] > s["h"] + 2 * s["line"]:
             add("GEOM_TEXT_OVERFLOW", "medium", (owner["path"], round(s["y"])),
@@ -265,7 +301,13 @@ def audit_geometry(geometry: dict[str, Any], pptx_path: str | Path, slide: int =
             ow, oh = _overlap(ra, rb)
             if ow > 4 and oh > 4 and not _contains(ra, rb) and not _contains(rb, ra):
                 add("GEOM_COLLISION", "high", ("text", round(a["x"]), round(a["y"]), round(b["x"]), round(b["y"])),
-                    f'text "{a["text"][:25]}" and text "{b["text"][:25]}" overlap by {ow:.0f}x{oh:.0f}px')
+                    f'text "{a["text"][:25]}" and text "{b["text"][:25]}" overlap by {ow:.0f}x{oh:.0f}px',
+                    px=min(ow, oh))
+
+    # placeholder text left on the slide (a recipe's "X.XX", "[Platform B]" not in the brief, TBD)
+    for s in shapes:
+        for hit in _placeholders(s["text"], brief):
+            add("PLACEHOLDER_TEXT", "high", ("ph", hit), f'placeholder text "{hit}" on the slide')
 
     # R5: fill — content (what is drawn inside) against the box it was given
     def content_span(members: list[dict]) -> float:
@@ -308,10 +350,10 @@ def _table_text_rows(shape: dict) -> float:
     return shape.get("text_h", 0.0)
 
 
-def audit_run_folder(folder: str | Path, slide_type: str = "") -> list[dict[str, str]]:
+def audit_run_folder(folder: str | Path, slide_type: str = "", brief: str = "") -> list[dict[str, str]]:
     """geometry.json + presentation.pptx in one compile folder -> issues ([] when either is missing)."""
     folder = Path(folder)
     geo, pptx = folder / "geometry.json", folder / "presentation.pptx"
     if not geo.exists() or not pptx.exists():
         return []
-    return audit_geometry(json.loads(geo.read_text(encoding="utf-8")), pptx, slide_type=slide_type)
+    return audit_geometry(json.loads(geo.read_text(encoding="utf-8")), pptx, slide_type=slide_type, brief=brief)

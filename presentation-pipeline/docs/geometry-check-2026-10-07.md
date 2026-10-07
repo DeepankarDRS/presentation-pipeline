@@ -116,3 +116,15 @@ each other, off the slide), timeline labels too long for their diagram, matrix l
 these need a layout change, not more room (candidates for the LLM repair with the pixel report).
 Time: +1.8 s on a slide fixed with the dense order, +4.7 s on a slide that stays too dense; 0 on a slide
 without spills. Unit tests 795 pass, the 4 known failures.
+
+## Tiers and placeholder check (2026-10-07)
+
+Compared with Genspark's `check_slide_layout` categories (user, 2026-10-07): covered — spill / card overflow,
+text-on-text, contrast, font floor; not needed — ancestor clip (PPTX does not clip: it shows as a spill).
+Added now: **tier** on every geometry finding and `LOW_CONTRAST` — `error` = measured defect (spill / collision /
+off-slide > 10 px, placeholder text, contrast < 1.5:1): code fix or repairer; `warning` = borderline (4-10 px,
+the 3 cases judged borderline by eye all land here; contrast 1.5-4.5): for the visual critic to confirm on the
+screenshot; `info` = fill codes, owned by code. **`PLACEHOLDER_TEXT`** (report only, tier error): drawn
+"X.XX" / "XX", `TBD` / `lorem`, "Insight 1 —", "METRIC A", a bracketed name the brief does not use (the brief's own
+"[Platform B]" is content). 0 hits on the 79 saved slides: a guard. Later (rare in our renders): text over a card
+that is not its own, collapsed line height.
