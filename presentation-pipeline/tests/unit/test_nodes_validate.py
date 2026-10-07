@@ -124,6 +124,11 @@ def test_every_plan_kind_has_a_tag_except_title_and_layer():
         assert spec.tags_for(k), k
 
 
-@pytest.mark.parametrize("name", ["count_eq_1", "count_ge_3", "one_singled_out", "not_matrix", "all_titles_numbered_ok", "has_tones"])
-def test_every_requires_check_is_implemented(name):
+def _requires_names():
+    return sorted({r for b in spec.blocks().values() for v in (b.get("variants") or {}).values()
+                   for r in v.get("requires") or []})
+
+
+@pytest.mark.parametrize("name", _requires_names())
+def test_every_requires_check_in_block_variants_is_implemented(name):
     spec.check(name, QBR2()["components"][1])

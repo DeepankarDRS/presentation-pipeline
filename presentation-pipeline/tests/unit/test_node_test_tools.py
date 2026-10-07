@@ -69,7 +69,7 @@ def test_scripted_dry_run_end_to_end(tmp_path):
         for (case, n), code in expect.items():
             run = load_run(_FIX / "runs" / "decks" / f"{case}__r1")
             slide = next(s for s in run["slides"] if s["number"] == n)
-            r = node_test.run_slide(run, slide, llm, measure, tmp_path / case / str(n), "Inter", True, calls)
+            r = node_test.run_slide(run, slide, llm, measure, tmp_path / case / str(n), "Inter", True, calls, repairs=2)
             assert code in r["issues_first"], (case, n, r["issues_first"])
             assert r["compiled"], (case, n)
             errors = {"NODE_REF_UNKNOWN", "NODE_MISSING", "NODE_REF_DUPLICATE", "NODE_KIND_NO_REF"}
@@ -97,3 +97,49 @@ def test_expand_failure_leaves_an_empty_box(monkeypatch):
         m.close()
     codes = [i["code"] for i in rep["issues"]]
     assert codes.count("NODE_EXPAND_FAILED") == 2 and '<VStack h="200" />' in xml
+
+
+def test_first_try_only_by_default(tmp_path):
+    """D12: 1a records an error on the first try and does not repair it."""
+    if not shutil.which("node"):
+        pytest.skip("node not installed")
+    from scripts import node_test
+    from scripts.phase0b.fit import Measurer
+    assert node_test.MAX_REPAIRS == 0
+    run = load_run(_FIX / "runs" / "decks" / "deck-qbr-data__r1")
+    slide = next(s for s in run["slides"] if s["number"] == 2)
+    calls, m = [], Measurer()
+    try:
+        r = node_test.run_slide(run, slide, node_test.ScriptedLLM(_FIX / "scripted"), m, tmp_path, "Inter", True, calls)
+    finally:
+        m.close()
+    assert r["repairs"] == 0 and len(calls) == 1 and "NODE_REF_UNKNOWN" in r["issues_final"]
+
+
+@pytest.mark.parametrize("tag,variant,block", [("Timeline", "cards", True), ("Timeline", "rail", False),
+                                               ("Ul", "tiles", True), ("Ul", "icon", False),
+                                               ("ProcessArrow", "step_cards", True), ("ProcessArrow", "alternating", False)])
+def test_block_variants_drawn_where_phase0b_has_one(tag, variant, block):
+    from scripts.phase0b.expand import as_block
+    comp = {"kind": "x", "content_data": {}}
+    assert as_block({"tag": tag, "attrs": {"ref": "c", "variant": variant}}, comp) is block
+
+
+def test_timeline_cards_variant_expands_to_a_block():
+    if not shutil.which("node"):
+        pytest.skip("node not installed")
+    from scripts.phase0b.expand import expand_nodes
+    from scripts.phase0b.fit import Measurer
+    run = load_run(_FIX / "runs" / "decks" / "gate-deck-all-nodes-dense__r1")
+    plan = run["slides"][4]["plan"]   # brand_timeline, conversion_flow, conversion_rules
+    sk = ('<Slide><VStack w="1280" h="720" alignItems="stretch"><Text fontSize="30">H</Text>'
+          '<Timeline ref="brand_timeline" variant="cards" h="200" /><Flow ref="conversion_flow" grow="1" />'
+          '<Ul ref="conversion_rules" variant="tiles" /></VStack></Slide>')
+    m = Measurer()
+    try:
+        xml, rep = expand_nodes(sk, plan, run["theme"]["element"], m, run["theme"])
+    finally:
+        m.close()
+    assert 'id="slot-brand_timeline"' in xml and "<Timeline" not in xml       # drawn as a block
+    assert 'id="slot-conversion_rules"' in xml and "<Ul" not in xml
+    assert 'id="node-conversion_flow"' in xml                                 # no variant: native

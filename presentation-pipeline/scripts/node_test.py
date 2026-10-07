@@ -10,8 +10,8 @@
 
 Per slide: the node prompt (prompt_lines.render_prompts) -> one generator call -> the node pass
 (scripts/phase0b/expand.expand_nodes: checks, native fillers, derived blocks in their boxes) -> compile.
-A NODE_* error or a failed compile -> a node-aware re-ask on the skeleton (the same prompts + the
-previous skeleton + the errors), at most MAX_REPAIRS. Writes output/1a/<label>/<case>/slide-NN/
+First try only (D12): a NODE_* error or a failed compile is recorded, not repaired. --repairs N turns on a
+node-aware re-ask on the skeleton (the same prompts + the previous skeleton + the errors), at most N; off in 1a. Writes output/1a/<label>/<case>/slide-NN/
 {user-prompt.txt, skeleton.xml, skeleton-repair-N.xml, expanded.xml, check.json, compile-result.json,
 presentation.pptx} and output/1a/<label>/node-test-manifest.json (settings, every call's usage, per-slide result).
 Both arms are drawn in the deck font (--font, default Inter) and compiled with fit-grow (--fit-grow, default on).
@@ -34,7 +34,8 @@ from scripts.phase0b.expand import deck_font, expand_nodes
 from scripts.phase0b.fit import Measurer
 
 ROOT = Path(__file__).resolve().parents[1]
-MAX_REPAIRS = 2
+# D12 (user, 2026-10-07): 1a scores the first try only; --repairs N turns the node-aware re-ask on
+MAX_REPAIRS = 0
 FENCE = re.compile(r"^```(?:xml)?\s*|\s*```\s*$")
 
 
@@ -139,7 +140,7 @@ def _cost(usage: dict) -> float:
 
 
 def run_slide(run: dict, slide: dict, llm, measure: Measurer, out: Path, font: str | None, fit_grow: bool,
-              calls: list[dict]) -> dict:
+              calls: list[dict], repairs: int = MAX_REPAIRS) -> dict:
     from src.agents.context_builder import build_contract
     from src.compiler.nodes.prompt_lines import render_prompts
     from src.compiler.nodes.validate import repair_note
@@ -151,7 +152,7 @@ def run_slide(run: dict, slide: dict, llm, measure: Measurer, out: Path, font: s
     (out / "user-prompt.txt").write_text(user, encoding="utf-8")
     messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
     first = None
-    for attempt in range(MAX_REPAIRS + 1):
+    for attempt in range(repairs + 1):
         reply = llm(messages, case, n, attempt, plan)
         u = reply.usage
         calls.append({"case": case, "slide": n, "step": "generator" if attempt == 0 else "node_repair",
@@ -171,7 +172,7 @@ def run_slide(run: dict, slide: dict, llm, measure: Measurer, out: Path, font: s
         errors = [i for i in rep["issues"] if i["severity"] == "error"]
         if cr["ok"] and not errors:
             break
-        if attempt == MAX_REPAIRS:
+        if attempt == repairs:
             break
         diags = "\n".join(f"- {d.get('type', '')}: {d.get('message', '')}" for d in (cr.get("diagnostics") or [])[:8])
         note = repair_note(errors) + ("\n" + diags if diags else "")
@@ -223,6 +224,7 @@ def main() -> None:
     ap.add_argument("--off", action="store_true", help="arm A: recompile step 0's saved XML, no LLM")
     ap.add_argument("--font", default="Inter", help='deck font for both arms; "none" leaves POM\'s default')
     ap.add_argument("--fit-grow", choices=["on", "off"], default="on")
+    ap.add_argument("--repairs", type=int, default=MAX_REPAIRS, help="node-aware re-asks per slide (1a: 0, first try only)")
     ap.add_argument("--bundle", action="store_true", help="zip the output folder for the trip back")
     a = ap.parse_args()
 
@@ -247,7 +249,7 @@ def main() -> None:
             if a.off:
                 r = run_off(run, slide, out, font, fit_grow)
             else:
-                r = run_slide(run, slide, llm, measure, out, font, fit_grow, calls)
+                r = run_slide(run, slide, llm, measure, out, font, fit_grow, calls, a.repairs)
             results.append(r)
             print(f"{row['case']} {row['slide']}: compiled {r['compiled']}"
                   + ("" if a.off else f", repairs {r['repairs']}, first-try issues {r['issues_first']}"), flush=True)
@@ -256,7 +258,7 @@ def main() -> None:
             measure.close()
     manifest = {"label": a.label, "arm": "off" if a.off else "nodes", "llm": None if a.off else a.llm,
                 "git_commit": _git("rev-parse", "--short", "HEAD"), "git_dirty": bool(_git("status", "--porcelain")),
-                "font": font, "fit_grow": fit_grow, "slides_file": str(a.slides), "elapsed_s": round(time.time() - t0, 1),
+                "font": font, "fit_grow": fit_grow, "repairs": a.repairs, "slides_file": str(a.slides), "elapsed_s": round(time.time() - t0, 1),
                 "calls": calls, "cost_usd": round(sum(c["cost"] for c in calls), 4), "results": results}
     (out_root / "node-test-manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{len(results)} slides, {sum(r['compiled'] for r in results)} compiled, ${manifest['cost_usd']} -> {out_root}")

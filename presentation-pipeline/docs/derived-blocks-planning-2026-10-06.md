@@ -246,7 +246,9 @@ tag; each variant says whether it is drawn `native` or as a `block`). Look: `doc
 - Who chooses: the generator picks `variant` from its component's line; the planner supplies tones and
   emphasis; code checks `requires` and falls back (look spec §7).
 - **In 1a** derived nodes have their single current look and native nodes POM's look: `variant` is
-  validated and counted, not drawn. Block looks arrive in step 1.
+  validated and counted, not drawn. Block looks arrive in step 1. **Amended by D12 (2026-10-07):** a native tag's
+  block variant that Phase 0b can draw (Timeline cards / columns, ProcessArrow / Flow numbered / step_cards, Ul tiles /
+  columns) is drawn by that Phase 0b block in 1a.
 
 ### 3.4 Validity and where the pass runs
 
@@ -371,8 +373,8 @@ argues against for 1a; they are covered by the scripted dry run (§4.6) and by s
   by the native fillers (POM's own look, as in A). Same `<Theme>` in both, from the manifest's theme; B's
   blocks are recoloured from that palette with role-based text colours (§1a) so the blind comparison
   judges layout and fill, not palette. The palette file is read, not edited (the palette session owns it).
-- B uses the normal validator → compile-repair loop with today's budget; first-try compliance (measure 1)
-  is taken **before** any repair, the repairs are counted in measure 8.
+- B is scored on its **first try only** (D12, 2026-10-07): no repair calls; an error or a failed compile is counted in
+  measure 8, and a slide that does not compile is a loss for nodes in measure 4.
 
 ### 4.3 Measures and kill criteria (unchanged criteria; how each is computed)
 
@@ -417,7 +419,7 @@ Not touched: the graph, `src/node/fit-grow.js`, `palettes.yaml`. The node code s
 ### 4.5 Cost and run order
 
 Per slide for B: input ≈ 11.7k × 0.92 ≈ 10.8k tokens, output ≈ 0.45k (−55%), at gpt-4.1 list price ≈ **$0.026**;
-+ ≈ 10% repairs. **32 slides ≈ $0.9** (the $0.5 estimate assumed $0.02 per slide on 24 slides; $0.02 was
+no repair calls (D12). **32 slides ≈ $0.8** (≈ $0.9 with the repairs first planned) (the $0.5 estimate assumed $0.02 per slide on 24 slides; $0.02 was
 below step 0's measured generator cost). Run order (one case first): `deck-qbr-data` (4 slides, ≈ $0.11),
 check its folder and scores, then the other five in one command. Test PC commands (final form when built):
 
@@ -460,8 +462,8 @@ fixtures `tests/fixtures/nodes/` (two fictional step 0 decks, one scripted broke
   compiled with fit-grow on (`--fit-grow`): font-neutral comparison, D1's font, exact measurement.
 - Block text is clamped to the 12 px label floor (D8); the blocks' type is raised to body 14 / label 12.
 - Blocks take the deck palette by role (`deck_pack`): panel = surfaceAlt, dark tile = textMain, text on dark = surface.
-- **Repairs in arm B are a node-aware re-ask on the skeleton** (same prompts + the previous skeleton + the errors,
-  at most 2), not today's `repairer`: that one patches expanded XML and knows no ref tags (deviation from §4.2).
+- Repairs: first built as a node-aware re-ask on the skeleton; **D12 (2026-10-07): 1a scores the first try only**,
+  no repair calls (`--repairs 0`); a slide that does not compile is a loss for nodes in the blind comparison.
 - `ref_tags` sizes: layout attributes also `minW` / `maxW` / `minH` / `maxH`; `NODE_NO_SIZE` does not apply to
   Text / Table / Ul (content-sized). Native nodes carry `id="node-<ref>"` for scoring.
 - The matrix filler spreads items that share a cell (two "low / high" items were drawn on one point).
@@ -473,13 +475,12 @@ fixtures `tests/fixtures/nodes/` (two fictional step 0 decks, one scripted broke
 | 1 mechanical skeleton, 32 slides | 32 / 32 compile; 78 / 78 components ok; 0 invented words in nodes; broken words 0 (off arm 6); overlap slides 2 (off 4): CHEFFIN 6 (table without cell margins, as off), XTSY 8 (native Timeline, labels up to 20 words); overfull 2 (agency 2, dense 3). Variety 0.943 vs 1.0 is code's one-band layout, not a result |
 | 2 prompt examples m1–m4 on their own plans | all compile, all components ok, 0 invented; m2 overlap inside the native table (no cell margins) |
 | 3 one broken skeleton per code | each code reported on its slide; errors repaired in one re-ask; all 10 compile; `NODE_EMPTY_PLAN` / `NODE_EXPAND_FAILED` covered by unit tests |
-| 4 prompt size | 32 slides: 10,478 vs 11,539 tokens (tiktoken, −9.2%); est. input 10.6k per slide vs step 0's measured 11.7k; cost ≈ $0.025 per slide, ≈ $0.9 for 32 (as §4.5) |
+| 4 prompt size | 32 slides: 10,478 vs 11,539 tokens (tiktoken, −9.2%); est. input 10.6k per slide vs step 0's measured 11.7k; cost ≈ $0.025 per slide, ≈ $0.8 for 32 with no repair calls (D12) |
 | 5 off arm recompile | 32 / 32 compile; broken words 6, overlap slides 4 |
 | 6 unit tests | **680 pass, the 4 known failures** (634 + 46 new); `test_py311_syntax` passes |
 
-**Open (user):** POM's native Timeline cannot fit long labels (XTSY 8), and in 1a variants are not drawn (§3.3), so a
-`cards` choice would still be drawn native. Recommendation: in 1a draw the block variants Phase 0b already has
-(Timeline cards / columns, ProcessArrow and Flow numbered / step_cards, Ul tiles / columns) when the LLM picks them.
+**Decided (D12, 2026-10-07):** POM's native Timeline cannot fit long labels (XTSY 8), so in 1a the block variants
+Phase 0b already has are drawn when the LLM picks them (§3.3 amended for 1a). First try only; Inter + fit-grow on both arms.
 
 ## 5. Open questions: recommendations
 
@@ -554,6 +555,7 @@ tuned in step 1 on the nodes demo render (free).
 | D9 | Default-switch gates (§5.3) and fill contract (§5.4) | as written | **decided 2026-10-05: both approved.** `slots` stays opt-in until the five gates hold (a separate decision after step 4); step 2 gains "the edit service re-expands blocks after every edit"; fill numbers tuned in step 1 |
 | D10 | Contract form (§3, §4): named self-closing tags with `ref` for every plan kind except `layer` (derived `KpiRow` / `CardGrid` / `Callout` / `SlideHeader`; native `Table` / `Chart` / `Ul` / `Timeline` / `ProcessArrow` / `Flow` / `Pyramid` / `Tree` / `Matrix` / `Text`, code fills their children), content by reference only, shape hints in each component's prompt line, `NODE_*` codes, setting `blocks: off / nodes` | as written | **decided 2026-10-06 (user): rewrite the contract into the node form** |
 | D11 | 1a made exact on step 0's plans (§4, 2026-10-06 follow-up session): `ref` = the plan's `component_id`; all 32 eligible slides (six decks; CHEFFIN 2, CHEFFIN 3, XTSY 6 out as prompt-example sources; QBR 1, launch 1 out, nothing to place), not ≈ 24; arm A recompiled on the 1a commit; node code in `src/compiler/nodes/`, unwired until step 1; cost ≈ $0.9 (was ≈ $0.5), `deck-qbr-data` first (≈ $0.11); scripted dry run §4.6 before any paid call; card_grid matrix not covered (no such plan in step 0) | as written | **decided 2026-10-07 (user): approved as written** |
+| D12 | 1a dry-run choices (§4.7, 2026-10-07): (1) draw the block variants Phase 0b has when the LLM picks them; (2) repairs; (3) both arms in Inter with fit-grow on; (4) who fixes the ₹59.8 fit-grow regression | (1) yes; (2) node-aware re-ask, then revised: first try only; (3) yes; (4) the font-size session, else me | **decided 2026-10-07 (user): (1) yes: Timeline cards / columns, ProcessArrow and Flow (linear) numbered / step_cards, Ul tiles / columns drawn by the closest Phase 0b block; Ul icon, ProcessArrow alternating, Chart labelled / horizontal stay native (no block yet); (2) first try only: no repair calls in 1a, an error is a fallback (measure 8), a node slide that does not compile counts as a loss in the blind comparison; the re-ask stays in `node_test.py` behind `--repairs N` (0 in 1a); step 2 decides the repair route, likely today's repairer fed the skeleton; (3) yes; (4) fixed in this session (§7)** |
 
 ## 7. Step 0 build log (build session 2026-10-06, branch `feat/derived-blocks-step0`)
 
@@ -672,5 +674,17 @@ grow-phase trait, not the guard. **R1 replay (`fontexp_replay`, `output/fontexp4
 4 → 5** against step 0: "₹59.8" breaks again on gj-h1 slide 14. Cause: `growText` grows the left column's card titles
 (16 → 19 px) and icons, then pins both `w="max"` columns (789 / 405 px), so the KPI tiles on the right lose ~10 px; the
 growth search rejects a word that becomes too wide but lets a word that was already too wide get narrower room. Not a
-guard fault (the number is at its 28 px floor). Fix proposed (font-size code, `search()` in `fit-grow.js`): reject a step
-that adds > 1 px to any word's overflow. Waiting for the user.
+guard fault (the number is at its 28 px floor).
+
+**Fixed (D12 (4), this session, 2026-10-07), two parts in `src/node/fit-grow.js`:**
+1. Growth search: a growth step is rejected when it makes any word on the slide too wide, or a too-wide word wider,
+   by more than 1 px (`overAll`; before, only the growing texts were checked). Alone this was not enough: "₹59.8"
+   was already 16 px too wide before any growth (72 px box), and step 0 had escaped only because growing text in its
+   `w="max"` column happened to widen the column, which the new width pinning prevents.
+2. Shrink guard, new first step: a text too wide inside a box fit-grow pinned (its w was flexible; never an author's
+   width) takes the px it lacks from its wider pinned neighbour, innermost box first (tile, then column), scaled by
+   the word's share of the box; kept only under the guard's rule (total overflow down, no new too-wide word), else
+   it shrinks as before. gj-h1 slide 14: right column +76 px, no warning left.
+**R1 replay (`output/fontexp6`): broken words 4, overlap slides 4** (step 0: 5 / 4; committed font-size work: 6 / 5):
+"₹59.8" and "Projected" now fit. Left: "Governance", "Recalculation", "Recommendation" (6-column table), "₹1.80".
+Fixture `tests/fixtures/shrink_guard/g4-pinned-columns.xml` + test; a second compile makes no guard edit.

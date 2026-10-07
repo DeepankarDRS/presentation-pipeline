@@ -142,6 +142,8 @@ def check(name: str, comp: dict) -> bool:
         return cd.get("card_layout") != "matrix"
     if name == "all_titles_numbered_ok":
         return not any(_NUMBERED.match(t) for t in items(comp))
+    if name == "chart_is_bar":
+        return str(cd.get("chart_type") or comp.get("chart_type") or "bar").lower() == "bar"
     if name == "has_tones":
         tones = list(cd.get("kpi_tones") or []) + [c.get("tone") for c in cd.get("cards") or []]
         return any(t for t in tones)

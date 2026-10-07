@@ -108,9 +108,29 @@ def _layout_attrs(a: dict) -> str:
     return "".join(f' {k}="{v}"' for k, v in a.items() if k in LAYOUT)
 
 
-def draw_derived(tag: str, comp: dict, p: R.Pack, w: float, h: float) -> str:
+# D12 (user, 2026-10-07): in 1a a native tag whose `variant` is a block variant is drawn by the
+# Phase 0b block closest to it; variants with no Phase 0b block (Ul icon, ProcessArrow alternating,
+# Chart labelled / horizontal) stay native
+BLOCK_VARIANTS = {"Timeline": {"cards", "columns"}, "ProcessArrow": {"numbered", "step_cards"},
+                  "Flow": {"numbered", "step_cards"}, "Ul": {"tiles", "columns"}}
+
+
+def as_block(t: dict, comp: dict) -> bool:
+    if t["attrs"].get("variant") not in BLOCK_VARIANTS.get(t["tag"], ()):
+        return False
+    return t["tag"] != "Flow" or R.linear_flow(comp) is not None
+
+
+def draw_derived(tag: str, comp: dict, p: R.Pack, w: float, h: float, variant: str | None = None) -> str:
     if tag == "Callout":
         return R.insight(str((comp.get("content_data") or {}).get("text") or ""), p)
+    if tag == "Ul":
+        items = [str(b) for b in (comp.get("content_data") or {}).get("bullets") or []]
+        inner = R.tile_row(items, p) if variant == "tiles" else R.note_columns(items, p)
+        return f'<VStack grow="1" justifyContent="center">{inner}</VStack>'
+    if tag in ("Timeline", "ProcessArrow", "Flow"):
+        inner = R.timeline_block(comp, p, w, h, ' grow="1"') if tag == "Timeline" else R.process_steps(comp, p)
+        return inner if tag == "Timeline" else f'<VStack grow="1" justifyContent="center">{inner}</VStack>'
     return draw(comp, p, w, h)
 
 
@@ -137,7 +157,7 @@ def expand_nodes(skeleton: str, plan: dict, theme_element: str, measure: Measure
 
     natives: dict[int, str] = {}
     for i, t in enumerate(tags):
-        if S.family(t["tag"]) == "native":
+        if S.family(t["tag"]) == "native" and not as_block(t, comps[t["attrs"]["ref"]]):
             try:   # id="node-<ref>" marks the node for scoring (1a measure 2: words inside nodes)
                 natives[i] = re.sub(r"^<(\w+)", rf'<\1 id="node-{t["attrs"]["ref"]}"',
                                     N.fill(t["tag"], comps[t["attrs"]["ref"]], t["attrs"], theme), count=1)
@@ -164,7 +184,7 @@ def expand_nodes(skeleton: str, plan: dict, theme_element: str, measure: Measure
             if ref not in drawn:
                 box = boxes.get(f"slot-{ref}") or {"w": 400, "h": 200}
                 try:
-                    inner = R.retoken(R.scale_type(draw_derived(t["tag"], comps[ref], p, box["w"], box["h"]), scale), p)
+                    inner = R.retoken(R.scale_type(draw_derived(t["tag"], comps[ref], p, box["w"], box["h"], t["attrs"].get("variant")), scale), p)
                     inner = BELOW_FLOOR.sub(f'fontSize="{LABEL_FLOOR}"', inner)
                     drawn[ref] = f'<VStack id="slot-{ref}"{_layout_attrs(t["attrs"])} alignItems="stretch">{inner}</VStack>'
                 except Exception as e:

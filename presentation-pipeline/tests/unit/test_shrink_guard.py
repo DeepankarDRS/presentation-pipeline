@@ -113,3 +113,17 @@ def test_a_slide_where_every_word_fits_has_no_guard_edits(tmp_path):
         '</VStack></Slide>', encoding="utf-8")
     r = _compile(xml, tmp_path / "out")
     assert _guard_lines(r) == [] and _warnings(r) == []
+
+
+def test_a_pinned_column_takes_width_from_its_wider_pinned_neighbour(tmp_path):
+    """2026-10-07 (gj-h1 slide 14 in R1's replay): growing the left column's text pinned both w="max" columns, and
+    the KPI numbers in the narrow right column ("₹59.8", "5.30x", 28px, at their floor) broke. The guard widens a
+    box fit-grow pinned, innermost first, from its wider pinned neighbour; the second pass makes no guard edit."""
+    first = _compile(_FIX / "g4-pinned-columns.xml", tmp_path / "a")
+    assert any("column widened" in r for r in first["fitGrow"]), first["fitGrow"]
+    assert _warnings(first) == []
+    assert all(int(v) >= 28 for v in re.findall(r'fontSize="(\d+)" color="\$(?:positive|accent)" bold="true"[^>]*>[₹\d-]', first["xml"]))
+    fitted = tmp_path / "g4-fitted.xml"
+    fitted.write_text(first["xml"], encoding="utf-8")
+    second = _compile(fitted, tmp_path / "b")
+    assert not any("column widened" in r or "wider than" in r for r in second["fitGrow"]) and _warnings(second) == []

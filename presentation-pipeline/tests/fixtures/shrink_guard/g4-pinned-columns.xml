@@ -1,0 +1,33 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="E2E8F0" />
+<Slide>
+<VStack w="1280" h="720" padding="36" gap="14" alignItems="stretch" backgroundColor="$surface">
+  <Text fontSize="30" bold="true" color="$textMain" fontFamily="Inter">Next half: what we need and what we expect</Text>
+  <HStack grow="1" gap="14" alignItems="stretch">
+    <VStack w="max" padding="18" gap="12" backgroundColor="$surfaceAlt" border.color="$border" border.width="1" justifyContent="center">
+      <Text fontSize="16" color="$textMain" bold="true" fontFamily="Inter">Budget flexibility</Text>
+      <Text fontSize="15" color="$textMuted" lineHeight="1.4" fontFamily="Inter">Move up to a fifth of the monthly budget between platforms within the week when one of them falls behind its target return, and report every move with its reason in the Monday review so finance sees it early.</Text>
+      <Text fontSize="16" color="$textMain" bold="true" fontFamily="Inter">Creative refresh</Text>
+      <Text fontSize="15" color="$textMuted" lineHeight="1.4" fontFamily="Inter">Two new creatives per category, ten assets in total, by the middle of the next month for the two hero products, with banner sizes for every placement the platforms sell during the festival weeks.</Text>
+      <Text fontSize="16" color="$textMain" bold="true" fontFamily="Inter">Stock in the big cities</Text>
+      <Text fontSize="15" color="$textMuted" lineHeight="1.4" fontFamily="Inter">A weekly fill-rate report for the top cities so that ads pause before a product runs out, and restart on their own when the stock is back above the threshold agreed with the supply team.</Text>
+    </VStack>
+    <VStack w="max" gap="16" justifyContent="center">
+      <Text fontSize="15" color="$accent" bold="true" letterSpacing="1" fontFamily="Inter">TARGETS FOR THE HALF</Text>
+      <HStack gap="10" alignItems="stretch">
+        <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" border.color="$border" border.width="1" justifyContent="center">
+          <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1" fontFamily="Inter">Projected sales</Text>
+          <Text fontSize="28" color="$positive" bold="true" fontFamily="Inter">₹59.8<Span fontSize="16" color="$textMuted"> Cr</Span></Text>
+        </VStack>
+        <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" border.color="$border" border.width="1" justifyContent="center">
+          <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1" fontFamily="Inter">Blended return</Text>
+          <Text fontSize="28" color="$accent" bold="true" fontFamily="Inter">5.30<Span fontSize="16" color="$textMuted">x</Span></Text>
+        </VStack>
+        <VStack w="max" padding="12" gap="4" backgroundColor="$surfaceAlt" border.color="$border" border.width="1" justifyContent="center">
+          <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="1" fontFamily="Inter">Ad share</Text>
+          <Text fontSize="28" color="$positive" bold="true" fontFamily="Inter">-3<Span fontSize="16" color="$textMuted"> ppt</Span></Text>
+        </VStack>
+      </HStack>
+    </VStack>
+  </HStack>
+</VStack>
+</Slide>

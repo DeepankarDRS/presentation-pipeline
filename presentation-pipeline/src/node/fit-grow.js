@@ -1281,26 +1281,34 @@ function cardOf(L, n) {
 }
 
 /** Ids (text / list) whose longest word is wider than their box (renderer slack for an unloaded font). */
+/** px by which a text's / list's widest unbreakable piece runs past its box (0 when it fits). */
+function overBy(L, n) {
+  if (!n || !["text", "ul", "ol"].includes(n.type)) return 0;
+  const family = n.fontFamily ?? "Noto Sans JP";
+  const b = L.box(n);
+  const list = n.type !== "text";
+  const room = (b.w - b.pl - b.pr - (list ? 36 : 0)) * (exact(L.ctx, family, n.bold) ? 1 : GUARD_SLACK);
+  const texts = list ? n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""))
+    : [n.text ?? (n.runs ?? []).map((r) => r.text).join("")];
+  if (room <= 0) return 0;
+  return Math.max(0, widestPiece(texts, family, n.fontSize ?? 24, n.bold, n.letterSpacing, L.ctx).w - room);
+}
+
 function wordsOver(L, ids) {
-  const over = new Set();
-  for (const id of ids) {
-    const n = L.byId.get(id);
-    if (!n || !["text", "ul", "ol"].includes(n.type)) continue;
-    const family = n.fontFamily ?? "Noto Sans JP";
-    const b = L.box(n);
-    const list = n.type !== "text";
-    const room = (b.w - b.pl - b.pr - (list ? 36 : 0)) * (exact(L.ctx, family, n.bold) ? 1 : GUARD_SLACK);
-    const texts = list ? n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""))
-      : [n.text ?? (n.runs ?? []).map((r) => r.text).join("")];
-    if (room > 0 && widestPiece(texts, family, n.fontSize ?? 24, n.bold, n.letterSpacing, L.ctx).w > room + 0.5) over.add(id);
-  }
-  return over;
+  return new Set(ids.filter((id) => overBy(L, L.byId.get(id)) > 0.5));
+}
+
+/** Every text on the slide already wider than its box -> by how many px (growth may not make these worse). */
+function overAll(L) {
+  const out = new Map();
+  for (const root of L.slides) walk(root, (n) => { const o = n.id ? overBy(L, n) : 0; if (o > 0.5) out.set(n.id, o); });
+  return out;
 }
 
 async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words = []) {
   const fullest = (L) => Math.max(...ids.map((id) => fill(L.byId.get(id), L).ratio));
   const B = await layout(xml);
-  let before, ratio, lines0, slideMax, widths, over0, need0;
+  let before, ratio, lines0, slideMax, widths, over0, need0, tight0;
   try {
     before = overflows(B);
     widths = outsideWidths(B, ids);
@@ -1312,6 +1320,7 @@ async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words
     // a heading only 1 line in POM counts as 1 even if the 85% margin wraps it
     lines0 = new Map(keepLines.map((k) => [k, lineCount(B.byId.get(k), B)]));
     over0 = wordsOver(B, words);
+    tight0 = overAll(B);
     need0 = wrapNeed(B, keepLines);
   } finally { B.free(); }
   let lo = 1, hi = max, best = 1;
@@ -1334,6 +1343,9 @@ async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words
       for (const [k, w] of widths) if (Math.abs(T.box(T.byId.get(k)).w - w) > 1) ok = false;
       // growing never makes a word wider than its box (composer: never past the longest word)
       for (const k of wordsOver(T, words)) if (!over0.has(k)) ok = false;
+      // nor makes any word on the slide (more) too wide, also outside the growing boxes: growth in one
+      // column narrowed the KPI tiles beside it and broke "₹59.8" (gj-h1 slide 14, 2026-10-07 replay)
+      for (const [k, o] of overAll(T)) if (o > (tight0.get(k) ?? 0) + 1) ok = false;
       if (ok) { best = s; ratio = r; lo = s; } else hi = s;
     } finally { T.free(); }
   }
@@ -1347,7 +1359,8 @@ async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words
 // 7 left in the real-font run). For every text / list / table / processArrow label whose
 // longest unbreakable piece (a word, or the part after a hyphen) is wider than the space
 // it gets, at the size it has now:
-//   1. widen   — a table column takes width from the columns that have spare;
+//   1. widen   — a table column takes width from the columns that have spare; a column fit-grow
+//                pinned takes it from its wider pinned neighbour (never an author's width);
 //   2. shrink  — the type goes down to the largest size at which the piece fits, never
 //                below its floor (14px; a number or title >= 28px keeps >= 28);
 //   3. report  — a piece still too wide becomes a WORD_TOO_WIDE warning
@@ -1401,6 +1414,21 @@ async function scanWords(xml) {
   const L = await layout(xml);
   const ctx = L.ctx;
   const found = [];   // { id, kind, fs, own, room, at(f) -> widest piece, table? }
+  const up = new Map();   // node -> parent
+  for (const root of L.slides) walk(root, (n, parent) => { if (parent) up.set(n, parent); });
+  // every box this pass pinned (w was flexible) around the text, innermost first, that has a pinned,
+  // wider neighbour in its row: a tile beside a wider tile, then the column beside a wider column
+  const columns = (n) => {
+    const out = [];
+    for (let a = n; up.get(a); a = up.get(a)) {
+      const row = up.get(a);
+      if (row.type !== "hstack" || !PINNED.has(a.id)) continue;
+      const sib = (row.children ?? []).filter((c) => c !== a && PINNED.has(c.id))
+        .sort((x, y) => L.box(y).w - L.box(x).w)[0];
+      if (sib && L.box(sib).w > L.box(a).w) out.push({ id: a.id, w: L.box(a).w, sib: sib.id, sibW: L.box(sib).w });
+    }
+    return out;
+  };
   try {
     for (const root of L.slides) walk(root, (n) => {
       if (!n.id) return;
@@ -1413,7 +1441,7 @@ async function scanWords(xml) {
         const room = (b.w - b.pl - b.pr) * slack(n.bold);
         const text = n.text ?? runs.map((r) => r.text).join("");
         const at = (f) => widestPiece([text], family, f, n.bold, n.letterSpacing, ctx);
-        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "text", fs, own: n.fontSize, room, at });
+        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "text", fs, own: n.fontSize, room, at, columns: columns(n) });
       } else if (n.type === "ul" || n.type === "ol") {
         if (n.items.some((i) => i.fontSize !== undefined || (i.runs ?? []).some((r) => r.fontSize !== undefined))) return;
         const fs = n.fontSize ?? 24;
@@ -1451,11 +1479,14 @@ async function scanWords(xml) {
       }
     });
   } finally { L.free(); }
+  // a box shares its width with what is beside the text (tiles in a column): widen it by what the word
+  // lacks, scaled by the word's share of the box
+  for (const t of found) for (const c of t.columns ?? []) c.need = Math.ceil(c.w * (t.at(t.fs).w - t.room) / t.room) + 2;
   return found;
 }
 
 /** The XML with one finding fixed as far as the rules allow (the same XML when nothing can be done). */
-function guardEdit(xml, t) {
+function guardEdit(xml, t, widen = 0) {
   if (t.table) {
     const { widths, need, W } = t;
     const deficit = widths.map((w, i) => Math.max(0, need[i] - w));
@@ -1476,6 +1507,15 @@ function guardEdit(xml, t) {
     while (fs > guardFloor(t.fs0) && !fits(fs)) fs -= 1;
     if (fs >= t.fs0) return { xml, note: null };
     return { xml: writeTable(xml, t.id, { fontOf: fontAt(fs) }), note: `table cell text ${t.fs0} -> ${fs}px (a word is wider than its column)` };
+  }
+  if (widen !== false && t.columns?.[widen]) {
+    // a box fit-grow pinned takes the px its word lacks from its wider pinned neighbour (gj-h1 slide 14:
+    // "₹59.8" needs 88px in a KPI tile of a 405px column beside a 789px one); kept only if the slide gains
+    const c = t.columns[widen], need = c.need;
+    if (c.sibW - need > c.w + need) {
+      const out = setAttrs(setAttrs(xml, c.id, { w: Math.round(c.w + need) }), c.sib, { w: Math.round(c.sibW - need) });
+      return { xml: out, note: `column widened by ${need}px for "${t.at(t.fs).word}" (from its pinned neighbour)` };
+    }
   }
   const fs = guardSize(t.fs, t.at, t.room);
   if (fs >= t.fs) return { xml, note: null };
@@ -1501,19 +1541,23 @@ async function guardWords(xml, report, warnings) {
   for (let round = 0; round < GUARD_ROUNDS && found.length; round++) {
     let progress = false;
     for (const t of found) {
-      const edit = guardEdit(xml, t);
-      if (!edit.note) continue;
-      const after = await scanWords(edit.xml);
-      // keep an edit only when the slide's total overflow (px) goes down and no piece elsewhere is newly
-      // too wide: a smaller label can narrow the tile that was sized by it and break the number beside
-      // it (R1 replay: "Projected" -> "₹59.8"), which the total shows even when the count does not
-      const before = new Set(found.map((f) => f.id));
-      if (overflow(after) >= overflow(found) - 0.5 || after.some((f) => !before.has(f.id))) continue;
-      xml = edit.xml;
-      found = after;
-      report.push(edit.note);
-      progress = true;
-      break;   // the findings changed: take them again from the new layout
+      // widen each pinned box around the text, innermost first, then shrink (widen = false)
+      for (const widen of [...(t.columns ?? []).keys(), false]) {
+        const edit = guardEdit(xml, t, widen);
+        if (!edit.note) continue;
+        const after = await scanWords(edit.xml);
+        // keep an edit only when the slide's total overflow (px) goes down and no piece elsewhere is newly
+        // too wide: a smaller label can narrow the tile that was sized by it and break the number beside
+        // it (R1 replay: "Projected" -> "₹59.8"), which the total shows even when the count does not
+        const before = new Set(found.map((f) => f.id));
+        if (overflow(after) >= overflow(found) - 0.5 || after.some((f) => !before.has(f.id))) continue;
+        xml = edit.xml;
+        found = after;
+        report.push(edit.note);
+        progress = true;
+        break;
+      }
+      if (progress) break;   // the findings changed: take them again from the new layout
     }
     if (!progress) break;
   }
