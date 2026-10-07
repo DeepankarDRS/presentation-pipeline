@@ -22,9 +22,10 @@ from typing import Any
 
 STATUS_ROLES = ("accent", "positive", "negative", "warning")
 DERIVED_KEYS = tuple(f"{r}Soft" for r in STATUS_ROLES) + tuple(
-    f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral")
+    f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral", "border")
 
 TEXT_MIN = 4.5
+BORDER_MIN = 1.4
 SOFT_MIX_LIGHT = 0.13
 SOFT_MIX_DARK = 0.22
 NEUTRAL_MIX_LIGHT = 0.22
@@ -60,17 +61,17 @@ def mix(color: str, base: str, amount: float) -> str:
     return _hex(tuple(bb + (cc - bb) * amount for cc, bb in zip(c, b)))  # type: ignore[arg-type]
 
 
-def _step_lightness(color: str, backgrounds: list[str], darken: bool) -> str:
+def _step_lightness(color: str, backgrounds: list[str], darken: bool, target: float = TEXT_MIN) -> str:
     """Move `color`'s HLS lightness (hue and saturation kept) until it reaches
-    TEXT_MIN on every background. Unchanged if it already passes."""
-    if all(contrast(color, bg) >= TEXT_MIN for bg in backgrounds):
+    `target` on every background. Unchanged if it already passes."""
+    if all(contrast(color, bg) >= target for bg in backgrounds):
         return color.upper()
     h, l, s = colorsys.rgb_to_hls(*_rgb(color))
     step = -0.01 if darken else 0.01
     while 0.0 < l < 1.0:
         l = max(0.0, min(1.0, l + step))
         cand = _hex(colorsys.hls_to_rgb(h, l, s))
-        if all(contrast(cand, bg) >= TEXT_MIN for bg in backgrounds):
+        if all(contrast(cand, bg) >= target for bg in backgrounds):
             return cand
     return _hex(colorsys.hls_to_rgb(h, l, s))
 
@@ -98,6 +99,12 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
     else:
         out["onAccent"] = max((text_main, surface, "FFFFFF", "111111"),
                               key=lambda c: contrast(c, accent)).upper()
+
+    # a card must read as a card: its hairline >= BORDER_MIN on the slide AND on the card
+    # (corporate-slate's E2E8F0 was 1.17:1 on F7F9FC; the critic called white cards "flat",
+    # run 5fb8a2, 2026-10-07). Same hue, only the lightness moves.
+    out["border"] = _step_lightness(palette["border"], [surface, surface_alt], darken=not dark,
+                                    target=BORDER_MIN)
 
     out["neutral"] = (palette.get("neutral") or mix(
         text_main, surface, NEUTRAL_MIX_DARK if dark else NEUTRAL_MIX_LIGHT)).upper()

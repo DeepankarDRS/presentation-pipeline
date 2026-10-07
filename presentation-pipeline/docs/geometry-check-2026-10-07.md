@@ -176,3 +176,31 @@ not the one the headline names; slide 6's icon chips drew odd small squares.
 Follow-ups done (LLM-free): normalizer `SHAPE_TYPE_ALIAS` (`circle` → `ellipse`, … — slide 6's first compile
 failed on it; the saved XML now compiles first time); manifest `critic.issues` keeps severity / type / description /
 fix. Unit tests 804 pass, the 4 known failures. Note: the test PC reported uncommitted local changes.
+
+## KPI tiles, card edges and the generator's layout rules (2026-10-07)
+
+User decisions (2026-10-07): solve the "flat cards" problem in the **palette**; a code rule only for the
+**KPI case**; other layouts stay with the LLM through **layout rules** in its prompt (adapted from a 1920x1080
+reference deck guide the user shared).
+
+- **Card edge (palette):** the critic's one remaining issue in run 5fb8a2 asked for a card background the NRR /
+  Enterprise tiles already had; they looked flat because `border` E2E8F0 was 1.17:1 on the slide (F7F9FC), and
+  every light palette was 1.12-1.29:1. `palette_tokens.derive_tokens` now derives `border` (same hue, lightness
+  stepped) to ≥ 1.4:1 on `surface` and `surfaceAlt` (corporate-slate E2E8F0 → CAD5E4); dark palettes unchanged.
+  Test: all 18 palettes.
+- **KPI rows (`src/compiler/kpi_grid.py`, normalizer `KPI_ROWS`):** when the slide's only body band is a row of
+  4-6 stat tiles, the tiles become rows of 2 or 3 at equal % widths (4 → 2+2, 5 → 3+2, 6 → 3+3). The four options
+  are in `docs/eval/kpi-tiles/kpi-tile-options.png` (A stretched / B centred / C bigger numbers / D 2x2): centring
+  alone (B) was worse than today; the width was the limit. Before / after on the two saved KPI slides:
+  `docs/eval/kpi-tiles/kpi-rows-before-after.png` — numbers 34 → 85 px, no geometry finding.
+- **fit-grow:** stat rows stacked as one grid (same % tile width) share one number size; tiers of different widths
+  (hero + supporting) keep theirs — the first version merged CHEFFIN's two tiers and shrank the hero tier (caught by
+  eye, fixed). New `growStatSides`: a tile's label and delta grow with its number (≈ 0.3 ×, ≤ 24 px), kept only if
+  nothing spills.
+- **Layout rules (capacity.yaml `layout`, rendered by `capacity.layout_rules()` into the generator's house style):**
+  KPI ≤ 4 per row and ≥ 260 px per tile; hero number 64-120 px; two compared metrics as two equal cards; grids with
+  equal widths and 12-20 px gaps; ≤ 3 table columns in a half-width card; rows 36-88 px; a takeaway card 35-40 %
+  beside the evidence; two-column splits 60/40 or 40/60. `kpi_row.per_row` 2-5 → 2-4 (5 tiles were ~230 px wide),
+  so planner and generator state one number. Prompt +≈ 170 tokens.
+Replay of 48 slides with the new fit-grow and palette: no code got worse. Unit tests 826 pass, the 4 known failures.
+Not run with the API yet.

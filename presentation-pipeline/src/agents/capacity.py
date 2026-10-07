@@ -175,3 +175,25 @@ def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
         out.append(comp)
     components[:] = out
     return notes
+
+
+# ── The generator's layout rules (capacity.yaml `layout`, 2026-10-07) ──────
+def layout_rules() -> str:
+    """Prompt text for the generator: how to lay components out, numbers from capacity.yaml."""
+    k, lay = capacity()["kpi_row"], capacity()["layout"]
+    lo, hi = lay["hero_number_px"]
+    g0, g1 = lay["grid_gap_px"]
+    r0, r1 = lay["table_row_px"]
+    return "\n".join([
+        f"- KPI tiles: at most {k['per_row'][1]} per row, each at least {lay['kpi_tile_min_w']}px wide; "
+        f"more metrics -> rows of equal tiles (w as %: 2 per row 49%, 3 per row 32%).",
+        f"- One number the headline rests on: a hero tile, number {lo}-{hi}px; "
+        f"{lay['paired_cards']} compared metrics: {lay['paired_cards']} equal cards side by side.",
+        f"- Card grids: equal widths per row, gaps {g0}-{g1}px; never a lone narrow card beside a wide one.",
+        f"- Tables: at most {lay['table_cols_half']} columns in a half-width card (more -> give the table "
+        f"the full width); body rows {r0}-{r1}px.",
+        f"- A takeaway card beside a chart or table takes {lay['side_card_w'][0]}-{lay['side_card_w'][1]} "
+        f"of the width; the evidence takes the rest.",
+        f"- Two-column slides: {' or '.join(lay['split'])}, the evidence side wider.",
+        "- Everything ends inside the slide padding; the slide's main band takes the spare height.",
+    ])

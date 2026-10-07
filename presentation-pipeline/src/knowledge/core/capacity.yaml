@@ -10,7 +10,7 @@
 # component, or choose another kind.
 
 kpi_row:
-  per_row: [2, 5]        # tiles in one row; more metrics -> rows of equal tiles
+  per_row: [2, 4]        # tiles in one row (5 left ~230 px tiles: width-bound numbers, 2026-10-07); more -> rows of equal tiles
 table:
   max_rows: 10           # body rows; past it the slide squeezes and rows spill
   max_cols: 8
@@ -34,3 +34,16 @@ card_grid:
   items: [2, 12]
   per_row: [2, 4]          # the plan check writes per_row (7 -> 4 + 3, 9 -> 3 + 3 + 3)
   steps_max: 5             # one row joined by arrows, full slide width; more -> grid
+
+# The generator's layout rules (2026-10-07, user: "add an LLM-level rule" for layouts code does
+# not fix; adapted from a 1920x1080 reference deck guide, scaled to 1280x720). Rendered by
+# src/agents/capacity.py layout_rules() into the generator prompt; state the numbers only here.
+layout:
+  kpi_tile_min_w: 260        # px; narrower tiles cap the number's size
+  hero_number_px: [64, 120]  # one number the headline rests on (fit-grow HERO_CAP 120)
+  paired_cards: 2            # two metrics compared: two equal cards side by side
+  grid_gap_px: [12, 20]      # between cards in a grid, equal widths per row
+  table_cols_half: 3         # columns a table may have in a half-width card; more -> full width
+  table_row_px: [36, 88]     # body row height
+  side_card_w: ["35%", "40%"]   # a takeaway card beside a chart / table; the evidence takes the rest
+  split: ["60/40", "40/60"]  # two-column slides: the evidence side is the wider one, never 50/50 by default

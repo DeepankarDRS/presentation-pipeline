@@ -12,6 +12,7 @@ from typing import Any
 
 from src.compiler.content_model import find_violations, flatten_text_containers
 from src.compiler.grow_fallback import ensure_growing_band, share_row_height
+from src.compiler.kpi_grid import kpi_rows
 from src.compiler.icons import fix_icon_names
 from src.utils.text_clean import strip_illegal
 
@@ -692,6 +693,9 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     if had_theme:
         xml = strip_theme(xml)
 
+    xml, kpi_note = kpi_rows(xml)
+    if kpi_note:
+        issues.append({"code": "KPI_ROWS", "message": kpi_note, "auto_fixed": True})
     xml, grow_note = ensure_growing_band(xml)
     if grow_note:
         issues.append({"code": "GROW_BAND_ADDED", "message": grow_note, "auto_fixed": True})

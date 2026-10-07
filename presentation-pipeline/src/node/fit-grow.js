@@ -1600,13 +1600,52 @@ async function statRows(xml) {
   const L = await layout(xml);
   const rows = [];
   try {
-    for (const root of L.slides) walk(root, (n) => {
+    for (const root of L.slides) walk(root, (n, parent) => {
       if (!statRow(n)) return;
       const tiles = n.children.filter((c) => STACKS.has(c.type) && c.id);
-      rows.push({ tiles: tiles.map((c) => c.id), ids: tiles.map((c) => statAnchor(c).id) });
+      const row = { tiles: tiles.map((c) => c.id), ids: tiles.map((c) => statAnchor(c).id) };
+      // stat rows stacked in one VStack with the same % tile width are one grid (kpi_grid.py's
+      // 2+2 / 3+2): one number size. Tiers of different widths (hero + supporting) keep theirs.
+      const pct = JSON.stringify(tiles[0].w);
+      row.pct = /%/.test(pct) && tiles.every((c) => JSON.stringify(c.w) === pct) ? pct : null;
+      const prev = rows[rows.length - 1];
+      if (prev && row.pct && prev.pct === row.pct && parent && parent.type === "vstack" && prev.parent === parent) {
+        prev.tiles.push(...row.tiles);
+        prev.ids.push(...row.ids);
+      } else rows.push({ ...row, parent });
     });
   } finally { L.free(); }
-  return rows;
+  return rows.map(({ tiles, ids }) => ({ tiles, ids }));
+}
+
+// A tile's label and delta grow with its number (≈ 0.3 x, ≤ 24 px; user 2026-10-07: 14 px
+// labels under 96 px numbers read as an afterthought). Kept only if nothing spills.
+const SIDE_RATIO = 0.3;
+const SIDE_CAP = 24;
+
+async function growStatSides(xml, report, rows) {
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const { tiles, ids } of rows) {
+      const anchor = Math.min(...ids.map((id) => L.byId.get(id)?.fontSize ?? 24));
+      const target = Math.min(SIDE_CAP, Math.round(anchor * SIDE_RATIO));
+      for (const t of tiles) walk(L.byId.get(t), (n) => {
+        if (n.type !== "text" || !n.id || ids.includes(n.id)) return;
+        if ((n.runs ?? []).some((r) => r.fontSize !== undefined)) return;
+        if ((n.fontSize ?? 24) < target) edits.push([n.id, target]);
+      });
+    }
+  } finally { L.free(); }
+  if (!edits.length) return xml;
+  let out = xml;
+  for (const [id, fs] of edits) out = setAttrs(out, id, { fontSize: fs });
+  const T = await layout(out);
+  try {
+    if (spillsOf(T).length || overSlide(T) > 0) return xml;
+  } finally { T.free(); }
+  report.push(`KPI labels / deltas grow with their numbers (-> ${Math.max(...edits.map((e) => e[1]))}px)`);
+  return out;
 }
 
 async function evenStats(xml, report, rows) {
@@ -1655,6 +1694,11 @@ async function fitSlide(inputXml, report, warnings = []) {
     if (evened === xml) break;
     warnings.length = w0;
     xml = await guardWords(evened, report, warnings);
+  }
+  const sided = await growStatSides(xml, report, rows);
+  if (sided !== xml) {
+    warnings.length = w0;
+    xml = await guardWords(sided, report, warnings);
   }
   return report.length ? untag(xml) : inputXml;
 }

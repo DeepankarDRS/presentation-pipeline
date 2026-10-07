@@ -86,3 +86,13 @@ def test_chart_focus_pair_is_literal_hex():
     focus = resolve_theme("navy-orange")["chart_focus"]
     assert focus["focus"] == _PALETTES["navy-orange"]["accent"]
     assert not focus["rest"].startswith("$")
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_card_edge_is_visible(name):
+    """A card's hairline reads on the slide AND on the card (corporate-slate's was 1.17:1)."""
+    p = _PALETTES[name]
+    border = derive_tokens(p)["border"]
+    assert contrast(border, p["surface"]) >= 1.4 and contrast(border, p["surfaceAlt"]) >= 1.4
+    diff = abs(_hue(border) - _hue(p["border"]))
+    assert min(diff, 360 - diff) <= 8 or len({p["border"][i:i + 2] for i in (0, 2, 4)}) == 1

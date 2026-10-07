@@ -19,6 +19,7 @@ import yaml
 
 from src.agents.blueprint_selector import select_blueprint
 from src.agents.hint_capabilities import hint_scopes, visual_intent_techniques
+from src.agents.capacity import layout_rules
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
@@ -577,7 +578,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     notes = _select_notes(
         kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
     )
-    house_style = _render_house_style()
+    house_style = _render_house_style() + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n" + layout_rules()
     component_recipes = _render_component_recipes(
         [_recipe_kind(c) for c in slide_plan.get("components", [])])
     slide_type = slide_plan.get("slide_type", "content")
