@@ -80,3 +80,39 @@ Compile time: +≈ 30 ms per slide.
 3. Sparse fix: the main component takes the free space, then scale ≤ 1.25×, then centre.
 4. Stress fixtures per component kind as the gate. 5. LLM repair with the pixel report for what is
    left (paid, ask first). A code becomes a repair trigger only at ≥ 90 % precision.
+
+## Step 2 built: spill fix in code (2026-10-07)
+
+`src/node/fit-grow.js` phase 7 `fixSpills` (after `reserveWrap`, before the word guard; `POM_FIT_SPILL=0` turns
+it off). It runs only when a component needs more room than its box (table columns / rows, text, list,
+stack content; the slide root is never given minH):
+
+1. **Give the space.** A table too wide: columns re-planned into the box when no column gets narrower than
+   a word, else `minW` on the table **and its parent stacks up to the row** (a child's minW does not widen
+   its parent: the agency card stayed narrow until this). Too tall: `minH` = what the rows / text / content
+   need. Up to 3 rounds.
+2. **Dense order** if the slide is then too tall, each step on the original XML, cumulative, space given
+   again: gaps ×0.75, ×0.5 (≥ 8) → padding ×0.75, ×0.5 (≥ 12) → fonts ×0.92 … ×0.7 (≥ 14).
+3. **Still too full:** left as generated, `SLIDE_DENSE` warning (a split is the user's call). Re-flow
+   (lists / card grids / tighter table columns) is not built yet.
+
+POM's own autoFit stays as the last resort; it only acts on a slide too tall overall and shrinks fonts to 10.
+
+**Replay (same 79 slides, LLM-free), slides with the code, step 1 → step 2:**
+
+| Code | Set A (48) | Set B (31) |
+|---|---|---|
+| `GEOM_SPILL` | 2 → 1 | 7 → 3 |
+| `GEOM_COLLISION` | 4 → 3 | 4 → 2 |
+| `GEOM_CARD_EMPTY` | 7 → 7 | 2 → 1 |
+| `WORD_TOO_WIDE` | 5 → 5 | 6 → 5 |
+| `SLIDE_DENSE` (new) | 0 | 3 |
+
+Checked by eye before / after: the agency table's hidden CVR column is back, the Blinkit table no longer runs
+under its chart (NTB % and ACOS visible), the Swiggy KPI "₹1.80 Cr" no longer breaks over its delta (dense
+order gaps / padding / fonts ×0.85, type still ≥ 14). Left: the 3 `SLIDE_DENSE` slides (old gj-h1 regen,
+two with a table wider than its card), the `<Layer>` slide (positions written by the LLM: captions over
+each other, off the slide), timeline labels too long for their diagram, matrix labels over each other —
+these need a layout change, not more room (candidates for the LLM repair with the pixel report).
+Time: +1.8 s on a slide fixed with the dense order, +4.7 s on a slide that stays too dense; 0 on a slide
+without spills. Unit tests 795 pass, the 4 known failures.

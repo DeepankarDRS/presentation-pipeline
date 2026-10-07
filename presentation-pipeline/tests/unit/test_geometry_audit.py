@@ -88,3 +88,47 @@ def test_a_full_clean_slide_has_no_findings(tmp_path):
                      for _ in range(3))
            + '</HStack></VStack></Slide>')
     assert _audit(xml, tmp_path) == {}
+
+
+# --- the spill fix in fit-grow (item 2 step 2): same slides, fit-grow on -----------------------
+
+def _fit(xml: str, tmp_path: Path) -> tuple[dict[str, list[str]], dict]:
+    import json
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    src = tmp_path / "in.xml"
+    src.write_text(xml, encoding="utf-8")
+    subprocess.run(["node", str(COMPILER), str(src), str(tmp_path / "out")], capture_output=True,
+                   timeout=180, check=True)
+    result = json.loads((tmp_path / "out" / "compile-result.json").read_text(encoding="utf-8"))
+    found: dict[str, list[str]] = {}
+    for i in audit_run_folder(tmp_path / "out"):
+        found.setdefault(i["code"], []).append(i["message"])
+    return found, result
+
+
+def test_fit_grow_gives_a_squeezed_table_its_rows(tmp_path):
+    xml = (f'<Slide><VStack w="1280" h="720" padding="40" gap="20">'
+           f'<VStack h="120" backgroundColor="FFFFFF"><Table>{_rows(5)}</Table></VStack>'
+           f'<VStack h="80" backgroundColor="FFFFFF"><Text>next card</Text></VStack></VStack></Slide>')
+    found, result = _fit(xml, tmp_path)
+    assert "GEOM_SPILL" not in found and "GEOM_COLLISION" not in found
+    assert any("spill fixed" in m or "box protected" in m for m in result["fitGrow"])
+
+
+def test_fit_grow_widens_a_table_card_into_its_row(tmp_path):
+    head = "".join(f"<Td>Header {i}</Td>" for i in range(6))
+    cells = "".join(f"<Td>₹{i}9.5L</Td>" for i in range(6))
+    xml = (f'<Slide><VStack w="1280" h="720" padding="40"><HStack gap="20" h="300">'
+           f'<VStack w="max" padding="16" backgroundColor="FFFFFF"><Table><Tr>{head}</Tr><Tr>{cells}</Tr></Table></VStack>'
+           f'<VStack w="max" padding="16" backgroundColor="FFFFFF"><Text>' + "beside " * 60 + '</Text></VStack>'
+           f'</HStack></VStack></Slide>')
+    found, _ = _fit(xml, tmp_path)
+    assert "GEOM_SPILL" not in found
+
+
+def test_too_dense_slide_is_left_and_reported(tmp_path):
+    body = "".join(f'<VStack h="60" backgroundColor="FFFFFF"><Text fontSize="14">{"word " * 200}</Text></VStack>'
+                   for _ in range(7))
+    xml = f'<Slide><VStack w="1280" h="720" padding="40" gap="20">{body}</VStack></Slide>'
+    _, result = _fit(xml, tmp_path)
+    assert any(w["code"] == "SLIDE_DENSE" for w in result.get("warnings") or [])

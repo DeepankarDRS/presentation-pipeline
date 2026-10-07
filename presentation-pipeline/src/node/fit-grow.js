@@ -1643,6 +1643,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
+  if (process.env.POM_FIT_SPILL !== "0") xml = await fixSpills(xml, report, warnings);
   const w0 = warnings.length;
   const rows = await statRows(xml);
   xml = await guardWords(xml, report, warnings);
@@ -1655,6 +1656,145 @@ async function fitSlide(inputXml, report, warnings = []) {
     xml = await guardWords(evened, report, warnings);
   }
   return report.length ? untag(xml) : inputXml;
+}
+
+// --- phase 7: spills (slide-quality item 2 step 2, 2026-10-07) -----------------
+//
+// A component that needs more room than its box draws past it: a table's rows or
+// columns (POM keeps declared widths even when they add up to more than the box),
+// a text or list in a box set too small, a stack whose content is taller than its h.
+// The renderer draws all of it anyway, over the next card (docs/geometry-check-2026-10-07.md).
+//
+//   1. give the space — a table's columns re-planned into its box (only when no
+//      column gets narrower than a word), else minW; minH = what the rows / text /
+//      content need. Up to 3 rounds (narrower columns can need taller rows).
+//   2. if the slide is then too full, the dense order, each step tried on the
+//      original XML and the space given again: gaps (>= 8) -> padding (>= 12) ->
+//      fonts (>= 14), cumulative.
+//   3. still too full: the XML is left as it was and SLIDE_DENSE is reported (a
+//      split into two slides is a plan decision).
+// POM's own autoFit only acts on a slide too tall overall, and shrinks fonts to 10 px.
+
+const SPILL_TOL = 2;
+const DENSE_STEPS = [["gap", 0.75], ["gap", 0.5], ["padding", 0.75], ["padding", 0.5],
+  ["fontSize", 0.92], ["fontSize", 0.85], ["fontSize", 0.78], ["fontSize", 0.7]];
+const DENSE_FLOOR = { gap: 8, padding: 12, fontSize: 14 };
+
+function spillsOf(L) {
+  const out = [];
+  for (const root of L.slides) walk(root, (n, parent) => {
+    if (!n.id || !parent) return; // the slide root: a too-tall slide is overSlide's, not a spill
+    const b = L.box(n);
+    if (n.type === "table") {
+      const cw = sum(resolveColumnWidths(n, b.w));
+      if (cw > b.w + SPILL_TOL) out.push({ n, kind: "w", need: cw, have: b.w });
+      const rh = rowsSum(n);
+      if (rh > b.h + SPILL_TOL) out.push({ n, kind: "h", need: rh, have: b.h });
+    } else if (n.type === "text" || n.type === "ul" || n.type === "ol" || STACKS.has(n.type)) {
+      const need = natural(n, L);
+      if (need > b.h + SPILL_TOL) out.push({ n, kind: "h", need, have: b.h });
+    }
+  });
+  return out;
+}
+
+function overSlide(L) {
+  return Math.max(0, ...L.slides.map((r) => contentHeight(r, L) - SLIDE.h * 1.005));
+}
+
+/** Edits that give each spilling component the room it draws in. */
+function giveSpace(xml, spills, L) {
+  const parentOf = new Map();
+  for (const root of L.slides) walk(root, (c, p) => p && parentOf.set(c, p));
+  for (const { n, kind, need, have } of spills) {
+    if (n.type === "table" && kind === "w") {
+      const grid = cellGrid(n);
+      // re-plan as if no width were set: candidates then all sum to the box width
+      const plan = grid && planTable({ ...n, columns: n.columns.map(() => ({})) }, grid, have,
+        (c) => c.fontSize ?? TD_FONT, L.ctx, resolveRowHeights(n).map(() => 0));
+      if (plan && plan.valid) {
+        const widths = plan.widths ?? intWidths(n.columns.map(() => have / n.columns.length), have);
+        const declared = resolveRowHeights(n);
+        xml = writeTable(xml, n.id, { widths, rows: declared.map((d, i) => rowFor(d, plan.need[i])) });
+      } else {
+        xml = setAttrs(xml, n.id, { minW: Math.ceil(need) });
+        // a child's minW does not widen its parent: carry it up while the parent is narrower
+        let w = need;
+        for (let p = parentOf.get(n); p && p.id && parentOf.get(p); p = parentOf.get(p)) {
+          const b = L.box(p);
+          w += p.type === "vstack" ? b.pl + b.pr : 0;
+          if (p.type === "hstack" || b.w >= w - SPILL_TOL) break;
+          xml = setAttrs(xml, p.id, { minW: Math.ceil(w) });
+        }
+      }
+    } else {
+      xml = setAttrs(xml, n.id, { minH: Math.ceil(need) });
+    }
+  }
+  return xml;
+}
+
+/** Give space for up to 3 rounds; returns { xml, spills, over } of the result. */
+async function settle(xml) {
+  let L = await layout(xml);
+  try {
+    for (let round = 0; round < 3; round++) {
+      const sp = spillsOf(L);
+      if (!sp.length) break;
+      xml = giveSpace(xml, sp, L);
+      L.free();
+      L = await layout(xml);
+    }
+    return { xml, spills: spillsOf(L).map(({ n, kind, need, have }) => ({ id: n.id, type: n.type, kind, need, have })),
+      over: overSlide(L) };
+  } finally { L.free(); }
+}
+
+function scaleSpacing(xml, scales) {
+  for (const [attr, s] of Object.entries(scales)) {
+    const floor = DENSE_FLOOR[attr];
+    xml = xml.replace(new RegExp(`(\\s${attr}\\s*=\\s*")([\\d. ]+)(")`, "g"), (m, a, v, b) =>
+      a + v.trim().split(/\s+/).map((t) => {
+        const x = Number(t);
+        return x > floor ? Math.max(floor, Math.round(x * s)) : x;
+      }).join(" ") + b);
+  }
+  return xml;
+}
+
+const describeSpill = (s) => `${s.type} ${s.kind === "w" ? "width" : "height"} ${Math.round(s.have)} -> ${Math.round(s.need)}px`;
+
+async function fixSpills(xml, report, warnings) {
+  const L = await layout(xml);
+  let first;
+  try {
+    first = spillsOf(L).map(({ n, kind, need, have }) => ({ id: n.id, type: n.type, kind, need, have }));
+  } finally { L.free(); }
+  // stacks follow their content: name the leaves (tables / texts) when there are any
+  const named = (sp) => {
+    const leaves = sp.filter((s) => !STACKS.has(s.type));
+    return (leaves.length ? leaves : sp).map(describeSpill).join("; ");
+  };
+  if (!first.length) return xml;
+
+  let out = await settle(xml);
+  if (!out.spills.length && out.over <= 0) {
+    report.push(`spill fixed (space given): ${named(first)}`);
+    return out.xml;
+  }
+  const scales = {};
+  for (const [attr, s] of DENSE_STEPS) {
+    scales[attr] = s;
+    out = await settle(scaleSpacing(xml, scales));
+    if (!out.spills.length && out.over <= 0) {
+      report.push(`spill fixed (dense: ${Object.entries(scales).map(([a, v]) => `${a} x${v}`).join(", ")}): ${named(first)}`);
+      return out.xml;
+    }
+  }
+  warnings.push({ code: "SLIDE_DENSE", message: `content needs more room than the slide has after gaps, padding and `
+    + `fonts down to 14px; left as generated: ${named(first)}` });
+  report.push(`spill left (slide too dense): ${named(first)}`);
+  return xml;
 }
 
 // Whole-pass time budget. Each slide takes ~1-3s; a deck is compiled in one
