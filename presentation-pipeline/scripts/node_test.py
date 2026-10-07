@@ -48,7 +48,13 @@ class Reply:
 
 class RealLLM:
     def __init__(self) -> None:
+        import os
+
+        from dotenv import load_dotenv
         from src.utils.llm_client import get_llm
+        load_dotenv(ROOT / ".env")   # OPENAI_API_KEY from presentation-pipeline/.env, as src/graph.py does
+        if not os.environ.get("OPENAI_API_KEY"):
+            raise SystemExit(f"OPENAI_API_KEY is not set: put it in {ROOT / '.env'} (nothing was sent)")
         self.llm = get_llm("generator")
 
     def __call__(self, messages: list[dict], case: str, number: int, attempt: int, plan: dict) -> Reply:
