@@ -162,3 +162,17 @@ the normalizer's `GROW_BAND_ADDED` or the generator) — a decision for the user
   `grow="2"`" rule is replaced by a flag-only "unbalanced composition";
 - issues that still talk only about size / space are dropped before repair and logged (`code_owned`).
 Not measured yet with the critic on (paid; ask first). Unit tests 803 pass, the 4 known failures.
+
+## Paid check with the critic on (test PC, 2026-10-07, commit `48af92a`, `deck-qbr-data` × 1, $0.45)
+
+8 slides, all compiled (slide 6 after one compile repair). The critic passed 6 slides with no issue (≈ 15 output
+tokens each) and raised no size / spacing complaint visible in the result: it did not fight fit-grow. On slide 5
+it flagged the context card that held a generic description instead of content ("Presents the quarter's most
+important accomplishments…"); the slide was re-planned and the repaired slide shows a dark read-out with the real
+message — the kind of judgement code cannot make. 2 medium issues stayed open (slides 6–7; texts were not saved —
+the manifest now keeps them). Fit-grow on the run: the segment table grew to 24 px text / 396 px rows; KPI tiles
+remain the open `GEOM_CARD_EMPTY` case. Seen by eye: the revenue chart put the focus colour on the first quarter,
+not the one the headline names; slide 6's icon chips drew odd small squares.
+Follow-ups done (LLM-free): normalizer `SHAPE_TYPE_ALIAS` (`circle` → `ellipse`, … — slide 6's first compile
+failed on it; the saved XML now compiles first time); manifest `critic.issues` keeps severity / type / description /
+fix. Unit tests 804 pass, the 4 known failures. Note: the test PC reported uncommitted local changes.

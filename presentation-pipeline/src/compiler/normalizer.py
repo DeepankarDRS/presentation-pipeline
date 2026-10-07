@@ -512,6 +512,11 @@ def ensure_single_theme(xml: str, theme_element: str) -> str:
     return f"{theme}\n{body}".strip() + "\n"
 
 
+_SHAPE_ALIASES = {"circle": "ellipse", "oval": "ellipse", "square": "rect", "rectangle": "rect",
+                  "roundedrect": "roundRect", "roundedrectangle": "roundRect", "rounded": "roundRect"}
+_SHAPE_ALIAS_RE = re.compile(r'shapeType="(' + "|".join(_SHAPE_ALIASES) + r')"', re.IGNORECASE)
+
+
 def normalize_xml(raw_xml: str) -> dict[str, Any]:
     """Normalize raw LLM XML output: strip fences, fix colors, remove br/hr.
 
@@ -566,6 +571,18 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
         issues.append({
             "code": "FONTWEIGHT_TO_BOLD",
             "message": f"Replaced {len(fontweight_hits)} 'fontWeight' attribute(s) with 'bold=\"true\"'.",
+            "auto_fixed": True,
+        })
+
+    # shapeType names POM rejects but that have one meaning (critic-on run 5fb8a2, 2026-10-07:
+    # "circle" cost a compile repair)
+    shape_hits = list(_SHAPE_ALIAS_RE.finditer(xml))
+    if shape_hits:
+        xml = _SHAPE_ALIAS_RE.sub(lambda m: f'shapeType="{_SHAPE_ALIASES[m.group(1).lower()]}"', xml)
+        issues.append({
+            "code": "SHAPE_TYPE_ALIAS",
+            "message": "shapeType {} -> POM names.".format(
+                ", ".join(sorted({m.group(1) for m in shape_hits}))),
             "auto_fixed": True,
         })
 

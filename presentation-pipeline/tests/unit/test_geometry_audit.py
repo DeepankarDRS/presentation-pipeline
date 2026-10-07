@@ -178,3 +178,10 @@ def test_sparse_table_slide_grows_the_table_then_centres(tmp_path):
     import json
     geo = json.loads((tmp_path / "out" / "geometry.json").read_text(encoding="utf-8"))
     assert geo["slides"][0]["children"][0]["y"] == 40  # the header stays at the top
+
+
+def test_shape_type_aliases_are_normalized():
+    from src.compiler.normalizer import normalize_xml
+    r = normalize_xml('<Slide><VStack><Shape shapeType="circle" w="10" h="10" /></VStack></Slide>')
+    assert 'shapeType="ellipse"' in r["cleaned_xml"]
+    assert any(i["code"] == "SHAPE_TYPE_ALIAS" for i in r["issues"])

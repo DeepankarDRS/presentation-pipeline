@@ -269,6 +269,9 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
             "high": critic_high,
             "medium": critic_medium,
             "low": critic_low,
+            # the texts, to review a critic-on run from the bundle (2026-10-07)
+            "issues": [{k: str(i.get(k, ""))[:300] for k in ("severity", "type", "description", "fix")}
+                       for i in critic_issues],
         },
         "steps": step_summary,
         "pptx_path": compile_result.get("pptx_path"),
