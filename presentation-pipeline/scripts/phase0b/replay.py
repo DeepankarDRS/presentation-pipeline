@@ -45,14 +45,15 @@ def deck_name(path: Path) -> str:
     return path.parent.name if path.name == "slides.json" else re.sub(r"\W+", "-", path.stem).strip("-")
 
 
-def replay(path: Path, out: Path, pack: str, measure=None) -> dict:
+def replay(path: Path, out: Path, pack: str, measure=None, p: R.Pack | None = None) -> dict:
+    """p: a ready pack (e.g. R.deck_pack: the run's own palette); default the named style pack."""
     name = deck_name(path)
     saved = json.loads(path.read_text(encoding="utf-8"))
     plans = [s["slide_plan"] for s in saved if s.get("slide_plan")]
     first = plans[0]
     brand = (first.get("slide_title") or "Deck").split()[0].strip(" ·:|").upper()
     deck = {"pack": pack, "brand": brand, "running": first.get("slide_title") or "", "entities": {}}
-    p = R.Pack(pack, {})
+    p = p or R.Pack(pack, {})
     src = out / f"src-{name}"
     src.mkdir(parents=True, exist_ok=True)
     drawn_plans, rows = [], []

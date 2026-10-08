@@ -1168,8 +1168,11 @@ def _cover(plan: dict, deck: dict, p: Pack, total: int) -> str:
         msg = (f'<VStack w="380" gap="10" padding.left="18" borderLeft.color="$accent2" borderLeft.width="3">'
                f'{p.label("Key message", "$accent2")}<Text fontSize="15" fontFamily="{p.sans}" italic="true" color="$muted" '
                f'lineHeight="1.45">{x(narr)}</Text></VStack>') if narr else ""
+        # the dark hero needs the pack's dark colour set; a deck palette (deck_pack) has one set only
+        bg = ('backgroundGradient="radial-gradient(circle at 12% 8%, #26301A 0%, #0D0F0C 60%)"' if p.dark_c
+              else 'backgroundColor="$bg"')
         return f'''<Slide>
-  <VStack w="{W}" h="{H}" padding="56" alignItems="stretch" backgroundGradient="radial-gradient(circle at 12% 8%, #26301A 0%, #0D0F0C 60%)">
+  <VStack w="{W}" h="{H}" padding="56" alignItems="stretch" {bg}>
     <HStack alignItems="center" justifyContent="spaceBetween">
       <HStack gap="10" alignItems="center"><Shape shapeType="rect" w="8" h="8" fill.color="$accent2" />{p.label(brand, "$ink", 12, ' bold="true"')}</HStack>
       {p.label(f"01 / {total:02d}", "$muted", 9, ' textAlign="right"')}

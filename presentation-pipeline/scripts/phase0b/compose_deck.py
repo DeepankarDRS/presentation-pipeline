@@ -1,6 +1,11 @@
 """Draw a pipeline run's slide plans with the code composer, as one .pptx (research tool, §14).
 
     python -m scripts.phase0b.compose_deck output/runs/<run_id> [--pack studio_inter] [--fallback llm|gap]
+        [--palette deck|pack]
+
+Colours: --palette deck (default) draws the code slides in the run's own <Theme> (run-manifest.json
+theme_element, else deck/input.xml), so they match the LLM fallback slides; --pack then gives only
+fonts, type and structure. --palette pack keeps the style pack's colours (style_packs.yaml).
 
 Takes the run's slides.json (written by every pipeline run), draws each slide with the
 Phase 0b composer + two-pass sizing (replay.py --fit), compiles, merges the slides and
@@ -22,6 +27,7 @@ import re
 import sys
 from pathlib import Path
 
+from scripts.phase0b import render as R
 from scripts.phase0b.fit import Measurer
 from scripts.phase0b.replay import deck_name, replay
 from scripts.render_check import _compile
@@ -37,7 +43,19 @@ def run_folder(path: Path) -> Path:
     raise FileNotFoundError(f"{path}: no slides.json here or above (pass output/runs/<run_id>)")
 
 
-def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm") -> dict:
+def run_theme(run: Path) -> str:
+    """The run's <Theme .../> tag: run-manifest.json theme_element, else deck/input.xml; "" if none."""
+    manifest = run / "run-manifest.json"
+    if manifest.exists():
+        theme = json.loads(manifest.read_text(encoding="utf-8")).get("theme_element") or ""
+        if "<Theme" in theme:
+            return theme
+    deck_xml = run / "deck" / "input.xml"
+    m = re.search(r"<Theme[^>]*/>", deck_xml.read_text(encoding="utf-8")) if deck_xml.exists() else None
+    return m.group() if m else ""
+
+
+def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm", palette: str = "deck") -> dict:
     """Draw the run's plans; returns {pptx, slides, code, llm, left_out, smaller_type, overfull}.
     Writes <run>/composed/composed.pptx."""
     try:  # the blocks measure text with the real font files; without Pillow they silently estimate
@@ -48,13 +66,19 @@ def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm") -> dic
     run = run_folder(run.resolve())
     out = run / "composed"
     saved = json.loads((run / "slides.json").read_text(encoding="utf-8"))
-    deck_xml = run / "deck" / "input.xml"
-    m = re.search(r"<Theme[^>]*/>", deck_xml.read_text(encoding="utf-8")) if deck_xml.exists() else None
-    theme = m.group() if m else ""
+    theme = run_theme(run)
+    p = None
+    if palette == "deck":
+        if theme:  # code slides take every colour from the run's <Theme> by role (render.deck_pack)
+            p = R.deck_pack(theme, base=pack)
+            p.dark_slides = []  # the deck theme has one colour set: no slides drawn dark
+        else:
+            print(f"warning: {run.name} has no <Theme> (run-manifest.json / deck/input.xml); "
+                  f"code slides use the {pack} pack colours", file=sys.stderr)
 
     measure = Measurer()
     try:
-        report = replay(run / "slides.json", out, pack, measure)
+        report = replay(run / "slides.json", out, pack, measure, p)
     finally:
         measure.close()
     code_dir = out / f"src-{deck_name(run / 'slides.json')}"
@@ -99,9 +123,11 @@ def main() -> None:
     ap.add_argument("run", type=Path, help="output/runs/<run_id> (or any path inside it)")
     ap.add_argument("--pack", default="studio_inter", help="style pack (scripts/phase0b/style_packs.yaml)")
     ap.add_argument("--fallback", choices=["llm", "gap"], default="llm")
+    ap.add_argument("--palette", choices=["deck", "pack"], default="deck",
+                    help="deck: colours from the run's <Theme> (fonts + structure from --pack); pack: the pack's own")
     a = ap.parse_args()
     try:
-        r = compose(a.run, a.pack, a.fallback)
+        r = compose(a.run, a.pack, a.fallback, a.palette)
     except FileNotFoundError as e:
         sys.exit(str(e))
     print(f"slides: {len(r['code'])} code-drawn, {len(r['llm'])} LLM fallback "
