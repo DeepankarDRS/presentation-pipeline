@@ -47,3 +47,21 @@ Most of the gap is **planning** (1-4, 7) and **house-style numbers / rules** (6,
 
 Checked: replaying the saved slides 1-3 and 5 through normalize + compile_xml gives no DEL character and every run in Inter; Inter is embedded.
 Not done: the chart block (#8), and a paid run to see what the planners and generator now write.
+
+## Paid run after the changes (test PC, 2026-10-08, commit `8d7b3ed`, `deck-qbr-data`, critic on, $0.25)
+
+`run-30cd7b/deck.png`. 5 slides (was 8), $0.25 (was $0.49), 0 retries, critic 0 issues, passed.
+Fixed: no fact on two slides, claim headlines, no broken glyphs, Inter, title 36 / subtitle 18.
+Still wrong, and the fix (built LLM-free the same day):
+
+| Seen | Cause | Fix |
+|---|---|---|
+| Revenue chart 180 px tall, lower 40% empty | the chart card was the only child of a `grow="3"` band and had no grow | normalizer `GROW_LONE_CARD` (`grow_fallback.fill_lone_child`) |
+| Focus colour on Q2 FY25 and Q3 FY26 | LLM chartColors | normalizer `CHART_FOCUS_LATEST`: a one-series bar chart over periods highlights the last period unless the slide text names the highlighted one |
+| Segment table: last column 600 px wide, others cramped | `<Col width>` on three columns | normalizer `TABLE_NUMERIC_COLS_SHARED`: numeric columns share the width |
+| "Note: these are the quarter's headline financials..." / "Note: Enterprise is the largest..." boxes | outline planner wrote its own commentary as "Note:" | outline prompt: "Note:" only for a caveat the request states; narrative never restates or signposts |
+| Priority cards: the same words as tag, title and body | planner split one brief line and kept it whole as the body | `written_lines.drop_repeated_bodies` compares the body with title + tag |
+| Third priority card dark for no reason | planner design_hint picked a focus | component planner: focus only what the headline names |
+| Plain centred cover | generator cover rule | cover layout: left title 56-60 + accent block |
+
+Replay of slides 2-3 with the code fixes: `run-30cd7b/replay-slides-2-3.png` (left = run, right = replay).

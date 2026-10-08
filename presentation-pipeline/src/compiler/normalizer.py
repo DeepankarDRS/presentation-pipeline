@@ -11,7 +11,7 @@ import re
 from typing import Any
 
 from src.compiler.content_model import find_violations, flatten_text_containers
-from src.compiler.grow_fallback import ensure_growing_band, share_row_height
+from src.compiler.grow_fallback import ensure_growing_band, fill_lone_child, share_row_height
 from src.compiler.kpi_grid import kpi_rows
 from src.compiler.icons import fix_icon_names
 from src.utils.text_clean import strip_illegal
@@ -405,6 +405,79 @@ def strip_control_chars(text: str) -> tuple[str, int]:
     return cleaned, n
 
 
+# A one-series bar / column chart over time highlights the latest period (2026-10-08: two QBR runs
+# put the focus colour on the first quarter). Only when the chart already uses one focus colour
+# against one base colour, and the slide's text names no other period.
+_PERIOD_RE = re.compile(r"^(?:Q[1-4]|H[12]|FY|CY|W\d|(?:19|20)\d\d|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", re.I)
+_CHART_RE = re.compile(r"<Chart\b(?P<attrs>[^>]*)>(?P<body>.*?)</Chart>", re.S)
+
+
+def _focus_latest_period(xml: str) -> tuple[str, int]:
+    count = 0
+    slide_text = " ".join(re.findall(r">([^<>]+)<", _CHART_RE.sub("", xml)))
+
+    def _fix(m: re.Match) -> str:
+        nonlocal count
+        attrs, body = m.group("attrs"), m.group("body")
+        if body.count("<ChartSeries") != 1 or not re.search(r'chartType="(?:bar|column)"', attrs):
+            return m.group(0)
+        labels = re.findall(r'<ChartDataPoint[^>]*\blabel="([^"]*)"', body)
+        cm = re.search(r"chartColors='(\[[^']*\])'", attrs)
+        if len(labels) < 3 or not cm or not all(_PERIOD_RE.match(x.strip()) for x in labels):
+            return m.group(0)
+        colors = re.findall(r'"([^"]+)"', cm.group(1))
+        distinct = set(colors)
+        if len(colors) != len(labels) or len(distinct) != 2:
+            return m.group(0)
+        base = max(distinct, key=colors.count)
+        focus = (distinct - {base}).pop()
+        if colors.count(focus) == 1 and any(lab in slide_text for i, lab in enumerate(labels)
+                                             if colors[i] == focus):
+            return m.group(0)        # the headline names the highlighted period: keep it
+        want = [base] * (len(labels) - 1) + [focus]
+        if want == colors:
+            return m.group(0)
+        count += 1
+        new = "chartColors='[" + ",".join(f'"{c}"' for c in want) + "]'"
+        return m.group(0).replace(cm.group(0), new, 1)
+
+    return _CHART_RE.sub(_fix, xml), count
+
+
+# Numeric table columns share the width equally (2026-10-08: the QBR segment table pinned 180 / 140 /
+# 120 px and left the last column 600 px wide). A column whose body cells are all figures loses its
+# pixel width; text columns keep theirs.
+_TABLE_RE = re.compile(r"<Table\b[^>]*>.*?</Table>", re.S)
+_FIGURE_RE = re.compile(r"^[\s$€£₹+\-−~<>≈]*[\d][\d.,]*\s*(?:%|x|×|[KMB]n?|pts?|months?|mo|days?)?\s*$", re.I)
+
+
+def _share_numeric_columns(xml: str) -> tuple[str, int]:
+    count = 0
+
+    def _fix(m: re.Match) -> str:
+        nonlocal count
+        table = m.group(0)
+        cols = list(re.finditer(r"<Col\b[^>]*/>", table))
+        rows = re.findall(r"<Tr\b[^>]*>(.*?)</Tr>", table, re.S)
+        if len(cols) < 3 or len(rows) < 3:
+            return table
+        cells = [[re.sub(r"<[^>]+>", "", c).strip() for c in re.findall(r"<Td\b[^>]*>(.*?)</Td>", r, re.S)]
+                 for r in rows[1:]]
+        out = table
+        for j in range(len(cols) - 1, -1, -1):
+            col = cols[j].group(0)
+            if "width=" not in col:
+                continue
+            body = [r[j] for r in cells if j < len(r)]
+            if body and all(_FIGURE_RE.match(v) for v in body):
+                a, b = cols[j].span()
+                out = out[:a] + "<Col />" + out[b:]
+                count += 1
+        return out
+
+    return _TABLE_RE.sub(_fix, xml), count
+
+
 def _tidy_text_whitespace(xml: str) -> tuple[str, int]:
     """Text written over several indented lines keeps its newline + indent as characters: the
     CHEFFIN cover title started with '\\n          CHEFFIN…' and rendered pushed right. Collapse
@@ -490,6 +563,12 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
     xml, n = _pad_table_columns(xml)
     if n:
         note("TABLE_COLS_PADDED", f"Added <Col /> to {n} table(s) whose rows had more cells than columns.")
+    xml, n = _share_numeric_columns(xml)
+    if n:
+        note("TABLE_NUMERIC_COLS_SHARED", f"Removed the pixel width of {n} numeric table column(s) so they share the width.")
+    xml, n = _focus_latest_period(xml)
+    if n:
+        note("CHART_FOCUS_LATEST", f"Moved the focus colour to the latest period on {n} time-series chart(s).")
     xml, n = strip_control_chars(xml)
     if n:
         note("CONTROL_CHAR_REMOVED", f"Removed {n} control character(s) (drawn as a box glyph).")
@@ -718,6 +797,9 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     xml, rows_note = share_row_height(xml)
     if rows_note:
         issues.append({"code": "GROW_ROWS_ADDED", "message": rows_note, "auto_fixed": True})
+    xml, lone_note = fill_lone_child(xml)
+    if lone_note:
+        issues.append({"code": "GROW_LONE_CARD", "message": lone_note, "auto_fixed": True})
 
     cleaned = xml.strip() + "\n"
     auto_fixed = sum(1 for i in issues if i["auto_fixed"])

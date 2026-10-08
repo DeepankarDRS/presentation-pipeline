@@ -142,3 +142,33 @@ def share_row_height(xml: str) -> tuple[str, str | None]:
         xml = xml[:at] + ' grow="1"' + xml[at:]
     return xml, (f'Gave grow="1" to {len(inserts)} card row(s) of a growing band so the rows '
                  "share its height (none of them grew).")
+
+
+# A growing band whose ONLY child is a card (no grow / h) leaves the card at content height:
+# the QBR revenue chart sat in a <VStack grow="3"> but its card did not grow, so the chart stayed
+# at minH 180 with the lower 40% of the slide empty (2026-10-08). The lone card takes the band.
+
+def _subtree_names(el: dict) -> set[str]:
+    names = {el["name"]}
+    for c in el["children"]:
+        names |= _subtree_names(c)
+    return names
+
+
+def fill_lone_child(xml: str) -> tuple[str, str | None]:
+    """Return (xml, message); message is None when nothing changed."""
+    inserts: list[int] = []
+    for el in _elements(xml):
+        if el["name"] != "VStack" or not _FLEX_ATTR_RE.search(el["attrs"]) or len(el["children"]) != 1:
+            continue
+        child = el["children"][0]
+        if child["name"] not in ("VStack", "HStack") or _FLEX_ATTR_RE.search(child["attrs"]):
+            continue
+        if not (_BG_ATTR_RE.search(child["attrs"]) or _subtree_names(child) & _FILLS):
+            continue
+        inserts.append(child["start"] + 1 + len(child["name"]))
+    if not inserts:
+        return xml, None
+    for at in sorted(inserts, reverse=True):
+        xml = xml[:at] + ' grow="1"' + xml[at:]
+    return xml, f'Gave grow="1" to {len(inserts)} card(s) that were the only child of a growing band.'

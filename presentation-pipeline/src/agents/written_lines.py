@@ -116,7 +116,10 @@ def drop_repeated_bodies(plan: dict[str, Any]) -> list[str]:
         for card in (comp.get("content_data") or {}).get("cards", []):
             if not isinstance(card, dict) or not card.get("body"):
                 continue
-            title, body = set(re.findall(r"[a-z0-9₹%]+", str(card.get("title", "")).lower())),                 set(re.findall(r"[a-z0-9₹%]+", str(card["body"]).lower()))
+            # title + tag together (2026-10-08: QBR priority cards split one brief line into title /
+            # tag and kept the whole line again as the body - the same words three times)
+            head = f'{card.get("title", "")} {card.get("tag", "")}'
+            title, body = set(re.findall(r"[a-z0-9₹%]+", head.lower())),                 set(re.findall(r"[a-z0-9₹%]+", str(card["body"]).lower()))
             if title and body and (body <= title or len(body & title) / len(body | title) >= 0.8):
                 notes.append(f"removed card body that repeats its title: {card['body']}")
                 card.pop("body", None)

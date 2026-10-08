@@ -77,9 +77,14 @@ Frame this slide's content to support the narrative above.
 
 ## SLIDE TYPE: {{ slide_type | upper }}
 {% if slide_type == "cover" %}
-Cover slide - centered layout, large display fonts, minimal elements.
-Use a prominent title (fontSize 40-48), optional subtitle/tagline below.
-No charts, tables, or dense content. Think "hero" - one big statement.
+Cover slide - one big statement, minimal elements, no charts or tables.
+Root <HStack w="1280" h="720" alignItems="stretch" backgroundColor="$surface">: a left
+<VStack grow="1" padding="72" gap="20" justifyContent="center"> with an optional kicker (16, $accentText,
+letterSpacing 3), the title (fontSize 56-60 bold, left-aligned), a short accent bar
+(<Shape shapeType="rect" w="96" h="6" fill.color="$accent" />) and the subtitle (26, $textMuted);
+a right <VStack w="400" padding="56" backgroundColor="$accent" justifyContent="end"> holding one short
+token from the title (the period or the company, fontSize 96-120 bold, color="$onAccent"). Never centre
+small text in the middle of an empty slide.
 {% elif slide_type == "content" %}
 Content slide - narrative focus with title + body text or bullets.
 Readable fonts. Tell the story, don't overwhelm with data.
