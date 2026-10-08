@@ -15,7 +15,7 @@ A slide with a component that has no block (timeline, flow, matrix, a caption on
 slide, ...) uses the LLM's own slide from the same run (--fallback llm, the default; what a
 build would do) or the code slide with that component left out (--fallback gap).
 
-Writes <run>/composed/composed.pptx; the run's LLM deck is <run>/deck/presentation.pptx.
+Writes <run>/composed/composed.pptx (--palette pack: composed-pack.pptx); the run's LLM deck is <run>/deck/presentation.pptx.
 No API calls. Experiment code, not wired into the pipeline.
 """
 
@@ -55,9 +55,15 @@ def run_theme(run: Path) -> str:
     return m.group() if m else ""
 
 
+def run_name_theme(run: Path) -> str:
+    """The run's theme name from run-manifest.json, for messages."""
+    manifest = run / "run-manifest.json"
+    return (json.loads(manifest.read_text(encoding="utf-8")).get("theme") or "?") if manifest.exists() else "?"
+
+
 def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm", palette: str = "deck") -> dict:
     """Draw the run's plans; returns {pptx, slides, code, llm, left_out, smaller_type, overfull}.
-    Writes <run>/composed/composed.pptx."""
+    Writes <run>/composed/composed.pptx (palette "pack": composed-pack.pptx)."""
     try:  # the blocks measure text with the real font files; without Pillow they silently estimate
         from PIL import ImageFont  # noqa: F401
     except ImportError as e:
@@ -103,12 +109,13 @@ def compose(run: Path, pack: str = "studio_inter", fallback: str = "llm", palett
         raise RuntimeError(f"{run}: no slide compiled")
 
     merged = merge_pptx_files(pptx, out / "merged.pptx")
-    final = out / "composed.pptx"
+    final = out / ("composed-pack.pptx" if palette == "pack" else "composed.pptx")
     embed_deck_fonts(merged, final)  # the open fonts the slides name, subset (src/compiler/font_embed.py)
     merged.unlink()  # same slides without the fonts: only an intermediate step
     fits = [r.get("fit") or {} for r in report["per_slide"]]
     return {
         "pptx": str(final),
+        "palette": f"deck theme ({run_name_theme(run)})" if p else f"{pack} pack colours",
         "slides": len(kinds),
         "code": [i + 1 for i, k in enumerate(kinds) if k == "code"],
         "llm": [i + 1 for i, k in enumerate(kinds) if k == "llm"],
@@ -137,6 +144,7 @@ def main() -> None:
     print("smaller type on: " + (", ".join(f"{n} (x{s})" for n, s in r["smaller_type"].items()) or "none"))
     if r["overfull"]:
         print("SLIDE_OVERFULL: " + ", ".join(map(str, r["overfull"])))
+    print(f"colours: {r['palette']}")
     print(f"composed deck: {r['pptx']}")
     llm = run_folder(a.run.resolve()) / "deck" / "presentation.pptx"
     if llm.exists():
