@@ -99,11 +99,17 @@ def deck_pack(theme_element: str, base: str = "studio_inter") -> Pack:
     (body >= 14 px, labels >= 12 px). Use with `retoken`: the slide keeps the deck's <Theme>."""
     t = dict(re.findall(r'(\w+)="([0-9A-Fa-f]{6})"', theme_element))
     p = Pack(base)
-    on = lambda bg: "FFFFFF" if _luma(bg) < 0.5 else t["textMain"]   # noqa: E731 - text on a fill
+    accent2 = t.get("accentAlt", t["accent"])
+    # text on a fill: the theme's surface or textMain, whichever is further in lightness (dark themes too)
+    on = lambda bg: max((t["surface"], t["textMain"]), key=lambda c: abs(_luma(c) - _luma(bg)))  # noqa: E731
+    if _luma(t["surface"]) < 0.5:  # dark theme: "dark" fills a raised panel, light text on it
+        dark, white = t.get("accentSoft", t["surfaceAlt"]), t["textMain"]
+    else:
+        dark, white = t["textMain"], t["surface"]
     p.c = {"bg": t["surface"], "ink": t["textMain"], "muted": t["textMuted"], "line": t["border"],
-           "panel": t["surfaceAlt"], "dark": t["textMain"], "white": t["surface"],
-           "accent": t["accent"], "accent2": t.get("accentAlt", t["accent"]),
-           "negative": t["negative"], "onAccent": on(t["accent"])}
+           "panel": t["surfaceAlt"], "dark": dark, "white": white,
+           "accent": t["accent"], "accent2": accent2,
+           "negative": t["negative"], "onAccent": on(accent2)}  # $onAccent always sits on $accent2
     p.dark_c = None
     p.t = {**p.t, "body": max(14, p.t["body"]), "label": max(12, p.t["label"])}
     return p
