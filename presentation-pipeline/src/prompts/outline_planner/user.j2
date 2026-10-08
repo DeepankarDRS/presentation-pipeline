@@ -37,7 +37,12 @@ Content distribution guidance:
 
 TARGET DECK SIZE: {{ target_slides }} slides{% if slide_count_source == 'request' %} (the count the request states){% endif %}.
 {% if target_slides and target_slides > 1 %}
-Produce EXACTLY {{ target_slides }} slides in your outline. Do NOT add Q&A, Appendix, Thank You, or Next Steps slides unless the request explicitly asks for them.
+{% if slide_count_source == 'settings' %}
+Produce AT MOST {{ target_slides }} slides: one per distinct block of content in the request (plus the cover). When the content runs out, stop - fewer slides are better than a slide that repeats a figure or point shown elsewhere.
+{% else %}
+Produce EXACTLY {{ target_slides }} slides in your outline.
+{% endif %}
+Do NOT add Q&A, Appendix, Thank You, or Next Steps slides unless the request explicitly asks for them.
 {% endif %}
 
 Produce the deck outline. Every slide's key_messages must be specific, carry the request's figures exactly as written, and carry semantic intent (the downstream planner reads the shape of each message to choose components). Never make up a figure.

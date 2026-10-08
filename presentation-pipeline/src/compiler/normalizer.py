@@ -392,6 +392,19 @@ def _mark_to_span(xml: str) -> tuple[str, int]:
     return _spans(xml, False), count  # a <Mark> outside Text/Li/Td
 
 
+# C0 controls (not tab / newline / CR) and DEL: the 2026-10-07 QBR plan held "\x7f" as a separator
+# and PowerPoint drew it as a box (2026-10-08).
+_CONTROL_RE = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+
+def strip_control_chars(text: str) -> tuple[str, int]:
+    """Replace each control character with a space and close the double space it leaves."""
+    cleaned, n = _CONTROL_RE.subn(" ", text)
+    if n:
+        cleaned = re.sub(r"(?<=\S) {2,}(?=\S)", " ", cleaned)
+    return cleaned, n
+
+
 def _tidy_text_whitespace(xml: str) -> tuple[str, int]:
     """Text written over several indented lines keeps its newline + indent as characters: the
     CHEFFIN cover title started with '\\n          CHEFFIN…' and rendered pushed right. Collapse
@@ -477,6 +490,9 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
     xml, n = _pad_table_columns(xml)
     if n:
         note("TABLE_COLS_PADDED", f"Added <Col /> to {n} table(s) whose rows had more cells than columns.")
+    xml, n = strip_control_chars(xml)
+    if n:
+        note("CONTROL_CHAR_REMOVED", f"Removed {n} control character(s) (drawn as a box glyph).")
     xml, n = _tidy_text_whitespace(xml)
     if n:
         note("TEXT_WHITESPACE_TRIMMED", f"Trimmed line breaks + indentation inside {n} Text/Li/Td "

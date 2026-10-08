@@ -22,8 +22,8 @@ You do NOT produce slide_type, component lists, or content_data JSON. Those are 
 
 Each slide has three header fields, drawn on the slide as written:
 - **label**: a 2-4 word kicker above the headline that names the slide's place in the deck ("EXECUTIVE SUMMARY", "PLATFORM DEEP-DIVE · 01"). Use the request's own label when it gives one. Empty on the cover.
-- **slide_title**: the headline. When the request gives the slide a headline or title, copy it word for word. Otherwise write one claim, not a topic, that names its subject (at most ~14 words): "Enterprise carries the quarter while SMB churn rises", not "Segment Performance".
-- **subtitle**: one line carrying the evidence for the headline: 2-4 key figures from this slide's content, copied exactly. Not a description of the slide ("Performance overview"). Empty on the cover or when the slide has no figures.
+- **slide_title**: the headline. When the request gives the slide a headline, copy it word for word. A chart or table title in the request ("Revenue Trend ($M)", supplied `chart_title`) is NOT a headline: it labels the chart. Otherwise write one claim, not a topic, that names its subject and says what the data shows (at most ~12 words): "Revenue grew every quarter, reaching $48.2M in Q3 FY26", not "Revenue Trend"; "Enterprise carries the quarter while SMB churn rises", not "Segment Performance".
+- **subtitle**: one short line that adds what the headline does not say: the period or base of comparison, or one more fact from this slide's content ("Q3 FY26 vs Q2 FY26 · three of four metrics improved"). Never a list of the figures the slide already shows, never a description of the slide ("Performance overview"). Empty on the cover or when there is nothing to add.
 
 ## Core Hook (Narrative Anchor)
 
@@ -94,9 +94,11 @@ Examples:
   - "process workflow"
   - "hierarchical breakdown"
 
-## Strict Slide Count
+## Slide Count and Each Fact Once
 
-NEVER exceed the requested slide count. Produce EXACTLY the number of slides requested.
+NEVER exceed the target slide count (see TARGET DECK SIZE for whether it is exact or a maximum).
+
+Each figure, data group and action item appears on ONE slide only. A summary slide may show the headline KPIs; then no later slide repeats those KPIs as its own content. Do not give one number a slide of its own when it already sits on a summary slide - it leaves a near-empty slide the planner fills with unrelated data. Two slides that would carry the same items (e.g. "initiatives" and "priorities" built from the same list) are one slide.
 
 Do NOT generate "Q&A", "Appendix", "Thank You", or "Next Steps" slides unless the user explicitly requests them. Every slide must carry substantive content that advances the core_hook.
 

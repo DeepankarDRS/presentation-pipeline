@@ -135,11 +135,10 @@ def _build_repair_context(
         directive = (
             f"The previous plan used components [{', '.join(failed_kinds)}] which "
             f"had visual design quality issues. Keep the same component types — "
-            f"the problem is styling, not component choice. Apply design treatments: "
-            f"a dark callout panel ($textMain background with $accentAlt header) for "
-            f"key read-outs, semantic coloring ($positive/$negative/$warning) on metric "
-            f"cells and KPI deltas, card containers ($surfaceAlt + borderRadius + border) "
-            f"around charts and tables, and eyebrow kicker labels in the header."
+            f"the problem is styling, not component choice. Fix only the issues the "
+            f"critic named: semantic coloring ($positive/$negative/$warning) on metric "
+            f"cells and KPI deltas, the planned kicker when the header has none. Add no "
+            f"panels, boxes or card-in-card wrappers (2026-10-08: they cluttered slides)."
         )
         return {
             "failed_kinds": failed_kinds,

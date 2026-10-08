@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -49,8 +50,24 @@ def _parse_result(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# The deck font (2026-10-08): POM names "Noto Sans JP" and nothing is embedded, so each viewer drew a
+# different substitute while fit-grow measured another. Inter ships in src/node/fonts (OFL) and is
+# embedded by font_embed. POM_DECK_FONT=none keeps POM's default.
+FONT_TAGS = ("Text", "Ul", "Ol", "Td", "Timeline", "ProcessArrow", "Pyramid", "Shape")
+DECK_FONT = os.environ.get("POM_DECK_FONT", "Inter")
+
+
+def deck_font(xml: str, family: str | None = DECK_FONT) -> str:
+    """Every text-bearing node without a fontFamily gets the deck font."""
+    if not family or family.lower() == "none":
+        return xml
+    pat = re.compile(rf"<({'|'.join(FONT_TAGS)})\b(?![^<>]*\bfontFamily=)")
+    return pat.sub(lambda m: f'<{m.group(1)} fontFamily="{family}"', xml)
+
+
 def compile_xml(xml: str, output_dir: Path, *, timeout: int = 120) -> dict[str, Any]:
-    """Write xml to output_dir/input.xml, run compile-pom.js, return CompileResult dict."""
+    """Write xml (in the deck font) to output_dir/input.xml, run compile-pom.js, return CompileResult dict."""
+    xml = deck_font(xml)
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 

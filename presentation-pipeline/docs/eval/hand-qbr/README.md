@@ -31,3 +31,19 @@ Not seen as a cause here: the generator model's ability (it followed the plan an
 ## What this says
 Most of the gap is **planning** (1-4, 7) and **house-style numbers / rules** (6, 9-11). Two are plain **code bugs**
 (5, 12). One needs a **new drawing block** (8). None needs a bigger model.
+
+## Changes made from this comparison (2026-10-08, LLM-free so far)
+
+| # | Change | Files |
+|---|---|---|
+| 5 | Control characters removed from every parsed LLM result and in the normalizer (`CONTROL_CHAR_REMOVED`) | `src/utils/llm_client.py` (`unpack_raw`), `src/compiler/normalizer.py` |
+| 12 | Deck font Inter on every text node (incl. Shape) in `compile_xml`, so fit-grow measures and `font_embed` embeds it; `POM_DECK_FONT=none` turns it off | `src/compiler/compiler_client.py` |
+| 1, 2 | Slide count from settings is a maximum, not "EXACTLY"; each fact on one slide; no slide for one number already on a summary | `src/prompts/outline_planner/user.j2`, `system.j2` |
+| 3, 4 | A chart title is not a headline; headline says what the data shows; subtitle adds the period or one fact, never a list of the slide's figures | outline `system.j2`, `outline_planner_schema.py`, `outline_replanner/system.j2` |
+| 7 | No filler components (summary / intent boxes) in the component planner | `src/prompts/slide_component_planner/system.j2` |
+| 6, 9-11 | Type ramp (title 36, subtitle 18, body 18, stats 44-56, table 20-22), root padding 48-56 / gap 24-36, flat cards, content top + pinned footer in tall tiles, one card style per deck, at most one dark panel per deck; table rows 56-88, grid gap 20-24 | `house-style.yaml`, `capacity.yaml`, `generator/system.j2` |
+| 10 | Critic: kicker issue only when the header has no uppercase label (stops the second eyebrow); "dark anchor panel" and "bare table/chart" rules removed; new "filler box" issue. Repairer adds no panels or wrappers | `visual_critic/*.j2`, `repairer.py`, `repairer/patch.j2` |
+| - | Golden examples and blueprint reference XML off by default (written in the old sizes); `POM_EXAMPLES=on` for an A/B | `src/agents/context_builder.py` |
+
+Checked: replaying the saved slides 1-3 and 5 through normalize + compile_xml gives no DEL character and every run in Inter; Inter is embedded.
+Not done: the chart block (#8), and a paid run to see what the planners and generator now write.

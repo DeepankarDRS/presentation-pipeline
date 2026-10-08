@@ -10,6 +10,8 @@ Writes: contract, theme_element, resolved_theme
 
 from __future__ import annotations
 
+import os
+
 import functools
 import logging
 from pathlib import Path
@@ -542,6 +544,12 @@ def _clean_list(values: Any) -> list[str]:
 
 # ── Public entry point ───────────────────────────────────────────────────────
 
+# Golden examples and blueprint reference XML (2026-10-08): written in the old type sizes (headline
+# 30-32, padding 36, shadows); the generator copied them over the house-style ramp. Off by default;
+# POM_EXAMPLES=on brings them back for an A/B.
+EXAMPLES_ON = os.environ.get("POM_EXAMPLES", "off").lower() == "on"
+
+
 def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[str, Any]:
     """Build a generation contract for one slide from its plan.
 
@@ -582,7 +590,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     component_recipes = _render_component_recipes(
         [_recipe_kind(c) for c in slide_plan.get("components", [])])
     slide_type = slide_plan.get("slide_type", "content")
-    golden_examples = _render_golden_examples(slide_type) if has_grammar else ""
+    golden_examples = _render_golden_examples(slide_type) if has_grammar and EXAMPLES_ON else ""
 
     blueprint = select_blueprint(slide_plan)
     blueprint_structure = ""
@@ -590,7 +598,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     blueprint_name = ""
     if blueprint:
         blueprint_name = blueprint.get("blueprint_name", "")
-        blueprint_reference_xml = (blueprint.get("reference_xml") or "").strip()
+        blueprint_reference_xml = (blueprint.get("reference_xml") or "").strip() if EXAMPLES_ON else ""
         struct = blueprint.get("structure", {})
         bands = struct.get("bands", [])
         lines = [

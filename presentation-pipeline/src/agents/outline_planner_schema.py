@@ -22,18 +22,18 @@ class OutlineSlide(BaseModel):
     )
     slide_title: str = Field(
         description="The slide's headline, shown on the slide. When the request gives "
-                    "this slide a headline or title, copy it exactly, word for word. "
-                    "Otherwise write one claim (not a topic) that names its subject, "
-                    "at most ~14 words. E.g. 'Enterprise carries the quarter while SMB "
+                    "this slide a headline, copy it exactly, word for word; a chart or "
+                    "table title is not a headline. Otherwise write one claim (not a topic) "
+                    "that says what the data shows, at most ~12 words. E.g. 'Enterprise carries the quarter while SMB "
                     "churn rises', not 'Segment Performance'."
     )
     subtitle: str = Field(
         default="",
-        description="One line under the headline that carries the evidence: 2-4 key "
-                    "figures from this slide's content, copied exactly as the request "
-                    "writes them, e.g. '<figure> · <figure> · <figure>'. Not a description "
-                    "of the slide ('Performance overview'). Empty on the cover or when the "
-                    "slide has no figures.",
+        description="One short line under the headline that adds what it does not say: "
+                    "the period or base of comparison, or one more fact from this slide. "
+                    "Never a list of the figures the slide already shows, never a "
+                    "description of the slide ('Performance overview'). Empty on the cover "
+                    "or when there is nothing to add.",
     )
     section: str = Field(
         default="",

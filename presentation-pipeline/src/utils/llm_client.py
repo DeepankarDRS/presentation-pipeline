@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from pydantic import BaseModel
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 
 logger = logging.getLogger(__name__)
@@ -135,8 +136,25 @@ def unpack_raw(result) -> tuple[Any, dict[str, Any]]:
     don't use include_raw).
     """
     if isinstance(result, dict) and "parsed" in result and "raw" in result:
-        return result["parsed"], extract_usage(result["raw"])
-    return result, dict(_ZERO_USAGE)
+        return _clean_strings(result["parsed"]), extract_usage(result["raw"])
+    return _clean_strings(result), dict(_ZERO_USAGE)
+
+
+def _clean_strings(obj: Any) -> Any:
+    """Drop control characters from every string in a parsed LLM result (a plan once carried
+    DEL (0x7f) separators into the slides, drawn as boxes; 2026-10-08)."""
+    from src.compiler.normalizer import strip_control_chars
+    if isinstance(obj, str):
+        return strip_control_chars(obj)[0]
+    if isinstance(obj, list):
+        return [_clean_strings(v) for v in obj]
+    if isinstance(obj, dict):
+        return {k: _clean_strings(v) for k, v in obj.items()}
+    if isinstance(obj, BaseModel):
+        dumped = obj.model_dump()
+        cleaned = _clean_strings(dumped)
+        return obj if cleaned == dumped else type(obj).model_validate(cleaned)
+    return obj
 
 
 def get_pricing(model: str) -> dict[str, float]:

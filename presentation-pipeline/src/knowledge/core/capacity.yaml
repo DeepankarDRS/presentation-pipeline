@@ -42,8 +42,8 @@ layout:
   kpi_tile_min_w: 260        # px; narrower tiles cap the number's size
   hero_number_px: [64, 120]  # one number the headline rests on (fit-grow HERO_CAP 120)
   paired_cards: 2            # two metrics compared: two equal cards side by side
-  grid_gap_px: [12, 20]      # between cards in a grid, equal widths per row
+  grid_gap_px: [20, 24]      # between cards in a grid, equal widths per row
   table_cols_half: 3         # columns a table may have in a half-width card; more -> full width
-  table_row_px: [36, 88]     # body row height
+  table_row_px: [56, 88]     # body row height (2026-10-08: 22px cells need room)
   side_card_w: ["35%", "40%"]   # a takeaway card beside a chart / table; the evidence takes the rest
   split: ["60/40", "40/60"]  # two-column slides: the evidence side is the wider one, never 50/50 by default

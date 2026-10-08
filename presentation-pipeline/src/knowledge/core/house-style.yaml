@@ -19,7 +19,8 @@ frame: >
   alignItems="stretch" backgroundColor="$surface"> (horizontal bands, top-to-
   bottom) OR <HStack w="1280" h="720" padding="P" gap="G"
   alignItems="stretch" backgroundColor="$surface"> (vertical splits, left-to-
-  right — use for full-bleed 50/50 or 60/40 layouts). P = 32-40, G = 14-22.
+  right — use for full-bleed 50/50 or 60/40 layouts). P = 48-56, G = 24-36
+  (2026-10-08: more air between header and body; docs/eval/hand-qbr).
   Nothing on the slide is positioned in absolute pixels from the slide origin —
   everything is a child of this root stack and flows. The root's fixed size is
   what makes every relative size below resolve to real pixels. DEFAULT to VStack
@@ -91,8 +92,9 @@ composition: >
 
 header_band: >
   <HStack justifyContent="spaceBetween" alignItems="start"> (no h, no grow): left a
-  <VStack gap="4-5"> of the planned kicker + headline + subtitle (see type ramp);
-  right optional - one headline KPI from the plan. No badge or pill in the header.
+  <VStack gap="8-10"> of the planned kicker + headline + subtitle (see type ramp);
+  right optional - one headline KPI from the plan. No badge or pill in the header:
+  the kicker is plain uppercase text, never a shape.
 
 # --- sizing by weight (verified v10.3.0, docs/layout-sizing-plan.md) -----
 # POM's flexbox shares the height. Never add up pixel heights: the generator's
@@ -102,8 +104,13 @@ sizing: |
   - The band holding the slide's MAIN content takes grow from its height-weight:
     hero 3 | peer 2 | supporting 1 | minor none. Any component may be that band:
     a chart or diagram card, a KPI row, a callout / narrative panel, a bullet card.
-    Tiles, cards and panels in a growing band stretch; their text is enlarged after
-    generation, so keep justifyContent="center" inside tiles.
+    Tiles, cards and panels in a growing band stretch to equal heights. Inside a
+    tall tile or card never centre a small block of text in empty space: put the
+    content at the top and pin the closing item (a delta chip, a target, a source)
+    to the bottom - justifyContent="spaceBetween" for label / value / delta, or a
+    <VStack grow="1" /> spacer before the pinned item (2026-10-08, hand-qbr).
+  - NO FILLER: no box that restates the headline, the subtitle or another
+    component. Spare height goes to the main element, never to a new box.
   - A slide WITH a chart or diagram: that card grows; KPI rows and callouts beside
     it keep their content height.
   - Table cards: NO h, NO grow - a table sizes to its rows. On a slide with a
@@ -136,8 +143,9 @@ data_nodes: |
 # --- recipes (parameterised, not slides) ------------------------------
 recipes:
   surface_card: >
-    <VStack padding="14-22" gap="6-14" backgroundColor="$surfaceAlt"
-      borderRadius="12-16" border.color="$border" border.width="1">
+    <VStack padding="24-32" gap="12-16" backgroundColor="$surfaceAlt"
+      borderRadius="12" border.color="$border" border.width="1"> - flat: no
+    shadow, no icon unless the plan asks for one, never a card inside a card.
     The default container for a chart, a stat cluster, a table. Add grow only
     per SIZING BY WEIGHT; w="max"/% only when its parent is an HStack.
   accent_card: >
@@ -158,8 +166,8 @@ recipes:
     panel); body the plan's sentence(s); optional a 2-3 row stat list. A panel
     with heading + body + stats needs the height - give it grow. One per slide.
   micro_pair: >
-    a label-over-value stat with no card: <VStack gap="2"><Text 10-12
-    "$textMuted">Label</Text><Text 24-34 bold "$textMain">Value</Text></VStack>.
+    a label-over-value stat with no card: <VStack gap="4"><Text 16
+    "$textMuted">Label</Text><Text 32-48 bold "$textMain">Value</Text></VStack>.
     2-3 side by side in an HStack; justifyContent="spaceBetween" spreads them
     across the row. spaceBetween is for that horizontal row ONLY - never as the
     justifyContent of a vertical card.
@@ -169,16 +177,20 @@ recipes:
     color="$textMain" fontSize="14" bold="true" borderRadius="999">SHORT LABEL</Shape>
 
 # --- type ramp (fontSize) --------------------------------------------
+# 2026-10-08: raised to the hand-written QBR deck (docs/eval/hand-qbr): the old ramp
+# (title 27-32, body 14-16, stats 26-36) read as small on a projected slide.
 type_ramp:
-  eyebrow: "14 bold, letterSpacing 2, $accent. NEVER below 14."
-  slide_title: "27-32 bold, $textMain"
-  subtitle: "14-16 $textMuted. NEVER below 14."
-  card_title: "14-16 bold, $textMain"
-  label: "14 $textMuted. NEVER below 14."
-  body: "14-16, $textMain or $textMuted, lineHeight 1.4-1.55. NEVER below 14."
-  stat_value: "26-36 bold"
+  eyebrow: "14 bold, letterSpacing 2, $accentText, uppercase plain text."
+  slide_title: "36 bold, $textMain, lineHeight 1.15 (32 when it runs to two lines)"
+  subtitle: "18 $textMuted"
+  card_title: "22-26 bold, $textMain"
+  label: "16-20 bold $textMuted (tile label, column header 16)"
+  body: "18, $textMain or $textMuted, lineHeight 1.4. 16 only on a dense slide. NEVER below 14."
+  stat_value: "44-56 bold, sized so the longest value fits the tile on ONE line (about 0.6 x fontSize per character)"
+  table_cell: "20-22; header row 16 bold $textMuted"
+  chart_label: "16-18 (values and axis labels)"
   single_stat: "72 bold, $textMain - only a kpi_row with one value (enlarged to fill after generation)"
-  caption: "14 $textMuted. NEVER below 14."
+  caption: "14-16 $textMuted. NEVER below 14."
 
 font_floor: >
   ABSOLUTE RULE: no fontSize on ANY element may be below 14. This applies to
@@ -227,9 +239,10 @@ render_gotchas:
      not fit, re-lay it out (second row or column, wider card) and trim filler
      words - never drop an item, a figure or a line of the plan.
      All recipes now use 14pt minimum. Copy those sizes exactly."
-  - "A KPI tile with justifyContent=\"spaceBetween\" in a tall row is the classic
-     bad KPI card: label glued to the top, number floating low, delta clipped
-     at the bottom. Use justifyContent=\"center\" and NO h on the row."
+  - "A KPI tile: NO h on the row or the tile. In a growing row use
+     justifyContent=\"spaceBetween\" (label top, value, delta chip bottom); with
+     a fixed h it clips the delta. Centred content in a tall tile leaves it empty
+     (2026-10-08)."
   - "Text wrapping: POM measures text with its own font; the renderer may wrap
      one line more than POM expected, pushing siblings down. Keep headings on
      hero panels and cards SHORT and give panels/cards a little height slack.
@@ -250,9 +263,10 @@ render_gotchas:
      $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
 
 design_variety: >
-  Lay out each slide for its own content. Vary card treatments when it helps
-  the content - not every slide needs the same borderRadius/border.color style.
-  Use at most ONE dark panel ($textMain bg) per 3 slides.
+  Lay out each slide for its own content, but keep ONE card treatment, one type
+  ramp and one KPI tile style across the deck. One emphasis per slide (a tinted
+  tile, the highlighted bar, the highlighted row). Use at most ONE dark panel
+  ($textMain bg) per deck, and only when the plan has a read-out to anchor.
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:

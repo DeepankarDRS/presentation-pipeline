@@ -101,13 +101,13 @@ Display or standard fonts.
 {% if slide_type not in ('cover', 'section_break') %}
 1. **Header**: draw the HEADER from the user prompt exactly as written. When it has a kicker,
    the FIRST element inside the header band is that kicker, in uppercase:
-   `<Text fontSize="14" color="$accent" bold="true" letterSpacing="2">KICKER TEXT</Text>`
+   `<Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">KICKER TEXT</Text>`
    then the headline, then the subtitle (if given). No kicker in the HEADER means no kicker on
    the slide - never make one up. No badge or pill in the header.
-2. **Card shells**: wrap a Table, Chart or data component in a card VStack when it needs a frame
-   (a card title or note, or it sits beside other cards):
-   `<VStack backgroundColor="$surfaceAlt" padding="16" borderRadius="14" border.color="$border">`
-   A card holds a real component - never an empty or near-empty card.
+2. **Card shells**: wrap a Table, Chart or data component in a card VStack only when it sits beside
+   other cards; a table alone on the slide needs no card:
+   `<VStack backgroundColor="$surfaceAlt" padding="28" borderRadius="12" border.color="$border" border.width="1">`
+   A card holds a real component - never an empty or near-empty card, never a card inside a card.
 3. **Source line**: only when the plan names a source (e.g. a caption component), as the LAST
    element of the root: `<Text fontSize="14" color="$textMuted">Source: ...</Text>`.
    Never make up a source or a date.
@@ -152,14 +152,14 @@ Common properties (all nodes including VStack/HStack):
 ## DESIGN LANGUAGE
 
 Visual hierarchy (apply to every slide):
-  Title: fontSize 32-40, bold, color="$textMain"
-  Labels: fontSize 14, color="$textMuted" (NEVER below 14)
-  Body: fontSize 14-16, color="$textMain" (NEVER below 14)
-  KPI values: fontSize 32-46, bold, with unit in <Span fontSize="18-22">
+  Title: fontSize 36, bold, color="$textMain"
+  Labels: fontSize 16-20, color="$textMuted" (NEVER below 14)
+  Body: fontSize 18, color="$textMain" (NEVER below 14)
+  KPI values: fontSize 44-56, bold, one line in the tile
   Deltas: color="$positive" for up, color="$negative" for down
 
 Slide structure:
-  Root: <VStack|HStack w="1280" h="720" padding="32-40" gap="14-22" alignItems="stretch" backgroundColor="$surface">
+  Root: <VStack|HStack w="1280" h="720" padding="48-56" gap="24-36" alignItems="stretch" backgroundColor="$surface">
   Charts: always set explicit w and h that fit within the parent container.
   Account for axis labels - leave 40-60px margin so labels don't overflow.
 

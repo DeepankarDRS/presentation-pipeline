@@ -58,13 +58,12 @@ These are the markers that separate a polished deck from a passable one. Always 
 {% if slide_type in ('data', 'deepdive', 'performance', '') %}
 **MEDIUM severity (triggers repair) — data/deepdive slides only:**
 - **Flat KPI tiles**: When KPI tiles are present, each tile must have a visible card background (`$surfaceAlt`), consistent `border.color="$border"` and `borderRadius`, and a three-level font-size step (label small → value large → delta small). A flat row of Text nodes with no card styling is MEDIUM. Set `repair_strategy: "regenerate"` — tile structure requires a layout rebuild.
-- **No dark anchor panel**: On slides with 2+ tables or charts, there should be exactly one inverted panel (`backgroundColor="$textMain"` or similar dark fill, light/accent text) that anchors the key read-out. Its complete absence is MEDIUM. Set `repair_strategy: "regenerate"` — adding a panel requires restructuring the layout.
 - **Inconsistent semantic coloring**: Tables with performance data (ROAS, ACOS, growth %) should color cells using `$positive`/`$negative`/`$warning` consistently across all rows. If some rows are colored and others are not for the same metric, or if numeric columns are uniformly uncolored when clear positive/negative signals exist, that is MEDIUM. Patch: add color attributes to the un-colored cells.
 {% endif %}
 
 **MEDIUM severity (triggers PATCH repair — all slide types):**
-- **Kicker/eyebrow missing**: Every slide except cover and section_break must have an uppercase kicker above the title (`fontSize="14"`, `letterSpacing="2"`, `color="$accent"`, `bold="true"`). Missing kicker is MEDIUM. Patch: insert one Text node above the title.
-- **Bare table or chart (no card shell)**: Tables and charts must sit inside a card shell (`backgroundColor="$surfaceAlt"`, `border.color="$border"`, `borderRadius="14"`). A bare table or chart rendered directly in the root layout is MEDIUM. Patch: wrap the element in a VStack with card attributes.
+- **Kicker/eyebrow missing**: only when the slide plan has a label and the header shows no uppercase label above the headline. A header that already starts with an uppercase label (any size or style) HAS its kicker: never report it, never add a second. Patch: insert one Text node above the title (`fontSize="14"`, `letterSpacing="2"`, `color="$accentText"`, `bold="true"`).
+- **Filler box**: a callout, summary or "intent" box that restates the headline, the subtitle or another component on the slide. MEDIUM. Patch: remove it and let the main element take the space.
 - **Missing source/caption line**: when the XML or plan names a source that the slide does not show, append it at the bottom (`fontSize="14"`, `color="$textMuted"`). MEDIUM. Never make up a source or a date: no named source, no issue.
 
 **LOW severity (flag only — all slide types):**
@@ -88,7 +87,7 @@ Only flag these if they are obviously present — do not invent problems on clea
   - `fix`: a concrete POM XML change — name the node, attribute, and value. Good: "On the chart's card VStack, set grow=\"2\"". Bad: "make the chart bigger".
   - `affected_nodes`: use only valid POM node names: Slide, Theme, VStack, HStack, ZStack, Text, Chart, Table, KPI, Image, Bullet, Divider, Spacer, Pyramid, Timeline, Flow, Matrix, Tree.
 - Set `overall_assessment`: "layout_broken" if severe structural problems, "needs_tuning" for minor fixes, "good" if acceptable.
-- Set `repair_strategy`: "regenerate" when: wrong component types were chosen, OR 2+ HIGH structural issues and layout is fundamentally broken, OR flat KPI tiles or absent dark anchor panel (structural rebuild needed). Use "patch" for: missing kicker, bare table/chart, missing source line, inconsistent semantic coloring, and all LOW items. Use "none" only when no issues require repair.
+- Set `repair_strategy`: "regenerate" when: wrong component types were chosen, OR 2+ HIGH structural issues and layout is fundamentally broken, OR flat KPI tiles (structural rebuild needed). Use "patch" for: missing kicker, filler box, missing source line, inconsistent semantic coloring, and all LOW items. Use "none" only when no issues require repair.
 - Report at most 5 issues. Prioritise HIGH > MEDIUM > LOW. If more than 5 exist, omit the lowest-severity ones.
 
 ## SEVERITY RULES
