@@ -168,7 +168,7 @@ async function layout(xml) {
   const yogaOf = (n) => { for (const m of maps) if (m.has(n)) return m.get(n); };
   const box = (n) => {
     const y = yogaOf(n);
-    return { w: y.getComputedWidth(), h: y.getComputedHeight(), top: y.getComputedTop(),
+    return { w: y.getComputedWidth(), h: y.getComputedHeight(), top: y.getComputedTop(), left: y.getComputedLeft(),
       pl: y.getComputedPadding(0), pt: y.getComputedPadding(1),
       pr: y.getComputedPadding(2), pb: y.getComputedPadding(3) };
   };
@@ -312,8 +312,42 @@ async function growDiagrams(xml, report) {
     xml = setAttrs(xml, id, e);
     report.push(`${type} nodes -> ${JSON.stringify(e)}`);
   }
+
+  // 2c. a <Layer> drawn at fixed pixels in a bigger card scales up, children and type with it
+  // (2026-10-08: XTSY hub-and-spoke 560 x 296 in a ~1100 x 420 card read as a thumbnail)
+  L = await layout(xml);
+  const layers = [];
+  try {
+    for (const root of L.slides) walk(root, (n, parent) => {
+      if (n.type !== "layer" || !n.id || !parent || typeof n.w !== "number" || typeof n.h !== "number") return;
+      const pb = L.box(parent);
+      const f = fill(parent, L);
+      const roomW = pb.w - pb.pl - pb.pr;
+      const roomH = n.h + Math.max(0, f.inner - f.content);
+      const k = Math.min(roomW / n.w, roomH / n.h, LAYER_CAP) * 0.97;
+      if (k >= 1.1) layers.push([n.id, k]);
+    });
+  } finally { L.free(); }
+  for (const [id, k] of layers) {
+    const el = findElement(xml, id);
+    if (!el) continue;
+    const scaledXml = xml.slice(0, el.start)
+      + xml.slice(el.start, el.end).replace(LAYER_NUM_RE, (m, key, v) =>
+        ` ${key}="${key === "fontSize" ? Math.min(Math.round(v * k), LAYER_FONT_CAP) : Math.round(v * k)}"`)
+      + xml.slice(el.end);
+    const T = await layout(scaledXml);
+    let ok;
+    try { ok = sideways(T) === 0 && T.slides.every((r) => natural(r, T) <= SLIDE.h + 1); } finally { T.free(); }
+    if (!ok) continue;
+    xml = scaledXml;
+    report.push(`layer x${k.toFixed(2)} (fills its card)`);
+  }
   return xml;
 }
+
+const LAYER_CAP = 1.8;
+const LAYER_FONT_CAP = 28;
+const LAYER_NUM_RE = /\s(x|y|w|h|x1|y1|x2|y2|fontSize|size)="(\d+(?:\.\d+)?)"/g;
 
 // --- phase 0: respect an explicit h --------------------------------------------
 // In POM, w="max" is flexGrow:1 on the MAIN axis — inside a VStack that grows
@@ -1305,10 +1339,26 @@ function overAll(L) {
   return out;
 }
 
+/** Boxes that stick out sideways: past the slide's edge, or a text past its parent (2026-10-08:
+ *  CHEFFIN 7 content-sized KPI tiles, numbers 32 -> 96px pushed the row 41px off the slide and the
+ *  numbers over each other; every height check passed). Returns the count. */
+function sideways(L) {
+  let n = 0;
+  const visit = (c, x0, px, pw) => {
+    const b = L.box(c);
+    const x = x0 + b.left;
+    if (x < -1 || x + b.w > SLIDE.w + 1) n += 1;
+    else if (c.type === "text" && pw !== undefined && (x < px - 1 || x + b.w > px + pw + 1)) n += 1;
+    for (const k of c.children ?? []) visit(k, x, x, b.w);
+  };
+  for (const root of L.slides) visit(root, 0);
+  return n;
+}
+
 async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words = []) {
   const fullest = (L) => Math.max(...ids.map((id) => fill(L.byId.get(id), L).ratio));
   const B = await layout(xml);
-  let before, ratio, lines0, slideMax, widths, over0, need0, tight0;
+  let before, ratio, lines0, slideMax, widths, over0, need0, tight0, side0;
   try {
     before = overflows(B);
     widths = outsideWidths(B, ids);
@@ -1322,6 +1372,7 @@ async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words
     over0 = wordsOver(B, words);
     tight0 = overAll(B);
     need0 = wrapNeed(B, keepLines);
+    side0 = sideways(B);
   } finally { B.free(); }
   let lo = 1, hi = max, best = 1;
   for (let i = 0; i < 7; i++) {
@@ -1346,6 +1397,7 @@ async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words
       // nor makes any word on the slide (more) too wide, also outside the growing boxes: growth in one
       // column narrowed the KPI tiles beside it and broke "₹59.8" (gj-h1 slide 14, 2026-10-07 replay)
       for (const [k, o] of overAll(T)) if (o > (tight0.get(k) ?? 0) + 1) ok = false;
+      if (sideways(T) > side0) ok = false;
       if (ok) { best = s; ratio = r; lo = s; } else hi = s;
     } finally { T.free(); }
   }

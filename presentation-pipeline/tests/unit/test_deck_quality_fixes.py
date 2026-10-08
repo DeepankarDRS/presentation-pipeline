@@ -84,3 +84,51 @@ def test_card_body_repeating_title_and_tag_is_dropped():
         {"title": "Close 3 enterprise logos", "tag": "$4M+ combined ARR",
          "body": "Close 3 enterprise logos worth $4M+ combined ARR"}]}}]}
     assert drop_repeated_bodies(plan) and "body" not in plan["components"][0]["content_data"]["cards"][0]
+
+
+# third pass, from the six-case run quality-1008 (2026-10-08)
+
+_THEME = ('<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" '
+          'negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="CAD5E4" '
+          'chartSurface="FFFFFF" chartInk="16202E" />\n')
+
+
+def test_later_dark_panels_become_tinted_cards():
+    from src.compiler.normalizer import soften_dark_panels
+    xml = ('<VStack><VStack padding="20" backgroundColor="$textMain"><Text color="$surfaceAlt">A</Text>'
+           '<HStack><Text color="$neutral">b</Text></HStack></VStack><Text color="$surfaceAlt">outside</Text></VStack>')
+    out, n = soften_dark_panels(xml)
+    assert n == 1 and 'backgroundColor="$accentSoft"' in out
+    assert '<Text color="$textMain">A</Text>' in out and '<Text color="$textMuted">b</Text>' in out
+    assert '<Text color="$surfaceAlt">outside</Text>' in out
+
+
+def _fit(xml, tmp_path):
+    import json, shutil
+    import pytest
+    if not shutil.which("node"):
+        pytest.skip("node not installed")
+    from src.compiler.compiler_client import compile_xml
+    r = compile_xml(_THEME + xml, tmp_path)
+    return r, (tmp_path / "fitted.xml").read_text(encoding="utf-8") if (tmp_path / "fitted.xml").exists() else xml
+
+
+def test_kpi_numbers_never_grow_off_the_slide(tmp_path):
+    tile = ('<VStack w="max" padding="20" gap="8" backgroundColor="$surfaceAlt" justifyContent="center" alignItems="center">'
+            '<Text fontSize="14" color="$textMuted">Spend</Text>'
+            '<Text fontSize="32" bold="true" color="$textMain">₹129.4<Span fontSize="18">L</Span></Text></VStack>')
+    xml = ('<Slide><VStack w="1280" h="720" padding="48" gap="24" alignItems="stretch" backgroundColor="$surface">'
+           '<Text fontSize="36" bold="true" color="$textMain">Seven KPIs</Text>'
+           f'<HStack gap="18" alignItems="stretch" grow="1">{tile * 7}</HStack></VStack></Slide>')
+    r, _ = _fit(xml, tmp_path)
+    assert r["ok"] and not [w for w in r["warnings"] if w.get("code") == "NODE_OUT_OF_BOUNDS"]
+
+
+def test_small_layer_scales_into_its_card(tmp_path):
+    xml = ('<Slide><VStack w="1280" h="720" padding="48" gap="24" alignItems="stretch" backgroundColor="$surface">'
+           '<Text fontSize="36" bold="true" color="$textMain">Hub</Text>'
+           '<VStack grow="1" padding="24" backgroundColor="$surfaceAlt" alignItems="center">'
+           '<Layer w="400" h="200"><Shape id="hub" shapeType="ellipse" x="150" y="50" w="100" h="100" text="Hub" fontSize="14" />'
+           '</Layer></VStack></VStack></Slide>')
+    r, fitted = _fit(xml, tmp_path)
+    assert r["ok"] and '<Layer w="400"' not in fitted

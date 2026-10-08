@@ -25,7 +25,7 @@ from src.compiler.compiler_client import CompilerError, compile_xml, validate_xm
 from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
-from src.compiler.normalizer import ensure_single_theme, normalize_xml, pre_validate
+from src.compiler.normalizer import DARK_PANEL, ensure_single_theme, normalize_xml, pre_validate, soften_dark_panels
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
@@ -59,6 +59,11 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         output_dir = output_dir / f"retry-{attempt}"
 
     norm = normalize_xml(xml)
+    if any(DARK_PANEL in (c.get("xml") or "") for c in state.get("completed_slides") or []):
+        norm["cleaned_xml"], n_dark = soften_dark_panels(norm["cleaned_xml"])
+        if n_dark:
+            norm["issues"].append({"code": "DARK_PANEL_SOFTENED", "auto_fixed": True,
+                                   "message": f"{n_dark} dark panel(s) became tinted cards (one dark panel per deck)."})
     theme_el = (state.get("contract") or {}).get("theme_element") or state.get("theme_element", "")
     cleaned = ensure_single_theme(norm["cleaned_xml"], theme_el)
     speaker_notes = norm.get("speaker_notes", "")

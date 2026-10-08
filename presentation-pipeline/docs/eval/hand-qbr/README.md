@@ -65,3 +65,21 @@ Still wrong, and the fix (built LLM-free the same day):
 | Plain centred cover | generator cover rule | cover layout: left title 56-60 + accent block |
 
 Replay of slides 2-3 with the code fixes: `run-30cd7b/replay-slides-2-3.png` (left = run, right = replay).
+
+## Six-case run (test PC, 2026-10-08, commit `693bfe5`, label `quality-1008`, $1.74) and fixes
+
+6/6 passed, slide counts on target, first pass 97.3% (step 0: 94.6%), fill 0.83 (same). Light decks clearly
+better (`six-case-1008/light-run.png`). Dense decks showed problems across briefs (`dense-run.png`); the
+geometry check did not exist at step 0, so its counts have no step-0 baseline.
+
+| # | Seen across decks | Fix (2026-10-08, LLM-free) |
+|---|---|---|
+| 1 | KPI numbers grown 32 -> 96 px in 7 content-sized tiles: row 41 px off the slide, numbers over each other (CHEFFIN 5) | fit-grow `search` rejects any growth that pushes a box past the slide edge or a text past its parent (`sideways`; boxes now carry `left`) |
+| 2 | Diagrams drawn with `<Layer>` at fixed pixels inside a much bigger card (XTSY 1, 5) | fit-grow phase 2c scales a Layer, its children and their type to the room its card gives (<= 1.8x, kept only if nothing leaves the slide) |
+| 4 | A dark `$textMain` panel on 6 of 8 XTSY slides | validator: after the deck's first dark panel, later ones become `$accentSoft` cards with ink text (`DARK_PANEL_SOFTENED`) |
+
+Replay of all 37 slides through the new code (`dense-replay.png`; eval run counts -> replay):
+GEOM_COLLISION 21 -> 7, GEOM_SPILL 14 -> 7, GEOM_OFF_SLIDE 2 -> 1, GEOM_CARD_EMPTY 19 -> 24 (4 of them are the
+covers' accent block, counted because the replay passes no slide type; CHEFFIN KPI tiles are emptier at 44 px).
+Open: native diagrams in narrow columns (all-nodes 3-5) and over-full text slides (CHEFFIN 4, XTSY 3): item 5,
+re-flow first, split only when a slide still does not fit at 16 px (planner change, next round).

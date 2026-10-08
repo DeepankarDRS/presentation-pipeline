@@ -478,6 +478,40 @@ def _share_numeric_columns(xml: str) -> tuple[str, int]:
     return _TABLE_RE.sub(_fix, xml), count
 
 
+# One dark panel per deck (house style; 2026-10-08: XTSY drew a $textMain panel on 6 of 8 slides).
+# The validator calls this when an earlier slide of the deck already has one: later panels become
+# a tinted card and their light text turns to ink.
+DARK_PANEL = 'backgroundColor="$textMain"'
+_STACK_TAG_RE = re.compile(r"<(/?)(VStack|HStack)\b[^>]*?(/?)>")
+_ON_DARK = {"$surface": "$textMain", "$surfaceAlt": "$textMain", "$onAccent": "$textMain",
+            "FFFFFF": "$textMain", "#FFFFFF": "$textMain", "$neutral": "$textMuted", "$accentAlt": "$accentText"}
+
+
+def soften_dark_panels(xml: str) -> tuple[str, int]:
+    count = 0
+    while True:
+        at = xml.find(DARK_PANEL)
+        if at < 0:
+            return xml, count
+        start = xml.rfind("<", 0, at)
+        depth, end = 0, len(xml)
+        for m in _STACK_TAG_RE.finditer(xml, start):
+            if m.group(3):
+                if depth == 0:
+                    end = m.end()
+                    break
+                continue
+            depth += -1 if m.group(1) else 1
+            if depth == 0:
+                end = m.end()
+                break
+        panel = xml[start:end].replace(DARK_PANEL, 'backgroundColor="$accentSoft"', 1)
+        panel = re.sub(r'\b(color|textColor)="([^"]+)"',
+                       lambda c: f'{c.group(1)}="{_ON_DARK.get(c.group(2), c.group(2))}"', panel)
+        xml = xml[:start] + panel + xml[end:]
+        count += 1
+
+
 def _tidy_text_whitespace(xml: str) -> tuple[str, int]:
     """Text written over several indented lines keeps its newline + indent as characters: the
     CHEFFIN cover title started with '\\n          CHEFFIN…' and rendered pushed right. Collapse
