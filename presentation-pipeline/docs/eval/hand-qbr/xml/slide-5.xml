@@ -1,0 +1,39 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="CAD5E4" chartSurface="FFFFFF" chartInk="16202E" accentSoft="E3EBFC" accentText="1C5CEA" positiveSoft="E1EEE6" positiveText="147739" negativeSoft="FAE3E3" negativeText="C82020" warningSoft="F5E9DF" warningText="AA4F09" onAccent="FFFFFF" neutral="C6C9CF" />
+<!-- fit-grow: off -->
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="36" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="10">
+      <Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">Q4 PRIORITIES</Text>
+      <Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15">Three Q4 priorities, each with a measurable target</Text>
+    </VStack>
+    <HStack grow="1" gap="24" alignItems="stretch">
+      <VStack w="1" grow="1" padding="32" gap="14" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <Text fontSize="44" color="$accentText" bold="true">01</Text>
+        <Text fontSize="26" color="$textMain" bold="true" lineHeight="1.2">Close 3 enterprise logos</Text>
+        <Text fontSize="18" color="$textMuted" lineHeight="1.4">Grow the largest, fastest-growing segment</Text>
+        <VStack grow="1" />
+        <Shape shapeType="rect" w="300" h="1" fill.color="$border" />
+        <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="2">TARGET</Text>
+        <Text h="84" fontSize="30" color="$textMain" bold="true">$4M+ combined ARR</Text>
+      </VStack>
+      <VStack w="1" grow="1" padding="32" gap="14" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <Text fontSize="44" color="$accentText" bold="true">02</Text>
+        <Text fontSize="26" color="$textMain" bold="true" lineHeight="1.2">Launch self-serve onboarding</Text>
+        <Text fontSize="18" color="$textMuted" lineHeight="1.4">Reduce CAC payback</Text>
+        <VStack grow="1" />
+        <Shape shapeType="rect" w="300" h="1" fill.color="$border" />
+        <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="2">TARGET</Text>
+        <Text h="84" fontSize="30" color="$textMain" bold="true">14 → 10 months</Text>
+      </VStack>
+      <VStack w="1" grow="1" padding="32" gap="14" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
+        <Text fontSize="44" color="$accentText" bold="true">03</Text>
+        <Text fontSize="26" color="$textMain" bold="true" lineHeight="1.2">Ship analytics v2 dashboard</Text>
+        <Text fontSize="18" color="$textMuted" lineHeight="1.4">Product milestone for the board</Text>
+        <VStack grow="1" />
+        <Shape shapeType="rect" w="300" h="1" fill.color="$border" />
+        <Text fontSize="14" color="$textMuted" bold="true" letterSpacing="2">TARGET</Text>
+        <Text h="84" fontSize="30" color="$textMain" bold="true">Before Jan board meeting</Text>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

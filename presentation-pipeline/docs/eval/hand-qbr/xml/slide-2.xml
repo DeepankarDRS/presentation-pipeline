@@ -1,0 +1,33 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="CAD5E4" chartSurface="FFFFFF" chartInk="16202E" accentSoft="E3EBFC" accentText="1C5CEA" positiveSoft="E1EEE6" positiveText="147739" negativeSoft="FAE3E3" negativeText="C82020" warningSoft="F5E9DF" warningText="AA4F09" onAccent="FFFFFF" neutral="C6C9CF" />
+<!-- fit-grow: off -->
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="36" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="10">
+      <Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">EXECUTIVE SUMMARY</Text>
+      <Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15">ARR up 18% to $48.2M — gross margin is the one metric slipping</Text>
+      <Text fontSize="18" color="$textMuted">Q3 FY26 vs Q2 FY26 · three of four headline metrics improved</Text>
+    </VStack>
+    <HStack grow="1" gap="24" alignItems="stretch">
+      <VStack w="1" grow="1" padding="32" gap="16" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="spaceBetween">
+        <Text fontSize="20" color="$textMuted" bold="true">ARR</Text>
+        <Text fontSize="48" color="$textMain" bold="true">$48.2M</Text>
+        <HStack><HStack padding="8" backgroundColor="$positiveSoft" borderRadius="6"><Text fontSize="18" color="$positiveText" bold="true">▲ +18% QoQ</Text></HStack></HStack>
+      </VStack>
+      <VStack w="1" grow="1" padding="32" gap="16" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="spaceBetween">
+        <Text fontSize="20" color="$textMuted" bold="true">Net Revenue Retention</Text>
+        <Text fontSize="48" color="$textMain" bold="true">114%</Text>
+        <HStack><HStack padding="8" backgroundColor="$positiveSoft" borderRadius="6"><Text fontSize="18" color="$positiveText" bold="true">▲ +2 pts</Text></HStack></HStack>
+      </VStack>
+      <VStack w="1" grow="1" padding="32" gap="16" backgroundColor="$negativeSoft" borderRadius="12" border.color="$negative" border.width="2" justifyContent="spaceBetween">
+        <Text fontSize="20" color="$negativeText" bold="true">Gross Margin</Text>
+        <Text fontSize="48" color="$textMain" bold="true">72.1%</Text>
+        <HStack><HStack padding="8" backgroundColor="$surfaceAlt" borderRadius="6"><Text fontSize="18" color="$negativeText" bold="true">▼ -1.4 pts</Text></HStack></HStack>
+      </VStack>
+      <VStack w="1" grow="1" padding="32" gap="16" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="spaceBetween">
+        <Text fontSize="20" color="$textMuted" bold="true">CAC Payback</Text>
+        <Text fontSize="48" color="$textMain" bold="true">14 mo</Text>
+        <HStack><HStack padding="8" backgroundColor="$positiveSoft" borderRadius="6"><Text fontSize="18" color="$positiveText" bold="true">▼ -2 months</Text></HStack></HStack>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

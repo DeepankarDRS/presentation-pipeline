@@ -1,0 +1,16 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="CAD5E4" chartSurface="FFFFFF" chartInk="16202E" accentSoft="E3EBFC" accentText="1C5CEA" positiveSoft="E1EEE6" positiveText="147739" negativeSoft="FAE3E3" negativeText="C82020" warningSoft="F5E9DF" warningText="AA4F09" onAccent="FFFFFF" neutral="C6C9CF" />
+<!-- fit-grow: off -->
+<Slide>
+  <HStack w="1280" h="720" alignItems="stretch" backgroundColor="$surface">
+    <VStack grow="1" padding="72" gap="20" justifyContent="center">
+      <Text fontSize="16" color="$accentText" bold="true" letterSpacing="3">QUARTERLY BUSINESS REVIEW</Text>
+      <Text fontSize="60" color="$textMain" bold="true" lineHeight="1.1">Q3 FY26 Business Review</Text>
+      <Shape shapeType="rect" w="96" h="6" fill.color="$accent" />
+      <Text fontSize="26" color="$textMuted">Acme Analytics — Executive Update</Text>
+    </VStack>
+    <VStack w="400" padding="56" gap="4" backgroundColor="$accent" justifyContent="end">
+      <Text fontSize="120" color="$onAccent" bold="true" lineHeight="1">Q3</Text>
+      <Text fontSize="40" color="$onAccent" lineHeight="1.1">FY26</Text>
+    </VStack>
+  </HStack>
+</Slide>

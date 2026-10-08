@@ -1,0 +1,49 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="CAD5E4" chartSurface="FFFFFF" chartInk="16202E" accentSoft="E3EBFC" accentText="1C5CEA" positiveSoft="E1EEE6" positiveText="147739" negativeSoft="FAE3E3" negativeText="C82020" warningSoft="F5E9DF" warningText="AA4F09" onAccent="FFFFFF" neutral="C6C9CF" />
+<!-- fit-grow: off -->
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="32" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="10">
+      <Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">SEGMENTS</Text>
+      <Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15">Enterprise is 58% of ARR and the fastest-growing segment</Text>
+      <Text fontSize="18" color="$textMuted">SMB has 16× more customers than Enterprise but 12% of ARR</Text>
+    </VStack>
+    <VStack gap="12">
+      <Text fontSize="16" color="$textMuted" bold="true">Share of ARR, Q3 FY26 ($48.2M)</Text>
+      <HStack h="56" gap="4" alignItems="stretch">
+        <HStack w="680" padding="12" backgroundColor="$accent" borderRadius="6" alignItems="center"><Text fontSize="18" color="$onAccent" bold="true">Enterprise · 58%</Text></HStack>
+        <HStack w="348" padding="12" backgroundColor="$accentSoft" borderRadius="6" alignItems="center"><Text fontSize="18" color="$accentText" bold="true">Mid-Market · 30%</Text></HStack>
+        <HStack w="136" padding="12" backgroundColor="$neutral" borderRadius="6" alignItems="center"><Text fontSize="18" color="$textMain" bold="true">SMB · 12%</Text></HStack>
+      </HStack>
+    </VStack>
+    <Table defaultRowHeight="84" cellBorder.color="$border" cellBorder.width="1">
+      <Col width="368" />
+      <Col />
+      <Col />
+      <Col />
+      <Tr>
+        <Td fontSize="16" bold="true" color="$textMuted" backgroundColor="$surface">Segment</Td>
+        <Td fontSize="16" bold="true" color="$textMuted" backgroundColor="$surface" textAlign="right">ARR</Td>
+        <Td fontSize="16" bold="true" color="$textMuted" backgroundColor="$surface" textAlign="right">QoQ growth</Td>
+        <Td fontSize="16" bold="true" color="$textMuted" backgroundColor="$surface" textAlign="right">Customers</Td>
+      </Tr>
+      <Tr>
+        <Td fontSize="22" bold="true" color="$textMain" backgroundColor="$accentSoft">Enterprise</Td>
+        <Td fontSize="22" bold="true" color="$accentText" backgroundColor="$accentSoft" textAlign="right">$28.1M</Td>
+        <Td fontSize="22" bold="true" color="$positiveText" backgroundColor="$accentSoft" textAlign="right">+22%</Td>
+        <Td fontSize="22" color="$textMain" backgroundColor="$accentSoft" textAlign="right">142</Td>
+      </Tr>
+      <Tr>
+        <Td fontSize="22" color="$textMain" backgroundColor="$surfaceAlt">Mid-Market</Td>
+        <Td fontSize="22" color="$textMain" backgroundColor="$surfaceAlt" textAlign="right">$14.4M</Td>
+        <Td fontSize="22" color="$positiveText" backgroundColor="$surfaceAlt" textAlign="right">+14%</Td>
+        <Td fontSize="22" color="$textMain" backgroundColor="$surfaceAlt" textAlign="right">487</Td>
+      </Tr>
+      <Tr>
+        <Td fontSize="22" color="$textMain" backgroundColor="$surfaceAlt">SMB</Td>
+        <Td fontSize="22" color="$textMain" backgroundColor="$surfaceAlt" textAlign="right">$5.7M</Td>
+        <Td fontSize="22" color="$positiveText" backgroundColor="$surfaceAlt" textAlign="right">+8%</Td>
+        <Td fontSize="22" color="$textMain" backgroundColor="$surfaceAlt" textAlign="right">2,341</Td>
+      </Tr>
+    </Table>
+  </VStack>
+</Slide>

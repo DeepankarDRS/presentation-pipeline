@@ -1,0 +1,33 @@
+<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentAlt="0EA5E9" positive="15803D" negative="DC2626" warning="B45309" textMain="16202E" textMuted="55627A" border="CAD5E4" chartSurface="FFFFFF" chartInk="16202E" accentSoft="E3EBFC" accentText="1C5CEA" positiveSoft="E1EEE6" positiveText="147739" negativeSoft="FAE3E3" negativeText="C82020" warningSoft="F5E9DF" warningText="AA4F09" onAccent="FFFFFF" neutral="C6C9CF" />
+<!-- fit-grow: off -->
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="32" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="10">
+      <Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">REVENUE</Text>
+      <Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15">Revenue grew every quarter, reaching $48.2M in Q3 FY26</Text>
+      <Text fontSize="18" color="$textMuted">Quarterly revenue, $M · last six quarters</Text>
+    </VStack>
+    <HStack grow="1" gap="32" alignItems="stretch">
+      <VStack grow="1" padding="32" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="end">
+        <HStack gap="28" alignItems="end">
+          <VStack w="1" grow="1" gap="8" alignItems="center"><Text fontSize="18" color="$textMuted" bold="true">28.4</Text><Shape shapeType="rect" w="88" h="177" fill.color="$neutral" /><Text fontSize="16" color="$textMuted">Q2 FY25</Text></VStack>
+          <VStack w="1" grow="1" gap="8" alignItems="center"><Text fontSize="18" color="$textMuted" bold="true">31.2</Text><Shape shapeType="rect" w="88" h="194" fill.color="$neutral" /><Text fontSize="16" color="$textMuted">Q3 FY25</Text></VStack>
+          <VStack w="1" grow="1" gap="8" alignItems="center"><Text fontSize="18" color="$textMuted" bold="true">36.1</Text><Shape shapeType="rect" w="88" h="225" fill.color="$neutral" /><Text fontSize="16" color="$textMuted">Q4 FY25</Text></VStack>
+          <VStack w="1" grow="1" gap="8" alignItems="center"><Text fontSize="18" color="$textMuted" bold="true">39.1</Text><Shape shapeType="rect" w="88" h="243" fill.color="$neutral" /><Text fontSize="16" color="$textMuted">Q1 FY26</Text></VStack>
+          <VStack w="1" grow="1" gap="8" alignItems="center"><Text fontSize="18" color="$textMuted" bold="true">42.3</Text><Shape shapeType="rect" w="88" h="263" fill.color="$neutral" /><Text fontSize="16" color="$textMuted">Q2 FY26</Text></VStack>
+          <VStack w="1" grow="1" gap="8" alignItems="center"><Text fontSize="22" color="$accentText" bold="true">48.2</Text><Shape shapeType="rect" w="88" h="300" fill.color="$accent" /><Text fontSize="16" color="$textMain" bold="true">Q3 FY26</Text></VStack>
+        </HStack>
+      </VStack>
+      <VStack w="300" gap="24" alignItems="stretch">
+        <VStack grow="1" padding="28" gap="8" backgroundColor="$accentSoft" borderRadius="12" justifyContent="center">
+          <Text fontSize="48" color="$accentText" bold="true">+$5.9M</Text>
+          <Text fontSize="18" color="$textMain">added in Q3 FY26 — the largest quarterly gain in six quarters</Text>
+        </VStack>
+        <VStack grow="1" padding="28" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center">
+          <Text fontSize="48" color="$textMain" bold="true">+70%</Text>
+          <Text fontSize="18" color="$textMuted">since Q2 FY25 ($28.4M)</Text>
+        </VStack>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>
