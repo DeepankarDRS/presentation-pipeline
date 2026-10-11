@@ -355,3 +355,27 @@ for every later run until removed):
 **Then, here (free):** render the bundle; per KPI slide, name the layout the LLM chose and its item count; a
 contact sheet per deck beside its q1008 version (today's route, 2026-10-08); blind pairs of the KPI slides if
 the user wants to mark them. The planner reruns, so plans differ from q1008: a deck-level look, not a strict A/B.
+
+**Full-deck run done** (test PC, 2026-10-11, commit `a1cc01c`, 4 decks / 25 slides, **$1.13**; `docs/eval/kpi-node/decks/`).
+The test PC ran before the paid-check sizing fixes; the 4 KPI slides were recompiled here on the current commit
+for `kpi-slides.png` (both runs), the deck sheets use the bundles' own renders. The planner reran, so plans
+differ from q1008 (XTSY: no `kpi_row` in either run).
+
+| KPI slide | refs on: layout the LLM composed | sizes (today's route → refs) |
+|---|---|---|
+| QBR exec summary (4) | row of 4, ARR on a dark panel (the hint asked "inverted panel"), icons in the label row; callout + segment table below | 32 → 55 px |
+| all-nodes dense (5) | row of 5 above a full-width chart, first tile tinted; the planner put "repeat revenue 62%" in the row (q1008 had it as a separate hero panel) | 30 / 72 → 47 px |
+| CHEFFIN slide 1 (5) | one row of 5 (the planner made one component, q1008 two tiers), Combined spend tinted, a dark "core diagnosis" panel below | 71 / 51 → 43 px |
+| CHEFFIN slide 4 (7) | 4 + 3 grid with an accent rule, ROAS toned red, Allowable CPC tinted, no icons | 28 → 58 px, words too wide 6 → 0 |
+
+Four slides, four layouts: the LLM varies the composition with the content, without rules. Not seen: a hero tier,
+rows beside a chart, a strip. Weak: CHEFFIN 4's last row of 3 does not fill the width; CHEFFIN 1 tiles 5
+`GEOM_CARD_EMPTY` (tall tiles, one row); QBR's ARR value in `$accent` on the dark panel + green delta read low
+(`LOW_CONTRAST` 2). KPI slides first try 3 / 4: all-nodes put the refs and an `Icon` inside a `<Text>`
+(`INVALID_CHILD`, repaired).
+
+Deck level (vs q1008, the same 4 cases): cost $1.13 vs $1.11; first pass 22 / 25 vs 25 / 25; word breaks 12 vs 9
+(9 of the 12 on all-nodes slide 3, a non-KPI slide). **Not from the refs:** the CHEFFIN cover did not compile —
+the LLM typed literal colours with an alpha channel (`7B3FE41A`, 8 digits), POM rejects them, the slide was not
+retried and the deck shows "Slide could not be generated" (also a ZIP-level merge, so `pptx_merge`'s media-name
+bug can show wrong icons in that deck). Normalizer fix proposed separately.
