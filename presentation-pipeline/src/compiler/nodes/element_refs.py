@@ -29,13 +29,13 @@ from typing import Any
 from lxml import etree
 
 from src.compiler.nodes import spec
-from src.compiler.value_parts import split_value, unit_px
+from src.compiler.value_parts import is_sentence, split_value, unit_px, unit_share
 
 ERROR, WARNING, REPORT = "error", "warning", "report"
 SEVERITY = {
     "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR,
     "NODE_FIELD_MISSING": WARNING, "NODE_BYPASSED": WARNING, "NODE_ATTR_IGNORED": WARNING,
-    "NODE_FOCUS_UNNAMED": REPORT,
+    "NODE_FOCUS_UNNAMED": REPORT, "NODE_VALUE_TEXT": WARNING,
 }
 
 FIELDS = ("label", "value", "note")
@@ -47,6 +47,9 @@ PLAN_KEY = {"label": "kpi_labels", "value": "kpi_values", "note": "kpi_deltas"}
 # too full to count as sparse elsewhere (nothing grew). A hero starts at the ramp's single stat
 # (72): in a content-height card nothing grows it, and 48 stayed 48 where the LLM had drawn 72.
 LABEL_PX, NOTE_PX, VALUE_PX, HERO_PX = 16, 16, 28, 72
+# a "value" that is a sentence (planner put prose in kpi_values; plan check KPI_VALUE_TEXT) is drawn
+# as body text, not as a bold number grown to fill (2026-10-11 blind pair 1.3: "not all things bold")
+BODY_PX = 18
 ROLE_COLOR = {"label": "$accentText", "value": "$textMain", "note": "$textMuted"}
 TONE_ROLE = {"good": "positive", "positive": "positive", "bad": "negative", "negative": "negative",
              "watch": "warning", "warning": "warning"}
@@ -106,7 +109,7 @@ def _container(el: etree._Element) -> etree._Element | None:
     return None
 
 
-def _set_text(el: etree._Element, field: str, text: str, size: int) -> None:
+def _set_text(el: etree._Element, field: str, text: str, size: int, share: float) -> None:
     for c in list(el):
         el.remove(c)
     if field != "value":
@@ -115,7 +118,7 @@ def _set_text(el: etree._Element, field: str, text: str, size: int) -> None:
     head, unit = split_value(text)
     el.text = head
     if unit:
-        span = etree.SubElement(el, "Span", fontSize=str(unit_px(size)))
+        span = etree.SubElement(el, "Span", fontSize=str(unit_px(size, share)))
         span.text = unit
 
 
@@ -184,9 +187,16 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         if field == "value" and "fontSize" in a:
             flag("NODE_ATTR_IGNORED", ref, f'fontSize on ref="{ref}": code sizes every value of {cid} together; removed.')
 
-        size = (HERO_PX if hero else VALUE_PX) if field == "value" else (LABEL_PX if field == "label" else NOTE_PX)
+        prose = field == "value" and is_sentence(text)
+        if prose:
+            flag("NODE_VALUE_TEXT", ref, f'{cid} item {i}: the value is a sentence, drawn as body text: "{text[:60]}"')
+        size = BODY_PX if prose else (HERO_PX if hero else VALUE_PX) if field == "value" else (
+            LABEL_PX if field == "label" else NOTE_PX)
         a["fontSize"] = str(size)
-        if field == "value":
+        if prose:
+            a.pop("bold", None)
+            value_els[(cid, i)] = el
+        elif field == "value":
             a["bold"] = "true"
             a["id"] = f"kpi{'h' if hero else 'v'}-{cid}-{i}"
             value_els[(cid, i)] = el
@@ -195,7 +205,7 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
             role = TONE_ROLE.get(tones[i].lower()) if i < len(tones) else None
             dark = ON_FILL.get(_fill_of(el) or "")
             a["color"] = dark or (f"${role}Text" if role else ROLE_COLOR[field])
-        _set_text(el, field, text, size)
+        _set_text(el, field, text, size, unit_share(_list(comp, "kpi_values")))
         placed[cid].setdefault(i, set()).add(field)
 
     # values filled on an earlier pass (a repaired slide comes back already filled) count as placed
@@ -283,6 +293,8 @@ def prompt_line(comp: dict) -> str:
         "($surfaceAlt, $accentSoft, $accent, $accentText, $positiveSoft / $positiveText, $negativeSoft / $negativeText, "
         "$warningSoft / $warningText, $border; a dark panel is $panelDark with text color=\"$onPanelDark\"). "
         "A color=\"$token\" on a ref Text is kept; no fontSize on a value.",
+        "An icon, if any, goes in the label row (an HStack: icon left of the label, or the label left and the icon "
+        "right with justifyContent=\"spaceBetween\") - not alone and centred above the label.",
     ]
     f = focus_index(comp)
     if f is not None:

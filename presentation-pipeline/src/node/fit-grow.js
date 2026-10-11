@@ -189,6 +189,11 @@ function natural(n, L) {
   if (n.type === "text") {
     const fs = Math.max(n.fontSize ?? 24, ...(n.runs ?? []).map((r) => r.fontSize ?? n.fontSize ?? 24));
     const text = n.text ?? (n.runs ?? []).map((r) => r.text).join("");
+    // a number + its smaller unit on one line is one line tall (measured whole at the number's size
+    // "14 months" wrapped: its tile reserved a second line and sat out of line with its peers)
+    if ((n.runs ?? []).some((r) => r.fontSize !== undefined) && lineCount(n, L, 1) === 1) {
+      return b.pt + b.pb + fs * (n.lineHeight ?? 1.3);
+    }
     return b.pt + b.pb + measureText(text, innerW, { fontFamily: n.fontFamily ?? "Noto Sans JP",
       fontSizePx: fs, lineHeight: n.lineHeight ?? 1.3, fontWeight: n.bold ? "bold" : "normal",
       letterSpacingPx: n.letterSpacing }, L.ctx.textMeasurementMode, L.ctx.fontRegistry).heightPx;
@@ -1232,6 +1237,15 @@ function lineCount(n, L, margin = 0.85) {
   const fs = n.fontSize ?? 24, lh = n.lineHeight ?? 1.3;
   const family = n.fontFamily ?? "Noto Sans JP";
   const real = L.ctx.fontRegistry.hasFont(family, n.bold ? "bold" : "normal");
+  const room = Math.max(0, b.w - b.pl - b.pr) * (real ? 1 : margin);
+  // runs of their own size (a KPI number + its smaller unit): one line when the runs, each at its
+  // size, fit side by side; measured at the Text's size a word unit wrapped and stopped the growth
+  if ((n.runs ?? []).some((r) => r.fontSize !== undefined)) {
+    const w = n.runs.reduce((sum, r) => sum + measureText(r.text ?? "", Infinity, { fontFamily: family,
+      fontSizePx: r.fontSize ?? fs, lineHeight: lh, fontWeight: (r.bold ?? n.bold) ? "bold" : "normal",
+      letterSpacingPx: n.letterSpacing }, L.ctx.textMeasurementMode, L.ctx.fontRegistry).widthPx, 0);
+    if (w <= room) return 1;
+  }
   const { heightPx } = measureText(n.text ?? (n.runs ?? []).map((r) => r.text).join(""),
     Math.max(0, b.w - b.pl - b.pr) * (real ? 1 : margin), { fontFamily: family, fontSizePx: fs,
       lineHeight: lh, fontWeight: n.bold ? "bold" : "normal", letterSpacingPx: n.letterSpacing },
@@ -1363,6 +1377,7 @@ function overBy(L, n) {
   const texts = list ? n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""))
     : [n.text ?? (n.runs ?? []).map((r) => r.text).join("")];
   if (room <= 0) return 0;
+  if (!list) return Math.max(0, runWidest(n, 1, L.ctx).w - room);
   return Math.max(0, widestPiece(texts, family, n.fontSize ?? 24, n.bold, n.letterSpacing, L.ctx).w - room);
 }
 
@@ -1484,6 +1499,36 @@ function widestPiece(texts, family, fs, bold, spacing, ctx) {
   return widest;
 }
 
+/**
+ * The widest unbreakable piece of one Text, each run measured at its own size x k: "₹114.9<Span
+ * fontSize=17>L</Span>" is one word of two sizes, "14<Span fontSize=14> months</Span>" two words, the
+ * second small. Measuring every run at the Text's size counted a small unit as a full-size word: a
+ * KPI value with a word unit ("14 months") stopped growing at 39 px in a 280 px tile (KPI gallery,
+ * 2026-10-11) and the guard shrank numbers whose unit was what looked too wide.
+ */
+function runWidest(n, k, ctx) {
+  const family = n.fontFamily ?? "Noto Sans JP";
+  const runs = n.runs?.length ? n.runs : [{ text: n.text ?? "" }];
+  let widest = { word: "", w: 0 }, cur = { word: "", w: 0 };
+  const flush = () => { if (cur.w > widest.w) widest = cur; cur = { word: "", w: 0 }; };
+  for (const r of runs) {
+    const fs = (r.fontSize ?? n.fontSize ?? 24) * k;
+    const weight = (r.bold ?? n.bold) ? "bold" : "normal";
+    for (const part of String(r.text ?? "").split(/(\s+)/)) {
+      if (!part) continue;
+      if (/^\s+$/.test(part)) { flush(); continue; }
+      part.split(/(?<=[-–—])/).forEach((piece, j) => {
+        if (j > 0) flush();
+        const w = measureText(piece, Infinity, { fontFamily: family, fontSizePx: fs, lineHeight: 1.3,
+          fontWeight: weight, letterSpacingPx: n.letterSpacing }, ctx.textMeasurementMode, ctx.fontRegistry).widthPx;
+        cur = { word: cur.word + piece, w: cur.w + w };
+      });
+    }
+  }
+  flush();
+  return widest;
+}
+
 const exact = (ctx, family, bold) => ctx.fontRegistry.hasFont(family, bold ? "bold" : "normal");
 
 /**
@@ -1529,8 +1574,7 @@ async function scanWords(xml) {
         const fs = Math.max(n.fontSize ?? 24, ...runs.map((r) => r.fontSize ?? n.fontSize ?? 24));
         const b = L.box(n);
         const room = (b.w - b.pl - b.pr) * slack(n.bold);
-        const text = n.text ?? runs.map((r) => r.text).join("");
-        const at = (f) => widestPiece([text], family, f, n.bold, n.letterSpacing, ctx);
+        const at = (f) => runWidest(n, f / fs, ctx);
         if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "text", fs, own: n.fontSize, room, at, columns: columns(n) });
       } else if (n.type === "ul" || n.type === "ol") {
         if (n.items.some((i) => i.fontSize !== undefined || (i.runs ?? []).some((r) => r.fontSize !== undefined))) return;
@@ -1690,7 +1734,8 @@ async function statRows(xml) {
   const L = await layout(xml);
   const rows = [];
   try {
-    for (const r of refGroups(L)) if (!r.hero) rows.push({ tiles: r.tiles, ids: r.ids, pct: null, parent: null });
+    // a hero is a row of one: evenStats has nothing to even, growStatSides grows its label / note
+    for (const r of refGroups(L)) rows.push({ tiles: r.tiles, ids: r.ids, pct: null, parent: null });
     for (const root of L.slides) walk(root, (n, parent) => {
       if (!statRow(n)) return;
       const tiles = n.children.filter((c) => STACKS.has(c.type) && c.id);
@@ -1759,6 +1804,29 @@ async function evenStats(xml, report, rows) {
   return xml;
 }
 
+/**
+ * POM lays a Text out measuring all of it at its own size, so a KPI ref value with a small word unit
+ * ("14<Span fontSize=24> months</Span>" at 58 px) gets a two-line box and its tile sits out of line
+ * with its peers, while the renderer draws one line (KPI gallery 2026-10-11). A ref value whose runs,
+ * each at its size, fit on one line gets h = one line.
+ */
+async function oneLineValues(xml, report) {
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const root of L.slides) walk(root, (n) => {
+      if (n.type !== "text" || !n.id || !REF_VALUE.test(n.id) || n.h !== undefined) return;
+      if (!(n.runs ?? []).some((r) => r.fontSize !== undefined) || lineCount(n, L, 1) !== 1) return;
+      const b = L.box(n);
+      const one = Math.ceil(b.pt + b.pb + (n.fontSize ?? 24) * (n.lineHeight ?? 1.3));
+      if (b.h > one + 2) edits.push([n.id, one]);
+    });
+  } finally { L.free(); }
+  for (const [id, h] of edits) xml = setAttrs(xml, id, { h });
+  if (edits.length) report.push(`KPI values with a unit kept on one line (${edits.length})`);
+  return xml;
+}
+
 // --- entry ----------------------------------------------------------------------
 
 /** One slide (with the document's <Theme> prefix) through every phase. */
@@ -1792,6 +1860,7 @@ async function fitSlide(inputXml, report, warnings = []) {
     warnings.length = w0;
     xml = await guardWords(sided, report, warnings);
   }
+  xml = await oneLineValues(xml, report);
   return report.length ? untag(xml) : inputXml;
 }
 

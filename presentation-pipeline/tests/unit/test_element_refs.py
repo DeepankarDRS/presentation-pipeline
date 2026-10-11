@@ -9,7 +9,7 @@ import yaml
 
 from src.compiler.nodes import element_refs as E
 from src.compiler.palette_tokens import TEXT_MIN, contrast, derive_tokens
-from src.compiler.value_parts import split_value, unit_px
+from src.compiler.value_parts import is_sentence, split_value, unit_px, unit_share
 
 PLAN = {"components": [
     {"component_id": "title", "kind": "title", "count": 1},
@@ -51,8 +51,8 @@ def test_full_skeleton_fills_verbatim_with_no_issues():
     assert "ref=" not in xml
     for text in ("Spend", "Revenue", "Blended ROAS", "Amazon ₹29.4L", "ACOS ~307%"):
         assert f">{text}</Text>" in xml, text
-    assert '>₹114.9<Span fontSize="13">L</Span></Text>' in xml
-    assert '>0.33<Span fontSize="13">x</Span></Text>' in xml
+    assert '>₹114.9<Span fontSize="17">L</Span></Text>' in xml   # one-letter units: 0.6 x 28
+    assert '>0.33<Span fontSize="17">x</Span></Text>' in xml
     assert res["components"]["kpis"] == {"items": 3, "values_placed": 3, "labels_placed": 3, "notes_placed": 2,
                                         "notes_planned": 2, "bypassed": 0}
 
@@ -215,7 +215,8 @@ def test_soften_dark_panels_also_takes_panel_dark():
 
 @pytest.mark.parametrize("value,parts", [
     ("$48.2M", ("$48.2", "M")), ("₹4.2 Cr", ("₹4.2", " Cr")), ("114%", ("114", "%")), ("0.33x", ("0.33", "x")),
-    ("-1.4 pts", ("-1.4", " pts")), ("14 months", ("14 months", "")), ("₹1,234", ("₹1,234", "")),
+    ("-1.4 pts", ("-1.4", " pts")), ("14 months", ("14", " months")), ("15 min/wk", ("15", " min/wk")),
+    ("₹1,234", ("₹1,234", "")), ("₹29.4L / ₹85.5L", ("₹29.4L / ₹85.5L", "")),
     ("Q3 FY26", ("Q3 FY26", "")), ("  7.5×  ", ("7.5", "×")),
 ])
 def test_split_value_is_verbatim(value, parts):
@@ -225,6 +226,51 @@ def test_split_value_is_verbatim(value, parts):
 
 def test_unit_px():
     assert unit_px(44) == 20
+    assert unit_px(28, 0.42) == 14   # never below the floor
+
+
+@pytest.mark.parametrize("values,share", [
+    (["114%", "0.33x", "$48.2M"], 0.6), (["₹4.2 Cr", "114%"], 0.5), (["-1.4 pts"], 0.5),
+    (["14 months", "72.1%"], 0.42), (["Q3 FY26"], 0.45),
+])
+def test_unit_share_follows_the_longest_unit(values, share):
+    assert unit_share(values) == share
+
+
+@pytest.mark.parametrize("value,prose", [
+    ("Generic search consumed the largest budget pool and returned around 0.29x ROAS.", True),
+    ("Brand campaigns were strong", True), ("0.33x", False), ("14 months", False), ("Q3 FY26", False),
+    ("₹29.4L / ₹85.5L", False), ("", False),
+])
+def test_is_sentence(value, prose):
+    assert is_sentence(value) is prose
+
+
+def test_sentence_value_is_drawn_as_body_text():
+    plan = {"components": [{"component_id": "k", "kind": "kpi_row", "content_data": {
+        "kpi_labels": ["Generic search", "Brand"],
+        "kpi_values": ["Generic search consumed the largest budget pool and returned around 0.29x ROAS.", "0.99x"]}}]}
+    xml = ('<Slide><VStack><HStack><VStack><Text ref="k.0.label"/><Text ref="k.0.value" bold="true"/></VStack>'
+           '<VStack><Text ref="k.1.label"/><Text ref="k.1.value"/></VStack></HStack></VStack></Slide>')
+    res = E.fill_refs(xml, plan)
+    assert res["ok"] and "NODE_VALUE_TEXT" in codes(res)
+    prose = re.search(r"<Text[^>]*>Generic search consumed[^<]*</Text>", res["xml"]).group(0)
+    assert f'fontSize="{E.BODY_PX}"' in prose and "bold" not in prose and "kpiv-" not in prose
+    assert 'id="kpiv-k-1"' in res["xml"]
+
+
+def test_plan_check_reasks_on_sentence_kpi_values():
+    from src.agents.plan_checks import KPI_VALUE_TEXT, REASK_CODES, finalize_plan, find_problems, reask_context
+    plan = {"components": [{"component_id": "k", "kind": "kpi_row", "count": 2, "content_data": {
+        "kpi_labels": ["Generic search", "Brand"],
+        "kpi_values": ["Generic search consumed the largest budget pool.", "0.99x"]}}]}
+    problems = find_problems(plan, "brief")
+    assert [p["code"] for p in problems] == [KPI_VALUE_TEXT] and KPI_VALUE_TEXT in REASK_CODES
+    assert "card_grid" in reask_context(problems)["directive"]
+    finalize_plan(plan, "brief")
+    assert any(f["code"] == KPI_VALUE_TEXT for f in plan["plan_flags"])
+    ok = {"components": [dict(plan["components"][0], content_data={"kpi_labels": ["A"], "kpi_values": ["0.99x"]})]}
+    assert not find_problems(ok, "brief")
 
 
 # ── prompt line, generator, validator ─────────────────────────────────────────
@@ -232,7 +278,7 @@ def test_unit_px():
 def test_prompt_line_has_ids_lengths_focus_and_no_values():
     line = E.prompt_line(PLAN["components"][1])
     assert '<Text ref="kpis.<index>.<field>"/>' in line and "3 items" in line and "no note for item 1" in line
-    assert 'Focus item: 2 ("Blended ROAS")' in line and "$panelDark" in line
+    assert 'Focus item: 2 ("Blended ROAS")' in line and "$panelDark" in line and "label row" in line
     for v in ("₹114.9L", "₹37.4L", "0.33x", "Amazon ₹29.4L", "ACOS"):
         assert v not in line, v
 

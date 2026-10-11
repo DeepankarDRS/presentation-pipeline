@@ -240,3 +240,34 @@ launch 34 → 28 (slide full, table squeezed: nothing may grow), agency takeover
 misses against the letter of the pass line: 1 broken word (the same kicker in A) and `GEOM_CARD_EMPTY` 8 → 9.
 Inputs for the paid check (§4): the unit-span ratio (1.1: the user wants it to vary, not fixed at 0.45), sentence
 values in a `kpi_row` (plan check), icon position is the LLM's (1.4: a prompt-line hint at most).
+
+## 8. After the marks: unit size, sentence values, icon hint, gallery (2026-10-11)
+
+User on the three findings: units vary "small or large based on the characters count and spacing"; sentence
+values: "you can, but how"; icons: a prompt-line hint. Then: show what B's KPI cards look like.
+
+- **Unit size** (`value_parts.unit_share`): one share per component from its longest unit — 1 character
+  (`%`, `x`, `M`, `L`) 0.6, 2-3 letters (`Cr`, `pts`, `ms`) 0.5, a word (`months`, `min/wk`) 0.42; floor 14 px.
+  Word units now split ("14 months" → `14` + small ` months`). Spacing is fit-grow's: it grows the whole value.
+- **fit-grow measured a sized Text as one size** (found by the gallery): word width (`overBy`, the guard),
+  line count and natural height took every run at the Text's size, so a small unit counted as full size — a
+  value with a word unit stopped growing (39 px in a 280 px tile) and the guard shrank numbers for their
+  unit. Now run-aware (`runWidest`, `lineCount`, `natural`). POM itself lays such a Text out as two lines;
+  `oneLineValues` gives a ref value whose runs fit one line `h` = one line (its tile sat out of line).
+  A hero's label / note now grow with it (`growStatSides`, ≤ 24 px).
+- **Sentence values**: plan check `KPI_VALUE_TEXT` (`plan_checks.find_problems`, a re-ask code: the planner
+  is asked once more, told kpi_values hold the figure and findings go in a card_grid / bullet_list; still
+  there → flagged in `plan_flags`). Fill fallback: a sentence value is drawn as body text (18 px, not bold, not
+  in the size group), `NODE_VALUE_TEXT` warning. The plan check runs on both routes (`off` too): it is a plan
+  fix, and saved-plan replays and the generator-only paid check are not affected.
+- **Icon hint** in the KPI prompt line: an icon goes in the label row (left of the label, or right with
+  `spaceBetween`), not alone and centred on top.
+- **Gallery** (`python -m scripts.kpi_gallery`, `docs/eval/kpi-node/gallery/`): six looks the LLM may compose
+  (tiles, strip, side bars, focus panel, rows beside a chart, hero tier) × two plans (QBR 4 KPIs, ROAS 5 KPIs
+  with tones) × corporate-slate / gj-h1 / graphite-dark, real fill + fit-grow + POM. Skeletons are
+  hand-written; the paid check shows which ones the LLM writes.
+- **Item counts** (`focus-panel-counts.png`, the same focus-panel skeleton at 1-7 items): there are no
+  variant triggers or count rules — the LLM picks the arrangement from the item count in its prompt line.
+  Code's half holds at any count (text, one size, colours). What the LLM must get right: 1 item in a
+  two-column shape leaves half the band empty; 6-7 items in a 2 × 2 grid drop items — the validator raises
+  `NODE_ITEM_MISSING` and the slide goes to repair, so a value is never silently lost.

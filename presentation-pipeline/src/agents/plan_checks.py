@@ -20,12 +20,14 @@ import re
 from typing import Any
 
 from src.agents.written_lines import drop_repeated_bodies, from_brief
+from src.compiler.value_parts import is_sentence
 
 PLAN_EMPTY = "PLAN_EMPTY"
 PLAN_INSTRUCTION_TEXT = "PLAN_INSTRUCTION_TEXT"
 PLAN_DUPLICATE_ITEMS = "PLAN_DUPLICATE_ITEMS"
 SLIDE_SPARSE = "SLIDE_SPARSE"
-REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT)
+KPI_VALUE_TEXT = "KPI_VALUE_TEXT"   # a kpi_row value that is a sentence, not a figure (KPI pilot 2026-10-11)
+REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, KPI_VALUE_TEXT)
 
 # the keys that hold a component's content; a block kind with none of them filled is empty
 _CONTENT_KEYS: dict[str, tuple[str, ...]] = {
@@ -120,6 +122,12 @@ def find_problems(plan: dict[str, Any], brief_text: str) -> list[dict[str, str]]
                                  "detail": f"{comp.get('kind')} '{cid}' holds an instruction, not slide content: "
                                            f"{item[:90]}"})
                 break
+        if comp.get("kind") == "kpi_row":
+            prose = [str(v) for v in (comp.get("content_data") or {}).get("kpi_values") or [] if is_sentence(str(v))]
+            if prose:
+                problems.append({"code": KPI_VALUE_TEXT, "component_id": cid,
+                                 "detail": f"kpi_row '{cid}' has {len(prose)} sentence(s) as kpi_values, not figures: "
+                                           f"{prose[0][:80]}"})
     return problems
 
 
@@ -132,7 +140,11 @@ def reask_context(problems: list[dict[str, str]]) -> dict[str, Any]:
         "directive": ("Plan this slide again. Fill every component's content_data from the key messages "
                       "(no empty components). Slide text must be what the audience reads: never an "
                       "instruction to the presenter, never speaker notes, never 'show / highlight / break down / "
-                      "walk through ...' directions. Keep the other components that were right."),
+                      "walk through ...' directions. Keep the other components that were right."
+                      + (" A kpi_row's kpi_values hold the figure only (e.g. '0.29x', '₹10.0L'), with the metric "
+                         "name in kpi_labels; findings written as sentences belong in a card_grid (one card per "
+                         "finding) or a bullet_list, not in a kpi_row." if any(p["code"] == KPI_VALUE_TEXT
+                                                                              for p in problems) else "")),
     }
 
 
@@ -299,6 +311,10 @@ def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
             _flag(plan, PLAN_EMPTY, comp.get("component_id", ""), f"{comp.get('kind')} has no content")
     if not plan.get("components"):
         _flag(plan, PLAN_EMPTY, "", "the plan has no components")
+    for comp in plan.get("components") or []:
+        vals = (comp.get("content_data") or {}).get("kpi_values") or [] if comp.get("kind") == "kpi_row" else []
+        if any(is_sentence(str(v)) for v in vals):
+            _flag(plan, KPI_VALUE_TEXT, comp.get("component_id", ""), "kpi_values hold sentences, not figures")
     sparse = sparse_flag(plan)
     if sparse:
         plan.setdefault("plan_flags", []).append(sparse)
