@@ -316,7 +316,9 @@ def summary(out: Path, results: list[dict]) -> str:
             vals = [f(r[arm]) for r in rows]
             return sum(v for v in vals if v is not None), sum(v is None for v in vals)
         comps = [(r, cid) for r in rows for cid in r["components"]]
-        one = lambda arm: sum(1 for r, c in comps if r[arm]["sizes"][c]["distinct"] <= 1
+        # a component with no figures (sentence values drawn as body text, NODE_VALUE_TEXT) has no size to share
+        figs = [(r, c) for r, c in comps if r["B"]["sizes"][c]["sizes"] or r["B"]["sizes"][c]["hero"]]
+        one = lambda arm: sum(1 for r, c in figs if r[arm]["sizes"][c]["distinct"] <= 1
                              and (r[arm]["sizes"][c]["sizes"] or r[arm]["sizes"][c]["hero"]))
         lines += [f"## {'Today' if group == 'today' else 'Older routes'} ({len(rows)} slides, {len(comps)} kpi_row components)", "",
                   f"Mapping rate: values {_pct(*m['value'])}, labels {_pct(*m['label'])}, notes {_pct(*m['note'])}.", "",
@@ -324,7 +326,7 @@ def summary(out: Path, results: list[dict]) -> str:
                   f"| compiled | {sum(r['A']['compiled'] for r in rows)} | {sum(r['B']['compiled'] for r in rows)} |",
                   f"| WORD_TOO_WIDE | {tot('A', lambda s: s['word_too_wide'])[0]} | {tot('B', lambda s: s['word_too_wide'])[0]} |",
                   f"| broken words in the render | {tot('A', lambda s: s['broken'])[0]} | {tot('B', lambda s: s['broken'])[0]} |",
-                  f"| components with one number size | {one('A')} / {len(comps)} | {one('B')} / {len(comps)} |",
+                  f"| components with one number size (with figures) | {one('A')} / {len(figs)} | {one('B')} / {len(figs)} |",
                   f"| GEOM_CARD_EMPTY | {tot('A', lambda s: s['fill']['GEOM_CARD_EMPTY'])[0]} | {tot('B', lambda s: s['fill']['GEOM_CARD_EMPTY'])[0]} |",
                   f"| GEOM_SLIDE_SPARSE | {tot('A', lambda s: s['fill']['GEOM_SLIDE_SPARSE'])[0]} | {tot('B', lambda s: s['fill']['GEOM_SLIDE_SPARSE'])[0]} |",
                   f"| LOW_CONTRAST | {tot('A', lambda s: s['low_contrast'])[0]} | {tot('B', lambda s: s['low_contrast'])[0]} |",
@@ -353,7 +355,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--out", type=Path, default=OUT)
     ap.add_argument("--no-render", action="store_true")
+    ap.add_argument("--summary", action="store_true", help="rewrite summary.md from results.json only")
     a = ap.parse_args()
+    if a.summary:
+        print(summary(a.out, json.loads((a.out / "results.json").read_text(encoding="utf-8"))))
+        return 0
     shutil.rmtree(a.out, ignore_errors=True)
     results = run(a.out, render=not a.no_render)
     if not a.no_render:

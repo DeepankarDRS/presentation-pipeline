@@ -271,3 +271,22 @@ values: "you can, but how"; icons: a prompt-line hint. Then: show what B's KPI c
   Code's half holds at any count (text, one size, colours). What the LLM must get right: 1 item in a
   two-column shape leaves half the band empty; 6-7 items in a 2 × 2 grid drop items — the validator raises
   `NODE_ITEM_MISSING` and the slide goes to repair, so a value is never silently lost.
+
+**Replay v2** (2026-10-11, after §8; `docs/eval/kpi-node/replay-v2/`, run output `output/kpi-replay/`, v1 kept in
+`output/kpi-replay-v1/`). The fit-grow measuring fix applies to both arms (A's own unit spans too), so A moved
+as well.
+
+| today's route | v1 A / B | v2 A / B |
+|---|---|---|
+| value mapping | 100% | 100% |
+| one number size (components with figures) | 9 / 9, 9 / 9 | 8 / 8, 8 / 8 (agency takeover: sentences, now body text) |
+| `WORD_TOO_WIDE` · broken words | 7 / 7 · 1 / 1 | 7 / 7 · 1 / 1 (the same CHEFFIN 4 words and kicker) |
+| `GEOM_CARD_EMPTY` | 8 / 9 | 7 / 9 (run-1008: the callout under the KPIs, 48% full; CHEFFIN 4: the 7th tile) |
+| `LOW_CONTRAST` · values off the plan | 4 / 4 · 0 / 0 | 4 / 4 · 0 / 0 |
+
+Older routes v2: one size 15 / 15 both, `GEOM_CARD_EMPTY` A 9 / B **6** (v1 9 / 12), sizes up on both arms
+(critic-on exec summary A 47 → 57, B 48 → 67). By eye: the QBR "14 months" tile now lines up with its peers
+in B (A still sits out of line: POM measures its span at full size, `oneLineValues` only takes ref values);
+the agency-takeover sentences are 18 px body text in B, smaller and plainer than A's coloured 22 px lines;
+word units now split in B ("15 min/wk" → small "min/wk"). The blind sheet is regenerated (same 7 slides),
+`marks.csv` empty: marking it again is optional.
