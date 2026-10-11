@@ -88,6 +88,8 @@ grid; stacked rows with icons beside a chart.
 
 ## 2. Free replay (LLM-free, this PC) — plan
 
+**Approved 2026-10-11 (user), with the build in §3.**
+
 **Question:** on today's compositions, does the ref-fill step lose anything, and can the LLM's KPI XML be
 expressed as element refs at all?
 
@@ -146,7 +148,9 @@ for that request.
 **Pass:** B preferred on ≥ 60% of KPI slides blind (a tie counts half); 0 broken words; 0 values not from the
 plan; value refs ≥ 90% per item, first try; repair rate ≤ today's. **Kill:** B preferred on < 40%.
 
-## 5. Look-spec decisions under B (recommendations; your answers not yet recorded)
+## 5. Look-spec decisions under B
+
+**Decided 2026-10-11 (user): all six as recommended.** On V7 the user added: new colours may be authored in `palettes.yaml` for every palette. So `panelDark` / `onPanelDark` are derived by `palette_tokens.py` by default, and a palette entry may author them (authored wins, as `neutral` does today); the contrast test covers both
 
 | # | Under B | Recommendation |
 |---|---|---|
