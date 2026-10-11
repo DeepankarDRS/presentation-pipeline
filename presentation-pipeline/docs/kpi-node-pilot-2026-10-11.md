@@ -1,6 +1,6 @@
 # KPI node pilot: decision record and replay plan (2026-10-11)
 
-Branch `feat/kpi-node` (from `feat/slide-quality` at `a76a7a0`). Planning session; no pipeline code changed.
+Branch `feat/kpi-node` (from `feat/slide-quality` at `a76a7a0`). Planned 2026-10-11; built and replayed the same day (§7).
 Restarts derived nodes with one component, the KPI row, as an opt-in pilot. The bar is today's LLM KPI
 slides (after palette tokens, geometry check, fit-grow fixes, `kpi_grid`), not the 1a ones.
 
@@ -171,3 +171,55 @@ Spec names → `palette_tokens.py`: `accentTint` → `accentSoft`, `accentInk` �
 replaced by the first slide's (reproduced on `output/kpi-variants/b/`: slide 4 showed slide 1's wallet icon
 for its gauge). Used by `src/agents/deck_nodes.py`, so merged decks with icons can show wrong icons. Proposed
 as its own fix session; may explain 1a mark 6.4 ("1 has wrong icons") if the sheets were made from merged decks.
+
+## 7. Build (§3) and free replay (§2) — done 2026-10-11
+
+Unit-test baseline before the change: 839 pass + the 4 known failures.
+
+**Built** (opt-in, `POM_BLOCKS=kpi`; unset / `off` = today's route, no behaviour change):
+- `src/compiler/nodes/element_refs.py`: `fill_refs(xml, plan)` parses `<Text ref="cid.i.label|value|note"/>`,
+  raises the §1 codes (`NODE_REF_UNKNOWN` / `NODE_REF_DUPLICATE` / `NODE_ITEM_MISSING` errors → repair;
+  `NODE_FIELD_MISSING` / `NODE_BYPASSED` / `NODE_ATTR_IGNORED` warnings; `NODE_FOCUS_UNNAMED` report), writes the
+  plan text verbatim, removes value `fontSize`, sets label / note to the ramp (16), colour defaults (LLM `$token`
+  wins → tone ink from `kpi_tones` → light ink on a dark fill the LLM drew → role default). A slide that comes back
+  already filled (visual repair) counts its values as placed. `prompt_line(comp)`: ids, fields, lengths, focus,
+  tones, tokens; no values.
+- Peer group: fit-grow's existing groups need tiles in one HStack (or a % grid), so B's free arrangements were not
+  covered → the fill step ids values `kpiv-<cid>-<i>` (hero `kpih-…`); fit-grow `refGroups` grows each component's
+  values together to its fullest box's target fill (cap 96, hero 120) wherever they sit, evens them after the
+  guard, labels grow with them. Values start at 28 px (guard floor) — the ramp's 44 first tried was too wide on a
+  dense slide (spill fixer shrank the whole slide) and too full to count as sparse elsewhere (nothing grew).
+  A hero starts at 72 (ramp single stat; in a content-height card nothing grows it). A one-item `kpi_row` is a hero.
+- `src/compiler/value_parts.py` (V15): one verbatim split (`"₹4.2 Cr"` → `"₹4.2"` + `" Cr"`); the composer
+  (`scripts/phase0b/render.py`) and the variant gallery use it now.
+- V7: `panelDark` / `onPanelDark` derived in `palette_tokens.py` (light palettes: `textMain` / white; dark: the
+  accent hue at lightness 0.2), authored entries win; ≥ 4.5:1 on all 18 palettes (test). The one-dark-panel-per-deck
+  softener also takes `$panelDark`. house-style prose still says "inverted panel `$textMain`" (left so `off` stays
+  today's prompt); only the KPI prompt line names `$panelDark`.
+- Validator: fill before `normalize_xml`; ref errors block with retryable diagnostics. Generator: under `kpi` a
+  `kpi_row` gets the ref line instead of its data; slide-level `kpi_*` keys are dropped.
+- Tests: `tests/unit/test_element_refs.py` (58: grammar, every code, verbatim fill, peer ids + one size through the
+  real compiler, hero, tones, dark fill, token-only colours, panel tokens on every palette, parser, prompt, validator).
+
+**Replay** (`python -m scripts.kpi_replay`; results `docs/eval/kpi-node/replay/summary.md`, run output in
+`output/kpi-replay/`). Today's route = 7 slides / 9 `kpi_row` components (q1008 + run-1008, de-duplicated).
+
+| pass line (today's route) | result |
+|---|---|
+| value mapping ≥ 70% (kill line) | **100%** values, 100% labels, 100% notes (older routes 98 / 98 / 79%: notes merged into the value Text) |
+| 0 broken words in B | 1, the same word in A: the kicker "PERFORMANCE" (not KPI text, pre-existing) |
+| 1 number size per component (hero excepted) | 9 / 9 (A also 9 / 9: fit-grow already evens a row) |
+| 0 values in B that differ from the plan | 0 (A: 0 too) |
+| B not worse than A on fill / contrast | contrast equal (4 / 4); `GEOM_CARD_EMPTY` 8 → **9** (CHEFFIN slide 4, the known 7-tile dense slide: its 7th tile 51% full) |
+| blind: no loss beyond 1 slide | **waiting for your marks** (7 slides whose renders differ, `sheet-01/02.png`) |
+
+Sizes: QBR exec summary 32 → 60 px (tiles filled), CHEFFIN 71 / 51 → 70 / 51, heroes 120 / 120 / 72 as A; product
+launch 34 → 28 (slide full, table squeezed: nothing may grow), agency takeover 22 → 28.
+
+**Found (not fixed):**
+1. *Sentence "values"* — agency takeover's `kpi_row` has five sentences as `kpi_values` ("Generic search consumed
+   the largest budget pool and returned around 0.29x ROAS."). A drew them as body text with coloured spans; B
+   draws them bold at value size. A planner / plan-check issue (that is a card grid), but under B it shows.
+2. *LLM text styling inside a KPI text is lost*: caps the LLM typed ("REPEAT REVENUE" for plan "Repeat revenue";
+   POM has no text-transform) and coloured spans inside a value. Needs an attribute (e.g. caps) if it matters.
+3. *Labels at the ramp's 16 px* break a word in a very narrow tile ("Ad / sales", CHEFFIN slide 4, A drew 14).

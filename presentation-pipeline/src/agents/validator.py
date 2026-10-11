@@ -25,7 +25,8 @@ from src.compiler.compiler_client import CompilerError, compile_xml, validate_xm
 from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
-from src.compiler.normalizer import DARK_PANEL, ensure_single_theme, normalize_xml, pre_validate, soften_dark_panels
+from src.compiler.nodes import element_refs
+from src.compiler.normalizer import ensure_single_theme, has_dark_panel, normalize_xml, pre_validate, soften_dark_panels
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
@@ -58,8 +59,29 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     if attempt > 0:
         output_dir = output_dir / f"retry-{attempt}"
 
+    # KPI element refs (POM_BLOCKS=kpi, docs/kpi-node-pilot-2026-10-11.md): code writes the text
+    # of every <Text ref="cid.i.field"/> before anything else reads the slide
+    ref_issues: list[dict[str, Any]] = []
+    if element_refs.mode() == "kpi":
+        idx = state.get("current_slide_index", 0)
+        refs = element_refs.fill_refs(xml, slide_plans[idx] if idx < len(slide_plans) else {})
+        xml, ref_issues = refs["xml"], refs["issues"]
+        for i in ref_issues:
+            logger.info(f"validator: {i['code']} ({i['severity']}): {i['message']}")
+        if not refs["ok"]:
+            diags = [{"type": i["code"], "message": i["message"]} for i in ref_issues if i["severity"] == "error"]
+            fail = {"ok": False, "pptx_path": None, "diagnostics": diags, "warnings": [], "retryable": True}
+            return {
+                "normalize_result": {"issues": [dict(i, auto_fixed=False) for i in ref_issues], "auto_fixed": 0,
+                                     "blocking": True, "cleaned_xml": xml},
+                "validate_result": {"ok": False, "diagnostics": diags, "warnings": []},
+                "compile_result": fail,
+                "layout_issues": [],
+            }
+
     norm = normalize_xml(xml)
-    if any(DARK_PANEL in (c.get("xml") or "") for c in state.get("completed_slides") or []):
+    norm["issues"] = [dict(i, auto_fixed=i["severity"] != "error") for i in ref_issues] + norm["issues"]
+    if any(has_dark_panel(c.get("xml") or "") for c in state.get("completed_slides") or []):
         norm["cleaned_xml"], n_dark = soften_dark_panels(norm["cleaned_xml"])
         if n_dark:
             norm["issues"].append({"code": "DARK_PANEL_SOFTENED", "auto_fixed": True,

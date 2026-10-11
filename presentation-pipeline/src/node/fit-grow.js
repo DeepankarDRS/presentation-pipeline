@@ -27,8 +27,10 @@
 //                     grow, so both have room to fill.
 //   3b. KPI values  — a sparse row of stat tiles grows its hero numbers (and
 //                     their inline unit <Span>s) together, up to 96px; a lone hero
-//                     stat card (short number >= 48px) up to 120px.
-//   4. text         — in each stack under ~70% full, fonts grow together until
+//                     stat card (short number >= 48px) up to 120px. KPI ref values
+//                     (ids kpiv-<component>-<i>) grow as one group per component
+//                     wherever they sit; a kpih- hero alone, up to 120px.
+//   4. text        — in each stack under ~70% full, fonts grow together until
 //                     ~88% full, as the composer sizes cards: titles and body by
 //                     s, labels and icons by sqrt(s); card title <= 48px, body
 //                     <= 28px and <= title / 1.3; each box's stat number and
@@ -831,6 +833,34 @@ function statAnchor(tile) {
   return top >= FIXED_FONT && tops.length === 1 ? tops[0] : null;
 }
 
+// KPI element refs (POM_BLOCKS=kpi, src/compiler/nodes/element_refs.py): the fill step ids every
+// value "kpiv-<component>-<i>" (a focus value set size="hero": "kpih-…"). The values of one
+// component are peers wherever the LLM put them (tiles, a strip, a dark panel beside a grid,
+// stacked rows): one size, grown together, evened after the guard. A hero grows on its own.
+const REF_VALUE = /^kpi([vh])-(.+)-(\d+)$/;
+
+/** [{ ids: value ids, tiles: each value's card (nearest boxed stack, else its parent), hero }] */
+function refGroups(L) {
+  const groups = new Map();
+  for (const root of L.slides) {
+    const up = new Map();
+    walk(root, (n, parent) => up.set(n, parent));
+    walk(root, (n) => {
+      const m = n.type === "text" && n.id && REF_VALUE.exec(n.id);
+      if (!m) return;
+      let tile = up.get(n);
+      for (let p = tile; p && STACKS.has(p.type); p = up.get(p)) if (hasBoxStyle(p)) { tile = p; break; }
+      if (!tile || !tile.id) return;
+      const key = m[1] === "h" ? n.id : `v:${m[2]}`;
+      if (!groups.has(key)) groups.set(key, { ids: [], tiles: [], hero: m[1] === "h" });
+      const g = groups.get(key);
+      g.ids.push(n.id);
+      if (!g.tiles.includes(tile.id)) g.tiles.push(tile.id);
+    });
+  }
+  return [...groups.values()];
+}
+
 // --- phase 3a: a KPI row shares the spare height of a sparse text band ------------
 // The generator gives grow to one band. When that band is a callout of two lines, it takes
 // all the spare height while the KPI tiles beside it stay at content height: the callout
@@ -902,18 +932,26 @@ async function growStats(xml, report) {
       const tiles = (n.children ?? []).filter((c) => STACKS.has(c.type) && c.id);
       if (tiles.length < 2) return;
       const anchors = tiles.map(statAnchor);
-      if (anchors.some((a) => !a)) return;
+      if (anchors.some((a) => !a || REF_VALUE.test(a.id))) return;
       const f0 = Math.min(...anchors.map((a) => a.fontSize ?? 24));
       if (f0 >= STAT_CAP) return;
       const ratio = Math.max(...tiles.map((t) => fill(t, L).ratio));
       if (ratio < LOW_FILL) groups.push({ ids: tiles.map((t) => t.id), anchors: anchors.map((a) => a.id), f0, ratio, cap: STAT_CAP });
     });
+    for (const r of refGroups(L)) {
+      const f0 = Math.min(...r.ids.map((id) => L.byId.get(id).fontSize ?? 24));
+      const cap = r.hero ? HERO_CAP : STAT_CAP;
+      const ratio = Math.max(...r.tiles.map((t) => fill(L.byId.get(t), L).ratio));
+      // ref values start small (28 px): they grow to the fullest box's target fill, sparse or not
+      if (f0 < cap && ratio < TARGET_FILL) groups.push({ ids: r.tiles, anchors: r.ids, f0, ratio, cap, hero: r.hero });
+    }
     // a lone hero stat (the one number the headline rests on) grows past tile size
     const grouped = new Set(groups.flatMap((g) => g.ids));
     for (const root of L.slides) walk(root, (n, parent) => {
       if (!parent || n.type !== "vstack" || !n.id || grouped.has(n.id) || !hasBoxStyle(n)) return; // not the slide root
       if (parent?.type === "hstack" && (parent.children ?? []).filter((c) => STACKS.has(c.type) && statAnchor(c)).length > 1) return;
       const a = statAnchor(n);
+      if (a && REF_VALUE.test(a.id)) return;
       const text = a ? (a.text ?? (a.runs ?? []).map((r) => r.text).join("")) : "";
       if (!a || !/\d/.test(text) || text.trim().length > HERO_TEXT_MAX) return;
       if ((a.fontSize ?? 24) < HERO_MIN || (a.fontSize ?? 24) >= HERO_CAP) return;
@@ -1652,9 +1690,11 @@ async function statRows(xml) {
   const L = await layout(xml);
   const rows = [];
   try {
+    for (const r of refGroups(L)) if (!r.hero) rows.push({ tiles: r.tiles, ids: r.ids, pct: null, parent: null });
     for (const root of L.slides) walk(root, (n, parent) => {
       if (!statRow(n)) return;
       const tiles = n.children.filter((c) => STACKS.has(c.type) && c.id);
+      if (tiles.some((c) => REF_VALUE.test(statAnchor(c).id))) return;
       const row = { tiles: tiles.map((c) => c.id), ids: tiles.map((c) => statAnchor(c).id) };
       // stat rows stacked in one VStack with the same % tile width are one grid (kpi_grid.py's
       // 2+2 / 3+2): one number size. Tiers of different widths (hero + supporting) keep theirs.

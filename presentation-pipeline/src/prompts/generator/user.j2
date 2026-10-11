@@ -26,7 +26,9 @@ COMPONENTS (put every one on the slide — each carries its own data):
 {% endif %}
 {% if hint_scopes and hint_scopes.get(comp.kind) %}  scope: {{ hint_scopes[comp.kind] }}
 {% endif %}
-{% if comp.content_data %}
+{% if comp.ref_line %}
+  {{ comp.ref_line }}
+{% elif comp.content_data %}
   Data for {{ comp.component_id or comp.kind }}:
   {% for key, value in comp.content_data.items() %}
   {{ key }}: {{ value }}

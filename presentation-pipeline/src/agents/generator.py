@@ -12,6 +12,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from src.compiler.nodes import element_refs
 from src.state import AttemptRecord, PresentationState
 from src.utils.llm_client import extract_usage, get_llm
 
@@ -57,6 +58,13 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
     )
 
     components = plan.get("components", [])
+    content_data = plan.get("content_data", {})
+    if element_refs.mode() == "kpi":
+        # KPI element refs: a kpi_row's text is placed by ref, so the prompt carries no values
+        components = [dict(c, content_data={}, ref_line=element_refs.prompt_line(c)) if c.get("kind") == "kpi_row"
+                      and c.get("component_id") else c for c in components]
+        if any(c.get("ref_line") for c in components):
+            content_data = {k: v for k, v in (content_data or {}).items() if not str(k).startswith("kpi_")}
     user_prompt = user_tmpl.render(
         objective=state.get("raw_request", ""),
         slide_title=plan.get("slide_title", ""),
@@ -66,7 +74,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         components=components,
         hint_scopes=contract.get("hint_scopes", {}),
         layout_hint=plan.get("layout_hint", ""),
-        content_data=plan.get("content_data", {}),
+        content_data=content_data,
         supplied_content=state.get("supplied_content"),
         slide_type=plan.get("slide_type", ""),
     )

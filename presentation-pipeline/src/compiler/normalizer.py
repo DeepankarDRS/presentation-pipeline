@@ -482,17 +482,24 @@ def _share_numeric_columns(xml: str) -> tuple[str, int]:
 # The validator calls this when an earlier slide of the deck already has one: later panels become
 # a tinted card and their light text turns to ink.
 DARK_PANEL = 'backgroundColor="$textMain"'
+DARK_PANELS = (DARK_PANEL, 'backgroundColor="$panelDark"')   # $panelDark: KPI pilot V7
 _STACK_TAG_RE = re.compile(r"<(/?)(VStack|HStack)\b[^>]*?(/?)>")
 _ON_DARK = {"$surface": "$textMain", "$surfaceAlt": "$textMain", "$onAccent": "$textMain",
-            "FFFFFF": "$textMain", "#FFFFFF": "$textMain", "$neutral": "$textMuted", "$accentAlt": "$accentText"}
+            "FFFFFF": "$textMain", "#FFFFFF": "$textMain", "$neutral": "$textMuted", "$accentAlt": "$accentText",
+            "$onPanelDark": "$textMain"}
+
+
+def has_dark_panel(xml: str) -> bool:
+    return any(p in xml for p in DARK_PANELS)
 
 
 def soften_dark_panels(xml: str) -> tuple[str, int]:
     count = 0
     while True:
-        at = xml.find(DARK_PANEL)
-        if at < 0:
+        hits = [(xml.find(p), p) for p in DARK_PANELS if p in xml]
+        if not hits:
             return xml, count
+        at, found = min(hits)
         start = xml.rfind("<", 0, at)
         depth, end = 0, len(xml)
         for m in _STACK_TAG_RE.finditer(xml, start):
@@ -505,7 +512,7 @@ def soften_dark_panels(xml: str) -> tuple[str, int]:
             if depth == 0:
                 end = m.end()
                 break
-        panel = xml[start:end].replace(DARK_PANEL, 'backgroundColor="$accentSoft"', 1)
+        panel = xml[start:end].replace(found, 'backgroundColor="$accentSoft"', 1)
         panel = re.sub(r'\b(color|textColor)="([^"]+)"',
                        lambda c: f'{c.group(1)}="{_ON_DARK.get(c.group(2), c.group(2))}"', panel)
         xml = xml[:start] + panel + xml[end:]

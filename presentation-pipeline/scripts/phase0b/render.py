@@ -21,6 +21,8 @@ from xml.sax.saxutils import escape
 
 import yaml
 
+from src.compiler.value_parts import split_value, unit_px
+
 HERE = Path(__file__).resolve().parent
 W, H = 1280, 720
 PAD_X = 56
@@ -271,24 +273,21 @@ def fit_columns(titles: list[str], width: float, fs: float, most: int, pad: int 
 
 # ── blocks ───────────────────────────────────────────────────────────────────
 
-_NUM = re.compile(r"^(?P<pre>[₹$€£]?)(?P<num>[\d.,]+)(?P<unit>[A-Za-z%]*)$")
-
-
 def big_number(value: str, fs: int, color: str, p: Pack) -> str:
     # line box = the glyphs' height (GLYPH_H): at lineHeight 1 a big number hung below its box
     # onto the note under it (POM writes exact spacing and centres with Noto metrics)
-    m = _NUM.match(value.strip())
-    if not m or not m["unit"]:
+    head, unit = split_value(value)
+    if not unit:
         return f'<Text fontSize="{fs}" fontFamily="{p.sans}" bold="true" color="{color}" lineHeight="{GLYPH_H}">{x(value)}</Text>'
     return (f'<Text fontSize="{fs}" fontFamily="{p.sans}" bold="true" color="{color}" lineHeight="{GLYPH_H}">'
-            f'{x(m["pre"] + m["num"])}<Span fontSize="{round(fs * 0.45)}">{x(m["unit"])}</Span></Text>')
+            f'{x(head)}<Span fontSize="{unit_px(fs)}">{x(unit)}</Span></Text>')
 
 
 def _value_em(value: str, p: Pack) -> float:
-    m = _NUM.match(value.strip())
-    if not m or not m["unit"]:
+    head, unit = split_value(value)
+    if not unit:
         return em(value, p.sans)
-    return em(m["pre"] + m["num"], p.sans) + 0.45 * em(m["unit"], p.sans)
+    return em(head, p.sans) + 0.45 * em(unit, p.sans)
 
 
 def kpi_label_fs(p: Pack, h: float | None) -> int:

@@ -14,7 +14,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +25,7 @@ sys.path.insert(0, str(ROOT))
 
 from src.compiler.font_embed import embed_deck_fonts  # noqa: E402
 from src.compiler.pptx_merge import merge_pptx_files  # noqa: E402
+from src.compiler.value_parts import split_value, unit_px  # noqa: E402
 
 SANS, MONO = "Inter", "JetBrains Mono"
 
@@ -126,19 +126,10 @@ def text(s: str, size: int, color: str, bold: bool = False, extra: str = "") -> 
     return f'<Text fontFamily="{SANS}" fontSize="{size}"{b} color="{color}" lineHeight="1.25"{extra}>{esc(s)}</Text>'
 
 
-VALUE = re.compile(r"^(?P<head>[+\-\u2212~<>\u2248]?[\u20b9$\u20ac\u00a3\u00a5]?\d[\d,]*(?:\.\d+)?)\s?(?P<unit>%|x|\u00d7|[A-Za-z]{1,3})?$")
-
-
-def split_value(value: str) -> tuple[str, str]:
-    """(number, unit) for a KPI value (look spec §7c, V15); no full match -> (value, "")."""
-    m = VALUE.match(value.strip())
-    return (m["head"], m["unit"] or "") if m else (value, "")
-
-
 def number(value: str, size: int, color: str) -> str:
     """Bold number; its unit (%, x, ×, Cr, B, K …) as a 0.45x span; anything else drawn whole."""
     head, unit = split_value(value)
-    span = f'<Span fontSize="{round(size * 0.45)}">{esc(unit)}</Span>' if unit else ""
+    span = f'<Span fontSize="{unit_px(size)}">{esc(unit)}</Span>' if unit else ""
     return f'<Text fontFamily="{SANS}" fontSize="{size}" bold="true" color="{color}" lineHeight="1.2">{esc(head)}{span}</Text>'
 
 

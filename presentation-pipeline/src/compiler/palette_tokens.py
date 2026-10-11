@@ -10,6 +10,12 @@ rule that guarantees contrast, so no recipe or prompt needs a literal hex:
   onAccent     text on an accent fill (white when it passes, else the best ink)
   neutral      grey for "everything else" (non-focus series, bars, dots);
                a palette may author its own
+  panelDark    a fill that is dark on EVERY palette (an inverted / focus panel; on a
+               dark palette $textMain is light): light palettes -> textMain, dark
+               palettes -> the accent hue at PANEL_DARK_L lightness (a deep tint
+               that reads apart from the neutral slide by hue, not lightness)
+  onPanelDark  text on panelDark (>= 4.5:1). Both may be authored (authored wins;
+               KPI pilot V7, docs/kpi-node-pilot-2026-10-11.md §5)
 
 Lightness is changed in HLS (hue kept), never by mixing toward the ink colour:
 mixing turns saturated orange into brown.
@@ -22,7 +28,7 @@ from typing import Any
 
 STATUS_ROLES = ("accent", "positive", "negative", "warning")
 DERIVED_KEYS = tuple(f"{r}Soft" for r in STATUS_ROLES) + tuple(
-    f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral", "border")
+    f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral", "border", "panelDark", "onPanelDark")
 
 TEXT_MIN = 4.5
 BORDER_MIN = 1.4
@@ -30,6 +36,7 @@ SOFT_MIX_LIGHT = 0.13
 SOFT_MIX_DARK = 0.22
 NEUTRAL_MIX_LIGHT = 0.22
 NEUTRAL_MIX_DARK = 0.32
+PANEL_DARK_L = 0.2
 
 
 def _rgb(hex_: str) -> tuple[float, float, float]:
@@ -76,6 +83,11 @@ def _step_lightness(color: str, backgrounds: list[str], darken: bool, target: fl
     return _hex(colorsys.hls_to_rgb(h, l, s))
 
 
+def _with_lightness(color: str, lightness: float) -> str:
+    h, l, s = colorsys.rgb_to_hls(*_rgb(color))
+    return _hex(colorsys.hls_to_rgb(h, min(l, lightness), s))
+
+
 def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
     """Return the derived tokens for one palette entry (authored `neutral` wins)."""
     dark = palette.get("mode") == "dark"
@@ -108,4 +120,10 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
 
     out["neutral"] = (palette.get("neutral") or mix(
         text_main, surface, NEUTRAL_MIX_DARK if dark else NEUTRAL_MIX_LIGHT)).upper()
+
+    panel = palette.get("panelDark") or (
+        _with_lightness(accent, PANEL_DARK_L) if dark else text_main)
+    out["panelDark"] = panel.upper()
+    out["onPanelDark"] = (palette.get("onPanelDark") or max(
+        (surface, text_main, "FFFFFF"), key=lambda c: contrast(c, panel))).upper()
     return out
