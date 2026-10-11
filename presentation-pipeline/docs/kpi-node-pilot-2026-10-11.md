@@ -211,7 +211,7 @@ Unit-test baseline before the change: 839 pass + the 4 known failures.
 | 1 number size per component (hero excepted) | 9 / 9 (A also 9 / 9: fit-grow already evens a row) |
 | 0 values in B that differ from the plan | 0 (A: 0 too) |
 | B not worse than A on fill / contrast | contrast equal (4 / 4); `GEOM_CARD_EMPTY` 8 → **9** (CHEFFIN slide 4, the known 7-tile dense slide: its 7th tile 51% full) |
-| blind: no loss beyond 1 slide | **waiting for your marks** (7 slides whose renders differ, `sheet-01/02.png`) |
+| blind: no loss beyond 1 slide | **passed**: B 3 wins, 3 ties, 1 loss (score 0.643; marks `docs/eval/kpi-node/replay/marks.csv`) |
 
 Sizes: QBR exec summary 32 → 60 px (tiles filled), CHEFFIN 71 / 51 → 70 / 51, heroes 120 / 120 / 72 as A; product
 launch 34 → 28 (slide full, table squeezed: nothing may grow), agency takeover 22 → 28.
@@ -223,3 +223,20 @@ launch 34 → 28 (slide full, table squeezed: nothing may grow), agency takeover
 2. *LLM text styling inside a KPI text is lost*: caps the LLM typed ("REPEAT REVENUE" for plan "Repeat revenue";
    POM has no text-transform) and coloured spans inside a value. Needs an attribute (e.g. caps) if it matters.
 3. *Labels at the ramp's 16 px* break a word in a very narrow tile ("Ad / sales", CHEFFIN slide 4, A drew 14).
+
+**Blind marks (user, 2026-10-11), unblinded:**
+
+| pair | slide | preferred | user's reason |
+|---|---|---|---|
+| 1.1 | product launch / 3 | A | "liked that units size can be small or big" — B draws every unit at 0.45 × the number (V15) and its numbers at 28 vs A's 34 (full slide) |
+| 1.2 | QBR exec summary / 1 | **B** | "better size for the kpi card values" (32 → 60 px) |
+| 1.3 | agency takeover / 0 | **B** | "like the bold contrast but … not all things bold" — the sentence-values finding (1 above) |
+| 1.4 | all-nodes dense / 1 | same | icons always on top; text in the "repeat revenue" card not readable — both arms, the LLM's composition, not the fill |
+| 2.1 | CHEFFIN / 1 | same | "no change" |
+| 2.2 | CHEFFIN / 4 | **B** | "proper use of logo size" |
+| 2.3 | QBR run-1008 / 1 | same | "no change" |
+
+**Replay verdict: pass** on today's route (mapping 100%, one size 9 / 9, 0 off-plan values, blind 1 loss), with two
+misses against the letter of the pass line: 1 broken word (the same kicker in A) and `GEOM_CARD_EMPTY` 8 → 9.
+Inputs for the paid check (§4): the unit-span ratio (1.1: the user wants it to vary, not fixed at 0.45), sentence
+values in a `kpi_row` (plan check), icon position is the LLM's (1.4: a prompt-line hint at most).
