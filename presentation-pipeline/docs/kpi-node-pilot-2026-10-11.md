@@ -314,7 +314,7 @@ sheet redone here with `--rescore` on this commit):
 | 0 broken words | **0** (A 0) |
 | 0 values not from the plan | **0** |
 | repair rate ≤ today's | 2 repairs in 9 runs (QBR r2, r3: 2 XML errors each, not refs; +$0.012 each). Today's route on these slides: 0 in q1008 (one run each), so not directly comparable; the first try's error text was not saved (runner gap) |
-| B preferred on ≥ 60% blind | **waiting for your marks** (9 pairs, `sheet-01..03.png`) |
+| B preferred on ≥ 60% blind | **0.556** (B 5, A 4, no ties): below pass, above kill (< 40%) |
 
 What the LLM did with refs: all values placed every time; it still writes `fontSize` on values (removed,
 `NODE_ATTR_IGNORED`, harmless); in QBR r1 it typed the four labels as plain text (verbatim, `NODE_FIELD_MISSING`
@@ -330,3 +330,11 @@ Found by the paid runs and fixed in code (scores above include them):
    72 / 72. The test-PC runs were filled before ids carried the rank; `--rescore` adds it from the plan.
 3. *A Python string turned `\b` into a backspace in a fit-grow regex* while I edited (cap silently off); fixed,
    no other control characters in the changed files.
+
+**Blind marks (user), unblinded:** QBR exec summary B 2 / 3 ("better size", "better positioning"; A once:
+"executive summary better"); CHEFFIN slide 1 B 3 / 3 ("overall better", "heading colors" ×2); CHEFFIN slide 4
+(7 tiles) A 3 / 3 ("icon look cool"). All three B runs of slide 4 drew no icons; A has one per tile. Likely the §8
+icon hint ("in the label row, not alone and centred on top"): 7 narrow tiles have no room beside the label, so
+the LLM left icons out. Without slide 4 B is 5 / 6. **Verdict: rethink zone (§4), one cause.** Proposed (not
+built, asking the user): the prompt line says an icon per item is welcome, in the label row where it fits,
+above the label in a narrow tile; then a paid re-run of CHEFFIN slide 4 × 3 (≈ $0.10) and marks on those pairs.
