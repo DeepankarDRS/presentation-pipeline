@@ -290,3 +290,17 @@ in B (A still sits out of line: POM measures its span at full size, `oneLineValu
 the agency-takeover sentences are 18 px body text in B, smaller and plainer than A's coloured 22 px lines;
 word units now split in B ("15 min/wk" → small "min/wk"). The blind sheet is regenerated (same 7 slides),
 `marks.csv` empty: marking it again is optional.
+
+## 9. Paid check: runner ready (2026-10-11), run on the test PC
+
+User: go ahead. This PC has no API key (two-device workflow), so the run is the test PC's.
+`python -m scripts.kpi_paid --repeat 3 --label kpi-paid --bundle` — generator only from the saved plans in
+`docs/eval/kpi-node/paid-inputs.json` (q1008: deck-qbr-data slide 1, gate-deck-cheffin-full slides 1 and 4;
+4 `kpi_row` components, corporate-slate), `POM_BLOCKS=kpi`, the real graph (generator → validator with the
+ref fill → repairs; critic off). Arm A = q1008's XML recompiled on the same commit. 9 generator calls,
+estimate ≈ $0.3–0.4 with repairs. Records the first try (refs placed, `NODE_*` codes), repair passes, cost, the
+replay scores and a blind sheet; `output/kpi-paid/kpi-paid.zip` to email back (`--no-render` if LibreOffice is
+missing there; `--rescore` here redoes the scores and sheet for free). Dry run here (`--dry`: a fake generator
+answering with the mapped XML): 3 / 3 compile first try, refs 16 / 16, path and bundle work. Noted: the QBR
+plan's hint names all four tiles (for colours), so `singled_out` finds no focus and the ARR tile drawn apart
+reports `NODE_FOCUS_UNNAMED` (report only).

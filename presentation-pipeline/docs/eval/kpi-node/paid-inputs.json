@@ -1,0 +1,368 @@
+[
+ {
+  "case": "deck-qbr-data",
+  "slide": 1,
+  "theme": "corporate-slate",
+  "request": "Create a Q3 FY26 quarterly business review for the executive team. Here is our actual data:\nCompany: Acme Analytics. Quarter: Q3 FY26.\nHeadline KPIs: - ARR: $48.2M (+18% QoQ) - Net Revenue Retention: 114% (+2pts) - Gross Margin: 72.1% (-1.4pts) - CAC Payback: 14 months (-2 months)\nRevenue by quarter (last 6): Q2 FY25: $28.4M, Q3 FY25: $31.2M, Q4 FY25: $36.1M, Q1 FY26: $39.1M, Q2 FY26: $42.3M, Q3 FY26: $48.2M\nSegment breakdown: Enterprise: ARR $28.1M, QoQ +22%, 142 customers Mid-Market: ARR $14.4M, QoQ +14%, 487 customers SMB: ARR $5.7M, QoQ +8%, 2,341 customers\nQ4 priorities: 1. Close 3 enterprise logos worth $4M+ combined ARR 2. Launch self-serve onboarding to reduce CAC payback to 10 months 3. Ship analytics v2 dashboard before Jan board meeting\n",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "ARR grew to $48.2M while margin softened",
+   "label": "EXECUTIVE SUMMARY",
+   "subtitle": "Q3 FY26 vs Q2 FY26",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle with period comparison",
+     "design_hint": "color the key phrase 'ARR' to accent the metric",
+     "weight": "minor",
+     "content_data": {
+      "title": "ARR grew to $48.2M while margin softened",
+      "subtitle": "Q3 FY26 vs Q2 FY26"
+     }
+    },
+    {
+     "component_id": "kpi_metrics",
+     "kind": "kpi_row",
+     "count": 4,
+     "content_summary": "Dashboard tiles: ARR, NRR, Gross Margin, CAC Payback with deltas",
+     "items": 4,
+     "design_hint": "Emphasize the ARR tile as the hero (lifted and largest); color-code Gross Margin in the negative palette; show ARR and NRR in positive color; render CAC Payback's -2 months delta in positive color (improvement); keep tiles in the given order with ARR first",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "ARR",
+       "NRR",
+       "Gross Margin",
+       "CAC Payback"
+      ],
+      "kpi_values": [
+       "$48.2M",
+       "114%",
+       "72.1%",
+       "14 months"
+      ],
+      "kpi_deltas": [
+       "+18% QoQ",
+       "+2 pts",
+       "-1.4 pts",
+       "-2 months"
+      ],
+      "kpi_directions": [
+       "up",
+       "up",
+       "down",
+       "down"
+      ]
+     }
+    }
+   ],
+   "layout_hint": "slide_title is a minor header at the top; kpi_metrics is the hero occupying the main content band with the ARR tile emphasized (left/first) and the other KPI tiles presented as supporting tiles.",
+   "content_data": {
+    "title": "ARR grew to $48.2M while margin softened",
+    "subtitle": "Q3 FY26 vs Q2 FY26",
+    "kpi_labels": [
+     "ARR",
+     "NRR",
+     "Gross Margin",
+     "CAC Payback"
+    ],
+    "kpi_values": [
+     "$48.2M",
+     "114%",
+     "72.1%",
+     "14 months"
+    ],
+    "kpi_deltas": [
+     "+18% QoQ",
+     "+2 pts",
+     "-1.4 pts",
+     "-2 months"
+    ],
+    "kpi_directions": [
+     "up",
+     "up",
+     "down",
+     "down"
+    ]
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "kpi_labels": "user",
+    "kpi_values": "user",
+    "kpi_deltas": "user",
+    "kpi_directions": "user"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">EXECUTIVE SUMMARY</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\"><Span color=\"$accent\">ARR</Span> grew to $48.2M while margin softened</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Q3 FY26 vs Q2 FY26</Text>\n    </VStack>\n    <VStack gap=\"18\" grow=\"1\"><HStack gap=\"18\" alignItems=\"stretch\" grow=\"1\"><VStack padding=\"24\" gap=\"8\" backgroundColor=\"$accentSoft\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\" w=\"49%\">\n        <Icon name=\"trending-up\" size=\"28\" color=\"$accent\"/>\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">ARR</Text>\n        <Text fontSize=\"44\" bold=\"true\" color=\"$accentText\">$48.2<Span fontSize=\"22\" color=\"$textMuted\">M</Span></Text>\n        <Text fontSize=\"16\" bold=\"true\" color=\"$positive\">+18% QoQ</Text>\n      </VStack>\n      <VStack padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" w=\"49%\">\n        <Icon name=\"users\" size=\"24\" color=\"$positive\"/>\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">NRR</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$positive\">114<Span fontSize=\"18\" color=\"$textMuted\">%</Span></Text>\n        <Text fontSize=\"16\" bold=\"true\" color=\"$positive\">+2 pts</Text>\n      </VStack>\n      </HStack><HStack gap=\"18\" alignItems=\"stretch\" grow=\"1\"><VStack padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" w=\"49%\">\n        <Icon name=\"percent\" size=\"24\" color=\"$negative\"/>\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">Gross Margin</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$negativeText\">72.1<Span fontSize=\"18\" color=\"$textMuted\">%</Span></Text>\n        <Text fontSize=\"16\" bold=\"true\" color=\"$negative\">-1.4 pts</Text>\n      </VStack>\n      <VStack padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" w=\"49%\">\n        <Icon name=\"clock\" size=\"24\" color=\"$positive\"/>\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">CAC Payback</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$textMain\">14<Span fontSize=\"18\" color=\"$textMuted\"> months</Span></Text>\n        <Text fontSize=\"16\" bold=\"true\" color=\"$positive\">-2 months</Text>\n      </VStack>\n    </HStack></VStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-cheffin-full",
+  "slide": 1,
+  "theme": "corporate-slate",
+  "request": "You are a senior performance marketing strategist, FLIPCART Ads expert, quick-commerce media buyer, and data scientist.\n\nCreate a polished, client-ready audit presentation for CHEFFIN, a ready-to-cook / ready-to-eat food brand. The deck should audit the brand’s current FLIPCART Ads and ZAROMA Ads performance, identify key gaps in the current operating model, and make a strong case for why our agency should take over performance media operations.\n\nIMPORTANT:\nKeep the deck concise and executive-friendly.. Cover all important insights, but avoid unnecessary detail. Use sharp headlines, clear tables, charts, and concise recommendations.\n\nDECK OBJECTIVE:\nThe deck should help us present to the client that:\n1. The brand is spending heavily across FLIPCART and ZAROMA but not buying profitable demand.\n2. The current performance problem is structural, not just a small campaign optimization issue.\n3. CPC is much higher than what the current AOV and conversion rate can support.\n4. There are clear gaps in search-term governance, bid discipline, campaign structure, audience strategy, city allocation, and budget allocation.\n5. Our agency can improve performance using a stronger data-led operating model.\n\nSTYLE:\n- Clean, modern, boardroom-ready.\n- Use Indian currency format: ₹, L for lakhs.\n- Use ROAS as “0.34x”, CPC as “₹31.1”, ACOS as “290%”.\n- Use white background, dark text, and subtle FLIPCART orange + ZAROMA purple accents.\n- Use charts and tables where useful.\n- Avoid overcrowding slides.\n- Every slide headline should state the conclusion, not just the topic.\n- Do not attack the current agency directly. Use professional language such as “current operating gaps”, “opportunity to improve governance”, and “needs tighter control”.\n\nDATA CONTEXT: refer attached sheet which has all the data.\nThe audit is based on:\n1. FLIPCART Targeting last 90 days data.\n2. FLIPCART Search Term report.\n3. ZAROMA April, May, and June data.\n4. ZAROMA campaign, city, and keyword-level views.\n\nDATA QUALITY NOTE:\nMention that some FLIPCART pivot-style sheets had unreliable or zeroed ratio fields, so metrics were recalculated from raw data. Also mention that ZAROMA campaign, city, and keyword sheets may not reconcile perfectly because they appear to have slightly different coverage. Use ZAROMA campaign-level data as the primary platform total source, while city and keyword sheets should be used for diagnostic insights.\n\nKEY FORMULAS:\nROAS = Revenue or Sales / Spend\nACOS = Spend / Sales\nCTR = Clicks / Impressions\nCPC = Spend / Clicks\nCVR = Orders or Purchases / Clicks\nCPA = Spend / Orders or Purchases\nAOV = Sales / Orders or Purchases\nAllowable CPC for 1.0x ROAS = AOV × CVR\n\nCORE EXECUTIVE DIAGNOSIS:\nAcross FLIPCART and ZAROMA, CHEFFIN is spending at scale but the traffic economics are structurally weak. The issue is not just campaign optimization. The brand needs a paid-growth operating system built around intent, SKU economics, search-term governance, city-level allocation, break-even CPC rules, AOV improvement, and CVR improvement.\n\nPLATFORM SUMMARY:\nFLIPCART:\n- Spend: ₹29.4L\n- Ad sales: ₹10.1L\n- ROAS: 0.34x\n- CPC: ₹31.1\n- CVR: 5.5%\n- AOV: ₹195\n- Allowable CPC for 1.0x ROAS: ₹10.7\n\nZAROMA:\n- Spend: ₹85.5L\n- Ad revenue: ₹27.3L\n- ROAS: 0.32x\n- CPC: ₹46.2\n- CVR: 6.4%\n- AOV: ₹230\n- Allowable CPC for 1.0x ROAS: ₹14.8\n\nCombined:\n- Spend: ₹114.9L\n- Revenue: ₹37.4L\n- ROAS: 0.33x\n- CPC: ₹41.1\n- CVR: 6.1%\n- AOV: ₹219\n\nKEY INTERPRETATION:\nThe current CPCs are almost 3x higher than what current AOV and CVR can support. Therefore, performance cannot be fixed only by bid tweaks. The account needs:\n1. Lower CPC on weak traffic.\n2. Higher CVR through better keyword, SKU, and city matching.\n3. Higher AOV through bundles, multipacks, offers, and higher-value SKUs.\n4. Spend reallocation from low-intent traffic to proven high-intent pockets.\n5. Break-even CPC rules by platform, keyword, SKU, city, and campaign objective.\n\nCREATE THE DECK USING THIS 6-SLIDE STRUCTURE:\n\nSLIDE 1: Title Slide\nHeadline:\nCHEFFIN FLIPCART & ZAROMA Ads Audit\n\nSubtitle:\nLast 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap\n\nInclude:\nPrepared by our agency\n\nVisual:\nMarketplace growth theme with FLIPCART and ZAROMA visual cues.\n\nSLIDE 2: Executive Summary\nHeadline:\nThe account is spending at scale, but not yet buying profitable demand.\n\nShow key numbers:\n- Combined spend: ₹114.9L\n- Combined revenue: ₹37.4L\n- Combined ROAS: 0.33x\n- FLIPCART ROAS: 0.34x\n- ZAROMA ROAS: 0.32x\n\nMain insight:\nBoth FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR.\n\nAdd callout:\n“This is a media economics problem, not just a campaign hygiene problem.”\n\nSLIDE 3: Core Economics Problem\nHeadline:\nCPC is nearly 3x higher than what current conversion economics can support.\n\nCreate a table:\nPlatform | Actual CPC | Allowable CPC for 1.0x ROAS | Gap\nFLIPCART | ₹31.1 | ₹10.7 | Actual CPC is ~2.9x allowable\nZAROMA | ₹46.2 | ₹14.8 | Actual CPC is ~3.1x allowable\n\nVisual:\nBar chart comparing actual CPC vs allowable CPC.\n\nMain insight:\nAt the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together.\n\nSLIDE 4: Data Reviewed & Methodology\nHeadline:\nWe rebuilt the audit from raw performance data, not surface-level reports.\n\nInclude:\n- FLIPCART Targeting last 90 days report\n- FLIPCART Search Term report\n- ZAROMA campaign-level data\n- ZAROMA city-level data\n- ZAROMA keyword-level data\n\nData quality note:\n- Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.\n- ZAROMA sheets appear to have different coverage, so campaign-level totals were used as primary totals and city/keyword sheets were used for diagnostics.\n\nSLIDE 5: FLIPCART Performance Snapshot\nHeadline:\nFLIPCART is generating traffic, but at weak revenue efficiency.\n\nShow table:\nMetric | Value\nSpend | ₹29.4L\nAd sales | ₹10.1L\nROAS | 0.34x\nCPC | ₹31.1\nCVR | 5.5%\nAOV | ₹195\nAllowable CPC for 1.0x ROAS | ₹10.7\n\nMain insight:\nFLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support.\n\nSLIDE 6: FLIPCART Ad Type & Match-Type Diagnosis\nHeadline:\nSBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.\n\nUse two mini tables or one combined visual.\n\nAd type performance:\nAd Type | Spend Share | Sales Share | ROAS | Interpretation\nSP | 75.6% | 75.3% | 0.34x | Main volume driver, but inefficient overall\nSBV | 12.8% | 8.5% | 0.23x | Weak video efficiency\nSBT | 9.3% | 15.1% | 0.56x | Best ad type; under-allocated\nSD | 2.4% | 1.1% | 0.17x | Weak conversion quality\n\nMatch / targeting performance:\nExact ROAS: 0.44x\nPhrase ROAS: 0.26x\nAuto ROAS: 0.30x\nCategory ROAS: 0.25x\nBroad ROAS: 0.22x\nAudience ROAS: 0.15x\n\nMain insight:\nExact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control.\n",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "The account is spending at scale, but not yet buying profitable demand.",
+   "label": "EXECUTIVE SUMMARY",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Kicker and headline",
+     "design_hint": "title is minor — keep plain, no extra emphasis",
+     "weight": "minor",
+     "content_data": {
+      "title": "The account is spending at scale, but not yet buying profitable demand.",
+      "subtitle": "EXECUTIVE SUMMARY"
+     }
+    },
+    {
+     "component_id": "combined_kpi_scorecard",
+     "kind": "kpi_row",
+     "count": 3,
+     "content_summary": "Combined spend, revenue and combined ROAS",
+     "items": 3,
+     "design_hint": "emphasize the Combined ROAS tile as the focal metric: render the Combined ROAS tile as a dark/inverted panel while keeping spend and revenue tiles neutral",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "Combined spend",
+       "Combined revenue",
+       "Combined ROAS"
+      ],
+      "kpi_values": [
+       "₹114.9L",
+       "₹37.4L",
+       "0.33x"
+      ],
+      "kpi_deltas": [
+       "",
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       "",
+       ""
+      ]
+     }
+    },
+    {
+     "component_id": "platform_roas_tiles",
+     "kind": "kpi_row",
+     "count": 2,
+     "content_summary": "Per-platform ROAS for FLIPCART and ZAROMA",
+     "items": 2,
+     "design_hint": "group these two ROAS tiles as a callout panel and color-code them in the negative color (underperforming) so both platforms read as weak but equal",
+     "weight": "peer",
+     "content_data": {
+      "kpi_labels": [
+       "FLIPCART ROAS",
+       "ZAROMA ROAS"
+      ],
+      "kpi_values": [
+       "0.34x",
+       "0.32x"
+      ],
+      "kpi_deltas": [
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       ""
+      ]
+     }
+    },
+    {
+     "component_id": "insight_narrative",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "High-level insight and callout about media economics",
+     "design_hint": "color/highlight the quoted callout sentence (\"This is a media economics problem, not just a campaign hygiene problem.\") as the key phrase and lift/elevate the narrative card",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR. \"This is a media economics problem, not just a campaign hygiene problem.\""
+     }
+    }
+   ],
+   "layout_hint": "combined_kpi_scorecard is the primary element across the top; platform_roas_tiles sit immediately below it as a focused callout; insight_narrative is a supporting band beneath both.",
+   "content_data": {
+    "title": "The account is spending at scale, but not yet buying profitable demand.",
+    "subtitle": "EXECUTIVE SUMMARY",
+    "kpi_labels": [
+     "FLIPCART ROAS",
+     "ZAROMA ROAS"
+    ],
+    "kpi_values": [
+     "0.34x",
+     "0.32x"
+    ],
+    "kpi_deltas": [
+     "",
+     ""
+    ],
+    "kpi_directions": [
+     "",
+     ""
+    ],
+    "text": "Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR. \"This is a media economics problem, not just a campaign hygiene problem.\""
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "kpi_labels": "sample",
+    "kpi_values": "sample",
+    "kpi_deltas": "sample",
+    "kpi_directions": "sample",
+    "text": "sample"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <!-- Header -->\n    <VStack gap=\"8\" alignItems=\"start\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">EXECUTIVE SUMMARY</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">The account is spending at scale, but not yet buying profitable demand.</Text>\n    </VStack>\n    <!-- Combined KPI Scorecard -->\n    <HStack gap=\"18\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">Combined spend</Text>\n        <Text fontSize=\"32\" color=\"$textMain\" bold=\"true\">₹114.9L</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">Combined revenue</Text>\n        <Text fontSize=\"32\" color=\"$textMain\" bold=\"true\">₹37.4L</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"16\" color=\"$surfaceAlt\" bold=\"true\">Combined ROAS</Text>\n        <Text fontSize=\"32\" color=\"$accentAlt\" bold=\"true\">0.33x</Text>\n      </VStack>\n    </HStack>\n    <!-- Platform ROAS Tiles as Negative Callout -->\n    <HStack gap=\"18\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$negativeSoft\" borderRadius=\"12\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"16\" color=\"$negativeText\" bold=\"true\">FLIPCART ROAS</Text>\n        <Text fontSize=\"28\" color=\"$negativeText\" bold=\"true\">0.34x</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"16\" gap=\"6\" backgroundColor=\"$negativeSoft\" borderRadius=\"12\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Text fontSize=\"16\" color=\"$negativeText\" bold=\"true\">ZAROMA ROAS</Text>\n        <Text fontSize=\"28\" color=\"$negativeText\" bold=\"true\">0.32x</Text>\n      </VStack>\n    </HStack>\n    <!-- Insight Narrative (Supporting, Lifted Card) -->\n    <VStack grow=\"1\" padding=\"28\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n      <Text fontSize=\"18\" color=\"$textMain\" lineHeight=\"1.4\">Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR. <Span color=\"$accentText\" bold=\"true\">\"This is a media economics problem, not just a campaign hygiene problem.\"</Span></Text>\n    </VStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-cheffin-full",
+  "slide": 4,
+  "theme": "corporate-slate",
+  "request": "You are a senior performance marketing strategist, FLIPCART Ads expert, quick-commerce media buyer, and data scientist.\n\nCreate a polished, client-ready audit presentation for CHEFFIN, a ready-to-cook / ready-to-eat food brand. The deck should audit the brand’s current FLIPCART Ads and ZAROMA Ads performance, identify key gaps in the current operating model, and make a strong case for why our agency should take over performance media operations.\n\nIMPORTANT:\nKeep the deck concise and executive-friendly.. Cover all important insights, but avoid unnecessary detail. Use sharp headlines, clear tables, charts, and concise recommendations.\n\nDECK OBJECTIVE:\nThe deck should help us present to the client that:\n1. The brand is spending heavily across FLIPCART and ZAROMA but not buying profitable demand.\n2. The current performance problem is structural, not just a small campaign optimization issue.\n3. CPC is much higher than what the current AOV and conversion rate can support.\n4. There are clear gaps in search-term governance, bid discipline, campaign structure, audience strategy, city allocation, and budget allocation.\n5. Our agency can improve performance using a stronger data-led operating model.\n\nSTYLE:\n- Clean, modern, boardroom-ready.\n- Use Indian currency format: ₹, L for lakhs.\n- Use ROAS as “0.34x”, CPC as “₹31.1”, ACOS as “290%”.\n- Use white background, dark text, and subtle FLIPCART orange + ZAROMA purple accents.\n- Use charts and tables where useful.\n- Avoid overcrowding slides.\n- Every slide headline should state the conclusion, not just the topic.\n- Do not attack the current agency directly. Use professional language such as “current operating gaps”, “opportunity to improve governance”, and “needs tighter control”.\n\nDATA CONTEXT: refer attached sheet which has all the data.\nThe audit is based on:\n1. FLIPCART Targeting last 90 days data.\n2. FLIPCART Search Term report.\n3. ZAROMA April, May, and June data.\n4. ZAROMA campaign, city, and keyword-level views.\n\nDATA QUALITY NOTE:\nMention that some FLIPCART pivot-style sheets had unreliable or zeroed ratio fields, so metrics were recalculated from raw data. Also mention that ZAROMA campaign, city, and keyword sheets may not reconcile perfectly because they appear to have slightly different coverage. Use ZAROMA campaign-level data as the primary platform total source, while city and keyword sheets should be used for diagnostic insights.\n\nKEY FORMULAS:\nROAS = Revenue or Sales / Spend\nACOS = Spend / Sales\nCTR = Clicks / Impressions\nCPC = Spend / Clicks\nCVR = Orders or Purchases / Clicks\nCPA = Spend / Orders or Purchases\nAOV = Sales / Orders or Purchases\nAllowable CPC for 1.0x ROAS = AOV × CVR\n\nCORE EXECUTIVE DIAGNOSIS:\nAcross FLIPCART and ZAROMA, CHEFFIN is spending at scale but the traffic economics are structurally weak. The issue is not just campaign optimization. The brand needs a paid-growth operating system built around intent, SKU economics, search-term governance, city-level allocation, break-even CPC rules, AOV improvement, and CVR improvement.\n\nPLATFORM SUMMARY:\nFLIPCART:\n- Spend: ₹29.4L\n- Ad sales: ₹10.1L\n- ROAS: 0.34x\n- CPC: ₹31.1\n- CVR: 5.5%\n- AOV: ₹195\n- Allowable CPC for 1.0x ROAS: ₹10.7\n\nZAROMA:\n- Spend: ₹85.5L\n- Ad revenue: ₹27.3L\n- ROAS: 0.32x\n- CPC: ₹46.2\n- CVR: 6.4%\n- AOV: ₹230\n- Allowable CPC for 1.0x ROAS: ₹14.8\n\nCombined:\n- Spend: ₹114.9L\n- Revenue: ₹37.4L\n- ROAS: 0.33x\n- CPC: ₹41.1\n- CVR: 6.1%\n- AOV: ₹219\n\nKEY INTERPRETATION:\nThe current CPCs are almost 3x higher than what current AOV and CVR can support. Therefore, performance cannot be fixed only by bid tweaks. The account needs:\n1. Lower CPC on weak traffic.\n2. Higher CVR through better keyword, SKU, and city matching.\n3. Higher AOV through bundles, multipacks, offers, and higher-value SKUs.\n4. Spend reallocation from low-intent traffic to proven high-intent pockets.\n5. Break-even CPC rules by platform, keyword, SKU, city, and campaign objective.\n\nCREATE THE DECK USING THIS 6-SLIDE STRUCTURE:\n\nSLIDE 1: Title Slide\nHeadline:\nCHEFFIN FLIPCART & ZAROMA Ads Audit\n\nSubtitle:\nLast 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap\n\nInclude:\nPrepared by our agency\n\nVisual:\nMarketplace growth theme with FLIPCART and ZAROMA visual cues.\n\nSLIDE 2: Executive Summary\nHeadline:\nThe account is spending at scale, but not yet buying profitable demand.\n\nShow key numbers:\n- Combined spend: ₹114.9L\n- Combined revenue: ₹37.4L\n- Combined ROAS: 0.33x\n- FLIPCART ROAS: 0.34x\n- ZAROMA ROAS: 0.32x\n\nMain insight:\nBoth FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR.\n\nAdd callout:\n“This is a media economics problem, not just a campaign hygiene problem.”\n\nSLIDE 3: Core Economics Problem\nHeadline:\nCPC is nearly 3x higher than what current conversion economics can support.\n\nCreate a table:\nPlatform | Actual CPC | Allowable CPC for 1.0x ROAS | Gap\nFLIPCART | ₹31.1 | ₹10.7 | Actual CPC is ~2.9x allowable\nZAROMA | ₹46.2 | ₹14.8 | Actual CPC is ~3.1x allowable\n\nVisual:\nBar chart comparing actual CPC vs allowable CPC.\n\nMain insight:\nAt the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together.\n\nSLIDE 4: Data Reviewed & Methodology\nHeadline:\nWe rebuilt the audit from raw performance data, not surface-level reports.\n\nInclude:\n- FLIPCART Targeting last 90 days report\n- FLIPCART Search Term report\n- ZAROMA campaign-level data\n- ZAROMA city-level data\n- ZAROMA keyword-level data\n\nData quality note:\n- Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.\n- ZAROMA sheets appear to have different coverage, so campaign-level totals were used as primary totals and city/keyword sheets were used for diagnostics.\n\nSLIDE 5: FLIPCART Performance Snapshot\nHeadline:\nFLIPCART is generating traffic, but at weak revenue efficiency.\n\nShow table:\nMetric | Value\nSpend | ₹29.4L\nAd sales | ₹10.1L\nROAS | 0.34x\nCPC | ₹31.1\nCVR | 5.5%\nAOV | ₹195\nAllowable CPC for 1.0x ROAS | ₹10.7\n\nMain insight:\nFLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support.\n\nSLIDE 6: FLIPCART Ad Type & Match-Type Diagnosis\nHeadline:\nSBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.\n\nUse two mini tables or one combined visual.\n\nAd type performance:\nAd Type | Spend Share | Sales Share | ROAS | Interpretation\nSP | 75.6% | 75.3% | 0.34x | Main volume driver, but inefficient overall\nSBV | 12.8% | 8.5% | 0.23x | Weak video efficiency\nSBT | 9.3% | 15.1% | 0.56x | Best ad type; under-allocated\nSD | 2.4% | 1.1% | 0.17x | Weak conversion quality\n\nMatch / targeting performance:\nExact ROAS: 0.44x\nPhrase ROAS: 0.26x\nAuto ROAS: 0.30x\nCategory ROAS: 0.25x\nBroad ROAS: 0.22x\nAudience ROAS: 0.15x\n\nMain insight:\nExact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control.\n",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+   "label": "FLIPCART SNAPSHOT",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Kicker + headline for the FLIPCART platform deep-dive",
+     "design_hint": "color the kicker 'FLIPCART SNAPSHOT' in accent and emphasize the phrase 'weak revenue efficiency' in the title",
+     "weight": "minor",
+     "content_data": {
+      "title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+      "subtitle": "FLIPCART SNAPSHOT"
+     }
+    },
+    {
+     "component_id": "flipkart_kpis",
+     "kind": "kpi_row",
+     "count": 7,
+     "content_summary": "Seven KPI tiles showing Spend, Ad sales, ROAS, CPC, CVR, AOV and Allowable CPC",
+     "items": 7,
+     "design_hint": "emphasize the 'Allowable CPC for 1.0x ROAS' tile and visually show the gap vs CPC: color the CPC tile in negative (warning) and the Allowable CPC tile in positive; keep all tiles in the brief's order",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "Spend",
+       "Ad sales",
+       "ROAS",
+       "CPC",
+       "CVR",
+       "AOV",
+       "Allowable CPC for 1.0x ROAS"
+      ],
+      "kpi_values": [
+       "₹29.4L",
+       "₹10.1L",
+       "0.34x",
+       "₹31.1",
+       "5.5%",
+       "₹195",
+       "₹10.7"
+      ],
+      "kpi_deltas": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ]
+     }
+    },
+    {
+     "component_id": "flipkart_insight",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Main insight explaining the CPC gap relative to AOV and CVR",
+     "items": 1,
+     "design_hint": "lift the card and color the phrase 'almost 3x higher' in warning to draw attention to the CPC gap",
+     "weight": "supporting",
+     "content_data": {
+      "text": "FLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+     }
+    }
+   ],
+   "layout_hint": "flipkart_kpis is the primary element in the center of the slide; slide_title sits as a small header above; flipkart_insight is a supporting band beneath the KPI scorecard calling out the CPC gap.",
+   "content_data": {
+    "title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+    "subtitle": "FLIPCART SNAPSHOT",
+    "kpi_labels": [
+     "Spend",
+     "Ad sales",
+     "ROAS",
+     "CPC",
+     "CVR",
+     "AOV",
+     "Allowable CPC for 1.0x ROAS"
+    ],
+    "kpi_values": [
+     "₹29.4L",
+     "₹10.1L",
+     "0.34x",
+     "₹31.1",
+     "5.5%",
+     "₹195",
+     "₹10.7"
+    ],
+    "kpi_deltas": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "kpi_directions": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "text": "FLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "kpi_labels": "sample",
+    "kpi_values": "sample",
+    "kpi_deltas": "sample",
+    "kpi_directions": "sample",
+    "text": "sample"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\" alignItems=\"start\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">FLIPCART SNAPSHOT</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">FLIPCART is generating traffic, but at <Span color=\"$accentText\" bold=\"true\">weak revenue efficiency</Span>.</Text>\n    </VStack>\n    <HStack gap=\"18\" alignItems=\"stretch\" grow=\"1\">\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" alignItems=\"center\">\n        <Icon name=\"wallet\" size=\"24\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\">Spend</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$textMain\">₹29.4<Span fontSize=\"18\" color=\"$textMuted\">L</Span></Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" alignItems=\"center\">\n        <Icon name=\"shopping-bag\" size=\"24\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\">Ad sales</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$textMain\">₹10.1<Span fontSize=\"18\" color=\"$textMuted\">L</Span></Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" alignItems=\"center\">\n        <Icon name=\"percent\" size=\"24\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\">ROAS</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$textMain\">0.34<Span fontSize=\"18\" color=\"$textMuted\">x</Span></Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$warningSoft\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" alignItems=\"center\">\n        <Icon name=\"dollar-sign\" size=\"24\" color=\"$warning\" />\n        <Text fontSize=\"14\" color=\"$warningText\" bold=\"true\">CPC</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$warningText\">₹31.1</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" alignItems=\"center\">\n        <Icon name=\"percent\" size=\"24\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\">CVR</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$textMain\">5.5<Span fontSize=\"18\" color=\"$textMuted\">%</Span></Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" alignItems=\"center\">\n        <Icon name=\"shopping-cart\" size=\"24\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\">AOV</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$textMain\">₹195</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"20\" gap=\"8\" backgroundColor=\"$positiveSoft\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" alignItems=\"center\">\n        <Icon name=\"dollar-sign\" size=\"24\" color=\"$positive\" />\n        <Text fontSize=\"14\" color=\"$positiveText\" bold=\"true\">Allowable CPC for 1.0x ROAS</Text>\n        <Text fontSize=\"32\" bold=\"true\" color=\"$positiveText\">₹10.7</Text>\n      </VStack>\n    </HStack>\n    <VStack padding=\"20\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">FLIPCART’s CPC is <Span color=\"$warningText\" bold=\"true\">almost 3x higher</Span> than the CPC the current AOV and CVR can support.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n"
+ }
+]
