@@ -59,7 +59,7 @@ def test_full_skeleton_fills_verbatim_with_no_issues():
 
 def test_values_share_one_start_size_and_carry_peer_ids():
     xml = E.fill_refs(full(), PLAN)["xml"]
-    vals = re.findall(r'<Text ([^>]*id="kpiv-kpis-(\d)"[^>]*)>', xml)
+    vals = re.findall(r'<Text ([^>]*id="kpiv1-kpis-(\d)"[^>]*)>', xml)
     assert [v[1] for v in vals] == ["0", "1", "2"]
     assert {re.search(r'fontSize="(\d+)"', v[0]).group(1) for v in vals} == {str(E.VALUE_PX)}
     assert all('bold="true"' in v[0] for v in vals)
@@ -68,8 +68,8 @@ def test_values_share_one_start_size_and_carry_peer_ids():
 def test_hero_only_on_the_focus_value():
     xml = slide(tile(0, value_attrs=' size="hero"') + tile(1, note=False) + tile(2, value_attrs=' size="hero"'))
     res = E.fill_refs(xml, PLAN)
-    assert 'id="kpih-kpis-2"' in res["xml"] and f'fontSize="{E.HERO_PX}"' in res["xml"]
-    assert 'id="kpiv-kpis-0"' in res["xml"] and "size=" not in res["xml"]
+    assert 'id="kpih1-kpis-2"' in res["xml"] and f'fontSize="{E.HERO_PX}"' in res["xml"]
+    assert 'id="kpiv1-kpis-0"' in res["xml"] and "size=" not in res["xml"]
     assert codes(res) == ["NODE_ATTR_IGNORED"]
 
 
@@ -77,7 +77,7 @@ def test_a_one_item_kpi_row_is_a_hero():
     plan = {"components": [{"component_id": "hero", "kind": "kpi_row",
                             "content_data": {"kpi_labels": ["ROAS"], "kpi_values": ["0.33x"]}}]}
     res = E.fill_refs('<Slide><VStack><Text ref="hero.0.label"/><Text ref="hero.0.value"/></VStack></Slide>', plan)
-    assert res["ok"] and 'id="kpih-hero-0"' in res["xml"]
+    assert res["ok"] and 'id="kpih1-hero-0"' in res["xml"]
 
 
 def test_label_and_note_sizes_come_from_the_ramp():
@@ -160,7 +160,7 @@ def test_already_filled_values_count_as_placed():
 def test_role_default_colours():
     out = E.fill_refs(full(), PLAN)["xml"]
     assert re.search(r'<Text[^>]*color="\$accentText"[^>]*>Spend<', out)
-    assert 'color="$textMain"' in value_tag(out, "kpiv-kpis-0")
+    assert 'color="$textMain"' in value_tag(out, "kpiv1-kpis-0")
     assert re.search(r'<Text[^>]*color="\$textMuted"[^>]*>Amazon', out)
 
 
@@ -169,15 +169,15 @@ def test_tone_ink_and_own_token_wins():
                                                                         kpi_tones=["", "good", "bad"]))]}
     xml = full().replace('<Text ref="kpis.2.label"/>', '<Text ref="kpis.2.label" color="$warningText"/>')
     out = E.fill_refs(xml, plan)["xml"]
-    assert 'color="$positiveText"' in value_tag(out, "kpiv-kpis-1")
-    assert 'color="$negativeText"' in value_tag(out, "kpiv-kpis-2")
+    assert 'color="$positiveText"' in value_tag(out, "kpiv1-kpis-1")
+    assert 'color="$negativeText"' in value_tag(out, "kpiv1-kpis-2")
     assert re.search(r'color="\$warningText"[^>]*>Blended ROAS<', out)
 
 
 def test_text_on_a_dark_fill_defaults_to_light_ink():
     xml = slide(tile(0) + tile(1, note=False) + tile(2).replace("$surfaceAlt", "$panelDark"))
     out = E.fill_refs(xml, PLAN)["xml"]
-    assert 'color="$onPanelDark"' in value_tag(out, "kpiv-kpis-2")
+    assert 'color="$onPanelDark"' in value_tag(out, "kpiv1-kpis-2")
     assert re.search(r'color="\$onPanelDark"[^>]*>Blended ROAS<', out)
 
 
@@ -255,8 +255,8 @@ def test_sentence_value_is_drawn_as_body_text():
     res = E.fill_refs(xml, plan)
     assert res["ok"] and "NODE_VALUE_TEXT" in codes(res)
     prose = re.search(r"<Text[^>]*>Generic search consumed[^<]*</Text>", res["xml"]).group(0)
-    assert f'fontSize="{E.BODY_PX}"' in prose and "bold" not in prose and "kpiv-" not in prose
-    assert 'id="kpiv-k-1"' in res["xml"]
+    assert f'fontSize="{E.BODY_PX}"' in prose and "bold" not in prose and "kpiv" not in prose
+    assert 'id="kpiv1-k-1"' in res["xml"]
 
 
 def test_plan_check_reasks_on_sentence_kpi_values():
@@ -353,8 +353,35 @@ def test_fit_grow_sizes_ref_values_as_one_group_and_the_hero_alone(tmp_path):
     xml = tmp_path / "t.xml"
     xml.write_text(resolve_theme("corporate-slate")["element"] + "\n" + res["xml"], encoding="utf-8")
     out = _compile(xml, tmp_path / "o")
-    peers = {int(v) for v in re.findall(r'<Text[^>]*fontSize="(\d+)"[^>]*id="kpiv-k-\d"', out["xml"])}
-    hero = [int(v) for v in re.findall(r'<Text[^>]*fontSize="(\d+)"[^>]*id="kpih-k-2"', out["xml"])]
+    peers = {int(v) for v in re.findall(r'<Text[^>]*fontSize="(\d+)"[^>]*id="kpiv1-k-\d"', out["xml"])}
+    hero = [int(v) for v in re.findall(r'<Text[^>]*fontSize="(\d+)"[^>]*id="kpih1-k-2"', out["xml"])]
     assert len(peers) == 1 and peers.pop() > E.VALUE_PX, out["fitGrow"]
     assert hero and hero[0] > E.HERO_PX, out["fitGrow"]
     assert not any(w["code"] == "WORD_TOO_WIDE" for w in out.get("warnings", [])), out.get("warnings")
+
+
+def test_fit_grow_keeps_a_lower_weight_component_at_or_below_the_hero_row(tmp_path):
+    """Paid check 2026-10-11: a "peer" row of two wide tiles grew to 92 px under the "hero" row at 72."""
+    from src.agents.style_resolver import resolve_theme
+    from tests.unit.test_fit_grow_tables import _compile
+    plan = {"components": [
+        {"component_id": "top", "kind": "kpi_row", "weight": "hero", "content_data": {
+            "kpi_labels": ["Spend", "Revenue", "ROAS"], "kpi_values": ["₹114.9L", "₹37.4L", "0.33x"]}},
+        {"component_id": "low", "kind": "kpi_row", "weight": "peer", "content_data": {
+            "kpi_labels": ["Amazon ROAS", "Zepto ROAS"], "kpi_values": ["0.34x", "0.32x"]}}]}
+    tile = lambda c, i, w: (f'<VStack w="{w}" padding="20" gap="8" backgroundColor="$surfaceAlt" justifyContent="center">'
+                            f'<Text ref="{c}.{i}.label"/><Text ref="{c}.{i}.value"/></VStack>')
+    skel = ('<Slide><VStack w="1280" h="720" padding="48" gap="20" backgroundColor="$surface">'
+            '<Text fontSize="36" bold="true" color="$textMain">Spend is at scale</Text>'
+            f'<HStack grow="3" gap="18" alignItems="stretch">{"".join(tile("top", i, "max") for i in range(3))}</HStack>'
+            f'<HStack gap="18" alignItems="stretch">{"".join(tile("low", i, "max") for i in range(2))}</HStack>'
+            '</VStack></Slide>')
+    res = E.fill_refs(skel, plan)
+    assert 'id="kpiv0-top-0"' in res["xml"] and 'id="kpiv1-low-0"' in res["xml"]
+    xml = tmp_path / "t.xml"
+    xml.write_text(resolve_theme("corporate-slate")["element"] + "\n" + res["xml"], encoding="utf-8")
+    out = _compile(xml, tmp_path / "o")
+    size = lambda pre: {int(v) for v in re.findall(rf'<Text[^>]*fontSize="(\d+)"[^>]*id="{pre}-\d"', out["xml"])}
+    top, low = size("kpiv0-top"), size("kpiv1-low")
+    assert len(top) == 1 and len(low) == 1 and max(low) <= max(top), (top, low, out["fitGrow"])
+    assert max(low) > E.VALUE_PX, out["fitGrow"]   # the content-sized row still grew

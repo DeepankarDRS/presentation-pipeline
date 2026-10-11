@@ -14,8 +14,8 @@ and code writes the text. Runs in the validator before normalize_xml, only under
 
 Code owns, over anything the LLM wrote on a ref Text: the text (verbatim from kpi_labels /
 kpi_values / kpi_deltas), the value's size (one size for every value of a component, the
-unit as a span, fit-grow grows the group together: ids `kpiv-<cid>-<i>`, a focus value with
-size="hero" `kpih-<cid>-<i>`), label / note sizes from the type ramp, and the colour of a
+unit as a span, fit-grow grows the group together: ids `kpiv<rank>-<cid>-<i>`, a focus value with
+size="hero" `kpih<rank>-<cid>-<i>`; rank = the plan weight, 0 hero .. 3 minor), label / note sizes from the type ramp, and the colour of a
 ref Text with no `$token` colour (tone ink, else the role default, else light ink on a dark
 fill the LLM drew). Everything else (containers, fills, bars, icons) is the LLM's.
 """
@@ -57,7 +57,11 @@ TONE_ROLE = {"good": "positive", "positive": "positive", "bad": "negative", "neg
 ON_FILL = {"$panelDark": "$onPanelDark", "$textMain": "$surface", "$accent": "$onAccent"}
 _STACKS = {"VStack", "HStack"}
 _REF = re.compile(r"^(?P<cid>[\w-]+)\.(?P<i>\d+)\.(?P<field>[a-z]+)$")
-PEER_ID = re.compile(r"^kpi[vh]-")
+PEER_ID = re.compile(r"^kpi[vh]\d?-")
+# plan weight -> rank in the value id: fit-grow never grows a component's numbers past those of a
+# component the plan weights higher on the slide (paid check 2026-10-11: a "peer" row of 2 tiles grew to
+# 92 px under the "hero" row at 72)
+WEIGHT_RANK = {"hero": 0, "peer": 1, "supporting": 2, "minor": 3}
 
 
 def mode() -> str:
@@ -198,7 +202,7 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
             value_els[(cid, i)] = el
         elif field == "value":
             a["bold"] = "true"
-            a["id"] = f"kpi{'h' if hero else 'v'}-{cid}-{i}"
+            a["id"] = f"kpi{'h' if hero else 'v'}{WEIGHT_RANK.get(comp.get('weight') or 'peer', 1)}-{cid}-{i}"
             value_els[(cid, i)] = el
         if "color" not in a:
             tones = _list(comp, "kpi_tones")
@@ -210,7 +214,7 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
 
     # values filled on an earlier pass (a repaired slide comes back already filled) count as placed
     for t in root.iter("Text"):
-        pm = re.match(r"^kpi[vh]-(?P<cid>[\w-]+)-(?P<i>\d+)$", t.get("id", ""))
+        pm = re.match(r"^kpi[vh]\d?-(?P<cid>[\w-]+)-(?P<i>\d+)$", t.get("id", ""))
         if pm and pm["cid"] in comps and (pm["cid"], int(pm["i"])) not in value_els:
             placed[pm["cid"]].setdefault(int(pm["i"]), set()).add("value")
             value_els[(pm["cid"], int(pm["i"]))] = t

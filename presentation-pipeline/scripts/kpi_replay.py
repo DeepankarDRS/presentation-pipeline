@@ -143,8 +143,8 @@ def value_sizes(final_xml: str, plan: dict, arm: str) -> dict[str, dict]:
     out = {}
     for cid, c in comps.items():
         if arm == "B":
-            sizes = [_size(t) for t in root.iter("Text") if re.match(rf"^kpiv-{re.escape(cid)}-\d+$", t.get("id", ""))]
-            hero = [_size(t) for t in root.iter("Text") if re.match(rf"^kpih-{re.escape(cid)}-\d+$", t.get("id", ""))]
+            sizes = [_size(t) for t in root.iter("Text") if re.match(rf"^kpiv\d?-{re.escape(cid)}-\d+$", t.get("id", ""))]
+            hero = [_size(t) for t in root.iter("Text") if re.match(rf"^kpih\d?-{re.escape(cid)}-\d+$", t.get("id", ""))]
         else:
             keys = [_key(v) for v in (c.get("content_data") or {}).get("kpi_values") or []]
             texts = list(root.iter("Text"))

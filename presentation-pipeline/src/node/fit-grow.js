@@ -28,8 +28,9 @@
 //   3b. KPI values  — a sparse row of stat tiles grows its hero numbers (and
 //                     their inline unit <Span>s) together, up to 96px; a lone hero
 //                     stat card (short number >= 48px) up to 120px. KPI ref values
-//                     (ids kpiv-<component>-<i>) grow as one group per component
-//                     wherever they sit; a kpih- hero alone, up to 120px.
+//                     (ids kpiv<rank>-<component>-<i>) grow as one group per component
+//                     wherever they sit; a kpih hero alone, up to 120px; never past a
+//                     component the plan weights higher (rank 0 hero .. 3 minor).
 //   4. text        — in each stack under ~70% full, fonts grow together until
 //                     ~88% full, as the composer sizes cards: titles and body by
 //                     s, labels and icons by sqrt(s); card title <= 48px, body
@@ -842,7 +843,7 @@ function statAnchor(tile) {
 // value "kpiv-<component>-<i>" (a focus value set size="hero": "kpih-…"). The values of one
 // component are peers wherever the LLM put them (tiles, a strip, a dark panel beside a grid,
 // stacked rows): one size, grown together, evened after the guard. A hero grows on its own.
-const REF_VALUE = /^kpi([vh])-(.+)-(\d+)$/;
+const REF_VALUE = /^kpi([vh])(\d?)-(.+)-(\d+)$/;
 
 /** [{ ids: value ids, tiles: each value's card (nearest boxed stack, else its parent), hero }] */
 function refGroups(L) {
@@ -856,8 +857,8 @@ function refGroups(L) {
       let tile = up.get(n);
       for (let p = tile; p && STACKS.has(p.type); p = up.get(p)) if (hasBoxStyle(p)) { tile = p; break; }
       if (!tile || !tile.id) return;
-      const key = m[1] === "h" ? n.id : `v:${m[2]}`;
-      if (!groups.has(key)) groups.set(key, { ids: [], tiles: [], hero: m[1] === "h" });
+      const key = m[1] === "h" ? n.id : `v:${m[3]}`;
+      if (!groups.has(key)) groups.set(key, { ids: [], tiles: [], hero: m[1] === "h", rank: m[2] === "" ? 1 : Number(m[2]) });
       const g = groups.get(key);
       g.ids.push(n.id);
       if (!g.tiles.includes(tile.id)) g.tiles.push(tile.id);
@@ -947,8 +948,12 @@ async function growStats(xml, report) {
       const f0 = Math.min(...r.ids.map((id) => L.byId.get(id).fontSize ?? 24));
       const cap = r.hero ? HERO_CAP : STAT_CAP;
       const ratio = Math.max(...r.tiles.map((t) => fill(L.byId.get(t), L).ratio));
-      // ref values start small (28 px): they grow to the fullest box's target fill, sparse or not
-      if (f0 < cap && ratio < TARGET_FILL) groups.push({ ids: r.tiles, anchors: r.ids, f0, ratio, cap, hero: r.hero });
+      // ref values start small (28 px): they grow to the fullest box's target fill, sparse or not. Cards
+      // sized by their content (no grow / h: full at any size) grow too, taking height from the slide's
+      // flexible bands while the slide fits and nothing else overflows (paid check 2026-10-11: CHEFFIN's
+      // second KPI row stayed at 28 px under a grow="3" row at 72 px; the LLM's own XML had 51)
+      const content = r.tiles.every((t) => { const n = L.byId.get(t); return n.h === undefined && n.grow === undefined; });
+      if (f0 < cap && (ratio < TARGET_FILL || content)) groups.push({ ids: r.tiles, anchors: r.ids, f0, ratio, cap, hero: r.hero, free: ratio >= TARGET_FILL, rank: r.rank, ref: true });
     }
     // a lone hero stat (the one number the headline rests on) grows past tile size
     const grouped = new Set(groups.flatMap((g) => g.ids));
@@ -964,11 +969,28 @@ async function growStats(xml, report) {
       if (ratio < LOW_FILL) groups.push({ ids: [n.id], anchors: [a.id], f0: a.fontSize ?? 24, ratio, cap: HERO_CAP, hero: true });
     });
   } finally { L.free(); }
+  // ref groups by plan weight (hero first), groups with room before content-sized ones. A ref group grows no
+  // larger than the numbers of a component the plan weights higher (paid check run 3: the "peer" row of two
+  // tiles grew to 92 px under the "hero" row at 72); a content-sized group no larger than the slide's other
+  // KPI numbers either. A hero stat (size="hero") is the plan's focus and keeps its own cap.
+  groups.sort((a, b) => (a.rank ?? 9) - (b.rank ?? 9) || (a.free ? 1 : 0) - (b.free ? 1 : 0));
   for (const g of groups) {
+    if (g.ref && !g.hero) {
+      const sizes = (higher) => [...xml.matchAll(/<Text\b[^>]*>/g)].map((m) => m[0]).flatMap((t) => {
+        const id = /\sid="kpiv(\d?)-[^"]*"/.exec(t);
+        const mine = id && g.anchors.some((a) => t.includes(`id="${a}"`));
+        if (!id || mine || (higher && Number(id[1] || 1) >= g.rank)) return [];
+        return [Number((/\sfontSize="([\d.]+)"/.exec(t) ?? [])[1] ?? 0)];
+      }).filter((f) => f > 0);
+      const above = sizes(true), all = g.free ? sizes(false) : [];
+      if (above.length) g.cap = Math.min(g.cap, Math.max(...above));
+      if (all.length) g.cap = Math.min(g.cap, Math.max(...all));
+      if (g.cap <= g.f0) continue;
+    }
     const apply = (src, s) => g.anchors.reduce((x, id) => scaleTextFont(x, id, s, g.cap), src);
     const unpinned = xml;
     xml = await pinWidths(xml, g.ids);
-    const r = await search(xml, g.ids, apply, g.cap / g.f0, g.anchors, 0, g.anchors);
+    const r = await search(xml, g.ids, apply, g.cap / g.f0, g.anchors, 0, g.anchors, g.free);
     if (r.best <= 1.05) { xml = unpinned; continue; }
     xml = apply(xml, r.best);
     report.push(`${g.hero ? "hero stat" : "KPI values"} x${r.best.toFixed(2)} (${g.f0} -> ${Math.min(Math.round(g.f0 * r.best), g.cap)}px), `
@@ -1408,7 +1430,7 @@ function sideways(L) {
   return n;
 }
 
-async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words = []) {
+async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words = [], ignoreFill = false) {
   const fullest = (L) => Math.max(...ids.map((id) => fill(L.byId.get(id), L).ratio));
   const B = await layout(xml);
   let before, ratio, lines0, slideMax, widths, over0, need0, tight0, side0;
@@ -1433,7 +1455,7 @@ async function search(xml, ids, apply, max, keepLines = [], lineSlack = 0, words
     const T = await layout(apply(xml, s));
     try {
       const r = fullest(T);
-      let ok = r <= TARGET_FILL && T.slides.every((r, j) => natural(r, T) <= slideMax[j]);
+      let ok = (ignoreFill || r <= TARGET_FILL) && T.slides.every((r, j) => natural(r, T) <= slideMax[j]);
       for (const [k, o] of overflows(T)) if (o > Math.max(before.get(k) ?? 0, 0) + 1) ok = false;
       for (const [k, l0] of lines0) if (lineCount(T.byId.get(k), T) > Math.max(l0, 1) + lineSlack) ok = false;
       // the lines the renderer draws beyond POM's (85% width) need height in their card: a

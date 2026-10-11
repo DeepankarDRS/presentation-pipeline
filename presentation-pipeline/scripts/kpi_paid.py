@@ -131,9 +131,14 @@ def rescore(label: str, render: bool = True) -> list[dict]:
         it = items[f"{row['item']}-s{row['slide']}"]
         theme = resolve_theme(it["theme"])["element"]
         a_dir, b_dir = out / "A" / row["case"] / "slide-0", out / "B" / row["case"] / "slide-0"
-        if not (a_dir / "compile-result.json").exists():
+        if True:   # free: always recompile both arms on this commit
             row["A"] = score("A", a_dir, compile_slide(it["xml_today"], theme, a_dir), it["plan"], row["case"], render)
         xml = (out / "B" / row["case"] / "final.xml").read_text(encoding="utf-8")
+        # runs filled before ids carried the plan weight's rank (kpiv-cid-i -> kpiv<rank>-cid-i, as the fill writes now)
+        from src.compiler.nodes.element_refs import WEIGHT_RANK
+        for cid, c in kpi_components(it["plan"]).items():
+            rank = WEIGHT_RANK.get(c.get("weight") or "peer", 1)
+            xml = xml.replace(f'id="kpiv-{cid}-', f'id="kpiv{rank}-{cid}-').replace(f'id="kpih-{cid}-', f'id="kpih{rank}-{cid}-')
         row["B"] = score("B", b_dir, compile_slide(xml, theme, b_dir), it["plan"], row["case"], render) if xml else None
     (out / "results.json").write_text(json.dumps(runs, indent=1, ensure_ascii=False), encoding="utf-8")
     if render:

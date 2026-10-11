@@ -1,0 +1,310 @@
+[
+ {
+  "case": "deck-qbr-data-s1-r1",
+  "item": "deck-qbr-data",
+  "slide": 1,
+  "repeat": 1,
+  "run_id": "kpi-deck-qbr-data-s1-r1-1791713471",
+  "first_ok": true,
+  "first_issues": [
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.0.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.1.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.2.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.3.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_FIELD_MISSING",
+    "severity": "warning",
+    "message": "kpi_metrics item 0: no <Text ref=\"kpi_metrics.0.label\"/>."
+   },
+   {
+    "code": "NODE_FIELD_MISSING",
+    "severity": "warning",
+    "message": "kpi_metrics item 1: no <Text ref=\"kpi_metrics.1.label\"/>."
+   },
+   {
+    "code": "NODE_FIELD_MISSING",
+    "severity": "warning",
+    "message": "kpi_metrics item 2: no <Text ref=\"kpi_metrics.2.label\"/>."
+   },
+   {
+    "code": "NODE_FIELD_MISSING",
+    "severity": "warning",
+    "message": "kpi_metrics item 3: no <Text ref=\"kpi_metrics.3.label\"/>."
+   }
+  ],
+  "validator_passes": 1,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.029148,
+  "refs_first_try": [
+   4,
+   4
+  ]
+ },
+ {
+  "case": "gate-deck-cheffin-full-s1-r1",
+  "item": "gate-deck-cheffin-full",
+  "slide": 1,
+  "repeat": 1,
+  "run_id": "kpi-gate-deck-cheffin-full-s1-r1-1791713513",
+  "first_ok": true,
+  "first_issues": [],
+  "validator_passes": 1,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.030408,
+  "refs_first_try": [
+   5,
+   5
+  ]
+ },
+ {
+  "case": "gate-deck-cheffin-full-s4-r1",
+  "item": "gate-deck-cheffin-full",
+  "slide": 4,
+  "repeat": 1,
+  "run_id": "kpi-gate-deck-cheffin-full-s4-r1-1791713533",
+  "first_ok": true,
+  "first_issues": [
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.0.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.1.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.2.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.3.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.4.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.5.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.6.value\": code sizes every value of flipkart_kpis together; removed."
+   }
+  ],
+  "validator_passes": 1,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.031102,
+  "refs_first_try": [
+   7,
+   7
+  ]
+ },
+ {
+  "case": "deck-qbr-data-s1-r2",
+  "item": "deck-qbr-data",
+  "slide": 1,
+  "repeat": 2,
+  "run_id": "kpi-deck-qbr-data-s1-r2-1791713555",
+  "first_ok": false,
+  "first_issues": [
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.0.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.1.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.2.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.3.value\": code sizes every value of kpi_metrics together; removed."
+   }
+  ],
+  "validator_passes": 2,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.041992,
+  "refs_first_try": [
+   4,
+   4
+  ]
+ },
+ {
+  "case": "gate-deck-cheffin-full-s1-r2",
+  "item": "gate-deck-cheffin-full",
+  "slide": 1,
+  "repeat": 2,
+  "run_id": "kpi-gate-deck-cheffin-full-s1-r2-1791713577",
+  "first_ok": true,
+  "first_issues": [],
+  "validator_passes": 1,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.029944,
+  "refs_first_try": [
+   5,
+   5
+  ]
+ },
+ {
+  "case": "gate-deck-cheffin-full-s4-r2",
+  "item": "gate-deck-cheffin-full",
+  "slide": 4,
+  "repeat": 2,
+  "run_id": "kpi-gate-deck-cheffin-full-s4-r2-1791713599",
+  "first_ok": true,
+  "first_issues": [
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.0.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.1.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.2.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.3.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.4.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.5.value\": code sizes every value of flipkart_kpis together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"flipkart_kpis.6.value\": code sizes every value of flipkart_kpis together; removed."
+   }
+  ],
+  "validator_passes": 1,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.030982,
+  "refs_first_try": [
+   7,
+   7
+  ]
+ },
+ {
+  "case": "deck-qbr-data-s1-r3",
+  "item": "deck-qbr-data",
+  "slide": 1,
+  "repeat": 3,
+  "run_id": "kpi-deck-qbr-data-s1-r3-1791713620",
+  "first_ok": false,
+  "first_issues": [
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.0.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.1.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.2.value\": code sizes every value of kpi_metrics together; removed."
+   },
+   {
+    "code": "NODE_ATTR_IGNORED",
+    "severity": "warning",
+    "message": "fontSize on ref=\"kpi_metrics.3.value\": code sizes every value of kpi_metrics together; removed."
+   }
+  ],
+  "validator_passes": 2,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.042146,
+  "refs_first_try": [
+   4,
+   4
+  ]
+ },
+ {
+  "case": "gate-deck-cheffin-full-s1-r3",
+  "item": "gate-deck-cheffin-full",
+  "slide": 1,
+  "repeat": 3,
+  "run_id": "kpi-gate-deck-cheffin-full-s1-r3-1791713641",
+  "first_ok": true,
+  "first_issues": [],
+  "validator_passes": 1,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.029896,
+  "refs_first_try": [
+   5,
+   5
+  ]
+ },
+ {
+  "case": "gate-deck-cheffin-full-s4-r3",
+  "item": "gate-deck-cheffin-full",
+  "slide": 4,
+  "repeat": 3,
+  "run_id": "kpi-gate-deck-cheffin-full-s4-r3-1791713660",
+  "first_ok": true,
+  "first_issues": [],
+  "validator_passes": 1,
+  "generator_calls": 1,
+  "final_ok": true,
+  "cost_usd": 0.029902,
+  "refs_first_try": [
+   7,
+   7
+  ]
+ }
+]

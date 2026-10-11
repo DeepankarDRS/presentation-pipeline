@@ -304,3 +304,29 @@ missing there; `--rescore` here redoes the scores and sheet for free). Dry run h
 answering with the mapped XML): 3 / 3 compile first try, refs 16 / 16, path and bundle work. Noted: the QBR
 plan's hint names all four tiles (for colours), so `singled_out` finds no focus and the ARR tile drawn apart
 reports `NODE_FOCUS_UNNAMED` (report only).
+
+**Paid check result** (test PC, 2026-10-11, `--repeat 3`: 9 runs, **$0.296**; `docs/eval/kpi-node/paid/`; scores and
+sheet redone here with `--rescore` on this commit):
+
+| §4 pass line | result |
+|---|---|
+| value refs ≥ 90% per item, first try | **48 / 48 (100%)**; 0 runs with a `NODE_*` error |
+| 0 broken words | **0** (A 0) |
+| 0 values not from the plan | **0** |
+| repair rate ≤ today's | 2 repairs in 9 runs (QBR r2, r3: 2 XML errors each, not refs; +$0.012 each). Today's route on these slides: 0 in q1008 (one run each), so not directly comparable; the first try's error text was not saved (runner gap) |
+| B preferred on ≥ 60% blind | **waiting for your marks** (9 pairs, `sheet-01..03.png`) |
+
+What the LLM did with refs: all values placed every time; it still writes `fontSize` on values (removed,
+`NODE_ATTR_IGNORED`, harmless); in QBR r1 it typed the four labels as plain text (verbatim, `NODE_FIELD_MISSING`
+warnings); icons in the label row on QBR (the new hint), none on two of three CHEFFIN slide 4 runs.
+
+Found by the paid runs and fixed in code (scores above include them):
+1. *A KPI row sized by its content never grew* (CHEFFIN slide 1's second row stayed at 28 px under a
+   `grow="3"` row; the LLM's own XML had 51): a ref group in cards without `grow` / `h` may grow while the slide
+   fits and nothing overflows (`search(..., ignoreFill)`).
+2. *Then it outgrew the main row* (92 px under 72): the plan's `weight` now reaches fit-grow — value ids carry
+   the rank (`kpiv<rank>-…`, 0 hero … 3 minor) and a component never grows past one the plan weights higher;
+   a content-sized group also not past the slide's other KPI numbers. CHEFFIN slide 1 now 72 / 72, 72 / 66,
+   72 / 72. The test-PC runs were filled before ids carried the rank; `--rescore` adds it from the plan.
+3. *A Python string turned `\b` into a backspace in a fit-grow regex* while I edited (cap silently off); fixed,
+   no other control characters in the changed files.
