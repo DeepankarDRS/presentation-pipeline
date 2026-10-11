@@ -338,3 +338,20 @@ icon hint ("in the label row, not alone and centred on top"): 7 narrow tiles hav
 the LLM left icons out. Without slide 4 B is 5 / 6. **Verdict: rethink zone (§4), one cause.** Proposed (not
 built, asking the user): the prompt line says an icon per item is welcome, in the label row where it fits,
 above the label in a narrow tile; then a paid re-run of CHEFFIN slide 4 × 3 (≈ $0.10) and marks on those pairs.
+
+## 10. Next: the KPI looks in full decks (user, 2026-10-11)
+
+User: no icon re-run; move on and see the variants in action. Layouts the LLM chose in the 9 paid runs, the
+same in every repeat: QBR 4 KPIs → 2 × 2 grid, ARR tile tinted, icons in the label row; CHEFFIN slide 1 →
+3 tiles with Combined ROAS on a dark panel + 2 red-toned tiles; CHEFFIN slide 4 → 7 tiles in a row, no icons.
+Variety comes per slide, not per run.
+
+**Run (test PC, approved to plan; ≈ $1.0–1.3):** the full pipeline (planner included) with refs on, in one
+PowerShell window (`$env:` lasts only for that window; a `POM_BLOCKS=kpi` line in `.env` works too but stays on
+for every later run until removed):
+
+    $env:POM_BLOCKS="kpi"; python -m scripts.eval_run deck-qbr-data gate-deck-cheffin-full gate-deck-all-nodes-dense gate-deck-xtsy-qcomm --repeat 1 --label kpi-decks --bundle
+
+**Then, here (free):** render the bundle; per KPI slide, name the layout the LLM chose and its item count; a
+contact sheet per deck beside its q1008 version (today's route, 2026-10-08); blind pairs of the KPI slides if
+the user wants to mark them. The planner reruns, so plans differ from q1008: a deck-level look, not a strict A/B.
