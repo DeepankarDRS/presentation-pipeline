@@ -3,8 +3,8 @@ with ordinary POM nodes and places each item's text by reference,
 
     <Text ref="kpi_metrics.2.value"/>       ref = <component_id>.<item index>.<label|value|note>
 
-and code writes the text. Runs in the validator before normalize_xml, only under
-`POM_BLOCKS=kpi` and only for `kpi_row` components.
+and code writes the text. Runs in the validator before normalize_xml, under `POM_BLOCKS=kpi` (the
+default; `off` = the old route) and only for `kpi_row` components. KPI tiles get square corners.
 
     result = fill_refs(xml, plan)
     result["xml"]         the slide with every ref Text filled (refs gone)
@@ -65,9 +65,9 @@ WEIGHT_RANK = {"hero": 0, "peer": 1, "supporting": 2, "minor": 3}
 
 
 def mode() -> str:
-    """`POM_BLOCKS`: off (today's route) | kpi (kpi_row components become element refs)."""
-    v = os.environ.get("POM_BLOCKS", "off").strip().lower()
-    return v if v in ("off", "kpi") else "off"
+    """`POM_BLOCKS`: kpi (default since 2026-10-11: kpi_row components become element refs) | off (the old route)."""
+    v = os.environ.get("POM_BLOCKS", "kpi").strip().lower()
+    return v if v in ("off", "kpi") else "kpi"
 
 
 def kpi_components(plan: dict | None) -> dict[str, dict]:
@@ -243,6 +243,12 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
                     flag("NODE_FIELD_MISSING", f"{cid}.{i}.{field}", f'{cid} item {i}: no <Text ref="{cid}.{i}.{field}"/>.')
         result["components"][cid] = stats
         _focus_check(comp, cid, value_els, flag)
+
+    # KPI tiles have square corners (user, 2026-10-11): they read apart from the slide's other cards
+    for el in value_els.values():
+        card = _container(el)
+        if card is not None and card.attrib.pop("borderRadius", None) is not None:
+            changed = True
 
     if changed:
         result["xml"] = (root.text or "") + "".join(etree.tostring(c, encoding="unicode") for c in root)

@@ -50,6 +50,10 @@ _ATTR_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_.\-]*)\s*=\s*\"[^\"]*\"")
 _HASH_COLOR_RE = re.compile(
     r"(?P<attr>[A-Za-z_][A-Za-z0-9_.\-]*)\s*=\s*\"#(?P<hex>[0-9A-Fa-f]{3,8})\""
 )
+# RRGGBBAA (CHEFFIN cover, 2026-10-11: backgroundColor="7B3FE41A"): POM rejects alpha; blend onto white
+_ALPHA_COLOR_RE = re.compile(
+    r'(?P<attr>[A-Za-z_.]*(?:[Cc]olor|fill))\s*=\s*"(?P<hex>[0-9A-Fa-f]{6})(?P<a>[0-9A-Fa-f]{2})"'
+)
 _ZERO_DIM_RE = re.compile(
     r"\b(?P<attr>w|h|minW|maxW|minH|maxH|fontSize)\s*=\s*\"(?P<val>0|-\d+(?:\.\d+)?|0*\.0+)\""
 )
@@ -95,6 +99,13 @@ _UNIVERSAL_ATTRS: set[str] = {
 }
 _OPEN_TAG_RE = re.compile(r"<([A-Za-z][A-Za-z0-9]*)\b([^>]*?)/?>")
 _ATTR_NAME_RE = re.compile(r"([A-Za-z_][A-Za-z0-9_.\-]*)\s*=\s*\"")
+
+
+def _blend_alpha(m: re.Match) -> str:
+    a = int(m.group("a"), 16) / 255
+    h = m.group("hex")
+    rgb = "".join("%02X" % round(int(h[i:i + 2], 16) * a + 255 * (1 - a)) for i in (0, 2, 4))
+    return m.group("attr") + '="' + rgb + '"'
 
 
 def _perceived_brightness(hex_color: str) -> float:
@@ -690,6 +701,15 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
         issues.append({
             "code": "HASH_COLOR",
             "message": f"Stripped leading '#' from {len(hash_hits)} color value(s).",
+            "auto_fixed": True,
+        })
+
+    alpha_hits = list(_ALPHA_COLOR_RE.finditer(xml))
+    if alpha_hits:
+        xml = _ALPHA_COLOR_RE.sub(_blend_alpha, xml)
+        issues.append({
+            "code": "ALPHA_COLOR_BLENDED",
+            "message": f"Blended {len(alpha_hits)} 8-digit (alpha) color value(s) onto white.",
             "auto_fixed": True,
         })
 

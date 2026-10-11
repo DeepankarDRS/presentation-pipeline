@@ -78,6 +78,15 @@ def test_normalize_strips_hash_colors():
     assert "HASH_COLOR" in codes
 
 
+def test_normalize_blends_alpha_colors_onto_white():
+    xml = ('<VStack w="1280" h="720"><VStack backgroundColor="#7B3FE41A" border.color="7B3FE4" id="deadbeef">'
+           '<Text>x</Text></VStack></VStack>')
+    result = normalize_xml(xml)
+    assert 'backgroundColor="F2EBFC"' in result["cleaned_xml"]   # 7B3FE4 at 10% over white
+    assert 'border.color="7B3FE4"' in result["cleaned_xml"] and 'id="deadbeef"' in result["cleaned_xml"]
+    assert "ALPHA_COLOR_BLENDED" in [i["code"] for i in result["issues"]]
+
+
 def test_normalize_flags_zero_dims():
     result = normalize_xml(ZERO_DIM_XML)
     codes = [i["code"] for i in result["issues"]]

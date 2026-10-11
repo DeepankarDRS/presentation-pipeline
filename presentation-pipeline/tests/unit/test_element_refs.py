@@ -148,6 +148,13 @@ def test_focus_drawn_apart_but_unnamed_is_reported():
     assert E.fill_refs(named, PLAN)["issues"] == []
 
 
+def test_kpi_tiles_lose_border_radius_other_cards_keep_it():
+    xml = slide(tile(0, extra=' borderRadius="12"') + tile(1, note=False) + tile(2, extra=' borderRadius="8"')
+                + '<VStack backgroundColor="$surfaceAlt" borderRadius="12"><Text>Takeaway</Text></VStack>')
+    out = E.fill_refs(xml, PLAN)["xml"]
+    assert out.count("borderRadius") == 1 and 'borderRadius="12"><Text>Takeaway' in out
+
+
 def test_already_filled_values_count_as_placed():
     """A repaired slide comes back filled (no refs): its values are not 'missing'."""
     filled = E.fill_refs(full(), PLAN)["xml"]
@@ -285,11 +292,11 @@ def test_prompt_line_has_ids_lengths_focus_and_no_values():
 
 def test_mode_reads_pom_blocks(monkeypatch):
     monkeypatch.delenv("POM_BLOCKS", raising=False)
+    assert E.mode() == "kpi"   # the default since 2026-10-11
+    monkeypatch.setenv("POM_BLOCKS", "off")
     assert E.mode() == "off"
-    monkeypatch.setenv("POM_BLOCKS", "kpi")
-    assert E.mode() == "kpi"
     monkeypatch.setenv("POM_BLOCKS", "slots")
-    assert E.mode() == "off"
+    assert E.mode() == "kpi"
 
 
 def _gen_state():

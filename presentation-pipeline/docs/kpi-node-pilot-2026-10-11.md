@@ -379,3 +379,15 @@ Deck level (vs q1008, the same 4 cases): cost $1.13 vs $1.11; first pass 22 / 25
 the LLM typed literal colours with an alpha channel (`7B3FE41A`, 8 digits), POM rejects them, the slide was not
 retried and the deck shows "Slide could not be generated" (also a ZIP-level merge, so `pptx_merge`'s media-name
 bug can show wrong icons in that deck). Normalizer fix proposed separately.
+
+## 11. Decision: refs on by default, square KPI tiles, alpha colours (user, 2026-10-11)
+
+- **`POM_BLOCKS` defaults to `kpi`** (`element_refs.mode()`): every `kpi_row` goes through element refs.
+  `POM_BLOCKS=off` gives the old route; any other value reads as `kpi`.
+- **KPI tiles have square corners** (user: so the KPI tiles read apart from the slide's other cards): `fill_refs`
+  drops `borderRadius` from each value's tile (the nearest stack with a fill or border). Callouts, chart and table
+  cards keep theirs. `docs/eval/kpi-node/decks/kpi-slides-square.png`: the 4 KPI slides of §10, recompiled
+  (right column = refs, square tiles).
+- **8-digit literal colours** (the §10 CHEFFIN cover): normalizer `ALPHA_COLOR_BLENDED` blends `RRGGBBAA` on a
+  `*color` / `fill` attribute onto white (`7B3FE41A` → `F2EBFC`). The saved cover now compiles (it failed before).
+- Unit tests 916 pass + the 4 known failures.
