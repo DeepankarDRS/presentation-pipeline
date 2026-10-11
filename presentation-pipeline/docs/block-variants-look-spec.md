@@ -149,6 +149,8 @@ node. Reference implementation: `tokens()` in `scripts/variant_gallery.py` (beco
 
 ## 4. KPI row
 
+> **Superseded for the KPI pilot (2026-10-11, D13):** the LLM composes KPI tiles itself and places content by element ref (`docs/kpi-node-pilot-2026-10-11.md`). The variants below are not built; the colour roles, number caps (V2), tones (§4a) and the value parser (V15) carry over as code's part. Colour never comes from a variant.
+
 Content: `kpi_labels`, `kpi_values`, `kpi_deltas` (note or change, may be null), `kpi_directions`.
 Tile anatomy, top to bottom: label → number → note. The note is shown only when the plan has one.
 The note colour follows `kpi_directions` and house-style `color_roles` (negative = losses / risks,
