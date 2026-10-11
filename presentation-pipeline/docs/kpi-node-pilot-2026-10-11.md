@@ -374,7 +374,7 @@ rows beside a chart, a strip. Weak: CHEFFIN 4's last row of 3 does not fill the 
 (`LOW_CONTRAST` 2). KPI slides first try 3 / 4: all-nodes put the refs and an `Icon` inside a `<Text>`
 (`INVALID_CHILD`, repaired).
 
-Deck level (vs q1008, the same 4 cases): cost $1.13 vs $1.11; first pass 22 / 25 vs 25 / 25; word breaks 12 vs 9
+Deck level (vs q1008, the same 4 cases): cost $1.13 vs $1.11; first pass 22 / 25 vs 25 / 25; word breaks 12 vs 8
 (9 of the 12 on all-nodes slide 3, a non-KPI slide). **Not from the refs:** the CHEFFIN cover did not compile —
 the LLM typed literal colours with an alpha channel (`7B3FE41A`, 8 digits), POM rejects them, the slide was not
 retried and the deck shows "Slide could not be generated" (also a ZIP-level merge, so `pptx_merge`'s media-name
