@@ -43,6 +43,7 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Paid eval, bundle for email (test device) | `python -m scripts.eval_run gj-h1-regen --repeat 1 --label <label> --bundle` (no case names = the 12-case gate) |
 | Where a deck loses the brief's headlines / numbers (saved runs, no API) | `python -m scripts.eval_lineage <run zips> --case tests/cases/<case>.yaml` (north-star Appendix C) |
 | Planning-only runs of the Test 1 path + scoring (paid; `--rescore` is free) | `python -m scripts.plan_only <cases> --repeat 1 --label <label> --bundle` |
+| How the slide component planner groups a slide's numbers into kpi_rows (main graph, planners only; paid, `--rescore` free) | `python -m scripts.kpi_plan_only --repeat 3 --label kpi-plans --bundle` — `output/kpi-plans/<label>/summary.md` |
 | LLM deck vs code-composer deck on the same runs (paid run, compose is free) | `python -m scripts.eval_run deck-qbr-data gate-deck-agency-takeover --repeat 1 --label longrun --compose --bundle` — `decks/<case>__rN/` holds `llm.pptx`, `composed.pptx`, `slides.json` (also in the bundle); one run folder: `python -m scripts.phase0b.compose_deck output/runs/<run_id>` (needs Pillow) |
 
 Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-10-04: 556 pass, 4 fail; 2026-10-11: 839 pass before the KPI pilot — not regressions):
