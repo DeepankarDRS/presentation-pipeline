@@ -1,0 +1,24 @@
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="28" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="10">
+      <Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">EXECUTIVE SUMMARY</Text>
+      <Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15">The account is spending at scale, but not yet buying profitable demand.</Text>
+    </VStack>
+    <VStack gap="24" grow="3">
+      <KpiGrid ref="combined_kpi_scorecard" layout="row" cols="3">
+        <Kpi ref="combined_kpi_scorecard.0"/>
+        <Kpi ref="combined_kpi_scorecard.1"/>
+        <Kpi ref="combined_kpi_scorecard.2" variant="inverted" size="hero"/>
+      </KpiGrid>
+      <VStack padding="24" gap="16" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" shadow.blur="6" shadow.offset="2" shadow.color="000">
+        <KpiGrid ref="platform_roas_tiles" layout="row" cols="2">
+          <Kpi ref="platform_roas_tiles.0" color="$negative" variant="filled"/>
+          <Kpi ref="platform_roas_tiles.1" color="$negative" variant="filled"/>
+        </KpiGrid>
+      </VStack>
+    </VStack>
+    <VStack grow="1" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" padding="32" gap="14" shadow.blur="6" shadow.offset="2" shadow.color="000">
+      <Text fontSize="18" color="$textMain" lineHeight="1.4">Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR. <Span color="$accentText" bold="true">"This is a media economics problem, not just a campaign hygiene problem."</Span></Text>
+    </VStack>
+  </VStack>
+</Slide>
