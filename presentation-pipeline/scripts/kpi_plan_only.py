@@ -4,7 +4,7 @@
 
 Runs the real graph (outline planner -> slide component planner -> plan reviewer) for each case and stops
 before the style resolver, so no slide is generated (paid: the planners only). Per KPI slide it records the
-kpi_row components (id, weight, items, design hint), whether the numbers were split into several groups,
+kpi_row components (id, weight, items with their kpi_tones, design hint), whether the numbers were split into several groups,
 numbers placed in two groups, and numbers of the slide's key_messages that no component carries.
 
 Writes output/kpi-plans/<label>/: runs.json (every run's slide plans), summary.md. --bundle zips the folder
@@ -91,6 +91,7 @@ def kpi_slides(run: dict[str, Any]) -> list[dict[str, Any]]:
             vals = [str(v) for v in cd.get("kpi_values") or []]
             groups.append({"id": c.get("component_id"), "weight": c.get("weight"), "n": len(vals),
                            "labels": [str(x) for x in cd.get("kpi_labels") or []], "values": vals,
+                           "tones": [str(x) for x in cd.get("kpi_tones") or []],
                            "hint": (c.get("design_hint") or "")[:160]})
             for v in vals:
                 if _num(v) in seen and seen[_num(v)] != c.get("component_id"):
@@ -123,7 +124,9 @@ def summary(runs: list[dict[str, Any]]) -> str:
     for r, s in slides:
         lines.append(f"**{r['case']} r{r['repeat']} slide {s['slide']}** — {s['title']}")
         for x in s["groups"]:
-            lines.append(f"- `{x['id']}` {x['weight']}: " + ", ".join(f"{a} {b}" for a, b in zip(x["labels"], x["values"]))
+            tones = x.get("tones") or [""] * len(x["values"])
+            lines.append(f"- `{x['id']}` {x['weight']}: " + ", ".join(f"{a} {b}" + (f" [{t}]" if t else "")
+                                                                   for a, b, t in zip(x["labels"], x["values"], tones))
                          + (f" — _{x['hint']}_" if x["hint"] else ""))
         lines.append("")
     return "\n".join(lines)

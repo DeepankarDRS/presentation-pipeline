@@ -5,6 +5,8 @@
     python -m scripts.kpi_paid --label dry --dry                           # free: a fake generator answers with
                                                                            # today's XML mapped to refs (path check)
     python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label tiles-paid --bundle   # tile nodes (spec §8 step 5)
+    python -m scripts.kpi_plan_only deck-qbr-data gate-deck-cheffin-full --repeat 3 --label p3   # then arm B on
+    python -m scripts.kpi_paid --blocks tiles --arm-a kpi --plans p3 --repeat 3 --label tiles-paid-3   # fresh plans
     python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label <copy> --rescore --refill   # free: tile code
                                                     # changes on saved runs (B expanded again from first.xml)
 
@@ -121,15 +123,41 @@ class _FakeLLM:
         return SimpleNamespace(content=self.xml, response_metadata={"finish_reason": "stop", "model_name": "dry"})
 
 
-def run(label: str, repeat: int, dry: bool = False) -> None:
+def _kpi_labels(plan: dict) -> set[str]:
+    return {str(lbl).strip().lower() for c in kpi_components(plan).values()
+            for lbl in (c.get("content_data") or {}).get("kpi_labels") or []}
+
+
+def fresh_plan(plans: list[dict], it: dict, r: int) -> dict | None:
+    """--plans: the planner run's plan of the saved item's slide (repeat r, else r1): the slide whose kpi_row labels
+    overlap the saved plan's most (a tie: the same slide_index); None when no slide shares a KPI label."""
+    runs = [x for x in plans if x.get("case") == it["case"]]
+    run_ = next((x for x in runs if x.get("repeat") == r), runs[0] if runs else None)
+    want, idx = _kpi_labels(it["plan"]), it["plan"].get("slide_index")
+    scored = [(len(want & _kpi_labels(p)), p.get("slide_index") == idx, p) for p in (run_ or {}).get("slide_plans") or []]
+    best = max(scored, key=lambda t: (t[0], t[1]), default=None)
+    return best[2] if best and best[0] else None
+
+
+def run(label: str, repeat: int, dry: bool = False, plans: str | None = None) -> None:
     out = OUT / label
     items = json.loads(INPUTS.read_text(encoding="utf-8"))
+    fresh = json.loads((ROOT / "output" / "kpi-plans" / plans / "runs.json").read_text(encoding="utf-8")) if plans else None
     results = []
     for r in range(1, repeat + 1):
         for it in items:
             name = f"{it['case']}-s{it['slide']}"
             rid = f"kpi-{name}-r{r}-{int(time.time())}"
             print(f"run {name} r{r} ...", flush=True)
+            if fresh is not None:   # this slide planned again (kpi_plan_only); scored against that plan
+                plan = fresh_plan(fresh, it, r)
+                if plan is None:
+                    print("  skipped: the planner run has no slide with these KPI labels", flush=True)
+                    continue
+                it = {**it, "plan": plan}
+                (out / "B" / f"{name}-r{r}").mkdir(parents=True, exist_ok=True)
+                (out / "B" / f"{name}-r{r}" / "plan.json").write_text(json.dumps(plan, indent=1, ensure_ascii=False),
+                                                                     encoding="utf-8")
             try:
                 if dry:
                     from scripts.kpi_replay import map_refs
@@ -172,6 +200,9 @@ def rescore(label: str, render: bool = True, arm_a: str = "today", refill: bool 
             row["A"] = score("A", a_dir, compile_slide(it["xml_today"], theme, a_dir), it["plan"], row["case"], render)
         xml = (out / "B" / row["case"] / "final.xml").read_text(encoding="utf-8")
         first = out / "B" / row["case"] / "first.xml"
+        plan_file = out / "B" / row["case"] / "plan.json"   # --plans: arm B's own plan
+        if plan_file.exists():
+            it = {**it, "plan": json.loads(plan_file.read_text(encoding="utf-8"))}
         if refill and first.exists() and row.get("validator_passes") == 1:   # this commit's tile expansion of the
             from src.compiler.nodes import tiles                              # LLM's own XML (no repair ran)
             xml = tiles.fill(first.read_text(encoding="utf-8"), it["plan"])["xml"]
@@ -251,6 +282,8 @@ def main() -> int:
     ap.add_argument("--blocks", choices=("kpi", "tiles"), default="kpi", help="POM_BLOCKS for arm B")
     ap.add_argument("--arm-a", choices=("today", "kpi"), default="today",
                     help="arm A: q1008's XML (today) or the 2026-10-11 element-ref slides (kpi)")
+    ap.add_argument("--plans", help="paid run: arm B on the slide plans of output/kpi-plans/<label>/runs.json "
+                    "(python -m scripts.kpi_plan_only), matched to each saved slide by its KPI labels")
     ap.add_argument("--refill", action="store_true",
                     help="--rescore: expand arm B again from the LLM's first.xml on this commit (runs with no repair)")
     a = ap.parse_args()
@@ -266,7 +299,7 @@ def main() -> int:
             print("OPENAI_API_KEY is not set (.env): the paid check runs on the test PC")
             return 2
         shutil.rmtree(OUT / a.label, ignore_errors=True)
-        run(a.label, a.repeat)
+        run(a.label, a.repeat, plans=a.plans)
     rescore(a.label, render=not a.no_render, arm_a=a.arm_a, refill=a.refill)
     if a.bundle:
         print(bundle(a.label))
