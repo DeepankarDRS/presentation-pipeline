@@ -1,0 +1,22 @@
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="28" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="10">
+      <Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">FLIPCART SNAPSHOT</Text>
+      <Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15">FLIPCART is generating traffic, but at <Span color="$accentText">weak revenue efficiency</Span>.</Text>
+    </VStack>
+    <VStack gap="0" grow="3">
+      <KpiGrid ref="flipkart_kpis">
+        <Kpi ref="flipkart_kpis.0"/>
+        <Kpi ref="flipkart_kpis.1"/>
+        <Kpi ref="flipkart_kpis.2"/>
+        <Kpi ref="flipkart_kpis.3" color="$warning"/>
+        <Kpi ref="flipkart_kpis.4"/>
+        <Kpi ref="flipkart_kpis.5"/>
+        <Kpi ref="flipkart_kpis.6" color="$positive"/>
+      </KpiGrid>
+    </VStack>
+    <VStack padding="28" gap="10" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" shadow.type="outer" shadow.blur="6" shadow.offset="2" margin.top="6">
+      <Text fontSize="18" color="$textMain" lineHeight="1.4">FLIPCART’s CPC is <Span color="$warningText">almost 3x higher</Span> than the CPC the current AOV and CVR can support.</Text>
+    </VStack>
+  </VStack>
+</Slide>

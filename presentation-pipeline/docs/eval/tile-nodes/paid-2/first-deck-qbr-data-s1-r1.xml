@@ -1,0 +1,12 @@
+<Slide>
+  <VStack w="1280" h="720" padding="48" gap="32" alignItems="stretch" backgroundColor="$surface">
+    <VStack gap="10">
+      <Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">EXECUTIVE SUMMARY</Text>
+      <Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15"><Span color="$accent">ARR</Span> grew to $48.2M while margin softened</Text>
+      <Text fontSize="18" color="$textMuted">Q3 FY26 vs Q2 FY26</Text>
+    </VStack>
+    <VStack grow="1" alignItems="stretch" justifyContent="center">
+      <KpiGrid ref="kpi_metrics"/>
+    </VStack>
+  </VStack>
+</Slide>
