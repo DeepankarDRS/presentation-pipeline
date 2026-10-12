@@ -102,3 +102,34 @@ def test_a_row_with_no_height_to_spare_stays_a_row(tmp_path, monkeypatch):
     filler = '<VStack h="330" backgroundColor="$surfaceAlt"><Text fontSize="18" color="$textMain">Chart</Text></VStack>'
     on = _tiles_slide(tmp_path, '<KpiGrid ref="kpis"/>', filler)
     assert not any("two rows" in r for r in on["fitGrow"]), on["fitGrow"]
+
+
+def test_a_large_hero_grows_after_the_other_kpi_numbers(tmp_path, monkeypatch):
+    """Paid check 2, CHEFFIN 1 r1 (the LLM's XML): with the platform tiles drawn bare on the LLM's panel the
+    hero took the freed height (72 -> 99 px) and the platform row stayed at 28 px; it now goes last."""
+    import json
+
+    from scripts.kpi_replay import compile_slide
+    from src.agents.style_resolver import resolve_theme
+    from src.compiler.nodes import tiles
+    monkeypatch.setenv("POM_BLOCKS", "tiles")
+    it = next(i for i in json.loads((_FIT.parents[2] / "docs" / "eval" / "kpi-node" / "paid-inputs.json")
+                                    .read_text(encoding="utf-8")) if i["case"] == "gate-deck-cheffin-full" and i["slide"] == 1)
+    llm = ('<Slide><VStack w="1280" h="720" padding="48" gap="28" alignItems="stretch" backgroundColor="$surface">'
+           '<VStack gap="10"><Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">EXECUTIVE SUMMARY</Text>'
+           '<Text fontSize="36" color="$textMain" bold="true" lineHeight="1.15">The account is spending at scale, but not '
+           'yet buying profitable demand.</Text></VStack>'
+           '<VStack gap="22" grow="3"><KpiGrid ref="combined_kpi_scorecard">'
+           '<Kpi ref="combined_kpi_scorecard.2" variant="inverted" size="hero" /></KpiGrid>'
+           '<VStack padding="20" gap="14" backgroundColor="$negativeSoft" borderRadius="12" border.color="$border" '
+           'border.width="1"><KpiGrid ref="platform_roas_tiles"><Kpi ref="platform_roas_tiles.0" color="$negative" '
+           'variant="filled" /><Kpi ref="platform_roas_tiles.1" color="$negative" variant="filled" /></KpiGrid></VStack>'
+           '</VStack><VStack grow="1" backgroundColor="$surfaceAlt" padding="32" gap="14" borderRadius="12">'
+           '<Text fontSize="18" color="$textMain" lineHeight="1.4">Both platforms show the same structural issue: CPC is '
+           'too high relative to AOV and CVR.</Text></VStack></VStack></Slide>')
+    res = compile_slide(tiles.fill(llm, it["plan"])["xml"], resolve_theme(it["theme"])["element"], tmp_path)["res"]
+    assert res["status"] == "success"
+    xml = (tmp_path / "fitted.xml").read_text(encoding="utf-8")
+    size = lambda cid: [int(v) for v in re.findall(rf'fontSize="(\d+)"[^>]*id="kpi[vh]\d-{cid}-\d"', xml)]
+    assert min(size("platform_roas_tiles")) >= 50, (size("platform_roas_tiles"), res["fitGrow"])   # was 28-29
+    assert max(size("platform_roas_tiles")) <= max(size("combined_kpi_scorecard")), res["fitGrow"]

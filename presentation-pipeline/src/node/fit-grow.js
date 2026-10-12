@@ -984,7 +984,10 @@ async function growStats(xml, report) {
   // larger than the numbers of a component the plan weights higher (paid check run 3: the "peer" row of two
   // tiles grew to 92 px under the "hero" row at 72); a content-sized group no larger than the slide's other
   // KPI numbers either. A hero stat (size="hero") is the plan's focus and keeps its own cap.
-  groups.sort((a, b) => (a.rank ?? 9) - (b.rank ?? 9) || (a.free ? 1 : 0) - (b.free ? 1 : 0));
+  // A hero already drawn large that would take the slide's spare height goes last: the other KPI numbers get it
+  // first (CHEFFIN 1 tiles: with the platform tiles' padding gone the hero took 72 -> 99 px, the row stayed 28).
+  const late = (g) => (g.hero && g.free && g.f0 >= HERO_MIN ? 1 : 0);
+  groups.sort((a, b) => late(a) - late(b) || (a.rank ?? 9) - (b.rank ?? 9) || (a.free ? 1 : 0) - (b.free ? 1 : 0));
   for (const g of groups) {
     if (g.ref && !g.hero) {
       const sizes = (higher) => [...xml.matchAll(/<Text\b[^>]*>/g)].map((m) => m[0]).flatMap((t) => {

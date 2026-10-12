@@ -116,6 +116,23 @@ def test_own_color_on_a_plain_tile_draws_toned():
     assert 'borderLeft.color="$warning"' in bar and "$warningSoft" not in bar
 
 
+def test_tiles_on_the_llms_panel_of_their_colour_draw_bare():
+    # paid check 2, CHEFFIN 1: filled $negative tiles vanished into the LLM's own $negativeSoft panel
+    panel = '<VStack padding="20" backgroundColor="$negativeSoft">{}</VStack>'
+    for kpi in ('<Kpi ref="more.0" color="$negative" variant="filled"/>', '<Kpi ref="more.0" color="$negative"/>'):
+        xml = run(panel.format(f'<KpiGrid ref="more">{kpi}</KpiGrid>'), PLAN2)["xml"]
+        tile = tile_of(xml, 0, "more")
+        assert 'padding="0"' in tile and "backgroundColor" not in tile and "border" not in tile, tile
+        assert 'color="$negativeText"' in value_of(xml, 0, "more")   # the number keeps its colour
+        assert 'backgroundColor="$surfaceAlt"' in tile_of(xml, 1, "more")   # a plain tile shows on the panel
+    # an item placed outside a group, on its panel, too; the slide's own background is no panel
+    xml = run(panel.format('<Kpi ref="kpis.1" variant="filled" color="$negative"/>'))["xml"]
+    assert 'padding="0"' in tile_of(xml, 1)
+    xml = T.fill('<Slide><VStack w="1280" h="720" backgroundColor="$surface"><KpiGrid ref="kpis" variant="dot"/></VStack></Slide>',
+                 PLAN)["xml"]
+    assert 'backgroundColor="$surface"' in tile_of(xml, 0)
+
+
 def test_dot_draws_a_marker_and_bare_has_no_tile_fill():
     dot = run('<KpiGrid ref="kpis" variant="dot"/>')["xml"]
     assert dot.count('<Shape shapeType="ellipse" w="8" h="8"') == 4

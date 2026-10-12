@@ -210,8 +210,9 @@ def _row(lead: etree._Element | None, label: etree._Element | None, gap: int) ->
 
 
 def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tuple[dict, _Layer, _Layer] | None,
-               flag) -> etree._Element:
-    """One item's tile, its layers resolved (house -> group variant -> group attrs -> item variant -> item attrs)."""
+               flag, panel: str | None = None) -> etree._Element:
+    """One item's tile, its layers resolved (house -> group variant -> group attrs -> item variant -> item attrs).
+    `panel`: the fill of the LLM's own box around the tag (panel_fill)."""
     cid = comp["component_id"]
     ref = f"{cid}.{i}"
     gmeta, gparts = group if group else ({}, _Layer())
@@ -241,6 +242,13 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
         for p, a in layer.parts.items():
             parts[p].update(a)
     # part colours may name {role} only through the looks; an LLM value is a token already
+    if panel and box.get("backgroundColor") == panel:
+        # on the LLM's own panel of the same colour the panel is the tile: no fill, border or padding of its own
+        # (paid check 2, CHEFFIN 1: filled $negative tiles vanished into a $negativeSoft panel and its padding
+        # and theirs kept the row's numbers at 28 px)
+        for k in [k for k in box if k == "backgroundColor" or k.startswith("border")]:
+            del box[k]
+        box["padding"] = "0"
     arranges = kpi()["item_attributes"]["arrange"]["values"]
     arrange = (_choice("arrange", imeta.get("arrange"), arranges, ref, flag)
                or _choice("arrange", gmeta.get("arrange"), arranges, ref, flag) or arranges[0])
@@ -295,6 +303,16 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
         if el is not None:
             tile.append(el)
     return tile
+
+
+def panel_fill(el: etree._Element) -> str | None:
+    """The backgroundColor of the nearest filled box the LLM put around a tile tag (not the slide's root)."""
+    for p in el.iterancestors():
+        if p.tag == "Slide" or p.getparent() is None or p.getparent().tag == "Slide":
+            return None
+        if p.get("backgroundColor"):
+            return p.get("backgroundColor")
+    return None
 
 
 # ── a group ───────────────────────────────────────────────────────────────────
@@ -434,7 +452,8 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
             overrides[key[1]] = _read(child, ITEM_META, flag)
         n = len(element_refs._list(comp, "kpi_values"))
         mine = [i for i in range(n) if (cid, i) not in outside]
-        tiles = [build_tile(comp, i, (gmeta, gparts), overrides.get(i), flag) for i in mine]
+        panel = panel_fill(g)
+        tiles = [build_tile(comp, i, (gmeta, gparts), overrides.get(i), flag, panel) for i in mine]
         drawn[cid].update(mine)
         if not tiles:
             g.getparent().remove(g)
@@ -444,7 +463,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         g.getparent().replace(g, new)
     for (cid, i), el in outside.items():
         meta, box, parts = _read(el, ITEM_META, flag)
-        tile = build_tile(comps[cid], i, None, (meta, box, parts), flag)
+        tile = build_tile(comps[cid], i, None, (meta, box, parts), flag, panel_fill(el))
         tile.tail = el.tail
         el.getparent().replace(el, tile)
         drawn[cid].add(i)
