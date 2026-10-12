@@ -68,42 +68,10 @@ SIZING: POM's flexbox allocates - never add up pixel heights. VStack child: full
   width by stretch, grow="N" = share of the spare height, else content height.
   HStack child: w="max" / w="62%" / grow="2" = width share. h="max" minH fills a card.
 
-{% if core_hook %}
-## NARRATIVE ANCHOR
-{{ core_hook }}
-Frame this slide's content to support the narrative above.
-{% endif %}
-{% if slide_type %}
-
-## SLIDE TYPE: {{ slide_type | upper }}
-{% if slide_type == "cover" %}
-Cover slide - one big statement, minimal elements, no charts or tables.
-Root <HStack w="1280" h="720" alignItems="stretch" backgroundColor="$surface">: a left
-<VStack grow="1" padding="72" gap="20" justifyContent="center"> with an optional kicker (16, $accentText,
-letterSpacing 3), the title (fontSize 56-60 bold, left-aligned), a short accent bar
-(<Shape shapeType="rect" w="96" h="6" fill.color="$accent" />) and the subtitle (26, $textMuted);
-a right <VStack w="400" padding="56" backgroundColor="$accent" justifyContent="end"> holding one short
-token from the title (the period or the company, fontSize 96-120 bold, color="$onAccent"). Never centre
-small text in the middle of an empty slide.
-{% elif slide_type == "content" %}
-Content slide - narrative focus with title + body text or bullets.
-Readable fonts. Tell the story, don't overwhelm with data.
-{% elif slide_type == "data" %}
-Data slide - charts, tables, KPIs are the star. Title frames the data.
-Can be dense. Charts fill their card (h="max" minH) and axis labels stay readable.
-{% elif slide_type == "section_break" %}
-Section break - minimal divider page. One short phrase, large centered text.
-Use accent color prominently. Very sparse - almost empty slide.
-fontSize 36-48 for the text, centered vertically and horizontally.
-{% elif slide_type == "closing" %}
-Closing slide - wrap up with key takeaways or call-to-action.
-Bullet list of 3-5 summary points, or a strong closing statement.
-Display or standard fonts.
-{% endif %}
-{% endif %}
-
+{# Cache order (docs/tile-nodes-spec-2026-10-12.md §5): everything above "## THIS SLIDE" is the same for
+   every slide of a deck (static rules, then the deck's theme and narrative), so the provider caches it
+   as a shared prefix; everything that varies per slide comes after it. tests/unit/test_generator_cache_order.py #}
 ## DESIGN ELEMENTS (every slide except cover and section_break)
-{% if slide_type not in ('cover', 'section_break') %}
 1. **Header**: draw the HEADER from the user prompt exactly as written. When it has a kicker,
    the FIRST element inside the header band is that kicker, in uppercase:
    `<Text fontSize="14" color="$accentText" bold="true" letterSpacing="2">KICKER TEXT</Text>`
@@ -118,25 +86,12 @@ Display or standard fonts.
    Never make up a source or a date.
 4. **Nothing you cannot draw**: no placeholder shapes (circles, boxes, "image here") for a visual
    the plan does not give you - leave it out.
-{% else %}
 Cover and section_break slides: skip kicker, card shells, and source line. No placeholder
 shapes (circles, boxes, "image here") for visuals the plan does not give you.
-{% endif %}
-
-## THEME (reference only - do NOT emit this element)
-The pipeline injects the single top-level <Theme> automatically. Use the token
-names below as $tokenName references in color attributes; never output <Theme>.
-{{ theme_element }}
-
-## ALLOWED NODES
-{{ allowed_nodes | join(', ') }}
 {% if icon_names %}
-Icon names (unknown names are removed; no brand logos): {{ icon_names }}
-{% endif %}
-{% if node_hierarchy %}
 
-## NODE HIERARCHY (valid parent -> children)
-{{ node_hierarchy }}
+## ICON NAMES
+Icon names (unknown names are removed; no brand logos): {{ icon_names }}
 {% endif %}
 
 ## LAYOUT FUNDAMENTALS
@@ -172,10 +127,6 @@ Color tokens:
   $surface=background  $surfaceAlt=cards  $accent=anchors  $textMain=headings
   $textMuted=labels  $positive=good  $negative=bad  $border=outlines (subtle gray)
 {% endif %}
-## ALLOWED ATTRIBUTES PER NODE
-{% for node, attrs in allowed_attributes.items() %}
-  <{{ node }}>: {{ attrs | join(', ') }}
-{% endfor %}
 {% if house_style %}
 
 ## LAYOUT GRAMMAR
@@ -187,7 +138,70 @@ SIZING) -> fill with content.
 {% endif %}
 {% if nodes %}
 {% include "nodes_rules.j2" %}
-{% elif component_recipes %}
+{% endif %}
+
+## THEME (reference only - do NOT emit this element)
+The pipeline injects the single top-level <Theme> automatically. Use the token
+names below as $tokenName references in color attributes; never output <Theme>.
+{{ theme_element }}
+{% if core_hook %}
+
+## NARRATIVE ANCHOR
+{{ core_hook }}
+Frame this slide's content to support the narrative above.
+{% endif %}
+{% if deck_notes %}
+
+## NOTES
+{% for note in deck_notes %}
+- {{ note }}
+{% endfor %}
+{% endif %}
+
+## THIS SLIDE
+Everything below is about the slide you are building now.
+{% if slide_type %}
+
+## SLIDE TYPE: {{ slide_type | upper }}
+{% if slide_type == "cover" %}
+Cover slide - one big statement, minimal elements, no charts or tables.
+Root <HStack w="1280" h="720" alignItems="stretch" backgroundColor="$surface">: a left
+<VStack grow="1" padding="72" gap="20" justifyContent="center"> with an optional kicker (16, $accentText,
+letterSpacing 3), the title (fontSize 56-60 bold, left-aligned), a short accent bar
+(<Shape shapeType="rect" w="96" h="6" fill.color="$accent" />) and the subtitle (26, $textMuted);
+a right <VStack w="400" padding="56" backgroundColor="$accent" justifyContent="end"> holding one short
+token from the title (the period or the company, fontSize 96-120 bold, color="$onAccent"). Never centre
+small text in the middle of an empty slide.
+{% elif slide_type == "content" %}
+Content slide - narrative focus with title + body text or bullets.
+Readable fonts. Tell the story, don't overwhelm with data.
+{% elif slide_type == "data" %}
+Data slide - charts, tables, KPIs are the star. Title frames the data.
+Can be dense. Charts fill their card (h="max" minH) and axis labels stay readable.
+{% elif slide_type == "section_break" %}
+Section break - minimal divider page. One short phrase, large centered text.
+Use accent color prominently. Very sparse - almost empty slide.
+fontSize 36-48 for the text, centered vertically and horizontally.
+{% elif slide_type == "closing" %}
+Closing slide - wrap up with key takeaways or call-to-action.
+Bullet list of 3-5 summary points, or a strong closing statement.
+Display or standard fonts.
+{% endif %}
+{% endif %}
+
+## ALLOWED NODES
+{{ allowed_nodes | join(', ') }}
+{% if node_hierarchy %}
+
+## NODE HIERARCHY (valid parent -> children)
+{{ node_hierarchy }}
+{% endif %}
+
+## ALLOWED ATTRIBUTES PER NODE
+{% for node, attrs in allowed_attributes.items() %}
+  <{{ node }}>: {{ attrs | join(', ') }}
+{% endfor %}
+{% if component_recipes and not nodes %}
 
 ## COMPONENT RECIPES
 {{ component_recipes }}
@@ -240,7 +254,7 @@ A component may carry a `visual-intent` and a `scope` (its allowed treatments). 
 When no visual-intent is given, use default rendering — no embellishment needed.
 {% endif %}
 
-## NOTES
-{% for note in notes %}
+## {{ "NOTES FOR THIS SLIDE" if deck_notes else "NOTES" }}
+{% for note in notes if note not in (deck_notes or []) %}
 - {{ note }}
 {% endfor %}

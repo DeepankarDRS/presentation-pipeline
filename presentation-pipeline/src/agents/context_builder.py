@@ -586,6 +586,9 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     notes = _select_notes(
         kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
     )
+    # the notes no component kind adds are the same on every slide of a deck: the generator puts them in
+    # the cached prefix of its system prompt, the rest after "## THIS SLIDE" (tile-nodes spec §5)
+    deck_notes = _select_notes([], validation, text_yaml, {}, theme, has_grammar=has_grammar)
     house_style = _render_house_style() + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n" + layout_rules()
     component_recipes = _render_component_recipes(
         [_recipe_kind(c) for c in slide_plan.get("components", [])])
@@ -640,6 +643,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "theme_mode": theme["mode"],
         "chart_colors": theme["chart_colors"],
         "notes": notes,
+        "deck_notes": deck_notes,
         "house_style": house_style,
         "component_recipes": component_recipes,
         "golden_examples": golden_examples,

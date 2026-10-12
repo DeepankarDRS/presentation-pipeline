@@ -50,6 +50,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         golden_examples=contract.get("golden_examples", ""),
         blueprint_structure=contract.get("blueprint_structure", ""),
         blueprint_reference_xml=contract.get("blueprint_reference_xml", ""),
+        deck_notes=contract.get("deck_notes", []),
         notes=contract.get("notes", []),
         visual_intent_techniques=contract.get("visual_intent_techniques", ""),
         icon_names=contract.get("icon_names", ""),
