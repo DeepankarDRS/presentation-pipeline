@@ -102,8 +102,7 @@ def extract_usage(response) -> dict[str, Any]:
     """Extract tokens_in, tokens_out, tokens_reasoning, tokens_cached, model from an AIMessage's metadata.
 
     tokens_out already includes tokens_reasoning (OpenAI bills them as output) and tokens_in
-    already includes tokens_cached (billed at a discount), so cost stays tokens_in / tokens_out;
-    tokens_reasoning and tokens_cached are for reading only.
+    already includes tokens_cached, which the evaluator bills at the model's `cached_input` rate.
     """
     meta = getattr(response, "response_metadata", None) or {}
     token_usage = meta.get("token_usage") or {}
@@ -158,7 +157,7 @@ def _clean_strings(obj: Any) -> Any:
 
 
 def get_pricing(model: str) -> dict[str, float]:
-    """Return {input, output} cost per 1M tokens for a model name."""
+    """Return {input, output[, cached_input]} cost per 1M tokens for a model name."""
     cfg = _load_models_config()
     pricing = cfg.get("pricing") or {}
     if model in pricing:

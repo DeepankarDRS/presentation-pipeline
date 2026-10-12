@@ -32,10 +32,13 @@ logger = logging.getLogger(__name__)
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-def _compute_cost(tokens_in: int, tokens_out: int, model: str) -> float:
-    """Compute cost in dollars from token counts and model pricing."""
+def _compute_cost(tokens_in: int, tokens_out: int, model: str, tokens_cached: int = 0) -> float:
+    """Compute cost in dollars from token counts and model pricing. `tokens_cached` is the part of
+    tokens_in served from the provider's prompt cache, billed at `cached_input` (else at `input`)."""
     pricing = get_pricing(model)
-    cost_in = (tokens_in / 1_000_000) * pricing.get("input", 0.0)
+    cached = min(max(tokens_cached or 0, 0), tokens_in)
+    cost_in = ((tokens_in - cached) / 1_000_000) * pricing.get("input", 0.0) \
+        + (cached / 1_000_000) * pricing.get("cached_input", pricing.get("input", 0.0))
     cost_out = (tokens_out / 1_000_000) * pricing.get("output", 0.0)
     return round(cost_in + cost_out, 6)
 
@@ -72,7 +75,7 @@ def _build_step_summary(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
         tokens_in = record.get("tokens_in", 0)
         tokens_out = record.get("tokens_out", 0)
         model = record.get("model", "unknown")
-        cost = _compute_cost(tokens_in, tokens_out, model)
+        cost = _compute_cost(tokens_in, tokens_out, model, record.get("tokens_cached", 0))
 
         steps.append({
             "step": record.get("step", "unknown"),
@@ -221,7 +224,7 @@ def evaluator_node(state: PresentationState) -> dict[str, Any]:
     models_used = list({r.get("model", "unknown") for r in history})
     primary_model = models_used[0] if models_used else "unknown"
     total_cost = sum(
-        _compute_cost(r.get("tokens_in", 0), r.get("tokens_out", 0), r.get("model", "unknown"))
+        _compute_cost(r.get("tokens_in", 0), r.get("tokens_out", 0), r.get("model", "unknown"), r.get("tokens_cached", 0))
         for r in history
     )
 

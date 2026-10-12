@@ -51,6 +51,16 @@ def test_compute_cost_zero_tokens():
     assert cost == 0.0
 
 
+def test_compute_cost_bills_cached_input_at_the_cached_rate():
+    # 11 Oct paid check, one generator call: 11,290 in (11,136 cached), 869 out on gpt-4.1
+    cost = _compute_cost(11_290, 869, "gpt-4.1-2025-04-14", tokens_cached=11_136)
+    assert cost == round(154 * 2.00 / 1e6 + 11_136 * 0.50 / 1e6 + 869 * 8.00 / 1e6, 6)
+    assert cost < _compute_cost(11_290, 869, "gpt-4.1-2025-04-14")
+    # no cached rate -> the input rate; cached never above tokens_in
+    assert _compute_cost(1000, 0, "totally-unknown-model", 500) == 0.0
+    assert _compute_cost(1_000_000, 0, "gpt-4.1", tokens_cached=5_000_000) == 0.5
+
+
 # ── Step summary ─────────────────────────────────────────────────────────
 
 def test_build_step_summary():

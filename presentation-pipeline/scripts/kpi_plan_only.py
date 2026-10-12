@@ -64,7 +64,8 @@ def plan_case(case: dict[str, Any], run_id: str) -> dict[str, Any]:
         if "style_resolver" in chunk:   # planning is done: stop before any slide is generated
             break
     history = final.get("generation_history") or []
-    cost = sum(_compute_cost(r.get("tokens_in", 0), r.get("tokens_out", 0), r.get("model", "unknown")) for r in history)
+    cost = sum(_compute_cost(r.get("tokens_in", 0), r.get("tokens_out", 0), r.get("model", "unknown"), r.get("tokens_cached", 0))
+               for r in history)
     return {"outline": final.get("outline_plan") or {}, "slide_plans": final.get("slide_plans") or [],
             "cost_usd": round(cost, 4)}
 

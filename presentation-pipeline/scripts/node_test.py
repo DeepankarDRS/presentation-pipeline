@@ -142,7 +142,7 @@ def _cost(usage: dict) -> float:
     from src.agents.evaluator import _compute_cost
     if usage.get("model") in ("mechanical", "scripted"):
         return 0.0
-    return _compute_cost(usage.get("tokens_in", 0), usage.get("tokens_out", 0), usage.get("model", ""))
+    return _compute_cost(usage.get("tokens_in", 0), usage.get("tokens_out", 0), usage.get("model", ""), usage.get("tokens_cached", 0))
 
 
 def run_slide(run: dict, slide: dict, llm, measure: Measurer, out: Path, font: str | None, fit_grow: bool,

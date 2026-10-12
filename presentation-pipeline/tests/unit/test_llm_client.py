@@ -76,7 +76,7 @@ def test_extract_usage_without_reasoning_tokens(token_usage):
 
 
 def test_pricing_for_reasoning_models():
-    assert get_pricing("gpt-5-mini") == {"input": 0.25, "output": 2.00}
+    assert get_pricing("gpt-5-mini") == {"input": 0.25, "cached_input": 0.025, "output": 2.00}
     assert get_pricing("gpt-5-mini-2025-08-07")["input"] == 0.25  # dated name -> longest prefix
     assert get_pricing("gpt-5")["input"] == 1.25
     assert get_pricing("o4-mini")["output"] == 4.40
