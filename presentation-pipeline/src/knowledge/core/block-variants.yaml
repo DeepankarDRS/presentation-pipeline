@@ -1,4 +1,6 @@
-# pom-knowledge/core/block-variants.yaml   (DRAFT 2026-10-06, not read by code yet)
+# pom-knowledge/core/block-variants.yaml   (DRAFT 2026-10-06; `blocks` is read by src/compiler/nodes/spec.py
+# for the 1a node route, `tile_nodes` at the end (2026-10-12) is a design not read by code yet:
+# docs/tile-nodes-spec-2026-10-12.md)
 # The ONE place the ref-node tags and their `variant` names are stated (node contract,
 # docs/derived-blocks-planning-2026-10-06.md §3, decision D10). The generator prompt
 # renders each component's line from it, and the node pass reads it. A test fails when a
@@ -243,3 +245,190 @@ blocks:
       native: {prompt: "the 2x2 map as drawn"}
 
 # `layer` has no tag: it carries no content shape, so the LLM draws it (NODE_KIND_NO_REF).
+
+
+# ══ Tile nodes (design 2026-10-12, not read by code yet) ══════════════════════════
+# Spec and reasons: docs/tile-nodes-spec-2026-10-12.md. Replaces, when built, the `kpi_row`,
+# `card_grid` and `card_steps` blocks above for the element-ref route (POM_BLOCKS=kpi).
+#
+# Shape of a native POM data node: a group tag and an item tag, like Timeline / TimelineItem.
+#   <KpiGrid ref="kpi_metrics" variant="filled" cols="2">        group: every item, plan order
+#     <Kpi ref="kpi_metrics.2" variant="toned" icon="alert-triangle"/>   item: overrides one tile
+#   </KpiGrid>
+#   <Kpi ref="kpi_metrics.4" variant="inverted" size="hero"/>    item outside a group: placed anywhere
+#
+# - A group draws every item of its component except the items a <Kpi> / <Card> places
+#   outside it. Each item is drawn exactly once (NODE_REF_DUPLICATE / NODE_ITEM_MISSING).
+# - An item tag inside a group must name that group's component (NODE_REF_UNKNOWN).
+# - Item tags are self-closing; groups hold only item tags.
+# - Text always comes from the plan; notes are always drawn (user, 2026-10-12).
+# - Attributes resolve in this order, later wins (Timeline.dateColor -> TimelineItem.dateColor):
+#     house look -> group variant -> group attributes -> item variant -> item attributes
+# - Part attributes: a part name, a dot, then a native POM attribute of the node the part
+#   becomes (POM's own dot style, as border.color / fill.color / glow.size):
+#     label.color="$accent"  value.glow.size="6"  icon.variant="circle-filled"  marker.fill.color="$negative"
+# - Box attributes (no prefix) land on the tile's VStack.
+# - Colours are $tokens only (LITERAL_COLOR). `color` takes a role token, from which code
+#   derives the fills and inks of the looks: $accent / $positive / $negative / $warning / $neutral.
+#   {role} in a look below = that role; default role = the plan tone (good -> positive,
+#   bad -> negative, watch -> warning, "" -> accent). $neutral has no Soft / Text token:
+#   ${role}Soft -> $surfaceAlt and ${role}Text -> $textMain for it.
+
+tile_nodes:
+  version: 1
+
+  dropped:              # removed with info NODE_ATTR_DROPPED; code owns them
+    box: [borderRadius, position, top, right, bottom, left, zIndex, id]   # square tiles (user, 2026-10-11 §11; kept 2026-10-12)
+    parts: [fontSize, fontFamily, lineHeight, text, size]                 # number / label sizes, deck font, icon size
+    content: true       # typed text or child nodes inside an item tag
+
+  box_attributes: [backgroundColor, backgroundGradient, border, border.color, border.width, border.dashType,
+                   borderTop.color, borderTop.width, borderRight.color, borderRight.width,
+                   borderBottom.color, borderBottom.width, borderLeft.color, borderLeft.width,
+                   padding, padding.top, padding.right, padding.bottom, padding.left, gap,
+                   alignItems, justifyContent, shadow.type, shadow.blur, shadow.offset, shadow.color,
+                   opacity, w, h, grow, minW, maxW, minH, maxH, alignSelf, margin]
+
+  part_nodes:           # part -> the POM node it becomes -> the attributes its prefix may carry
+    Text:  [color, bold, italic, underline, highlight, letterSpacing, textAlign, textGradient,
+            glow.size, glow.opacity, glow.color, outline.size, outline.color]
+    Icon:  [name, color, variant, bgColor, glow.size, glow.opacity, glow.color, outline.size, outline.color]
+    Shape: [shapeType, w, h, fill.color, fill.transparency, line.color, line.width, line.dashType,
+            glow.size, glow.opacity, glow.color]
+
+  # ── KPI ───────────────────────────────────────────────────────────────────────
+  kpi:
+    plan_kind: kpi_row
+    group_tag: KpiGrid
+    item_tag: Kpi
+    ref: {group: "<component_id>", item: "<component_id>.<index>"}
+    emphasis_from: [design_hint]
+    parts:
+      label:  Text
+      value:  Text
+      note:   Text
+      icon:   Icon      # `icon="name"` is shorthand for icon.name; no icon unless named
+      marker: Shape     # drawn only when the variant has one or marker.shapeType is set
+
+    group_attributes:
+      ref:    {required: true}
+      layout: {values: [row, grid, column], default: "row; grid when more than 4 items"}
+      cols:   {type: number, applies_to: grid, default: "balanced (5 -> 3 + 2, 7 -> 4 + 3)"}
+      shared: [variant, arrange, color, icon, parts]   # item attributes the group may set for every tile
+
+    item_attributes:
+      ref:     {required: true}
+      variant: {default: "the group's variant, else plain"}
+      arrange: {values: [label-first, value-first, icon-top, side], default: label-first}
+               # side = icon (or marker) left, label / value / note stacked right
+      size:    {values: [normal, hero], default: normal, requires: [is_emphasis_item], fallback: normal}
+      color:   {values: [$accent, $positive, $negative, $warning, $neutral], default: "plan tone"}
+      icon:    {type: icon name, default: none}
+
+    owned_by_code: [label / value / note text, one value size per group (hero larger),
+                    unit spans (value_parts), word fit, icon size, readable text on dark fills]
+
+    variants:           # first = default. `look` is what the variant sets before attributes
+      plain:
+        prompt: "light surface, hairline border, number in ink"
+        look: {backgroundColor: $surfaceAlt, border.color: $border, border.width: 1,
+               label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
+      filled:
+        prompt: "tile tinted with the item's colour"
+        look: {backgroundColor: "${role}Soft", label.color: $textMuted, value.color: "${role}Text",
+               note.color: "${role}Text"}
+      toned:
+        prompt: "tinted by the item's tone, number in that tone"
+        requires: [has_tones]
+        fallback: plain
+        look: {backgroundColor: "${role}Soft", border.color: "${role}", border.width: 1,
+               value.color: "${role}Text", note.color: "${role}Text"}
+      bar:
+        prompt: "coloured left bar"
+        look: {backgroundColor: $surfaceAlt, borderLeft.color: "${role}", borderLeft.width: 6,
+               label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
+      dot:
+        prompt: "small dot and a coloured spaced label"
+        look: {backgroundColor: $surface, border.color: $border, border.width: 1,
+               marker.shapeType: ellipse, marker.w: 8, marker.h: 8, marker.fill.color: "${role}",
+               label.color: "${role}Text", label.letterSpacing: 1, value.color: $textMain}
+      inverted:
+        prompt: "dark tile for the number the slide is about"
+        emphasis: true  # only on the emphasis item; elsewhere -> fallback (NODE_VARIANT_UNMET)
+        requires: [count_ge_3, is_emphasis_item]
+        fallback: plain
+        look: {backgroundColor: $panelDark, label.color: $onPanelDark, value.color: $onPanelDark,
+               note.color: $onPanelDark}
+      bare:
+        prompt: "number and label only, no tile"
+        look: {padding: 0, label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
+
+  # ── Card ──────────────────────────────────────────────────────────────────────
+  card:
+    plan_kind: card_grid
+    group_tag: CardGrid
+    item_tag: Card
+    ref: {group: "<component_id>", item: "<component_id>.<index>"}
+    emphasis_from: [design_hint, priority, destination]   # destination: steps layouts only
+    parts:
+      title:  Text
+      body:   Text      # the card's body lines from the plan, one Text per line
+      icon:   Icon
+      marker: Shape     # on steps / numerals code writes the step number into it (Shape text)
+
+    group_attributes:
+      ref:    {required: true}
+      layout:
+        values: [grid, matrix, steps, rail, columns]
+        default: "the plan's card_layout"
+        match_plan: {grid: [grid], matrix: [matrix], steps: [steps, rail, columns]}   # else NODE_LAYOUT_UNMET -> plan's
+        # steps = row of cards with arrows; rail = vertical line, a dot per step, text right;
+        # columns = columns under a segmented bar
+      cols:   {type: number, applies_to: [grid], default: balanced}
+      shared: [variant, arrange, color, icon, parts]
+
+    item_attributes:
+      ref:     {required: true}
+      variant: {default: "the group's variant, else outline"}
+      arrange: {values: [stack, side, title-band], default: stack}
+               # stack = icon / marker, title, body; side = icon left; title-band = title on a coloured strip
+      color:   {values: [$accent, $positive, $negative, $warning, $neutral], default: "plan tone"}
+      icon:    {type: icon name, default: none}
+
+    owned_by_code: [title / body text, the card's tag line, type sizes shared by all cards,
+                    step numbers, arrows between steps, word fit, readable text on dark fills]
+
+    variants:
+      outline:
+        prompt: "hairline cards on the background"
+        look: {border.color: $border, border.width: 1, title.color: $textMain, body.color: $textMuted}
+      filled:
+        prompt: "cards on a light panel, no border"
+        look: {backgroundColor: $surfaceAlt, title.color: $textMain, body.color: $textMuted}
+      toned:
+        prompt: "tinted by the card's tone, coloured left edge"
+        requires: [has_tones]
+        fallback: filled
+        look: {backgroundColor: "${role}Soft", borderLeft.color: "${role}", borderLeft.width: 6,
+               title.color: "${role}Text", body.color: $textMain}
+      accent_top:
+        prompt: "coloured bar on top (pillars, workstreams)"
+        look: {backgroundColor: $surfaceAlt, borderTop.color: "${role}", borderTop.width: 4,
+               title.color: $textMain, body.color: $textMuted}
+      numerals:
+        prompt: "large faint 01 02 03 above each title"
+        requires: [not_matrix, all_titles_numbered_ok]
+        fallback: outline
+        look: {border.color: $border, border.width: 1, marker.shapeType: rect, marker.fill.transparency: 1,
+               marker.line.width: 0, title.color: $textMain, body.color: $textMuted}
+               # numeral colour and size: code ($neutral, a fixed step above the title)
+      inverted:
+        prompt: "dark card: the featured item or the destination step"
+        emphasis: true
+        requires: [count_ge_3, is_emphasis_item, not_matrix]
+        fallback: filled
+        look: {backgroundColor: $panelDark, title.color: $onPanelDark, body.color: $onPanelDark}
+
+  # Checks added for tile nodes (the others are in the header of this file):
+  #   is_emphasis_item   the item is the one an `emphasis_from` source names (spec.singled_out,
+  #                      or the last step for `destination`); the LLM never picks it
