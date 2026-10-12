@@ -19,7 +19,8 @@ A tile written by hand with <Text ref> stays valid (T2) and is counted (`hand_it
 Attributes resolve in this order, later wins: house look -> group variant -> group attributes ->
 item variant -> item attributes. `color` picks the role ({role} in a look); its default is the
 plan tone; an item with its own `color` and no variant of its own takes its variant's `with_color` look
-(plain -> toned), so the colour always shows. `inverted` and size="hero" only on the item the plan singles
+(plain -> toned), so the colour always shows; with no colour asked, its plan tone takes `with_tone` (plain: bad /
+watch -> toned, good -> the number in that colour). `inverted` and size="hero" only on the item the plan singles
 out (is_emphasis_item).
 """
 
@@ -75,6 +76,13 @@ def role_value(value: Any, role: str) -> str:
     if role == "neutral":
         return s.replace("${role}Soft", "$surfaceAlt").replace("${role}Text", "$textMain").replace("${role}", "$neutral")
     return s.replace("${role}", f"${role}")
+
+
+def tone_of(comp: dict, i: int) -> str:
+    """The plan's tone of item i: good / bad / watch, or "" (plan_checks.settle_kpi_tones)."""
+    tones = element_refs._list(comp, "kpi_tones")
+    role = element_refs.TONE_ROLE.get(str(tones[i]).lower(), "") if i < len(tones) and tones[i] else ""
+    return {"positive": "good", "negative": "bad", "warning": "watch"}.get(role, "")
 
 
 def tone_role(comp: dict, i: int) -> str:
@@ -228,9 +236,13 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
     layers = [_look(kpi()["house_look"], role)]
     if not imeta.get("variant"):
         name = _variant(comp, i, gmeta.get("variant"), cid, flag)
+        patch: dict = {}
         if imeta.get("color") in ROLE_OF:   # the item's own colour is its tone: a look that shows it
             name = vs[name].get("with_color", name)
-        layers.append(_look(vs[name]["look"], role))
+        elif not gmeta.get("color") and tone_of(comp, i):   # the plan's tone, no colour asked: its look
+            how = (vs[name].get("with_tone") or {}).get(tone_of(comp, i))
+            name, patch = (how, {}) if isinstance(how, str) else (name, how or {})
+        layers += [_look(vs[name]["look"], role), _look(patch, role)]
     layers.append(gparts)
     if imeta.get("variant"):
         layers.append(_look(vs[_variant(comp, i, imeta["variant"], ref, flag)]["look"], role))

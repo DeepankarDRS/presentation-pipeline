@@ -245,3 +245,27 @@ def test_a_bare_note_prefix_is_a_footnote_not_an_instruction():
     assert not is_instruction_text("Note: SOC2 + HIPAA certification targeted for Apr 2027", brief)
     assert is_instruction_text("Speaker Notes: SOC2 + HIPAA certification", brief)   # the strong labels always count
     assert is_instruction_text("Talking points: lead with the enterprise story", brief)
+
+
+def test_kpi_tones_are_settled_one_per_value():
+    """tile-nodes spec §6: the planner's kpi_tones as code reads them (good / bad / watch / "")."""
+    k = comp("kpis", "kpi_row", {"kpi_labels": ["ARR", "NRR", "Margin", "CAC"], "kpi_values": ["$48.2M", "114%", "72.1%", "14"],
+                                 "kpi_tones": ["Positive", "good", "NEGATIVE", "warning", "bad"]})
+    finalize_plan(plan([k]), BRIEF)
+    assert k["content_data"]["kpi_tones"] == ["good", "good", "bad", "watch"]   # synonyms mapped, trimmed
+    short = comp("k2", "kpi_row", {"kpi_labels": ["A", "B"], "kpi_values": ["1%", "2%"], "kpi_tones": ["meh"] * 1 + ["bad"]})
+    finalize_plan(plan([short]), BRIEF)
+    assert short["content_data"]["kpi_tones"] == ["", "bad"]   # unknown -> ""
+    pad = comp("k3", "kpi_row", {"kpi_labels": ["A", "B"], "kpi_values": ["1%", "2%"], "kpi_tones": ["watch"]})
+    finalize_plan(plan([pad]), BRIEF)
+    assert pad["content_data"]["kpi_tones"] == ["watch", ""]
+    none = comp("k4", "kpi_row", {"kpi_labels": ["A"], "kpi_values": ["1%"], "kpi_tones": ["", None]})
+    finalize_plan(plan([none]), BRIEF)
+    assert "kpi_tones" not in none["content_data"]   # no tone at all: none kept
+
+
+def test_the_planner_prompt_asks_for_kpi_tones_by_meaning():
+    from pathlib import Path
+    text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
+    assert '"kpi_tones": ["good", "good", "bad"]' in text and "not which way it moved" in text
+    assert "kpi_tones" in PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]

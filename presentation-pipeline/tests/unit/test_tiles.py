@@ -116,6 +116,22 @@ def test_own_color_on_a_plain_tile_draws_toned():
     assert 'borderLeft.color="$warning"' in bar and "$warningSoft" not in bar
 
 
+def test_plan_tones_draw_on_a_plain_tile_bad_and_watch_tinted_good_in_the_number():
+    # PLAN tones: "", good, bad, watch (paid check 2, QBR: a bare <KpiGrid> drew no colour without tones)
+    xml = run('<KpiGrid ref="kpis"/>')["xml"]
+    assert 'backgroundColor="$surfaceAlt"' in tile_of(xml, 0) and 'color="$textMain"' in value_of(xml, 0)
+    assert 'backgroundColor="$surfaceAlt"' in tile_of(xml, 1) and 'color="$positiveText"' in value_of(xml, 1)
+    assert 'backgroundColor="$negativeSoft"' in tile_of(xml, 2) and 'border.color="$negative"' in tile_of(xml, 2)
+    assert 'backgroundColor="$warningSoft"' in tile_of(xml, 3) and 'color="$warningText"' in value_of(xml, 3)
+    # a colour or a variant the LLM asks for wins; a group colour turns the tones' looks off
+    own = run('<KpiGrid ref="kpis"><Kpi ref="kpis.2" color="$positive"/></KpiGrid>')["xml"]
+    assert 'backgroundColor="$positiveSoft"' in tile_of(own, 2)
+    bar = run('<KpiGrid ref="kpis" variant="bar"/>')["xml"]
+    assert 'backgroundColor="$surfaceAlt"' in tile_of(bar, 2) and 'borderLeft.color="$negative"' in tile_of(bar, 2)
+    grouped = run('<KpiGrid ref="kpis" color="$accent"/>')["xml"]
+    assert all('backgroundColor="$surfaceAlt"' in tile_of(grouped, i) for i in range(4))
+
+
 def test_tiles_on_the_llms_panel_of_their_colour_draw_bare():
     # paid check 2, CHEFFIN 1: filled $negative tiles vanished into the LLM's own $negativeSoft panel
     panel = '<VStack padding="20" backgroundColor="$negativeSoft">{}</VStack>'

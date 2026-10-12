@@ -350,10 +350,13 @@ tile_nodes:
 
     variants:           # first = default. `look` is what the variant sets before attributes
       plain:
-        prompt: "light surface, hairline border, number in ink; an item with its own color draws toned"
+        prompt: "light surface, hairline border, number in ink; an item with its own color, or a bad / watch tone, draws toned"
         # an item with its own color and no variant of its own draws as this variant, so the colour shows
         # (paid check 2, CHEFFIN 4: color="$warning" on a plain tile without note / icon drew nothing)
         with_color: toned
+        # an item the plan gives a tone (kpi_tones) and the LLM no variant / color: bad and watch tiles are
+        # tinted, a good tile shows it in its number (colour roles: attention where it is needed, 2026-10-12)
+        with_tone: {bad: toned, watch: toned, good: {value.color: "${role}Text"}}
         look: {backgroundColor: $surfaceAlt, border.color: $border, border.width: 1,
                label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
       filled:

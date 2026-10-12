@@ -298,6 +298,24 @@ def sparse_flag(plan: dict[str, Any]) -> dict[str, str] | None:
             "detail": f"thin slide: about {total:.1f} units of content (limit {SPARSE_UNITS})"}
 
 
+_TONES = {"good": "good", "positive": "good", "bad": "bad", "negative": "bad", "watch": "watch", "warning": "watch"}
+
+
+def settle_kpi_tones(comp: dict[str, Any]) -> None:
+    """A kpi_row's kpi_tones as code reads them (tile-nodes spec §6): one per value, good / bad / watch / "",
+    synonyms mapped, anything else blank. A row with no tone at all keeps no kpi_tones."""
+    data = comp.get("content_data") or {}
+    if comp.get("kind") != "kpi_row" or "kpi_tones" not in data:
+        return
+    raw = data["kpi_tones"] if isinstance(data["kpi_tones"], list) else []
+    n = len(data.get("kpi_values") or [])
+    tones = [_TONES.get(str(t).strip().lower(), "") for t in raw[:n]] + [""] * max(0, n - len(raw))
+    if any(tones):
+        data["kpi_tones"] = tones
+    else:
+        data.pop("kpi_tones")
+
+
 # ── entry point ─────────────────────────────────────────────────────────────
 
 def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
@@ -312,6 +330,7 @@ def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
     if not plan.get("components"):
         _flag(plan, PLAN_EMPTY, "", "the plan has no components")
     for comp in plan.get("components") or []:
+        settle_kpi_tones(comp)
         vals = (comp.get("content_data") or {}).get("kpi_values") or [] if comp.get("kind") == "kpi_row" else []
         if any(is_sentence(str(v)) for v in vals):
             _flag(plan, KPI_VALUE_TEXT, comp.get("component_id", ""), "kpi_values hold sentences, not figures")

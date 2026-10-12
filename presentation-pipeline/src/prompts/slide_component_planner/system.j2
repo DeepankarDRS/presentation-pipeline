@@ -214,7 +214,10 @@ For kpi_row:
   { "kpi_labels": ["ARR", "NRR", "Margin"],
     "kpi_values": ["$42.8M", "114%", "72.1%"],
     "kpi_deltas": ["+18% QoQ", "+2 pts", "-1.4 pts"],
-    "kpi_directions": ["up", "up", "down"] }
+    "kpi_directions": ["up", "up", "down"],
+    "kpi_tones": ["good", "good", "bad"] }
+
+kpi_tones: one per item, what the number means for the slide's story, not which way it moved: "good" (a win or a fix: growth, retention up, a cost, churn or payback going down), "bad" (a loss, leak or risk: margin down, a return below break-even, a cost above what the economics allow), "watch" (worth watching: mixed, near a limit), "" (neutral context such as spend or volume, a target, or when the key_messages and headline give no judgement). Judge only from the key_messages and the headline; code colours the tiles by it.
 
 For chart:
   { "chart_type": "bar",
@@ -306,7 +309,8 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
         "kpi_labels": ["Monthly active users", "Day-30 retention", "Store rating"],
         "kpi_values": ["2.4M", "38%", "4.6"],
         "kpi_deltas": ["+12% QoQ", "+3 pts", ""],
-        "kpi_directions": ["up", "up", ""]
+        "kpi_directions": ["up", "up", ""],
+        "kpi_tones": ["good", "good", ""]
       }
     },
     {
@@ -319,7 +323,8 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
         "kpi_labels": ["Crash-free sessions", "Sessions per user per day", "Average session length", "Support tickets per 1,000 users"],
         "kpi_values": ["99.2%", "3.1", "6m 40s", "4.2"],
         "kpi_deltas": ["", "", "", ""],
-        "kpi_directions": ["", "", "", ""]
+        "kpi_directions": ["", "", "", ""],
+        "kpi_tones": ["", "", "", ""]
       }
     }
   ],
