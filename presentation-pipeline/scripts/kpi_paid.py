@@ -5,6 +5,8 @@
     python -m scripts.kpi_paid --label dry --dry                           # free: a fake generator answers with
                                                                            # today's XML mapped to refs (path check)
     python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label tiles-paid --bundle   # tile nodes (spec §8 step 5)
+    python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label <copy> --rescore --refill   # free: tile code
+                                                    # changes on saved runs (B expanded again from first.xml)
 
 Inputs: docs/eval/kpi-node/paid-inputs.json (the 3 KPI slides of q1008's deck-qbr-data and
 gate-deck-cheffin-full: plan, today's XML, theme, brief; committed so the test PC needs no output/).
@@ -154,7 +156,7 @@ def run(label: str, repeat: int, dry: bool = False) -> None:
     (out / "runs.json").write_text(json.dumps(results, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
-def rescore(label: str, render: bool = True, arm_a: str = "today") -> list[dict]:
+def rescore(label: str, render: bool = True, arm_a: str = "today", refill: bool = False) -> list[dict]:
     out = OUT / label
     kpi_arm = json.loads(KPI_ARM.read_text(encoding="utf-8")) if arm_a == "kpi" else {}
     items = {f"{i['case']}-s{i['slide']}": i for i in json.loads(INPUTS.read_text(encoding="utf-8"))}
@@ -169,6 +171,10 @@ def rescore(label: str, render: bool = True, arm_a: str = "today") -> list[dict]
         else:   # free: always recompile both arms on this commit
             row["A"] = score("A", a_dir, compile_slide(it["xml_today"], theme, a_dir), it["plan"], row["case"], render)
         xml = (out / "B" / row["case"] / "final.xml").read_text(encoding="utf-8")
+        first = out / "B" / row["case"] / "first.xml"
+        if refill and first.exists() and row.get("validator_passes") == 1:   # this commit's tile expansion of the
+            from src.compiler.nodes import tiles                              # LLM's own XML (no repair ran)
+            xml = tiles.fill(first.read_text(encoding="utf-8"), it["plan"])["xml"]
         # runs filled before ids carried the plan weight's rank (kpiv-cid-i -> kpiv<rank>-cid-i, as the fill writes now)
         from src.compiler.nodes.element_refs import WEIGHT_RANK
         for cid, c in kpi_components(it["plan"]).items():
@@ -245,6 +251,8 @@ def main() -> int:
     ap.add_argument("--blocks", choices=("kpi", "tiles"), default="kpi", help="POM_BLOCKS for arm B")
     ap.add_argument("--arm-a", choices=("today", "kpi"), default="today",
                     help="arm A: q1008's XML (today) or the 2026-10-11 element-ref slides (kpi)")
+    ap.add_argument("--refill", action="store_true",
+                    help="--rescore: expand arm B again from the LLM's first.xml on this commit (runs with no repair)")
     a = ap.parse_args()
     os.environ["POM_BLOCKS"] = a.blocks
     if a.dry:
@@ -259,7 +267,7 @@ def main() -> int:
             return 2
         shutil.rmtree(OUT / a.label, ignore_errors=True)
         run(a.label, a.repeat)
-    rescore(a.label, render=not a.no_render, arm_a=a.arm_a)
+    rescore(a.label, render=not a.no_render, arm_a=a.arm_a, refill=a.refill)
     if a.bundle:
         print(bundle(a.label))
     return 0
