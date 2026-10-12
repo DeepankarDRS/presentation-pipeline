@@ -434,3 +434,16 @@ shuffled; `key.json` holds the answer).
 - **CHEFFIN 4: the LLM put all 7 tiles in one row** (run 1: 4 + 3): numbers 37 px, bound by the tile width,
   `GEOM_CARD_EMPTY` 7. CHEFFIN 1: 5 tiles without icons, 37 px, `GEOM_CARD_EMPTY` 5, labels stay 14 px. Not
   fixed: a layout choice (user: no rules); open whether the prompt line should state the row width per tile.
+
+**Blind marks (user, 2026-10-12): B (refs run 2) 3 wins, A (today) 1, 0 ties → 0.75** (replay 0.643, paid check
+0.556). Note: the seeded shuffle put B on the left in all 4 pairs.
+
+| pair | case | winner | user's note |
+|---|---|---|---|
+| P1 | QBR exec summary | B | better space allocation and font size |
+| P2 | all-nodes | B | colour visibility in the repeat-revenue panel (the re-fill with `_unwrap_refs`) |
+| P3 | CHEFFIN 1 | A | five cards better shown (today: 3 big tiles + a row of 2) |
+| P4 | CHEFFIN 4 | B | font size; both would be better as 4 cards above, 3 below |
+
+The one loss and the P4 note point the same way: 5-7 tiles in one narrow row (37 px numbers, empty tiles) lose to
+fewer, wider tiles per row.
