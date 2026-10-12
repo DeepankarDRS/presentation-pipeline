@@ -1,7 +1,8 @@
 # Tile nodes: `KpiGrid` / `Kpi` and `CardGrid` / `Card` (spec, 2026-10-12)
 
-Status: **design, not built.** Data: `src/knowledge/core/block-variants.yaml` → `tile_nodes` (not read by
-code yet; the `blocks` section above it still serves the 1a node route). Builds on the KPI node pilot
+Status: **KPI built behind `POM_BLOCKS=tiles` (2026-10-12, branch `feat/tile-nodes`; §10), Card still a design.**
+Data: `src/knowledge/core/block-variants.yaml` → `tile_nodes` (read by `src/compiler/nodes/tiles.py`; the `blocks`
+section above it still serves the 1a node route). Builds on the KPI node pilot
 (`docs/kpi-node-pilot-2026-10-11.md`, D13) and replaces, for the element-ref route, the variant syntax of
 `docs/block-variants-look-spec.md` §4–§6. The colour roles, number caps, tones and value parser of those
 docs carry over unchanged.
@@ -258,3 +259,21 @@ Every figure except "today" is an estimate until the paid check.
 | T4 | `numerals` drawn with a transparent Shape carrying the number: check in the gallery that it renders | check |
 | T5 | `matrix` layout: row / column headers from the plan, `Card` per cell; same rules as card_matrix today | confirm when cards are built |
 | T6 | Should `CardGrid` steps arrows take a style attribute (`connector.color`)? | no, code draws them in `$neutral` |
+
+## 10. Build notes (2026-10-12, steps 1–4, free)
+
+Built: cache order (step 1), `tiles.py` + checks + prompt lines for KPI (step 2), gallery (step 3,
+`docs/eval/tile-nodes/gallery/`), free replay (step 4, `docs/eval/tile-nodes/replay/`). What differed from this spec:
+
+| § | Spec | Built / measured |
+|---|---|---|
+| §5 | fixed node lines ~150 tokens | ~300 (all variant phrases from the YAML); in the cached prefix |
+| §5 | per-component line ~35 tokens | ~60–85: it also names each item's label (needed to pick an icon per item) and the longest value |
+| §5 | ~9k of ~11.7k input a shared prefix | static prefix 1.2k → 7.5k tokens on the 4 saved decks (system tokens shared 14% → 74%); the rest per slide: notes for its kinds, recipes, visual-intent techniques, allowed attributes |
+| §7 | KPI output ~12–60 tokens | 12–60 is the floor without styling; reproducing the LLM's own part styling took 60–190 (replay: −78% overall, −84% on first tries) |
+| §4 | resolution order house → group variant → group attrs → item variant → item attrs | an item's own variant **replaces** the group variant's look (else an inverted tile kept the plain hairline); the group's attributes still apply under it |
+| §2 | `size` hero on the emphasis item | a hero tile inside its group's row needs equal columns (code sets `w="1" grow="1"`): the peers grew first and the shrink guard cut the hero below them |
+| §2.1 | `toned` needs tones | the LLM tints tiles by meaning where the plan has no tones; proposal: `has_tones` also counts an item's explicit `color` |
+| §2 | `size` on a group | dropped with info (`NODE_ATTR_DROPPED`), as on a part; not an error |
+| — | — | an `icon` on a dark tile takes the readable ink (`$onPanelDark`), as its text does |
+| §9 T4 | numerals Shape check in the gallery | a Card question; open until cards are built |
