@@ -51,7 +51,7 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
     state = initial_state(run_id=run_id, raw_request=item["request"], theme_name=item["theme"],
                           deck_min_threshold=1, critic_mode="off")
     state["slide_plans"] = [dict(item["plan"], slide_index=0)]
-    attempts, final = [], {}
+    attempts, generated, final = [], [], {}
     cfg = {"run_name": f"kpi-paid-{run_id}", "tags": ["kpi-pilot"], "recursion_limit": 80}
     for mode, chunk in compile_graph().stream(state, config=cfg, stream_mode=["updates", "values"]):
         if mode == "values":
@@ -60,6 +60,8 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
         for node, update in chunk.items():
             if node == "validator" and isinstance(update, dict):
                 attempts.append(update)
+            elif node == "generator" and isinstance(update, dict) and update.get("current_xml"):
+                generated.append(update["current_xml"])
     first = attempts[0] if attempts else {}
     issues = [i for i in (first.get("normalize_result") or {}).get("issues") or [] if i.get("code") in REF_CODES]
     gen = [g for g in final.get("generation_history") or [] if getattr(g, "step", None) == "generator"
@@ -68,6 +70,9 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
     return {
         "first_ok": bool((first.get("compile_result") or {}).get("ok")),
         "first_issues": [{k: i.get(k) for k in ("code", "severity", "message")} for i in issues],
+        "first_diagnostics": [f"{d.get('type', '?')}: {str(d.get('message', ''))[:200]}"
+                              for d in (first.get("compile_result") or {}).get("diagnostics") or []][:5],
+        "first_xml": generated[0] if generated else "",
         "validator_passes": len(attempts),
         "generator_calls": len(gen),
         "final_xml": (last.get("normalize_result") or {}).get("cleaned_xml") or final.get("current_xml", ""),
@@ -114,9 +119,11 @@ def run(label: str, repeat: int, dry: bool = False) -> None:
                        "final_xml": "", "cost_usd": 0.0, "validator_passes": 0, "generator_calls": 0}
             placed, planned = refs_first_try(it, res["first_issues"])
             row = {"case": f"{name}-r{r}", "item": it["case"], "slide": it["slide"], "repeat": r, "run_id": rid,
-                   **{k: v for k, v in res.items() if k != "final_xml"}, "refs_first_try": [placed, planned]}
+                   **{k: v for k, v in res.items() if k not in ("final_xml", "first_xml")}, "refs_first_try": [placed, planned]}
             (out / "B" / row["case"] / "slide-0").mkdir(parents=True, exist_ok=True)
             (out / "B" / row["case"] / "final.xml").write_text(res["final_xml"], encoding="utf-8")
+            if res.get("first_xml"):
+                (out / "B" / row["case"] / "first.xml").write_text(res["first_xml"], encoding="utf-8")
             results.append(row)
             print(f"  first try ok={res['first_ok']} refs {placed}/{planned} passes={res['validator_passes']} "
                   f"final ok={res['final_ok']} ${res['cost_usd']:.3f}", flush=True)

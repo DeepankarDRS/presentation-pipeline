@@ -364,9 +364,12 @@ def _copy_slides(case: dict[str, Any], out_dir: Path) -> None:
             continue
         dst = case_dir / f"slide-{s['index']}"
         dst.mkdir(parents=True, exist_ok=True)
-        for f in ("input.xml", "fitted.xml", "compile-result.json", "presentation.pptx"):
+        for f in ("input.xml", "fitted.xml", "compile-result.json", "presentation.pptx", "generated.xml"):
             if (Path(src) / f).exists() and Path(src) != dst:
                 shutil.copy2(Path(src) / f, dst / f)
+        first = Path(src).parent if Path(src).name.startswith("retry-") else None
+        if first and (first / "generated.xml").exists():   # KPI refs: the LLM's XML on the first try
+            shutil.copy2(first / "generated.xml", dst / "first-generated.xml")
     deck = case.pop("_deck_pptx")
     if deck and Path(deck).exists():
         from src.compiler.screenshot import render_screenshots  # PowerPoint COM; no-op elsewhere

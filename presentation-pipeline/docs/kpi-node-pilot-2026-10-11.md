@@ -391,3 +391,20 @@ bug can show wrong icons in that deck). Normalizer fix proposed separately.
 - **8-digit literal colours** (the §10 CHEFFIN cover): normalizer `ALPHA_COLOR_BLENDED` blends `RRGGBBAA` on a
   `*color` / `fill` attribute onto white (`7B3FE41A` → `F2EBFC`). The saved cover now compiles (it failed before).
 - Unit tests 916 pass + the 4 known failures.
+
+## 12. Fixes from the full decks, checked on the saved slides (2026-10-12)
+
+The 4 KPI slides of §10 turned back into refs (`map_refs`, the LLM's own attributes kept), filled and compiled
+on the new code: `docs/eval/kpi-node/decks/kpi-slides-fixes.png` (right column).
+
+| Fix | Where | Before → after on the saved slides |
+|---|---|---|
+| 1. A KPI text on a dark tile (`$panelDark` / `$textMain` / `$accent`) whose colour does not read there gets the fill's on-colour (`READS_ON`, `NODE_ATTR_IGNORED`) | `element_refs.fill_refs` | QBR `LOW_CONTRAST` 2 → 0 (ARR + its delta white on the dark tile) |
+| 2. A row of content-sized tiles (`w="max"`) spans its width: each tile `grow="1"` (content width + an even share), an empty spacer stack goes; widths the LLM set stay. fit-grow counts `grow` on a tile in a row as width, not height (the row still grows its numbers) | `element_refs._fill_rows`, fit-grow `growStats` | CHEFFIN 4's row of 3 reaches the right edge; numbers 58 px unchanged |
+| 3. A ref tile still sparse after growth (fit-grow's `LOW_FILL`) with an icon beside its label: icon above the label, the label stretched to the tile | fit-grow `stackTileIcons` | CHEFFIN 1 `GEOM_CARD_EMPTY` 5 → 0; labels wrap between words in the narrowest tiles, 0 broken words |
+| 4. The LLM's XML before the fill is kept: `generated.xml` per try (validator), `first-generated.xml` in eval bundles (`eval_run`), `first.xml` + `first_diagnostics` in `kpi_paid` | validator, `scripts/eval_run.py`, `scripts/kpi_paid.py` | `kpi_paid --dry` writes `first.xml` |
+
+Number sizes on the 4 slides unchanged (55 / 47 / 43 / 58 px); a first try at equal tile widths (`w="1"`)
+squeezed the widest number (47 → 28 px on all-nodes) and was dropped. Not covered: icons, other
+colour-on-fill pairs outside KPI tiles. A paid check is not needed for these (code-only, the LLM's input is
+unchanged); one full-deck run before the merge covers them.

@@ -55,6 +55,11 @@ TONE_ROLE = {"good": "positive", "positive": "positive", "bad": "negative", "neg
              "watch": "warning", "warning": "warning"}
 # text on a dark fill the LLM drew, when it gave the ref no colour
 ON_FILL = {"$panelDark": "$onPanelDark", "$textMain": "$surface", "$accent": "$onAccent"}
+# the colours that read on each dark fill; any other colour on a KPI text there becomes ON_FILL's
+# (QBR 2026-10-11: the LLM wrote $accentText for ARR and a green delta on a $textMain tile, LOW_CONTRAST 2)
+READS_ON = {"$panelDark": {"$onPanelDark", "$surface", "$surfaceAlt"},
+            "$textMain": {"$surface", "$surfaceAlt", "$onPanelDark"},
+            "$accent": {"$onAccent", "$surface", "$surfaceAlt"}}
 _STACKS = {"VStack", "HStack"}
 _REF = re.compile(r"^(?P<cid>[\w-]+)\.(?P<i>\d+)\.(?P<field>[a-z]+)$")
 PEER_ID = re.compile(r"^kpi[vh]\d?-")
@@ -188,6 +193,11 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         if color is not None and not color.startswith("$"):
             flag("NODE_ATTR_IGNORED", ref, f'color="{color}" on ref="{ref}": colours are $tokens; removed.')
             del a["color"]
+        fill = _fill_of(el) or ""
+        if fill in READS_ON and a.get("color") is not None and a["color"] not in READS_ON[fill]:
+            flag("NODE_ATTR_IGNORED", ref, f'color="{a["color"]}" on ref="{ref}" does not read on {fill}; '
+                 f'{ON_FILL[fill]} instead.')
+            a["color"] = ON_FILL[fill]
         if field == "value" and "fontSize" in a:
             flag("NODE_ATTR_IGNORED", ref, f'fontSize on ref="{ref}": code sizes every value of {cid} together; removed.')
 
@@ -245,15 +255,44 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         _focus_check(comp, cid, value_els, flag)
 
     # KPI tiles have square corners (user, 2026-10-11): they read apart from the slide's other cards
+    cards = []
     for el in value_els.values():
         card = _container(el)
-        if card is not None and card.attrib.pop("borderRadius", None) is not None:
-            changed = True
+        if card is not None and card not in cards:
+            cards.append(card)
+            if card.attrib.pop("borderRadius", None) is not None:
+                changed = True
+    changed |= _fill_rows(cards)
 
     if changed:
         result["xml"] = (root.text or "") + "".join(etree.tostring(c, encoding="unicode") for c in root)
     result["ok"] = not any(i["severity"] == ERROR for i in issues)
     return result
+
+
+def _fill_rows(cards: list) -> bool:
+    """A row of content-sized KPI tiles (w="max") spans its width: each tile takes an even share of the
+    spare width and an empty stack kept as a grid spacer goes (CHEFFIN 4 + 3, 2026-10-11: the row of 3 stopped short).
+    Widths the LLM set (px, %) stay."""
+    changed = False
+    rows = []
+    for c in cards:
+        p = c.getparent()
+        if p is not None and p.tag == "HStack" and p not in rows:
+            rows.append(p)
+    for row in rows:
+        kids = [k for k in row if isinstance(k.tag, str)]
+        tiles = [k for k in kids if k in cards]
+        spacers = [k for k in kids if k.tag in _STACKS and len(k) == 0 and not (k.text or "").strip()
+                   and not k.get("backgroundColor") and not any(a.startswith("border") for a in k.attrib)]
+        if len(tiles) < 2 or len(tiles) + len(spacers) != len(kids) or any(t.get("w", "max") != "max" for t in tiles):
+            continue
+        for k in spacers:
+            row.remove(k)
+        for t in tiles:   # content width + an even share of the spare (equal widths squeezed the widest number)
+            t.set("grow", "1")
+        changed = True
+    return changed
 
 
 def _focus_check(comp: dict, cid: str, value_els: dict, flag) -> None:

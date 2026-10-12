@@ -392,3 +392,67 @@ def test_fit_grow_keeps_a_lower_weight_component_at_or_below_the_hero_row(tmp_pa
     top, low = size("kpiv0-top"), size("kpiv1-low")
     assert len(top) == 1 and len(low) == 1 and max(low) <= max(top), (top, low, out["fitGrow"])
     assert max(low) > E.VALUE_PX, out["fitGrow"]   # the content-sized row still grew
+
+
+# ── after the full decks (2026-10-12): dark-tile colours, rows that span, icons above labels ──────
+
+def test_kpi_text_on_a_dark_tile_gets_the_readable_colour():
+    """QBR deck: the LLM wrote $accentText for ARR and a green delta on a $textMain tile (LOW_CONTRAST 2)."""
+    dark = tile(0).replace('backgroundColor="$surfaceAlt"', 'backgroundColor="$textMain"').replace(
+        'ref="kpis.0.value"', 'ref="kpis.0.value" color="$accentText"').replace(
+        'ref="kpis.0.note"', 'ref="kpis.0.note" color="$positiveText"').replace(
+        'ref="kpis.0.label"', 'ref="kpis.0.label" color="$surfaceAlt"')
+    res = E.fill_refs(slide(dark + tile(1, note=False) + tile(2)), PLAN)
+    assert value_tag(res["xml"], "kpiv1-kpis-0").count('color="$surface"') == 1
+    assert '<Text color="$surfaceAlt" fontSize="16">Spend</Text>' in res["xml"]   # a colour that reads stays
+    assert sum(i["code"] == "NODE_ATTR_IGNORED" for i in res["issues"]) == 2, res["issues"]
+
+
+def test_a_row_of_content_sized_tiles_spans_its_width_and_loses_its_spacer():
+    """CHEFFIN 4 + 3 grid: w="max" tiles and an empty <VStack w="max"/> left the row of 3 short."""
+    sized = lambda i, **kw: tile(i, extra=' w="max"', **kw)
+    xml = slide(sized(0) + sized(1, note=False) + sized(2) + '<VStack w="max"/>')
+    out = E.fill_refs(xml, PLAN)["xml"]
+    assert '<VStack w="max"/>' not in out and out.count('grow="1"') == 3
+    fixed = slide(tile(0, extra=' w="30%"') + tile(1, note=False) + tile(2) + '<VStack w="max"/>')
+    assert '<VStack w="max"/>' in E.fill_refs(fixed, PLAN)["xml"]   # widths the LLM set: row left alone
+
+
+def test_fit_grow_puts_the_icon_above_the_label_in_a_sparse_tile(tmp_path):
+    """CHEFFIN slide 1: five narrow tiles in a grow="3" row, numbers bound by the width, half empty."""
+    from src.agents.style_resolver import resolve_theme
+    from tests.unit.test_fit_grow_tables import _compile
+    plan = {"components": [{"component_id": "k", "kind": "kpi_row", "content_data": {
+        "kpi_labels": ["Combined spend", "Combined revenue", "Combined ROAS", "FLIPCART ROAS", "ZAROMA ROAS"],
+        "kpi_values": ["₹114.9L", "₹37.4L", "0.33x", "0.34x", "0.32x"]}}]}
+    t = lambda i: (f'<VStack w="max" padding="20" gap="8" backgroundColor="$surfaceAlt" justifyContent="center">'
+                   f'<HStack gap="8" alignItems="center"><Icon name="percent" size="24" color="$accent"/>'
+                   f'<Text ref="k.{i}.label"/></HStack><Text ref="k.{i}.value"/></VStack>')
+    skel = ('<Slide><VStack w="1280" h="720" padding="48" gap="28" backgroundColor="$surface">'
+            '<Text fontSize="36" bold="true" color="$textMain">Spending at scale</Text>'
+            f'<HStack grow="3" gap="18" alignItems="stretch">{"".join(t(i) for i in range(5))}</HStack>'
+            '<VStack grow="1" padding="22" backgroundColor="$surfaceAlt"><Text fontSize="16" color="$textMain">'
+            'Both platforms show the same issue: CPC is too high for AOV and CVR.</Text></VStack></VStack></Slide>')
+    xml = tmp_path / "t.xml"
+    xml.write_text(resolve_theme("corporate-slate")["element"] + "\n" + E.fill_refs(skel, plan)["xml"], encoding="utf-8")
+    out = _compile(xml, tmp_path / "o")
+    assert out["xml"].count('<VStack alignItems="start"') == 5 and "<HStack gap=\"8\"" not in out["xml"], out["fitGrow"]
+    assert out["xml"].count('<Text alignSelf="stretch"') == 5
+
+
+def test_validator_keeps_the_llm_xml_before_the_fill(monkeypatch, tmp_path):
+    from src.agents import validator
+    monkeypatch.setenv("POM_BLOCKS", "kpi")
+    monkeypatch.setattr(validator, "validate_xml",
+                        lambda xml, out_dir: {"ok": False, "diagnostics": [{"type": "X", "message": "stop"}], "warnings": []})
+    state = _gen_state()
+    state["run_id"] = f"kpi-ref-test-{tmp_path.name}"
+    state["current_xml"] = full()
+    validator.validator_node(state)
+    from pathlib import Path
+    saved = Path(validator.__file__).resolve().parents[2] / "output" / "runs" / state["run_id"] / "generated.xml"
+    try:
+        assert saved.read_text(encoding="utf-8") == full()
+    finally:
+        import shutil
+        shutil.rmtree(saved.parent, ignore_errors=True)

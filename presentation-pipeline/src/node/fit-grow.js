@@ -944,6 +944,8 @@ async function growStats(xml, report) {
       const ratio = Math.max(...tiles.map((t) => fill(t, L).ratio));
       if (ratio < LOW_FILL) groups.push({ ids: tiles.map((t) => t.id), anchors: anchors.map((a) => a.id), f0, ratio, cap: STAT_CAP });
     });
+    const up = new Map();
+    for (const root of L.slides) walk(root, (n, parent) => up.set(n, parent));
     for (const r of refGroups(L)) {
       const f0 = Math.min(...r.ids.map((id) => L.byId.get(id).fontSize ?? 24));
       const cap = r.hero ? HERO_CAP : STAT_CAP;
@@ -952,7 +954,9 @@ async function growStats(xml, report) {
       // sized by their content (no grow / h: full at any size) grow too, taking height from the slide's
       // flexible bands while the slide fits and nothing else overflows (paid check 2026-10-11: CHEFFIN's
       // second KPI row stayed at 28 px under a grow="3" row at 72 px; the LLM's own XML had 51)
-      const content = r.tiles.every((t) => { const n = L.byId.get(t); return n.h === undefined && n.grow === undefined; });
+      // (grow on a tile in a row is its width: the fill step's _fill_rows spreads a row of tiles that way)
+      const content = r.tiles.every((t) => { const n = L.byId.get(t);
+        return n.h === undefined && (n.grow === undefined || up.get(n)?.type === "hstack"); });
       if (f0 < cap && (ratio < TARGET_FILL || content)) groups.push({ ids: r.tiles, anchors: r.ids, f0, ratio, cap, hero: r.hero, free: ratio >= TARGET_FILL, rank: r.rank, ref: true });
     }
     // a lone hero stat (the one number the headline rests on) grows past tile size
@@ -1827,6 +1831,36 @@ async function evenStats(xml, report, rows) {
 }
 
 /**
+ * A KPI ref tile still mostly empty after growth (its number is bound by the tile's width, the
+ * height is spare: CHEFFIN 5 tiles in one row, 2026-10-11, 51% full) with an icon beside its label:
+ * the icon goes above the label, which then has the tile's whole width to grow into.
+ */
+async function stackTileIcons(xml, report) {
+  const L = await layout(xml);
+  const rows = [];
+  try {
+    for (const g of refGroups(L)) for (const t of g.tiles) {
+      const tile = L.byId.get(t);
+      if (!tile || fill(tile, L).ratio >= LOW_FILL) continue;   // POM's measure; the drawn tile read < 55%
+      for (const c of tile.children ?? []) {
+        const kids = c.children ?? [];
+        if (c.type === "hstack" && c.id && kids.length === 2 && kids[0].type === "icon" && kids[1].type === "text") rows.push(c.id);
+      }
+    }
+  } finally { L.free(); }
+  for (const id of rows) {
+    const el = findElement(xml, id);
+    const open = xml.slice(el.start, el.openEnd).replace(/^<HStack/, "<VStack")
+      .replace(/\salignItems\s*=\s*("[^"]*"|'[^']*')/, "").replace(/^<VStack/, '<VStack alignItems="start"');
+    // the label spans the tile (content-wide, it wraps where the drawn font runs wider than POM's measure)
+    const body = xml.slice(el.openEnd, el.end).replace(/<\/HStack>$/, "</VStack>").replace(/<Text\b/, '<Text alignSelf="stretch"');
+    xml = xml.slice(0, el.start) + open + body + xml.slice(el.end);
+  }
+  if (rows.length) report.push(`KPI tiles with spare height: icon above the label (${rows.length})`);
+  return xml;
+}
+
+/**
  * POM lays a Text out measuring all of it at its own size, so a KPI ref value with a small word unit
  * ("14<Span fontSize=24> months</Span>" at 58 px) gets a two-line box and its tile sits out of line
  * with its peers, while the renderer draws one line (KPI gallery 2026-10-11). A ref value whose runs,
@@ -1866,6 +1900,8 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await reserveWrap(xml, report);
   if (process.env.POM_FIT_SPILL !== "0") xml = await fixSpills(xml, report, warnings);
   if (process.env.POM_FIT_CENTRE !== "0") xml = await centreBody(xml, report);
+  const stacked = await stackTileIcons(xml, report);
+  if (stacked !== xml) xml = await growText(await growStats(stacked, report), report);
   const w0 = warnings.length;
   const rows = await statRows(xml);
   xml = await guardWords(xml, report, warnings);

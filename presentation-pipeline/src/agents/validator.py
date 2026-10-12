@@ -64,6 +64,9 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     ref_issues: list[dict[str, Any]] = []
     if element_refs.mode() == "kpi":
         idx = state.get("current_slide_index", 0)
+        if "ref=" in xml:   # the LLM's own XML, before code fills it (eval bundles: the first try)
+            output_dir.mkdir(parents=True, exist_ok=True)
+            (output_dir / "generated.xml").write_text(xml, encoding="utf-8")
         refs = element_refs.fill_refs(xml, slide_plans[idx] if idx < len(slide_plans) else {})
         xml, ref_issues = refs["xml"], refs["issues"]
         for i in ref_issues:
