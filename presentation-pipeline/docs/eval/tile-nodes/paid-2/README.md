@@ -50,12 +50,50 @@ output 2,920 (324 a slide). Check 1: $0.058 for 3 slides (≈ $0.019 a slide, on
 ## Proposed next (free)
 
 - (a) An item with its own `color` and no `variant` takes the toned look (soft fill, coloured border, number in that
-  colour), so a colour the LLM asks for always shows (also the replay's finding 4).
+  colour), so a colour the LLM asks for always shows (also the replay's finding 4). **Built** (`1b9af6c`).
 - (b) Planner `kpi_tones` (spec §6), so colour by meaning comes from the plan, not from the generator reading the hint.
+  Not built: touches `slide_component_planner.py` (another session's uncommitted edits); needs the user's go-ahead.
 - (c) Tiles inside the LLM's own filled panel: say so in the tile lines, or draw them `bare` / unfilled on a panel of
-  the same colour; and the lower-weight row's 28 px (fit-grow).
+  the same colour; and the lower-weight row's 28 px (fit-grow). **Built in code** (`875a18b`; no prompt line).
 - (d) Why tile values stop at 58–60 px in a growing band where hand-built tiles reach 72–91 px (fit-grow on the
-  expanded tiles: does the group / its tiles grow with the band?).
+  expanded tiles: does the group / its tiles grow with the band?). **Found and fixed** (`e57c8b4`).
+
+## Fixes (2026-10-12, free; `fixes/`)
+
+Re-scored on the same 9 saved runs, arm B expanded again from each run's `first.xml` on the new code
+(`python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label <copy> --rescore --refill`, `6ee2255`); renders in
+`fixes/sheet-01..03.png` (same blind order as `sheet-01..03.png`, `key.json`), scores in `fixes/summary.md`.
+
+**Why 58 px (d).** Not a cap: the width. tiles.py laid the bare `<KpiGrid>` of four as one row of 285 px tiles; at
+~60 px "14 months" wraps (fit-grow's line check), with ~200 px of the band left empty. The hand-built route's LLM
+had drawn the same four as 2 × 2. CHEFFIN 1's scorecard stops at 60 px for a different reason: its tiles reach the
+fill target beside the 72 px hero tile (as on the hand route); its platform row stayed at 28 px because the slide
+was full: the LLM's panel padding (20) plus the tiles' own (22) and the hero first in line for any spare height.
+
+| | before | after | hand-built (A) |
+|---|---|---|---|
+| QBR values (r1 / r2 / r3) | 58 / 58 / 58, one row of 4 | **85 / 87 / 85**, 2 × 2 (`regridTiles`), labels 16 → 24 | 91 / 86 / 86 |
+| CHEFFIN 1 scorecard; platform row | 60; 29 / 56; 28 / 60; 29 | 60; **60** / 60; **49** / 60; **60** (bare on the LLM's pink panel) | 72; 69 / 72; 63 / 72; 72 |
+| CHEFFIN 4 values; `$warning` / `$positive` items | 58; colours not drawn | 58; CPC toned amber, Allowable CPC toned green | 28 |
+| first try / errors / repairs / broken words / card empty B | 48/48, 0, 0, 0, 0 | unchanged | |
+
+The hand-built route moved too, a little: CHEFFIN 1's platform row 72 → 69 (r1) and 66 → 63 (r2), because
+content-sized ref tiles now grow their labels with the numbers inside the search (labels 16 → 18–24).
+
+What the fixes do:
+- (a) `with_color: toned` on `plain` (block-variants.yaml): an item with its own `color` and no variant of its own
+  draws toned. Explicit variants, a group `color`, and variants that already show the colour are unchanged.
+- (d) tiles.py ids a row it chose itself (no `layout` / `cols` from the LLM) `kpig-<component>`; fit-grow's new
+  phase `regridTiles` grows the row and its balanced two-row grid and keeps the grid when its numbers end ≥ 15%
+  larger. Content-sized ref tiles grow their labels / notes with the numbers inside the search (0.3 ×, ≤ 24 px).
+- (c) a tile whose fill equals the fill of the nearest box the LLM drew around its tag (not the slide root) draws
+  without fill, border or padding: the panel is the tile, the number keeps its colour. A content-sized hero already
+  ≥ 48 px grows after the other KPI groups.
+
+Still open: QBR's tiles have no colour at all (the plan has no tones and the LLM writes a bare `<KpiGrid>`): the
+user's other reason for the QBR loss ("color code"), (b). CHEFFIN 1's tile labels stay 16 px (the slide is full).
+The user's CHEFFIN 1 note (Combined ROAS with the platform ROAS figures) is the plan's grouping, both routes: kept
+separate (user, 2026-10-12).
 
 Files: `sheet-01..03.png` (blind pairs), `marks.csv`, `key.json` (`nodes_side` = tiles), `summary.md` (scores per
 run), `first-*.xml` (what the LLM wrote).
