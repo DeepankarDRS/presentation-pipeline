@@ -52,7 +52,7 @@ output 2,920 (324 a slide). Check 1: $0.058 for 3 slides (≈ $0.019 a slide, on
 - (a) An item with its own `color` and no `variant` takes the toned look (soft fill, coloured border, number in that
   colour), so a colour the LLM asks for always shows (also the replay's finding 4). **Built** (`1b9af6c`).
 - (b) Planner `kpi_tones` (spec §6), so colour by meaning comes from the plan, not from the generator reading the hint.
-  Not built: touches `slide_component_planner.py` (another session's uncommitted edits); needs the user's go-ahead.
+  **Built** (user's go-ahead, `27b7aae`; the planner's prompt and schema text, not `slide_component_planner.py`).
 - (c) Tiles inside the LLM's own filled panel: say so in the tile lines, or draw them `bare` / unfilled on a panel of
   the same colour; and the lower-weight row's 28 px (fit-grow). **Built in code** (`875a18b`; no prompt line).
 - (d) Why tile values stop at 58–60 px in a growing band where hand-built tiles reach 72–91 px (fit-grow on the
@@ -90,7 +90,19 @@ What the fixes do:
   without fill, border or padding: the panel is the tile, the number keeps its colour. A content-sized hero already
   ≥ 48 px grows after the other KPI groups.
 
-Still open: QBR's tiles have no colour at all (the plan has no tones and the LLM writes a bare `<KpiGrid>`): the
+**(b) planner tones** (`27b7aae`, `b115ef9`). The slide component planner writes `kpi_tones` per item (good / bad /
+watch / "", by what the number means: payback shorter = good); `plan_checks.settle_kpi_tones` keeps one per value.
+Under tiles a plain tile with no colour asked draws its tone (`with_tone` on `plain`): bad / watch tinted, good in
+the number; a colour or variant the LLM writes wins. The element-ref route already colours ref text by tone.
+Not measurable on the saved runs (their plans have no tones): `fixes/tones-demo.png` re-expands the saved first
+tries with tones taken from each plan's own hint (QBR good, good, bad, good; CHEFFIN 1 platform bad, bad; CHEFFIN 4
+CPC bad, Allowable CPC good) — an illustration, not evidence. QBR then reads like the hand route (green numbers, the
+margin tile tinted red); CHEFFIN 1 and 4 do not change (the LLM's own colours already win there). Evidence needs a
+planner run: `kpi_paid --plans` puts arm B on a `kpi_plan_only` run's plans. Gallery (free): where several items share a bad tone, all of them
+tint, so example 2 ("one tile singled out", one item toned by hand) now shows three red tiles; emphasis stays the
+plan's inverted / hero item. Unit tests 1031 pass / 4 known.
+
+Before (b), still open: QBR's tiles have no colour at all (the plan has no tones and the LLM writes a bare `<KpiGrid>`): the
 user's other reason for the QBR loss ("color code"), (b). CHEFFIN 1's tile labels stay 16 px (the slide is full).
 The user's CHEFFIN 1 note (Combined ROAS with the platform ROAS figures) is the plan's grouping, both routes: kept
 separate (user, 2026-10-12).
