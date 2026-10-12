@@ -481,3 +481,11 @@ with (CPC) and moves it ahead of CPC — against the brief's order and the slide
 allowable); the prompt's "a target vs the actual" example may read as "split them". r1 shortened the label
 "Allowable CPC for 1.0x ROAS" to "Allowable CPC" (the only not-carried number, 1.0x). Cost per planning run
 $0.05-0.09 (above the $0.30-0.50 estimate for 9).
+
+**Prompt fix after the check (user, 2026-10-12): the planner conserves the data, the composition is its own
+choice.** `slide_component_planner/system.j2`: Job 1 now says labels are content, copied word for word, never
+shortened, and every number and label of the slide sits in exactly one component; Job 2 says which items go
+together, whether a group stays whole or splits, which kind carries it and what is hero is the planner's choice,
+there is no single right arrangement and variety between slides and runs is welcome. The grouping paragraph
+gives the groupings as examples, not rules, and says numbers compared directly (an actual and its target or
+benchmark) stay in one group, side by side; within a group the brief's order. Not yet run with the LLM.
