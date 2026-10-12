@@ -289,12 +289,35 @@ def test_prompt_line_names_items_emphasis_and_tones_but_no_values():
     assert '<KpiGrid ref="kpis"/>' in line
 
 
+def test_prompt_line_lists_the_variants_this_component_can_use():
+    line = T.prompt_line(PLAN["components"][1])                         # tones + an emphasis item
+    assert "variants plain filled toned bar dot inverted bare" in line
+    line = T.prompt_line(PLAN2["components"][-1])                       # 2 items, no tones, no hint
+    assert "variants plain filled bar dot bare;" in line
+    assert "no emphasis item (no hero, inverted or focus)" in line and "no tones;" in line
+    hinted = dict(PLAN["components"][1], design_hint="show Revenue in positive colour",
+                  content_data={k: v for k, v in PLAN["components"][1]["content_data"].items() if k != "kpi_tones"})
+    line = T.prompt_line(hinted)
+    assert "no tones (colour by the visual-intent)" in line and "variants plain filled bar dot bare;" in line
+
+
 def test_node_lines_name_every_variant_and_arrange():
     lines = T.node_lines()
     for name in T.kpi()["variants"]:
         assert f"{name} (" in lines
     for a in T.kpi()["item_attributes"]["arrange"]["values"]:
         assert a in lines
+
+
+def test_node_lines_map_the_kpi_treatments_to_tile_attributes():
+    from src.agents.hint_capabilities import kind_treatments
+    lines = T.node_lines()
+    planner = kind_treatments("kpi_row")
+    for t in T.treatments():
+        assert t in planner and f"\n- {t}: " in lines
+    assert "sparkline" in planner and "sparkline" not in T.treatments()      # a Kpi holds no chart
+    assert T.scope(planner) == "treatments: " + ", ".join(t for t in planner if t != "sparkline")
+    assert "only for an item that differs" in lines
 
 
 def _gen_state():
@@ -315,9 +338,24 @@ def test_generator_prompt_under_tiles(monkeypatch):
     head = system.split("\n## THIS SLIDE\n")[0]
     assert "## KPI TILES (code draws them from the plan)" in head      # fixed lines: in the cached prefix
     assert "# kpi_row" not in system and "# dark_callout_panel" not in system and "# compact_kpi_strip" not in system
+    # the kpi_row's visual-intent: tile attributes, not the hand-built techniques; no sparkline in its scope
+    techniques = system.split("## VISUAL-INTENT TRANSLATION")[1]
+    assert "- icon_tiles (" not in techniques and "- sparkline (" not in techniques
+    kpi_scope = user.split("KPI TILES kpis:")[0].rsplit("scope:", 1)[1]
+    assert "sentiment" in kpi_scope and "sparkline" not in kpi_scope
     monkeypatch.setenv("POM_BLOCKS", "kpi")
     system, user = _render_prompts(dict(_gen_state()))
     assert "KPI REFS for kpis" in user and "## KPI TILES" not in system
+    assert "- sparkline (" in system.split("## VISUAL-INTENT TRANSLATION")[1]
+
+
+def test_kpi_row_without_an_id_keeps_the_techniques():
+    from src.agents.context_builder import build_contract
+    from src.agents.style_resolver import resolve_theme
+    plan = {"slide_index": 0, "slide_type": "data", "components": [
+        {"kind": "kpi_row", "count": 2, "content_data": {"kpi_labels": ["A", "B"], "kpi_values": ["1", "2"]}}]}
+    contract = build_contract(plan, resolve_theme("corporate-slate"))
+    assert "- sparkline (" in contract["visual_intent_techniques"] and "sparkline" in contract["hint_scopes"]["kpi_row"]
 
 
 def test_kpi_recipes_stay_on_the_other_routes(monkeypatch):

@@ -61,8 +61,9 @@ width in the render (the known POM-measure vs drawn-font gap).
 
 ## Proposed next (free unless noted)
 
-1. **Prompt**: one line in the fixed tile lines, roughly "apply the component's visual-intent with `color` /
-   `note.color` / `variant` per item; with no tones given, colour each item by what the hint says".
+1. **Prompt** — built 2026-10-12 (spec §10, last row): each kpi_row treatment mapped to tile attributes in the
+   fixed lines, the hand-built KPI techniques and `sparkline` out of the tiles prompt, the variants this component
+   can use in its line. Not run paid yet.
 2. **Emphasis**: `spec.singled_out` takes the label nearest the emphasis word ("ARR tile as the hero") when the hint
    names several labels. It is still the plan that picks the item, not the LLM; needs your OK (rule of 2026-10-07).
 3. **Planner tones** (spec §6, look spec V10): fill `kpi_tones` so colour by meaning doesn't depend on the generator

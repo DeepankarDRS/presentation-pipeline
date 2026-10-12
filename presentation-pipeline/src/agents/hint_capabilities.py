@@ -28,6 +28,11 @@ def _kind(kind: str) -> dict[str, Any]:
     return (load_capabilities().get("kinds") or {}).get(kind) or {}
 
 
+def kind_treatments(kind: str) -> list[str]:
+    """The treatments a component kind supports, in YAML order."""
+    return list(_kind(kind).get("treatments", []))
+
+
 def planner_capabilities_section() -> str:
     """One line per kind: the treatment intents it supports, plus what it must never get."""
     caps = load_capabilities()

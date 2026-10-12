@@ -328,6 +328,22 @@ tile_nodes:
     owned_by_code: [label / value / note text, one value size per group (hero larger),
                     unit spans (value_parts), word fit, icon size, readable text on dark fills]
 
+    # the planner's visual-intent treatments (hint-capabilities.yaml kpi_row) as tile attributes. Under tiles the
+    # generator gets these instead of the hand-built techniques, and a kpi_row's scope lists only these
+    # (sparkline is left out: a Kpi holds no chart). Emphasis stays the plan's item (user, 2026-10-07).
+    treatments:
+      emphasis:       'size="hero" on the emphasis item'
+      focus:          'variant="inverted" on the emphasis item'
+      inverted_panel: 'variant="inverted" on the emphasis item'
+      sentiment:      'color on each item by meaning: $negative losses / leaks / risks, $positive wins / fixes, $warning watch
+                       (the tones, when given, already set it); variant="filled" or "bar" shows it on the tile, value.color="$negativeText"
+                       (or $positiveText / $warningText) on the number'
+      icon_tiles:     'icon="name" (ICON NAMES) on every item, or on none'
+      status_dots:    'variant="dot" with each item''s color'
+      accent_border:  'variant="bar"'
+      gradient:       'backgroundGradient="linear-gradient(90deg, $accentSoft 0%, $surface 100%)" on a <Kpi>'
+      lift:           'shadow.type="outer" shadow.blur="6" shadow.offset="2" on each <Kpi>'
+
     # the house look: the first layer, under every variant (the pilot gallery's tile, 2026-10-11)
     house_look: {padding: 22, gap: 10, justifyContent: center, icon.color: "${role}Text",
                  label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}

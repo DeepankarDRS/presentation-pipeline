@@ -20,7 +20,7 @@ from typing import Any
 import yaml
 
 from src.agents.blueprint_selector import select_blueprint
-from src.agents.hint_capabilities import hint_scopes, visual_intent_techniques
+from src.agents.hint_capabilities import hint_scopes, kind_treatments, visual_intent_techniques
 from src.agents.capacity import layout_rules
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
 from src.compiler.nodes import tiles
@@ -592,8 +592,16 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     deck_notes = _select_notes([], validation, text_yaml, {}, theme, has_grammar=has_grammar)
     house_style = _render_house_style() + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n" + layout_rules()
     recipe_kinds = [_recipe_kind(c) for c in slide_plan.get("components", [])]
+    technique_kinds, scopes = kinds, hint_scopes(kinds)
     if tiles.on():   # code draws KPI tiles: no kpi_row / hero_stat / compact strip / dark callout recipes
         recipe_kinds = [k for k in recipe_kinds if k not in ("kpi_row", "hero_stat")]
+        # a kpi_row's visual-intent becomes tile attributes (tiles.node_lines), not hand-built techniques;
+        # a kpi_row without a component_id has no tile tags and keeps them
+        kpis = [c for c in slide_plan.get("components", []) if c.get("kind") == "kpi_row"]
+        if kpis and all(c.get("component_id") for c in kpis):
+            technique_kinds = [k for k in kinds if k != "kpi_row"]
+            if "kpi_row" in scopes:
+                scopes["kpi_row"] = tiles.scope(kind_treatments("kpi_row"))
     component_recipes = _render_component_recipes(recipe_kinds)
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar and EXAMPLES_ON else ""
@@ -654,8 +662,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "blueprint_reference_xml": blueprint_reference_xml,
         "blueprint_name": blueprint_name,
         "component_count": len(kinds),
-        "visual_intent_techniques": visual_intent_techniques(kinds),
-        "hint_scopes": hint_scopes(kinds),
+        "visual_intent_techniques": visual_intent_techniques(technique_kinds),
+        "hint_scopes": scopes,
         "icon_names": _render_icon_names(),
     }
 

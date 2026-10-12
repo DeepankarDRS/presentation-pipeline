@@ -481,13 +481,32 @@ def node_lines() -> str:
         f'<{GROUP} ref="<kpi id>" layout="row|grid|column" cols="N"> draws every item in plan order; holds only <{ITEM}>; '
         "its gap / box attributes are the group's box.",
         f'<{ITEM} ref="<kpi id>.<index>"/> inside the group restyles that item; outside, places it anywhere (the group '
-        "skips it). Each item once.",
+        f"skips it). Each item once. Write a <{ITEM}> only for an item that differs: one with no attributes inside "
+        "its group changes nothing.",
         "Both take variant, arrange, color, icon and parts: label. value. note. = <Text> attributes, icon. = <Icon>, "
         'marker. = <Shape> (value.glow.size="6" icon.variant="circle-filled"); a Kpi also size="hero" and box attributes.',
         "Code writes the text and sizes: no fontSize, lineHeight, borderRadius or children in a Kpi.",
         f'variant: {variants}. inverted / size="hero": the line\'s emphasis item only.',
         f"arrange: {arranges} (side = icon left). color: $accent $positive $negative $warning $neutral (default: the tone).",
+        "The component's visual-intent is drawn with these attributes (a bare tag draws none of it):",
+        *(f"- {t}: {how}" for t, how in treatments().items()),
     ])
+
+
+def treatments() -> dict[str, str]:
+    """Visual-intent treatment -> the tile attributes that draw it (block-variants.yaml `kpi.treatments`)."""
+    return {t: " ".join(str(how).split()) for t, how in kpi()["treatments"].items()}
+
+
+def scope(planner_treatments: list[str]) -> str:
+    """A kpi_row's scope line under tiles: the planner's treatments that tiles can draw."""
+    return "treatments: " + ", ".join(t for t in planner_treatments if t in treatments())
+
+
+def variants_for(comp: dict) -> list[str]:
+    """The variants this component can use (requires met; inverted needs the plan's emphasis item)."""
+    extra = {"is_emphasis_item": emphasis_index(comp) is not None}
+    return [n for n, v in kpi()["variants"].items() if not spec.failed_requires(v, comp, extra)]
 
 
 def prompt_line(comp: dict) -> str:
@@ -498,10 +517,12 @@ def prompt_line(comp: dict) -> str:
     parts = [f"KPI TILES {cid}: {n} item{'s' if n != 1 else ''} (0-{n - 1})"]
     parts.append("items " + ", ".join(f"{i} {labels[i] if i < len(labels) else ''}".strip() for i in range(n)))
     f = emphasis_index(comp)
-    if f is not None:
-        parts.append(f"emphasis {f}")
+    parts.append(f"emphasis {f}" if f is not None else "no emphasis item (no hero, inverted or focus)")
     tones = element_refs._list(comp, "kpi_tones")
     if any(tones):
         parts.append("tones " + " ".join(f"{i}={t}" for i, t in enumerate(tones) if t))
+    else:
+        parts.append("no tones" + (" (colour by the visual-intent)" if comp.get("design_hint") else ""))
+    parts.append("variants " + " ".join(variants_for(comp)))
     parts.append(f"longest value {max((len(v) for v in values), default=0)} chars")
     return "; ".join(parts) + f'. <{GROUP} ref="{cid}"/> or <{ITEM} ref="{cid}.N"/>'
