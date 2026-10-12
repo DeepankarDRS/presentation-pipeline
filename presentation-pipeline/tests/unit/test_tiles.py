@@ -349,3 +349,23 @@ def test_mode_values(monkeypatch):
     assert E.refs_on() and not T.on()
     monkeypatch.setenv("POM_BLOCKS", "off")
     assert not E.refs_on()
+
+
+def test_side_keeps_the_dot_beside_the_label_when_an_icon_leads():
+    xml = run('<KpiGrid ref="kpis" variant="dot" arrange="side" icon="gauge"/>')["xml"]
+    assert xml.count('<Shape shapeType="ellipse"') == 4 and xml.count('<Icon name="gauge"') == 4
+    assert re.search(r'<VStack gap="6" grow="1"><HStack gap="8" alignItems="center"><Shape', xml)
+
+
+def test_item_variant_replaces_the_group_variant_look():
+    xml = run('<KpiGrid ref="kpis" variant="plain" label.bold="true"><Kpi ref="kpis.2" variant="inverted"/></KpiGrid>')["xml"]
+    focus = tile_of(xml, 2)
+    assert 'backgroundColor="$panelDark"' in focus and "border.color" not in focus   # no plain hairline under it
+    assert '<Text color="$onPanelDark" bold="true" fontSize="16">Blended ROAS</Text>' in xml   # the group's attrs still apply
+
+
+def test_a_row_with_a_hero_tile_gets_equal_columns():
+    xml = run('<KpiGrid ref="kpis"><Kpi ref="kpis.2" variant="inverted" size="hero"/></KpiGrid>')["xml"]
+    assert all(" w=\"1\"" in tile_of(xml, i) and "grow=\"1\"" in tile_of(xml, i) for i in range(4))
+    plain = run('<KpiGrid ref="kpis"/>')["xml"]
+    assert " w=\"1\"" not in tile_of(plain, 0) and "grow=\"1\"" in tile_of(plain, 0)

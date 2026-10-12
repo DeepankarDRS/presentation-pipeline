@@ -220,8 +220,11 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
             flag("NODE_ATTR_DROPPED", m.get("ref"), f'color="{m["color"]}" on ref="{m.get("ref")}": one of {", ".join(ROLE_OF)}; '
                  "the plan tone used.")
     vs = kpi()["variants"]
+    # an item's own variant replaces the group's (its look does not sit on the group variant's, e.g. a plain
+    # hairline under an inverted tile); the group's attributes still apply under it
     layers = [_look(kpi()["house_look"], role)]
-    layers.append(_look(vs[_variant(comp, i, gmeta.get("variant"), cid, flag)]["look"], role))
+    if not imeta.get("variant"):
+        layers.append(_look(vs[_variant(comp, i, gmeta.get("variant"), cid, flag)]["look"], role))
     layers.append(gparts)
     if imeta.get("variant"):
         layers.append(_look(vs[_variant(comp, i, imeta["variant"], ref, flag)]["look"], role))
@@ -268,6 +271,8 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
         if lead is not None:
             tile.append(lead)
         body = etree.SubElement(tile, "VStack", gap="6", grow="1")
+        if icon is not None and marker is not None:   # the icon leads; the dot stays beside the label
+            label = _row(marker, label, 8)
         for el in (label, value, note):
             if el is not None:
                 body.append(el)
@@ -310,8 +315,14 @@ def build_group(tiles: list[etree._Element], meta: dict[str, str], box: _Layer, 
                 cols = None
             else:
                 layout = "grid"   # cols="2" asks for a grid
-    for t in tiles:   # tiles share the row (content width + an even share of the spare, as element_refs._fill_rows)
+    # tiles share the row: content width + an even share of the spare (element_refs._fill_rows). A row holding a
+    # hero tile gets equal columns: the peers' numbers grow first and would take the hero's width (CHEFFIN 1 dry
+    # run 2026-10-12: peers 28 -> 79 px, the hero cut from 72 to 35 px by the shrink guard)
+    hero = any(t.find(".//Text[@size='hero']") is not None for t in tiles)
+    for t in tiles:
         if t.get("w") is None and t.get("grow") is None:
+            if hero:
+                t.set("w", "1")
             t.set("grow", "1")
     if layout == "grid":
         cols = cols or _balanced_cols(len(tiles))
