@@ -340,6 +340,8 @@ def build_group(tiles: list[etree._Element], meta: dict[str, str], box: _Layer, 
         outer = etree.Element("HStack" if layout == "row" else "VStack", gap=gap, alignItems="stretch")
         for t in tiles:
             outer.append(t)
+        if layout == "row" and meta.get("layout") is None and meta.get("cols") is None:
+            outer.set("id", f"kpig-{ref}")   # a row code chose: fit-grow may make it two rows (regridTiles)
     for k, v in box.box.items():
         outer.set(k, v)
     return outer

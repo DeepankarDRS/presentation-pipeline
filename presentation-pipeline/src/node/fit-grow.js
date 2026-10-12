@@ -957,7 +957,14 @@ async function growStats(xml, report) {
       // (grow on a tile in a row is its width: the fill step's _fill_rows spreads a row of tiles that way)
       const content = r.tiles.every((t) => { const n = L.byId.get(t);
         return n.h === undefined && (n.grow === undefined || up.get(n)?.type === "hstack"); });
-      if (f0 < cap && (ratio < TARGET_FILL || content)) groups.push({ ids: r.tiles, anchors: r.ids, f0, ratio, cap, hero: r.hero, free: ratio >= TARGET_FILL, rank: r.rank, ref: true });
+      // tiles sized by their content take the slide's spare height: their labels / notes grow with the numbers
+      // inside the search (growStatSides' size), so the numbers leave them the room (a two-row grid of tiles grew
+      // to 95 px and left its labels at 16, regridTiles). Tiles with room keep it for them (the fill target).
+      const sides = [];
+      for (const t of r.tiles) walk(L.byId.get(t), (n) => {
+        if (n.type === "text" && n.id && !r.ids.includes(n.id) && !(n.runs ?? []).some((x) => x.fontSize !== undefined)) sides.push([n.id, n.fontSize ?? 24]);
+      });
+      if (f0 < cap && (ratio < TARGET_FILL || content)) groups.push({ ids: r.tiles, anchors: r.ids, f0, ratio, cap, hero: r.hero, free: ratio >= TARGET_FILL, rank: r.rank, ref: true, sides: ratio >= TARGET_FILL ? sides : [] });
     }
     // a lone hero stat (the one number the headline rests on) grows past tile size
     const grouped = new Set(groups.flatMap((g) => g.ids));
@@ -991,7 +998,9 @@ async function growStats(xml, report) {
       if (all.length) g.cap = Math.min(g.cap, Math.max(...all));
       if (g.cap <= g.f0) continue;
     }
-    const apply = (src, s) => g.anchors.reduce((x, id) => scaleTextFont(x, id, s, g.cap), src);
+    const side = (s) => Math.min(SIDE_CAP, Math.round(Math.min(Math.round(g.f0 * s), g.cap) * SIDE_RATIO));
+    const apply = (src, s) => (g.sides ?? []).reduce((x, [id, f]) => (f < side(s) ? setAttrs(x, id, { fontSize: side(s) }) : x),
+      g.anchors.reduce((x, id) => scaleTextFont(x, id, s, g.cap), src));
     const unpinned = xml;
     xml = await pinWidths(xml, g.ids);
     const r = await search(xml, g.ids, apply, g.cap / g.f0, g.anchors, 0, g.anchors, g.free);
@@ -999,6 +1008,81 @@ async function growStats(xml, report) {
     xml = apply(xml, r.best);
     report.push(`${g.hero ? "hero stat" : "KPI values"} x${r.best.toFixed(2)} (${g.f0} -> ${Math.min(Math.round(g.f0 * r.best), g.cap)}px), `
       + `fill ${Math.round(g.ratio * 100)}% -> ${Math.round(r.ratio * 100)}%`);
+  }
+  return xml;
+}
+
+// --- phase 3a: a code-laid row of KPI tiles may become two rows -----------------
+// tiles.py lays a <KpiGrid> the LLM gave no layout / cols as one row (up to 4 items) and ids it
+// "kpig-<component>". In a tall band a row of four leaves its numbers bound by the tile width, not the
+// height (paid check 2, QBR: "14 months" wraps past 58 px in 285 px tiles with ~200 px of the band
+// empty; the hand-built 2 x 2 tiles of the same slide reached 91 px). The row and its balanced
+// two-row grid are both grown; the grid is kept when its smallest number ends REGRID_GAIN larger.
+const REGRID_MIN = 4;
+const REGRID_GAIN = 1.15;
+const GROUP_ID = /^kpig-/;
+
+/** [start, end) of each top-level child element of el (from findElement). */
+function childRanges(xml, el) {
+  const out = [];
+  const re = new RegExp(TAG_RE.source, "g");
+  re.lastIndex = el.openEnd;
+  let depth = 0, start = -1, m;
+  while ((m = re.exec(xml)) && m.index < el.end) {
+    if (m[1]) {
+      depth -= 1;
+      if (depth === 0) out.push([start, re.lastIndex]);
+      if (depth < 0) break;   // the element's own close tag
+    } else if (m[4]) {
+      if (depth === 0) out.push([m.index, re.lastIndex]);
+    } else {
+      if (depth === 0) start = m.index;
+      depth += 1;
+    }
+  }
+  return out;
+}
+
+/** The row `id` as a VStack of balanced HStack rows (the tiles unchanged), or null. */
+function asGrid(xml, id, rows) {
+  const el = findElement(xml, id);
+  if (!el || el.name !== "HStack") return null;
+  const kids = childRanges(xml, el);
+  if (kids.length < REGRID_MIN) return null;
+  const open = xml.slice(el.start, el.openEnd);
+  const gap = (/\sgap\s*=\s*"([^"]*)"/.exec(open) ?? [])[1] ?? "0";
+  const cols = Math.ceil(kids.length / rows);
+  let body = "";
+  for (let k = 0, r = 0; k < kids.length; k += cols, r += 1) {
+    body += `<HStack id="${ID_PREFIX}${9000 + r}" gap="${gap}" grow="1" alignItems="stretch">`
+      + kids.slice(k, k + cols).map(([s, e]) => xml.slice(s, e)).join("") + "</HStack>";
+  }
+  const vopen = open.replace(/^<HStack/, "<VStack").replace(/\/?>$/, ">");
+  return xml.slice(0, el.start) + vopen + body + "</VStack>" + xml.slice(el.end);
+}
+
+/** The smallest KPI value size inside element id. */
+function minValue(xml, id) {
+  const el = findElement(xml, id);
+  if (!el) return 0;
+  const sizes = [...xml.slice(el.start, el.end).matchAll(/<Text\b[^>]*>/g)].map((m) => m[0])
+    .filter((t) => { const i = /\sid="([^"]*)"/.exec(t); return i && REF_VALUE.test(i[1]); })
+    .map((t) => Number((/\sfontSize="([\d.]+)"/.exec(t) ?? [])[1] ?? 0));
+  return sizes.length ? Math.min(...sizes) : 0;
+}
+
+async function regridTiles(xml, report) {
+  const ids = [...xml.matchAll(/<HStack\b[^>]*\sid="(kpig-[^"]*)"/g)].map((m) => m[1]).filter((id) => GROUP_ID.test(id));
+  for (const id of ids) {
+    const grid = asGrid(xml, id, 2);
+    if (!grid) continue;
+    const pinned = new Set(PINNED);
+    const trial = async (x) => { const out = minValue(await growStats(x, []), id); PINNED.clear(); pinned.forEach((p) => PINNED.add(p)); return out; };
+    const row = await trial(xml), two = await trial(grid);
+    if (two >= row * REGRID_GAIN) {
+      xml = grid;
+      report.push(`KPI tiles of ${id.slice(5)} in two rows (numbers ${row} -> ${two}px as grown)`);
+    }
   }
   return xml;
 }
@@ -1895,6 +1979,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await sizeTables(xml, report);
   xml = await growDiagrams(xml, report);
   xml = await shareHeight(xml, report);
+  xml = await regridTiles(xml, report);
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);

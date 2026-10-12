@@ -53,3 +53,52 @@ def test_a_kpi_row_is_evened_even_when_the_guard_takes_a_number_below_24px(tmp_p
     on = _compile(xml, tmp_path / "on")
     values = [int(v) for v in re.findall(r'<Text[^>]*\sfontSize="(\d+)" color="\$textMain" bold="true">', on["xml"])]
     assert len(values) == 5 and len(set(values)) == 1 and values[0] < 24, (values, on["fitGrow"])
+
+
+# ── a code-laid row of tiles may become two rows (regridTiles; paid check 2, QBR) ─────────────────────────────
+
+_THEME = ('<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" accentText="1C5CEA" textMain="16202E" '
+          'textMuted="55627A" border="CAD5E4" />')
+_QBR = {"components": [{"component_id": "kpis", "kind": "kpi_row", "count": 4, "content_data": {
+    "kpi_labels": ["ARR", "NRR", "Gross Margin", "CAC Payback"], "kpi_values": ["$48.2M", "114%", "72.1%", "14 months"],
+    "kpi_deltas": ["+18% QoQ", "+2 pts", "-1.4 pts", "-2 months"]}}]}
+
+
+def _tiles_slide(tmp_path, group, below=""):
+    from src.compiler.nodes import tiles
+    body = (f'<VStack gap="10"><Text fontSize="36" color="$textMain" bold="true">ARR grew while margin softened</Text></VStack>'
+            f'<VStack grow="1" alignItems="stretch" justifyContent="center">{group}</VStack>{below}')
+    res = tiles.fill(f'<Slide><VStack w="1280" h="720" padding="48" gap="32" alignItems="stretch" '
+                     f'backgroundColor="$surface">{body}</VStack></Slide>', _QBR)
+    assert res["ok"], res["issues"]
+    xml = tmp_path / "t.xml"
+    xml.write_text(_THEME + res["xml"], encoding="utf-8")
+    return _compile(xml, tmp_path / "on")
+
+
+def _values(xml):
+    return [int(v) for v in re.findall(r'<Text[^>]*\sfontSize="(\d+)"[^>]*\sid="kpiv\d-kpis-\d"', xml)]
+
+
+def test_a_code_laid_row_of_four_tiles_becomes_two_rows_in_a_tall_band(tmp_path, monkeypatch):
+    monkeypatch.setenv("POM_BLOCKS", "tiles")
+    on = _tiles_slide(tmp_path, '<KpiGrid ref="kpis"/>')
+    assert any("KPI tiles of kpis in two rows" in r for r in on["fitGrow"]), on["fitGrow"]
+    values = _values(on["xml"])
+    assert len(values) == 4 and len(set(values)) == 1 and values[0] >= 75, (values, on["fitGrow"])   # row: 58
+    labels = [int(v) for v in re.findall(r'<Text color="\$textMuted" fontSize="(\d+)">', on["xml"])]
+    assert labels and min(labels) >= 20, labels   # the labels grew with the numbers
+    assert on["xml"].count("<HStack") >= 2 and 'id="kpig-kpis"' in on["xml"]
+
+
+def test_a_row_the_llm_asked_for_stays_a_row(tmp_path, monkeypatch):
+    monkeypatch.setenv("POM_BLOCKS", "tiles")
+    on = _tiles_slide(tmp_path, '<KpiGrid ref="kpis" layout="row"/>')
+    assert not any("two rows" in r for r in on["fitGrow"]) and "kpig-" not in on["xml"]
+
+
+def test_a_row_with_no_height_to_spare_stays_a_row(tmp_path, monkeypatch):
+    monkeypatch.setenv("POM_BLOCKS", "tiles")
+    filler = '<VStack h="330" backgroundColor="$surfaceAlt"><Text fontSize="18" color="$textMain">Chart</Text></VStack>'
+    on = _tiles_slide(tmp_path, '<KpiGrid ref="kpis"/>', filler)
+    assert not any("two rows" in r for r in on["fitGrow"]), on["fitGrow"]
