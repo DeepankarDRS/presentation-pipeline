@@ -25,7 +25,7 @@ from src.compiler.compiler_client import CompilerError, compile_xml, validate_xm
 from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
-from src.compiler.nodes import element_refs
+from src.compiler.nodes import element_refs, tiles
 from src.compiler.normalizer import ensure_single_theme, has_dark_panel, normalize_xml, pre_validate, soften_dark_panels
 from src.state import PresentationState
 
@@ -60,14 +60,16 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         output_dir = output_dir / f"retry-{attempt}"
 
     # KPI element refs (POM_BLOCKS=kpi, docs/kpi-node-pilot-2026-10-11.md): code writes the text
-    # of every <Text ref="cid.i.field"/> before anything else reads the slide
+    # of every <Text ref="cid.i.field"/> before anything else reads the slide; under POM_BLOCKS=tiles
+    # it first expands <KpiGrid> / <Kpi> into such tiles (docs/tile-nodes-spec-2026-10-12.md)
     ref_issues: list[dict[str, Any]] = []
-    if element_refs.mode() == "kpi":
+    if element_refs.refs_on():
         idx = state.get("current_slide_index", 0)
         if "ref=" in xml:   # the LLM's own XML, before code fills it (eval bundles: the first try)
             output_dir.mkdir(parents=True, exist_ok=True)
             (output_dir / "generated.xml").write_text(xml, encoding="utf-8")
-        refs = element_refs.fill_refs(xml, slide_plans[idx] if idx < len(slide_plans) else {})
+        fill = tiles.fill if tiles.on() else element_refs.fill_refs
+        refs = fill(xml, slide_plans[idx] if idx < len(slide_plans) else {})
         xml, ref_issues = refs["xml"], refs["issues"]
         for i in ref_issues:
             logger.info(f"validator: {i['code']} ({i['severity']}): {i['message']}")

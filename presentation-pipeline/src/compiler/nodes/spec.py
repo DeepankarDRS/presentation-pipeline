@@ -150,8 +150,10 @@ def check(name: str, comp: dict) -> bool:
     raise KeyError(f"unknown requires check {name}")
 
 
-def failed_requires(variant: dict, comp: dict) -> list[str]:
-    return [r for r in variant.get("requires") or [] if not check(r, comp)]
+def failed_requires(variant: dict, comp: dict, extra: dict[str, bool] | None = None) -> list[str]:
+    """`extra`: checks only the caller can answer (tile nodes: is_emphasis_item, per item)."""
+    extra = extra or {}
+    return [r for r in variant.get("requires") or [] if not (extra[r] if r in extra else check(r, comp))]
 
 
 def available(kind: str, tag: str, comp: dict) -> dict[str, dict]:
@@ -160,10 +162,12 @@ def available(kind: str, tag: str, comp: dict) -> dict[str, dict]:
     return {k: v for k, v in variants(kind, tag, layout).items() if not failed_requires(v, comp)}
 
 
-def resolve_variant(kind: str, tag: str, comp: dict, asked: str | None) -> tuple[str | None, str | None, str]:
-    """(variant used, code or None, note). Unknown -> default; unmet -> the fallback chain."""
+def resolve_variant(kind: str, tag: str, comp: dict, asked: str | None, *, vs: dict[str, dict] | None = None,
+                    extra: dict[str, bool] | None = None) -> tuple[str | None, str | None, str]:
+    """(variant used, code or None, note). Unknown -> default; unmet -> the fallback chain.
+    `vs` replaces the block's variants (tile nodes read theirs from `tile_nodes`); `extra` as failed_requires."""
     layout = (comp.get("content_data") or {}).get("card_layout")
-    vs = variants(kind, tag, layout)
+    vs = vs if vs is not None else variants(kind, tag, layout)
     if not vs:
         return None, None, ""
     default = next(iter(vs))
@@ -174,10 +178,10 @@ def resolve_variant(kind: str, tag: str, comp: dict, asked: str | None) -> tuple
     seen, name = set(), asked
     while name in vs and name not in seen:
         seen.add(name)
-        fails = failed_requires(vs[name], comp)
+        fails = failed_requires(vs[name], comp, extra)
         if not fails:
             if name == asked:
                 return name, None, ""
-            return name, "NODE_VARIANT_UNMET", f'variant "{asked}" needs {", ".join(failed_requires(vs[asked], comp))}; "{name}" used'
+            return name, "NODE_VARIANT_UNMET", f'variant "{asked}" needs {", ".join(failed_requires(vs[asked], comp, extra))}; "{name}" used'
         name = vs[name].get("fallback") or default
-    return default, "NODE_VARIANT_UNMET", f'variant "{asked}" needs {", ".join(failed_requires(vs[asked], comp))}; "{default}" used'
+    return default, "NODE_VARIANT_UNMET", f'variant "{asked}" needs {", ".join(failed_requires(vs[asked], comp, extra))}; "{default}" used'

@@ -281,6 +281,20 @@ post_mvp:
     children: none
     defaults: { color: "4472C4", textColor: "FFFFFF" }
 
+# ── Tile nodes (NOT POM: code expands them before anything reads the slide) ────────
+# POM_BLOCKS=tiles. src/compiler/nodes/tiles.py expands each into VStack / HStack / Text / Icon / Shape
+# before the normalizer and the content model see the slide (not one of their sections). Attributes,
+# variants and looks: block-variants.yaml `tile_nodes`; design: docs/tile-nodes-spec-2026-10-12.md.
+tile_nodes:
+  KpiGrid:
+    description: "Every item of one kpi_row component, in plan order, as tiles in a row / grid / column."
+    required: [ref]
+    children: [Kpi]
+  Kpi:
+    description: "One KPI item: restyles it inside its KpiGrid, or places it anywhere outside one."
+    required: [ref]
+    children: none
+
 # ── Still deferred (NOT in the prompt yet) ───────────────────────────────
 deferred:
   phase_b_more: [Image]

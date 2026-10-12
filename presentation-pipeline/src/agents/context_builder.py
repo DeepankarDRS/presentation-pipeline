@@ -23,6 +23,7 @@ from src.agents.blueprint_selector import select_blueprint
 from src.agents.hint_capabilities import hint_scopes, visual_intent_techniques
 from src.agents.capacity import layout_rules
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
+from src.compiler.nodes import tiles
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
 logger = logging.getLogger(__name__)
@@ -590,8 +591,10 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     # the cached prefix of its system prompt, the rest after "## THIS SLIDE" (tile-nodes spec §5)
     deck_notes = _select_notes([], validation, text_yaml, {}, theme, has_grammar=has_grammar)
     house_style = _render_house_style() + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n" + layout_rules()
-    component_recipes = _render_component_recipes(
-        [_recipe_kind(c) for c in slide_plan.get("components", [])])
+    recipe_kinds = [_recipe_kind(c) for c in slide_plan.get("components", [])]
+    if tiles.on():   # code draws KPI tiles: no kpi_row / hero_stat / compact strip / dark callout recipes
+        recipe_kinds = [k for k in recipe_kinds if k not in ("kpi_row", "hero_stat")]
+    component_recipes = _render_component_recipes(recipe_kinds)
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar and EXAMPLES_ON else ""
 

@@ -1,6 +1,6 @@
 # pom-knowledge/core/block-variants.yaml   (DRAFT 2026-10-06; `blocks` is read by src/compiler/nodes/spec.py
-# for the 1a node route, `tile_nodes` at the end (2026-10-12) is a design not read by code yet:
-# docs/tile-nodes-spec-2026-10-12.md)
+# for the 1a node route; `tile_nodes` at the end (2026-10-12) is read by src/compiler/nodes/tiles.py under
+# POM_BLOCKS=tiles (KPI built; Card still a design): docs/tile-nodes-spec-2026-10-12.md)
 # The ONE place the ref-node tags and their `variant` names are stated (node contract,
 # docs/derived-blocks-planning-2026-10-06.md §3, decision D10). The generator prompt
 # renders each component's line from it, and the node pass reads it. A test fails when a
@@ -247,7 +247,7 @@ blocks:
 # `layer` has no tag: it carries no content shape, so the LLM draws it (NODE_KIND_NO_REF).
 
 
-# ══ Tile nodes (design 2026-10-12, not read by code yet) ══════════════════════════
+# ══ Tile nodes (design 2026-10-12; KPI read by src/compiler/nodes/tiles.py, Card not yet) ═════
 # Spec and reasons: docs/tile-nodes-spec-2026-10-12.md. Replaces, when built, the `kpi_row`,
 # `card_grid` and `card_steps` blocks above for the element-ref route (POM_BLOCKS=kpi).
 #
@@ -328,6 +328,10 @@ tile_nodes:
     owned_by_code: [label / value / note text, one value size per group (hero larger),
                     unit spans (value_parts), word fit, icon size, readable text on dark fills]
 
+    # the house look: the first layer, under every variant (the pilot gallery's tile, 2026-10-11)
+    house_look: {padding: 22, gap: 10, justifyContent: center, icon.color: "${role}Text",
+                 label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
+
     variants:           # first = default. `look` is what the variant sets before attributes
       plain:
         prompt: "light surface, hairline border, number in ink"
@@ -358,7 +362,7 @@ tile_nodes:
         requires: [count_ge_3, is_emphasis_item]
         fallback: plain
         look: {backgroundColor: $panelDark, label.color: $onPanelDark, value.color: $onPanelDark,
-               note.color: $onPanelDark}
+               note.color: $onPanelDark, icon.color: $onPanelDark}
       bare:
         prompt: "number and label only, no tile"
         look: {padding: 0, label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}

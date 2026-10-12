@@ -139,6 +139,10 @@ SIZING) -> fill with content.
 {% if nodes %}
 {% include "nodes_rules.j2" %}
 {% endif %}
+{% if tile_nodes %}
+
+{{ tile_nodes }}
+{% endif %}
 
 ## THEME (reference only - do NOT emit this element)
 The pipeline injects the single top-level <Theme> automatically. Use the token

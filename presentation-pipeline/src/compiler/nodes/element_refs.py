@@ -70,9 +70,15 @@ WEIGHT_RANK = {"hero": 0, "peer": 1, "supporting": 2, "minor": 3}
 
 
 def mode() -> str:
-    """`POM_BLOCKS`: kpi (default since 2026-10-11: kpi_row components become element refs) | off (the old route)."""
+    """`POM_BLOCKS`: kpi (default since 2026-10-11: kpi_row components become element refs) | tiles (the LLM writes
+    <KpiGrid> / <Kpi> tile nodes, src/compiler/nodes/tiles.py; opt-in) | off (the old route)."""
     v = os.environ.get("POM_BLOCKS", "kpi").strip().lower()
-    return v if v in ("off", "kpi") else "kpi"
+    return v if v in ("off", "kpi", "tiles") else "kpi"
+
+
+def refs_on() -> bool:
+    """kpi_row text is placed by ref (kpi and tiles both end in fill_refs)."""
+    return mode() in ("kpi", "tiles")
 
 
 def kpi_components(plan: dict | None) -> dict[str, dict]:
