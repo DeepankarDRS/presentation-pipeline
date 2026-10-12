@@ -447,3 +447,20 @@ shuffled; `key.json` holds the answer).
 
 The one loss and the P4 note point the same way: 5-7 tiles in one narrow row (37 px numbers, empty tiles) lose to
 fewer, wider tiles per row.
+
+## 14. Variety from the plan: a slide's numbers in several kpi_rows (user, 2026-10-12)
+
+User: let the LLM decide; a slide may carry several KPI components so it is not one node drawn once. Where P3's
+winner came from: q1008's planner split CHEFFIN 1 into `combined_kpi_scorecard` (hero, 3) + `platform_roas_tiles`
+(peer, 2, "group as a callout panel"); both refs runs planned one row of 5 (and one of 7 on slide 4). In the 3
+runs the planner split 3 times (that slide, and all-nodes' 4 + a hero of 1 twice); every split slide drew well, the
+marked losses were long single rows.
+
+**Changed (prompt only):** `src/prompts/slide_component_planner/system.j2` — the component table says "count =
+tiles in this group … a slide's numbers may be several kpi_rows, one per role" (was "more metrics → a second
+kpi_row"), and the kpi_row description gains *Grouping a slide's numbers*: totals vs a breakdown, inputs vs the
+result, the headline's number vs context, a target vs its actual → one kpi_row each with its own weight and
+design_hint; peers stay one row; by meaning, never by count; each number in one group. Nothing downstream changes:
+refs, number sizes per component and the weight cap already handle several kpi_rows (§9). C17
+(`drop_duplicate_items`) needs ≥ 3 shared labels, so a split never trips it. Test:
+`test_planner_prompt_lets_a_slide_group_its_numbers_into_several_kpi_rows`. Not yet run with the LLM (paid).

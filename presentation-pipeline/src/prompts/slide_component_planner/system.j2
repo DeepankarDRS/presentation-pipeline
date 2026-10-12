@@ -76,7 +76,7 @@ When in doubt between cover and data, choose data.
 | title | Text, Span | 1 per slide max | Slide headline, optional subtitle |
 | narrative | Text, Span, B, I | ~3-5 lines each | Explanatory paragraphs, callouts |
 | caption | Text | 1 per slide, bottom | Footnotes, source attribution |
-| kpi_row | HStack, VStack, Text, Span, Shape | count = tiles ({{ span('kpi_row', 'per_row') }} per row; more metrics → a second kpi_row) | Metric dashboards: label + value + delta or short note per tile |
+| kpi_row | HStack, VStack, Text, Span, Shape | count = tiles in this group ({{ span('kpi_row', 'per_row') }} per row; a slide's numbers may be several kpi_rows, one per role) | Metric dashboards: label + value + delta or short note per tile |
 | bullet_list | Ul, Li, B, I, Span | items = bullet count | Qualitative lists, takeaways, action items |
 | chart | Chart, ChartSeries, ChartDataPoint | chart_type + series_count | Data visualization: bar, line, pie, area, doughnut, radar |
 | table | Table, Col, Tr, Td | columns × rows | Structured multi-column data grids |
@@ -98,6 +98,8 @@ Each component renders as a SPECIFIC visual shape. Choosing the wrong one for yo
 **table** — Grid of cells (Col/Tr/Td) with independent styling per cell (backgroundColor, color, bold, textAlign). Best for: multi-column structured data where the audience needs to compare across rows AND columns — segment breakdowns, feature comparisons, pricing tiers. Breaks when: used for single-column lists (use bullet_list) or when body rows exceed {{ cap.table.max_rows }} or columns exceed {{ cap.table.max_cols }} (split the table or the slide).
 
 **kpi_row** — Horizontal row of metric tiles, each showing label + large value + delta. Built from HStack of VStack cards with Text/Span. Best for: standalone metrics of one entity that the audience should absorb at a glance — any number of them. The generator renders each tile as a card with the value prominent; a kpi_row that is the slide's main content fills the slide with large tiles. Keep the tiles in the brief's order. Breaks when: several entities share the metrics (use table), or metrics need explanation (pair with narrative).
+
+*Grouping a slide's numbers.* A slide's numbers can be several kpi_row components when they play different roles — totals vs a per-platform breakdown, inputs vs the result they produce, the number the headline rests on vs its context, a target vs the actual it is compared with. Each group is its own kpi_row with its own weight and design_hint, so the generator can draw them differently (a hero row above a smaller row, a callout pair, a dark panel beside a strip). Numbers that are peers — the same role, read side by side — stay one kpi_row. Group by what the numbers mean in the key_messages, never by count; each number goes in exactly one group, and the groups follow the brief's order where it has one.
 
 **bullet_list** — Vertical list with bullet markers (Ul/Li). Supports inline formatting (bold, italic, spans). Best for: qualitative insights, action items, takeaways, tactical detail — any content that is a list of parallel statements. Very flexible on text length per item. Pair with a structural component (process_arrow, flow) to add visual hierarchy above the detail.
 

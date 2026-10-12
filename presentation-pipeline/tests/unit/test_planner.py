@@ -444,3 +444,12 @@ def test_slide_planner_prompt_examples_by_shape():
     assert "One entity's metrics → kpi_row" in prompt
     assert "labels ≤ 2 words, full slide width" in prompt        # 16: chevron capacity
     assert "The **matrix** kind is only a 2×2 positioning map" in prompt
+
+
+def test_planner_prompt_lets_a_slide_group_its_numbers_into_several_kpi_rows():
+    """User 2026-10-12: variety from the plan (q1008 CHEFFIN 1: a hero row of 3 + a callout pair of 2 won the
+    blind marks over one row of 5); grouping by role, never by count."""
+    from src.agents import slide_component_planner as P
+    text = P._jinja_env.get_template("system.j2").render(hint_capabilities=P.planner_capabilities_section())
+    assert "Grouping a slide's numbers" in text and "never by count" in text
+    assert "more metrics → a second kpi_row" not in text
