@@ -350,7 +350,10 @@ tile_nodes:
 
     variants:           # first = default. `look` is what the variant sets before attributes
       plain:
-        prompt: "light surface, hairline border, number in ink"
+        prompt: "light surface, hairline border, number in ink; an item with its own color draws toned"
+        # an item with its own color and no variant of its own draws as this variant, so the colour shows
+        # (paid check 2, CHEFFIN 4: color="$warning" on a plain tile without note / icon drew nothing)
+        with_color: toned
         look: {backgroundColor: $surfaceAlt, border.color: $border, border.width: 1,
                label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
       filled:

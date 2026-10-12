@@ -18,7 +18,9 @@ A tile written by hand with <Text ref> stays valid (T2) and is counted (`hand_it
 
 Attributes resolve in this order, later wins: house look -> group variant -> group attributes ->
 item variant -> item attributes. `color` picks the role ({role} in a look); its default is the
-plan tone. `inverted` and size="hero" only on the item the plan singles out (is_emphasis_item).
+plan tone; an item with its own `color` and no variant of its own takes its variant's `with_color` look
+(plain -> toned), so the colour always shows. `inverted` and size="hero" only on the item the plan singles
+out (is_emphasis_item).
 """
 
 from __future__ import annotations
@@ -224,7 +226,10 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
     # hairline under an inverted tile); the group's attributes still apply under it
     layers = [_look(kpi()["house_look"], role)]
     if not imeta.get("variant"):
-        layers.append(_look(vs[_variant(comp, i, gmeta.get("variant"), cid, flag)]["look"], role))
+        name = _variant(comp, i, gmeta.get("variant"), cid, flag)
+        if imeta.get("color") in ROLE_OF:   # the item's own colour is its tone: a look that shows it
+            name = vs[name].get("with_color", name)
+        layers.append(_look(vs[name]["look"], role))
     layers.append(gparts)
     if imeta.get("variant"):
         layers.append(_look(vs[_variant(comp, i, imeta["variant"], ref, flag)]["look"], role))

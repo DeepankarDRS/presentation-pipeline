@@ -99,6 +99,23 @@ def test_color_overrides_the_tone_t1():
     assert 'backgroundColor="$positiveSoft"' in tile_of(xml, 2)
 
 
+def test_own_color_on_a_plain_tile_draws_toned():
+    # paid check 2, CHEFFIN 4: color="$warning" on a plain tile without note / icon drew nothing
+    plan = {"components": [dict(PLAN["components"][1], content_data={
+        k: v for k, v in PLAN["components"][1]["content_data"].items() if k not in ("kpi_tones", "kpi_deltas")})]}
+    res = run('<KpiGrid ref="kpis"><Kpi ref="kpis.1" color="$warning"/></KpiGrid>', plan)
+    toned = tile_of(res["xml"], 1)
+    assert 'backgroundColor="$warningSoft"' in toned and 'border.color="$warning"' in toned
+    assert 'color="$warningText"' in value_of(res["xml"], 1) and "NODE_VARIANT_UNMET" not in codes(res)
+    assert 'backgroundColor="$surfaceAlt"' in tile_of(res["xml"], 0)   # no colour of its own: plain
+    # an explicit variant, a group colour, or a variant that shows the colour already stay as asked
+    assert 'backgroundColor="$surfaceAlt"' in tile_of(run(
+        '<KpiGrid ref="kpis"><Kpi ref="kpis.1" variant="plain" color="$warning"/></KpiGrid>', plan)["xml"], 1)
+    assert 'backgroundColor="$surfaceAlt"' in tile_of(run('<KpiGrid ref="kpis" color="$warning"/>', plan)["xml"], 1)
+    bar = tile_of(run('<KpiGrid ref="kpis" variant="bar"><Kpi ref="kpis.1" color="$warning"/></KpiGrid>', plan)["xml"], 1)
+    assert 'borderLeft.color="$warning"' in bar and "$warningSoft" not in bar
+
+
 def test_dot_draws_a_marker_and_bare_has_no_tile_fill():
     dot = run('<KpiGrid ref="kpis" variant="dot"/>')["xml"]
     assert dot.count('<Shape shapeType="ellipse" w="8" h="8"') == 4
