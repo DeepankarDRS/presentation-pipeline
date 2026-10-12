@@ -146,10 +146,10 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
     except etree.XMLSyntaxError:
         return result   # the normalizer / parseXml report the XML itself
 
+    changed = _unwrap_refs(root, flag)
     placed: dict[str, dict[int, set[str]]] = {cid: {} for cid in comps}
     value_els: dict[tuple[str, int], etree._Element] = {}
     seen: set[str] = set()
-    changed = False
 
     for el in list(root.iter()):
         if not isinstance(el.tag, str) or "ref" not in el.attrib:
@@ -268,6 +268,29 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         result["xml"] = (root.text or "") + "".join(etree.tostring(c, encoding="unicode") for c in root)
     result["ok"] = not any(i["severity"] == ERROR for i in issues)
     return result
+
+
+def _unwrap_refs(root: etree._Element, flag) -> bool:
+    """<Text fontSize=".." color=".."><Text ref="k.0.label"/></Text>: the LLM styles a ref by wrapping it
+    (full decks 2026-10-12: 2 of 4 KPI slides). POM rejects a Text in a Text, and the repairer then
+    flattened the filled slide (labels drawn twice, dark-tile colours past the fill). The ref Text takes
+    the wrapper's place and the attributes it lacks."""
+    changed = False
+    for el in list(root.iter("Text")):
+        outer = el.getparent()
+        if "ref" not in el.attrib or outer is None or outer.tag != "Text":
+            continue
+        if len(outer) != 1 or (outer.text or "").strip() or (el.tail or "").strip():
+            continue
+        for k, v in outer.attrib.items():
+            if k not in el.attrib:
+                el.set(k, v)
+        el.tail = outer.tail
+        outer.getparent().replace(outer, el)
+        flag("NODE_ATTR_IGNORED", el.get("ref"), f'ref="{el.get("ref")}" was wrapped in a <Text>; the ref Text '
+             "took its place (a ref Text carries its own attributes).")
+        changed = True
+    return changed
 
 
 def _fill_rows(cards: list) -> bool:

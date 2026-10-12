@@ -1,0 +1,26 @@
+{
+ "P1": {
+  "case": "deck-qbr-data",
+  "left": "B",
+  "A": "output\\q1008\\quality-1008-20261008-210801\\renders\\deck-qbr-data__r1\\slide-1.png",
+  "B": "output\\kpi-decks-2\\kpi-decks-2-20261012-090227\\renders\\deck-qbr-data__r1\\slide-1.png"
+ },
+ "P2": {
+  "case": "gate-deck-all-nodes-dense",
+  "left": "B",
+  "A": "output\\q1008\\quality-1008-20261008-210801\\renders\\gate-deck-all-nodes-dense__r1\\slide-1.png",
+  "B": "output\\kpi-decks-2\\refill\\gate-deck-all-nodes-dense\\slide-1\\slide.png"
+ },
+ "P3": {
+  "case": "gate-deck-cheffin-full",
+  "left": "B",
+  "A": "output\\q1008\\quality-1008-20261008-210801\\renders\\gate-deck-cheffin-full__r1\\slide-1.png",
+  "B": "output\\kpi-decks-2\\refill\\gate-deck-cheffin-full\\slide-1\\slide.png"
+ },
+ "P4": {
+  "case": "gate-deck-cheffin-full",
+  "left": "B",
+  "A": "output\\q1008\\quality-1008-20261008-210801\\renders\\gate-deck-cheffin-full__r1\\slide-4.png",
+  "B": "output\\kpi-decks-2\\kpi-decks-2-20261012-090227\\renders\\gate-deck-cheffin-full__r1\\slide-4.png"
+ }
+}

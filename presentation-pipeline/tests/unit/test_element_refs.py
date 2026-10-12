@@ -456,3 +456,16 @@ def test_validator_keeps_the_llm_xml_before_the_fill(monkeypatch, tmp_path):
     finally:
         import shutil
         shutil.rmtree(saved.parent, ignore_errors=True)
+
+
+def test_a_ref_wrapped_in_a_styled_text_takes_the_wrappers_place():
+    """Full decks 2026-10-12: <Text fontSize color><Text ref/></Text> on 2 of 4 KPI slides (INVALID_CHILD,
+    then a repair that drew the labels twice)."""
+    wrapped = (f'<VStack backgroundColor="$surfaceAlt"><Text fontSize="14" color="$textMuted"><Text ref="kpis.{0}.label"/></Text>'
+               f'<Text fontSize="30" bold="true" color="$positiveText"><Text ref="kpis.0.value"/></Text>'
+               f'<Text ref="kpis.0.note"/></VStack>')
+    res = E.fill_refs(slide(wrapped + tile(1, note=False) + tile(2)), PLAN)
+    assert res["ok"] and "</Text></Text>" not in res["xml"]
+    assert '<Text fontSize="16" color="$textMuted">Spend</Text>' in res["xml"]
+    assert 'color="$positiveText"' in value_tag(res["xml"], "kpiv1-kpis-0")
+    assert sum("was wrapped" in i["message"] for i in res["issues"]) == 2

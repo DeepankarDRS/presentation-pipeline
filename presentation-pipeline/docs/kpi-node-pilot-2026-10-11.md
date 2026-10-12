@@ -408,3 +408,29 @@ Number sizes on the 4 slides unchanged (55 / 47 / 43 / 58 px); a first try at eq
 squeezed the widest number (47 → 28 px on all-nodes) and was dropped. Not covered: icons, other
 colour-on-fill pairs outside KPI tiles. A paid check is not needed for these (code-only, the LLM's input is
 unchanged); one full-deck run before the merge covers them.
+
+## 13. Full decks, run 2 (test PC, 2026-10-12, commit a883687, $1.18)
+
+Same 4 cases as §10, refs on by default. `docs/eval/kpi-node/decks-2/`: `kpi-slides-3-runs.png` (today's route,
+refs run 1, refs run 2; PowerPoint renders from the test PC), `blind.png` + `marks.csv` (today vs run 2, sides
+shuffled; `key.json` holds the answer).
+
+| | run 1 (§10) | run 2 |
+|---|---|---|
+| first pass (deck) | 22 / 25 | 22 / 25 |
+| KPI slides first try | 3 / 4 | 2 / 4 |
+| word breaks (4 decks) | 12 | 5 |
+| low contrast on KPI slides | QBR 2 | all-nodes 2 (after repair) |
+| cost | $1.13 | $1.18 |
+
+- **Both KPI repairs: the LLM wrapped each ref in a styled Text** (`<Text fontSize color><Text ref="…"/></Text>`,
+  `INVALID_CHILD`; run 1's one repair was the same). The repairer then flattened the *filled* slide: CHEFFIN 1
+  drew every label twice, all-nodes kept `$accentText` / `$positiveText` on its dark hero panel (no refs left, so
+  §12 fix 1 never ran). **Fixed:** `element_refs._unwrap_refs` puts the ref Text in the wrapper's place with the
+  attributes it lacks (`NODE_ATTR_IGNORED`). Re-filled from the saved `first-generated.xml` (§12 fix 4): both
+  compile first time, no doubled labels, `LOW_CONTRAST` 0, all-nodes 53 px + a 120 px hero.
+  The blind sheet uses these two re-fills (LibreOffice renders; the rest are PowerPoint renders).
+- The 3rd repair (all-nodes slide 4) is a `connectorGradient` parse error on a Timeline, not KPI.
+- **CHEFFIN 4: the LLM put all 7 tiles in one row** (run 1: 4 + 3): numbers 37 px, bound by the tile width,
+  `GEOM_CARD_EMPTY` 7. CHEFFIN 1: 5 tiles without icons, 37 px, `GEOM_CARD_EMPTY` 5, labels stay 14 px. Not
+  fixed: a layout choice (user: no rules); open whether the prompt line should state the row width per tile.
