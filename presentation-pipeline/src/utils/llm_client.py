@@ -117,6 +117,28 @@ def extract_usage(response) -> dict[str, Any]:
     }
 
 
+def length_limit_usage(exc: BaseException) -> dict[str, Any] | None:
+    """Usage of a call that stopped at max_tokens before its answer was complete, else None.
+
+    The structured-output call raises openai's LengthFinishReasonError then; a reasoning model
+    can spend the whole budget reasoning (CHEFFIN slide 6, 2026-10-12). The tokens are billed,
+    so callers log and record them.
+    """
+    from openai import LengthFinishReasonError
+    if not isinstance(exc, LengthFinishReasonError):
+        return None
+    usage = getattr(exc.completion, "usage", None)
+    out_details = getattr(usage, "completion_tokens_details", None)
+    in_details = getattr(usage, "prompt_tokens_details", None)
+    return {
+        "tokens_in": getattr(usage, "prompt_tokens", 0) or 0,
+        "tokens_out": getattr(usage, "completion_tokens", 0) or 0,
+        "tokens_reasoning": getattr(out_details, "reasoning_tokens", 0) or 0,
+        "tokens_cached": getattr(in_details, "cached_tokens", 0) or 0,
+        "model": getattr(exc.completion, "model", None) or "unknown",
+    }
+
+
 def usage_record(usage: dict[str, Any], step: str, slide_index: int | None = None, **extra: Any) -> dict[str, Any]:
     """One generation_history entry for an LLM call, named by pipeline step and slide.
 

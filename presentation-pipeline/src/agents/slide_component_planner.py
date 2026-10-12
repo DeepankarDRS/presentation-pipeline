@@ -36,7 +36,7 @@ from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, rea
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
                                       flag_written_lines, visual_directions)
 from src.state import ComponentPlan, PresentationState, SlidePlan
-from src.utils.llm_client import get_llm, unpack_raw, usage_record
+from src.utils.llm_client import get_llm, length_limit_usage, unpack_raw, usage_record
 from src.utils.text_clean import clean_data
 
 logger = logging.getLogger(__name__)
@@ -59,6 +59,15 @@ _jinja_env = Environment(
 _jinja_env.globals.update(cap=capacity(), span=span)
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
+
+def _unreadable(text: Any, exc: Exception) -> str:
+    """What a log needs to name why content_data_json did not parse: the error, the length,
+    the start of the text and the text around the error."""
+    text = text if isinstance(text, str) else repr(text)
+    pos = getattr(exc, "pos", None)
+    near = f", near {text[max(0, pos - 60):pos + 60]!r}" if isinstance(pos, int) else ""
+    return f"{exc} ({len(text)} chars), starts {text[:160]!r}{near}"
+
 
 def _planner_slide_to_state(
     idx: int,
@@ -98,10 +107,10 @@ def _planner_slide_to_state(
 
         try:
             comp_data = clean_data(json.loads(c.content_data_json)) if c.content_data_json else {}
-        except (json.JSONDecodeError, TypeError):
+        except (json.JSONDecodeError, TypeError) as exc:
             logger.warning(
                 f"slide_component_planner: invalid content_data_json for "
-                f"component '{c.component_id}', using empty dict"
+                f"component '{c.component_id}', using empty dict: {_unreadable(c.content_data_json, exc)}"
             )
             comp_data = {}
 
@@ -291,8 +300,18 @@ def plan_with_reask(
                 repair_context=reask_context(problems) if attempt else None, finalize=False,
             )
         except Exception as exc:
-            logger.error(f"slide_component_planner: slide {idx + 1} attempt {attempt + 1} failed: {exc}")
+            spent = length_limit_usage(exc)
+            if spent:
+                logger.error(f"slide_component_planner: slide {idx + 1} attempt {attempt + 1} hit the output "
+                             f"limit before answering: {spent['tokens_reasoning']} of {spent['tokens_out']} "
+                             f"output tokens were reasoning ({spent['model']})")
+                history.append(usage_record(spent, "slide_component_planner", idx, reask=bool(attempt),
+                                            failed="length"))
+            else:
+                logger.error(f"slide_component_planner: slide {idx + 1} attempt {attempt + 1} failed: {exc}")
             problems = [{"code": PLAN_EMPTY, "component_id": "", "detail": "the previous planner call failed"}]
+            if attempt == 0:
+                first_problems = problems
             continue
         history.append(usage_record(usage, "slide_component_planner", idx, reask=bool(attempt)))
         problems = find_problems(plan, brief_text)

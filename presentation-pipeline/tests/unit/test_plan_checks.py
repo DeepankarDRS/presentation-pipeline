@@ -269,3 +269,34 @@ def test_the_planner_prompt_asks_for_kpi_tones_by_meaning():
     text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
     assert '"kpi_tones": ["good", "good", "bad"]' in text and "not which way it moved" in text
     assert "kpi_tones" in PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
+
+
+# ── what the log keeps when a planner call fails (tile-nodes wide eval, 2026-10-12) ──
+
+def _length_error(reasoning=16000, out=16000):
+    from openai import LengthFinishReasonError
+    from openai.types import CompletionUsage
+    from openai.types.chat import ChatCompletion
+    from openai.types.completion_usage import CompletionTokensDetails
+    usage = CompletionUsage(prompt_tokens=900, completion_tokens=out, total_tokens=900 + out,
+                            completion_tokens_details=CompletionTokensDetails(reasoning_tokens=reasoning))
+    return LengthFinishReasonError(completion=ChatCompletion.model_construct(model="gpt-5-mini", usage=usage))
+
+
+def test_a_length_limit_failure_logs_and_records_its_reasoning_tokens(caplog):
+    with caplog.at_level("ERROR"):
+        (p, history), m = run([_length_error(), (good(), USAGE)])
+    assert m.call_count == 2 and len(history) == 2
+    assert history[0]["failed"] == "length" and history[0]["tokens_reasoning"] == 16000
+    assert history[0]["tokens_out"] == 16000 and history[0]["model"] == "gpt-5-mini"
+    assert "16000 of 16000 output tokens were reasoning" in caplog.text
+    assert any(n == "planner re-asked because: the previous planner call failed" for n in p["capacity_fixes"])
+
+
+def test_an_unreadable_content_data_json_logs_its_start_and_the_text_near_the_error(caplog):
+    bad_json = '{"kpi_labels": ["ARR", "NRR"], "kpi_values": ["$48.2M" "114%"]}'
+    with caplog.at_level("WARNING"):
+        state = scp._planner_slide_to_state(0, _planner_slide(bad_json))
+    assert state["components"][0]["content_data"] == {}
+    assert "invalid content_data_json for component 'k'" in caplog.text
+    assert '{"kpi_labels": ["ARR", "NRR"]' in caplog.text and "chars)" in caplog.text and "near" in caplog.text
