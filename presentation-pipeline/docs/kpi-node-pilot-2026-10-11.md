@@ -464,3 +464,20 @@ design_hint; peers stay one row; by meaning, never by count; each number in one 
 refs, number sizes per component and the weight cap already handle several kpi_rows (§9). C17
 (`drop_duplicate_items`) needs ≥ 3 shared labels, so a split never trips it. Test:
 `test_planner_prompt_lets_a_slide_group_its_numbers_into_several_kpi_rows`. Not yet run with the LLM (paid).
+
+**Planner-only check (test PC, 2026-10-12, `python -m scripts.kpi_plan_only --repeat 3`, $0.619, 9 runs;
+`docs/eval/kpi-node/plans/summary.md`).** 12 KPI slides, 5 split into several kpi_rows; 0 numbers in two
+groups; 1 key-message number not carried.
+
+| slide | split, this check | split, the 3 runs before (q1008, decks 1, decks 2) | groups |
+|---|---|---|---|
+| QBR exec summary (4 peers) | 0 / 3 | 0 / 3 | one row of 4 each time (peers stay one row, as asked) |
+| CHEFFIN 1 (5) | 2 / 3 | 1 / 3 | combined spend / revenue / ROAS (hero) + the 2 platform ROAS (peer), both times |
+| CHEFFIN 4 (7) | 1 / 3 | 0 / 3 | Spend, Ad sales, ROAS, Allowable CPC (hero) + CPC, CVR, AOV (supporting) |
+| all-nodes (5) | 2 / 3 | 2 / 3 | the 62% repeat-revenue hero + a row of 4; the third run: one row with 62% in focus |
+
+Found: CHEFFIN 4's split puts the target (Allowable CPC) in a different group from the actual it is compared
+with (CPC) and moves it ahead of CPC — against the brief's order and the slide's point (CPC almost 3× the
+allowable); the prompt's "a target vs the actual" example may read as "split them". r1 shortened the label
+"Allowable CPC for 1.0x ROAS" to "Allowable CPC" (the only not-carried number, 1.0x). Cost per planning run
+$0.05-0.09 (above the $0.30-0.50 estimate for 9).
