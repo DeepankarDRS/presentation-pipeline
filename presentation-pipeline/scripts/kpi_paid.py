@@ -4,6 +4,7 @@
     python -m scripts.kpi_paid --label kpi-paid --rescore                  # free: scores + sheet again
     python -m scripts.kpi_paid --label dry --dry                           # free: a fake generator answers with
                                                                            # today's XML mapped to refs (path check)
+    python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label tiles-paid --bundle   # tile nodes (spec §8 step 5)
 
 Inputs: docs/eval/kpi-node/paid-inputs.json (the 3 KPI slides of q1008's deck-qbr-data and
 gate-deck-cheffin-full: plan, today's XML, theme, brief; committed so the test PC needs no output/).
@@ -11,7 +12,11 @@ Arm B: POM_BLOCKS=kpi, the real graph from the plan (style resolver -> context b
 validator with the ref fill -> repairer / visual repairer as in a normal run; critic off, as q1008's
 deck-qbr-data). Arm A: today's XML from q1008 recompiled on this commit (free, already paid for).
 Per run the first try is recorded (refs placed, NODE_* errors) and the final slide is scored like the
-replay (scripts/kpi_replay.score). Writes output/kpi-paid/<label>/: results.json, summary.md, sheets/
+replay (scripts/kpi_replay.score).
+--blocks tiles: arm B on POM_BLOCKS=tiles (<KpiGrid> / <Kpi>, docs/tile-nodes-spec-2026-10-12.md); --arm-a kpi:
+arm A = the 2026-10-11 paid check's element-ref slides (docs/eval/tile-nodes/paid-kpi-arm.json, recompiled on
+this commit) instead of q1008's XML. Both record the first generator call's tokens and the KPI XML's tokens
+(tile tags + hand-written ref tiles, scripts/tile_replay.kpi_xml) and the hand-written tiles a tiles run used. Writes output/kpi-paid/<label>/: results.json, summary.md, sheets/
 (blind A / B, scripts/node_test_sheet.py) and, with --bundle, <label>.zip to email back.
 """
 
@@ -29,16 +34,18 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-os.environ["POM_BLOCKS"] = "kpi"   # before any pipeline import reads it (it is read per call, this is belt and braces)
+os.environ.setdefault("POM_BLOCKS", "kpi")   # read per call; main() sets it from --blocks
 
 from scripts.kpi_replay import compile_slide, score  # noqa: E402
 from src.agents.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.nodes.element_refs import kpi_components  # noqa: E402
 
 INPUTS = ROOT / "docs" / "eval" / "kpi-node" / "paid-inputs.json"
+KPI_ARM = ROOT / "docs" / "eval" / "tile-nodes" / "paid-kpi-arm.json"   # {run case: final XML} of the 2026-10-11 paid check
 OUT = ROOT / "output" / "kpi-paid"
 REF_CODES = ("NODE_REF_UNKNOWN", "NODE_REF_DUPLICATE", "NODE_ITEM_MISSING", "NODE_FIELD_MISSING",
-             "NODE_BYPASSED", "NODE_ATTR_IGNORED", "NODE_FOCUS_UNNAMED", "NODE_VALUE_TEXT")
+             "NODE_BYPASSED", "NODE_ATTR_IGNORED", "NODE_FOCUS_UNNAMED", "NODE_VALUE_TEXT",
+             "NODE_ATTR_UNKNOWN", "NODE_ATTR_DROPPED", "NODE_VARIANT_UNKNOWN", "NODE_VARIANT_UNMET", "LITERAL_COLOR")
 
 
 def run_one(item: dict, run_id: str) -> dict[str, Any]:
@@ -67,7 +74,21 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
     gen = [g for g in final.get("generation_history") or [] if getattr(g, "step", None) == "generator"
            or (isinstance(g, dict) and g.get("step") == "generator")]
     last = attempts[-1] if attempts else {}
+    g0 = gen[0] if gen else {}
+    tok = (lambda k: g0.get(k) if isinstance(g0, dict) else getattr(g0, k, None))
+    first_xml = generated[0] if generated else ""
+    kpi_tokens, hand_items = None, None
+    if first_xml:
+        from scripts.tile_replay import kpi_xml, tokens
+        from src.compiler.nodes import tiles
+        kpi_tokens = tokens(kpi_xml(first_xml, item["plan"]))
+        if tiles.on():
+            hand_items = sum(c.get("hand_items", 0) for c in tiles.fill(first_xml, item["plan"])["components"].values())
     return {
+        "blocks": os.environ.get("POM_BLOCKS", "kpi"),
+        "gen_tokens": {"in": tok("tokens_in"), "out": tok("tokens_out"), "cached": tok("tokens_cached")},
+        "kpi_tokens": kpi_tokens,
+        "hand_items": hand_items,
         "first_ok": bool((first.get("compile_result") or {}).get("ok")),
         "first_issues": [{k: i.get(k) for k in ("code", "severity", "message")} for i in issues],
         "first_diagnostics": [f"{d.get('type', '?')}: {str(d.get('message', ''))[:200]}"
@@ -112,6 +133,9 @@ def run(label: str, repeat: int, dry: bool = False) -> None:
                     from scripts.kpi_replay import map_refs
                     from src.agents import generator
                     skel = map_refs(it["xml_today"], it["plan"])[0]
+                    if os.environ.get("POM_BLOCKS") == "tiles":   # the same tiles as tile tags
+                        from scripts.tile_replay import rewrite
+                        skel = rewrite(skel, it["plan"])["xml"]
                     generator.get_llm = lambda step, _x=skel: _FakeLLM(_x)
                 res = run_one(it, rid)
             except Exception as e:   # one failure must not cost the other runs
@@ -130,15 +154,19 @@ def run(label: str, repeat: int, dry: bool = False) -> None:
     (out / "runs.json").write_text(json.dumps(results, indent=1, ensure_ascii=False), encoding="utf-8")
 
 
-def rescore(label: str, render: bool = True) -> list[dict]:
+def rescore(label: str, render: bool = True, arm_a: str = "today") -> list[dict]:
     out = OUT / label
+    kpi_arm = json.loads(KPI_ARM.read_text(encoding="utf-8")) if arm_a == "kpi" else {}
     items = {f"{i['case']}-s{i['slide']}": i for i in json.loads(INPUTS.read_text(encoding="utf-8"))}
     runs = json.loads((out / "runs.json").read_text(encoding="utf-8"))
     for row in runs:
         it = items[f"{row['item']}-s{row['slide']}"]
         theme = resolve_theme(it["theme"])["element"]
         a_dir, b_dir = out / "A" / row["case"] / "slide-0", out / "B" / row["case"] / "slide-0"
-        if True:   # free: always recompile both arms on this commit
+        if arm_a == "kpi":   # the element-ref route's slide of the same run (repeat r1 when this one has none)
+            a_xml = kpi_arm.get(row["case"]) or kpi_arm[f"{row['item']}-s{row['slide']}-r1"]
+            row["A"] = score("B", a_dir, compile_slide(a_xml, theme, a_dir), it["plan"], row["case"], render)
+        else:   # free: always recompile both arms on this commit
             row["A"] = score("A", a_dir, compile_slide(it["xml_today"], theme, a_dir), it["plan"], row["case"], render)
         xml = (out / "B" / row["case"] / "final.xml").read_text(encoding="utf-8")
         # runs filled before ids carried the plan weight's rank (kpiv-cid-i -> kpiv<rank>-cid-i, as the fill writes now)
@@ -151,15 +179,22 @@ def rescore(label: str, render: bool = True) -> list[dict]:
     if render:
         from scripts import node_test_sheet as S
         S.build(out / "B", out / "A", out / "sheets")
-    write_summary(out, runs)
+    write_summary(out, runs, arm_a)
     return runs
 
 
-def write_summary(out: Path, runs: list[dict]) -> None:
+def write_summary(out: Path, runs: list[dict], arm_a: str = "today") -> None:
     placed = sum(r["refs_first_try"][0] for r in runs)
     planned = sum(r["refs_first_try"][1] for r in runs)
     first_err = sum(1 for r in runs if any(i["severity"] == "error" for i in r["first_issues"]))
-    lines = ["# KPI node pilot: paid check (generator only, POM_BLOCKS=kpi)", "",
+    blocks = runs[0].get("blocks", "kpi") if runs else "kpi"
+    gen = [r.get("gen_tokens") or {} for r in runs]
+    kt = [r["kpi_tokens"] for r in runs if r.get("kpi_tokens") is not None]
+    lines = [f"# KPI paid check (generator only, POM_BLOCKS={blocks}; arm A = "
+             f"{'the element-ref route, 2026-10-11' if arm_a == 'kpi' else 'q1008 XML'})", "",
+             f"Generator first call, mean tokens: in {_mean([g.get('in') for g in gen])}, cached {_mean([g.get('cached') for g in gen])}, "
+             f"out {_mean([g.get('out') for g in gen])}; KPI XML tokens (first try) mean {_mean(kt)}; hand-written tiles "
+             f"in tiles runs: {sum(r.get('hand_items') or 0 for r in runs)}.", "",
              f"{len(runs)} runs, ${sum(r['cost_usd'] for r in runs):.3f}. Value refs placed on the first try: "
              f"**{placed}/{planned}** ({round(100 * placed / planned) if planned else 0}%); runs with a NODE_* error "
              f"on the first try: {first_err}; final compiled: {sum(r['final_ok'] for r in runs)}/{len(runs)}; "
@@ -177,6 +212,11 @@ def write_summary(out: Path, runs: list[dict]) -> None:
     lines += ["", "Blind sheet: sheets/ (fill marks.csv; B plays the 'nodes' role in key.json)."]
     (out / "summary.md").write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
+
+
+def _mean(xs: list) -> str:
+    xs = [x for x in xs if x is not None]
+    return str(round(sum(xs) / len(xs))) if xs else "-"
 
 
 def bundle(label: str) -> Path:
@@ -202,7 +242,11 @@ def main() -> int:
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--bundle", action="store_true")
     ap.add_argument("--dry", action="store_true", help="free: fake generator, checks the path end to end")
+    ap.add_argument("--blocks", choices=("kpi", "tiles"), default="kpi", help="POM_BLOCKS for arm B")
+    ap.add_argument("--arm-a", choices=("today", "kpi"), default="today",
+                    help="arm A: q1008's XML (today) or the 2026-10-11 element-ref slides (kpi)")
     a = ap.parse_args()
+    os.environ["POM_BLOCKS"] = a.blocks
     if a.dry:
         shutil.rmtree(OUT / a.label, ignore_errors=True)
         run(a.label, a.repeat, dry=True)
@@ -215,7 +259,7 @@ def main() -> int:
             return 2
         shutil.rmtree(OUT / a.label, ignore_errors=True)
         run(a.label, a.repeat)
-    rescore(a.label, render=not a.no_render)
+    rescore(a.label, render=not a.no_render, arm_a=a.arm_a)
     if a.bundle:
         print(bundle(a.label))
     return 0
