@@ -294,6 +294,14 @@ tile_nodes:
     description: "One KPI item: restyles it inside its KpiGrid, or places it anywhere outside one."
     required: [ref]
     children: none
+  CardGrid:
+    description: "Every card of one card_grid component (grid / steps), in plan order, with the plan's text."
+    required: [ref]
+    children: [Card]
+  Card:
+    description: "One card: restyles it inside its CardGrid, or places it anywhere outside one."
+    required: [ref]
+    children: none
 
 # ── Still deferred (NOT in the prompt yet) ───────────────────────────────
 deferred:

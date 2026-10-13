@@ -23,7 +23,7 @@ from src.agents.blueprint_selector import select_blueprint
 from src.agents.hint_capabilities import hint_scopes, kind_treatments, visual_intent_techniques
 from src.agents.capacity import layout_rules
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
-from src.compiler.nodes import tiles
+from src.compiler.nodes import cards, tiles
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
 logger = logging.getLogger(__name__)
@@ -602,6 +602,16 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
             technique_kinds = [k for k in kinds if k != "kpi_row"]
             if "kpi_row" in scopes:
                 scopes["kpi_row"] = tiles.scope(kind_treatments("kpi_row"))
+        # card tile nodes (cards.py): no card_grid / card_steps recipes or hand-built card techniques for the
+        # card_grids code draws; a matrix card_grid (deferred) keeps its recipe and techniques
+        grids = [c for c in slide_plan.get("components", []) if c.get("kind") == "card_grid"]
+        drawn = cards.card_components(slide_plan)
+        if drawn:
+            recipe_kinds = [k for k in recipe_kinds if k not in ("card_grid", "card_steps")]
+            if len(drawn) == len(grids):
+                technique_kinds = [k for k in technique_kinds if k != "card_grid"]
+                if "card_grid" in scopes:
+                    scopes["card_grid"] = cards.scope(kind_treatments("card_grid"))
     component_recipes = _render_component_recipes(recipe_kinds)
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar and EXAMPLES_ON else ""

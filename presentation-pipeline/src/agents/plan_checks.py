@@ -27,7 +27,10 @@ PLAN_INSTRUCTION_TEXT = "PLAN_INSTRUCTION_TEXT"
 PLAN_DUPLICATE_ITEMS = "PLAN_DUPLICATE_ITEMS"
 SLIDE_SPARSE = "SLIDE_SPARSE"
 KPI_VALUE_TEXT = "KPI_VALUE_TEXT"   # a kpi_row value that is a sentence, not a figure (KPI pilot 2026-10-11)
-REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, KPI_VALUE_TEXT)
+# a title-only card whose title the brief follows with its own line (tile-nodes §11: under card tile nodes code
+# writes only plan text, so a line the planner dropped is lost; the LLM used to recover or invent one)
+CARD_LINES_DROPPED = "CARD_LINES_DROPPED"
+REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, KPI_VALUE_TEXT, CARD_LINES_DROPPED)
 
 # the keys that hold a component's content; a block kind with none of them filled is empty
 _CONTENT_KEYS: dict[str, tuple[str, ...]] = {
@@ -128,7 +131,35 @@ def find_problems(plan: dict[str, Any], brief_text: str) -> list[dict[str, str]]
                 problems.append({"code": KPI_VALUE_TEXT, "component_id": cid,
                                  "detail": f"kpi_row '{cid}' has {len(prose)} sentence(s) as kpi_values, not figures: "
                                            f"{prose[0][:80]}"})
+        if comp.get("kind") == "card_grid":
+            dropped = dropped_card_lines(comp, brief_text)
+            if dropped:
+                problems.append({"code": CARD_LINES_DROPPED, "component_id": cid,
+                                 "detail": f"card_grid '{cid}' gives {len(dropped)} card(s) only a title though the key "
+                                           f"messages give them a line: {dropped[0][:80]}"})
     return problems
+
+
+_BRIEF_PIECES = re.compile(r"\n|(?:^|\s)[*•·]\s|;")   # " - " is kept: it often joins a title to its line
+
+
+def dropped_card_lines(comp: dict[str, Any], brief_text: str) -> list[str]:
+    """The brief's lines for cards that have only a title: a piece of the brief (a line or a bullet) that starts with
+    the card's title and goes on for 4+ words ("Late fixes (after 20:00): urgent edits from mobile")."""
+    pieces = [re.sub(r"^(?:\d+[.)]|-)\s*", "", " ".join(x.split())) for x in _BRIEF_PIECES.split(brief_text or "")
+              if x and x.strip()]   # "1. Stand-up (09:00): ..." -> "Stand-up (09:00): ..."
+    out = []
+    for card in (comp.get("content_data") or {}).get("cards") or []:
+        if not isinstance(card, dict) or _card_lines(card):
+            continue
+        title = " ".join(str(card.get("title") or "").split())
+        if len(title) < 3:
+            continue
+        for piece in pieces:
+            if piece.lower().startswith(title.lower()) and len(piece[len(title):].split()) >= 4:
+                out.append(piece)
+                break
+    return out
 
 
 def reask_context(problems: list[dict[str, str]]) -> dict[str, Any]:
@@ -144,7 +175,10 @@ def reask_context(problems: list[dict[str, str]]) -> dict[str, Any]:
                       + (" A kpi_row's kpi_values hold the figure only (e.g. '0.29x', '₹10.0L'), with the metric "
                          "name in kpi_labels; findings written as sentences belong in a card_grid (one card per "
                          "finding) or a bullet_list, not in a kpi_row." if any(p["code"] == KPI_VALUE_TEXT
-                                                                              for p in problems) else "")),
+                                                                              for p in problems) else "")
+                      + (" A card_grid card copies its own line from the key messages into body (or bullets) when the "
+                         "key messages give one; code draws only what the plan holds." if any(
+                             p["code"] == CARD_LINES_DROPPED for p in problems) else "")),
     }
 
 
@@ -316,6 +350,47 @@ def settle_kpi_tones(comp: dict[str, Any]) -> None:
         data.pop("kpi_tones")
 
 
+def _card_lines(card: dict[str, Any]) -> list[str]:
+    bullets = card.get("bullets") if isinstance(card.get("bullets"), list) else []
+    return [str(x) for x in [card.get("body") or "", *bullets] if str(x).strip()]
+
+
+def settle_card_fields(comp: dict[str, Any]) -> None:
+    """A card_grid's per-card tone / key_phrase and its focus_card as code reads them (tile-nodes spec §11):
+    tones as kpi_tones (none kept when all blank); a key_phrase only when its words are in the card's body
+    or bullets (case and spacing taken from there), else dropped; focus_card only as an index in range, not on a
+    matrix (deferred), and not on the last step (the destination is the default there)."""
+    data = comp.get("content_data") or {}
+    if comp.get("kind") != "card_grid":
+        return
+    cards = [c for c in data.get("cards") or [] if isinstance(c, dict)]
+    tones = [_TONES.get(str(c.get("tone") or "").strip().lower(), "") for c in cards]
+    for c, t in zip(cards, tones):
+        if any(tones):
+            c["tone"] = t
+        else:
+            c.pop("tone", None)
+    for c in cards:
+        phrase = " ".join(str(c.get("key_phrase") or "").split())
+        c.pop("key_phrase", None)
+        if not phrase:
+            continue
+        for line in _card_lines(c):
+            m = re.search(r"\s+".join(map(re.escape, phrase.split())), line, re.I)
+            if m and m.group(0).strip() != line.strip():   # a phrase that is the whole line marks nothing
+                c["key_phrase"] = m.group(0)
+                break
+    raw = data.pop("focus_card", None)
+    try:
+        focus = int(raw) if raw is not None and str(raw).strip() != "" and not isinstance(raw, bool) else None
+    except (TypeError, ValueError):
+        focus = None
+    layout = data.get("card_layout") or "grid"
+    if focus is not None and 0 <= focus < len(cards) and layout != "matrix" \
+            and not (layout == "steps" and focus == len(cards) - 1):
+        data["focus_card"] = focus
+
+
 # ── entry point ─────────────────────────────────────────────────────────────
 
 def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
@@ -331,6 +406,7 @@ def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
         _flag(plan, PLAN_EMPTY, "", "the plan has no components")
     for comp in plan.get("components") or []:
         settle_kpi_tones(comp)
+        settle_card_fields(comp)
         vals = (comp.get("content_data") or {}).get("kpi_values") or [] if comp.get("kind") == "kpi_row" else []
         if any(is_sentence(str(v)) for v in vals):
             _flag(plan, KPI_VALUE_TEXT, comp.get("component_id", ""), "kpi_values hold sentences, not figures")

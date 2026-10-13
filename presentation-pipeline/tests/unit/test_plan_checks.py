@@ -271,6 +271,55 @@ def test_the_planner_prompt_asks_for_kpi_tones_by_meaning():
     assert "kpi_tones" in PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
 
 
+def _cards(layout="grid", **extra):
+    return comp("cards", "card_grid", {"card_layout": layout, **extra, "cards": [
+        {"title": "Close logos", "body": "Worth $4M+  combined ARR", "tone": "Positive", "key_phrase": "$4m+ combined"},
+        {"title": "Fix onboarding", "body": "Payback slipped to 19 months", "tone": "negative", "key_phrase": "22 months"},
+        {"title": "Ship v2", "bullets": ["Before the board meeting"], "tone": "meh", "key_phrase": "board meeting"},
+        {"title": "Hire", "body": "Two engineers", "key_phrase": "Two engineers"}]})
+
+
+def test_card_tones_and_key_phrases_are_settled():
+    """tile-nodes spec §11: tones as kpi_tones; a key_phrase only when it is in the card's own lines."""
+    c = _cards()
+    finalize_plan(plan([c]), BRIEF)
+    cards = c["content_data"]["cards"]
+    assert [k["tone"] for k in cards] == ["good", "bad", "", ""]
+    assert cards[0]["key_phrase"] == "$4M+  combined"           # the body's own case and spacing
+    assert "key_phrase" not in cards[1]                          # not in the body: dropped
+    assert cards[2]["key_phrase"] == "board meeting"             # found in a bullet
+    assert "key_phrase" not in cards[3]                          # the whole line marks nothing
+    quiet = comp("q", "card_grid", {"card_layout": "grid", "cards": [{"title": "A", "tone": ""}, {"title": "B", "tone": None}]})
+    finalize_plan(plan([quiet]), BRIEF)
+    assert all("tone" not in k for k in quiet["content_data"]["cards"])
+
+
+def test_focus_card_is_kept_only_where_code_can_draw_it():
+    for layout, focus, kept in [("grid", 1, 1), ("grid", "2", 2), ("grid", 9, None), ("grid", True, None),
+                                ("steps", 3, None), ("steps", 1, 1), ("matrix", 0, None)]:
+        c = _cards(layout, focus_card=focus)
+        finalize_plan(plan([c]), BRIEF)
+        assert c["content_data"].get("focus_card") == kept, (layout, focus)
+
+
+def test_focus_card_singles_out_its_card_before_the_hint():
+    from src.compiler.nodes import spec
+    c = _cards(focus_card=2)
+    c["design_hint"] = "inverted panel on the Close logos card"
+    finalize_plan(plan([c]), BRIEF)
+    assert spec.singled_out(c) == "Ship v2"
+    del c["content_data"]["focus_card"]
+    assert spec.singled_out(c) == "Close logos"
+
+
+def test_the_planner_prompt_asks_for_card_tones_phrases_and_focus():
+    from pathlib import Path
+    text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
+    assert '"focus_card": 4' in text and "key_phrase (card_grid" in text and "tone (card_grid)" in text
+    desc = PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
+    assert "focus_card" in desc and "key_phrase" in desc and '\\"tone\\"' not in desc and '"tone"' in desc
+
+
 # ── what the log keeps when a planner call fails (tile-nodes wide eval, 2026-10-12) ──
 
 def _length_error(reasoning=16000, out=16000):
@@ -300,3 +349,16 @@ def test_an_unreadable_content_data_json_logs_its_start_and_the_text_near_the_er
     assert state["components"][0]["content_data"] == {}
     assert "invalid content_data_json for component 'k'" in caplog.text
     assert '{"kpi_labels": ["ARR", "NRR"]' in caplog.text and "chars)" in caplog.text and "near" in caplog.text
+
+
+def test_a_title_only_card_whose_line_the_brief_gives_is_re_asked():
+    from src.agents.plan_checks import CARD_LINES_DROPPED, find_problems, reask_context
+    brief = ("Key messages:\n1. Stand-up (09:00-09:30): the board is reviewed live with the whole team\n"
+             "2. Late fixes - urgent edits from mobile, the fastest-growing moment\n* Hand-off")
+    c = comp("moments", "card_grid", {"card_layout": "grid", "cards": [
+        {"title": "Stand-up"}, {"title": "Late fixes"}, {"title": "Hand-off"}, {"title": "Review", "body": "Managers approve"}]})
+    probs = [p for p in find_problems(plan([c]), brief) if p["code"] == CARD_LINES_DROPPED]
+    assert len(probs) == 1 and "2 card(s)" in probs[0]["detail"]
+    assert "copies its own line" in reask_context(probs)["directive"]
+    rows_only = comp("mx", "card_grid", {"card_layout": "grid", "cards": [{"title": "Visibility"}, {"title": "Conversion"}]})
+    assert not [p for p in find_problems(plan([rows_only]), "Rows: Visibility Conversion Repeat Purchase") if p["code"] == CARD_LINES_DROPPED]
