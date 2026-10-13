@@ -193,8 +193,12 @@ def _styles(refs: dict, look: tuple[str, dict], comp: dict, i: int) -> dict[str,
 
 
 def _box(el: etree._Element, keep: tuple[str, ...] | None = None) -> dict[str, str]:
+    """The box attributes a tile tag may carry, literal colours left out (tile tags take palette tokens only). Sizes,
+    grow and gaps are kept: until 2026-10-13 only $-values were, so a rewritten <KpiGrid> lost the LLM's grow / w / h
+    (docs/eval/tile-nodes/wide/README.md)."""
     ok = set(T.data()["box_attributes"])
-    return {k: v for k, v in el.attrib.items() if k in ok and (keep is None or k in keep) and str(v).startswith("$") is not False}
+    literal_colour = lambda k, v: ("olor" in k or "Gradient" in k) and not str(v).startswith("$")
+    return {k: v for k, v in el.attrib.items() if k in ok and (keep is None or k in keep) and not literal_colour(k, v)}
 
 
 def _attrs(d: dict[str, str]) -> str:
