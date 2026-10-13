@@ -4,7 +4,7 @@
     python -m scripts.eval_run kpi-row single-table --label smoke --repeat 2
     python -m scripts.eval_run --fixtures tests/fixtures/golden/gj-h1-deck --label golden   # LLM-free
 
-Writes output/eval/<label>-<ts>/: results.json, summary.md, slides/<case>/slide-<i>/
+Writes output/eval/<label>-<ts>/: results.json, summary.md, run.log (every log line, uncut), slides/<case>/slide-<i>/
 (input.xml, fitted.xml, compile-result.json, presentation.pptx), renders/ (PowerPoint
 COM, when available). --bundle zips that folder for email; import it on the build
 device with `python -m scripts.eval_import <zip>`.
@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -451,11 +452,13 @@ def main(argv: list[str] | None = None) -> int:
         except FileExistsError:
             out_dir = args.out / f"{args.label}-{stamp}-{n}"
 
+    file_log = None
     if args.fixtures:
         cases = [evaluate_fixtures(args.fixtures, out_dir / "slides" / f"{args.fixtures.name}__r1")]
     else:
-        from src.utils.logging_config import setup_logging
+        from src.utils.logging_config import add_file_log, setup_logging
         setup_logging()
+        file_log = add_file_log(out_dir / "run.log")   # full lines, travels in the bundle
         cases = []
         for name in args.cases or GATE_CASES:
             case = load_case(name)
@@ -490,6 +493,9 @@ def main(argv: list[str] | None = None) -> int:
         with open(out_dir / "summary.md", "a", encoding="utf-8") as f:
             f.write(_composed_summary(cases))
     print(f"\n{out_dir / 'summary.md'}")
+    if file_log:
+        logging.getLogger().removeHandler(file_log)
+        file_log.close()
     if args.bundle:
         print(f"EMAIL THIS FILE: {make_bundle(out_dir)}")
     return 0

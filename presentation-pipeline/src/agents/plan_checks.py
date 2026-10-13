@@ -102,6 +102,17 @@ def is_empty(comp: dict[str, Any]) -> bool:
     return not any(_filled(data.get(k)) for k in keys)
 
 
+def holds_no_content(plan: dict[str, Any]) -> bool:
+    """No component past the headline and captions carries any content: the generator would
+    write the whole slide from the summaries (wide-kpi XTSY slide 5, 2026-10-13: both answers'
+    content_data_json unreadable, five invented lists). Unchecked kinds (layer, ...) count too.
+    Not one: a plan of only a title, and a cover or closing slide, whose visual may be decoration."""
+    if plan.get("slide_type") in ("cover", "closing"):
+        return False
+    body = [c for c in plan.get("components") or [] if c.get("kind") not in ("title", "caption")]
+    return bool(body) and not any(_filled(c.get("content_data")) for c in body)
+
+
 # ── problems that justify a re-ask ──────────────────────────────────────────
 
 def find_problems(plan: dict[str, Any], brief_text: str) -> list[dict[str, str]]:
@@ -111,6 +122,8 @@ def find_problems(plan: dict[str, Any], brief_text: str) -> list[dict[str, str]]
     comps = plan.get("components") or []
     if not comps:
         problems.append({"code": PLAN_EMPTY, "component_id": "", "detail": "the plan has no components"})
+    elif holds_no_content(plan) and not any(is_empty(c) for c in comps):
+        problems.append({"code": PLAN_EMPTY, "component_id": "", "detail": "no component holds any content"})
     for comp in comps:
         cid = comp.get("component_id", "")
         if is_empty(comp) and comp.get("kind") != "caption":

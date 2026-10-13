@@ -32,7 +32,7 @@ from src.agents.capacity import capacity, enforce_capacity, span
 from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
-from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, reask_context
+from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
                                       flag_written_lines, visual_directions)
 from src.state import ComponentPlan, PresentationState, SlidePlan
@@ -326,6 +326,10 @@ def plan_with_reask(
     if best is None:
         logger.error(f"slide_component_planner: slide {idx + 1} failed twice, using the fallback plan")
         best = fallback_plan(slide)
+    elif holds_no_content(best) and (fallback := fallback_plan(slide))["components"]:
+        logger.error(f"slide_component_planner: slide {idx + 1} holds no content after {len(history)} "
+                     f"tries, using the fallback plan")
+        best = fallback
     notes = finalize_plan(best, brief_text)
     if best.get("plan_source") == "fallback":
         notes.append("planner failed twice: fallback plan")

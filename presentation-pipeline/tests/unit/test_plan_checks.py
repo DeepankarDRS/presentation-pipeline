@@ -183,8 +183,12 @@ def test_an_empty_plan_is_asked_again_once_and_the_better_plan_wins():
     assert ctx["failed_kinds"] == ["kpi_row"]
 
 
+def partly_bad():
+    return plan([comp("k", "kpi_row", {}, "hero"), comp("n", "narrative", {"text": "ARR grew on enterprise."})])
+
+
 def test_the_wrapper_never_asks_a_third_time_and_keeps_the_first_on_a_tie():
-    first, second = bad(), bad()
+    first, second = partly_bad(), partly_bad()
     second["components"][0]["component_id"] = "second"
     (p, history), m = run([(first, USAGE), (second, USAGE), (good(), USAGE)])
     assert m.call_count == 2 and len(history) == 2
@@ -205,6 +209,42 @@ def test_failing_twice_with_no_content_lines_gives_no_components_but_is_flagged(
     with patch.object(scp, "plan_single_slide", side_effect=[RuntimeError("x"), RuntimeError("x")]):
         p, _ = scp.plan_with_reask(slide, outline_plan=OUTLINE)
     assert p["components"] == [] and PLAN_EMPTY in codes(p)
+
+
+def test_two_answers_with_no_content_anywhere_fall_back_to_the_briefs_own_lines():
+    # wide-kpi XTSY slide 5: both answers' content_data_json unreadable, every component {}
+    def empty():
+        return plan([comp("slide_title", "title", {}), comp("visual", "layer", {}),
+                     comp("tracking", "bullet_list", {}), comp("tagline", "narrative", {})])
+    (p, history), m = run([(empty(), USAGE), (empty(), USAGE)])
+    assert m.call_count == 2 and len(history) == 2
+    assert p["plan_source"] == "fallback"
+    assert p["components"][0]["content_data"]["bullets"] == ["ARR $48.2M, +18% QoQ"]
+    assert "planner failed twice: fallback plan" in p["capacity_fixes"]
+
+
+def test_a_plan_whose_only_body_is_an_unchecked_kind_with_no_data_is_asked_again():
+    empty = plan([comp("slide_title", "title", {"text": "Growth"}), comp("visual", "layer", {})])
+    assert [x["detail"] for x in find_problems(empty, BRIEF)] == ["no component holds any content"]
+    (p, history), m = run([(empty, USAGE), (good(), USAGE)])
+    assert m.call_count == 2 and "plan_source" not in p
+
+
+def test_a_cover_with_only_a_decorative_visual_is_not_empty():
+    cover = plan([comp("slide_title", "title", {}), comp("visual", "layer", {})], slide_type="cover")
+    assert find_problems(cover, BRIEF) == []
+
+
+def test_no_content_and_no_brief_lines_keeps_the_planners_plan():
+    slide = dict(SLIDE, key_messages=["Visual: dark hero tile"])
+    with patch.object(scp, "plan_single_slide", side_effect=[(bad(), USAGE), (bad(), USAGE)]):
+        p, _ = scp.plan_with_reask(slide, outline_plan=OUTLINE)
+    assert "plan_source" not in p and p["components"][0]["component_id"] == "k"
+
+
+def test_a_plan_with_some_content_is_kept():
+    (p, _), _ = run([(partly_bad(), USAGE), (partly_bad(), USAGE)])
+    assert "plan_source" not in p and PLAN_EMPTY in codes(p)
 
 
 def test_a_failed_first_call_then_a_good_second_one_works():

@@ -59,3 +59,16 @@ def test_context_filter_defaults():
     assert record.run_id == ""  # type: ignore[attr-defined]
     assert record.step == ""  # type: ignore[attr-defined]
     assert record.model == ""  # type: ignore[attr-defined]
+
+
+def test_add_file_log_writes_long_lines_uncut(tmp_path):
+    from src.utils.logging_config import add_file_log
+    path = tmp_path / "run.log"
+    handler = add_file_log(path)
+    try:
+        line = "invalid content_data_json, starts '" + "x" * 400 + "' → end"
+        logging.getLogger("slide_component_planner").warning(line)
+    finally:
+        logging.getLogger().removeHandler(handler)
+        handler.close()
+    assert line in path.read_text(encoding="utf-8")

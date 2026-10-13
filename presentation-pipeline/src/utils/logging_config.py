@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 from contextvars import ContextVar
+from pathlib import Path
 
 run_id_var: ContextVar[str] = ContextVar("run_id", default="")
 step_var: ContextVar[str] = ContextVar("step", default="")
@@ -71,3 +72,16 @@ def setup_logging(*, level: int = logging.INFO, use_context: bool = True) -> Non
     root.addHandler(handler)
     # fontTools' subsetter (font_embed) logs every glyph list at INFO: thousands of lines per deck
     logging.getLogger("fontTools").setLevel(max(level, logging.WARNING))
+
+
+def add_file_log(path: str | Path, *, level: int = logging.INFO) -> logging.Handler:
+    """Also write every log line to `path` in UTF-8, uncut. A console log saved by PowerShell
+    (`2>&1 | Tee-Object`) cuts each line at the window width, which lost the start of the
+    unreadable planner text in the 2026-10-13 paid runs. Returns the handler; remove and close
+    it when the run is done."""
+    handler = logging.FileHandler(path, encoding="utf-8")
+    handler.setLevel(level)
+    handler.setFormatter(logging.Formatter(_FORMAT))
+    handler.addFilter(ContextFilter())
+    logging.getLogger().addHandler(handler)
+    return handler

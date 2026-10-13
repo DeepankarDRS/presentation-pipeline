@@ -70,3 +70,26 @@ callout): tiles won. With one plan per arm, this run cannot separate the KPI dra
 Neither bundle includes the console log; the `.log` files hold the planner's new failure lines (step 2). Filter:
 
     Select-String -Path wide-tiles.log, wide-kpi.log -Pattern "invalid content_data_json|hit the output limit|failed twice|taken from the design hint|Traceback"
+
+Result (user), matched to the saved plans:
+
+| log line | slide | outcome |
+|---|---|---|
+| `hit the output limit … 16000 of 16000 output tokens were reasoning` ×3 | tiles: agency 5, CHEFFIN 6, XTSY 6 (first tries) | second try fine; ≈ $0.10 wasted |
+| `invalid content_data_json` on 3 components | tiles: agency 6, first try | second try fine |
+| `invalid content_data_json` on all 5 components, **both tries** ("Expecting property name", then "Expecting value") | kpi: XTSY 5 "How Our Commerce Intelligence Platform…" | **plan kept with every component empty; the generator wrote the TRACKING / INSIGHTS lists and the tagline itself** (none from the brief; no numbers, so the invented-number check passed it) |
+
+Every log line was cut at about 100 characters (PowerShell saves a console log at the window width), so the
+start of the unreadable text that step 2 logs was lost. The error types say the whole call broke the same way
+(single-quoted keys or not JSON at all), not one field.
+
+**Fixed after this run (free):**
+1. `plan_checks.holds_no_content`: a plan whose components past the title / captions carry no content at all
+   (cover and closing slides excepted: their visual may be decoration) is re-asked (`PLAN_EMPTY` "no component
+   holds any content"), and when the second answer is still empty the slide gets `fallback_plan` (the brief's
+   own lines) instead of the generator's inventions. Across 1,989 saved plans it catches 7, all empty.
+2. `eval_run` writes `run.log` (every log line, UTF-8, uncut) into the run folder, so the bundle carries it.
+
+Open: the cause of the unreadable `content_data_json`. The schema asks for JSON inside a string; the other
+session's typed-schema work (its sections 3 / 4: typed content data instead of a JSON string) would remove the
+parse step, and needs a paid check.
