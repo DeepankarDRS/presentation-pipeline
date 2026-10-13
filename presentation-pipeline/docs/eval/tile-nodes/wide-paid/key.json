@@ -1,0 +1,27 @@
+{
+ "pair-1": {
+  "case": "deck-qbr-data",
+  "slide": 1,
+  "tiles_side": 2
+ },
+ "pair-2": {
+  "case": "deck-product-launch-data",
+  "slide": 3,
+  "tiles_side": 2
+ },
+ "pair-3": {
+  "case": "gate-deck-cheffin-full",
+  "slide": 1,
+  "tiles_side": 2
+ },
+ "pair-4": {
+  "case": "gate-deck-cheffin-full",
+  "slide": 4,
+  "tiles_side": 1
+ },
+ "pair-5": {
+  "case": "gate-deck-all-nodes-dense",
+  "slide": 1,
+  "tiles_side": 2
+ }
+}
