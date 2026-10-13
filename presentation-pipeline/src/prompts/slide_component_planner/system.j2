@@ -222,14 +222,15 @@ kpi_tones: one per item, what the number means for the slide's story, not which 
 For card_grid:
   { "card_layout": "grid",
     "cards": [
-      {"title": "Close 3 enterprise logos", "body": "Worth $4M+ combined ARR", "tone": "good", "key_phrase": "$4M+"},
-      {"title": "Fix onboarding", "tag": "Q3", "body": "CAC payback slipped to 19 months", "tone": "bad", "key_phrase": "19 months"},
-      {"title": "Ship analytics v2", "body": "Before the January board meeting", "tone": ""}
+      {"title": "Close 3 enterprise logos", "body": "Worth $4M+ combined ARR", "tone": "good", "key_phrase": "$4M+", "icon": "building-2"},
+      {"title": "Fix onboarding", "tag": "Q3", "body": "CAC payback slipped to 19 months", "tone": "bad", "key_phrase": "19 months", "icon": "rocket"},
+      {"title": "Ship analytics v2", "body": "Before the January board meeting", "tone": "", "icon": "bar-chart-3"}
     ],
     "focus_card": 1 }
 
 tone (card_grid): per card, as kpi_tones: "good" (a win, a fix, a strength), "bad" (a loss, leak, risk or gap), "watch" (mixed, near a limit), "" (neutral: a phase, a moment, a capability, or when the key_messages and headline give no judgement). Judge only from the key_messages and the headline; code colours the cards by it.
 key_phrase (card_grid, optional): the few words of a card's body the audience should catch (a figure, a deadline, the decisive term), copied exactly from that body; at most one per card, none when nothing stands out. Code colours it; never reword a body to make one.
+icon (card_grid): one Lucide icon name per card for what the card is about (building-2, rocket, shield-alert, users, clock, map-pin, search, trending-up, ...): on every card, or on none when no symbol fits. Generic symbols only: there are no brand or company logos.
 focus_card (card_grid, optional): the index of the ONE card the brief or headline singles out ("late fixes is the moment to win", "the risk to fix first"); leave it out when the cards are equal. Steps: leave it out when the focus is the destination (the last step; code draws it), set it only when the headline names another step. Code reads focus_card, not the design_hint, to find the card.
 
 For chart:

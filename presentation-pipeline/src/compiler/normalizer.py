@@ -379,8 +379,14 @@ def _on_dark(container_attrs: str) -> bool:
         return False
     value = m.group(1)
     if value.startswith("$"):
-        return value.startswith("$surface")
+        return value.startswith(("$surface", "$onPanelDark", "$onAccent"))
     return _perceived_brightness(value) > 0.6
+
+
+# A <Mark> on a light palette tint ($accentSoft, $negativeSoft, ...) stays a highlighter: dark ink reads on it by
+# construction (card key phrases, tile-nodes §11, user 2026-10-13). Only saturated / literal markers become Spans.
+_SOFT_TOKEN_RE = re.compile(r"^\$\w+Soft$")
+_MARK_TAG_RE = re.compile(r"<Mark\b([^>]*?)(/?)>|</Mark\s*>")
 
 
 def _mark_to_span(xml: str) -> tuple[str, int]:
@@ -388,16 +394,25 @@ def _mark_to_span(xml: str) -> tuple[str, int]:
 
     def _spans(body: str, on_dark: bool) -> str:
         nonlocal count
+        kept: list[bool] = []   # per open <Mark>: kept as a highlighter
 
-        def _open(m: re.Match) -> str:
+        def _tag(m: re.Match) -> str:
             nonlocal count
+            if m.group(0).startswith("</"):
+                return m.group(0) if (kept.pop() if kept else False) else "</Span>"
+            color = _COLOR_ATTR_RE.search(m.group(1))
+            value = color.group(1) if color else ""
+            if _SOFT_TOKEN_RE.match(value) and not on_dark:   # light text on a light tint would not read
+                if not m.group(2):
+                    kept.append(True)
+                return m.group(0)
             count += 1
             if m.group(2):  # <Mark /> holds no text
                 return ""
-            color = _COLOR_ATTR_RE.search(m.group(1))
-            return f'<Span color="{_readable_text_color(color.group(1) if color else "", on_dark)}">'
+            kept.append(False)
+            return f'<Span color="{_readable_text_color(value, on_dark)}">'
 
-        return _MARK_CLOSE_RE.sub("</Span>", _MARK_OPEN_RE.sub(_open, body))
+        return _MARK_TAG_RE.sub(_tag, body)
 
     xml = _TEXT_BODY_RE.sub(lambda m: m.group(1) + _spans(m.group(4), _on_dark(m.group(3))) + m.group(5), xml)
     return _spans(xml, False), count  # a <Mark> outside Text/Li/Td

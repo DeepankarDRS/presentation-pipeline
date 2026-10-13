@@ -84,7 +84,7 @@ class PlannerComponent(BaseModel):
                     "  card_grid: {\"card_layout\": \"grid\" | \"steps\" | \"matrix\", "
                     "\"cards\": [{\"title\": \"...\", \"tag\": \"...\", \"body\": \"...\", "
                     "\"bullets\": [...], \"tone\": \"good\" | \"bad\" | \"watch\" | \"\", "
-                    "\"key_phrase\": \"<words copied from its body>\"}], \"focus_card\": <index, only when "
+                    "\"key_phrase\": \"<words copied from its body>\", \"icon\": \"<lucide name>\"}], \"focus_card\": <index, only when "
                     "the brief singles one card out>; matrix also \"columns\": [...], \"rows\": [...] with "
                     "cards in row order (one per row x column). tag / body / bullets only "
                     "when the key_messages give them}\n"

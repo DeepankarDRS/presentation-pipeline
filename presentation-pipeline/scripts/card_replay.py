@@ -12,7 +12,7 @@ LLM's own layout gives misleading numbers). The tag is bare (ref and the LLM's w
 attributes come from what the LLM drew, as a generator under
 POM_BLOCKS=tiles would write them (variant from the card fills / edges, icons, side icons). The plan fields old plans
 lack are stand-ins read from the same drawing: the LLM's one dark card -> focus_card, its tinted cards -> tones, its
-coloured / bold runs inside a card's own line -> key_phrase. Fresh planner plans may differ; that is the paid check.
+coloured / bold runs inside a card's own line -> key_phrase, its icons (on every card) -> icon. Fresh planner plans may differ; that is the paid check.
 
 Both arms: the deck font (compile_xml's deck_font) -> normalize -> compile-pom.js (fit-grow) -> LibreOffice with Inter
 (a private profile, `render`), scored with scripts.kpi_replay.score (broken words,
@@ -185,6 +185,12 @@ def stand_ins(boxes: list[etree._Element], comp: dict) -> tuple[dict, dict]:
             t = (run.text or "").strip()
             if t and t in body and norm(t) != norm(cs[i].get("title")) and not cs[i].get("key_phrase"):
                 cs[i]["key_phrase"] = read["phrases"][i] = t
+    icons = [next(b.iter("Icon"), None) for b in boxes]   # the planner's per-card icon: the LLM's icons
+    if all(ic is not None and ic.get("name") for ic in icons):
+        for c, ic in zip(cs, icons):
+            if isinstance(c, dict):
+                c.setdefault("icon", ic.get("name"))
+        read["icons"] = len(icons)
     if any(c.get("tone") for c in cs if isinstance(c, dict)):
         for c in cs:
             if isinstance(c, dict):
@@ -470,6 +476,7 @@ def summary(out: Path, results: list[dict]) -> str:
         f"- focus card (one dark card): {sum(1 for r in done for c in r['components'] if c.get('read', {}).get('dark') and len(c['read']['dark']) == 1)}",
         f"- cards with a tone: {sum(len(c.get('read', {}).get('tones', {})) for r in done for c in r['components'])}",
         f"- key phrases: {sum(len(c.get('read', {}).get('phrases', {})) for r in done for c in r['components'])}",
+        f"- card groups with icons: {sum(1 for r in done for c in r['components'] if c.get('read', {}).get('icons'))}",
         f"- B issues: {dict(Counter(code for r in done for code in r['b_issues']))}",
     ]
     text = "\n".join(lines) + "\n"

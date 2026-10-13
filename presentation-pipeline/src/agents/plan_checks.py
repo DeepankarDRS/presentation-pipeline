@@ -380,6 +380,16 @@ def settle_card_fields(comp: dict[str, Any]) -> None:
             if m and m.group(0).strip() != line.strip():   # a phrase that is the whole line marks nothing
                 c["key_phrase"] = m.group(0)
                 break
+    # icons: a real icon name (icons.canonical_icon_name), on every card or on none (a grid with some icons reads as
+    # missing ones; blind marks 2026-10-13: icons were the second reason the LLM's cards won)
+    from src.compiler.icons import canonical_icon_name, valid_icon_names
+    names = [canonical_icon_name(str(c.get("icon") or "")) for c in cards]
+    ok = bool(cards) and all(n in valid_icon_names() for n in names)
+    for c, n in zip(cards, names):
+        if ok:
+            c["icon"] = n
+        else:
+            c.pop("icon", None)
     raw = data.pop("focus_card", None)
     try:
         focus = int(raw) if raw is not None and str(raw).strip() != "" and not isinstance(raw, bool) else None

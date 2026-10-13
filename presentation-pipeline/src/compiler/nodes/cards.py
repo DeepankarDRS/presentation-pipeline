@@ -35,7 +35,7 @@ SEVERITY = tiles.SEVERITY
 GROUP, ITEM = "CardGrid", "Card"
 GROUP_META = {"ref", "layout", "cols", "variant", "arrange", "color", "icon"}
 ITEM_META = {"ref", "variant", "arrange", "color", "icon"}
-GAP = 14                       # between cards
+GAP = 20                       # between cards (blind marks 2026-10-13: separation between cards)
 PX = {"tag": 13, "title": 20, "body": 16, "number": 28, "numerals": 40}   # start sizes; fit-grow grows them
 ICON_PX = 26
 _TONE_ROLE = {"good": "positive", "bad": "negative", "watch": "warning"}
@@ -151,16 +151,18 @@ def _text(text: str, px: int, attrs: dict[str, str], **extra: str) -> etree._Ele
     return el
 
 
-def _with_phrase(el: etree._Element, text: str, phrase: str, color: str) -> None:
-    """`text` into el, the first `phrase` in it as a coloured Span (the plan's key_phrase, exact words)."""
+def _with_phrase(el: etree._Element, text: str, phrase: str, color: str, mark: str = "") -> None:
+    """`text` into el, the first `phrase` in it (the plan's key_phrase, exact words) as a highlighter: <Mark mark>
+    around a <Span color>; without `mark` a coloured Span; with neither, bold (a dark card)."""
     k = text.find(phrase) if phrase else -1
     if k < 0:
         el.text = text
         return
     el.text = text[:k]
-    span = etree.SubElement(el, "Span", color=color) if color else etree.SubElement(el, "B")
-    span.text = phrase
-    span.tail = text[k + len(phrase):]
+    host = etree.SubElement(el, "Mark", color=mark) if mark else el
+    run = etree.SubElement(host, "Span", color=color) if color else etree.SubElement(host, "B")
+    run.text = phrase
+    (host if mark else run).tail = text[k + len(phrase):]
 
 
 def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
@@ -230,7 +232,11 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
     # the key phrase: in the card's colour; bold on a dark card (a tint does not show there, gallery 2026-10-13);
     # a neutral card's in ink against its muted body
     dark = fill in element_refs.READS_ON
-    phrase_ink = "" if dark else "$textMain" if role == "neutral" else f"${role}Text"
+    # the key phrase: a highlighter in the card's tint with the phrase in its ink (user, 2026-10-13: the LLM's coloured
+    # phrases won the marks); on a card of that tint already, the ink alone; on a dark card, bold
+    tint = "accent" if role == "neutral" else role
+    phrase_ink = "" if dark else f"${tint}Text"
+    phrase_mark = "" if dark or fill == f"${tint}Soft" else f"${tint}Soft"
     els: list[etree._Element] = []
     # numerals: the group's numerals stay on its dark emphasis card too
     numerals = used == "numerals" or (not imeta.get("variant") and gmeta.get("variant") == "numerals"
@@ -243,7 +249,7 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
     els.append(_text(str(c.get("title") or ""), PX["title"], parts["title"], bold="true", id=f"cardt-{cid}-{i}"))
     if body:
         t = _text("", PX["body"], parts["body"], lineHeight="1.4", id=f"cardb-{cid}-{i}")
-        _with_phrase(t, body, phrase if phrase in body else "", phrase_ink)
+        _with_phrase(t, body, phrase if phrase in body else "", phrase_ink, phrase_mark)
         els.append(t)
     if bullets:
         ul = etree.Element("Ul", fontSize=str(PX["body"]), lineHeight="1.4")
@@ -252,9 +258,9 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
                 ul.set(k, v)
         for b in bullets:
             li = etree.SubElement(ul, "Li")
-            _with_phrase(li, b, phrase if phrase in b and phrase not in body else "", phrase_ink)
+            _with_phrase(li, b, phrase if phrase in b and phrase not in body else "", phrase_ink, phrase_mark)
         els.append(ul)
-    icon_name = imeta.get("icon") or gmeta.get("icon")
+    icon_name = imeta.get("icon") or gmeta.get("icon") or c.get("icon")   # the LLM's, else the plan's
     icon = None
     if icon_name:
         icon = etree.Element("Icon", name=icon_name, size=str(ICON_PX))
@@ -273,7 +279,21 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
         for el in els:
             col.append(el)
         return tile
-    for el in ([icon] if icon is not None else []) + els:
+    tag_el = next((e for e in els if e.get("letterSpacing") and not e.get("id", "").startswith("cardt-")), None)
+    if icon is not None and tag_el is not None:
+        # the icon leads the tag line: on a row of its own it cost the title ~20% of its size (replay 2026-10-13:
+        # QBR 44 -> 36 px). Not beside a title: the narrower title could not grow past its longest word
+        # (BREWLY pillars stayed at 20 px, "Subscriptions"), and the body is held below the title.
+        icon.attrib.pop("alignSelf", None)
+        row = etree.Element("HStack", gap="10", alignItems="center")
+        row.append(icon)
+        els[els.index(tag_el)] = row
+        tag_el.set("w", "1")       # beside the icon the tag takes the rest of the row and wraps there
+        tag_el.set("grow", "1")
+        row.append(tag_el)
+    elif icon is not None:
+        els.insert(0, icon)
+    for el in els:
         tile.append(el)
     return tile
 

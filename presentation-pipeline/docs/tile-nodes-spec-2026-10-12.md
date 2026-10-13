@@ -348,5 +348,16 @@ Content B drops: the LLM's own lines that are not in the plan: 4 of 80 component
 XTSY slide 3 bullets not in the brief: invented, so dropping them follows the content policy).
 Blind sheets: `output/card-replay/sheets/` (marks.csv; key.json after marking). Gate before the paid check: marks ≥ 0.5.
 
+**Blind marks (user, 2026-10-13, saved in `docs/eval/card-nodes/replay-2/`):**
+- Round 1, bare `column` default: **0.313** (B 20 / tie 7 / A 48). Reasons: separation between cards (A won on it 31 times),
+  icons (24), colour (8); B won on text size and space. The open column was dropped as the default.
+- Round 2, `lifted` default (white card, 8 px radius, 10% shadow, tone tint, tone-coloured tags, plan icons in the tag line or
+  above the title, key phrase as a `<Mark>` highlighter): **0.533** (B 24 / tie 32 / A 18, + 1 auto loss: the `w="max"`
+  squeeze compile failure) - passes the tile gate (0.5), below the 1a gate (0.6). Replay: empty cards 54 (A 44), overlaps
+  5 (A 6), LOW_CONTRAST 7 (A 20), titles 26 px (A 22), card output tokens -98%.
+  B won on space allocation and consistent card sizes; A won on coloured text runs ("span text color", "I like span better
+  than the mark"), content the plan lacks (bullets the LLM added, 4 pairs; an org chart planned as cards), two card groups drawn
+  alike ("variants for 2 types of cards"), and a step number in front of year tags ("01 · 2021").
+
 Open: the rail's text does not grow (wide cards, little spare height); a short last row stretches wider than the row
 above (KPI rows do the same); numerals + icons on a 5-card grid leave little room to grow.

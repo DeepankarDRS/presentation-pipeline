@@ -362,3 +362,15 @@ def test_a_title_only_card_whose_line_the_brief_gives_is_re_asked():
     assert "copies its own line" in reask_context(probs)["directive"]
     rows_only = comp("mx", "card_grid", {"card_layout": "grid", "cards": [{"title": "Visibility"}, {"title": "Conversion"}]})
     assert not [p for p in find_problems(plan([rows_only]), "Rows: Visibility Conversion Repeat Purchase") if p["code"] == CARD_LINES_DROPPED]
+
+
+def test_card_icons_are_real_names_on_every_card_or_none():
+    c = comp("c", "card_grid", {"card_layout": "grid", "cards": [{"title": "A", "icon": "Rocket"}, {"title": "B", "icon": "users"}]})
+    finalize_plan(plan([c]), BRIEF)
+    assert [k["icon"] for k in c["content_data"]["cards"]] == ["rocket", "users"]   # canonical names
+    some = comp("s", "card_grid", {"card_layout": "grid", "cards": [{"title": "A", "icon": "rocket"}, {"title": "B"}]})
+    finalize_plan(plan([some]), BRIEF)
+    assert all("icon" not in k for k in some["content_data"]["cards"])               # not on every card: none
+    fake = comp("f", "card_grid", {"card_layout": "grid", "cards": [{"title": "A", "icon": "acme-logo"}, {"title": "B", "icon": "users"}]})
+    finalize_plan(plan([fake]), BRIEF)
+    assert all("icon" not in k for k in fake["content_data"]["cards"])

@@ -286,7 +286,7 @@ tile_nodes:
                    borderTop.color, borderTop.width, borderRight.color, borderRight.width,
                    borderBottom.color, borderBottom.width, borderLeft.color, borderLeft.width,
                    padding, padding.top, padding.right, padding.bottom, padding.left, gap,
-                   alignItems, justifyContent, shadow.type, shadow.blur, shadow.offset, shadow.color,
+                   alignItems, justifyContent, shadow.type, shadow.blur, shadow.offset, shadow.color, shadow.opacity,
                    opacity, w, h, grow, minW, maxW, minH, maxH, alignSelf, margin]
 
   part_nodes:           # part -> the POM node it becomes -> the attributes its prefix may carry
@@ -420,7 +420,7 @@ tile_nodes:
 
     item_attributes:
       ref:     {required: true}
-      variant: {default: "the group's variant, else column; the emphasis card inverted"}
+      variant: {default: "the group's variant, else lifted; the emphasis card inverted"}
       arrange: {values: [stack, side], default: stack}
                # stack = icon, tag, title, body; side = icon left of tag / title / body
       color:   {values: [$accent, $positive, $negative, $warning, $neutral], default: "plan tone"}
@@ -442,14 +442,27 @@ tile_nodes:
       accent_border:  'variant="accent_top", or variant="toned"'
       lift:           'shadow.type="outer" shadow.blur="6" shadow.offset="2" on each <Card>'
 
-    house_look: {padding: 20, gap: 8, justifyContent: start, icon.color: "${role}Text", tag.color: $textMuted,
+    # cards are rounded (user, 2026-10-13: the POM guide's card, 8 px), KPI tiles stay square; the LLM cannot set it
+    house_look: {borderRadius: 8, padding: 20, gap: 8, justifyContent: start, icon.color: "${role}Text", tag.color: "${role}Text",
                  number.color: "${role}Text", title.color: $textMain, body.color: $textMuted}
 
     variants:           # first = default
-      # open text column (user, 2026-10-13): cards read apart from KPI tiles (boxed numbers); an open column with
-      # space below reads as whitespace, not an empty box. The rule takes the tone / the item's colour.
+      # blind marks 2026-10-13 (0.313 for `column`): separation between cards, colour backgrounds and icons won.
+      # The default (user, 2026-10-13): a white lifted card tinted by its tone; KPI tiles stay flat (no shadow).
+      lifted:
+        prompt: "white lifted card with a soft shadow, tinted by its tone (default)"
+        with_color: {backgroundColor: "${role}Soft", border.color: "${role}"}
+        with_tone: {bad: {backgroundColor: "${role}Soft", border.color: "${role}"},
+                    watch: {backgroundColor: "${role}Soft", border.color: "${role}"},
+                    good: {backgroundColor: "${role}Soft", border.color: "${role}"}}
+        # shadow per the POM styling guide's card (10% opacity, blur 4); 35% / blur 8 read as a smudge
+        look: {backgroundColor: $surface, border.color: $border, border.width: 1, padding: 24,
+               shadow.type: outer, shadow.blur: 4, shadow.offset: 2, shadow.color: $textMain, shadow.opacity: 0.1,
+               title.color: $textMain, body.color: $textMuted}
+      # open text column: a coloured rule on the left, no box. The default until the blind marks of 2026-10-13
+      # (0.313: separation between cards, colour and icons lost); kept as a variant.
       column:
-        prompt: "open column, a coloured rule on the left, no box (default)"
+        prompt: "open column, a coloured rule on the left, no box"
         with_color: {borderLeft.color: "${role}"}
         with_tone: {bad: {borderLeft.color: "${role}"}, watch: {borderLeft.color: "${role}"},
                     good: {borderLeft.color: "${role}"}}
@@ -468,7 +481,7 @@ tile_nodes:
       toned:
         prompt: "tinted by the card's tone, coloured left edge"
         requires: [has_tones]
-        fallback: column
+        fallback: lifted
         look: {backgroundColor: "${role}Soft", borderLeft.color: "${role}", borderLeft.width: 6,
                title.color: "${role}Text", body.color: $textMain, tag.color: "${role}Text"}
       accent_top:
@@ -478,14 +491,14 @@ tile_nodes:
       numerals:
         prompt: "large 01 02 03 above each title"
         requires: [all_titles_numbered_ok]
-        fallback: column
+        fallback: lifted
         with_color: {number.color: "${role}Text"}
         look: {backgroundColor: $surfaceAlt, number.color: $textMuted, title.color: $textMain, body.color: $textMuted}
       inverted:
         prompt: "dark card: the focus card or the destination step"
         emphasis: true
         requires: [count_ge_3, is_emphasis_item]
-        fallback: column
+        fallback: lifted
         look: {backgroundColor: $panelDark, title.color: $onPanelDark, body.color: $onPanelDark,
                tag.color: $onPanelDark, number.color: $onPanelDark, icon.color: $onPanelDark}
 
