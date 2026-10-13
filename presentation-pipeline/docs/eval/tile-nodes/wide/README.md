@@ -155,9 +155,25 @@ PC, after pulling the branch (it has to be pushed first):
     $env:POM_BLOCKS="tiles"; python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-tiles --bundle *>&1 | Tee-Object -FilePath wide-tiles.log
     $env:POM_BLOCKS="kpi"; python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-kpi --bundle *>&1 | Tee-Object -FilePath wide-kpi.log
 
-**Cost ≈ $3.5** (step 0's same six cases cost $1.74 for one arm; tiles cut the KPI slides' generator output, so the
-tiles arm is likely a little cheaper). Email back both bundles and both `.log` files (the logs hold the planner's
+**Cost: about $3.5–4.0 for both runs, $4 at most.** Per run (one route, six decks) from the saved manifests
+(`scripts.usage_report`, list price without the cached-input discount, so the bill is a little lower):
+
+| case | step 0 (10-06) | q1008 (10-08) | decks run 1 (10-11, refs) | decks run 2 (10-12, refs) |
+|---|---|---|---|---|
+| deck-qbr-data | $0.20 | $0.18 | $0.20 | $0.18 |
+| deck-product-launch-data | $0.24 | $0.25 | | |
+| gate-deck-agency-takeover | $0.32 | $0.38 | | |
+| gate-deck-all-nodes-dense | $0.27 | $0.30 | $0.30 | $0.35 |
+| gate-deck-cheffin-full | $0.28 | $0.27 | $0.27 | $0.28 |
+| gate-deck-xtsy-qcomm | $0.42 | $0.37 | $0.35 | $0.37 |
+| six decks | **$1.74** | **$1.74** | | |
+
+The element-ref route ran 2–6% above q1008 on the shared cases; the highest seen per case sums to $1.89. So one
+run costs about $1.75–1.95. Tiles cut the KPI slides' generator output (−36% on those slides in the paid checks,
+1–2 KPI slides a deck: a few cents). P1 / P2 add no LLM calls. What moves the cost: repairs (13–22 calls per deck
+across runs), and a planner call that hits its output limit (≈ 6 cents each, as CHEFFIN 6 in p3). For a hard
+stop, run `tiles` first and read its cost line before starting `kpi`. Email back both bundles and both `.log` files (the logs hold the planner's
 new failure lines). On the build PC (free): deck metrics per arm (`summary.md` of each bundle), this replay's
 counts on the new slides, the plans' tone coverage, and a blind sheet of the KPI slides for your marks (gate as
 before: tiles ≥ 0.5). Each arm plans its own decks, so plans differ between arms; with one repeat the comparison
-is per deck and per KPI slide, not per plan. `--repeat 2` doubles it (≈ $7) if the first run is close.
+is per deck and per KPI slide, not per plan. `--repeat 2` doubles it (≈ $7–8) if the first run is close.
