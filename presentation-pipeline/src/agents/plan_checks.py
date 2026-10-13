@@ -301,19 +301,101 @@ def sparse_flag(plan: dict[str, Any]) -> dict[str, str] | None:
 _TONES = {"good": "good", "positive": "good", "bad": "bad", "negative": "bad", "watch": "watch", "warning": "watch"}
 
 
-def settle_kpi_tones(comp: dict[str, Any]) -> None:
-    """A kpi_row's kpi_tones as code reads them (tile-nodes spec §6): one per value, good / bad / watch / "",
-    synonyms mapped, anything else blank. A row with no tone at all keeps no kpi_tones."""
+# Role words a design hint uses for a tone (hint-capabilities sentiment: losses / leaks / risks, wins / fixes, watch).
+_HINT_ROLES = (("bad", re.compile(r"\bnegative\b|\bred\b|\bloss(?:es)?\b|\bleaks?\b|\brisks?\b", re.I)),
+               ("good", re.compile(r"\bpositive\b|\bgreen\b|\bgains?\b|\bwins?\b", re.I)),
+               ("watch", re.compile(r"\bwarning\b|\bamber\b|\bwatch\b|\bcaution\b", re.I)))
+_EVERY_ITEM = re.compile(r"\b(?:all|every|each|both)\s+(?:(?:the|these|those|kpi|of\s+the)\s+)*(?:(\w[\w%/-]*)\s+)?"
+                         r"(?:tiles?|items?|metrics?|kpis?|values?|cards?)\b", re.I)
+_HINT_STOP = re.compile(r",|\b(?:and|while|but|keep|keeping|except|other|others)\b", re.I)
+_HINT_FOR = re.compile(r"\bfor\b", re.I)   # "green for high ROAS": the role names the item after it
+_HINT_REACH = 80   # a role word after an item, at most this many characters on ("A and B in positive")
+_HINT_LEAD = 25    # a role word before an item, this close and with no "and / keep / while" between ("red on CPC")
+
+
+def _hint_names(labels: list[str]) -> list[list[str]]:
+    """The names a hint may use for each item: the label, the label before " for " / " (" ("Allowable CPC"), and
+    an upper-case token only this label has ("FLIPCART" in "FLIPCART ROAS")."""
+    tokens = [set(re.findall(r"\b[A-Z]{2,8}\b", lab)) for lab in labels]
+    count = {t: sum(t in ts for ts in tokens) for ts in tokens for t in ts}
+    out = []
+    for lab, ts in zip(labels, tokens):
+        names = [lab] if lab else []
+        short = re.split(r"\s+for\s+|\s*\(", lab, maxsplit=1)[0].strip()
+        if short and short != lab:
+            names.append(short)
+        names += sorted(t for t in ts if count[t] == 1 and t != lab)
+        out.append(names)
+    return out
+
+
+def tones_from_hint(comp: dict[str, Any]) -> list[str]:
+    """kpi_tones read from a kpi_row's design_hint, for a row the planner gave none (wide eval P2, 2026-10-13).
+
+    Per clause (split at ; and sentence ends) every place an item is named takes the nearest role word after it
+    within _HINT_REACH characters ("color the CPC row in negative", "ARR and NRR as positive"), or one just before
+    it with no comma or "and / keep / while" between ("negative color on CPC"; "green for ROAS" wins outright); of
+    several places the nearest wins. A name inside a longer item's name does not count ("CPC" in "Allowable CPC").
+    When no item is named, a clause with "all / each / both [X] tiles" and one role gives that role to every item
+    (with X: the items whose label has X). The emphasis item is not touched."""
     data = comp.get("content_data") or {}
-    if comp.get("kind") != "kpi_row" or "kpi_tones" not in data:
-        return
-    raw = data["kpi_tones"] if isinstance(data["kpi_tones"], list) else []
+    labels = [str(x or "").strip() for x in data.get("kpi_labels") or []]
+    n = len(data.get("kpi_values") or [])
+    names = _hint_names(labels[:n])
+    best: dict[int, tuple[int, str]] = {}
+    clauses = re.split(r";|\.\s", comp.get("design_hint") or "")
+    for clause in clauses:
+        roles = sorted((m.start(), m.end(), tone) for tone, rx in _HINT_ROLES for m in rx.finditer(clause))
+        if not roles:
+            continue
+        spans = [(m.start(), m.end(), i) for i, ns in enumerate(names) for nm in ns
+                 for m in re.finditer(r"(?<!\w)" + re.escape(nm) + r"(?!\w)", clause, re.I)]
+        spans = [s for s in spans if not any(o[2] != s[2] and o[0] <= s[0] and s[1] <= o[1] and o[1] - o[0] > s[1] - s[0]
+                                             for o in spans)]
+        for start, end, i in spans:
+            found = []
+            after = [r for r in roles if r[0] >= end]
+            if after and after[0][0] - end <= _HINT_REACH:
+                found.append((after[0][0] - end, after[0][2]))
+            before = [r for r in roles if r[1] <= start]
+            gap = clause[before[-1][1]:start] if before else ""
+            if before and len(gap) <= _HINT_LEAD and not _HINT_STOP.search(gap):
+                found.append((0 if _HINT_FOR.search(gap) else len(gap), before[-1][2]))
+            for cand in found:
+                if i not in best or cand[0] < best[i][0]:
+                    best[i] = cand
+    tones = [best[i][1] if i in best else "" for i in range(n)]
+    if not any(tones):
+        for clause in clauses:
+            kinds = {tone for tone, rx in _HINT_ROLES if rx.search(clause)}
+            every = _EVERY_ITEM.search(clause)
+            if every and len(kinds) == 1:   # "all ROAS tiles": the items whose label has ROAS; "all tiles": every item
+                tone, word = kinds.pop(), (every.group(1) or "").lower()
+                return [tone if not word or word in lab.lower() else "" for lab in (labels + [""] * n)[:n]]
+    return tones
+
+
+def settle_kpi_tones(comp: dict[str, Any]) -> list[str]:
+    """A kpi_row's kpi_tones as code reads them (tile-nodes spec §6): one per value, good / bad / watch / "",
+    synonyms mapped, anything else blank. A row with no tone at all takes the tones its design hint names
+    (`tones_from_hint`), else keeps no kpi_tones. Returns the notes (a tone taken from the hint)."""
+    data = comp.get("content_data") or {}
+    if comp.get("kind") != "kpi_row" or not data.get("kpi_values"):
+        return []
+    raw = data.get("kpi_tones") if isinstance(data.get("kpi_tones"), list) else []
     n = len(data.get("kpi_values") or [])
     tones = [_TONES.get(str(t).strip().lower(), "") for t in raw[:n]] + [""] * max(0, n - len(raw))
     if any(tones):
         data["kpi_tones"] = tones
-    else:
-        data.pop("kpi_tones")
+        return []
+    data.pop("kpi_tones", None)
+    hinted = tones_from_hint(comp)
+    if not any(hinted):
+        return []
+    data["kpi_tones"] = hinted
+    labels = list(data.get("kpi_labels") or [])
+    named = ", ".join(f"{labels[i] if i < len(labels) else i} {t}" for i, t in enumerate(hinted) if t)
+    return [f"{comp.get('component_id', '')}: kpi_tones taken from the design hint ({named}); the planner wrote none"]
 
 
 # ── entry point ─────────────────────────────────────────────────────────────
@@ -330,7 +412,7 @@ def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
     if not plan.get("components"):
         _flag(plan, PLAN_EMPTY, "", "the plan has no components")
     for comp in plan.get("components") or []:
-        settle_kpi_tones(comp)
+        notes += settle_kpi_tones(comp)
         vals = (comp.get("content_data") or {}).get("kpi_values") or [] if comp.get("kind") == "kpi_row" else []
         if any(is_sentence(str(v)) for v in vals):
             _flag(plan, KPI_VALUE_TEXT, comp.get("component_id", ""), "kpi_values hold sentences, not figures")

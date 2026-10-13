@@ -118,8 +118,8 @@ scan), not from the 3 paid-check slides.
 
 | # | proposal | evidence | affects | cost |
 |---|---|---|---|---|
-| **P1** | **Tile house look padding 22 → 16, gap 10 → 6** (`block-variants.yaml` `tile_nodes.kpi.house_look`; the median of the LLM's own 206 hand tiles). Re-render the tile gallery. | Tiles smaller than the hand route on 29 slides → 14; larger on 12 → 27; `GEOM_CARD_EMPTY` 88 → 70 (hand 59); paid-check slides gain too (QBR 83 → 95 px). 4 slides +1 empty card, none smaller. | 39 of 68 slides get larger tile numbers, none smaller | free, one line + gallery |
-| **P2** | **Tones from the hint when the planner writes none** (`plan_checks.settle_kpi_tones`): an item named in the `design_hint` within ~60 characters of a role word gets that tone (negative / red / loss / leak / risk → bad; positive / green / win → good; warning / amber / watch → watch); "all / each / both" + one role → every item. Noted in `capacity_fixes`; only when `kpi_tones` is empty; the emphasis item is unchanged (it stays the plan's). | Under tiles colour depends on tones: the LLM asked for colour on 10 of 20 tile first tries (hand route: 74 of 82 rows coloured). Hints ask for colour on 66 of 83 rows; code can read 51 of them (44 name the item, 7 "all / each"). The planner missed tones on 1 of 4 rows in p3 (CHEFFIN 4, whose hint names CPC negative / Allowable CPC warning). | every tile row without tones and with a colour hint (in old plans: 51 of 83 rows) | free, code + unit tests |
+| **P1** (built) | **Tile house look padding 22 → 16, gap 10 → 6** (`block-variants.yaml` `tile_nodes.kpi.house_look`; the median of the LLM's own 206 hand tiles). Re-render the tile gallery. | Tiles smaller than the hand route on 29 slides → 14; larger on 12 → 27; `GEOM_CARD_EMPTY` 88 → 70 (hand 59); paid-check slides gain too (QBR 83 → 95 px). 4 slides +1 empty card, none smaller. | 39 of 68 slides get larger tile numbers, none smaller | free, one line + gallery |
+| **P2** (built) | **Tones from the hint when the planner writes none** (`plan_checks.settle_kpi_tones`): an item named in the `design_hint` within ~60 characters of a role word gets that tone (negative / red / loss / leak / risk → bad; positive / green / win → good; warning / amber / watch → watch); "all / each / both" + one role → every item. Noted in `capacity_fixes`; only when `kpi_tones` is empty; the emphasis item is unchanged (it stays the plan's). | Under tiles colour depends on tones: the LLM asked for colour on 10 of 20 tile first tries (hand route: 74 of 82 rows coloured). Hints ask for colour on 66 of 83 rows; code can read 51 of them (44 name the item, 7 "all / each"). The planner missed tones on 1 of 4 rows in p3 (CHEFFIN 4, whose hint names CPC negative / Allowable CPC warning). | every tile row without tones and with a colour hint (in old plans: 51 of 83 rows) | free, code + unit tests |
 | P3 | **`w="max"` squeeze: no fix now.** If the paid run shows it again: normalizer rule. In an HStack where a `w="max"` child holds more than ~80 characters of text beside another `w="max"` child, the text child gets `grow="1"` instead (paid check 3 showed that compiles). | 3 of 425 saved slides on today's compiler, all one slide (paid 3 CHEFFIN 1 ×3); 0 of 68 in the replay; older hits compile today. | 1 slide | free |
 | P4 | **Label colour: keep muted by default.** Optional, your call: on toned / filled tiles only, the label takes the tone's text colour. | The LLM's own labels are muted on 214 of 281 (76%) and coloured on 55, mostly in toned / focus tiles. The QBR note is one slide. | toned tiles only | free |
 | P5 | Compound KPI values ("₹0.59 L / 9.13x / 11.0%", "₹2.71 Cr (6.1% GMV)"): extend the plan check `KPI_VALUE_TEXT` to values with " / " or a bracketed second figure. **Measure first** in the paid run's fresh plans; today's numbers come from old plans. | 28 of 317 values on 10 of 68 slides (old plans); both routes draw them as big numbers. | both routes | free |
@@ -127,6 +127,24 @@ scan), not from the 3 paid-check slides.
 
 **Recommendation:** build P1 and P2 (free, about one session), re-run this replay, then the paid run below, so
 it judges tiles as they would ship. P3–P5 wait for the paid run's data.
+
+### P1 / P2 built (2026-10-13, user go-ahead)
+
+- **P1** (`638a385`): `house_look` padding 16, gap 6. The replay numbers are the `--look padding=16 gap=6`
+  experiment above (same values): tiles larger than the hand route on 27 slides, smaller on 14, card empty 70.
+  Gallery re-rendered (`docs/eval/tile-nodes/gallery/`); every variant / arrangement still compiles.
+- **P2**: `plan_checks.tones_from_hint`, called by `settle_kpi_tones` only when a `kpi_row` has no tones; the
+  note "kpi_tones taken from the design hint (…); the planner wrote none" goes into `capacity_fixes`. Rule: per
+  clause (split at `;` and sentence ends) an item named in the hint takes the nearest role word after it (within
+  80 characters), or one just before it with no comma or "and / keep / while" between ("green for ROAS" wins
+  outright). Names count by full label, the label before " for " / " (", or an upper-case token only that label
+  has. A name inside a longer item's name does not count ("CPC" in "Allowable CPC"). "all / each / both [X] tiles"
+  with one role gives it to every item, or to those with X in their label. On the 71 distinct saved rows it toned
+  37, and a hand check of all 37 found no misreading (e.g. CHEFFIN 4 CPC bad / Allowable CPC good, "all ROAS tiles"
+  → the three ROAS items only, "keep the CAC tile muted" → no tone). Hints that name no item ("color-code deltas")
+  give none. Tones colour the number on the element-ref route too, so P2 reaches both routes (as the hints ask).
+  The replay does not re-plan, so P2's effect on colour shows in the paid run (the plans' `capacity_fixes` count
+  how often it fired).
 
 ### The wider paid run (asks your OK; test PC)
 

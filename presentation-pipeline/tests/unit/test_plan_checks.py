@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 from src.agents import slide_component_planner as scp
 from src.agents.plan_checks import (
     PLAN_DUPLICATE_ITEMS, PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, SLIDE_SPARSE,
-    find_problems, finalize_plan, is_instruction_text, label_overlap, reask_context,
+    find_problems, finalize_plan, is_instruction_text, label_overlap, reask_context, tones_from_hint,
 )
 from src.agents.planner_schema import PlannerSlide
 from src.agents.written_lines import drop_repeated_bodies
@@ -263,6 +263,61 @@ def test_kpi_tones_are_settled_one_per_value():
     finalize_plan(plan([none]), BRIEF)
     assert "kpi_tones" not in none["content_data"]   # no tone at all: none kept
 
+
+
+# ── tones from the design hint when the planner wrote none (wide eval P2, 2026-10-13) ──
+
+def _kpi(labels, hint, **extra):
+    return comp("k", "kpi_row", {"kpi_labels": labels, "kpi_values": [f"{i}%" for i in range(len(labels))], **extra}) | {
+        "design_hint": hint}
+
+
+CPC_LABELS = ["Spend", "Ad sales", "ROAS", "CPC", "CVR", "AOV", "Allowable CPC for 1.0x ROAS"]
+
+
+def test_hint_tones_name_each_item_and_a_name_inside_a_longer_one_does_not_count():
+    hint = ("emphasize the 'Allowable CPC for 1.0x ROAS' tile and visually show the gap vs CPC: color the CPC tile in "
+            "negative (warning) and the Allowable CPC tile in positive; keep all tiles in the brief's order")
+    assert tones_from_hint(_kpi(CPC_LABELS, hint)) == ["", "", "", "bad", "", "", "good"]
+    hint = "shade the rows; color-code the CPC row as negative and the Allowable CPC row as positive"
+    assert tones_from_hint(_kpi(CPC_LABELS, hint)) == ["", "", "", "bad", "", "", "good"]
+
+
+def test_hint_tones_read_lists_and_stop_at_a_comma_or_keep():
+    labels = ["ARR", "NRR", "Gross Margin", "CAC Payback"]
+    hint = "color-code Gross Margin in negative, color NRR and CAC Payback in positive; lift the ARR tile slightly"
+    assert tones_from_hint(_kpi(labels, hint)) == ["", "good", "bad", "good"]
+    hint = "NRR in positive color, Gross Margin and CAC Payback in negative/warning color"
+    assert tones_from_hint(_kpi(labels, hint)) == ["", "good", "bad", "bad"]
+    hint = "highlight the 'NRR' tile in positive color and keep the 'Gross Margin' tile visually muted"
+    assert tones_from_hint(_kpi(labels, hint)) == ["", "good", "", ""]
+
+
+def test_hint_tones_role_before_the_item_and_short_names():
+    hint = "icon in each tile; color-code ROAS and ACOS tiles by outcome (green for high ROAS, amber for ACOS)"
+    assert tones_from_hint(_kpi(["GMV", "Blended ROAS", "ACOS"], hint)) == ["", "good", "watch"]
+    hint = "color-code ROAS tile in negative (red) to signal unprofitability; use neutral for spend and revenue tiles"
+    assert tones_from_hint(_kpi(["Ad Spend", "Revenue", "ROAS (F: 0.34x, Z: 0.32x)"], hint)) == ["", "", "bad"]
+
+
+def test_hint_tones_for_all_tiles_and_none_without_a_named_item():
+    labels = ["Combined spend", "Combined ROAS", "Platform A ROAS"]
+    assert tones_from_hint(_kpi(labels, "color all ROAS tiles in negative color")) == ["", "bad", "bad"]
+    assert tones_from_hint(_kpi(labels, "color-code both tiles as negative")) == ["bad"] * 3
+    assert tones_from_hint(_kpi(labels, "color-code deltas (positives green, negatives red)")) == ["", "", ""]
+    assert tones_from_hint(_kpi(labels, "inverted panel on the Combined ROAS tile")) == ["", "", ""]
+
+
+def test_finalize_takes_hint_tones_only_when_the_planner_wrote_none_and_says_so():
+    k = _kpi(CPC_LABELS, "color-code CPC tile in negative and Allowable CPC tile in positive")
+    notes = finalize_plan(plan([k]), BRIEF)
+    assert k["content_data"]["kpi_tones"] == ["", "", "", "bad", "", "", "good"]
+    assert any("kpi_tones taken from the design hint (CPC bad, Allowable CPC for 1.0x ROAS good)" in n for n in notes)
+    own = _kpi(CPC_LABELS, "color-code CPC tile in negative", kpi_tones=["", "", "watch"])
+    assert not any("design hint" in n for n in finalize_plan(plan([own]), BRIEF))
+    assert own["content_data"]["kpi_tones"] == ["", "", "watch", "", "", "", ""]   # the planner's own tones win
+    again = finalize_plan(plan([k]), BRIEF)
+    assert not any("design hint" in n for n in again)   # a second pass sees the tones: no repeat note
 
 def test_the_planner_prompt_asks_for_kpi_tones_by_meaning():
     from pathlib import Path
