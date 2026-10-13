@@ -113,9 +113,20 @@ def columns(comp: dict, n: int) -> int:
 
 
 def numbered_ok(comp: dict) -> bool:
-    """No title or tag already carries its own number ("Phase 1", "01"): the numerals would repeat it."""
-    return spec.check("all_titles_numbered_ok", comp) and not any(
-        spec._NUMBERED.match(str(c.get("tag") or "")) for c in cards_of(comp))
+    """No title or tag already carries its own number ("Phase 1", "01"), and the tags do not order the steps themselves
+    (years, months, quarters, days: any digit in every tag; blind marks 2026-10-13: "01 · 2021" was not wanted)."""
+    tags = [str(c.get("tag") or "") for c in cards_of(comp)]
+    return (spec.check("all_titles_numbered_ok", comp) and not any(spec._NUMBERED.match(t) for t in tags)
+            and not (tags and all(re.search(r"\d", t) for t in tags)))
+
+
+DENSE_CHARS = 90   # a group whose cards average more text than this draws its icons on the left
+
+
+def dense(comp: dict) -> bool:
+    """Cards with a lot of text (blind marks 2026-10-13, 10.4: icon left for dense cards, on top for sparse ones)."""
+    cs = cards_of(comp)
+    return bool(cs) and sum(text_len(c) for c in cs) / len(cs) > DENSE_CHARS
 
 
 # ── one card ──────────────────────────────────────────────────────────────────
@@ -167,7 +178,8 @@ def _with_phrase(el: etree._Element, text: str, phrase: str, color: str, mark: s
 
 def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
                item: tuple[dict, tiles._Layer, tiles._Layer] | None, flag, panel: str | None = None,
-               number: str | None = None) -> etree._Element:
+               number: str | None = None, default_variant: str | None = None,
+               default_arrange: str | None = None) -> etree._Element:
     """One card, its layers resolved (house -> group variant -> group attrs -> item variant -> item attrs).
     `panel`: the fill of the LLM's own box around the tag; `number`: "01" on numbered steps, else None."""
     cid = comp["component_id"]
@@ -189,7 +201,7 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
         used = name = _variant(comp, i, imeta["variant"], ref, flag)
     else:
         # the plan's emphasis card is dark unless the LLM gives it a variant of its own (the meaning is the plan's)
-        asked = "inverted" if emphasis and len(cards_of(comp)) >= 3 else gmeta.get("variant")
+        asked = "inverted" if emphasis and len(cards_of(comp)) >= 3 else (gmeta.get("variant") or default_variant)
         name = used = _variant(comp, i, asked, cid if asked == gmeta.get("variant") else ref, flag)
         if own_colour:
             name, patch = _patch(vs[name].get("with_color"), vs, name)
@@ -225,18 +237,18 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
 
     arranges = card()["item_attributes"]["arrange"]["values"]
     arrange = (tiles._choice("arrange", imeta.get("arrange"), arranges, ref, flag)
-               or tiles._choice("arrange", gmeta.get("arrange"), arranges, ref, flag) or arranges[0])
+               or tiles._choice("arrange", gmeta.get("arrange"), arranges, ref, flag) or default_arrange or arranges[0])
     c = cards_of(comp)[i]
     body, bullets = _lines(c)
     phrase = str(c.get("key_phrase") or "")
     # the key phrase: in the card's colour; bold on a dark card (a tint does not show there, gallery 2026-10-13);
     # a neutral card's in ink against its muted body
     dark = fill in element_refs.READS_ON
-    # the key phrase: a highlighter in the card's tint with the phrase in its ink (user, 2026-10-13: the LLM's coloured
-    # phrases won the marks); on a card of that tint already, the ink alone; on a dark card, bold
+    # the key phrase: coloured text in the card's tone, bold on a dark card (blind marks 2026-10-13: "I like span
+    # better than the mark"; the <Mark> highlighter stays possible through _with_phrase's `mark`)
     tint = "accent" if role == "neutral" else role
     phrase_ink = "" if dark else f"${tint}Text"
-    phrase_mark = "" if dark or fill == f"${tint}Soft" else f"${tint}Soft"
+    phrase_mark = ""
     els: list[etree._Element] = []
     # numerals: the group's numerals stay on its dark emphasis card too
     numerals = used == "numerals" or (not imeta.get("variant") and gmeta.get("variant") == "numerals"
@@ -482,8 +494,12 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         mine = [i for i in range(len(cards_of(comp))) if (cid, i) not in outside]
         panel = tiles.panel_fill(g)
         # steps: the number leads each card's tag line; rail: the rail draws it beside the card
+        # a slide's second card group reads as a different type of card (blind marks 2026-10-13: "variants for 2 types
+        # of the cards"): `filled` panels unless the LLM names a variant; dense cards put their icons on the left
+        second = "filled" if len(seen) > 1 else None
         built = [build_card(comp, i, (gmeta, gparts), overrides.get(i), flag, panel,
-                            nums[i] if layout == "steps" else None) for i in mine]
+                            nums[i] if layout == "steps" else None, second, "side" if dense(comp) else None)
+                 for i in mine]
         drawn[cid].update(mine)
         if not built:
             g.getparent().remove(g)

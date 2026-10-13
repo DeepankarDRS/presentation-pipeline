@@ -22,7 +22,8 @@ GRID = _grid("bets", [
     {"title": "Ship analytics", "body": "Before the board meeting", "tone": ""},
     {"title": "Hire leads", "bullets": ["Two engineering leads", "One designer"], "tone": "watch"},
 ], focus_card=1)
-STEPS = _grid("plan", [{"title": t, "tag": f"Day {k}"} for k, t in enumerate(["Audit", "Rebuild", "Automate", "Scale"])],
+STEPS = _grid("plan", [{"title": t, "tag": g} for t, g in zip(["Audit", "Rebuild", "Automate", "Scale"],
+                                                                  ["Kickoff", "Build", "Launch", "Grow"])],
               layout="steps")
 MATRIX = _grid("mx", [{"title": "Visibility"}, {"title": "Pricing"}], layout="matrix", columns=["Web"], rows=["A", "B"])
 PLAN = {"components": [{"component_id": "title", "kind": "title"}, GRID, STEPS, MATRIX]}
@@ -75,9 +76,8 @@ def test_the_plans_meaning_shows_on_a_bare_group():
     assert card_el(filled, "bets", 3).get("backgroundColor") == "$warningSoft"    # filled: watch tone -> toned
     span = good.find(".//Span")   # good card is tinted $positiveSoft already: the ink alone, no highlighter
     assert span is not None and span.text == "$4M+" and span.get("color") == "$positiveText" and good.find(".//Mark") is None
-    hi = card_el(run('<CardGrid ref="bets" variant="filled"/>')["xml"], "bets", 0)   # filled: a white-ish card -> highlighter
-    mark = hi.find(".//Mark")
-    assert mark is not None and mark.get("color") == "$positiveSoft" and mark.find("Span").text == "$4M+"
+    plain = card_el(run('<CardGrid ref="bets" variant="filled"/>')["xml"], "bets", 0)   # coloured span, no highlighter
+    assert plain.find(".//Mark") is None and plain.find(".//Span").get("color") == "$positiveText"
     assert focus.find(".//B").text == "19 months"                             # key phrase bold on the dark card
     assert all(t.get("color") == "$onPanelDark" for t in focus.iter("Text"))
 
@@ -117,7 +117,7 @@ def test_steps_number_the_tag_line_join_with_arrows_and_darken_the_destination()
     xml = run('<CardGrid ref="plan"/>')["xml"]
     root = etree.fromstring(xml.encode())
     assert len([e for e in root.iter("Icon") if e.get("name") == "arrow-right"]) == 3
-    assert "01 · DAY 0" in text_of(card_el(xml, "plan", 0))
+    assert "01 · KICKOFF" in text_of(card_el(xml, "plan", 0))
     assert card_el(xml, "plan", 3).get("backgroundColor") == "$panelDark"
     rail = run('<CardGrid ref="plan" layout="rail"/>')["xml"]
     assert "01 · " not in rail and ">01<" in rail and "arrow-right" not in rail
@@ -219,3 +219,28 @@ def test_an_icon_leads_the_tag_line_or_sits_above_the_title():
     plain = {"components": [_grid("p", [{"title": "Subscriptions", "icon": "users"}, {"title": "Bundles", "icon": "package"}])]}
     el = card_el(run('<CardGrid ref="p"/>', plain)["xml"], "p", 0)
     assert el[0].tag == "Icon" and el.find("HStack") is None   # beside a title it held the title to its longest word
+
+
+def test_steps_whose_tags_order_them_get_no_numbers():
+    dated = {"components": [_grid("y", [{"title": t, "tag": str(2021 + k)} for k, t in enumerate("ABCD")], layout="steps")]}
+    xml = run('<CardGrid ref="y"/>', dated)["xml"]
+    assert "01 · " not in xml and ">2021<" in xml
+    assert "01 · KICKOFF" in run('<CardGrid ref="plan"/>')["xml"]   # tags without an order of their own: numbered
+
+
+def test_a_second_card_group_is_drawn_as_another_type():
+    xml = run('<CardGrid ref="bets"/><CardGrid ref="plan"/>')["xml"]
+    assert card_el(xml, "bets", 2).get("backgroundColor") == "$surface"        # first group: lifted
+    assert card_el(xml, "plan", 0).get("backgroundColor") == "$surfaceAlt"     # second group: filled
+    asked = run('<CardGrid ref="bets"/><CardGrid ref="plan" variant="outline"/>')["xml"]
+    assert card_el(asked, "plan", 0).get("border.color") == "$border" and card_el(asked, "plan", 0).get("backgroundColor") is None
+
+
+def test_dense_cards_put_their_icon_on_the_left():
+    long_ = {"components": [_grid("d", [{"title": "Search share is falling", "icon": "search",
+                                          "body": "Organic search share dropped on every platform this quarter while paid held"},
+                                         {"title": "Retention is the strength", "icon": "users",
+                                          "body": "Repeat buyers are 41% of revenue and their basket grew this quarter"}])]}
+    el = card_el(run('<CardGrid ref="d"/>', long_)["xml"], "d", 0)
+    row = el.find("HStack")
+    assert row is not None and row[0].tag == "Icon" and row[1].tag == "VStack"   # icon left of the whole text column
