@@ -46,12 +46,24 @@ element-ref route never had a hand-typed KPI slide (0 invented numbers), so it h
 after this run** (regression test `test_a_typed_label_with_a_wrong_typed_value_is_missing_not_bypassed`): a
 wrong typed value is now an error and goes to repair; a right typed value stays a warning.
 
-## Blind marks (yours)
+## Blind marks (user, 2026-10-13; `marks.csv`, `key.json`)
 
-`sheet-01.png` (pairs 1–3) and `sheet-02.png` (pairs 4–5): the same case and slide on both routes, sides
-shuffled. Write 1, 2 or = and a reason in `marks.csv`; `key.json` says which side is tiles (open it only after
-marking). Gate as before: tiles ≥ 0.5. One pair has the wrong-number slide on one side; a slide with wrong numbers
-loses whatever it looks like.
+| pair | slide | tiles side | chosen | winner | user's reason |
+|---|---|---|---|---|---|
+| 1 | QBR 1 | 2 | 1 | kpi | better content for the commentary section |
+| 2 | product launch 3 | 2 | 2 | tiles | better content for the text section |
+| 3 | CHEFFIN 1 | 2 | 1 | kpi | text could have been better, but 2 sections were better |
+| 4 | CHEFFIN 4 | 1 | 1 | tiles | better use of space |
+| 5 | all-nodes-dense 1 | 2 | 2 | (tiles side) | space allocation is better |
+
+**Score: 0.6 as marked (tiles 3 of 5); 0.4 under the agreed rule** that a slide with wrong numbers loses: pair 5's
+tiles side is the hand-typed slide with four wrong numbers, and it was not drawn by tiles at all (no tile tags).
+Gate: tiles ≥ 0.5, so **failed** under the rule.
+
+What the marks measure: pairs 1–3 were decided on the text around the KPIs ("commentary", "text section"). Those
+texts come from each arm's own plan and generator call, not from how KPI tiles are drawn. Pair 4 is the one
+decision on a tile-drawn KPI block (tiles' 4 + 3 grid at 73 px vs the element-ref row of six at 46 px plus a large
+callout): tiles won. With one plan per arm, this run cannot separate the KPI drawing from the content.
 
 ## Planner log lines
 
