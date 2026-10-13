@@ -1,0 +1,1550 @@
+[
+ {
+  "case": "deck-qbr-data",
+  "slide": 6,
+  "layouts": [
+   "grid"
+  ],
+  "source": "output/critic-on2/deck-qbr-data-e2e624/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 6,
+   "slide_title": "Product & GTM initiatives for Q4",
+   "label": "PRODUCT",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Kicker and headline",
+     "design_hint": "color the phrase 'Q4' in the title to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "Product & GTM initiatives for Q4",
+      "subtitle": "PRODUCT"
+     }
+    },
+    {
+     "component_id": "initiatives_cards",
+     "kind": "card_grid",
+     "count": 2,
+     "content_summary": "Two program callouts: self-serve onboarding and analytics v2",
+     "items": 2,
+     "design_hint": "color-code the two program cards by intent: Self-serve onboarding in positive (reduces CAC payback), Analytics v2 in accent (product differentiation); icon in each card; give Self-serve onboarding slight visual lift",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Self-serve onboarding",
+        "body": "Launch self-serve onboarding to reduce CAC payback to 10 months"
+       },
+       {
+        "title": "Analytics v2 dashboard",
+        "body": "Ship analytics v2 dashboard before Jan board meeting"
+       }
+      ],
+      "per_row": 2
+     }
+    },
+    {
+     "component_id": "initiatives_narrative",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "High-level intent of the initiatives",
+     "design_hint": "color the phrase 'reduce CAC payback' in a positive tone and lift the card slightly",
+     "weight": "supporting",
+     "content_data": {
+      "text": "These initiatives are intended to reduce CAC payback and accelerate product-led expansion."
+     }
+    }
+   ],
+   "layout_hint": "slide_title at the top as the kicker/headline; initiatives_cards is the primary element beneath the title (two cards side-by-side, equal emphasis, slight priority lift for Self-serve onboarding); initiatives_narrative sits below as a supporting explanatory band.",
+   "content_data": {
+    "title": "Product & GTM initiatives for Q4",
+    "subtitle": "PRODUCT",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Self-serve onboarding",
+      "body": "Launch self-serve onboarding to reduce CAC payback to 10 months"
+     },
+     {
+      "title": "Analytics v2 dashboard",
+      "body": "Ship analytics v2 dashboard before Jan board meeting"
+     }
+    ],
+    "per_row": 2,
+    "text": "These initiatives are intended to reduce CAC payback and accelerate product-led expansion."
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "text": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 6.0 units of content (limit 9)"
+    }
+   ]
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack justifyContent=\"spaceBetween\" alignItems=\"start\">\n      <VStack gap=\"4\">\n        <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">PRODUCT</Text>\n        <Text fontSize=\"30\" color=\"$textMain\" bold=\"true\">Product &amp; GTM initiatives for <Span color=\"$accentText\">Q4</Span></Text>\n      </VStack>\n    </HStack>\n    <HStack grow=\"2\" gap=\"18\" alignItems=\"stretch\">\n      <VStack w=\"49%\" padding=\"22\" gap=\"10\" backgroundColor=\"$positiveSoft\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n        <Icon name=\"rocket\" size=\"28\" color=\"$positive\" alignSelf=\"start\" />\n        <Text fontSize=\"18\" color=\"$positiveText\" bold=\"true\">Self-serve onboarding</Text>\n        <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">Launch self-serve onboarding to <Span color=\"$positiveText\">reduce CAC payback</Span> to 10 months</Text>\n      </VStack>\n      <VStack w=\"49%\" padding=\"22\" gap=\"10\" backgroundColor=\"$accentSoft\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Icon name=\"chart-column\" size=\"28\" color=\"$accent\" alignSelf=\"start\" />\n        <Text fontSize=\"18\" color=\"$accentText\" bold=\"true\">Analytics v2 dashboard</Text>\n        <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">Ship analytics v2 dashboard before Jan board meeting</Text>\n      </VStack>\n    </HStack>\n    <VStack padding=\"18\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" borderLeft.color=\"$positive\" borderLeft.width=\"5\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n      <Text fontSize=\"14\" color=\"$positiveText\" bold=\"true\" letterSpacing=\"1\">INITIATIVE INTENT</Text>\n      <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">These initiatives are intended to <Span color=\"$positiveText\">reduce CAC payback</Span> and accelerate product-led expansion.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "deck-qbr-data",
+  "slide": 4,
+  "layouts": [
+   "steps"
+  ],
+  "source": "output/wide-paid/kpi/wide-kpi-20261013-111701/decks/deck-qbr-data__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "Q4 priorities",
+   "label": "PRIORITIES",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide header with kicker and section",
+     "design_hint": "accent the headline 'Q4 priorities' as the focal phrase (bold/color); render the subtitle 'PRIORITIES · Plan' in uppercase muted styling",
+     "weight": "minor",
+     "content_data": {
+      "title": "Q4 priorities",
+      "subtitle": "PRIORITIES · Plan"
+     }
+    },
+    {
+     "component_id": "priorities_steps",
+     "kind": "card_grid",
+     "count": 3,
+     "content_summary": "Ordered, actionable Q4 priorities as three step-cards",
+     "items": 3,
+     "design_hint": "use steps layout with numbered step badges (1–3), icon in each card, lift/elevate the cards; give equal emphasis to all three steps (no single-card spotlight)",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Close enterprise logos",
+        "body": "Close 3 enterprise logos worth $4M+ combined ARR"
+       },
+       {
+        "title": "Launch self-serve onboarding",
+        "body": "Launch self-serve onboarding to reduce CAC payback to 10 months"
+       },
+       {
+        "title": "Ship analytics v2 dashboard",
+        "body": "Ship analytics v2 dashboard before Jan board meeting"
+       }
+      ]
+     }
+    }
+   ],
+   "layout_hint": "priorities_steps is the primary, full-width hero in the center; slide_title sits as a minor header above it.",
+   "content_data": {
+    "title": "Q4 priorities",
+    "subtitle": "PRIORITIES · Plan",
+    "card_layout": "steps",
+    "cards": [
+     {
+      "title": "Close enterprise logos",
+      "body": "Close 3 enterprise logos worth $4M+ combined ARR"
+     },
+     {
+      "title": "Launch self-serve onboarding",
+      "body": "Launch self-serve onboarding to reduce CAC payback to 10 months"
+     },
+     {
+      "title": "Ship analytics v2 dashboard",
+      "body": "Ship analytics v2 dashboard before Jan board meeting"
+     }
+    ]
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "card_layout": "sample",
+    "cards": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 6.0 units of content (limit 9)"
+    }
+   ]
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"56\" gap=\"32\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\" alignItems=\"stretch\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">PRIORITIES</Text>\n      <Text fontSize=\"36\" color=\"$accentText\" bold=\"true\" lineHeight=\"1.15\">Q4 priorities</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\" textAlign=\"left\" bold=\"true\" letterSpacing=\"2\">PRIORITIES · PLAN</Text>\n    </VStack>\n    <HStack grow=\"3\" gap=\"24\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"28\" gap=\"14\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Shape shapeType=\"roundRect\" w=\"38\" h=\"38\" backgroundColor=\"$accentSoft\" borderRadius=\"19\" text=\"1\" fontSize=\"20\" color=\"$accentText\" bold=\"true\" />\n        <Icon name=\"briefcase\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"22\" color=\"$textMain\" bold=\"true\">Close enterprise logos</Text>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Close 3 enterprise logos worth $4M+ combined ARR</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"28\" gap=\"14\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Shape shapeType=\"roundRect\" w=\"38\" h=\"38\" backgroundColor=\"$accentSoft\" borderRadius=\"19\" text=\"2\" fontSize=\"20\" color=\"$accentText\" bold=\"true\" />\n        <Icon name=\"rocket\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"22\" color=\"$textMain\" bold=\"true\">Launch self-serve onboarding</Text>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Launch self-serve onboarding to reduce CAC payback to 10 months</Text>\n      </VStack>\n      <VStack w=\"max\" padding=\"28\" gap=\"14\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Shape shapeType=\"roundRect\" w=\"38\" h=\"38\" backgroundColor=\"$accentSoft\" borderRadius=\"19\" text=\"3\" fontSize=\"20\" color=\"$accentText\" bold=\"true\" />\n        <Icon name=\"chart-column\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"22\" color=\"$textMain\" bold=\"true\">Ship analytics v2 dashboard</Text>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Ship analytics v2 dashboard before Jan board meeting</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "deck-product-launch-data",
+  "slide": 1,
+  "layouts": [
+   "grid"
+  ],
+  "source": "output/q1008/quality-1008-20261008-210801/decks/deck-product-launch-data__r1/slides.json",
+  "theme": "midnight-indigo",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "Gateway sprawl creates operational toil, outages, and blind spots",
+   "label": "THE PROBLEM",
+   "subtitle": "Three core pain points teams face today",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle describing the problem and that there are three core pain points.",
+     "design_hint": "color the phrase \"Gateway sprawl\" in a warning color to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "Gateway sprawl creates operational toil, outages, and blind spots",
+      "subtitle": "Three core pain points teams face today"
+     }
+    },
+    {
+     "component_id": "pain_cards",
+     "kind": "card_grid",
+     "count": 3,
+     "content_summary": "Three pain-point cards, each showing one key_message (including the numeric/statistic where present).",
+     "items": 3,
+     "design_hint": "emphasize the numeric/statistic in each card (e.g., \"4+\", \"2.3 hours/week\", \"68%\") by rendering those numbers in the accent color and bold; place a small icon in each card header",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Multiple gateways",
+        "body": "Teams manage 4+ separate gateways averaging 2.3 hours/week each on config"
+       },
+       {
+        "title": "Misconfiguration outages",
+        "body": "68% of outages last quarter traced to gateway misconfiguration"
+       },
+       {
+        "title": "Lack of unified visibility",
+        "body": "No unified view of API traffic across services teams fly blind"
+       }
+      ],
+      "per_row": 3
+     }
+    }
+   ],
+   "layout_hint": "pain_cards is the primary element and should occupy the main band as three equal cards (side-by-side); slide_title is a minor header across the top.",
+   "content_data": {
+    "title": "Gateway sprawl creates operational toil, outages, and blind spots",
+    "subtitle": "Three core pain points teams face today",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Multiple gateways",
+      "body": "Teams manage 4+ separate gateways averaging 2.3 hours/week each on config"
+     },
+     {
+      "title": "Misconfiguration outages",
+      "body": "68% of outages last quarter traced to gateway misconfiguration"
+     },
+     {
+      "title": "Lack of unified visibility",
+      "body": "No unified view of API traffic across services teams fly blind"
+     }
+    ],
+    "per_row": 3
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 6.0 units of content (limit 9)"
+    }
+   ]
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"32\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">THE PROBLEM</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\"><Span color=\"$warningText\" bold=\"true\">Gateway sprawl</Span> creates operational toil, outages, and blind spots</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Three core pain points teams face today</Text>\n    </VStack>\n    <HStack grow=\"1\" gap=\"24\" alignItems=\"stretch\">\n      <VStack padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Icon name=\"settings\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n        <Text fontSize=\"22\" color=\"$textMain\" bold=\"true\">Multiple gateways</Text>\n        <Text fontSize=\"16\" color=\"$textMuted\" lineHeight=\"1.4\">Teams manage <Span color=\"$accentText\" bold=\"true\">4+</Span> separate gateways averaging <Span color=\"$accentText\" bold=\"true\">2.3 hours/week</Span> each on config</Text>\n      </VStack>\n      <VStack padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Icon name=\"triangle-alert\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n        <Text fontSize=\"22\" color=\"$textMain\" bold=\"true\">Misconfiguration outages</Text>\n        <Text fontSize=\"16\" color=\"$textMuted\" lineHeight=\"1.4\"><Span color=\"$accentText\" bold=\"true\">68%</Span> of outages last quarter traced to gateway misconfiguration</Text>\n      </VStack>\n      <VStack padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n        <Icon name=\"globe\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n        <Text fontSize=\"22\" color=\"$textMain\" bold=\"true\">Lack of unified visibility</Text>\n        <Text fontSize=\"16\" color=\"$textMuted\" lineHeight=\"1.4\">No unified view of API traffic across services — teams fly blind</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "deck-product-launch-data",
+  "slide": 2,
+  "layouts": [
+   "steps"
+  ],
+  "source": "output/wide-paid/kpi/wide-kpi-20261013-111701/decks/deck-product-launch-data__r1/slides.json",
+  "theme": "midnight-indigo",
+  "plan": {
+   "slide_index": 2,
+   "slide_title": "A five-step pipeline: discovery to zero-downtime scaling",
+   "label": "HOW IT WORKS",
+   "subtitle": "Connect, Route, Secure, Monitor, Scale",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle naming the five-step pipeline",
+     "design_hint": "color the phrase 'zero-downtime scaling' as accent",
+     "weight": "minor",
+     "content_data": {
+      "title": "A five-step pipeline: discovery to zero-downtime scaling",
+      "subtitle": "Connect, Route, Secure, Monitor, Scale"
+     }
+    },
+    {
+     "component_id": "pipeline_steps",
+     "kind": "card_grid",
+     "count": 5,
+     "content_summary": "Five ordered pipeline steps (Connect → Route → Secure → Monitor → Scale) with per-step detail",
+     "items": 5,
+     "design_hint": "use the steps layout with arrows connecting the cards; icon in each card; lift/elevate the card grid to make the pipeline the hero",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Connect",
+        "body": "point Nexus at your existing APIs via auto-discovery"
+       },
+       {
+        "title": "Route",
+        "body": "drag-and-drop routing rules with automatic conflict detection"
+       },
+       {
+        "title": "Secure",
+        "body": "one-click mTLS, rate limiting, and OAuth2 per-route"
+       },
+       {
+        "title": "Monitor",
+        "body": "unified dashboard with per-route latency, error rates, throughput"
+       },
+       {
+        "title": "Scale",
+        "body": "auto-scaling based on traffic patterns with zero-downtime deploys"
+       }
+      ]
+     }
+    }
+   ],
+   "layout_hint": "pipeline_steps is the primary, central element; slide_title sits above as a minor header.",
+   "content_data": {
+    "title": "A five-step pipeline: discovery to zero-downtime scaling",
+    "subtitle": "Connect, Route, Secure, Monitor, Scale",
+    "card_layout": "steps",
+    "cards": [
+     {
+      "title": "Connect",
+      "body": "point Nexus at your existing APIs via auto-discovery"
+     },
+     {
+      "title": "Route",
+      "body": "drag-and-drop routing rules with automatic conflict detection"
+     },
+     {
+      "title": "Secure",
+      "body": "one-click mTLS, rate limiting, and OAuth2 per-route"
+     },
+     {
+      "title": "Monitor",
+      "body": "unified dashboard with per-route latency, error rates, throughput"
+     },
+     {
+      "title": "Scale",
+      "body": "auto-scaling based on traffic patterns with zero-downtime deploys"
+     }
+    ]
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "card_layout": "sample",
+    "cards": "sample"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"56\" gap=\"32\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">HOW IT WORKS</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">A five-step pipeline: discovery to <Span color=\"$accentText\" bold=\"true\">zero-downtime scaling</Span></Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Connect, Route, Secure, Monitor, Scale</Text>\n    </VStack>\n    <HStack grow=\"2\" gap=\"18\" alignItems=\"stretch\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Icon name=\"plug\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">STEP 1</Text>\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Connect</Text>\n        <Text fontSize=\"16\" color=\"$textMain\">point Nexus at your existing APIs via auto-discovery</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Icon name=\"map-pin\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">STEP 2</Text>\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Route</Text>\n        <Text fontSize=\"16\" color=\"$textMain\">drag-and-drop routing rules with automatic conflict detection</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Icon name=\"shield-check\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">STEP 3</Text>\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Secure</Text>\n        <Text fontSize=\"16\" color=\"$textMain\">one-click mTLS, rate limiting, and OAuth2 per-route</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <Icon name=\"chart-line\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">STEP 4</Text>\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Monitor</Text>\n        <Text fontSize=\"16\" color=\"$textMain\">unified dashboard with per-route latency, error rates, throughput</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$textMain\" borderRadius=\"14\">\n        <Icon name=\"rocket\" size=\"28\" color=\"$accent\" />\n        <Text fontSize=\"16\" color=\"$accentAlt\" bold=\"true\" letterSpacing=\"1\">STEP 5</Text>\n        <Text fontSize=\"20\" color=\"$surfaceAlt\" bold=\"true\">Scale</Text>\n        <Text fontSize=\"16\" color=\"$surfaceAlt\">auto-scaling based on traffic patterns with zero-downtime deploys</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-agency-takeover",
+  "slide": 1,
+  "layouts": [
+   "grid"
+  ],
+  "source": "output/wide-paid/tiles/wide-tiles-20261013-104206/decks/gate-deck-agency-takeover__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+   "label": "[Platform A] LEAKAGE",
+   "subtitle": "Match-type performance and winning/weak terms show where to harvest and where to cut.",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle",
+     "design_hint": "color the phrase 'Exact match' to emphasize the performance callout",
+     "weight": "minor",
+     "content_data": {
+      "title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+      "subtitle": "Match-type performance and winning/weak terms show where to harvest and where to cut."
+     }
+    },
+    {
+     "component_id": "kicker_caption",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Slide kicker / platform label",
+     "design_hint": "muted small-caps kicker treatment to separate it from the headline",
+     "weight": "minor",
+     "content_data": {
+      "text": "[Platform A] LEAKAGE"
+     }
+    },
+    {
+     "component_id": "match_type_table",
+     "kind": "table",
+     "count": 1,
+     "content_summary": "Match-type economics: Spend, Rev, ROAS, CPC, CVR for Phrase/Exact/Broad",
+     "columns": 6,
+     "rows": 3,
+     "design_hint": "shade the Exact Match row and emphasize the ROAS column; mute the Broad Match row as underperforming",
+     "weight": "hero",
+     "content_data": {
+      "table_columns": [
+       "Match Type",
+       "Spend",
+       "Rev",
+       "ROAS",
+       "CPC",
+       "CVR"
+      ],
+      "table_rows": [
+       [
+        "Phrase Match",
+        "₹45.5L",
+        "₹14.6L",
+        "0.32x ROAS",
+        "₹62.0",
+        "8.6%"
+       ],
+       [
+        "Exact Match",
+        "₹21.3L",
+        "₹8.8L",
+        "0.41x ROAS",
+        "₹59.5",
+        "10.9%"
+       ],
+       [
+        "Broad Match",
+        "₹1.9L",
+        "₹0.4L",
+        "0.23x ROAS",
+        "₹64.7",
+        "6.2%"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "city_opportunity",
+     "kind": "card_grid",
+     "count": 2,
+     "content_summary": "City-level opportunity: Bengaluru highlight and list of cities needing review",
+     "items": 2,
+     "design_hint": "inverted panel on the Bengaluru card to highlight the best city; lift the 'Cities needing immediate review' card",
+     "weight": "peer",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Bengaluru",
+        "tag": "around 0.45x ROAS",
+        "body": "Bengaluru was the best large city at around 0.45x ROAS, but still below desired efficiency."
+       },
+       {
+        "title": "Cities needing immediate review",
+        "tag": "",
+        "body": "Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi."
+       }
+      ],
+      "per_row": 2
+     }
+    },
+    {
+     "component_id": "winners_and_weak_terms",
+     "kind": "bullet_list",
+     "count": 2,
+     "content_summary": "Lists of winning and weak search terms",
+     "items": 2,
+     "design_hint": "color-code by sentiment — Winners bullet in positive color, Weak terms bullet in negative; icon in the list header",
+     "weight": "supporting",
+     "content_data": {
+      "bullets": [
+       "Winners: [Brand] phrase, [Brand] exact, paneer makhani, curry, shahi paneer gravy.",
+       "Weak terms: butter chicken phrase, instant food phrase, ready to cook paneer phrase, mix phrase, instant gravy broad, ready masala, instant dal makhani, meat masala, kilrr chicken masala."
+      ]
+     }
+    },
+    {
+     "component_id": "recommendations_list",
+     "kind": "bullet_list",
+     "count": 2,
+     "content_summary": "Operational recommendations for fixing leakage and reallocating budget",
+     "items": 2,
+     "design_hint": "emphasize the first recommendation ('Scale exact winners') and color the phrase 'strict budgets for competitor and generic discovery terms' as a warning/action",
+     "weight": "supporting",
+     "content_data": {
+      "bullets": [
+       "Recommendation: Scale exact winners, reduce phrase/broad leakage, and create strict budgets for competitor and generic discovery terms.",
+       "Recommendation: Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand."
+      ]
+     }
+    },
+    {
+     "component_id": "city_summary_note",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "One-line city-level finding",
+     "design_hint": "color the '0.5x ROAS' phrase in a warning tone and lift the card slightly",
+     "weight": "minor",
+     "content_data": {
+      "text": "No major high-spend city crossed 0.5x ROAS."
+     }
+    }
+   ],
+   "layout_hint": "match_type_table is the primary left panel (hero); city_opportunity sits to the right as the peer panel; winners_and_weak_terms and recommendations_list are supporting blocks below or beside the city panel; the title (slide_title) and kicker_caption sit at the top as minor elements.",
+   "content_data": {
+    "title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+    "subtitle": "Match-type performance and winning/weak terms show where to harvest and where to cut.",
+    "text": "No major high-spend city crossed 0.5x ROAS.",
+    "table_columns": [
+     "Match Type",
+     "Spend",
+     "Rev",
+     "ROAS",
+     "CPC",
+     "CVR"
+    ],
+    "table_rows": [
+     [
+      "Phrase Match",
+      "₹45.5L",
+      "₹14.6L",
+      "0.32x ROAS",
+      "₹62.0",
+      "8.6%"
+     ],
+     [
+      "Exact Match",
+      "₹21.3L",
+      "₹8.8L",
+      "0.41x ROAS",
+      "₹59.5",
+      "10.9%"
+     ],
+     [
+      "Broad Match",
+      "₹1.9L",
+      "₹0.4L",
+      "0.23x ROAS",
+      "₹64.7",
+      "6.2%"
+     ]
+    ],
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Bengaluru",
+      "tag": "around 0.45x ROAS",
+      "body": "Bengaluru was the best large city at around 0.45x ROAS, but still below desired efficiency."
+     },
+     {
+      "title": "Cities needing immediate review",
+      "tag": "",
+      "body": "Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi."
+     }
+    ],
+    "per_row": 2,
+    "bullets": [
+     "Recommendation: Scale exact winners, reduce phrase/broad leakage, and create strict budgets for competitor and generic discovery terms.",
+     "Recommendation: Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand."
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "text": "sample",
+    "table_columns": "sample",
+    "table_rows": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "bullets": "sample"
+   },
+   "capacity_fixes": [
+    "planner re-asked because: narrative 'speaker_notes' holds an instruction, not slide content: Walk through match-type economics first — exact is the clear performance layer and should "
+   ]
+  },
+  "xml_today": "<Slide>\n  <HStack w=\"1280\" h=\"720\" padding=\"40\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"22\" alignItems=\"stretch\" grow=\"1\">\n      <VStack gap=\"10\" alignItems=\"stretch\">\n        <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">[PLATFORM A] LEAKAGE</Text>\n        <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\"><Span color=\"$accentText\" bold=\"true\">Exact match</Span> outperforms phrase and broad, but keyword governance needs sharper control.</Text>\n        <Text fontSize=\"18\" color=\"$textMuted\">Match-type performance and winning/weak terms show where to harvest and where to cut.</Text>\n      </VStack>\n      <VStack gap=\"20\" alignItems=\"stretch\">\n        <VStack padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n          <Text fontSize=\"14\" bold=\"true\" color=\"$textMain\">Match-type economics</Text>\n          <Table defaultRowHeight=\"40\" cellBorder.color=\"$border\" cellBorder.width=\"1\">\n            <Col width=\"140\" />\n            <Col width=\"120\" />\n            <Col width=\"120\" />\n            <Col width=\"120\" />\n            <Col />\n            <Col />\n            <Tr height=\"40\">\n              <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Match Type</Td>\n              <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">Spend</Td>\n              <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">Rev</Td>\n              <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">ROAS</Td>\n              <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">CPC</Td>\n              <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">CVR</Td>\n            </Tr>\n            <Tr>\n              <Td backgroundColor=\"$surface\" color=\"$textMuted\">Phrase Match</Td>\n              <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹45.5L</Td>\n              <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹14.6L</Td>\n              <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">0.32x ROAS</Td>\n              <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹62.0</Td>\n              <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">8.6%</Td>\n            </Tr>\n            <Tr>\n              <Td backgroundColor=\"$accentSoft\" color=\"$accentText\" bold=\"true\">Exact Match</Td>\n              <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">₹21.3L</Td>\n              <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">₹8.8L</Td>\n              <Td backgroundColor=\"$accentSoft\" color=\"$accentText\" bold=\"true\" textAlign=\"right\">0.41x ROAS</Td>\n              <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">₹59.5</Td>\n              <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">10.9%</Td>\n            </Tr>\n            <Tr>\n              <Td backgroundColor=\"$negativeSoft\" color=\"$negativeText\">Broad Match</Td>\n              <Td backgroundColor=\"$negativeSoft\" color=\"$textMain\" textAlign=\"right\">₹1.9L</Td>\n              <Td backgroundColor=\"$negativeSoft\" color=\"$textMain\" textAlign=\"right\">₹0.4L</Td>\n              <Td backgroundColor=\"$negativeSoft\" color=\"$negativeText\" bold=\"true\" textAlign=\"right\">0.23x ROAS</Td>\n              <Td backgroundColor=\"$negativeSoft\" color=\"$textMain\" textAlign=\"right\">₹64.7</Td>\n              <Td backgroundColor=\"$negativeSoft\" color=\"$textMain\" textAlign=\"right\">6.2%</Td>\n            </Tr>\n          </Table>\n        </VStack>\n      </VStack>\n    </VStack>\n    <VStack gap=\"24\" alignItems=\"stretch\" w=\"400\">\n      <HStack gap=\"16\" alignItems=\"stretch\">\n        <VStack w=\"49%\" padding=\"18\" gap=\"8\" backgroundColor=\"$textMain\" borderRadius=\"14\" justifyContent=\"center\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n          <Text fontSize=\"14\" color=\"$accentAlt\" bold=\"true\" letterSpacing=\"1\">around 0.45x ROAS</Text>\n          <Text fontSize=\"20\" color=\"$surfaceAlt\" bold=\"true\">Bengaluru</Text>\n          <Text fontSize=\"14\" color=\"$surfaceAlt\" lineHeight=\"1.45\">Bengaluru was the best large city at around 0.45x ROAS, but still below desired efficiency.</Text>\n        </VStack>\n        <VStack w=\"49%\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n          <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">Cities needing immediate review</Text>\n          <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Cities needing immediate review</Text>\n          <Text fontSize=\"14\" color=\"$textMuted\" lineHeight=\"1.45\">Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi.</Text>\n        </VStack>\n      </HStack>\n      <HStack gap=\"16\" alignItems=\"stretch\">\n        <VStack w=\"49%\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n          <HStack gap=\"8\" alignItems=\"center\">\n            <Icon name=\"star\" size=\"20\" color=\"$positive\" />\n            <Text fontSize=\"16\" color=\"$positiveText\" bold=\"true\">Winners</Text>\n          </HStack>\n          <Ul fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.4\">\n            <Li><Span color=\"$positiveText\" bold=\"true\">[Brand] phrase</Span>, <Span color=\"$positiveText\" bold=\"true\">[Brand] exact</Span>, paneer makhani, curry, shahi paneer gravy.</Li>\n          </Ul>\n          <HStack gap=\"8\" alignItems=\"center\" margin.top=\"10\">\n            <Icon name=\"triangle-alert\" size=\"20\" color=\"$negative\" />\n            <Text fontSize=\"16\" color=\"$negativeText\" bold=\"true\">Weak terms</Text>\n          </HStack>\n          <Ul fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.4\">\n            <Li><Span color=\"$negativeText\" bold=\"true\">butter chicken phrase</Span>, <Span color=\"$negativeText\" bold=\"true\">instant food phrase</Span>, ready to cook paneer phrase, mix phrase, instant gravy broad, ready masala, instant dal makhani, meat masala, kilrr chicken masala.</Li>\n          </Ul>\n        </VStack>\n        <VStack w=\"49%\" padding=\"18\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n          <HStack gap=\"8\" alignItems=\"center\">\n            <Icon name=\"lightbulb\" size=\"20\" color=\"$accent\" />\n            <Text fontSize=\"16\" color=\"$accentText\" bold=\"true\">Recommendations</Text>\n          </HStack>\n          <Ul fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.4\">\n            <Li><Span color=\"$accentText\" bold=\"true\">Scale exact winners</Span>, reduce phrase/broad leakage, and create <Span color=\"$warningText\" bold=\"true\">strict budgets for competitor and generic discovery terms</Span>.</Li>\n            <Li>Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand.</Li>\n          </Ul>\n        </VStack>\n      </HStack>\n      <VStack padding=\"14\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMain\">No major high-spend city crossed <Span color=\"$warningText\" bold=\"true\">0.5x ROAS</Span>.</Text>\n      </VStack>\n    </VStack>\n  </HStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-agency-takeover",
+  "slide": 4,
+  "layouts": [
+   "steps"
+  ],
+  "source": "output/wide-paid/kpi/wide-kpi-20261013-111701/decks/gate-deck-agency-takeover__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "First stop leakage, then rebuild, then scale only where economics prove out.",
+   "label": "ROADMAP · 05",
+   "subtitle": "30/60/90-day sequence: Stabilize → Rebuild → Scale.",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and 30/60/90 subtitle",
+     "design_hint": "color a key phrase: emphasize the words \"stop leakage\" in the headline",
+     "weight": "minor",
+     "content_data": {
+      "title": "First stop leakage, then rebuild, then scale only where economics prove out.",
+      "subtitle": "30/60/90-day sequence: Stabilize → Rebuild → Scale."
+     }
+    },
+    {
+     "component_id": "roadmap_steps",
+     "kind": "card_grid",
+     "count": 3,
+     "content_summary": "Three-step 30/60/90 execution roadmap (Stabilize, Rebuild, Scale) with platform actions under Stabilize",
+     "items": 3,
+     "design_hint": "steps layout with connecting arrows; color-code leakage-stopping actions (pause, reduce, cap) in negative color and highlight \"Protect brand and exact winners\" in positive color",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Stabilize",
+        "tag": "Days 0–7",
+        "bullets": [
+         "[Platform B]: Pause or negative 10+ click zero-sales terms. Reduce bids on ROAS <0.25x. Protect brand and exact winners. Cap SD, AMC, and weak category/competitor campaigns.",
+         "[Platform A]: Cap CPD/BOTD unless awareness is objective. Reduce weak phrase/broad bids. Protect brand and exact winners. Identify low-ROAS city/SKU combinations."
+        ]
+       },
+       {
+        "title": "Rebuild",
+        "tag": "Days 8–30",
+        "bullets": [
+         "Restructure by intent, SKU, city, and objective.",
+         "Move converting terms into exact.",
+         "Add negatives.",
+         "Create budget tiers and build CPC ceilings."
+        ]
+       },
+       {
+        "title": "Scale",
+        "tag": "Days 31–90",
+        "bullets": [
+         "Increase budgets on high-CVR/ROAS clusters.",
+         "Test bundles for AOV.",
+         "Run SBT/SBV/video tests on proven demand.",
+         "Forecast budget by efficiency tier."
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "speaker_notes",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Presenter guidance for each phase",
+     "design_hint": "accent border on the card and lift the speaker notes panel slightly to separate it from the steps",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Use Day 0–7 to stop bleeding and protect winners; Days 8–30 to implement structural changes and controls; Days 31–90 to scale only clusters that meet efficiency/ACOS targets and to test AOV/CVR uplifts."
+     }
+    }
+   ],
+   "layout_hint": "slide_title sits as a slim header (minor); roadmap_steps is the primary element across the middle as three sequential step cards (hero) with arrows; speaker_notes is a supporting band below the steps.",
+   "content_data": {
+    "title": "First stop leakage, then rebuild, then scale only where economics prove out.",
+    "subtitle": "30/60/90-day sequence: Stabilize → Rebuild → Scale.",
+    "card_layout": "steps",
+    "cards": [
+     {
+      "title": "Stabilize",
+      "tag": "Days 0–7",
+      "bullets": [
+       "[Platform B]: Pause or negative 10+ click zero-sales terms. Reduce bids on ROAS <0.25x. Protect brand and exact winners. Cap SD, AMC, and weak category/competitor campaigns.",
+       "[Platform A]: Cap CPD/BOTD unless awareness is objective. Reduce weak phrase/broad bids. Protect brand and exact winners. Identify low-ROAS city/SKU combinations."
+      ]
+     },
+     {
+      "title": "Rebuild",
+      "tag": "Days 8–30",
+      "bullets": [
+       "Restructure by intent, SKU, city, and objective.",
+       "Move converting terms into exact.",
+       "Add negatives.",
+       "Create budget tiers and build CPC ceilings."
+      ]
+     },
+     {
+      "title": "Scale",
+      "tag": "Days 31–90",
+      "bullets": [
+       "Increase budgets on high-CVR/ROAS clusters.",
+       "Test bundles for AOV.",
+       "Run SBT/SBV/video tests on proven demand.",
+       "Forecast budget by efficiency tier."
+      ]
+     }
+    ],
+    "text": "Use Day 0–7 to stop bleeding and protect winners; Days 8–30 to implement structural changes and controls; Days 31–90 to scale only clusters that meet efficiency/ACOS targets and to test AOV/CVR uplifts."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "text": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 8.0 units of content (limit 9)"
+    }
+   ]
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"40\" gap=\"20\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\" alignItems=\"stretch\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">ROADMAP · 05</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">First <Span color=\"$accentText\" bold=\"true\">stop leakage</Span>, then rebuild, then scale only where economics prove out.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">30/60/90-day sequence: Stabilize → Rebuild → Scale.</Text>\n    </VStack>\n    <HStack grow=\"2\" gap=\"16\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">Days 0–7</Text>\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"triangle-alert\" size=\"22\" color=\"$negative\" />\n          <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Stabilize</Text>\n        </HStack>\n        <Ul fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">\n          <Li><Span color=\"$negativeText\" bold=\"true\">[Platform B]: Pause or negative 10+ click zero-sales terms. Reduce bids on ROAS &lt;0.25x. </Span><Span color=\"$positiveText\" bold=\"true\">Protect brand and exact winners.</Span> <Span color=\"$negativeText\">Cap SD, AMC, and weak category/competitor campaigns.</Span></Li>\n          <Li><Span color=\"$negativeText\" bold=\"true\">[Platform A]: Cap CPD/BOTD unless awareness is objective. Reduce weak phrase/broad bids. </Span><Span color=\"$positiveText\" bold=\"true\">Protect brand and exact winners.</Span> <Span color=\"$textMain\">Identify low-ROAS city/SKU combinations.</Span></Li>\n        </Ul>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">Days 8–30</Text>\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"settings\" size=\"22\" color=\"$accent\" />\n          <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Rebuild</Text>\n        </HStack>\n        <Ul fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">\n          <Li>Restructure by intent, SKU, city, and objective.</Li>\n          <Li>Move converting terms into exact.</Li>\n          <Li>Add negatives.</Li>\n          <Li>Create budget tiers and build CPC ceilings.</Li>\n        </Ul>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"20\" gap=\"10\" backgroundColor=\"$accentSoft\" borderRadius=\"16\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"1\">Days 31–90</Text>\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"rocket\" size=\"22\" color=\"$accentText\" />\n          <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Scale</Text>\n        </HStack>\n        <Ul fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">\n          <Li>Increase budgets on high-CVR/ROAS clusters.</Li>\n          <Li>Test bundles for AOV.</Li>\n          <Li>Run SBT/SBV/video tests on proven demand.</Li>\n          <Li>Forecast budget by efficiency tier.</Li>\n        </Ul>\n      </VStack>\n    </HStack>\n    <VStack padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n      <HStack gap=\"8\" alignItems=\"center\">\n        <Icon name=\"lightbulb\" size=\"18\" color=\"$accent\" />\n        <Text fontSize=\"16\" color=\"$textMain\" bold=\"true\">Speaker notes</Text>\n      </HStack>\n      <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">Use Day 0–7 to stop bleeding and protect winners; Days 8–30 to implement structural changes and controls; Days 31–90 to scale only clusters that meet efficiency/ACOS targets and to test AOV/CVR uplifts.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-all-nodes-dense",
+  "slide": 3,
+  "layouts": [
+   "grid"
+  ],
+  "source": "output/kpi-decks-2/kpi-decks-2-20261012-090227/decks/gate-deck-all-nodes-dense__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 3,
+   "slide_title": "One team and one platform run a four-stage fulfilment chain.",
+   "label": "OPERATIONS",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline and kicker",
+     "design_hint": "color the phrase 'one platform' as an accent to draw attention to the operational platform",
+     "weight": "minor",
+     "content_data": {
+      "title": "One team and one platform run a four-stage fulfilment chain.",
+      "subtitle": "OPERATIONS · How We Run"
+     }
+    },
+    {
+     "component_id": "fulfilment_process",
+     "kind": "process_arrow",
+     "count": 4,
+     "content_summary": "Four-stage fulfilment process (Roast → Pack → Dispatch → Deliver)",
+     "items": 4,
+     "orientation": "horizontal",
+     "design_hint": "lift / elevate the process strip and add an accent border on the component's card; color the arrows in the forward direction with the deck's accent color to emphasise flow",
+     "weight": "hero",
+     "content_data": {
+      "direction": "horizontal",
+      "process_steps": [
+       "Roast",
+       "Pack",
+       "Dispatch",
+       "Deliver"
+      ]
+     }
+    },
+    {
+     "component_id": "org_tree",
+     "kind": "tree",
+     "count": 4,
+     "content_summary": "Org chart with Head of Growth and three direct reports",
+     "items": 4,
+     "orientation": "vertical",
+     "design_hint": "accent border on the card and emphasise the Head of Growth node (lift and slightly brighter fill) so reporting lines read clearly",
+     "weight": "supporting",
+     "content_data": {
+      "layout": "vertical",
+      "tree_nodes": [
+       {
+        "label": "Head of Growth",
+        "children": [
+         {
+          "label": "Performance Lead"
+         },
+         {
+          "label": "Retention Lead"
+         },
+         {
+          "label": "Marketplace Lead"
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "architecture_cards",
+     "kind": "card_grid",
+     "count": 3,
+     "content_summary": "Platform architecture layers: Channels, Customer data, Operations",
+     "items": 3,
+     "design_hint": "three equal cards side-by-side with a small icon in each card header; lift the card grid slightly to read as supporting context",
+     "weight": "supporting",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Channels",
+        "bullets": [
+         "Website",
+         "QUIKMART",
+         "DASHCART"
+        ]
+       },
+       {
+        "title": "Customer data",
+        "bullets": [
+         "profiles",
+         "purchase history"
+        ]
+       },
+       {
+        "title": "Operations",
+        "bullets": [
+         "roastery",
+         "inventory",
+         "delivery"
+        ]
+       }
+      ],
+      "per_row": 3
+     }
+    }
+   ],
+   "layout_hint": "fulfilment_process is the primary element (hero). Place org_tree and architecture_cards as supporting panels below the process (org_tree left, architecture_cards right) so the flow is primary and the org + platform layers provide contextual accountability.",
+   "content_data": {
+    "title": "One team and one platform run a four-stage fulfilment chain.",
+    "subtitle": "OPERATIONS · How We Run",
+    "direction": "horizontal",
+    "process_steps": [
+     "Roast",
+     "Pack",
+     "Dispatch",
+     "Deliver"
+    ],
+    "layout": "vertical",
+    "tree_nodes": [
+     {
+      "label": "Head of Growth",
+      "children": [
+       {
+        "label": "Performance Lead"
+       },
+       {
+        "label": "Retention Lead"
+       },
+       {
+        "label": "Marketplace Lead"
+       }
+      ]
+     }
+    ],
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Channels",
+      "bullets": [
+       "Website",
+       "QUIKMART",
+       "DASHCART"
+      ]
+     },
+     {
+      "title": "Customer data",
+      "bullets": [
+       "profiles",
+       "purchase history"
+      ]
+     },
+     {
+      "title": "Operations",
+      "bullets": [
+       "roastery",
+       "inventory",
+       "delivery"
+      ]
+     }
+    ],
+    "per_row": 3
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "direction": "sample",
+    "process_steps": "sample",
+    "layout": "sample",
+    "tree_nodes": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"32\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">OPERATIONS</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">One team and <Span color=\"$accentText\" bold=\"true\">one platform</Span> run a four-stage fulfilment chain.</Text>\n    </VStack>\n    <VStack grow=\"3\" backgroundColor=\"$surfaceAlt\" padding=\"28\" gap=\"16\" borderRadius=\"14\" border.color=\"$border\" border.width=\"4\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <HStack gap=\"10\" alignItems=\"center\">\n        <Icon name=\"truck\" size=\"20\" color=\"$accent\" />\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Fulfilment process</Text>\n      </HStack>\n      <ProcessArrow h=\"max\" minH=\"90\" direction=\"horizontal\" fontSize=\"16\" bold=\"true\">\n        <ProcessArrowStep label=\"Roast\" color=\"$accent\" textColor=\"$onAccent\" />\n        <ProcessArrowStep label=\"Pack\" color=\"$accent\" textColor=\"$onAccent\" />\n        <ProcessArrowStep label=\"Dispatch\" color=\"$accent\" textColor=\"$onAccent\" />\n        <ProcessArrowStep label=\"Deliver\" color=\"$accent\" textColor=\"$onAccent\" />\n      </ProcessArrow>\n    </VStack>\n    <HStack gap=\"24\" alignItems=\"stretch\">\n      <VStack grow=\"1\" backgroundColor=\"$surfaceAlt\" padding=\"24\" gap=\"12\" borderRadius=\"14\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"users\" size=\"20\" color=\"$accent\" />\n          <Text fontSize=\"16\" color=\"$textMain\" bold=\"true\">Org structure</Text>\n        </HStack>\n        <Tree layout=\"vertical\" h=\"max\" minH=\"200\" nodeShape=\"roundRect\" nodeWidth=\"130\" nodeHeight=\"46\" levelGap=\"52\" siblingGap=\"22\" connectorStyle.color=\"$neutral\" connectorStyle.width=\"2\">\n          <TreeItem label=\"Head of Growth\" color=\"$accent\" textColor=\"$onAccent\">\n            <TreeItem label=\"Performance Lead\" color=\"$accentSoft\" textColor=\"$textMain\" />\n            <TreeItem label=\"Retention Lead\" color=\"$accentSoft\" textColor=\"$textMain\" />\n            <TreeItem label=\"Marketplace Lead\" color=\"$accentSoft\" textColor=\"$textMain\" />\n          </TreeItem>\n        </Tree>\n      </VStack>\n      <VStack grow=\"1\" gap=\"12\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"12\" alignItems=\"stretch\">\n          <VStack w=\"32%\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"start\">\n            <Icon name=\"store\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Channels</Text>\n            <Ul fontSize=\"14\" color=\"$textMuted\">\n              <Li>Website</Li>\n              <Li>QUIKMART</Li>\n              <Li>DASHCART</Li>\n            </Ul>\n          </VStack>\n          <VStack w=\"32%\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"start\">\n            <Icon name=\"users\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Customer data</Text>\n            <Ul fontSize=\"14\" color=\"$textMuted\">\n              <Li>profiles</Li>\n              <Li>purchase history</Li>\n            </Ul>\n          </VStack>\n          <VStack w=\"32%\" padding=\"18\" gap=\"8\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"start\">\n            <Icon name=\"settings\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Operations</Text>\n            <Ul fontSize=\"14\" color=\"$textMuted\">\n              <Li>roastery</Li>\n              <Li>inventory</Li>\n              <Li>delivery</Li>\n            </Ul>\n          </VStack>\n        </HStack>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-all-nodes-dense",
+  "slide": 4,
+  "layouts": [
+   "steps"
+  ],
+  "source": "output/kpi-decks-2/kpi-decks-2-20261012-090227/decks/gate-deck-all-nodes-dense__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "Five milestones built the brand; one decision flow now converts each visitor.",
+   "label": "JOURNEY",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and kicker for the slide",
+     "design_hint": "color the phrase 'one decision flow' in accent to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "Five milestones built the brand; one decision flow now converts each visitor.",
+      "subtitle": "JOURNEY — Customer Journey"
+     }
+    },
+    {
+     "component_id": "timeline_steps",
+     "kind": "card_grid",
+     "count": 5,
+     "content_summary": "Five chronological milestones (2021-2025) shown as steps",
+     "items": 5,
+     "design_hint": "render as steps layout with an icon in each card and lift the card grid (no single-card highlight)",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Café opens",
+        "tag": "2021"
+       },
+       {
+        "title": "Website launch",
+        "tag": "2022"
+       },
+       {
+        "title": "Subscriptions live",
+        "tag": "2023"
+       },
+       {
+        "title": "QUIKMART listing",
+        "tag": "2024"
+       },
+       {
+        "title": "DASHCART listing",
+        "tag": "2025"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "conversion_table",
+     "kind": "table",
+     "count": 2,
+     "content_summary": "Branching conversion decision encoded as a 2-row table (Yes / No)",
+     "columns": 4,
+     "rows": 2,
+     "design_hint": "shade the header row and apply an accent border on the component card to separate the decision logic",
+     "weight": "supporting",
+     "content_data": {
+      "table_columns": [
+       "Visitor action",
+       "Bought before?",
+       "Offer",
+       "Next"
+      ],
+      "table_rows": [
+       [
+        "Visitor lands",
+        "Yes",
+        "Subscription offer",
+        "Checkout"
+       ],
+       [
+        "Visitor lands",
+        "No",
+        "Trial pack",
+        "Checkout"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "journey_rules",
+     "kind": "bullet_list",
+     "count": 3,
+     "content_summary": "Three rules that govern offers and checkout",
+     "items": 3,
+     "design_hint": "icon beside each point; compact spacing; accent border on the component card",
+     "weight": "minor",
+     "content_data": {
+      "bullets": [
+       "Returning buyers never see the trial pack",
+       "First-time visitors get one offer",
+       "Every offer ends at one checkout"
+      ]
+     }
+    }
+   ],
+   "layout_hint": "timeline_steps is the primary, full-width element across the top; below it, conversion_table sits bottom-left as supporting context and journey_rules sit bottom-right as supporting takeaways; slide_title occupies the header band.",
+   "content_data": {
+    "title": "Five milestones built the brand; one decision flow now converts each visitor.",
+    "subtitle": "JOURNEY — Customer Journey",
+    "card_layout": "steps",
+    "cards": [
+     {
+      "title": "Café opens",
+      "tag": "2021"
+     },
+     {
+      "title": "Website launch",
+      "tag": "2022"
+     },
+     {
+      "title": "Subscriptions live",
+      "tag": "2023"
+     },
+     {
+      "title": "QUIKMART listing",
+      "tag": "2024"
+     },
+     {
+      "title": "DASHCART listing",
+      "tag": "2025"
+     }
+    ],
+    "table_columns": [
+     "Visitor action",
+     "Bought before?",
+     "Offer",
+     "Next"
+    ],
+    "table_rows": [
+     [
+      "Visitor lands",
+      "Yes",
+      "Subscription offer",
+      "Checkout"
+     ],
+     [
+      "Visitor lands",
+      "No",
+      "Trial pack",
+      "Checkout"
+     ]
+    ],
+    "bullets": [
+     "Returning buyers never see the trial pack",
+     "First-time visitors get one offer",
+     "Every offer ends at one checkout"
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "table_columns": "sample",
+    "table_rows": "sample",
+    "bullets": "sample"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">JOURNEY</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">Five milestones built the brand; <Span color=\"$accentText\">one decision flow</Span> now converts each visitor.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">JOURNEY — Customer Journey</Text>\n    </VStack>\n    <HStack grow=\"2\" gap=\"16\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" alignItems=\"center\">\n        <Icon name=\"coffee\" size=\"32\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">2021</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Café opens</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" alignItems=\"center\">\n        <Icon name=\"globe\" size=\"32\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">2022</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Website launch</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" alignItems=\"center\">\n        <Icon name=\"repeat\" size=\"32\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">2023</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Subscriptions live</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" alignItems=\"center\">\n        <Icon name=\"shopping-bag\" size=\"32\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">2024</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">QUIKMART listing</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" alignItems=\"center\">\n        <Icon name=\"shopping-cart\" size=\"32\" color=\"$accent\" />\n        <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">2025</Text>\n        <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">DASHCART listing</Text>\n      </VStack>\n    </HStack>\n    <HStack gap=\"24\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\">\n        <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">Conversion decision flow</Text>\n        <Table defaultRowHeight=\"40\" cellBorder.color=\"$border\" cellBorder.width=\"1\">\n          <Col width=\"180\" /><Col width=\"120\" /><Col /><Col />\n          <Tr height=\"40\">\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Visitor action</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Bought before?</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Offer</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Next</Td>\n          </Tr>\n          <Tr>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">Visitor lands</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">Yes</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">Subscription offer</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">Checkout</Td>\n          </Tr>\n          <Tr>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">Visitor lands</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">No</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">Trial pack</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\">Checkout</Td>\n          </Tr>\n        </Table>\n      </VStack>\n      <VStack w=\"max\" padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" justifyContent=\"center\">\n        <VStack gap=\"10\">\n          <HStack gap=\"10\" alignItems=\"center\">\n            <Icon name=\"user-check\" size=\"18\" color=\"$accent\" />\n            <Text fontSize=\"14\" color=\"$textMain\">Returning buyers never see the trial pack</Text>\n          </HStack>\n          <HStack gap=\"10\" alignItems=\"center\">\n            <Icon name=\"user-plus\" size=\"18\" color=\"$accent\" />\n            <Text fontSize=\"14\" color=\"$textMain\">First-time visitors get one offer</Text>\n          </HStack>\n          <HStack gap=\"10\" alignItems=\"center\">\n            <Icon name=\"check-circle\" size=\"18\" color=\"$accent\" />\n            <Text fontSize=\"14\" color=\"$textMain\">Every offer ends at one checkout</Text>\n          </HStack>\n        </VStack>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-cheffin-full",
+  "slide": 0,
+  "layouts": [
+   "grid"
+  ],
+  "source": "output/kpi-decks/kpi-decks-20261011-210625/decks/gate-deck-cheffin-full__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 0,
+   "slide_title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+   "label": "",
+   "subtitle": "Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline and subtitle",
+     "design_hint": "color the words 'FLIPCART' in FLIPCART orange and 'ZAROMA' in purple to signal marketplace accents",
+     "weight": "minor",
+     "content_data": {
+      "title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+      "subtitle": "Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap"
+     }
+    },
+    {
+     "component_id": "audit_scope",
+     "kind": "card_grid",
+     "count": 2,
+     "content_summary": "Scope cards for FLIPCART and ZAROMA",
+     "items": 2,
+     "design_hint": "accent the FLIPCART card in FLIPCART orange and the ZAROMA card in purple; include a small marketplace icon in each card header",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "FLIPCART",
+        "tag": "last 90 days",
+        "body": "targeting + search-term report"
+       },
+       {
+        "title": "ZAROMA",
+        "tag": "April–June",
+        "body": "campaign, city, and keyword views"
+       }
+      ],
+      "per_row": 2
+     }
+    },
+    {
+     "component_id": "outcome_narrative",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Outcome statement describing assessment and operating model",
+     "design_hint": "emphasize the phrase 'clear operating model for performance takeover' in the accent color and lift the card slightly as supporting context",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Outcome: concise assessment of key platform economics, structural gaps, and a clear operating model for performance takeover."
+     }
+    },
+    {
+     "component_id": "prepared_by",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Authorship attribution",
+     "design_hint": "subtle small-caps caption; emphasize 'our agency' with a muted accent to denote authorship",
+     "weight": "minor",
+     "content_data": {
+      "text": "Prepared by our agency"
+     }
+    }
+   ],
+   "layout_hint": "audit_scope is the primary element (center of the slide); slide_title sits at the top as the header; outcome_narrative is a supporting band below or to the right of audit_scope; prepared_by is a small caption at the bottom-right.",
+   "content_data": {
+    "title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+    "subtitle": "Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "FLIPCART",
+      "tag": "last 90 days",
+      "body": "targeting + search-term report"
+     },
+     {
+      "title": "ZAROMA",
+      "tag": "April–June",
+      "body": "campaign, city, and keyword views"
+     }
+    ],
+    "per_row": 2,
+    "text": "Prepared by our agency"
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "text": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 6.0 units of content (limit 9)"
+    }
+   ]
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"24\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">CHEFFIN <Span color=\"FF6600\">FLIPCART</Span> &amp; <Span color=\"7B3FE4\">ZAROMA</Span> Ads Audit</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Last 90 Days Performance Review | Key Gaps, Opportunities &amp; Takeover Roadmap</Text>\n    </VStack>\n    <HStack grow=\"2\" gap=\"28\" alignItems=\"stretch\">\n      <VStack w=\"max\" grow=\"2\">\n        <HStack gap=\"24\" alignItems=\"stretch\">\n          <VStack w=\"49%\" padding=\"28\" gap=\"10\" backgroundColor=\"FF66001A\" borderRadius=\"14\" border.color=\"FF6600\" border.width=\"3\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n            <HStack gap=\"8\" alignItems=\"center\">\n              <Icon name=\"shopping-cart\" size=\"22\" color=\"FF6600\" />\n              <Text fontSize=\"14\" color=\"FF6600\" bold=\"true\" letterSpacing=\"1\">last 90 days</Text>\n            </HStack>\n            <Text fontSize=\"22\" color=\"FF6600\" bold=\"true\">FLIPCART</Text>\n            <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">targeting + search-term report</Text>\n          </VStack>\n          <VStack w=\"49%\" padding=\"28\" gap=\"10\" backgroundColor=\"7B3FE41A\" borderRadius=\"14\" border.color=\"7B3FE4\" border.width=\"3\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n            <HStack gap=\"8\" alignItems=\"center\">\n              <Icon name=\"store\" size=\"22\" color=\"7B3FE4\" />\n              <Text fontSize=\"14\" color=\"7B3FE4\" bold=\"true\" letterSpacing=\"1\">April–June</Text>\n            </HStack>\n            <Text fontSize=\"22\" color=\"7B3FE4\" bold=\"true\">ZAROMA</Text>\n            <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">campaign, city, and keyword views</Text>\n          </VStack>\n        </HStack>\n      </VStack>\n      <VStack w=\"max\" grow=\"1\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" justifyContent=\"center\">\n        <Text fontSize=\"16\" color=\"$textMain\" bold=\"true\">Outcome</Text>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Outcome: concise assessment of key platform economics, structural gaps, and a <Span color=\"$accent\" bold=\"true\">clear operating model for performance takeover</Span>.</Text>\n      </VStack>\n    </HStack>\n    <HStack justifyContent=\"end\">\n      <Text fontSize=\"14\" color=\"$textMuted\" letterSpacing=\"1\">Prepared by <Span color=\"$accentText\" bold=\"true\">our agency</Span></Text>\n    </HStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-cheffin-full",
+  "slide": 3,
+  "layouts": [
+   "grid"
+  ],
+  "source": "output/wide-paid/tiles/wide-tiles-20261013-104206/decks/gate-deck-cheffin-full__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 3,
+   "slide_title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+   "label": "METHODOLOGY",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline and kicker",
+     "design_hint": "title minor weight; color the word 'raw' for emphasis",
+     "weight": "minor",
+     "content_data": {
+      "title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+      "subtitle": "METHODOLOGY"
+     }
+    },
+    {
+     "component_id": "source_files",
+     "kind": "card_grid",
+     "count": 5,
+     "content_summary": "Reviewed source files used for the audit (platform-level and diagnostic sheets)",
+     "items": 5,
+     "design_hint": "dataset icon in each card; all five cards equal weight and slightly lifted to read as a collection",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "FLIPCART Targeting last 90 days report"
+       },
+       {
+        "title": "FLIPCART Search Term report"
+       },
+       {
+        "title": "ZAROMA campaign-level data"
+       },
+       {
+        "title": "ZAROMA city-level data"
+       },
+       {
+        "title": "ZAROMA keyword-level data"
+       }
+      ],
+      "per_row": 3
+     }
+    },
+    {
+     "component_id": "data_quality_notes",
+     "kind": "narrative",
+     "count": 2,
+     "content_summary": "Data provenance and quality considerations for how totals vs diagnostics were chosen",
+     "design_hint": "accent border on this card; color the phrases 'unreliable or zeroed' and 'different coverage' in warning to call out quality issues",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.\n\nZAROMA sheets appear to have different coverage, so campaign-level totals were used as the primary platform total source and city/keyword sheets were used for diagnostic insights."
+     }
+    }
+   ],
+   "layout_hint": "source_files is the primary element (hero) in the main band; data_quality_notes sits as a supporting band beneath it for provenance/quality explanation; slide_title is a minor header at the top.",
+   "content_data": {
+    "title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+    "subtitle": "METHODOLOGY",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "FLIPCART Targeting last 90 days report"
+     },
+     {
+      "title": "FLIPCART Search Term report"
+     },
+     {
+      "title": "ZAROMA campaign-level data"
+     },
+     {
+      "title": "ZAROMA city-level data"
+     },
+     {
+      "title": "ZAROMA keyword-level data"
+     }
+    ],
+    "per_row": 3,
+    "text": "Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.\n\nZAROMA sheets appear to have different coverage, so campaign-level totals were used as the primary platform total source and city/keyword sheets were used for diagnostic insights."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "text": "sample"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"56\" gap=\"32\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">METHODOLOGY</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">We rebuilt the audit from <Span color=\"$accentText\">raw</Span> performance data, not surface-level reports.</Text>\n    </VStack>\n    <VStack grow=\"2\" gap=\"20\">\n      <VStack gap=\"20\">\n        <HStack gap=\"20\" alignItems=\"stretch\">\n          <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n            <Icon name=\"file\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">FLIPCART Targeting last 90 days report</Text>\n          </VStack>\n          <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n            <Icon name=\"file\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">FLIPCART Search Term report</Text>\n          </VStack>\n          <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n            <Icon name=\"file\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">ZAROMA campaign-level data</Text>\n          </VStack>\n        </HStack>\n        <HStack gap=\"20\" alignItems=\"stretch\">\n          <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n            <Icon name=\"file\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">ZAROMA city-level data</Text>\n          </VStack>\n          <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n            <Icon name=\"file\" size=\"24\" color=\"$accent\" alignSelf=\"start\" />\n            <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">ZAROMA keyword-level data</Text>\n          </VStack>\n        </HStack>\n      </VStack>\n    </VStack>\n    <VStack gap=\"14\">\n      <VStack padding=\"18\" gap=\"8\" backgroundColor=\"$accentSoft\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">Some FLIPCART pivot metrics were <Span color=\"$warningText\">unreliable or zeroed</Span>, so ratios were recalculated.</Text>\n      </VStack>\n      <VStack padding=\"18\" gap=\"8\" backgroundColor=\"$accentSoft\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\">\n        <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">ZAROMA sheets appear to have <Span color=\"$warningText\">different coverage</Span>, so campaign-level totals were used as the primary platform total source and city/keyword sheets were used for diagnostic insights.</Text>\n      </VStack>\n    </VStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-xtsy-qcomm",
+  "slide": 0,
+  "layouts": [
+   "grid"
+  ],
+  "source": "output/eval/step0-20261006-212134/decks/gate-deck-xtsy-qcomm__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 0,
+   "slide_title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+   "label": "EXECUTIVE SUMMARY",
+   "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle for the slide",
+     "design_hint": "color the phrase 'XTSY' in the headline to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+      "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution"
+     }
+    },
+    {
+     "component_id": "platforms_ecosystem",
+     "kind": "card_grid",
+     "count": 3,
+     "content_summary": "Platforms where XTSY is live: Zepto, Swiggy Instamart and Blinkit — hero ecosystem visual",
+     "items": 3,
+     "design_hint": "icon in each tile; lift the cards slightly and add an accent border to mark this as the ecosystem hero",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Zepto"
+       },
+       {
+        "title": "Swiggy Instamart"
+       },
+       {
+        "title": "Blinkit"
+       }
+      ],
+      "per_row": 3
+     }
+    },
+    {
+     "component_id": "strategic_opportunity",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Statement framing why Quick Commerce matters and the opportunity for XTSY",
+     "design_hint": "accent border on the card and color the phrase 'significant opportunity for XTSY to scale' to emphasize the strategic point",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, creating a significant opportunity for XTSY to scale."
+     }
+    },
+    {
+     "component_id": "kicker_label",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Slide label / section kicker",
+     "design_hint": "emphasize the label as a small, distinct kicker above the headline",
+     "weight": "minor",
+     "content_data": {
+      "text": "EXECUTIVE SUMMARY"
+     }
+    }
+   ],
+   "layout_hint": "platforms_ecosystem is the visual hero centered on the slide; slide_title sits as a small header above it; strategic_opportunity is a supporting band below or to the right of the hero; kicker_label is a small emphasized caption near the header.",
+   "content_data": {
+    "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+    "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Zepto"
+     },
+     {
+      "title": "Swiggy Instamart"
+     },
+     {
+      "title": "Blinkit"
+     }
+    ],
+    "per_row": 3,
+    "text": "EXECUTIVE SUMMARY"
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "text": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 8.0 units of content (limit 9)"
+    }
+   ]
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"4\">\n      <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"2\">EXECUTIVE SUMMARY</Text>\n      <Text fontSize=\"29\" color=\"$textMain\" bold=\"true\">Unlocking the Next Phase of Growth for <Span color=\"$accent\">XTSY</Span> on Quick Commerce</Text>\n      <Text fontSize=\"15\" color=\"$textMuted\">Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution</Text>\n    </VStack>\n    <VStack grow=\"2\" gap=\"18\">\n      <HStack gap=\"18\" alignItems=\"stretch\" justifyContent=\"center\">\n        <VStack w=\"32%\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n          <Icon name=\"shopping-cart\" size=\"28\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\" textAlign=\"center\">Zepto</Text>\n        </VStack>\n        <VStack w=\"32%\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n          <Icon name=\"shopping-bag\" size=\"28\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\" textAlign=\"center\">Swiggy Instamart</Text>\n        </VStack>\n        <VStack w=\"32%\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n          <Icon name=\"store\" size=\"28\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\" textAlign=\"center\">Blinkit</Text>\n        </VStack>\n      </HStack>\n    </VStack>\n    <VStack padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" justifyContent=\"center\">\n      <Text fontSize=\"14\" color=\"$accent\" bold=\"true\" letterSpacing=\"1\">STRATEGIC OPPORTUNITY</Text>\n      <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.5\">Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, creating a <Span color=\"$accent\">significant opportunity for XTSY to scale</Span>.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n"
+ },
+ {
+  "case": "gate-deck-xtsy-qcomm",
+  "slide": 3,
+  "layouts": [
+   "steps"
+  ],
+  "source": "output/wide-paid/kpi/wide-kpi-20261013-111701/decks/gate-deck-xtsy-qcomm__r1/slides.json",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 3,
+   "slide_title": "Our 4-Phase Framework to Build Category Share",
+   "label": "FRAMEWORK",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline with kicker",
+     "design_hint": "kicker 'FRAMEWORK' in muted uppercase; emphasize the phrase '4-Phase' in the headline with the deck's accent color",
+     "weight": "minor",
+     "content_data": {
+      "title": "Our 4-Phase Framework to Build Category Share",
+      "subtitle": "FRAMEWORK"
+     }
+    },
+    {
+     "component_id": "phases_steps",
+     "kind": "card_grid",
+     "count": 4,
+     "content_summary": "Four phase cards laid out as a connected steps roadmap",
+     "items": 4,
+     "design_hint": "steps layout with arrows connecting the four phase cards; icon in each card header and lift/elevate the card group to read as a single roadmap",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Phase 1: Foundation & Hygiene",
+        "body": "Availability tracking; OOS reduction; Search audit; Visibility benchmark; Portfolio prioritization"
+       },
+       {
+        "title": "Phase 2: Market Share Capture",
+        "body": "Search dominance; Sponsored placements; Keyword expansion; Competitor conquesting; Category page visibility"
+       },
+       {
+        "title": "Phase 3: Consumer Expansion",
+        "body": "New-to-brand acquisition; New-to-category targeting; Cross-platform expansion; Geo expansion"
+       },
+       {
+        "title": "Phase 4: Scale & Profitability",
+        "body": "Automation-led optimization; Incrementality focus; Repeat purchase acceleration; Portfolio scaling"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "progression_arrow",
+     "kind": "process_arrow",
+     "count": 4,
+     "content_summary": "High-level progression band: Visibility → Offtakes → Market Share → Profitability",
+     "items": 4,
+     "orientation": "horizontal",
+     "design_hint": "render horizontal chevrons labeled exactly as the progression; color-code left→right (muted to stronger accent) to show forward progression",
+     "weight": "supporting",
+     "content_data": {
+      "direction": "horizontal",
+      "process_steps": [
+       "Visibility",
+       "Offtakes",
+       "Market Share",
+       "Profitability"
+      ]
+     }
+    }
+   ],
+   "layout_hint": "phases_steps is the primary center element (hero roadmap); progression_arrow sits below it as a supporting horizontal chevron band showing the high-level progression; slide_title is a small header at the top.",
+   "content_data": {
+    "title": "Our 4-Phase Framework to Build Category Share",
+    "subtitle": "FRAMEWORK",
+    "card_layout": "steps",
+    "cards": [
+     {
+      "title": "Phase 1: Foundation & Hygiene",
+      "body": "Availability tracking; OOS reduction; Search audit; Visibility benchmark; Portfolio prioritization"
+     },
+     {
+      "title": "Phase 2: Market Share Capture",
+      "body": "Search dominance; Sponsored placements; Keyword expansion; Competitor conquesting; Category page visibility"
+     },
+     {
+      "title": "Phase 3: Consumer Expansion",
+      "body": "New-to-brand acquisition; New-to-category targeting; Cross-platform expansion; Geo expansion"
+     },
+     {
+      "title": "Phase 4: Scale & Profitability",
+      "body": "Automation-led optimization; Incrementality focus; Repeat purchase acceleration; Portfolio scaling"
+     }
+    ],
+    "direction": "horizontal",
+    "process_steps": [
+     "Visibility",
+     "Offtakes",
+     "Market Share",
+     "Profitability"
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "direction": "sample",
+    "process_steps": "sample"
+   }
+  },
+  "xml_today": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\" alignItems=\"stretch\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">FRAMEWORK</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">Our <Span color=\"$accentText\" bold=\"true\">4-Phase</Span> Framework to Build Category Share</Text>\n    </VStack>\n    <HStack grow=\"2\" gap=\"18\" alignItems=\"stretch\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"settings\" size=\"22\" color=\"$accent\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Phase 1: Foundation &amp; Hygiene</Text>\n        </HStack>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Availability tracking; OOS reduction; Search audit; Visibility benchmark; Portfolio prioritization</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"trending-up\" size=\"22\" color=\"$accent\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Phase 2: Market Share Capture</Text>\n        </HStack>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Search dominance; Sponsored placements; Keyword expansion; Competitor conquesting; Category page visibility</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"users\" size=\"22\" color=\"$accent\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Phase 3: Consumer Expansion</Text>\n        </HStack>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">New-to-brand acquisition; New-to-category targeting; Cross-platform expansion; Geo expansion</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"22\" gap=\"10\" backgroundColor=\"$accentSoft\" borderRadius=\"14\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"rocket\" size=\"22\" color=\"$accentText\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Phase 4: Scale &amp; Profitability</Text>\n        </HStack>\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Automation-led optimization; Incrementality focus; Repeat purchase acceleration; Portfolio scaling</Text>\n      </VStack>\n    </HStack>\n    <VStack gap=\"12\" alignItems=\"stretch\">\n      <ProcessArrow h=\"max\" minH=\"90\" direction=\"horizontal\" fontSize=\"16\" bold=\"true\">\n        <ProcessArrowStep label=\"Visibility\" color=\"$accentSoft\" textColor=\"$textMain\" />\n        <ProcessArrowStep label=\"Offtakes\" color=\"$accentAlt\" textColor=\"$textMain\" />\n        <ProcessArrowStep label=\"Market Share\" color=\"$accent\" textColor=\"$onAccent\" />\n        <ProcessArrowStep label=\"Profitability\" color=\"$textMain\" textColor=\"$surfaceAlt\" />\n      </ProcessArrow>\n    </VStack>\n  </VStack>\n</Slide>\n"
+ }
+]
