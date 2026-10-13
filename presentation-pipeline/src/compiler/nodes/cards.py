@@ -495,8 +495,8 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         panel = tiles.panel_fill(g)
         # steps: the number leads each card's tag line; rail: the rail draws it beside the card
         # a slide's second card group reads as a different type of card (blind marks 2026-10-13: "variants for 2 types
-        # of the cards"): `filled` panels unless the LLM names a variant; dense cards put their icons on the left
-        second = "filled" if len(seen) > 1 else None
+        # of the cards"): open `column` cards unless the LLM names a variant; dense cards put their icons on the left
+        second = "column" if len(seen) > 1 else None
         built = [build_card(comp, i, (gmeta, gparts), overrides.get(i), flag, panel,
                             nums[i] if layout == "steps" else None, second, "side" if dense(comp) else None)
                  for i in mine]

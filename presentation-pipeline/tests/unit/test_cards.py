@@ -231,7 +231,8 @@ def test_steps_whose_tags_order_them_get_no_numbers():
 def test_a_second_card_group_is_drawn_as_another_type():
     xml = run('<CardGrid ref="bets"/><CardGrid ref="plan"/>')["xml"]
     assert card_el(xml, "bets", 2).get("backgroundColor") == "$surface"        # first group: lifted
-    assert card_el(xml, "plan", 0).get("backgroundColor") == "$surfaceAlt"     # second group: filled
+    second = card_el(xml, "plan", 0)                                           # second group: open column
+    assert second.get("backgroundColor") is None and second.get("borderLeft.width") == "3"
     asked = run('<CardGrid ref="bets"/><CardGrid ref="plan" variant="outline"/>')["xml"]
     assert card_el(asked, "plan", 0).get("border.color") == "$border" and card_el(asked, "plan", 0).get("backgroundColor") is None
 
