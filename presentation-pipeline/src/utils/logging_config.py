@@ -69,3 +69,5 @@ def setup_logging(*, level: int = logging.INFO, use_context: bool = True) -> Non
 
     root.setLevel(level)
     root.addHandler(handler)
+    # fontTools' subsetter (font_embed) logs every glyph list at INFO: thousands of lines per deck
+    logging.getLogger("fontTools").setLevel(max(level, logging.WARNING))

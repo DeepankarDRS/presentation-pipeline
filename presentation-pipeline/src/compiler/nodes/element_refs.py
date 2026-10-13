@@ -238,7 +238,7 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
     plain = {norm("".join(t.itertext())) for t in root.iter("Text")}
 
     for cid, comp in comps.items():
-        values, labels, notes = (_list(comp, PLAN_KEY[f]) for f in FIELDS)
+        labels, values, notes = (_list(comp, PLAN_KEY[f]) for f in FIELDS)   # FIELDS order: label, value, note
         stats = {"items": len(values), "values_placed": 0, "labels_placed": 0, "notes_placed": 0,
                  "notes_planned": sum(1 for d in notes if d), "bypassed": 0}
         for i, v in enumerate(values):

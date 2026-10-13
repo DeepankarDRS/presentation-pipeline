@@ -125,6 +125,20 @@ def test_typed_value_is_bypassed_not_missing():
     assert res["ok"] and codes(res) == ["NODE_BYPASSED"] and res["components"]["kpis"]["bypassed"] == 1
 
 
+
+def test_a_typed_label_with_a_wrong_typed_value_is_missing_not_bypassed():
+    """wide paid run 2026-10-13 (all-nodes-dense slide 1): the LLM typed the labels and wrong numbers; the check read
+    the label as the value (fields unpacked out of order) and kept the slide with a warning."""
+    xml = slide(tile(0) + tile(1, note=False) + '<VStack><Text>Blended ROAS</Text><Text fontSize="40">4.2x</Text>'
+                '<Text ref="kpis.2.note"/></VStack>')
+    res = E.fill_refs(xml, PLAN)
+    assert not res["ok"] and "NODE_BYPASSED" not in codes(res)
+    missing = [i for i in res["issues"] if i["code"] == "NODE_ITEM_MISSING"]
+    assert [i["ref"] for i in missing] == ["kpis.2.value"] and '("Blended ROAS")' in missing[0]["message"]
+    bypassed = E.fill_refs(xml.replace("4.2x", "0.33x"), PLAN)   # the right number typed: kept, reported
+    assert bypassed["ok"] and '"0.33x" is typed' in next(i["message"] for i in bypassed["issues"]
+                                                           if i["code"] == "NODE_BYPASSED")
+
 def test_attrs_ignored_font_size_text_and_literal_colour():
     xml = slide(tile(0, value_attrs=' fontSize="60" color="#FF0000"') + tile(1, note=False) + tile(2))
     xml = xml.replace('<Text ref="kpis.1.value"/>', '<Text ref="kpis.1.value">₹99L</Text>')
