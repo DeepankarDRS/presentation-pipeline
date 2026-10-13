@@ -301,6 +301,9 @@ def render(dest: Path) -> Path | None:
     if not pptx.exists():
         return None
     soffice = shutil.which("soffice") or str(SOFFICE)
+    if not Path(soffice).exists() and not shutil.which(soffice):
+        print(f"render skipped: LibreOffice not found ({soffice})")
+        return None
     for _ in range(2):
         subprocess.run([soffice, f"-env:UserInstallation={LO_PROFILE.as_uri()}", "--headless", "--convert-to", "pdf",
                         "--outdir", str(dest), str(pptx)], capture_output=True, check=False, timeout=180)
@@ -311,9 +314,9 @@ def render(dest: Path) -> Path | None:
 
 def overlaps(pdf: Path | None) -> list[str]:
     """Rendered text lines that run into each other (ink boxes overlapping); single glyph runs ("₹", "•") ignored."""
-    import pymupdf
-    if not pdf:
+    if not pdf:   # --no-render (test PC: no LibreOffice / pymupdf)
         return []
+    import pymupdf
     lines = []
     for b in pymupdf.open(pdf)[0].get_text("dict")["blocks"]:
         for ln in b.get("lines", []):
