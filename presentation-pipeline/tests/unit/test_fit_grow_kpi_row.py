@@ -7,6 +7,8 @@ s15 one kpi_row of five tiles with grow="1" above a callout without grow: the ti
 
 import re
 
+import pytest
+
 from tests.unit.test_fit_grow_tables import _FIT, _compile
 
 
@@ -91,9 +93,19 @@ def test_a_code_laid_row_of_four_tiles_becomes_two_rows_in_a_tall_band(tmp_path,
     assert on["xml"].count("<HStack") >= 2 and 'id="kpig-kpis"' in on["xml"]
 
 
-def test_a_row_the_llm_asked_for_stays_a_row(tmp_path, monkeypatch):
+@pytest.mark.parametrize("attrs", ['layout="row"', 'layout="row" cols="4"'])
+def test_a_row_the_llm_pinned_may_still_become_two_rows(tmp_path, monkeypatch, attrs):
+    """Pinned rows stayed width-bound (QBR paid 1: 69 px as written, 95 px as two rows)."""
     monkeypatch.setenv("POM_BLOCKS", "tiles")
-    on = _tiles_slide(tmp_path, '<KpiGrid ref="kpis" layout="row"/>')
+    on = _tiles_slide(tmp_path, f'<KpiGrid ref="kpis" {attrs}/>')
+    assert any("KPI tiles of kpis in two rows" in r for r in on["fitGrow"]), on["fitGrow"]
+    assert min(_values(on["xml"])) >= 75
+
+
+@pytest.mark.parametrize("attrs", ['cols="3"', 'layout="column"'])
+def test_a_grid_or_column_the_llm_asked_for_stays_as_written(tmp_path, monkeypatch, attrs):
+    monkeypatch.setenv("POM_BLOCKS", "tiles")
+    on = _tiles_slide(tmp_path, f'<KpiGrid ref="kpis" {attrs}/>')
     assert not any("two rows" in r for r in on["fitGrow"]) and "kpig-" not in on["xml"]
 
 

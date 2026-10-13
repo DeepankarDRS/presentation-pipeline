@@ -93,3 +93,34 @@ start of the unreadable text that step 2 logs was lost. The error types say the 
 Open: the cause of the unreadable `content_data_json`. The schema asks for JSON inside a string; the other
 session's typed-schema work (its sections 3 / 4: typed content data instead of a JSON string) would remove the
 parse step, and needs a paid check.
+
+## Why two tile slides drew smaller numbers (free replays, 2026-10-13)
+
+Tiles drew smaller numbers than the element-ref route on product launch 3 (54 vs 70 px) and CHEFFIN 1 (51 vs
+82–95 px). Every replay below compiles with the deck font (Inter) as the pipeline does, and reproduces the runs'
+own sizes exactly (54, 51, 95, 73, 26 px on tiles; 70, 95 / 82, 67, 46, 43 / 72, 28 on element refs).
+
+- **Product launch 3: the plan, not the tiles.** The tiles run planned 4 KPIs with short notes ("-89%") and a
+  written callout under them (~200 px); "1/quarter" fills its tile's width in a row of 4. The element-ref run
+  planned before → after notes and no callout, and the LLM drew a 2 × 2 over the full height.
+- **CHEFFIN 1: a pinned row, then the layout.** The LLM wrote `<KpiGrid layout="row" cols="5">` inside a growing
+  band: the row stayed content-height under a ~130 px empty strip, numbers width-bound at 51 px, labels grown to
+  24 / 28 px and wrapped. With the layout left to code: 3 + 2 rows fill the band, labels 17 px, numbers 57 px
+  (height-bound by the Insight band below). The element-ref run put the insight in a side tile.
+
+**Same plan, same layout** (the element-ref run's own slides, its hand tiles rewritten as tile tags by
+`tile_replay.rewrite`, so not tags an LLM wrote): tiles larger on 1 KPI group (launch 3: 82 vs 70), equal on 5,
+smaller on 3. Of those, CHEFFIN 4 (42 vs 46) was the rewrite's `layout="row"` of 7 and is fixed below (71 px).
+The other two are width shares: all-nodes-dense 1 (36 vs 43; the hand row gave the longest value "₹14.2Cr" a wider
+tile, 196 vs 171 px, the tiles are equal at 167 px) and CHEFFIN 1's platform row (67 vs 82; the tile group beside a
+side callout came out 293 px per tile vs 338). Open, not changed.
+
+**Fixed: a row the LLM pinned may become two rows.** `tiles.build_group` now ids a `layout="row"` with no `cols`
+(or `cols` ≥ the tile count) `kpig-…` like a row code chose, so fit-grow `regridTiles` keeps a two-row grid when
+its numbers end ≥ 15% larger (unchanged rule). An explicit grid (`cols` < count) or column stays as written.
+- Pinned slides of the paid runs, as written: QBR (paid 1) 69 → 95 px; CHEFFIN 1 (wide) stays 51 (two rows give
+  57, +12%, under the 15% rule); launch 3 54 (no gain); CHEFFIN 1 (paid 1, rows of 3 and 2) unchanged.
+- The 68-slide wide replay (`python -m scripts.tile_wide --no-render`): smallest tile number larger on 9 slides,
+  smaller on 0, the same on 58; tile `GEOM_CARD_EMPTY` 70 → 26 (element refs unchanged, 59). All 9 are CHEFFIN
+  slide 1 or 4 from different saved runs (rewritten rows of 5–7: 28 → 61 px, 38–40 → 57–77 px).
+  `pinned-row-before.png` / `pinned-row-after.png`: CHEFFIN 4, seven tiles in one row → 4 + 3.

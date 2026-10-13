@@ -370,8 +370,11 @@ def build_group(tiles: list[etree._Element], meta: dict[str, str], box: _Layer, 
         outer = etree.Element("HStack" if layout == "row" else "VStack", gap=gap, alignItems="stretch")
         for t in tiles:
             outer.append(t)
-        if layout == "row" and meta.get("layout") is None and meta.get("cols") is None:
-            outer.set("id", f"kpig-{ref}")   # a row code chose: fit-grow may make it two rows (regridTiles)
+        # a row fit-grow may make two rows (regridTiles), also when the LLM wrote layout="row" / cols >= the count:
+        # a pinned row of 4-5 stayed width-bound (QBR paid 1: 69 px, 95 as two rows; wide-paid CHEFFIN 1: 51 px in
+        # one row under a 130 px empty band, labels grown to 24 / 28 px and wrapped). A grid or column stays as written.
+        if layout == "row" and cols is None:
+            outer.set("id", f"kpig-{ref}")
     for k, v in box.box.items():
         outer.set(k, v)
     return outer
