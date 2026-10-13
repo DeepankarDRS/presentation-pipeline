@@ -344,8 +344,10 @@ tile_nodes:
       gradient:       'backgroundGradient="linear-gradient(90deg, $accentSoft 0%, $surface 100%)" on a <Kpi>'
       lift:           'shadow.type="outer" shadow.blur="6" shadow.offset="2" on each <Kpi>'
 
-    # the house look: the first layer, under every variant (the pilot gallery's tile, 2026-10-11)
-    house_look: {padding: 22, gap: 10, justifyContent: center, icon.color: "${role}Text",
+    # the house look: the first layer, under every variant (the pilot gallery's tile, 2026-10-11). Padding / gap are
+    # the median of the LLM's own 206 hand tiles: 22 / 10 left tile numbers smaller than the hand route on 29 of 68
+    # saved slides, 16 / 6 on 14 (docs/eval/tile-nodes/wide/README.md, P1, 2026-10-13)
+    house_look: {padding: 16, gap: 6, justifyContent: center, icon.color: "${role}Text",
                  label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
 
     variants:           # first = default. `look` is what the variant sets before attributes

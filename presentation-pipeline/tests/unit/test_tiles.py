@@ -164,7 +164,7 @@ def test_resolution_order_house_group_variant_group_attrs_item_variant_item_attr
               '<Kpi ref="kpis.3" backgroundColor="$accentSoft"/></KpiGrid>')["xml"]
     # item 0: house padding, group variant (plain) fill, group attrs over the variant's colours
     t0, v0 = tile_of(xml, 0), value_of(xml, 0)
-    assert 'padding="22"' in t0 and 'backgroundColor="$surfaceAlt"' in t0 and 'color="$accentText"' in v0
+    assert 'padding="16"' in t0 and 'backgroundColor="$surfaceAlt"' in t0 and 'color="$accentText"' in v0
     assert '<Text color="$accentText" fontSize="16">Spend</Text>' in xml
     # item 1: its own variant (filled) wins over the group attrs; its own attribute wins over everything
     assert 'backgroundColor="$positiveSoft"' in tile_of(xml, 1) and 'color="$positiveText"' in value_of(xml, 1)
@@ -326,7 +326,7 @@ def test_icon_sits_in_the_label_row_so_fit_grow_can_stack_it():
     xml = run('<KpiGrid ref="kpis" icon="gauge"/>')["xml"]
     assert re.search(r'<HStack gap="10" alignItems="center"><Icon name="gauge"[^>]*/><Text[^>]*>Spend</Text></HStack>', xml)
     side = run('<KpiGrid ref="kpis" icon="gauge" arrange="side"/>')["xml"]
-    assert re.search(r'<HStack padding="22"[^>]*alignItems="center"[^>]*><Icon name="gauge"[^>]*/><VStack gap="6" grow="1">', side)
+    assert re.search(r'<HStack padding="16"[^>]*alignItems="center"[^>]*><Icon name="gauge"[^>]*/><VStack gap="6" grow="1">', side)
 
 
 # ── prompt, generator, validator ──────────────────────────────────────────────
