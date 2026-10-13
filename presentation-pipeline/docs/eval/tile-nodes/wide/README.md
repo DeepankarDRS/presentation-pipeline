@@ -110,3 +110,36 @@ error, and for a call stopped at `max_tokens` how many output tokens were reason
 Files: `summary.md` (per slide, today's look), `summary-padding16.md` (the experiment's totals), `squeeze.md`,
 `sample-01.png` / `sample-02.png` (8 pairs: hand-written left, tile tags right; first sheet = where tiles did
 worst, second = typical), `sample-03-padding16.png`.
+
+## Proposals (step 4; none built, each needs your OK)
+
+Ranked by how many slides they affect. Every count comes from the 68 slides above (or the 425-slide squeeze
+scan), not from the 3 paid-check slides.
+
+| # | proposal | evidence | affects | cost |
+|---|---|---|---|---|
+| **P1** | **Tile house look padding 22 → 16, gap 10 → 6** (`block-variants.yaml` `tile_nodes.kpi.house_look`; the median of the LLM's own 206 hand tiles). Re-render the tile gallery. | Tiles smaller than the hand route on 29 slides → 14; larger on 12 → 27; `GEOM_CARD_EMPTY` 88 → 70 (hand 59); paid-check slides gain too (QBR 83 → 95 px). 4 slides +1 empty card, none smaller. | 39 of 68 slides get larger tile numbers, none smaller | free, one line + gallery |
+| **P2** | **Tones from the hint when the planner writes none** (`plan_checks.settle_kpi_tones`): an item named in the `design_hint` within ~60 characters of a role word gets that tone (negative / red / loss / leak / risk → bad; positive / green / win → good; warning / amber / watch → watch); "all / each / both" + one role → every item. Noted in `capacity_fixes`; only when `kpi_tones` is empty; the emphasis item is unchanged (it stays the plan's). | Under tiles colour depends on tones: the LLM asked for colour on 10 of 20 tile first tries (hand route: 74 of 82 rows coloured). Hints ask for colour on 66 of 83 rows; code can read 51 of them (44 name the item, 7 "all / each"). The planner missed tones on 1 of 4 rows in p3 (CHEFFIN 4, whose hint names CPC negative / Allowable CPC warning). | every tile row without tones and with a colour hint (in old plans: 51 of 83 rows) | free, code + unit tests |
+| P3 | **`w="max"` squeeze: no fix now.** If the paid run shows it again: normalizer rule. In an HStack where a `w="max"` child holds more than ~80 characters of text beside another `w="max"` child, the text child gets `grow="1"` instead (paid check 3 showed that compiles). | 3 of 425 saved slides on today's compiler, all one slide (paid 3 CHEFFIN 1 ×3); 0 of 68 in the replay; older hits compile today. | 1 slide | free |
+| P4 | **Label colour: keep muted by default.** Optional, your call: on toned / filled tiles only, the label takes the tone's text colour. | The LLM's own labels are muted on 214 of 281 (76%) and coloured on 55, mostly in toned / focus tiles. The QBR note is one slide. | toned tiles only | free |
+| P5 | Compound KPI values ("₹0.59 L / 9.13x / 11.0%", "₹2.71 Cr (6.1% GMV)"): extend the plan check `KPI_VALUE_TEXT` to values with " / " or a bracketed second figure. **Measure first** in the paid run's fresh plans; today's numbers come from old plans. | 28 of 317 values on 10 of 68 slides (old plans); both routes draw them as big numbers. | both routes | free |
+| P6 | Planner reliability: nothing to build; the paid run's log names the cause (step 2). | — | — | — |
+
+**Recommendation:** build P1 and P2 (free, about one session), re-run this replay, then the paid run below, so
+it judges tiles as they would ship. P3–P5 wait for the paid run's data.
+
+### The wider paid run (asks your OK; test PC)
+
+Full decks, both routes, the six cases step 0 ran (every one has KPI slides; QBR / CHEFFIN 1 / CHEFFIN 4 are in
+there, but now among 37 slides of 6 decks, about 6–8 of them KPI slides). From `presentation-pipeline/` on the test
+PC, after pulling the branch (it has to be pushed first):
+
+    $env:POM_BLOCKS="tiles"; python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-tiles --bundle *>&1 | Tee-Object -FilePath wide-tiles.log
+    $env:POM_BLOCKS="kpi"; python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-kpi --bundle *>&1 | Tee-Object -FilePath wide-kpi.log
+
+**Cost ≈ $3.5** (step 0's same six cases cost $1.74 for one arm; tiles cut the KPI slides' generator output, so the
+tiles arm is likely a little cheaper). Email back both bundles and both `.log` files (the logs hold the planner's
+new failure lines). On the build PC (free): deck metrics per arm (`summary.md` of each bundle), this replay's
+counts on the new slides, the plans' tone coverage, and a blind sheet of the KPI slides for your marks (gate as
+before: tiles ≥ 0.5). Each arm plans its own decks, so plans differ between arms; with one repeat the comparison
+is per deck and per KPI slide, not per plan. `--repeat 2` doubles it (≈ $7) if the first run is close.
