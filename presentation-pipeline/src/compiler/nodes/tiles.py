@@ -578,4 +578,5 @@ def prompt_line(comp: dict) -> str:
     if any(icons):
         parts.append("icons " + " ".join(f"{i}={x}" for i, x in enumerate(icons) if x) + " (drawn; icon= overrides)")
     parts.append(f"longest value {max((len(v) for v in values), default=0)} chars")
-    return "; ".join(parts) + f'. <{GROUP} ref="{cid}"/> or <{ITEM} ref="{cid}.N"/>'
+    return ("; ".join(parts) + f'. <{GROUP} ref="{cid}"/> or <{ITEM} ref="{cid}.N"/>; never type a label, value or '
+            "note yourself: code writes them from the plan")

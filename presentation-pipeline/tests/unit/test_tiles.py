@@ -339,6 +339,11 @@ def test_prompt_line_names_items_emphasis_and_tones_but_no_values():
     assert '<KpiGrid ref="kpis"/>' in line
 
 
+def test_prompt_line_says_never_type_the_text():
+    """Same-plan check 2026-10-14: values hidden from the generator, it typed tiles with invented numbers (2 / 2)."""
+    assert "never type a label, value or note yourself" in T.prompt_line(PLAN["components"][1])
+
+
 def test_prompt_line_names_plan_icons():
     comp = dict(PLAN["components"][1], content_data=dict(PLAN["components"][1]["content_data"],
                                                          kpi_icons=["wallet", "trending-up", "percent", "shopping-cart"]))

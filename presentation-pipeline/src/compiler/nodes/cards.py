@@ -611,4 +611,5 @@ def prompt_line(comp: dict) -> str:
         parts.append(f"{columns(comp, n)} per row")
     parts.append("variants " + " ".join(variants_for(comp)))
     parts.append(f"longest card {max((text_len(c) for c in cs), default=0)} chars")
-    return "; ".join(parts) + f'. <{GROUP} ref="{cid}"/> or <{ITEM} ref="{cid}.N"/>'
+    return ("; ".join(parts) + f'. <{GROUP} ref="{cid}"/> or <{ITEM} ref="{cid}.N"/>; never type a title, tag or '
+            "body yourself: code writes them from the plan")

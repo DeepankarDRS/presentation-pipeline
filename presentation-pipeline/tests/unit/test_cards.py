@@ -172,6 +172,7 @@ def test_prompt_lines():
     line = C.prompt_line(GRID)
     assert "CARDS bets: 4 cards (0-3), grid" in line and "focus 1 (drawn dark)" in line
     assert "tones 0=good 1=bad 3=watch" in line and "inverted" not in line and "Worth" not in line
+    assert "never type a title, tag or body yourself" in line
     fixed = C.node_lines()
     assert "<CardGrid" in fixed and "highlight_text" in fixed and "{role}" not in fixed
 
