@@ -96,6 +96,18 @@ def _lines(c: dict) -> tuple[str, list[str]]:
     return str(body or "").strip(), [b for b in bullets if b.strip()]
 
 
+# a step body of several sentences or "a; b; c" items: one point per line (user, card paid pair 3.1, 2026-10-14:
+# "I need points or a new line between the points"). A split needs a capital or "[" after the full stop, so
+# "0.25x." inside a sentence or "e.g. bids" stays whole; the words are the plan's, unchanged.
+_POINT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z\[])|;\s+")
+
+
+def points(body: str) -> list[str]:
+    """The points of a step body, or [] when it is one point."""
+    parts = [p.strip() for p in _POINT_SPLIT.split(body) if p.strip()]
+    return parts if len(parts) >= 2 else []
+
+
 def text_len(c: dict) -> int:
     body, bullets = _lines(c)
     return len(str(c.get("title") or "")) + len(body) + sum(len(b) for b in bullets)
@@ -240,6 +252,8 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
                or tiles._choice("arrange", gmeta.get("arrange"), arranges, ref, flag) or default_arrange or arranges[0])
     c = cards_of(comp)[i]
     body, bullets = _lines(c)
+    if layout_of(comp) == "steps" and body and not bullets and points(body):
+        body, bullets = "", points(body)
     phrase = str(c.get("key_phrase") or "")
     # the key phrase: in the card's colour; bold on a dark card (a tint does not show there, gallery 2026-10-13);
     # a neutral card's in ink against its muted body
@@ -265,6 +279,8 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
         els.append(t)
     if bullets:
         ul = etree.Element("Ul", fontSize=str(PX["body"]), lineHeight="1.4")
+        if not body:   # the card's body: fit-grow grows text with an id only (points stayed at 16 px beside 22 px titles)
+            ul.set("id", f"cardb-{cid}-{i}")
         for k, v in parts["body"].items():
             if k in ("color", "bold", "italic", "underline", "textAlign"):
                 ul.set(k, v)

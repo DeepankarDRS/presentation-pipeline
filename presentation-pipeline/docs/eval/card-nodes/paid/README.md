@@ -59,3 +59,11 @@ Open: empty cards on agency-takeover s4 and XTSY s3 (7); a stage visual for grow
 **Re-marked pairs (user): 2.4 B, 3.1 B, 3.4 A → still 0.692** (`marks-after-fixes.csv`). Notes: 3.1 "I need points or
 a new line between the points" (a step body of several sentences runs as one paragraph); 3.4 the planner made an
 arrow-diagram brief a card_grid (not a card problem).
+
+## Step bodies as points (2026-10-14, free, user's note on pair 3.1)
+
+A steps card whose body holds several sentences or "a; b; c" items draws one point per line (a `<Ul>`, the plan's
+words unchanged; a split needs a capital or "[" after the full stop, so "0.25x." mid-sentence stays whole). Grids keep
+their body line. The list carries the body id so fit-grow grows it. Re-scored (`--rescore --refill`): agency 30/60/90
+r3 and XTSY phases r3 now read as points; the cost is smaller type where the fullest card fills (XTSY r3 titles
+26 → 22 px, points 16 px vs a 19 px paragraph; agency r3 titles 20 → 18 px). Empty cards unchanged (4).

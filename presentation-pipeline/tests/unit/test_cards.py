@@ -259,3 +259,17 @@ def test_a_steps_row_gives_a_long_step_a_wider_card_and_even_steps_equal_ones():
     assert len(grows) == 3 and grows[0] > grows[1] and grows[1] == grows[2], grows
     even = run('<CardGrid ref="plan"/>')["xml"]
     assert set(re.findall(r'<VStack id="card-plan-\d"[^>]*\sgrow="([\d.]+)"', even)) == {"1"}
+
+
+def test_a_step_body_of_several_points_draws_one_point_per_line():
+    # user, card paid pair 3.1 (2026-10-14): "I need points or a new line between the points"
+    steps = _grid("plan", [{"title": "Days 8-30", "body": "Restructure by intent. Move terms into exact. Add negatives."},
+                           {"title": "Days 31-90", "body": "Scale proven clusters at 0.25x. or better"},
+                           {"title": "Later", "body": "Audit; benchmark; prioritise"}], layout="steps")
+    xml = run('<CardGrid ref="plan"/>', {"components": [steps]})["xml"]
+    root = etree.fromstring(f"<r>{xml}</r>")
+    lis = [["".join(li.itertext()) for li in c.iter("Li")] for c in root.iter("VStack") if (c.get("id") or "").startswith("card-plan-")]
+    assert lis == [["Restructure by intent.", "Move terms into exact.", "Add negatives."], [], ["Audit", "benchmark", "prioritise"]]
+    assert "Scale proven clusters at 0.25x. or better" in xml
+    grid = _grid("g", [{"title": "A", "body": "One. Two."}, {"title": "B", "body": "Three"}])
+    assert "<Li" not in run('<CardGrid ref="g"/>', {"components": [grid]})["xml"]   # grids keep their body line
