@@ -45,3 +45,17 @@ Without pair 2.1 (QBR r2: the LLM drew its 3 cards by hand, no tags) 0.667.
   the build PC.
 
 Open: empty cards on agency-takeover s4 and XTSY s3 (7); a stage visual for growth roadmaps (the one A win).
+
+## Empty-card fixes (2026-10-14, free, re-scored with `card_paid --rescore --refill`)
+
+- fit-grow: the cards of one card_grid (ids `card-<cid>-<i>`) grow as one group across their rows, and a group's
+  inner stacks are not grown alone after it (XTSY 4-phase grid: rows 28 / 23 px → one size 24 px; agency 30/60/90:
+  the middle step 27 px beside 20 / 20 → 20 / 20 / 20).
+- cards.py: a steps row gives each card a width share by its text (sqrt, 0.7–1.6) when the texts differ ≥ 1.5×;
+  grid rows keep equal columns.
+- Empty cards (B) 7 → 4; the 4 left: two cards of planner instruction text (XTSY r2 "Visual: 4-stage growth roadmap",
+  "Progression"), two on the 8-component agency-takeover slide. `summary-after-fixes.md`.
+
+**Re-marked pairs (user): 2.4 B, 3.1 B, 3.4 A → still 0.692** (`marks-after-fixes.csv`). Notes: 3.1 "I need points or
+a new line between the points" (a step body of several sentences runs as one paragraph); 3.4 the planner made an
+arrow-diagram brief a card_grid (not a card problem).

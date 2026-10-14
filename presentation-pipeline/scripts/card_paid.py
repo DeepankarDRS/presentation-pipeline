@@ -127,7 +127,7 @@ def _score(arm: str, d: Path, xml: str, theme: str, plan: dict, case: str, rende
     return sc
 
 
-def rescore(label: str, render: bool = True) -> list[dict]:
+def rescore(label: str, render: bool = True, refill: bool = False) -> list[dict]:
     out = OUT / label
     items = {f"{i['case']}-s{i['slide']}": i for i in json.loads(INPUTS.read_text(encoding="utf-8"))}
     runs = json.loads((out / "runs.json").read_text(encoding="utf-8"))
@@ -140,6 +140,10 @@ def rescore(label: str, render: bool = True) -> list[dict]:
         row["A"] = _score("A", out / "A" / row["case"] / "slide-1", R.BARE_AMP.sub("&amp;", it["xml_today"]), theme,
                           it["plan"], row["case"], render)
         xml = (out / "B" / row["case"] / "final.xml").read_text(encoding="utf-8")
+        first = out / "B" / row["case"] / "first.xml"
+        if refill and first.exists() and row.get("validator_passes") == 1:   # this commit's card / tile expansion
+            from src.compiler.nodes import tiles                              # of the LLM's own XML (no repair ran)
+            xml = tiles.fill(R.BARE_AMP.sub("&amp;", first.read_text(encoding="utf-8")), plan)["xml"]
         row["B"] = _score("B", out / "B" / row["case"] / "slide-1", xml, theme, plan, row["case"], render) if xml else None
     (out / "results.json").write_text(json.dumps(runs, indent=1, ensure_ascii=False), encoding="utf-8")
     if render:
@@ -204,6 +208,7 @@ def main() -> int:
     ap.add_argument("--plans", help="paid run: the planning-only label (output/card-plans/<label>/runs.json)")
     ap.add_argument("--rescore", action="store_true", help="free: score saved runs again")
     ap.add_argument("--no-render", action="store_true")
+    ap.add_argument("--refill", action="store_true", help="with --rescore: re-expand first-try slides with this commit's code")
     ap.add_argument("--bundle", action="store_true")
     ap.add_argument("--dry", action="store_true", help="free: fake generator (the saved slide with bare tags)")
     a = ap.parse_args()
@@ -221,7 +226,7 @@ def main() -> int:
             print("OPENAI_API_KEY is not set (.env): the paid check runs on the test PC")
             return 2
         run(a.label, a.repeat, a.plans)
-    rescore(a.label, render=not a.no_render)
+    rescore(a.label, render=not a.no_render, refill=a.refill)
     if a.bundle:
         print(bundle(a.label))
     return 0

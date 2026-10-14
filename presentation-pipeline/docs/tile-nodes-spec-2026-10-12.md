@@ -368,3 +368,7 @@ ran: the fresh plans had no card_grid on 22 (CHEFFIN none in 3 runs). First try 
 (A 0), overlaps 0 (A 3), LOW_CONTRAST 0 (A 3). Fixed from it: a bare `&` left `<CardGrid>` unexpanded (`e799d56`),
 `--no-render` without LibreOffice (`0afc074`). Open: the 7 empty cards, a stage visual for growth roadmaps (A's one win),
 planner density (8 components on one slide), unreadable planner `content_data_json`.
+**Empty-card fixes (2026-10-14, free):** fit-grow grows a card_grid's cards as one group across rows and not one card
+alone beside a full one; a steps row shares width by text. Empty cards 7 → 4 (the rest: planner instruction text, the
+8-component slide); re-marked pairs unchanged, marks still 0.692. Open: step bodies of several sentences want one point
+per line (user, pair 3.1); an arrow-diagram brief planned as a card_grid (XTSY s3).

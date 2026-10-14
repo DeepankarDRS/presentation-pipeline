@@ -1279,6 +1279,16 @@ async function nextCandidate(xml, done) {
           // sizes, and a label grown to 24px then counted as a frozen title
           const tiles = n.type === "hstack" ? (n.children ?? []).filter((c) => STACKS.has(c.type)) : [];
           if (tiles.length >= 2 && tiles.every(peerOf(tiles[0]))) members = tiles;
+          // the cards of one card_grid (cards.py ids card-<cid>-<i>) are one group across their rows:
+          // row by row, XTSY's 4-phase grid drew row 1 at 28 / 20 px and row 2 at 23 / 17 (card paid, 2026-10-14)
+          const cid = /^card-(.+)-\d+$/.exec(n.id)?.[1];
+          if (cid && members.includes(n)) {
+            const own = new RegExp(`^card-${escapeRe(cid)}-\\d+$`), all = [];
+            L.slides.forEach((r) => walk(r, (d) => {
+              if (STACKS.has(d.type) && d.id && own.test(d.id) && !done.has(d.id) && !hasRigid(d) && textTargets(d).length) all.push(d);
+            }));
+            if (all.length > members.length) members = all;
+          }
           const ids = members.map((m) => m.id);
           const lists = members.map((m) => textTargets(m));
           // peer tiles: the same text slot has the same role in every tile
@@ -1303,7 +1313,11 @@ async function nextCandidate(xml, done) {
             const role = group.length > 1 && group.find((t) => t.title);
             if (role) for (const t of group) Object.assign(t, { title: true, heading: true, label: false, cap: Math.max(...group.map((g) => g.cap)) });
           }
-          found = { ids, seen: [n.id, ...ids], targets: lists.flat().filter((t) => !over.has(t.id)), icons, texts,
+          // a group's inner stacks are its own: grown alone after the group stopped at its fullest card,
+          // the middle card of three steps went 20 -> 27 px beside its peers (agency takeover, card paid 2026-10-14)
+          const inner = [];
+          if (cid) for (const m of members) walk(m, (d) => { if (d !== m && STACKS.has(d.type) && d.id) inner.push(d.id); });
+          found = { ids, seen: [n.id, ...ids, ...inner], targets: lists.flat().filter((t) => !over.has(t.id)), icons, texts,
             ratio: Math.max(...members.map((m) => fill(m, L).ratio)) };
           return;
         }

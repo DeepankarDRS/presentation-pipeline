@@ -319,6 +319,17 @@ def _peer(t: etree._Element) -> etree._Element:
     return t
 
 
+def _step_shares(cards: list[etree._Element]) -> list[str] | None:
+    """Width shares of a steps row by each card's text (sqrt, 0.7-1.6), or None when the texts are about even.
+    Equal columns put one long step beside short ones: the group's one size stops at the full card and the rest stay
+    half empty (agency takeover 30/60/90, card paid 2026-10-14). A grid's rows keep equal columns, to line up."""
+    lens = [max(1, len("".join(t.itertext()))) for t in cards]
+    if len(lens) < 2 or max(lens) < 1.5 * min(lens):
+        return None
+    mean = sum(lens) / len(lens)
+    return [f"{min(1.6, max(0.7, (n / mean) ** 0.5)):.2f}" for n in lens]
+
+
 def group_layout(comp: dict, meta: dict[str, str], ref: str, flag) -> str:
     """The group's layout: the LLM's when the plan's card_layout allows it (match_plan), else the plan's."""
     plan_layout = layout_of(comp)
@@ -337,10 +348,13 @@ def build_group(comp: dict, cards: list[etree._Element], meta: dict[str, str], b
     gap = box.box.pop("gap", str(GAP))
     if layout == "steps":
         outer = etree.Element("HStack", gap="10", alignItems="stretch")
+        shares = _step_shares(cards)
         for k, t in enumerate(cards):
             if k:
                 etree.SubElement(outer, "Icon", name="arrow-right", size="22", color="$textMuted", alignSelf="center")
             outer.append(_peer(t))
+            if shares and t.get("grow") == "1":
+                t.set("grow", shares[k])
     elif layout == "rail":
         outer = etree.Element("VStack", gap=gap)
         for t, num in zip(cards, numbers or [None] * len(cards)):

@@ -57,3 +57,20 @@ def test_a_card_numeral_grows_as_text_not_as_a_kpi_number(tmp_path):
     nums = [int(v) for v in re.findall(r'<Text[^>]*\sfontSize="(\d+)"[^>]*\sid="cardn-pillars-\d"', on["xml"])]
     titles = _titles(on["xml"])
     assert nums and titles and max(nums) <= 72 and min(titles) > 20, (nums, titles, on["fitGrow"])
+
+
+_UNEVEN = {"components": [{"component_id": "pillars", "kind": "card_grid", "count": 4, "content_data": {
+    "card_layout": "grid", "cards": [{"title": "Visibility", "body": "Search and home placement on every platform, "
+                                      "sponsored slots on the category pages, keyword expansion and competitor "
+                                      "conquesting on the terms that convert, weekly share-of-search tracking"},
+                                     {"title": "Pricing", "body": "Price-pack fit"},
+                                     {"title": "Assortment", "body": "Range per city"},
+                                     {"title": "Supply", "body": "Fill rate above 95%"}]}}]}
+
+
+def test_the_cards_of_one_grid_keep_one_size_across_rows_and_beside_a_full_card(tmp_path):
+    # card paid 2026-10-14: grown row by row (28 / 23 px), and a peer grown alone beside a full card (20 / 27 / 20)
+    on = _slide(tmp_path, '<CardGrid ref="pillars" cols="2"/>', _UNEVEN)
+    titles = _titles(on["xml"])
+    bodies = [int(v) for v in re.findall(r'<Text[^>]*\sfontSize="(\d+)"[^>]*\sid="cardb-pillars-\d"', on["xml"])]
+    assert len(titles) == 4 and len(set(titles)) == 1 and len(set(bodies)) == 1, (titles, bodies, on["fitGrow"])

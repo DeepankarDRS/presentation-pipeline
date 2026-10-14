@@ -3,6 +3,7 @@ plan's meaning (tones, focus card, key phrases), columns by text length, steps /
 the LLM's wrapper boxes, the deferred matrix, the prompt lines and the generator / context hooks."""
 
 import copy
+import re
 
 import pytest
 from lxml import etree
@@ -245,3 +246,16 @@ def test_dense_cards_put_their_icon_on_the_left():
     el = card_el(run('<CardGrid ref="d"/>', long_)["xml"], "d", 0)
     row = el.find("HStack")
     assert row is not None and row[0].tag == "Icon" and row[1].tag == "VStack"   # icon left of the whole text column
+
+
+def test_a_steps_row_gives_a_long_step_a_wider_card_and_even_steps_equal_ones():
+    # card paid 2026-10-14: one long step beside two short ones held the group's one size, the short cards half empty
+    long = _grid("plan", [{"title": "Days 0-7", "body": "Pause zero-sales terms; reduce bids on weak ROAS; protect brand "
+                           "and exact winners; cap SD, AMC and weak competitor campaigns; identify low-ROAS cities"},
+                          {"title": "Days 8-30", "body": "Restructure by intent"},
+                          {"title": "Days 31-90", "body": "Scale proven clusters"}], layout="steps")
+    xml = run('<CardGrid ref="plan"/>', {"components": [long]})["xml"]
+    grows = [float(g) for g in re.findall(r'<VStack id="card-plan-\d"[^>]*\sgrow="([\d.]+)"', xml)]
+    assert len(grows) == 3 and grows[0] > grows[1] and grows[1] == grows[2], grows
+    even = run('<CardGrid ref="plan"/>')["xml"]
+    assert set(re.findall(r'<VStack id="card-plan-\d"[^>]*\sgrow="([\d.]+)"', even)) == {"1"}
