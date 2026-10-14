@@ -361,3 +361,10 @@ Blind sheets: `output/card-replay/sheets/` (marks.csv; key.json after marking). 
 
 Open: the rail's text does not grow (wide cards, little spare height); a short last row stretches wider than the row
 above (KPI rows do the same); numerals + icons on a 5-card grid leave little room to grow.
+
+**Paid check on fresh plans (2026-10-13/14, test PC, $1.80: planners $1.517 + generator $0.282;
+`docs/eval/card-nodes/paid/README.md`): blind marks 0.692 (B 6 / tie 6 / A 1 of 13), gate passed.** Only 14 of 36 slides
+ran: the fresh plans had no card_grid on 22 (CHEFFIN none in 3 runs). First try 12 / 14, 0 NODE_* errors; empty cards 7
+(A 0), overlaps 0 (A 3), LOW_CONTRAST 0 (A 3). Fixed from it: a bare `&` left `<CardGrid>` unexpanded (`e799d56`),
+`--no-render` without LibreOffice (`0afc074`). Open: the 7 empty cards, a stage visual for growth roadmaps (A's one win),
+planner density (8 components on one slide), unreadable planner `content_data_json`.
