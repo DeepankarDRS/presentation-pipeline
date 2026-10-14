@@ -339,6 +339,23 @@ def test_prompt_line_names_items_emphasis_and_tones_but_no_values():
     assert '<KpiGrid ref="kpis"/>' in line
 
 
+def test_prompt_line_names_plan_icons():
+    comp = dict(PLAN["components"][1], content_data=dict(PLAN["components"][1]["content_data"],
+                                                         kpi_icons=["wallet", "trending-up", "percent", "shopping-cart"]))
+    assert "icons 0=wallet 1=trending-up 2=percent 3=shopping-cart" in T.prompt_line(comp)
+    assert "Icons from the plan: 0=wallet" in E.prompt_line(comp)
+
+
+def test_plan_icons_draw_unless_the_llm_names_one():
+    comps = [dict(c) for c in PLAN["components"]]
+    comps[1] = dict(comps[1], content_data=dict(comps[1]["content_data"],
+                                                kpi_icons=["wallet", "trending-up", "percent", "shopping-cart"]))
+    xml = run('<KpiGrid ref="kpis"><Kpi ref="kpis.3" icon="users"/></KpiGrid>', {"components": comps})["xml"]
+    assert 'name="wallet"' in xml and 'name="percent"' in xml
+    assert 'name="users"' in xml and 'name="shopping-cart"' not in xml   # the LLM's icon wins
+    assert "<Icon" not in run('<KpiGrid ref="kpis"/>')["xml"]           # no plan icons: none drawn
+
+
 def test_prompt_line_lists_the_variants_this_component_can_use():
     line = T.prompt_line(PLAN["components"][1])                         # tones + an emphasis item
     assert "variants plain filled toned bar dot inverted bare" in line

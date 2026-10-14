@@ -380,4 +380,7 @@ def prompt_line(comp: dict) -> str:
     tones = _list(comp, "kpi_tones")
     if any(tones):
         parts.append("Tones: " + ", ".join(f"{i}={t}" for i, t in enumerate(tones) if t) + " (good=positive, bad=negative, watch=warning).")
+    icons = _list(comp, "kpi_icons")
+    if any(icons):
+        parts.append("Icons from the plan: " + ", ".join(f"{i}={x}" for i, x in enumerate(icons) if x) + " (one <Icon> per tile).")
     return "\n  ".join(parts)

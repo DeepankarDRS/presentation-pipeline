@@ -445,6 +445,23 @@ def settle_kpi_tones(comp: dict[str, Any]) -> list[str]:
     return [f"{comp.get('component_id', '')}: kpi_tones taken from the design hint ({named}); the planner wrote none"]
 
 
+def settle_kpi_icons(comp: dict[str, Any]) -> None:
+    """A kpi_row's kpi_icons as code reads them, as card icons (settle_card_fields): a real icon name per value
+    (icons.canonical_icon_name) on every item, else none kept. Same-plan check 2026-10-14, pair 3.1: the
+    element-ref side drew icons on its KPI tiles, the tile side had none to draw."""
+    data = comp.get("content_data") or {}
+    if comp.get("kind") != "kpi_row" or "kpi_icons" not in data:
+        return
+    raw = data.pop("kpi_icons")
+    n = len(data.get("kpi_values") or [])
+    if not isinstance(raw, list) or not n or len(raw) < n:
+        return
+    from src.compiler.icons import canonical_icon_name, valid_icon_names
+    names = [canonical_icon_name(str(x or "")) for x in raw[:n]]
+    if all(nm in valid_icon_names() for nm in names):
+        data["kpi_icons"] = names
+
+
 def _card_lines(card: dict[str, Any]) -> list[str]:
     bullets = card.get("bullets") if isinstance(card.get("bullets"), list) else []
     return [str(x) for x in [card.get("body") or "", *bullets] if str(x).strip()]
@@ -511,6 +528,7 @@ def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
         _flag(plan, PLAN_EMPTY, "", "the plan has no components")
     for comp in plan.get("components") or []:
         notes += settle_kpi_tones(comp)
+        settle_kpi_icons(comp)
         settle_card_fields(comp)
         vals = (comp.get("content_data") or {}).get("kpi_values") or [] if comp.get("kind") == "kpi_row" else []
         if any(is_sentence(str(v)) for v in vals):

@@ -281,7 +281,8 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
     label = _text(f"{ref}.label", parts["label"]) if i < len(labels) and labels[i] else None
     value = _text(f"{ref}.value", parts["value"], hero)
     note = _text(f"{ref}.note", parts["note"]) if i < len(notes) and notes[i] else None   # notes always drawn
-    icon_name = imeta.get("icon") or gmeta.get("icon")
+    icons = element_refs._list(comp, "kpi_icons")
+    icon_name = imeta.get("icon") or gmeta.get("icon") or (icons[i] if i < len(icons) else "")   # the LLM's, else the plan's
     fill_ = box.get("backgroundColor", "")
     if fill_ in element_refs.READS_ON and parts["icon"].get("color") not in element_refs.READS_ON[fill_]:
         parts["icon"]["color"] = element_refs.ON_FILL[fill_]   # an icon reads on a dark tile, as its text does
@@ -573,5 +574,8 @@ def prompt_line(comp: dict) -> str:
     else:
         parts.append("no tones" + (" (colour by the visual-intent)" if comp.get("design_hint") else ""))
     parts.append("variants " + " ".join(variants_for(comp)))
+    icons = element_refs._list(comp, "kpi_icons")
+    if any(icons):
+        parts.append("icons " + " ".join(f"{i}={x}" for i, x in enumerate(icons) if x) + " (drawn; icon= overrides)")
     parts.append(f"longest value {max((len(v) for v in values), default=0)} chars")
     return "; ".join(parts) + f'. <{GROUP} ref="{cid}"/> or <{ITEM} ref="{cid}.N"/>'

@@ -469,3 +469,14 @@ def test_card_icons_are_real_names_on_every_card_or_none():
     fake = comp("f", "card_grid", {"card_layout": "grid", "cards": [{"title": "A", "icon": "acme-logo"}, {"title": "B", "icon": "users"}]})
     finalize_plan(plan([fake]), BRIEF)
     assert all("icon" not in k for k in fake["content_data"]["cards"])
+
+
+def test_kpi_icons_are_real_names_on_every_item_or_none():
+    data = lambda icons: {"kpi_labels": ["ARR", "NRR"], "kpi_values": ["$48M", "114%"], "kpi_icons": icons}
+    ok = comp("k", "kpi_row", data(["Wallet", "repeat"]))
+    finalize_plan(plan([ok]), BRIEF)
+    assert ok["content_data"]["kpi_icons"] == ["wallet", "repeat"]
+    for bad in (["wallet"], ["wallet", ""], ["wallet", "acme-logo"], "wallet"):
+        k = comp("k", "kpi_row", data(bad))
+        finalize_plan(plan([k]), BRIEF)
+        assert "kpi_icons" not in k["content_data"]
