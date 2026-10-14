@@ -115,9 +115,10 @@ def _elements(xml: str) -> list[dict]:
             continue
         if m.group("close"):
             if stack:
-                stack.pop()
+                stack.pop()["end"] = m.end()
             continue
-        el = {"name": name, "attrs": m.group("attrs"), "start": m.start(), "open_end": m.end(), "children": []}
+        el = {"name": name, "attrs": m.group("attrs"), "start": m.start(), "open_end": m.end(), "children": [],
+              "end": m.end()}
         if stack:
             stack[-1]["children"].append(el)
         out.append(el)
@@ -172,3 +173,49 @@ def fill_lone_child(xml: str) -> tuple[str, str | None]:
     for at in sorted(inserts, reverse=True):
         xml = xml[:at] + ' grow="1"' + xml[at:]
     return xml, f'Gave grow="1" to {len(inserts)} card(s) that were the only child of a growing band.'
+
+
+# ── a long text box in w="max" must not squeeze its row ─────────────────────
+# POM gives an HStack child w="max" flexGrow 1 with an AUTO basis: its text's one-line width. A sibling with no
+# w gets basis 0 (llm.md: w="max" "behaves as grow=1"). So a box of a long sentence in w="max" takes almost the
+# whole row and its neighbour keeps a sliver: tile same-plan pair 1.4 (CHEFFIN 1, one 110-character bullet beside
+# two KPI tiles: 1015 of 1184 px, the tiles drawn letter by letter), paid check 3 CHEFFIN 1 ×3 (a 170-character
+# callout beside the tiles' own w="max" panel: zero width, compile error). Such a box gets grow="1" instead
+# (basis 0: it shares the row's spare width with its siblings by grow, as the docs say) when a sibling holds KPI
+# tiles or cards: their numbers and words cannot wrap. Beside other text it stays: a w="max" checklist beside a
+# grow="2" quote keeps its content width (as grow="1" it took a third of the row: 10 broken words, agency 2).
+
+_LONG_TEXT = 60          # characters: ~500 px at 16 px Inter, past a fair share of a two-box row
+_RIGID = {"Table", "Chart", "Image", "Matrix", "Flow", "Tree", "ProcessArrow", "Timeline", "Pyramid"}
+_W_MAX_RE = re.compile(r"\sw\s*=\s*\"max\"")
+_TILE_ID_RE = re.compile(r"\sid\s*=\s*\"(?:kpi[vhg]\d?-|card-)")
+_GROW_RE = re.compile(r"\sgrow\s*=")
+
+
+def _text_len(xml: str, el: dict) -> int:
+    return len(" ".join(re.sub(r"<[^>]*>", " ", xml[el["open_end"]:el["end"]]).split()))
+
+
+def unsqueeze_text_boxes(xml: str) -> tuple[str, str | None]:
+    """Return (xml, message); message is None when nothing changed."""
+    edits: list[tuple[int, int]] = []
+    for el in _elements(xml):
+        if el["name"] != "HStack" or len(el["children"]) < 2:
+            continue
+        tiles = [c for c in el["children"] if _TILE_ID_RE.search(xml[c["start"]:c["end"]])]
+        for c in el["children"]:
+            if not [t for t in tiles if t is not c]:
+                continue
+            m = _W_MAX_RE.search(c["attrs"])
+            if c["name"] not in ("VStack", "HStack", "Text", "Ul", "Ol") or not m or _GROW_RE.search(c["attrs"]):
+                continue
+            if _subtree_names(c) & _RIGID or _text_len(xml, c) < _LONG_TEXT:
+                continue
+            at = c["start"] + 1 + len(c["name"]) + m.start()
+            edits.append((at, at + len(m.group(0))))
+    if not edits:
+        return xml, None
+    for a, b in sorted(edits, reverse=True):
+        xml = xml[:a] + ' grow="1"' + xml[b:]
+    return xml, (f'Gave grow="1" instead of w="max" to {len(edits)} box(es) of long text in a row, so they share '
+                 "the row's width instead of taking their one-line width.")

@@ -66,18 +66,45 @@ def overlaps(words):
     return hits
 
 
+def _next_line(a, b):
+    """b is drawn on a lower line than a. The next word must start (or end) at least half a line
+    lower: a fallback glyph (₹ in a font without it) is split off by the PDF text layer but sits
+    on the same line. The bottom counts too: a label's last letters can merge with the large number
+    below into one PDF word ("ROA" | "S0." in a squeezed tile), whose box starts higher."""
+    if (a[5], a[6]) == (b[5], b[6]):
+        return False
+    half = 0.5 * (a[3] - a[1])
+    return b[1] >= a[1] + half or b[3] >= a[3] + half
+
+
 def broken(words, vocab):
+    """Slide words drawn split over two or more lines. A run of words each on a lower line joins
+    into one slide word (longest first): "FLIP" | "CAR" | "T" = "flipcart". The last piece may carry
+    the start of the next word ("ROA" | "S0." = "roas" + "0."), as a squeezed tile draws it."""
     hits = []
-    for a, b in zip(words, words[1:]):
-        # the next word must start at least half a line lower: a fallback glyph (₹ in a font
-        # without it) is split off by the PDF text layer but sits on the same line
-        if (a[5], a[6]) == (b[5], b[6]) or b[1] < a[1] + 0.5 * (a[3] - a[1]):
-            continue
-        ta, tb = norm(a[4]), norm(b[4])
-        joined = norm(a[4] + b[4])
-        # a break after a hyphen, dash or slash is a normal line break; so is a lone bracket
-        if joined in vocab and ta and ta not in vocab and not a[4].endswith(("-", "—", "–", "/")):
-            hits.append(f"{a[4]}|{b[4]}")
+    i = 0
+    while i < len(words) - 1:
+        run = [words[i]]
+        while i + len(run) < len(words) and len(run) < 12 and _next_line(run[-1], words[i + len(run)]):
+            run.append(words[i + len(run)])
+        found = 0
+        first = norm(run[0][4])
+        if first and first not in vocab:
+            for k in range(len(run), 1, -1):
+                pieces = [w[4] for w in run[:k]]
+                # a break after a hyphen, dash or slash is a normal line break; so is a lone bracket
+                if any(p.endswith(("-", "—", "–", "/")) for p in pieces[:-1]):
+                    continue
+                head = "".join(pieces[:-1])
+                if norm(head + pieces[-1]) in vocab:
+                    found = k
+                elif any(norm(head + pieces[-1][:j]) in vocab for j in range(1, len(pieces[-1]))):
+                    found = k - 1          # the last piece also starts the next word: look at it again
+                    pieces[-1] += "…"
+                if found:
+                    hits.append("|".join(pieces))
+                    break
+        i += max(found, 1)
     return hits
 
 

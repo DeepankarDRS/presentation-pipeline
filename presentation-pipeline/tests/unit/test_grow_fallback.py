@@ -64,3 +64,27 @@ def test_card_rows_share_a_growing_bands_height():
     assert share_row_height(xml) == (xml, None)                      # idempotent
     fixed = grid.replace('<HStack gap="14">', '<HStack grow="1" gap="14">', 1)
     assert share_row_height(slide(HEADER, fixed))[1] is None         # one row already flexible: leave it
+
+
+# KPI / card tiles as the expansion writes them (tiles.py: boxed VStacks, value ids kpiv-)
+KTILE = ('<VStack padding="16" backgroundColor="$surfaceAlt" border.color="$border" border.width="1" grow="1">'
+         '<Text>ARR</Text><Text id="kpiv0-k-{i}">$48M</Text></VStack>')
+
+
+def test_long_text_box_in_w_max_beside_tiles_shares_the_row():
+    """Same-plan pair 1.4 (CHEFFIN 1): a 110-character bullet in w="max" took 1015 of 1184 px from two tiles."""
+    from src.compiler.grow_fallback import unsqueeze_text_boxes
+    text = "Both platforms show the same structural issue: CPC is too high relative to AOV and CVR."
+    tiles = '<VStack grow="1"><HStack id="kpig-k">' + KTILE.format(i=0) + KTILE.format(i=1) + "</HStack></VStack>"
+    box = f'<VStack padding="24" w="max"><Ul><Li>{text}</Li></Ul></VStack>'
+    xml, note = unsqueeze_text_boxes(slide(HEADER, f'<HStack gap="28" grow="1">{tiles}{box}</HStack>'))
+    assert '<VStack padding="24" grow="1">' in xml and 'w="max"' not in xml and note
+    assert unsqueeze_text_boxes(xml)[1] is None
+    # beside other text (agency 2: a w="max" checklist beside a grow="2" quote) it keeps its content width
+    quote = f'<VStack grow="2"><Text>{text}</Text></VStack>'
+    src = slide(HEADER, f'<HStack gap="24">{quote}{box}</HStack>')
+    assert unsqueeze_text_boxes(src) == (src, None)
+    # a short label in w="max" beside tiles is not squeezing anything
+    short = '<VStack w="max"><Text>Both platforms</Text></VStack>'
+    src = slide(HEADER, f'<HStack gap="28">{tiles}{short}</HStack>')
+    assert unsqueeze_text_boxes(src) == (src, None)

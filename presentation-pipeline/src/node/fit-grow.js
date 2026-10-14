@@ -2085,6 +2085,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
+  if (process.env.POM_FIT_LONE !== "0") xml = await fillLoneRows(xml, report);
   if (process.env.POM_FIT_SPILL !== "0") xml = await fixSpills(xml, report, warnings);
   if (process.env.POM_FIT_CENTRE !== "0") xml = await centreBody(xml, report);
   const stacked = await stackTileIcons(xml, report);
@@ -2107,6 +2108,50 @@ async function fitSlide(inputXml, report, warnings = []) {
   }
   xml = await oneLineValues(xml, report);
   return report.length ? untag(xml) : inputXml;
+}
+
+// --- phase 6b: a lone row of cards fills the band it sits in ---------------------
+// After the growth phases a row (or grid) of cards that is the only child of a taller box can still end at its
+// content height with an empty band under it: the LLM put four <Kpi> tags in its own HStack inside grow="3", the
+// numbers stopped at the tile width (65 px), and ~150 px of the band stayed empty (tile same-plan check pair 1.2,
+// QBR; the element-ref side's taller tiles won "empty space occupied better"). The row takes the band (its rows
+// too, in a grid); the cards stretch with it. Run after growth: a row whose cards grow by content fills the band
+// itself (CHEFFIN 1: stretched first, its numbers grew 54 instead of 62 px). Kept only if nothing spills.
+
+const LONE_GAP = 40;   // px of the band left empty under the row
+
+const cardRow = (n) => STACKS.has(n.type) && (n.children ?? []).length >= 2
+  && n.children.every((c) => STACKS.has(c.type) && hasBoxStyle(c));
+const cardBlock = (n) => cardRow(n)
+  || (n.type === "vstack" && (n.children ?? []).length >= 2 && n.children.every(cardRow));
+
+async function fillLoneRows(xml, report) {
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const root of L.slides) walk(root, (p, parent) => {
+      if (!parent || p.type !== "vstack" || (p.children ?? []).length !== 1) return;
+      const c = p.children[0];
+      if (!c.id || c.grow !== undefined || c.h !== undefined || !cardBlock(c)) return;
+      const b = L.box(p);
+      if (b.h - b.pt - b.pb - L.box(c).h < LONE_GAP) return;
+      const rows = c.type === "vstack" && !cardRow(c)
+        ? c.children.filter((r) => r.id && r.grow === undefined && r.h === undefined).map((r) => r.id) : [];
+      edits.push([c.id, rows]);
+    });
+  } finally { L.free(); }
+  if (!edits.length) return xml;
+  let out = xml;
+  for (const [id, rows] of edits) {
+    out = setAttrs(out, id, { grow: 1 });
+    for (const r of rows) out = setAttrs(out, r, { grow: 1 });
+  }
+  const T = await layout(out);
+  try {
+    if (spillsOf(T).length || overSlide(T) > 0) return xml;
+  } finally { T.free(); }
+  report.push(`${edits.length} lone row(s) of cards stretched to fill the band they sit in`);
+  return out;
 }
 
 // --- phase 7: spills (slide-quality item 2 step 2, 2026-10-07) -----------------

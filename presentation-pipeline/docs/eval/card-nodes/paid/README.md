@@ -67,3 +67,12 @@ words unchanged; a split needs a capital or "[" after the full stop, so "0.25x."
 their body line. The list carries the body id so fit-grow grows it. Re-scored (`--rescore --refill`): agency 30/60/90
 r3 and XTSY phases r3 now read as points; the cost is smaller type where the fullest card fills (XTSY r3 titles
 26 → 22 px, points 16 px vs a 19 px paragraph; agency r3 titles 20 → 18 px). Empty cards unchanged (4).
+
+## The 4 empty cards on the merged branch (2026-10-14, free; tile-nodes session after the merge)
+
+Re-scored on `feat/tile-nodes` after merging `feat/tile-cards` (`card_paid --label cp-merged --rescore --refill
+--no-render`): empty cards (B) still 4, the same two slides; both come from the plan, not from the card drawing:
+- XTSY s3 r2 (2): the planner made a 5th card "Progression" out of the brief's visual direction ("4-stage growth
+  roadmap"); its body is an arrow chain, not a card's content. `PLAN_INSTRUCTION_TEXT` does not catch it.
+- agency-takeover s1 r2 (2): the 8-component slide (planner density, marked "both wrong").
+No card code change. Follow-ups: planner density, a stage visual for growth roadmaps, instruction text as a card.

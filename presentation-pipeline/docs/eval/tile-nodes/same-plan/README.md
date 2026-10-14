@@ -73,3 +73,44 @@ tiles-plan 62 vs 48): larger numbers did not win a pair.
   third is the LLM decorating its own hand-written tiles more.
 - The hand-typed tiles with invented numbers come from the tile prompt line not saying "never type a value" while
   the values are hidden: a prompt change, paid check needed.
+
+## Layout fixes after the marks (2026-10-14, free, build PC; branch `feat/tile-nodes` after merging `feat/tile-cards`)
+
+Each fix proven on the saved slides before and after (deck font Inter, as the pipeline compiles):
+`tile_same_plan --rescore` on copies of this run (`sp-before` / `sp-after`) and a corpus pass over every distinct
+saved slide (573 `input.xml` in `output/` and the `llm_test` zips) that a change can touch (105), compiled both ways,
+rendered and scored where the fitted XML differs (41).
+
+1. **The broken-word scorer missed letter-stacked words** (`scripts/phase0b/fontcheck.broken`). It joined only two
+   pieces; a word drawn over three or more lines, or whose last letters merge with the large number below into one
+   PDF word ("ROA" | "S0."), was not counted. Now a run of pieces on successive lines joins longest first, and the last
+   piece may start the next word. Pair 1.4 (tiles): 0 → 4 broken (FLIP|CAR|T, ZAR|OM|A, ROA|S…×2), as the sheet showed.
+2. **A long text box in `w="max"` squeezed the tile row beside it** (normalizer `TEXT_BOX_UNSQUEEZED`,
+   `grow_fallback.unsqueeze_text_boxes`). POM gives a `w="max"` child flexGrow 1 with an *auto* basis (its text's
+   one-line width) while a sibling with no `w` gets basis 0 (llm.md says `w="max"` "behaves as grow=1"): a 110-character
+   bullet took 1015 of 1184 px. A `w="max"` box of 60+ characters of text (no table / chart) in a row where a sibling
+   holds KPI tiles or cards (ids `kpiv-` / `kpih-` / `kpig-` / `card-`) gets `grow="1"`. First version (any sibling)
+   touched 97 slides and hurt agency 2 (a checklist beside a quote: 0 → 10 broken words); restricted to tile / card
+   siblings: 10 slides.
+3. **A lone row of cards left an empty band** (fit-grow `fillLoneRows`, after the growth phases; `POM_FIT_LONE=0`
+   turns it off). A row or grid of boxed stacks that is the only child of a taller box, still ≥ 40 px short of it
+   after growth, takes the box (its rows too); kept only if nothing spills. A first version in the normalizer (before
+   growth) took growth away from content-sized tiles (launch 3: 2 × 2 at 64 px → one row at 54; tiles-plan CHEFFIN 1
+   62 → 54 px): moved after growth, both back to 64 / 62.
+
+| same-plan pair (tiles side) | before | after |
+|---|---|---|
+| 1.4 CHEFFIN 1 (kpi plan) | numbers 28 px, 4 broken words | 69 px, 0 broken (element-ref side 41 → 51 px) |
+| 1.2 QBR (kpi plan) | 65 px, ~150 px empty band under the tiles | 65 px, tiles fill the band (as the element-ref side the user preferred) |
+| the other 10 | | unchanged |
+
+Corpus (41 saved slides whose output changes): compiled 36 → 39, `w="max"` squeeze compile errors 5 → 2 (the three
+paid-check-3 CHEFFIN 1 tries now compile; the 2 left are the 8-component agency slide), `WORD_TOO_WIDE` 4 → 0, broken
+words 6 → 2 (the 2 left unchanged), smallest KPI number larger on 5 slides, smaller on 0. **`GEOM_CARD_EMPTY` 7 → 68**:
+31 slides have a stretched row, whose cards are now taller than their text (XTSY 1's 3 × 2 grid now ends level with
+the side panel; QBR 4's three cards reach the bottom). That is the trade the fix makes: an empty band becomes
+taller cards. The renders read better to me; it is your call (`POM_FIT_LONE=0` restores the old look).
+
+**Cards, the empty cards (2d):** re-scored on the merged branch, 4 left, both from the plans (card paid README, last
+section). **Open (2e, not changed):** width share of a tile row beside a neighbour (all-nodes-dense 1: the longest
+value gets no wider tile; CHEFFIN 1 platform row beside a callout).
