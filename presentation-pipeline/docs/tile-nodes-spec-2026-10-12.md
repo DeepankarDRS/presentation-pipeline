@@ -1,6 +1,6 @@
 # Tile nodes: `KpiGrid` / `Kpi` and `CardGrid` / `Card` (spec, 2026-10-12)
 
-Status: **KPI built behind `POM_BLOCKS=tiles` (2026-10-12, branch `feat/tile-nodes`; §10), Card still a design.**
+Status: **KPI built behind `POM_BLOCKS=tiles` (2026-10-12, branch `feat/tile-nodes`; §10); Card built 2026-10-13 (branch `feat/tile-cards`; §11), matrix deferred.**
 Data: `src/knowledge/core/block-variants.yaml` → `tile_nodes` (read by `src/compiler/nodes/tiles.py`; the `blocks`
 section above it still serves the 1a node route). Builds on the KPI node pilot
 (`docs/kpi-node-pilot-2026-10-11.md`, D13) and replaces, for the element-ref route, the variant syntax of
@@ -282,3 +282,93 @@ Built: cache order (step 1), `tiles.py` + checks + prompt lines for KPI (step 2)
 | §2 | `layout` default: row, grid when more than 4 | a row code chose, or a plain `layout="row"` the LLM wrote (no `cols` / `cols` ≥ the count; since 2026-10-13, wide-paid README), is id'd `kpig-<component>`; fit-grow `regridTiles` keeps its balanced two-row grid when the numbers end ≥ 15% larger (QBR: 58 px in one row of 4, width-bound by "14 months"; 85–87 px as 2 × 2). Content-sized ref tiles grow labels / notes with the numbers inside the search (`e57c8b4`) |
 | — | — | a tile on the LLM's own box of the same fill draws bare (no fill / border / padding); a content-sized hero ≥ 48 px grows after the other KPI groups (CHEFFIN 1 platform row 28 → 49–60 px, `875a18b`). Paid-2 runs re-scored: `docs/eval/tile-nodes/paid-2/README.md` "Fixes" |
 | §6 | planner fills `kpi_tones` reliably | built (`27b7aae`): prompt schema + example + rule (by meaning, from the key_messages / headline only), `plan_checks.settle_kpi_tones` (one per value, synonyms, none kept when all blank). §2.1: `plain` draws a tone with no colour asked (`with_tone`: bad / watch → toned, good → the number in its colour); `toned` now has tones to meet `has_tones`. Card `tone` not built (cards not started). `kpi_paid --plans` runs arm B on fresh planner plans (`b115ef9`) |
+
+## 11. Card build (2026-10-13, branch `feat/tile-cards`, free)
+
+Built from the KPI learnings (user's list, 2026-10-13), checked on saved runs only: no test-PC run yet.
+
+**Decisions (user, 2026-10-13):**
+- Grid emphasis comes from a planner field, `focus_card` (index, only when the brief singles one card out), not from
+  the design hint. Evidence: of 60 saved card grids, 20 grid hints asked for emphasis, but the hint named exactly one
+  card in only 4; the LLM still drew a dark card on 20 cards.
+- The plan marks a card's coloured key phrase (`key_phrase`, exact words of its body, at most one per card). The LLM
+  coloured spans inside card text on 14 of 60 grids (29 cards); under tile nodes code writes the text, so the plan carries it.
+- Matrix card grids are deferred (2 of 60 saved): they keep the hand-written route and recipe.
+
+**Planner** (`slide_component_planner/system.j2`, `planner_schema.py`, `plan_checks.settle_card_fields`): per-card
+`tone` (as `kpi_tones`), optional `key_phrase` (kept only when its words are in the card's body / bullets, the whole
+line never), optional `focus_card` (dropped out of range, on a matrix, or on the last step, where the destination is
+the default). `spec.singled_out` reads `focus_card` before the hint, so every route sees it.
+
+**Code** (`src/compiler/nodes/cards.py`; data `block-variants.yaml` `tile_nodes.card`), run by `tiles.fill` before the KPI tiles:
+
+| Learning | Built |
+|---|---|
+| 1. defaults decide quality | a bare `<CardGrid ref/>` draws the plan's meaning: tones (bad / watch → toned, good → coloured left edge), the emphasis card dark (`focus_card` → hint → last step; the LLM can restyle it with a variant of its own), key phrases in the card's colour (bold on a dark card). Default variant `column` (user, 2026-10-13): an open text column with a 3 px left rule in the tone / `color`, no fill, so cards read apart from KPI tiles (boxed numbers); the other variants stay available |
+| 2. emphasis readable from the plan | `focus_card`; steps → destination; matrix deferred |
+| 3. anything asked must show | every variant shows an item's `color` (`with_color`: toned / left edge / numeral colour); `toned` leaves cards without a tone neutral; the per-component line lists only usable variants (no `inverted`, no `toned` without tones, no `numerals` on numbered titles) |
+| 4. measured layouts | columns from text length (≤ 4 per row; long cards 3 or 2; 5 → 3 + 2, 7 → 4 + 3), peers `w="1" grow="1"`, group id `cardg-<cid>`; fit-grow `regridCards` tries balanced layouts with fewer columns and keeps one whose smallest title ends ≥ 15% larger (gallery: 4 short cards 37 → 48 px as 2 × 2; 4 cards in a half column 20 → 36 px) |
+| 5. ids | `card-<cid>-<i>`, `cardt-` (title), `cardb-` (body), `cardn-` (numeral; fit-grow grows it as text to 72 px, never as a KPI number: it froze at 40 px and held titles at 0.62 × 40, or grew 40 → 96 px) |
+| 6. the LLM's wrappers | a card on the LLM's panel of its own fill draws bare; a `<CardGrid>` / `<Card>` inside a `<Text>` (or inline run) replaces the wrapper (`NODE_ATTR_DROPPED`); the gallery has a wrappers sheet |
+| 7. code writes the text | title, tag, body, bullets (`Ul`), key phrase (`Span` / `B`); body = list → bullets |
+| thin plans | a group whose cards have only titles (21 of 80 saved plans) is drawn to its content and centred in its band (user: compact, centred); plan check `CARD_LINES_DROPPED` re-asks the planner once when a title-only card's title opens a line of the brief with 4+ more words (the brief gave it a line the plan dropped) |
+| 9. cost | card node lines in the cached prefix; `card_grid` / `card_steps` recipes and hand-built card techniques dropped when every card_grid is code-drawn; card content left out of the user prompt (titles only in the line) |
+
+Layouts: `grid`, `steps` (cards joined by `arrow-right` icons, the step number leads the tag line: "01 · DAY 0-30"),
+`rail` (one card per row, the number and a line to its left). Dropped from the design: `columns` (segmented bar) and
+`arrange="title-band"` (not needed by any saved slide); `numerals` uses a Text, not a transparent Shape (T4).
+Square cards (`borderRadius` dropped, as KPI tiles).
+
+**Gallery** (`python -m scripts.card_gallery`, `output/card-gallery/`): every variant on a 5-card grid, 9 layouts,
+6 wrapper boxes, corporate-slate + graphite-dark; all compile. Found and fixed there: numerals as a KPI number,
+toned tinting neutral cards, an invisible key phrase on dark cards, the rail number squeezed (POM sizes a `w="max"`
+Text to its own measure), a numbered step's "01" outgrowing its title.
+
+**Render font (found 2026-10-13):** `kpi_replay.compile_slide` (used by the KPI / tile / card replays and galleries) skips `compiler_client.deck_font`, so fit-grow measured Noto Sans JP and LibreOffice, which ignores the fonts embedded in the .pptx, drew bold text in Arial Black: the first card replay showed text overlaps the real deck does not have. The card replay and gallery now set the deck font and render through a private LibreOffice profile holding the deck fonts (`output/lo-inter`). The KPI replays still use the old path; their broken-word counts were measured in the wrong font.
+
+**Replay** (`python -m scripts.card_replay`, `output/card-replay/`): 80 saved card slides (output/**/slides.json: eval, q1008, kpi-decks, kpi-decks-2, wide-paid, critic-on, colour roles, step 0),
+75 replayed (5 skipped: a card title not on the slide, empty plans). A = the LLM's hand-drawn cards, B = the same slide with only
+those cards replaced by one bare `<CardGrid ref>` at their place (with the LLM's `w` / `grow`; the generator writes bare tags,
+learning 1; `--styled` writes the variant / icons read from the LLM's drawing instead). `focus_card` / tones / `key_phrase`
+stand-ins are read from the LLM's dark card, tinted cards and coloured runs (19 / 21 / 22). Both rendered in Inter.
+
+| | A | B bare (`column`) | B styled |
+|---|---|---|---|
+| compiled | 75 | 75 | 75 |
+| GEOM_CARD_EMPTY | 44 | 44 | 34 |
+| broken words / text overlaps (render) | 5 / 6 | 4 / 3 | 6 / 7 |
+| WORD_TOO_WIDE | 2 | 2 | 2 |
+| LOW_CONTRAST | 20 | 8 | 8 |
+| plan text missing | 0 | 0 | 0 |
+| smallest card title / body (median px) | 22 / 21 | 34.5 / 25.5 | 26.5 / 22.5 |
+| card output tokens | 46,094 | 930 (−98%) | 4,744 (−90%) |
+
+Before the compact title-only drawing and the `column` default (54 slides, `filled` default): GEOM_CARD_EMPTY 33 → 45.
+Content B drops: the LLM's own lines that are not in the plan: 4 of 80 components, 31 lines (step labels, headers, and on
+XTSY slide 3 bullets not in the brief: invented, so dropping them follows the content policy).
+Blind sheets: `output/card-replay/sheets/` (marks.csv; key.json after marking). Gate before the paid check: marks ≥ 0.5.
+
+**Blind marks (user, 2026-10-13, saved in `docs/eval/card-nodes/replay-2/`):**
+- Round 1, bare `column` default: **0.313** (B 20 / tie 7 / A 48). Reasons: separation between cards (A won on it 31 times),
+  icons (24), colour (8); B won on text size and space. The open column was dropped as the default.
+- Round 2, `lifted` default (white card, 8 px radius, 10% shadow, tone tint, tone-coloured tags, plan icons in the tag line or
+  above the title, key phrase as a `<Mark>` highlighter): **0.533** (B 24 / tie 32 / A 18, + 1 auto loss: the `w="max"`
+  squeeze compile failure) - passes the tile gate (0.5), below the 1a gate (0.6). Replay: empty cards 54 (A 44), overlaps
+  5 (A 6), LOW_CONTRAST 7 (A 20), titles 26 px (A 22), card output tokens -98%.
+  B won on space allocation and consistent card sizes; A won on coloured text runs ("span text color", "I like span better
+  than the mark"), content the plan lacks (bullets the LLM added, 4 pairs; an org chart planned as cards), two card groups drawn
+  alike ("variants for 2 types of cards"), and a step number in front of year tags ("01 · 2021").
+
+Open: the rail's text does not grow (wide cards, little spare height); a short last row stretches wider than the row
+above (KPI rows do the same); numerals + icons on a 5-card grid leave little room to grow.
+
+**Paid check on fresh plans (2026-10-13/14, test PC, $1.80: planners $1.517 + generator $0.282;
+`docs/eval/card-nodes/paid/README.md`): blind marks 0.692 (B 6 / tie 6 / A 1 of 13), gate passed.** Only 14 of 36 slides
+ran: the fresh plans had no card_grid on 22 (CHEFFIN none in 3 runs). First try 12 / 14, 0 NODE_* errors; empty cards 7
+(A 0), overlaps 0 (A 3), LOW_CONTRAST 0 (A 3). Fixed from it: a bare `&` left `<CardGrid>` unexpanded (`e799d56`),
+`--no-render` without LibreOffice (`0afc074`). Open: the 7 empty cards, a stage visual for growth roadmaps (A's one win),
+planner density (8 components on one slide), unreadable planner `content_data_json`.
+**Empty-card fixes (2026-10-14, free):** fit-grow grows a card_grid's cards as one group across rows and not one card
+alone beside a full one; a steps row shares width by text. Empty cards 7 → 4 (the rest: planner instruction text, the
+8-component slide); re-marked pairs unchanged, marks still 0.692. Open: step bodies of several sentences want one point
+per line (user, pair 3.1); an arrow-diagram brief planned as a card_grid (XTSY s3).

@@ -121,7 +121,12 @@ def items(comp: dict) -> list[str]:
 
 
 def singled_out(comp: dict) -> str | None:
-    """The one item the design hint names next to an emphasis word, else None."""
+    """The one item the plan singles out: a card_grid's focus_card (plan_checks.settle_card_fields), else the one
+    item the design hint names next to an emphasis word, else None."""
+    focus = (comp.get("content_data") or {}).get("focus_card")
+    names = items(comp)
+    if isinstance(focus, int) and not isinstance(focus, bool) and 0 <= focus < len(names):
+        return names[focus]
     hint = str(comp.get("design_hint") or "").lower()
     if not any(w in hint for w in _EMPHASIS_WORDS):
         return None

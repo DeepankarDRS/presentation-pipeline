@@ -126,3 +126,16 @@ def test_text_whitespace_keeps_inline_spacing():
         '<Table><Col /><Tr><Td> </Td></Tr></Table>'))["cleaned_xml"]
     assert '<Text>Audit covers <Span color="2563EB">FLIPCART</Span> Targeting, and more.</Text>' in xml
     assert "<Td> </Td>" in xml  # a blank cell stays a fixed point
+
+
+def test_a_mark_on_a_light_palette_tint_stays_a_highlighter():
+    """Card key phrases (tile-nodes §11, 2026-10-13): <Mark color="$xSoft"> reads by construction; others still become Spans."""
+    xml = normalize_xml(_slide(
+        '<Text color="16202E">A <Mark color="$negativeSoft"><Span color="$negativeText">19 months</Span></Mark> '
+        'B <Mark color="2563EB">blue</Mark></Text>'
+        '<Text color="$onPanelDark">C <Mark color="$accentSoft">on dark</Mark></Text>'))
+    out = xml["cleaned_xml"]
+    assert '<Mark color="$negativeSoft"><Span color="$negativeText">19 months</Span></Mark>' in out
+    assert '<Span color="2563EB">blue</Span>' in out and "on dark" in out and 'Mark color="$accentSoft"' not in out
+    again = normalize_xml(out)
+    assert again["cleaned_xml"] == out

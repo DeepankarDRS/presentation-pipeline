@@ -431,6 +431,21 @@ def test_validator_expands_tiles(monkeypatch):
     assert "<KpiGrid" not in seen["xml"] and 'id="kpiv1-kpis-0"' in seen["xml"] and "₹114.9" in seen["xml"]
 
 
+def test_validator_expands_tiles_after_a_bare_ampersand(monkeypatch):
+    from src.agents import validator
+    state = _gen_state()
+    seen = {}
+
+    def fake_norm(xml):
+        seen["xml"] = xml
+        raise RuntimeError("stop")
+    monkeypatch.setattr(validator, "normalize_xml", fake_norm)
+    state["current_xml"] = slide('<Text fontSize="14">KEYWORD & CITIES</Text><KpiGrid ref="kpis" variant="dot"/>')
+    with pytest.raises(RuntimeError):
+        validator.validator_node(state)
+    assert "<KpiGrid" not in seen["xml"] and "KEYWORD &amp; CITIES" in seen["xml"]
+
+
 def test_mode_values(monkeypatch):
     assert E.mode() == "tiles" and E.refs_on() and T.on()
     monkeypatch.setenv("POM_BLOCKS", "kpi")

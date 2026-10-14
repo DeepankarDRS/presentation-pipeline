@@ -95,6 +95,7 @@ const FIXED_FONT = 24;      // >= this outside a card is a title / KPI number: n
 // title / 1.3, labels (caps / letter-spaced) by sqrt(s); icons grow by sqrt(s) up to 56px.
 // In a KPI tile only the number is big: its label / delta lines stay <= 0.45x the number.
 const TITLE_CAP = 48;
+const NUMERAL_CAP = 72;      // a card's "01" (cards.py numerals) stays a step above its title
 const BODY_CAP = 28;
 const LABEL_CAP = 24;
 const TITLE_RATIO = 1.3;
@@ -836,6 +837,9 @@ function statAnchor(tile) {
   const size = (t) => t.fontSize ?? 24;
   const top = Math.max(...texts.map(size));
   const tops = texts.filter((t) => size(t) === top);
+  // a card's numeral ("01", cards.py ids cardn-) is a label above its title, not a stat: it grows as text
+  // (card gallery 2026-10-13: grown as KPI values 40 -> 96 px over 28 px titles)
+  if (tops.length === 1 && /^cardn-/.test(tops[0].id)) return null;
   return top >= FIXED_FONT && tops.length === 1 ? tops[0] : null;
 }
 
@@ -1090,6 +1094,80 @@ async function regridTiles(xml, report) {
   return xml;
 }
 
+// --- phase 3a': a code-laid card grid may take fewer columns --------------------
+// cards.py chooses a <CardGrid>'s columns from its text alone and ids the group "cardg-<component>"
+// (a VStack of HStack rows of cards). It cannot see the box: four short cards in one row of a tall band,
+// or in a half-width column beside a chart, stay at 16-20 px in empty cards (card gallery, 2026-10-13).
+// Each balanced layout with fewer columns (2 or 3 rows, or one column) is grown as the slide grows
+// (growStats, growText); the one whose smallest card title ends REGRID_GAIN larger than the current
+// layout's is kept. Under five cards a last row of one card is not tried.
+
+/** The rows of card group id: [[start, end) of each card] per row, or null. */
+function cardRowsOf(xml, id) {
+  const el = findElement(xml, id);
+  if (!el || el.name !== "VStack") return null;
+  return childRanges(xml, el).map(([s, e]) => {
+    const m = /^<HStack\b[^>]*\sid="([^"]*)"/.exec(xml.slice(s, e));
+    const row = m && findElement(xml, m[1]);
+    return row ? childRanges(xml, row) : [[s, e]];
+  });
+}
+
+/** Group id re-laid as rows of `cols` cards (the cards unchanged). */
+function asCardRows(xml, id, cols, base = 9200) {
+  const el = findElement(xml, id);
+  const cards = (cardRowsOf(xml, id) ?? []).flat();
+  if (!el || !cards.length) return null;
+  const open = xml.slice(el.start, el.openEnd);
+  const gap = (/\sgap\s*=\s*"([^"]*)"/.exec(open) ?? [])[1] ?? "0";
+  let body = "";
+  for (let k = 0, r = 0; k < cards.length; k += cols, r += 1) {
+    body += `<HStack id="${ID_PREFIX}${base + r}" gap="${gap}" grow="1" alignItems="stretch">`
+      + cards.slice(k, k + cols).map(([s, e]) => xml.slice(s, e)).join("") + "</HStack>";
+  }
+  return xml.slice(0, el.start) + open + body + "</VStack>" + xml.slice(el.end);
+}
+
+/** The smallest card title size of component cid (ids cardt-<cid>-<i>). */
+function minTitle(xml, cid) {
+  const re = new RegExp(`^cardt-${escapeRe(cid)}-\\d+$`);
+  const sizes = [...xml.matchAll(/<Text\b[^>]*>/g)].map((m) => m[0])
+    .filter((t) => { const i = /\sid="([^"]*)"/.exec(t); return i && re.test(i[1]); })
+    .map((t) => Number((/\sfontSize="([\d.]+)"/.exec(t) ?? [])[1] ?? 0));
+  return sizes.length ? Math.min(...sizes) : 0;
+}
+
+async function regridCards(xml, report) {
+  const ids = [...xml.matchAll(/<VStack\b[^>]*\sid="(cardg-[^"]*)"/g)].map((m) => m[1]);
+  for (const [g, id] of ids.entries()) {
+    const rows = cardRowsOf(xml, id);
+    if (!rows) continue;
+    const n = rows.flat().length, cols = Math.max(...rows.map((r) => r.length));
+    const tries = [...new Set([2, 3, n].map((r) => Math.ceil(n / r)))]
+      .filter((c) => c < cols && !(n < 5 && c > 1 && n % c === 1));
+    if (n < 2 || !tries.length) continue;
+    const cid = id.slice("cardg-".length);
+    const pinned = new Set(PINNED);
+    const trial = async (x) => {
+      const out = minTitle(await growText(await growStats(x, []), []), cid);
+      PINNED.clear(); pinned.forEach((p) => PINNED.add(p));
+      return out;
+    };
+    const now = await trial(xml);
+    let best = null, bestSize = now * REGRID_GAIN;
+    for (const c of tries) {
+      const x = asCardRows(xml, id, c, 9200 + 10 * g);   // numeric ids: untag removes them
+      const size = x ? await trial(x) : 0;
+      if (size >= bestSize) { best = [c, x]; bestSize = size; }
+    }
+    if (best) {
+      xml = best[1];
+      report.push(`cards of ${cid} ${best[0]} per row (titles ${now} -> ${bestSize}px as grown)`);
+    }
+  }
+  return xml;
+}
+
 // --- phase 3b: grow text inside sparse text-only stacks ------------------------
 
 function textTargets(stack) {
@@ -1115,16 +1193,22 @@ function textTargets(stack) {
       return;
     }
     const text = n.text ?? (n.runs ?? []).map((r) => r.text).join("");
+    const sig = parent ? `${parent.type}(${(parent.children ?? []).map((k) => k.type).join(",")})` : "";
+    if (/^cardn-/.test(n.id)) {
+      // a card's numeral ("01", cards.py): grows with its title (by s, to NUMERAL_CAP), never the box's stat anchor
+      // (card gallery 2026-10-13: as an anchor it froze at 40 px and held the titles at 0.62 x 40)
+      out.push({ id: n.id, f, text, sig, title: false, label: false, heading: true, numeral: true });
+      return;
+    }
     const label = /[A-Z]/.test(text) && text === text.toUpperCase() || n.letterSpacing !== undefined;
     const title = n.type === "text" && !!n.bold && !label;
-    const sig = parent ? `${parent.type}(${(parent.children ?? []).map((k) => k.type).join(",")})` : "";
     out.push({ id: n.id, f, text, sig, title, label: n.type === "text" && label, heading: title || (n.type === "text" && label) });
   });
   // a stat value / hero number (a short number >= 1.5x the smallest text in the box) is
   // the box's anchor: frozen here (growStats sizes it)
   const sizes = out.map((t) => t.f);
   const anchor = Math.max(...sizes);
-  const isAnchor = (t) => t.f === anchor && shortNumber(t.text);
+  const isAnchor = (t) => t.f === anchor && shortNumber(t.text) && !t.numeral;
   // a stat tile: a card whose one big text is a short number ("₹59.8 Cr"; not a header
   // stack's headline, nor a sentence with a digit in it: "Unlocking H2 growth ...")
   const big = boxed ? statAnchor(stack) : null;
@@ -1143,7 +1227,7 @@ function textTargets(stack) {
     : smallestFixed * 0.62);
   for (const t of out) {
     if (stat && t.title) Object.assign(t, { title: false, label: true });
-    const cap = t.title ? TITLE_CAP : t.label ? LABEL_CAP : BODY_CAP;
+    const cap = t.numeral ? NUMERAL_CAP : t.title ? TITLE_CAP : t.label ? LABEL_CAP : BODY_CAP;
     // grown text stays 2px below every bigger text in the box that does not grow (a label
     // under a "₹59.8 Cr" with an inline unit size never passes the number)
     const above = Math.min(...frozen.filter((f) => f > t.f)) - 2;
@@ -1195,6 +1279,16 @@ async function nextCandidate(xml, done) {
           // sizes, and a label grown to 24px then counted as a frozen title
           const tiles = n.type === "hstack" ? (n.children ?? []).filter((c) => STACKS.has(c.type)) : [];
           if (tiles.length >= 2 && tiles.every(peerOf(tiles[0]))) members = tiles;
+          // the cards of one card_grid (cards.py ids card-<cid>-<i>) are one group across their rows:
+          // row by row, XTSY's 4-phase grid drew row 1 at 28 / 20 px and row 2 at 23 / 17 (card paid, 2026-10-14)
+          const cid = /^card-(.+)-\d+$/.exec(n.id)?.[1];
+          if (cid && members.includes(n)) {
+            const own = new RegExp(`^card-${escapeRe(cid)}-\\d+$`), all = [];
+            L.slides.forEach((r) => walk(r, (d) => {
+              if (STACKS.has(d.type) && d.id && own.test(d.id) && !done.has(d.id) && !hasRigid(d) && textTargets(d).length) all.push(d);
+            }));
+            if (all.length > members.length) members = all;
+          }
           const ids = members.map((m) => m.id);
           const lists = members.map((m) => textTargets(m));
           // peer tiles: the same text slot has the same role in every tile
@@ -1219,7 +1313,11 @@ async function nextCandidate(xml, done) {
             const role = group.length > 1 && group.find((t) => t.title);
             if (role) for (const t of group) Object.assign(t, { title: true, heading: true, label: false, cap: Math.max(...group.map((g) => g.cap)) });
           }
-          found = { ids, seen: [n.id, ...ids], targets: lists.flat().filter((t) => !over.has(t.id)), icons, texts,
+          // a group's inner stacks are its own: grown alone after the group stopped at its fullest card,
+          // the middle card of three steps went 20 -> 27 px beside its peers (agency takeover, card paid 2026-10-14)
+          const inner = [];
+          if (cid) for (const m of members) walk(m, (d) => { if (d !== m && STACKS.has(d.type) && d.id) inner.push(d.id); });
+          found = { ids, seen: [n.id, ...ids, ...inner], targets: lists.flat().filter((t) => !over.has(t.id)), icons, texts,
             ratio: Math.max(...members.map((m) => fill(m, L).ratio)) };
           return;
         }
@@ -1983,6 +2081,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await growDiagrams(xml, report);
   xml = await shareHeight(xml, report);
   xml = await regridTiles(xml, report);
+  xml = await regridCards(xml, report);
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);

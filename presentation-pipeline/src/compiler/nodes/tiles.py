@@ -100,9 +100,9 @@ def emphasis_index(comp: dict) -> int | None:
 class _Layer:
     """One layer of the resolution order: tile box attributes and part attributes."""
 
-    def __init__(self) -> None:
+    def __init__(self, parts: dict[str, str] | None = None) -> None:
         self.box: dict[str, str] = {}
-        self.parts: dict[str, dict[str, str]] = {p: {} for p in kpi()["parts"]}
+        self.parts: dict[str, dict[str, str]] = {p: {} for p in (parts or kpi()["parts"])}
 
     def put(self, key: str, value: Any) -> None:
         head, _, rest = key.partition(".")
@@ -112,8 +112,8 @@ class _Layer:
             self.box[key] = str(value)
 
 
-def _look(look: dict, role: str) -> _Layer:
-    layer = _Layer()
+def _look(look: dict, role: str, parts: dict[str, str] | None = None) -> _Layer:
+    layer = _Layer(parts)
     for k, v in (look or {}).items():
         layer.put(k, role_value(v, role))
     return layer
@@ -124,13 +124,15 @@ def _is_colour_attr(key: str) -> bool:
     return last in ("color", "bgColor", "backgroundColor") or last.endswith("Color")
 
 
-def _read(el: etree._Element, meta_names: set[str], flag) -> tuple[dict[str, str], _Layer, _Layer]:
-    """(meta, box layer, part layer) of a tile tag. Box attributes on a group are the group's own box."""
+def _read(el: etree._Element, meta_names: set[str], flag, block: dict | None = None,
+          item_tag: str = ITEM) -> tuple[dict[str, str], _Layer, _Layer]:
+    """(meta, box layer, part layer) of a tile tag. Box attributes on a group are the group's own box.
+    `block`: the tile_nodes entry (kpi, card); `item_tag`: its item tag."""
     ref = el.get("ref")
     d = data()
     dropped_box, dropped_parts = set(d["dropped"]["box"]), set(d["dropped"]["parts"])
-    box_ok, part_nodes, parts = set(d["box_attributes"]), d["part_nodes"], kpi()["parts"]
-    meta, box, partl = {}, _Layer(), _Layer()
+    box_ok, part_nodes, parts = set(d["box_attributes"]), d["part_nodes"], (block or kpi())["parts"]
+    meta, box, partl = {}, _Layer(parts), _Layer(parts)
     for k, v in el.attrib.items():
         if k in meta_names:
             meta[k] = v
@@ -157,8 +159,8 @@ def _read(el: etree._Element, meta_names: set[str], flag) -> tuple[dict[str, str
             box.box[k] = v
         else:
             flag("NODE_ATTR_UNKNOWN", ref, f'{k} on <{el.tag} ref="{ref}">: not a {el.tag} attribute (meta: '
-                 f'{", ".join(sorted(meta_names))}; parts label. value. note. icon. marker.; box attributes as a VStack).')
-    if (el.text or "").strip() or (len(el) and el.tag == ITEM):
+                 f'{", ".join(sorted(meta_names))}; parts {" ".join(p + "." for p in parts)}; box attributes as a VStack).')
+    if (el.text or "").strip() or (len(el) and el.tag == item_tag):
         flag("NODE_ATTR_DROPPED", ref, f'text or children inside <{el.tag} ref="{ref}">: code writes the tile from the plan; removed.')
     return meta, box, partl
 
@@ -492,9 +494,15 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
 
 
 def fill(xml: str, plan: dict | None) -> dict[str, Any]:
-    """expand, then element_refs.fill_refs; one result in fill_refs' shape."""
-    exp = expand(xml, plan)
+    """cards.expand (code writes the card text), expand, then element_refs.fill_refs; one result in fill_refs'
+    shape, plus card_items {card_grid id: cards drawn from tile tags}."""
+    from src.compiler.nodes import cards   # cards builds on this module
+    crd = cards.expand(xml, plan)
+    exp = expand(crd["xml"], plan)
+    exp["issues"] = crd["issues"] + exp["issues"]
+    exp["ok"] = exp["ok"] and crd["ok"]
     res = element_refs.fill_refs(exp["xml"], plan)
+    res["card_items"] = crd["card_items"]
     for i in res["issues"]:
         if i["code"] == "NODE_ITEM_MISSING":   # name the tile tags, not the hand-written ref
             cid, k = i["ref"].split(".")[:2]

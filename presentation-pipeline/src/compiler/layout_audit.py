@@ -431,10 +431,18 @@ def _check_contrast(root: ET.Element, issues: list[dict[str, str]]) -> None:
         if el.tag in _TEXT_TAGS:
             own = el.get("text") if el.tag == "Shape" else (el.text or "") + "".join(c.tail or "" for c in el)
             judge(fg, bg, own or "", size, bold)
-            for span in el.iter():
-                if span is not el and span.get("color"):
-                    judge(span.get("color"), bg, "".join(span.itertext()),
-                          float(_parse_num(span.get("fontSize")) or size), span.get("bold") == "true" or bold)
+            def runs(parent: ET.Element, under: tuple[int, int, int] | None) -> None:
+                # a <Mark>'s colour is the highlight behind its text, not a text colour: its runs read on it
+                for span in parent:
+                    if span.tag == "Mark":
+                        runs(span, _rgb(span.get("color"), theme) if span.get("color") else under)
+                        continue
+                    if span.get("color"):
+                        judge(span.get("color"), under, "".join(span.itertext()),
+                              float(_parse_num(span.get("fontSize")) or size), span.get("bold") == "true" or bold)
+                    runs(span, under)
+
+            runs(el, bg)
         for child in el:
             walk(child, bg, fg, size, bold)
 

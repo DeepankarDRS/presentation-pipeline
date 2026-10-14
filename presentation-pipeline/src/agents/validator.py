@@ -26,7 +26,7 @@ from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
 from src.compiler.nodes import element_refs, tiles
-from src.compiler.normalizer import ensure_single_theme, has_dark_panel, normalize_xml, pre_validate, soften_dark_panels
+from src.compiler.normalizer import _BARE_AMP_RE, ensure_single_theme, has_dark_panel, normalize_xml, pre_validate, soften_dark_panels
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
@@ -68,6 +68,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         if "ref=" in xml:   # the LLM's own XML, before code fills it (eval bundles: the first try)
             output_dir.mkdir(parents=True, exist_ok=True)
             (output_dir / "generated.xml").write_text(xml, encoding="utf-8")
+        xml = _BARE_AMP_RE.sub("&amp;", xml)   # a bare '&' ("KEYWORD & CITIES") fails the parse: tags stayed unexpanded
         fill = tiles.fill if tiles.on() else element_refs.fill_refs
         refs = fill(xml, slide_plans[idx] if idx < len(slide_plans) else {})
         xml, ref_issues = refs["xml"], refs["issues"]

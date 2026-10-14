@@ -12,7 +12,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.compiler.nodes import element_refs, tiles
+from src.compiler.nodes import cards, element_refs, tiles
 from src.state import AttemptRecord, PresentationState
 from src.utils.llm_client import extract_usage, get_llm
 
@@ -56,7 +56,7 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         icon_names=contract.get("icon_names", ""),
         core_hook=state.get("core_hook", ""),
         slide_type=plan.get("slide_type", ""),
-        tile_nodes=tiles.node_lines() if tiles.on() else "",
+        tile_nodes=tiles.node_lines() + "\n\n" + cards.node_lines() if tiles.on() else "",
     )
 
     components = plan.get("components", [])
@@ -68,6 +68,14 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
                       and c.get("component_id") else c for c in components]
         if any(c.get("ref_line") for c in components):
             content_data = {k: v for k, v in (content_data or {}).items() if not str(k).startswith("kpi_")}
+        if tiles.on():
+            # card tile nodes: code writes the card text (cards.py); a matrix card_grid keeps its content (deferred)
+            drawn = cards.card_components(plan)
+            components = [dict(c, content_data={}, ref_line=cards.prompt_line(c)) if c.get("component_id") in drawn
+                          and c.get("kind") == "card_grid" else c for c in components]
+            if drawn and len(drawn) == sum(c.get("kind") == "card_grid" for c in components):
+                content_data = {k: v for k, v in (content_data or {}).items()
+                                if k not in ("cards", "card_layout", "per_row", "focus_card")}
     user_prompt = user_tmpl.render(
         objective=state.get("raw_request", ""),
         slide_title=plan.get("slide_title", ""),

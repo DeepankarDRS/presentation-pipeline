@@ -1,6 +1,6 @@
 # pom-knowledge/core/block-variants.yaml   (DRAFT 2026-10-06; `blocks` is read by src/compiler/nodes/spec.py
 # for the 1a node route; `tile_nodes` at the end (2026-10-12) is read by src/compiler/nodes/tiles.py under
-# POM_BLOCKS=tiles (KPI built; Card still a design): docs/tile-nodes-spec-2026-10-12.md)
+# POM_BLOCKS=tiles (KPI built; Card built 2026-10-13, matrix deferred): docs/tile-nodes-spec-2026-10-12.md)
 # The ONE place the ref-node tags and their `variant` names are stated (node contract,
 # docs/derived-blocks-planning-2026-10-06.md §3, decision D10). The generator prompt
 # renders each component's line from it, and the node pass reads it. A test fails when a
@@ -247,7 +247,7 @@ blocks:
 # `layer` has no tag: it carries no content shape, so the LLM draws it (NODE_KIND_NO_REF).
 
 
-# ══ Tile nodes (design 2026-10-12; KPI read by src/compiler/nodes/tiles.py, Card not yet) ═════
+# ══ Tile nodes (design 2026-10-12; KPI read by src/compiler/nodes/tiles.py, Card by cards.py) ═════
 # Spec and reasons: docs/tile-nodes-spec-2026-10-12.md. Replaces, when built, the `kpi_row`,
 # `card_grid` and `card_steps` blocks above for the element-ref route (POM_BLOCKS=kpi).
 #
@@ -286,7 +286,7 @@ tile_nodes:
                    borderTop.color, borderTop.width, borderRight.color, borderRight.width,
                    borderBottom.color, borderBottom.width, borderLeft.color, borderLeft.width,
                    padding, padding.top, padding.right, padding.bottom, padding.left, gap,
-                   alignItems, justifyContent, shadow.type, shadow.blur, shadow.offset, shadow.color,
+                   alignItems, justifyContent, shadow.type, shadow.blur, shadow.offset, shadow.color, shadow.opacity,
                    opacity, w, h, grow, minW, maxW, minH, maxH, alignSelf, margin]
 
   part_nodes:           # part -> the POM node it becomes -> the attributes its prefix may carry
@@ -392,70 +392,117 @@ tile_nodes:
         look: {padding: 0, label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
 
   # ── Card ──────────────────────────────────────────────────────────────────────
+  # Built 2026-10-13 (spec §11): src/compiler/nodes/cards.py. Code writes the text itself (no fill pass): ids
+  # cardg-<cid> (a group whose columns code chose), card-<cid>-<i>, cardt- (title), cardb- (body).
   card:
     plan_kind: card_grid
     group_tag: CardGrid
     item_tag: Card
     ref: {group: "<component_id>", item: "<component_id>.<index>"}
-    emphasis_from: [design_hint, priority, destination]   # destination: steps layouts only
+    # focus_card (planner, settle_card_fields) -> design hint (spec.singled_out) -> the last step (steps / rail).
+    # The emphasis card draws `inverted` by default; the LLM never picks it (user, 2026-10-07 / 2026-10-13)
+    emphasis_from: [focus_card, design_hint, destination]
+    deferred_layouts: [matrix]   # a matrix card_grid keeps the hand-written route (user, 2026-10-13: 2 saved slides)
     parts:
+      tag:    Text      # the plan's tag ("Q3", "PHASE 01"), small spaced capitals
       title:  Text
-      body:   Text      # the card's body lines from the plan, one Text per line
-      icon:   Icon
-      marker: Shape     # on steps / numerals code writes the step number into it (Shape text)
+      body:   Text      # the plan's body line and bullets; key_phrase drawn as a coloured Span
+      icon:   Icon      # `icon="name"` is shorthand for icon.name; no icon unless named
+      number: Text      # steps / numerals: 01 02 03 (T4: a Text, not a transparent Shape)
 
     group_attributes:
       ref:    {required: true}
       layout:
-        values: [grid, matrix, steps, rail, columns]
+        values: [grid, steps, rail]
         default: "the plan's card_layout"
-        match_plan: {grid: [grid], matrix: [matrix], steps: [steps, rail, columns]}   # else NODE_LAYOUT_UNMET -> plan's
-        # steps = row of cards with arrows; rail = vertical line, a dot per step, text right;
-        # columns = columns under a segmented bar
-      cols:   {type: number, applies_to: [grid], default: balanced}
+        match_plan: {grid: [grid], steps: [steps, rail]}   # else NODE_ATTR_DROPPED -> the plan's
+        # steps = cards in a row joined by arrows; rail = one card per row down a vertical line, the number left
+      cols:   {type: number, applies_to: [grid], default: "measured: 2-3 per row by text length, never more than 4"}
       shared: [variant, arrange, color, icon, parts]
 
     item_attributes:
       ref:     {required: true}
-      variant: {default: "the group's variant, else outline"}
-      arrange: {values: [stack, side, title-band], default: stack}
-               # stack = icon / marker, title, body; side = icon left; title-band = title on a coloured strip
+      variant: {default: "the group's variant, else lifted; the emphasis card inverted"}
+      arrange: {values: [stack, side], default: stack}
+               # stack = icon, tag, title, body; side = icon left of tag / title / body
       color:   {values: [$accent, $positive, $negative, $warning, $neutral], default: "plan tone"}
       icon:    {type: icon name, default: none}
 
-    owned_by_code: [title / body text, the card's tag line, type sizes shared by all cards,
-                    step numbers, arrows between steps, word fit, readable text on dark fills]
+    owned_by_code: [title / body / tag text, key phrase, type sizes shared by all cards, step numbers,
+                    arrows between steps, columns, word fit, readable text on dark fills]
 
-    variants:
-      outline:
-        prompt: "hairline cards on the background"
-        look: {border.color: $border, border.width: 1, title.color: $textMain, body.color: $textMuted}
+    # the planner's card_grid treatments (hint-capabilities.yaml) as card attributes; under tiles the generator gets
+    # these instead of the hand-built techniques. Emphasis, tones and key phrases come from the plan (code draws them).
+    treatments:
+      emphasis:       'code draws the plan''s focus card dark (no attribute)'
+      focus:          'code draws the plan''s focus card dark (no attribute)'
+      inverted_panel: 'code draws the plan''s focus card dark (no attribute)'
+      sentiment:      'the tones colour the cards (no attribute); variant="toned" tints every toned card; color on a
+                       <Card> by meaning when the plan has no tones ($negative risks / gaps, $positive wins, $warning watch)'
+      highlight_text: 'code colours each card''s key phrase from the plan (no attribute)'
+      icon_tiles:     'icon="name" (ICON NAMES) on the CardGrid or on each <Card>, on every card or on none'
+      accent_border:  'variant="accent_top", or variant="toned"'
+      lift:           'shadow.type="outer" shadow.blur="6" shadow.offset="2" on each <Card>'
+
+    # cards are rounded (user, 2026-10-13: the POM guide's card, 8 px), KPI tiles stay square; the LLM cannot set it
+    house_look: {borderRadius: 8, padding: 20, gap: 8, justifyContent: start, icon.color: "${role}Text", tag.color: "${role}Text",
+                 number.color: "${role}Text", title.color: $textMain, body.color: $textMuted}
+
+    variants:           # first = default
+      # blind marks 2026-10-13 (0.313 for `column`): separation between cards, colour backgrounds and icons won.
+      # The default (user, 2026-10-13): a white lifted card tinted by its tone; KPI tiles stay flat (no shadow).
+      lifted:
+        prompt: "white lifted card with a soft shadow, tinted by its tone (default)"
+        with_color: {backgroundColor: "${role}Soft", border.color: "${role}"}
+        with_tone: {bad: {backgroundColor: "${role}Soft", border.color: "${role}"},
+                    watch: {backgroundColor: "${role}Soft", border.color: "${role}"},
+                    good: {backgroundColor: "${role}Soft", border.color: "${role}"}}
+        # shadow per the POM styling guide's card (10% opacity, blur 4); 35% / blur 8 read as a smudge
+        look: {backgroundColor: $surface, border.color: $border, border.width: 1, padding: 24,
+               shadow.type: outer, shadow.blur: 4, shadow.offset: 2, shadow.color: $textMain, shadow.opacity: 0.1,
+               title.color: $textMain, body.color: $textMuted}
+      # open text column: a coloured rule on the left, no box. The default until the blind marks of 2026-10-13
+      # (0.313: separation between cards, colour and icons lost); kept as a variant.
+      column:
+        prompt: "open column, a coloured rule on the left, no box"
+        with_color: {borderLeft.color: "${role}"}
+        with_tone: {bad: {borderLeft.color: "${role}"}, watch: {borderLeft.color: "${role}"},
+                    good: {borderLeft.color: "${role}"}}
+        look: {borderLeft.color: $border, borderLeft.width: 3, padding: 4, padding.left: 18,
+               title.color: $textMain, body.color: $textMuted}
       filled:
         prompt: "cards on a light panel, no border"
+        with_color: toned
+        with_tone: {bad: toned, watch: toned, good: {borderLeft.color: "${role}", borderLeft.width: 6}}
         look: {backgroundColor: $surfaceAlt, title.color: $textMain, body.color: $textMuted}
+      outline:
+        prompt: "hairline cards on the background"
+        with_color: {borderLeft.color: "${role}", borderLeft.width: 6, title.color: "${role}Text"}
+        with_tone: {bad: toned, watch: toned, good: {borderLeft.color: "${role}", borderLeft.width: 6}}
+        look: {border.color: $border, border.width: 1, title.color: $textMain, body.color: $textMuted}
       toned:
         prompt: "tinted by the card's tone, coloured left edge"
         requires: [has_tones]
-        fallback: filled
+        fallback: lifted
         look: {backgroundColor: "${role}Soft", borderLeft.color: "${role}", borderLeft.width: 6,
-               title.color: "${role}Text", body.color: $textMain}
+               title.color: "${role}Text", body.color: $textMain, tag.color: "${role}Text"}
       accent_top:
-        prompt: "coloured bar on top (pillars, workstreams)"
+        prompt: "coloured bar on top in the card's colour (pillars, workstreams)"
         look: {backgroundColor: $surfaceAlt, borderTop.color: "${role}", borderTop.width: 4,
                title.color: $textMain, body.color: $textMuted}
       numerals:
-        prompt: "large faint 01 02 03 above each title"
-        requires: [not_matrix, all_titles_numbered_ok]
-        fallback: outline
-        look: {border.color: $border, border.width: 1, marker.shapeType: rect, marker.fill.transparency: 1,
-               marker.line.width: 0, title.color: $textMain, body.color: $textMuted}
-               # numeral colour and size: code ($neutral, a fixed step above the title)
+        prompt: "large 01 02 03 above each title"
+        requires: [all_titles_numbered_ok]
+        fallback: lifted
+        with_color: {number.color: "${role}Text"}
+        look: {backgroundColor: $surfaceAlt, number.color: $textMuted, title.color: $textMain, body.color: $textMuted}
       inverted:
-        prompt: "dark card: the featured item or the destination step"
+        prompt: "dark card: the focus card or the destination step"
         emphasis: true
-        requires: [count_ge_3, is_emphasis_item, not_matrix]
-        fallback: filled
-        look: {backgroundColor: $panelDark, title.color: $onPanelDark, body.color: $onPanelDark}
+        requires: [count_ge_3, is_emphasis_item]
+        fallback: lifted
+        look: {backgroundColor: $panelDark, title.color: $onPanelDark, body.color: $onPanelDark,
+               tag.color: $onPanelDark, number.color: $onPanelDark, icon.color: $onPanelDark}
 
   # Checks added for tile nodes (the others are in the header of this file):
   #   is_emphasis_item   the item is the one an `emphasis_from` source names (spec.singled_out,
