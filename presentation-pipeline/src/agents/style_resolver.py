@@ -78,6 +78,11 @@ def _palettes() -> dict[str, Any]:
 DEFAULT_THEME: dict[str, Any] = _build_theme(_DEFAULT_NAME, _palettes()[_DEFAULT_NAME])
 
 
+def theme_names() -> list[str]:
+    """Every palette name a run may ask for (palettes.yaml)."""
+    return list(_palettes())
+
+
 def resolve_theme(theme_name: str) -> dict[str, Any]:
     """Resolve a theme name to a full theme dict.
 

@@ -11,15 +11,10 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from src.state import (ChartTypeLiteral, ComponentKindLiteral, OrientationLiteral,
+                       SlideTypeLiteral, WeightLiteral)
 
-ComponentKindLiteral = Literal[
-    "title", "narrative", "caption", "kpi_row", "bullet_list",
-    "chart", "table", "timeline", "flow", "layer",
-    "tree", "matrix", "process_arrow", "pyramid", "card_grid",
-]
-
-WeightLiteral = Literal["hero", "peer", "supporting", "minor"]
-SlideTypeLiteral = Literal["cover", "content", "data", "section_break", "closing"]
+__all__ = ["ComponentKindLiteral", "SlideTypeLiteral", "WeightLiteral", "PlannerComponent", "PlannerSlide"]
 
 class PlannerComponent(BaseModel):
     """One component the slide should contain, with its own content data."""
@@ -36,9 +31,9 @@ class PlannerComponent(BaseModel):
         default=1, ge=1, le=20,
         description="How many instances (e.g. 4 KPI tiles, 3 chart series)."
     )
-    chart_type: str = Field(
+    chart_type: Literal["", ChartTypeLiteral] = Field(
         default="",
-        description="bar, line, pie, donut, area. Only when kind=chart."
+        description="Chart type, only when kind=chart; empty for every other kind."
     )
     series_count: int = Field(
         default=0, ge=0,
@@ -92,7 +87,7 @@ class PlannerComponent(BaseModel):
                     "  caption: {\"text\": \"...\"}\n"
                     "Must be valid JSON. No placeholders."
     )
-    orientation: str = Field(
+    orientation: OrientationLiteral = Field(
         default="",
         description="Direction hint for components that support it: "
                     "'horizontal' or 'vertical'. Applies to timeline, flow, "

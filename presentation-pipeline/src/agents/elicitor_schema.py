@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 from pydantic import BaseModel, Field
+
+from src.state import QuestionTypeLiteral
 
 
 class ElicitationQuestion(BaseModel):
     key: str = Field(description="Machine-readable slug, e.g. 'key_metric' or 'competitor_names'.")
     question: str = Field(description="Human-readable question text shown to the user.")
-    type: Literal["single_choice", "multi_choice", "free_text", "numeric"] = Field(
+    type: QuestionTypeLiteral = Field(
         default="free_text",
         description="UI widget type: single_choice=radio, multi_choice=checkboxes, "
                     "free_text=open input, numeric=number input.",

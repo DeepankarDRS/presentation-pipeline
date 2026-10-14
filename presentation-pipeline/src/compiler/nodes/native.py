@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any
+from typing import Any, get_args
 from xml.sax.saxutils import escape
+
+from src.state import ChartTypeLiteral
 
 LAYOUT = ("w", "h", "grow", "alignSelf", "minW", "maxW", "minH", "maxH")
 _NUM = re.compile(r"-?\d+(?:[.,]\d+)*(?:\.\d+)?")
@@ -85,12 +87,13 @@ def table(comp: dict, attrs: dict, theme: dict) -> str:
     return "".join(out) + "</Table>"
 
 
-_CHART_TYPES = {"bar", "line", "pie", "area", "doughnut", "radar"}
+_CHART_TYPES = set(get_args(ChartTypeLiteral))
 
 
 def chart(comp: dict, attrs: dict, theme: dict) -> str:
     cd = comp.get("content_data") or {}
     kind = str(cd.get("chart_type") or comp.get("chart_type") or "bar").lower()
+    kind = {"donut": "doughnut"}.get(kind, kind)   # plans saved before the chart_type enum
     kind = kind if kind in _CHART_TYPES else "bar"
     labels = [str(v) for v in cd.get("chart_labels") or []]
     series = cd.get("chart_series") or [{"name": cd.get("chart_title") or "Series 1", "values": cd.get("chart_values") or []}]

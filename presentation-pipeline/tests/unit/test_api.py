@@ -407,6 +407,16 @@ def test_refine_plan_rejects_empty_feedback():
     assert response.status_code == 422
 
 
+def test_unknown_theme_is_a_422_before_any_run():
+    for path, body in (("/generate", {"prompt": "x", "theme": "corporte-slate"}),
+                       ("/plan/outline", {"prompt": "x", "theme": "corporte-slate"}),
+                       ("/plan/outline", {"prompt": "x", "deck_settings": {"theme": "corporte-slate"}}),
+                       ("/plan/refine", {**_REFINE_BODY, "theme": "corporte-slate"})):
+        response = client.post(path, json=body)
+        assert response.status_code == 422, path
+        assert "unknown theme" in response.text, path
+
+
 def _planner_prompts(mock_planner_llm):
     """Extract (system, user) prompt strings from the mocked planner LLM call."""
     invoke = mock_planner_llm.return_value.with_structured_output.return_value.invoke

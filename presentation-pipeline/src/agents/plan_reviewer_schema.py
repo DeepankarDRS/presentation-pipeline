@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 from pydantic import BaseModel, Field
+
+from src.state import PlanReviewIssueTypeLiteral, SeverityLiteral
 
 
 class PlanReviewIssue(BaseModel):
-    severity: Literal["high", "medium", "low"] = Field(
+    severity: SeverityLiteral = Field(
         description="high = plan should be revised before generation; "
                     "medium = noticeable quality gap; "
                     "low = minor improvement opportunity."
@@ -17,13 +17,7 @@ class PlanReviewIssue(BaseModel):
         default=None,
         description="Which slide has the issue. None = deck-level issue.",
     )
-    type: Literal[
-        "narrative_gap",
-        "layout_repeat",
-        "component_mismatch",
-        "content_weak",
-        "missing_data",
-    ] = Field(
+    type: PlanReviewIssueTypeLiteral = Field(
         description="narrative_gap: slide doesn't support the core_hook. "
                     "layout_repeat: several adjacent content/data slides whose layout_hint describes the same arrangement. "
                     "component_mismatch: wrong component kind for the data type. "

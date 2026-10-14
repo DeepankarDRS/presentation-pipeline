@@ -14,6 +14,44 @@ import operator
 from typing import Annotated, Any, Literal, TypedDict
 
 
+# ── Closed value sets ───────────────────────────────────────────────────────
+# One source for every field with a fixed set of values. The LLM schemas
+# (src/agents/*_schema.py) import these, so the LLM can only answer with them;
+# the TypedDicts below use them for the type checker. state.py cannot import
+# from src/agents (its __init__ imports every node, and the nodes import state).
+
+ComponentKindLiteral = Literal[
+    "title", "narrative", "caption", "kpi_row", "bullet_list",
+    "chart", "table", "timeline", "flow", "layer",
+    "tree", "matrix", "process_arrow", "pyramid", "card_grid",
+]
+WeightLiteral = Literal["hero", "peer", "supporting", "minor"]
+SlideTypeLiteral = Literal["cover", "content", "data", "section_break", "closing"]
+# POM 10.3.0 <Chart chartType> = knowledge/core/nodes.yaml chartType_values (test_state_literals.py)
+ChartTypeLiteral = Literal["bar", "line", "pie", "area", "doughnut", "radar"]
+OrientationLiteral = Literal["", "horizontal", "vertical"]
+
+SeverityLiteral = Literal["high", "medium", "low"]
+PlanReviewIssueTypeLiteral = Literal[
+    "narrative_gap", "layout_repeat", "component_mismatch", "content_weak", "missing_data",
+]
+CriticTypeLiteral = Literal["completeness", "fidelity", "structure", "theme", "visual"]
+QuestionTypeLiteral = Literal["single_choice", "multi_choice", "free_text", "numeric"]
+
+ProvenanceLiteral = Literal["user", "sample"]
+PlanSourceLiteral = Literal["fallback"]   # absent = the planner's own plan
+PlanFlagCodeLiteral = Literal[            # what plan_checks writes to plan_flags (_flag, sparse_flag);
+    "PLAN_EMPTY", "PLAN_INSTRUCTION_TEXT", "PLAN_DUPLICATE_ITEMS", "SLIDE_SPARSE", "KPI_VALUE_TEXT",
+]                                         # CARD_LINES_DROPPED only drives a re-ask
+RetryTierLiteral = Literal[0, 1, 2]       # 0 = initial, 1 = PATCH, 2 = REGENERATE (repairer.py)
+StepLiteral = Literal[                    # step names in usage records (llm_client.usage_record, src/planning)
+    "elicitor", "outline_planner", "slide_component_planner", "plan_reviewer",
+    "generator", "repairer", "critic", "visual_critic", "visual_repairer", "slide_editor",
+    "storyline", "slide_designer",        # Test 1 planning path (src/planning/graph.py)
+]
+VisualRepairOutcomeLiteral = Literal["improved", "noop", "error"]
+
+
 # ── Sub-structures ──────────────────────────────────────────────────────────
 
 class OutlineSlide(TypedDict, total=False):
@@ -33,27 +71,41 @@ class OutlinePlan(TypedDict, total=False):
     slides: list[OutlineSlide]
 
 
+class PlanReviewIssue(TypedDict, total=False):
+    severity: SeverityLiteral
+    slide_index: int | None   # None = deck-level issue
+    type: PlanReviewIssueTypeLiteral
+    description: str
+    suggestion: str
+
+
 class PlanReview(TypedDict, total=False):
-    confidence_score: float
+    confidence_score: float   # 0.0 - 1.0
     approved: bool
     summary: str
-    issues: list[dict[str, Any]]
+    issues: list[PlanReviewIssue]
 
 
 class ComponentPlan(TypedDict, total=False):
     component_id: str
-    kind: str
+    kind: ComponentKindLiteral
     count: int
-    chart_type: str
+    chart_type: ChartTypeLiteral
     series_count: int
     columns: int
     rows: int
     items: int
     content_summary: str
     content_data: dict[str, Any]
-    orientation: str
+    orientation: OrientationLiteral
     design_hint: str
-    weight: str
+    weight: WeightLiteral
+
+
+class PlanFlag(TypedDict):
+    code: PlanFlagCodeLiteral
+    component_id: str   # "" = the whole slide
+    detail: str
 
 
 class SlidePlan(TypedDict, total=False):
@@ -61,15 +113,15 @@ class SlidePlan(TypedDict, total=False):
     slide_title: str   # the headline from the outline planner
     label: str         # kicker from the outline planner
     subtitle: str      # evidence line from the outline planner
-    slide_type: str    # cover | content | data | section_break | closing
+    slide_type: SlideTypeLiteral
     components: list[ComponentPlan]
     layout_hint: str   # freeform layout INTENT (priority/relationships, not pixels)
     content_data: dict[str, Any]
-    data_provenance: dict[str, str]  # key → "user" | "sample"
+    data_provenance: dict[str, ProvenanceLiteral]  # content_data key → source
     capacity_fixes: list[str]        # components converted past capacity.yaml (plan check)
     written_lines: list[str]         # card lines the planner wrote (not in the brief), for review
-    plan_flags: list[dict[str, str]]  # plan_checks findings: {code, component_id, detail} (SLIDE_SPARSE, PLAN_EMPTY ...)
-    plan_source: str                 # "fallback" when the planner failed twice (outline lines as a bullet list)
+    plan_flags: list[PlanFlag]       # plan_checks findings
+    plan_source: PlanSourceLiteral   # "fallback" when the planner failed twice (outline lines as a bullet list)
 
 
 class DeckPlan(TypedDict, total=False):
@@ -81,7 +133,7 @@ class DeckPlan(TypedDict, total=False):
 
 class AttemptRecord(TypedDict, total=False):
     attempt: int
-    tier: int          # 0=initial, 1=patch, 2=regenerate
+    tier: RetryTierLiteral
     errors_in: list[str]
     errors_out: list[str]
     error_sigs: list[str]   # canonical error_signatures() output for this attempt
@@ -93,35 +145,65 @@ class AttemptRecord(TypedDict, total=False):
     tokens_reasoning: int   # part of tokens_out (reasoning models)
     tokens_cached: int      # part of tokens_in served from the prompt cache
     model: str
-    step: str               # pipeline step that made the call (llm_client.usage_record)
+    step: StepLiteral       # pipeline step that made the call (llm_client.usage_record)
     slide_index: int | None  # 0-based; None for a deck-level call
     reask: bool             # a planner re-ask after a failed plan (step 0)
 
 
+class Diagnostic(TypedDict):
+    type: str      # error code, e.g. UNKNOWN_ATTRIBUTE, HARNESS_ERROR
+    message: str
+
+
+class LayoutIssue(TypedDict, total=False):
+    severity: str  # layout_audit: high / medium / low; geometry_audit: error / warning / info
+    code: str
+    message: str
+    tier: str
+
+
 class ValidateResult(TypedDict, total=False):
     ok: bool
-    diagnostics: list[dict[str, str]]
-    warnings: list[dict[str, str]]
+    diagnostics: list[Diagnostic]
+    warnings: list[Diagnostic]
 
 
 class CompileResult(TypedDict, total=False):
     ok: bool
     pptx_path: str | None
-    diagnostics: list[dict[str, str]]
-    warnings: list[dict[str, str]]
+    diagnostics: list[Diagnostic]
+    warnings: list[Diagnostic]
     retryable: bool
+
+
+class CriticIssue(TypedDict, total=False):
+    severity: SeverityLiteral
+    type: CriticTypeLiteral
+    description: str
+    fix: str
+    affected_nodes: list[str]   # visual critic only
 
 
 class CriticResult(TypedDict, total=False):
     passed: bool
-    issues: list[dict[str, Any]]
+    issues: list[CriticIssue]
 
 
 class VisualCriticResult(TypedDict, total=False):
     passed: bool
-    issues: list[dict[str, Any]]
+    issues: list[CriticIssue]
     screenshot_path: str | None
     repair_hints: dict[str, Any]
+
+
+class ElicitationQuestion(TypedDict, total=False):
+    key: str
+    question: str
+    type: QuestionTypeLiteral
+    options: list[str]
+    required: bool
+    default: str
+    hint: str
 
 
 # ── Main state ──────────────────────────────────────────────────────────────
@@ -147,7 +229,7 @@ class PresentationState(TypedDict, total=False):
 
     # ── Elicitation (elicitor writes; API writes answers before resume) ──
     elicitation_needed: bool
-    elicitation_questions: list[dict[str, Any]]
+    elicitation_questions: list[ElicitationQuestion]
     elicitation_answers: dict[str, str] | None
 
     # ── Outline plan (outline_planner writes, user may edit via API) ──
@@ -177,7 +259,6 @@ class PresentationState(TypedDict, total=False):
     # ── Multi-slide iteration ──
     current_slide_index: int
     completed_slides: Annotated[list[dict[str, Any]], operator.add]
-    previous_slide_archetype: str | None
 
     # ── Generation (generator writes, validator/critic/repairer read) ──
     current_xml: str
@@ -188,7 +269,7 @@ class PresentationState(TypedDict, total=False):
     normalize_result: dict[str, Any] | None
     validate_result: ValidateResult | None
     compile_result: CompileResult | None
-    layout_issues: list[dict[str, str]]
+    layout_issues: list[LayoutIssue]
 
     # ── Critique (critic writes) ──
     critic_result: CriticResult | None
@@ -204,12 +285,12 @@ class PresentationState(TypedDict, total=False):
     pre_critic_score: int
 
     # ── Retry (repairer writes) ──
-    retry_tier: int
+    retry_tier: RetryTierLiteral
     retry_count: int
     retry_budget: int
     visual_repair_budget: int
     visual_repair_count: int
-    visual_repair_outcome: str | None
+    visual_repair_outcome: VisualRepairOutcomeLiteral | None
     stall_detected: bool
 
     # ── Output ──
@@ -236,7 +317,14 @@ def initial_state(
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,
 ) -> PresentationState:
-    """Create a fully-initialized starting state for the graph."""
+    """Create a fully-initialized starting state for the graph.
+
+    An unknown theme_name raises here, at run start; "" = the default theme.
+    """
+    if theme_name:
+        from src.agents.style_resolver import theme_names  # lazy: src.agents imports state
+        if theme_name not in theme_names():
+            raise ValueError(f"unknown theme '{theme_name}'; palettes.yaml has: {', '.join(theme_names())}")
     return PresentationState(
         run_id=run_id,
         mode="single",
@@ -262,7 +350,6 @@ def initial_state(
         refine_feedback="",
         current_slide_index=0,
         completed_slides=[],
-        previous_slide_archetype=None,
         contract=None,
         theme_element="",
         resolved_theme=None,

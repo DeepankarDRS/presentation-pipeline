@@ -23,7 +23,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, get_args
 
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -35,7 +35,7 @@ from src.agents.settings_mapper import DeckSettings, compute_provenance, setting
 from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
                                       flag_written_lines, visual_directions)
-from src.state import ComponentPlan, PresentationState, SlidePlan
+from src.state import ChartTypeLiteral, ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, length_limit_usage, unpack_raw, usage_record
 from src.utils.text_clean import clean_data
 
@@ -59,6 +59,26 @@ _jinja_env = Environment(
 _jinja_env.globals.update(cap=capacity(), span=span)
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
+
+_CHART_TYPES = set(get_args(ChartTypeLiteral))
+_CHART_TYPE_ALIASES = {"donut": "doughnut"}   # the old schema text asked for "donut"
+
+
+def _settle_chart_type(comp: ComponentPlan, comp_data: dict[str, Any]) -> None:
+    """One chart type POM accepts, on the component and in its content_data.
+
+    The schema field is checked; content_data_json is a free string, so its
+    chart_type is aliased and dropped when unknown (the generator picks one).
+    """
+    raw = str(comp.get("chart_type") or comp_data.get("chart_type") or "").strip().lower()
+    chart_type = _CHART_TYPE_ALIASES.get(raw, raw)
+    if chart_type in _CHART_TYPES:
+        comp["chart_type"] = chart_type
+        comp_data["chart_type"] = chart_type
+    elif raw:
+        logger.warning(f"slide_component_planner: unknown chart_type '{raw}' on "
+                       f"'{comp.get('component_id')}', dropped")
+        comp_data.pop("chart_type", None)
 
 def _unreadable(text: Any, exc: Exception) -> str:
     """What a log needs to name why content_data_json did not parse: the error, the length,
@@ -114,6 +134,8 @@ def _planner_slide_to_state(
             )
             comp_data = {}
 
+        if c.kind == "chart":
+            _settle_chart_type(comp, comp_data)
         comp["content_data"] = comp_data
         components.append(comp)
 

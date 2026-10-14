@@ -334,8 +334,7 @@ def test_generator_prompts_draw_the_planned_header_and_invent_nothing():
             "slide_type": "data", "components": [{"kind": "table", "component_id": "t", "count": 1}]}
     for content_data in ({}, {"x": "1"}):
         plan["content_data"] = content_data
-        system, user = _render_prompts({"slide_plans": [plan], "current_slide_index": 0, "contract": {},
-                                        "previous_slide_archetype": "B"})
+        system, user = _render_prompts({"slide_plans": [plan], "current_slide_index": 0, "contract": {}})
         assert "kicker: DEEP-DIVE\n  headline: Search carries sales\n  subtitle: ₹1.32 Cr · 6.35x" in user
         for text in (system, user):
             low = text.lower()

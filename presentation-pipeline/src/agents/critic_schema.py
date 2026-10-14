@@ -6,13 +6,10 @@ guaranteed-valid JSON from the LLM via OpenAI's json_schema response format.
 
 from __future__ import annotations
 
-from typing import Literal
-
 from pydantic import BaseModel, Field
 
-
-CriticSeverityLiteral = Literal["high", "medium", "low"]
-CriticTypeLiteral = Literal["completeness", "fidelity", "structure", "theme", "visual"]
+from src.state import CriticTypeLiteral
+from src.state import SeverityLiteral as CriticSeverityLiteral
 
 
 class CriticIssue(BaseModel):

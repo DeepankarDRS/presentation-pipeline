@@ -19,19 +19,20 @@ from collections.abc import AsyncGenerator, Generator
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import AfterValidator, BaseModel, Field
 
 from src.agents.planner_schema import (
     ComponentKindLiteral,
     SlideTypeLiteral,
 )
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
+from src.agents.style_resolver import theme_names
 from src.graph import compile_graph
 from src.state import (
     ComponentPlan,
@@ -57,6 +58,16 @@ app.add_middleware(
 
 # ── Pydantic models ────────────────────────────────────────────────────────
 
+def _known_theme(name: str) -> str:
+    """A request's theme must be a palettes.yaml name ("" = the default): 422, not a failed run."""
+    if name and name not in theme_names():
+        raise ValueError(f"unknown theme '{name}'; palettes.yaml has: {', '.join(theme_names())}")
+    return name
+
+
+KnownTheme = Annotated[str, AfterValidator(_known_theme)]
+
+
 class CriticMode(str, Enum):
     auto = "auto"
     off = "off"
@@ -64,7 +75,7 @@ class CriticMode(str, Enum):
 
 class GenerateRequest(BaseModel):
     prompt: str
-    theme: str = ""
+    theme: KnownTheme = ""
     critic_mode: CriticMode = CriticMode.off
     deck_min_threshold: int = Field(
         default=1, ge=1, le=20,
@@ -105,7 +116,7 @@ class SlidePlanPayload(BaseModel):
 
 class GenerateFromPlanRequest(BaseModel):
     prompt: str
-    theme: str = ""
+    theme: KnownTheme = ""
     critic_mode: CriticMode = CriticMode.off
     deck_min_threshold: int = Field(default=1, ge=1, le=20)
     supplied_content: dict[str, Any] | None = None
@@ -503,7 +514,7 @@ def _payload_to_slide_plans(
 
 class OutlineRequest(BaseModel):
     prompt: str
-    theme: str = ""
+    theme: KnownTheme = ""
     deck_min_threshold: int = Field(default=6, ge=1, le=20)
     supplied_content: dict[str, Any] | None = None
     deck_settings: dict[str, Any] | None = None
@@ -666,6 +677,10 @@ async def create_outline(request: OutlineRequest) -> dict[str, Any]:
         except Exception:
             pass
 
+    try:
+        _known_theme(deck_settings.get("theme", request.theme))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
     state = initial_state(
         run_id=run_id,
         raw_request=request.prompt,
