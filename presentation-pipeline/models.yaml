@@ -24,7 +24,7 @@ steps:
     model: gpt-5-mini
     reasoning_effort: medium
     temperature: 0.1  # ignored by reasoning models; used again on gpt-4.1 (§9.1 planner 9)
-    max_tokens: 16000  # gpt-4.1 used 4000
+    max_tokens: 24000  # 16000 ran out on reasoning (wide-paid log, 3 first tries); gpt-4.1 used 4000
     response_format: json_schema
   plan_reviewer:
     provider: openai
