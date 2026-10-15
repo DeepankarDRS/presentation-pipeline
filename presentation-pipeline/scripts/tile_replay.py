@@ -98,6 +98,9 @@ def collect() -> list[dict]:
 
 def _parse(xml: str) -> etree._Element:
     xml = re.sub(r"<\?xml[^>]*\?>", "", xml)
+    # the LLM's first XML may hold a bare & ("Travel & commuting"): the normalizer escapes it later, this parse comes
+    # first (combined check 2026-10-15: 6 route-A runs lost their whole result to it)
+    xml = re.sub(r"&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)", "&amp;", xml)
     return etree.fromstring(f"<_r_>{xml}</_r_>".encode("utf-8"), etree.XMLParser(remove_blank_text=True))
 
 
