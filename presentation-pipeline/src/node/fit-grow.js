@@ -1289,6 +1289,14 @@ async function nextCandidate(xml, done) {
             }));
             if (all.length > members.length) members = all;
           }
+          // the cards of a grid fillLoneRows stretched are one group too (an LLM-drawn grid: regrown row by row,
+          // the energy-moments grid drew row 1 at 22 px and row 2 at 11, corpus 2026-10-14)
+          const lone = LONE_GROUPS.get(members[0]?.id);
+          if (lone) {
+            const all = lone.map((id) => L.byId.get(id))
+              .filter((d) => d && STACKS.has(d.type) && !done.has(d.id) && !hasRigid(d) && textTargets(d).length);
+            if (all.length > members.length) members = all;
+          }
           const ids = members.map((m) => m.id);
           const lists = members.map((m) => textTargets(m));
           // peer tiles: the same text slot has the same role in every tile
@@ -2073,6 +2081,7 @@ async function oneLineValues(xml, report) {
 /** One slide (with the document's <Theme> prefix) through every phase. */
 async function fitSlide(inputXml, report, warnings = []) {
   PINNED.clear();
+  LONE_GROUPS.clear();
   let xml = tagNodes(inputXml);
   xml = await respectHeights(xml, report);
   xml = await splitLists(xml, report);
@@ -2085,7 +2094,12 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await growStats(xml, report);
   xml = await growText(xml, report);
   xml = await reserveWrap(xml, report);
-  if (process.env.POM_FIT_LONE !== "0") xml = await fillLoneRows(xml, report);
+  if (process.env.POM_FIT_LONE !== "0") {
+    // the stretched cards are taller than their text: grow numbers and text into them (corpus 2026-10-14: QBR
+    // tiles 110 -> 210 px with the numbers left at their size read as empty cards)
+    const filled = await fillLoneRows(xml, report);
+    if (filled !== xml) xml = await growText(await growStats(filled, report), report);
+  }
   if (process.env.POM_FIT_SPILL !== "0") xml = await fixSpills(xml, report, warnings);
   if (process.env.POM_FIT_CENTRE !== "0") xml = await centreBody(xml, report);
   const stacked = await stackTileIcons(xml, report);
@@ -2119,6 +2133,8 @@ async function fitSlide(inputXml, report, warnings = []) {
 // itself (CHEFFIN 1: stretched first, its numbers grew 54 instead of 62 px). Kept only if nothing spills.
 
 const LONE_GAP = 40;   // px of the band left empty under the row
+// card id -> every card id of its stretched grid (growText grows them as one group)
+const LONE_GROUPS = new Map();
 
 const cardRow = (n) => STACKS.has(n.type) && (n.children ?? []).length >= 2
   && n.children.every((c) => STACKS.has(c.type) && hasBoxStyle(c));
@@ -2137,7 +2153,8 @@ async function fillLoneRows(xml, report) {
       if (b.h - b.pt - b.pb - L.box(c).h < LONE_GAP) return;
       const rows = c.type === "vstack" && !cardRow(c)
         ? c.children.filter((r) => r.id && r.grow === undefined && r.h === undefined).map((r) => r.id) : [];
-      edits.push([c.id, rows]);
+      const cards = rows.length ? c.children.flatMap((r) => (r.children ?? []).filter((k) => k.id).map((k) => k.id)) : [];
+      edits.push([c.id, rows, cards]);
     });
   } finally { L.free(); }
   if (!edits.length) return xml;
@@ -2150,6 +2167,7 @@ async function fillLoneRows(xml, report) {
   try {
     if (spillsOf(T).length || overSlide(T) > 0) return xml;
   } finally { T.free(); }
+  for (const [, , cards] of edits) for (const id of cards) LONE_GROUPS.set(id, cards);
   report.push(`${edits.length} lone row(s) of cards stretched to fill the band they sit in`);
   return out;
 }
