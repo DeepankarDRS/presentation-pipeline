@@ -50,9 +50,10 @@ SERIALIZE_SLIDES: bool = os.getenv("SLIDE_PLANNER_SERIALIZE", "false").lower() =
 
 
 def planner_schema() -> str:
-    """`PLANNER_SCHEMA`: "string" (default, PlannerSlide's content_data_json) or "typed" (PlannerSlideTyped,
-    content as an object; docs/planner-output-schema-research-2026-10-15.md). Read per call."""
-    return "typed" if os.getenv("PLANNER_SCHEMA", "string").strip().lower() == "typed" else "string"
+    """`PLANNER_SCHEMA`: "typed" (default since the 2026-10-15 paid check: PlannerSlideTyped, content as an
+    object) or "string" (PlannerSlide's content_data_json, the old route; docs/planner-output-schema-research-2026-10-15.md).
+    Read per call."""
+    return "string" if os.getenv("PLANNER_SCHEMA", "typed").strip().lower() == "string" else "typed"
 
 # ── Prompt env ──────────────────────────────────────────────────────────────
 

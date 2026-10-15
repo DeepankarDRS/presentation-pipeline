@@ -96,7 +96,7 @@ def main() -> int:
                                                             "parallel); same cost, less time; mind the API rate limit")
     ap.add_argument("--rescore", action="store_true", help="free: rebuild summary.md from runs.json")
     ap.add_argument("--schema", choices=["string", "typed"], default=None,
-                    help="planner output schema (sets PLANNER_SCHEMA; default: the environment's, else string)")
+                    help="planner output schema (sets PLANNER_SCHEMA; default: the environment's, else typed)")
     a = ap.parse_args()
     if a.schema:
         os.environ["PLANNER_SCHEMA"] = a.schema

@@ -122,7 +122,7 @@ def test_typed_reply_and_string_reply_give_the_same_plan():
                                                       "chart_values": [1.5, 2.0]}
 
 
-@pytest.mark.parametrize("env,expected", [(None, "string"), ("typed", "typed"), ("TYPED ", "typed"), ("x", "string")])
+@pytest.mark.parametrize("env,expected", [(None, "typed"), ("typed", "typed"), ("STRING ", "string"), ("string", "string"), ("x", "typed")])
 def test_planner_schema_switch(monkeypatch, env, expected):
     if env is None:
         monkeypatch.delenv("PLANNER_SCHEMA", raising=False)

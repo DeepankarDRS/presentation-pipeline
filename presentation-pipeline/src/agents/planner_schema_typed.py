@@ -1,7 +1,7 @@
 """Typed planner output: each component's content is an object, not JSON inside a string.
 
-`PLANNER_SCHEMA=typed` (env) plans with `PlannerSlideTyped`; the default `string` keeps `PlannerSlide`
-(`content_data_json`). Why: gpt-5-mini under strict json_schema wrote `content_data_json` as a bare `{` or a
+The planner plans with `PlannerSlideTyped` (default since the 2026-10-15 paid check); `PLANNER_SCHEMA=string`
+(env) keeps the old `PlannerSlide` (`content_data_json`). Why: gpt-5-mini under strict json_schema wrote `content_data_json` as a bare `{` or a
 give-up placeholder on ~8 of ~125 planner calls (choice-plans run, 2026-10-15) — the prompt's examples show
 the field as an object, the model starts one inside the string and the grammar closes the string at the first
 unescaped quote. Research and the choice of this design: docs/planner-output-schema-research-2026-10-15.md.

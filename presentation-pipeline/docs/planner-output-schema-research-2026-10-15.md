@@ -222,3 +222,35 @@ Unit tests (`pytest tests/unit -q`): before 1110 pass, after 1139 pass (+29, all
   https://community.openai.com/t/harmony-based-gpt-5-models-return-malformed-structured-outputs-sdk-1-100-2/1353934
 - Local code read: langchain_openai `with_structured_output` / `_convert_to_openai_response_format`, openai
   `lib/_pydantic.py` `to_strict_json_schema` (installed versions above).
+
+## Paid check result (test PC, 2026-10-15, $1.16, `output/card-plans/typed-schema/`)
+
+`card_plan_only --repeat 3 --schema typed --workers 5` at `adebe9d`, against `output/card-plans/choice-plans`
+(the same 18 runs on the string schema, $1.48). `python -m scripts.planner_schema_compare --logs …`:
+
+| | string (choice-plans) | typed |
+|---|---|---|
+| planner calls answered | 119 | 113 |
+| unreadable content fields | 24 | **0** |
+| length-limit hits (24000 output tokens) | 3 | **0** |
+| re-asks | 10 | **2** |
+| fallback plans | 1 | **0** |
+| output tokens p50 / p90 / max | 3438 / 5670 / 19526 | 3254 / 5095 / 6405 |
+| input tokens p50 | 12933 | 14785 |
+| cost | $1.48 | **$1.16** |
+
+Every gate passes (0 unreadable, ≤ 1 empty re-ask, 0 fallbacks, ≤ 3 length hits, p90 output −10%). The two
+re-asks are content checks, not parse failures (agency slide 2 "Recommendation:" narrative read as an
+instruction; XTSY slide 7 title-only impact cards).
+
+Plan quality, same scorer as the structure-loss README:
+- bullet lists 18 → 14; card grids 53 = 53; tables 20 → 24; agency Winners / Weak terms 2 cards in 3 of 3; XTSY
+  slide 2 has no "Show:" list in 3 of 3 (string: 1 of 3).
+- key messages under 60% carried: 17 of 449 (string) vs 18 of 467 (typed), the same; the outline's "Note:" lines all carried (captions
+  16 → 7: the notes moved into narratives and cards).
+- numbers in the key messages missing from the plan: real losses 0 (string) vs 4 (typed): product-launch r3
+  slide 4 kept only the "after" values in its KPI tiles (15 min/wk, 1/quarter, 38ms, 71) and dropped the
+  "before" values (2.3 hrs/wk, 12/quarter, 142ms, 22); r1 / r2 of that slide kept them. One run; watch it.
+- XTSY r1 slide 3: the 7 opportunity areas copied into all 4 lever cards of a matrix (28 bullets). The brief
+  does not say which area belongs to which lever; the string runs kept them as one list beside the cards. Comes
+  from the planner prompt's "put each under the card it belongs to" (structure-loss change 2), not the schema.
