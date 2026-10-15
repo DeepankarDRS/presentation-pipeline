@@ -31,6 +31,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from src.agents.capacity import capacity, enforce_capacity, span
 from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
+from src.agents.planner_schema_typed import PlannerSlideTyped, content_data_of
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
@@ -47,6 +48,12 @@ MAX_PARALLEL_LLM_CALLS: int = int(os.getenv("SLIDE_PLANNER_MAX_PARALLEL", "6"))
 MAX_CONCURRENCY: int = int(os.getenv("SLIDE_PLANNER_MAX_CONCURRENCY", "10"))
 SERIALIZE_SLIDES: bool = os.getenv("SLIDE_PLANNER_SERIALIZE", "false").lower() == "true"
 
+
+def planner_schema() -> str:
+    """`PLANNER_SCHEMA`: "string" (default, PlannerSlide's content_data_json) or "typed" (PlannerSlideTyped,
+    content as an object; docs/planner-output-schema-research-2026-10-15.md). Read per call."""
+    return "typed" if os.getenv("PLANNER_SCHEMA", "string").strip().lower() == "typed" else "string"
+
 # ── Prompt env ──────────────────────────────────────────────────────────────
 
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "slide_component_planner"
@@ -56,7 +63,7 @@ _jinja_env = Environment(
     lstrip_blocks=True,
 )
 # component capacity (knowledge/core/capacity.yaml) — the prompt's limits come from here
-_jinja_env.globals.update(cap=capacity(), span=span)
+_jinja_env.globals.update(cap=capacity(), span=span, content_field="content_data_json")
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
 
@@ -110,13 +117,13 @@ def parse_content_data(text: str) -> dict[str, Any]:
 
 def _planner_slide_to_state(
     idx: int,
-    slide: PlannerSlide,
+    slide: PlannerSlide | PlannerSlideTyped,
     supplied_content: dict[str, Any] | None = None,
     slide_title: str = "",
     label: str = "",
     subtitle: str = "",
 ) -> SlidePlan:
-    """Convert PlannerSlide Pydantic model to SlidePlan TypedDict."""
+    """Convert a PlannerSlide / PlannerSlideTyped Pydantic model to the SlidePlan TypedDict."""
     components: list[ComponentPlan] = []
     merged_content_data: dict[str, Any] = {}
 
@@ -127,25 +134,17 @@ def _planner_slide_to_state(
             count=c.count,
             content_summary=c.content_summary,
         )
-        if c.chart_type:
-            comp["chart_type"] = c.chart_type
-        if c.series_count:
-            comp["series_count"] = c.series_count
-        if c.columns:
-            comp["columns"] = c.columns
-        if c.rows:
-            comp["rows"] = c.rows
-        if c.items:
-            comp["items"] = c.items
-        if c.orientation:
-            comp["orientation"] = c.orientation
-        if c.design_hint:
-            comp["design_hint"] = c.design_hint
-        if c.weight:
-            comp["weight"] = c.weight
+        # a typed component carries only the fields its kind uses
+        for field in ("chart_type", "series_count", "columns", "rows", "items", "orientation", "design_hint",
+                      "weight"):
+            if value := getattr(c, field, None):
+                comp[field] = value  # type: ignore[literal-required]
 
         try:
-            comp_data = clean_data(parse_content_data(c.content_data_json)) if c.content_data_json else {}
+            if hasattr(c, "content"):
+                comp_data = clean_data(content_data_of(c))
+            else:
+                comp_data = clean_data(parse_content_data(c.content_data_json)) if c.content_data_json else {}
         except (json.JSONDecodeError, TypeError) as exc:
             logger.warning(
                 f"slide_component_planner: invalid content_data_json for "
@@ -236,7 +235,10 @@ def plan_single_slide(
 
     supplied_for_slide = _filter_supplied_content_for_slide(supplied_content, slide)
 
+    typed = planner_schema() == "typed"
+    content_field = "content" if typed else "content_data_json"
     user_msg = _jinja_env.get_template("user.j2").render(
+        content_field=content_field,
         slide=slide,
         core_hook=outline_plan.get("core_hook", ""),
         deck_context=all_slide_titles,
@@ -247,12 +249,12 @@ def plan_single_slide(
         repair_context=repair_context,
     )
     system_msg = _jinja_env.get_template("system.j2").render(
-        hint_capabilities=planner_capabilities_section(),
+        hint_capabilities=planner_capabilities_section(), content_field=content_field,
     )
 
     llm = get_llm("slide_component_planner")
     structured_llm = llm.with_structured_output(
-        PlannerSlide, method="json_schema", include_raw=True,
+        PlannerSlideTyped if typed else PlannerSlide, method="json_schema", include_raw=True,
     )
 
     raw_result = structured_llm.invoke([

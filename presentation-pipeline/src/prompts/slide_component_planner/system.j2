@@ -200,7 +200,7 @@ Good layout_hints:
 
 ## Per-Component content_data Requirements
 
-CRITICAL: Every component MUST have its own content_data_json. Data must NEVER be merged at the slide level.
+CRITICAL: Every component MUST have its own {{ content_field }}. Data must NEVER be merged at the slide level.
 
 ### Mapping key_messages → content_data:
 - A key_message like "Revenue grew 40% YoY to $42.8M" → extract "$42.8M" and "+40% YoY" into the component's content_data (kpi_values, kpi_deltas)
@@ -314,7 +314,7 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "The app grew its base and kept it"}
+      "{{ content_field }}": {"title": "The app grew its base and kept it"}
     },
     {
       "component_id": "headline_kpis",
@@ -322,7 +322,7 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
       "count": 3,
       "weight": "peer",
       "design_hint": "QoQ deltas in positive color",
-      "content_data_json": {
+      "{{ content_field }}": {
         "kpi_labels": ["Monthly active users", "Day-30 retention", "Store rating"],
         "kpi_values": ["2.4M", "38%", "4.6"],
         "kpi_deltas": ["+12% QoQ", "+3 pts", ""],
@@ -336,7 +336,7 @@ Visual emphasis: the growth and retention numbers first; the usage detail below
       "count": 4,
       "weight": "peer",
       "design_hint": "lift the tiles slightly",
-      "content_data_json": {
+      "{{ content_field }}": {
         "kpi_labels": ["Crash-free sessions", "Sessions per user per day", "Average session length", "Support tickets per 1,000 users"],
         "kpi_values": ["99.2%", "3.1", "6m 40s", "4.2"],
         "kpi_deltas": ["", "", "", ""],
@@ -372,7 +372,7 @@ Visual emphasis: the Billing bar stands out against the target
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "Billing tickets take twice as long as any other queue"}
+      "{{ content_field }}": {"title": "Billing tickets take twice as long as any other queue"}
     },
     {
       "component_id": "queue_chart",
@@ -380,7 +380,7 @@ Visual emphasis: the Billing bar stands out against the target
       "chart_type": "bar",
       "weight": "hero",
       "design_hint": "accent color on the Billing bar, muted color for the rest",
-      "content_data_json": {
+      "{{ content_field }}": {
         "chart_type": "bar",
         "chart_title": "Average resolution time (hours)",
         "chart_labels": ["Billing", "Technical", "Onboarding", "Account"],
@@ -391,7 +391,7 @@ Visual emphasis: the Billing bar stands out against the target
       "component_id": "target_note",
       "kind": "narrative",
       "weight": "supporting",
-      "content_data_json": {"text": "Billing is the only queue above the 8h service target"}
+      "{{ content_field }}": {"text": "Billing is the only queue above the 8h service target"}
     }
   ],
   "layout_hint": "queue_chart is the hero; target_note is a slim supporting band below it"
@@ -422,7 +422,7 @@ Visual emphasis: the per-region breakdown; the growth vs margin trade-off
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "The West leads on growth, the North on margin"}
+      "{{ content_field }}": {"title": "The West leads on growth, the North on margin"}
     },
     {
       "component_id": "region_table",
@@ -431,7 +431,7 @@ Visual emphasis: the per-region breakdown; the growth vs margin trade-off
       "rows": 3,
       "weight": "hero",
       "design_hint": "accent on the highest growth and the highest margin cells",
-      "content_data_json": {
+      "{{ content_field }}": {
         "table_columns": ["Region", "Revenue", "Growth", "Margin"],
         "table_rows": [
           ["North", "€12.4M", "+4%", "31%"],
@@ -470,7 +470,7 @@ Visual emphasis: the three groups side by side; the next step stands out
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "Two of four library branches are ready to reopen"}
+      "{{ content_field }}": {"title": "Two of four library branches are ready to reopen"}
     },
     {
       "component_id": "branch_status",
@@ -478,7 +478,7 @@ Visual emphasis: the three groups side by side; the next step stands out
       "items": 3,
       "weight": "hero",
       "design_hint": "Ready in positive, Waiting on inspection in warning, Delayed in negative",
-      "content_data_json": {
+      "{{ content_field }}": {
         "card_layout": "grid",
         "cards": [
           {"title": "Ready to reopen", "bullets": ["Riverside branch", "Hillcrest branch"], "tone": "good", "icon": "check-circle"},
@@ -492,7 +492,7 @@ Visual emphasis: the three groups side by side; the next step stands out
       "kind": "narrative",
       "weight": "supporting",
       "design_hint": "accent border on the callout",
-      "content_data_json": {"text": "Next step: book the Old Town inspection before 12 May"}
+      "{{ content_field }}": {"text": "Next step: book the Old Town inspection before 12 May"}
     }
   ],
   "layout_hint": "branch_status fills the main band as three equal cards; next_step is a slim callout below"
@@ -525,7 +525,7 @@ Visual emphasis: late fixes is the moment to win
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "Teams open the tool at five moments in the working day"}
+      "{{ content_field }}": {"title": "Teams open the tool at five moments in the working day"}
     },
     {
       "component_id": "usage_moments",
@@ -533,7 +533,7 @@ Visual emphasis: late fixes is the moment to win
       "items": 5,
       "weight": "hero",
       "design_hint": "inverted panel on the Late fixes card; clock icon in each card",
-      "content_data_json": {
+      "{{ content_field }}": {
         "card_layout": "grid",
         "cards": [
           {"title": "Stand-up", "tag": "09:00-09:30", "body": "The board is reviewed live with the whole team"},
@@ -556,4 +556,4 @@ Visual emphasis: late fixes is the moment to win
 
 ## Output
 
-Return one PlannerSlide with all fields populated: slide_type, components (each with component_id, content_data_json, weight, and design_hint), and layout_hint.
+Return one PlannerSlide with all fields populated: slide_type, components (each with component_id, {{ content_field }}, weight, and design_hint), and layout_hint.
