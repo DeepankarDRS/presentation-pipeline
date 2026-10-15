@@ -350,3 +350,43 @@ What to read: agency slide 2 (Winners / Weak terms as cards or one list per grou
 XTSY slide 3 (opportunity areas under the matrix cards, no written lines), XTSY slide 2 (no "Show:" list),
 no speaker notes anywhere, re-asks per run vs 32 / 210 plans, fallbacks 0, length-limit lines in `run.log`, and
 that QBR / product-launch card slides stay cards.
+
+### Paid check result (test PC, 2026-10-15, $1.48, `output/card-plans/choice-plans/`)
+
+`card_plan_only --repeat 3 --workers 5` at `14f95ce`, compared with the same 18 runs at `cd5b5e9`-era prompts
+(`output/card-plans/card-plans`, 2026-10-13, $1.52). No API or rate-limit errors with 5 workers.
+
+| | before (10-13) | after (10-15) |
+|---|---|---|
+| bullet lists | 34 | **18** |
+| … label_detail lists (class b) | 7 | **1** |
+| … named-item lists | 12 | 9 |
+| card grids | 45 | 53 |
+| speaker-note key_messages in the outline | 18 | **0** |
+| re-asks: instruction text / card lines | 10 / 4 | **0 / 0** |
+| re-asks: empty components (unreadable JSON) / call failed | 6 / 1 | 7 / 2 |
+| fallbacks (failed twice) | 0 | 1 (XTSY r2 slide 6) |
+| K4 fired | (not built) | 0: the planner no longer drew the 9 city cards |
+
+Per slide:
+- **Agency slide 2:** Winners / Weak terms are 2 cards (one per group) in 3 of 3 (before: a list in 2, cards per term
+  in 1). The cities: an 8-item list once, 3 cards once, folded into the list once; no 9-card grid, so K4 had
+  nothing to do.
+- **XTSY slide 2:** the "Show:" topics list is gone in 1 of 3. In the other 2 the outline dropped the "Show:"
+  label and wrote the topics as a plain message, so code cannot tell them from content. The outline prompt line
+  did not hold; open.
+- **XTSY slide 3:** the 7 opportunity areas are still a list beside the 4 lever cards in 3 of 3. That is right for
+  this brief: it does not say which area belongs to which lever, and the prompt forbids assigning items to cells
+  the brief did not. What remains wrong: in 2 of 3 the planner wrote its own card lines paraphrasing the areas
+  (flagged `body_source: written`, shown to the user for review).
+- **XTSY slide 6:** the benefits beside the flow became cards in 2 of 3 (list in 1). Change 2 says a list for
+  supporting items; the cards fill the slide, so not harmful, but the rule did not steer it.
+- QBR / launch card slides stay cards.
+
+**Failures now come from one cause: `content_data_json` is JSON written inside a string.** `run.log` has 23
+unreadable fields in about 8 of ~125 planner calls. 13 are a bare `{`; the rest are the model giving up on the
+string form ("content_data_json:INVALID_PLACEHOLDER_REPLACED_BY_VALID_JSON",
+"design_hint_raw_workaround_field_ignore_if_parser_accepts_objects…"). No parser can recover them. Plus 3 first
+tries that spent all 24000 output tokens on reasoning (qbr r3 s2, CHEFFIN r2 s4, XTSY r2 s5 — the last then
+failed twice → fallback). Proposed next step: a typed `content_data` object in `PlannerSlide` instead of the
+JSON string (per-kind fields), which removes the parse step; needs its own paid planning check.
