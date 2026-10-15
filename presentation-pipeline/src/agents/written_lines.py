@@ -29,7 +29,35 @@ def from_brief(line: str, brief_text: str) -> bool:
     return sum(w in have for w in words) / len(words) >= BRIEF_OVERLAP
 
 
-_DIRECTION = re.compile(r"^\s*(visual|design|style|look|layout)\s*:\s*", re.I)
+# a direction for building the slide, not slide text: "Visual: ...", "Visual Suggestion: ..." (agency format), and a
+# bare "Show: a, b, c" (XTSY slide 2: topics to cover, drawn as a 3-item list in every XTSY run)
+_DIRECTION = re.compile(r"^\s*(visual(?:\s+(?:suggestions?|directions?|ideas?))?|design|style|look|layout|show)\s*:\s*",
+                        re.I)
+# presenter notes: never on the slide ("Speaker Notes: ...": 18 outline messages in the 29 plan-only runs, written by
+# the outline for the agency brief's requested format, drawn as a 6-item list on the pillars slide)
+NOTES_LABEL = re.compile(r"^\W*((speaker|presenter|slide)\s+notes?|talking points?|presenter script)\s*[:\-–—]", re.I)
+# "Show benefits: a; b" - a direction verb in front of a content label; the label and its items are content
+_SHOW_LABEL = re.compile(r"^(\W*)show\s+(?!how\b|that\b|the\b|where\b|why\b)([A-Za-z][^:]{0,40}):", re.I)
+
+
+def settle_direction_lines(slide: dict[str, Any]) -> list[str]:
+    """Clean one outline slide's key_messages in place: presenter notes dropped, "Show <label>:" made "<Label>:".
+    "Visual:" / "Show:" directions stay in key_messages (the planner reads them as design input; code keeps them out
+    of the slide's content, see `visual_directions`). Returns plain-words notes."""
+    notes: list[str] = []
+    keep = []
+    for msg in slide.get("key_messages") or []:
+        text = str(msg or "")
+        if NOTES_LABEL.match(text):
+            notes.append(f"dropped presenter notes from key_messages: {text[:80]}")
+            continue
+        m = _SHOW_LABEL.match(text)
+        if m:
+            label = m.group(2).strip()
+            text = f"{m.group(1)}{label[:1].upper()}{label[1:]}:{text[m.end():]}"
+        keep.append(text)
+    slide["key_messages"] = keep
+    return notes
 _TEXT_KINDS = {"narrative", "caption", "bullet_list"}
 _DESIGN_WORDS = re.compile(r"visual|theme|cues?\b|colou?r|icons?\b|imagery|illustrat|gradient|layout|style|mood|look and feel",
                            re.I)
@@ -52,7 +80,7 @@ def _component_text(comp: dict[str, Any]) -> str:
 def content_line_list(slide: dict[str, Any], directions: list[str]) -> list[str]:
     """The slide's brief lines that are content: not labelled as, or copied from, a design direction."""
     return [m for m in slide.get("key_messages") or []
-            if m and not _DIRECTION.match(m) and not any(from_brief(m, d) for d in directions)]
+            if m and not _DIRECTION.match(m) and not NOTES_LABEL.match(m) and not any(from_brief(m, d) for d in directions)]
 
 
 def content_lines(slide: dict[str, Any], directions: list[str]) -> str:

@@ -7,7 +7,8 @@ carries planner instructions shows up on the slide. Two kinds of check:
   text that is an instruction to the presenter, not slide content (`PLAN_INSTRUCTION_TEXT`).
 * **fixes** (`finalize_plan`) - code repairs what is left: drops an empty caption and any
   instruction text still there, drops a duplicate component (`PLAN_DUPLICATE_ITEMS`) and a card
-  body that repeats its title, and flags a thin slide (`SLIDE_SPARSE`, report only).
+  body that repeats its title, turns many short cards on a full slide into a list (`CARDS_TO_LIST`, rule K4),
+  and flags a thin slide (`SLIDE_SPARSE`, report only).
 
 Every flag lands in `SlidePlan.plan_flags` as {code, component_id?, detail}; each fix also
 writes a plain-words note into `capacity_fixes`, like the other plan checks. Thresholds are an
@@ -19,7 +20,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from src.agents.written_lines import drop_repeated_bodies, from_brief
+from src.agents.written_lines import NOTES_LABEL, drop_repeated_bodies, from_brief
 from src.compiler.value_parts import is_sentence
 
 PLAN_EMPTY = "PLAN_EMPTY"
@@ -53,9 +54,8 @@ _WEIGHT_RANK = {"hero": 0, "peer": 1, "supporting": 2, "minor": 3}
 
 # ── instruction text ────────────────────────────────────────────────────────
 
-# a label that marks presenter notes ("Speaker Notes: Lead with ...", "Talking points: ..."): always instruction text
-_NOTES_LABEL = re.compile(r"^\W*((speaker|presenter|slide)\s+notes?|talking points?)\s*[:\-–—]", re.I)
-# a bare "Note: ..." is NOT a label: it is a normal footnote prefix (launch 6: "Note: SOC2 + HIPAA certification ...")
+# presenter notes (written_lines.NOTES_LABEL) are always instruction text; a bare "Note: ..." is NOT a label: it is
+# a normal footnote prefix (launch 6: "Note: SOC2 + HIPAA certification ...")
 # verbs that only address a presenter: always instruction text at the start of slide text
 _PRESENTER_VERB = re.compile(
     r"^\W*(walk (?:the audience |them |everyone )?through|talk (?:the audience )?through|lead with|"
@@ -75,7 +75,7 @@ def is_instruction_text(text: str, brief_text: str) -> bool:
     t = (text or "").strip()
     if not t:
         return False
-    if _NOTES_LABEL.match(t) or _PRESENTER_VERB.match(t) or _ADDRESSES_SLIDE.search(t):
+    if NOTES_LABEL.match(t) or _PRESENTER_VERB.match(t) or _ADDRESSES_SLIDE.search(t):
         return True
     return bool(_PLANNER_VERB.match(t)) and not from_brief(t, brief_text)
 
@@ -153,7 +153,8 @@ def find_problems(plan: dict[str, Any], brief_text: str) -> list[dict[str, str]]
     return problems
 
 
-_BRIEF_PIECES = re.compile(r"\n|(?:^|\s)[*•·]\s|;")   # " - " is kept: it often joins a title to its line
+# a line, a bullet, a ";" item or a sentence; " - " is kept: it often joins a title to its line
+_BRIEF_PIECES = re.compile(r"\n|(?:^|\s)[*•·]\s|;|(?<=[a-z0-9)])\.\s+(?=[A-Z])")
 
 
 def dropped_card_lines(comp: dict[str, Any], brief_text: str) -> list[str]:
@@ -345,6 +346,66 @@ def sparse_flag(plan: dict[str, Any]) -> dict[str, str] | None:
             "detail": f"thin slide: about {total:.1f} units of content (limit {SPARSE_UNITS})"}
 
 
+# ── dense slides (rule K4, docs/presentation-rules-draft-2026-10-15.md) ─────
+
+CARDS_TO_LIST = "CARDS_TO_LIST"
+# K4 thresholds, set on the saved plans (docs/eval/structure-loss/README.md, "K4"): the agency Keyword & City slide's
+# other components hold 103-132 words in all 5 saved plans; every other slide with a 6+ card grid holds <= 53.
+DENSE_REST_WORDS = 80   # words in the slide's other components that make it dense
+MANY_CARDS = 6          # a grid of at least this many cards ...
+SHORT_CARD_WORDS = 6    # ... most of them (2 in 3) with at most this many words of body and bullets
+_NOT_TEXT = {"tone", "icon", "key_phrase", "card_layout", "chart_type", "direction", "layout", "body_source",
+             "kpi_directions", "kpi_tones", "kpi_icons", "focus_card", "x", "y"}
+
+
+def content_words(value: Any) -> int:
+    """Words the audience reads in a content_data value (a number counts one; tones, icons and layout keys none)."""
+    if isinstance(value, str):
+        return len(value.split())
+    if isinstance(value, dict):
+        return sum(content_words(v) for k, v in value.items() if k not in _NOT_TEXT)
+    if isinstance(value, (list, tuple)):
+        return sum(content_words(v) for v in value)
+    return 1 if isinstance(value, (int, float)) and not isinstance(value, bool) else 0
+
+
+def rest_words(plan: dict[str, Any], comp: dict[str, Any]) -> int:
+    """How full the slide is without `comp`: the words of its other components (headline and captions aside)."""
+    return sum(content_words(c.get("content_data") or {}) for c in plan.get("components") or []
+               if c is not comp and c.get("kind") not in ("title", "caption"))
+
+
+def cards_to_list(plan: dict[str, Any]) -> list[str]:
+    """K4: on a slide already full, a grid of many short cards becomes a bullet_list. Nine cards beside a table, two
+    lists and three paragraphs made POM squeeze a text box to zero height (agency Keyword & City, 2026-10-13 / 15).
+    Each card becomes one item, "title: body; bullets", word for word; cards with the same lines share one item
+    ("Hyderabad, Chennai: Needs immediate review"). Grids of steps or a matrix, and grids on a slide with room, stay
+    cards: they fill the slide's spare space."""
+    notes: list[str] = []
+    for comp in plan.get("components") or []:
+        data = comp.get("content_data") or {}
+        if comp.get("kind") != "card_grid" or (data.get("card_layout") or "grid") != "grid":
+            continue
+        cards = [c for c in data.get("cards") or [] if isinstance(c, dict) and str(c.get("title") or "").strip()]
+        short = sum(len(" ".join(_card_lines(c)).split()) <= SHORT_CARD_WORDS for c in cards)
+        rest = rest_words(plan, comp)
+        if len(cards) < MANY_CARDS or 3 * short < 2 * len(cards) or rest < DENSE_REST_WORDS:
+            continue
+        groups: dict[str, list[str]] = {}
+        for card in cards:
+            groups.setdefault("; ".join(_card_lines(card)), []).append(" ".join(str(card["title"]).split()))
+        bullets = [f"{', '.join(titles)}: {lines}" if lines else ", ".join(titles) for lines, titles in groups.items()]
+        comp["kind"] = "bullet_list"
+        comp["content_data"] = {"bullets": bullets}
+        comp["items"] = comp["count"] = len(bullets)
+        comp["design_hint"] = "bold each item's lead-in"
+        cid = comp.get("component_id", "")
+        notes.append(f"{cid}: card_grid of {len(cards)} short cards on a full slide ({rest} words in the other "
+                     f"components) -> bullet_list of {len(bullets)} items")
+        _flag(plan, CARDS_TO_LIST, cid, notes[-1])
+    return notes
+
+
 _TONES = {"good": "good", "positive": "good", "bad": "bad", "negative": "bad", "watch": "watch", "warning": "watch"}
 
 
@@ -521,6 +582,7 @@ def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
     notes = drop_instruction_text(plan, brief_text)
     notes += drop_repeated_bodies(plan)
     notes += drop_duplicate_items(plan)
+    notes += cards_to_list(plan)
     for comp in plan.get("components") or []:
         if is_empty(comp):
             _flag(plan, PLAN_EMPTY, comp.get("component_id", ""), f"{comp.get('kind')} has no content")

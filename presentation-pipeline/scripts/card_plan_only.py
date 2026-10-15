@@ -1,6 +1,7 @@
 """Card tile nodes, paid check part 1 (docs/tile-nodes-spec-2026-10-12.md §11): planning-only runs of the main graph.
 
     python -m scripts.card_plan_only --repeat 3 --label card-plans --bundle      # test PC (OPENAI_API_KEY), ~$1.30
+    python -m scripts.card_plan_only --repeat 3 --label card-plans --bundle --workers 5   # 5 decks at once, same cost
     python -m scripts.card_plan_only --label card-plans --rescore                # free: summary.md again
 
 Runs the real graph up to the style resolver (scripts.kpi_plan_only.plan_case) for the six decks of the card paid
@@ -8,7 +9,7 @@ check, so no slide is generated. Per card_grid it records what the planner gave 
 key phrases, icons, cards without a line, and the plan flags (CARD_LINES_DROPPED re-asks). scripts.card_paid then
 draws the slides of docs/eval/card-nodes/paid-inputs.json on these plans (--plans <label>).
 
-Writes output/card-plans/<label>/: runs.json (every run's slide plans), summary.md; --bundle zips the folder.
+Writes output/card-plans/<label>/: runs.json (every run's slide plans), summary.md, run.log; --bundle zips the folder.
 """
 
 from __future__ import annotations
@@ -17,7 +18,9 @@ import argparse
 import json
 import shutil
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
@@ -83,6 +86,8 @@ def main() -> int:
     ap.add_argument("--repeat", type=int, default=3)
     ap.add_argument("--label", default="card-plans")
     ap.add_argument("--bundle", action="store_true")
+    ap.add_argument("--workers", type=int, default=1, help="decks planned at once (each also plans its slides in "
+                                                            "parallel); same cost, less time; mind the API rate limit")
     ap.add_argument("--rescore", action="store_true", help="free: rebuild summary.md from runs.json")
     a = ap.parse_args()
     out = OUT / a.label
@@ -92,23 +97,36 @@ def main() -> int:
         for r in runs:
             r["cards"] = card_slides(r)
     else:
+        from src.utils.logging_config import add_file_log, setup_logging
+        setup_logging()
+        add_file_log(out / "run.log")   # planner re-asks / failures, uncut; travels in the bundle
+        jobs = [(name, rep) for name in a.cases for rep in range(1, a.repeat + 1)]
+        cases = {name: load_case(name) for name in a.cases}
         runs = []
-        for name in a.cases:
-            case = load_case(name)
-            for rep in range(1, a.repeat + 1):
-                rid = f"cardplan-{name}-r{rep}-{int(time.time())}"
-                print(f"plan {name} r{rep} ...", flush=True)
-                try:
-                    res = plan_case(case, rid)
-                except Exception as e:   # one failure must not cost the other runs
-                    print(f"  failed: {e}", flush=True)
-                    res = {"outline": {}, "slide_plans": [], "cost_usd": 0.0, "error": str(e)[:300]}
-                run = {"case": name, "repeat": rep, "run_id": rid, **res}
-                run["cards"] = card_slides(run)
+        lock = threading.Lock()
+
+        def one(job: tuple[str, int]) -> None:
+            name, rep = job
+            rid = f"cardplan-{name}-r{rep}-{int(time.time())}"
+            print(f"plan {name} r{rep} ...", flush=True)
+            try:
+                res = plan_case(cases[name], rid)
+            except Exception as e:   # one failure must not cost the other runs
+                print(f"  {name} r{rep} failed: {e}", flush=True)
+                res = {"outline": {}, "slide_plans": [], "cost_usd": 0.0, "error": str(e)[:300]}
+            run = {"case": name, "repeat": rep, "run_id": rid, **res}
+            run["cards"] = card_slides(run)
+            with lock:   # runs.json after every run, in case order, so a stopped run keeps what it has
                 runs.append(run)
-                print(f"  ${res['cost_usd']:.3f}; card slides " + ", ".join(
+                runs.sort(key=lambda r: (a.cases.index(r["case"]), r["repeat"]))
+                print(f"  {name} r{rep} ${res['cost_usd']:.3f}; card slides " + ", ".join(
                     f"s{s['slide']} {s['layout']} x{s['n']}" for s in run["cards"]), flush=True)
-                (out / "runs.json").write_text(json.dumps(runs, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
+                (out / "runs.json").write_text(json.dumps(runs, indent=1, ensure_ascii=False, default=str),
+                                               encoding="utf-8")
+
+        # each run plans its own slides in parallel already (SLIDE_PLANNER_MAX_PARALLEL); --workers runs decks at once
+        with ThreadPoolExecutor(max_workers=max(1, a.workers)) as pool:
+            list(pool.map(one, jobs))
     (out / "runs.json").write_text(json.dumps(runs, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
     (out / "summary.md").write_text(summary(runs), encoding="utf-8")
     print(out / "summary.md")

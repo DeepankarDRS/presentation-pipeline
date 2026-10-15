@@ -89,6 +89,25 @@ def _unreadable(text: Any, exc: Exception) -> str:
     return f"{exc} ({len(text)} chars), starts {text[:160]!r}{near}"
 
 
+def parse_content_data(text: str) -> dict[str, Any]:
+    """content_data_json as a dict. Besides plain JSON it reads one object with text around it: gpt-5-mini sometimes
+    repeats the field name inside the string (`content_data_json": {"title": ...}`, combined run 2026-10-15: two
+    components left empty, the slide re-asked). Raises JSONDecodeError when there is no object to read."""
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as exc:
+        start = text.find("{") if isinstance(text, str) else -1
+        if start <= 0:
+            raise
+        try:
+            data, _ = json.JSONDecoder().raw_decode(text, start)
+        except json.JSONDecodeError:
+            raise exc from None
+    if not isinstance(data, dict):
+        raise TypeError(f"content_data_json is a {type(data).__name__}, not an object")
+    return data
+
+
 def _planner_slide_to_state(
     idx: int,
     slide: PlannerSlide,
@@ -126,7 +145,7 @@ def _planner_slide_to_state(
             comp["weight"] = c.weight
 
         try:
-            comp_data = clean_data(json.loads(c.content_data_json)) if c.content_data_json else {}
+            comp_data = clean_data(parse_content_data(c.content_data_json)) if c.content_data_json else {}
         except (json.JSONDecodeError, TypeError) as exc:
             logger.warning(
                 f"slide_component_planner: invalid content_data_json for "
@@ -183,7 +202,8 @@ def _filter_supplied_content_for_slide(
 def brief_text_for(slide: dict[str, Any], supplied_content: dict[str, Any] | None) -> str:
     """Everything the brief says for this slide: what a plan line has to come from."""
     supplied_for_slide = _filter_supplied_content_for_slide(supplied_content, slide)
-    return " ".join([*(slide.get("key_messages") or []), slide.get("slide_title", ""),
+    # one line per message: `dropped_card_lines` reads a card's line within one message, never across two
+    return "\n".join([*(slide.get("key_messages") or []), slide.get("slide_title", ""),
                      slide.get("subtitle", ""), slide.get("visual_emphasis", ""),
                      json.dumps(supplied_for_slide or {}, ensure_ascii=False)])
 

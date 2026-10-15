@@ -35,7 +35,7 @@ Read the SHAPE of each key_message to decide which component type fits:
 | Named rows × named columns whose cells are NUMBERS (a grid, even when the brief calls it a "matrix") | table | "Rows: Visibility, Conversion · Columns: Web, App, Store · cells: 42%, 31%, 18% …" |
 | Named rows × named columns whose cells are WORDS (levers × platforms, capabilities × teams) | card_grid (card_layout "matrix") | "Visibility — Web: search expansion · App: home-screen placement · Store: window displays" |
 | Entity + single metric (3+ entities) | chart | "Bengaluru 0.45x · Hyderabad 0.31x · Chennai 0.28x" |
-| Categorized list (items grouped under labels) | bullet_list | "Winners: brand exact, paneer · Weak: butter chicken phrase, instant food" |
+| Categorized list (items grouped under labels) | card_grid (a card per group, its items as bullets) when the slide has room; bullet_list (an item per group) when the slide is already full | "Ready: export, search · Blocked: billing sync, single sign-on" |
 | Ordered sequence of ≤ {{ cap.process_arrow['items'][1] }} steps, labels ≤ {{ cap.process_arrow.max_label_words }} words | process_arrow (full slide width) | "Discovery → Design → Build → Test → Deploy" |
 | Parallel items that are not a sequence (moments, pillars, impact areas, capabilities, data sources), with or without a line each | card_grid (card_layout "grid") | "Morning check-in: guests confirm the day · Lunch booking: short-notice tables · Late room service" |
 | Ordered phases or steps that each carry detail (a 90-day plan, a workflow) | card_grid (card_layout "steps") | "Month 1 Audit: category review, search audit · Month 2 Activate: search scaling · Month 3 Scale: automation" |
@@ -53,7 +53,8 @@ Read the SHAPE of each key_message to decide which component type fits:
 - Named rows × named columns → **table** when the cells are numbers, **card_grid** (matrix layout) when the cells are words — even when the brief calls it a "matrix" or "opportunity matrix". A table of repeated sentences reads as a wall of text. When the brief names the rows and columns but NOT what goes in each cell (e.g. rows = levers, columns = platforms, plus a separate list of opportunity areas), do not fill cells with the row or column names ("Visibility — Zepto" says nothing) and do not assign items to cells the brief didn't: make a card_grid with one card per row whose bullets are the listed items that belong to that row, and name the columns in the card tags or the layout_hint ("applies to Zepto · Blinkit · Instamart"). The **matrix** kind is only a 2×2 positioning map: use it only when the key_messages say where each item sits on both axes — never make up positions.
 - Sequential steps WITH detail per step → **card_grid** (steps layout: a card per step, joined by arrows), not process_arrow + a separate bullet_list
 - Items with no order between them → **card_grid** (a card per item), never **process_arrow**: chevrons claim a sequence the content doesn't have. **bullet_list** is for plain takeaways, actions and read-outs — not for a set of named items the slide is about
-- Items grouped by category → **bullet_list** (not separate components per category)
+- Items grouped by category → ONE component that keeps the groups visible: a **card_grid** with a card per group and its items as that card's bullets (a **table** when every group has the same fields); when the slide is already full, a **bullet_list** with one item per group ("Ready: export, search"). Never a separate component per group, and never a flat list that loses the group names
+- Short named items beside the slide's main component (a card_grid, flow or layer): when they belong to that component's items (the features of each product tier, the tasks of each phase), put each under the card it belongs to as a bullet — not as a list beside it, and not reworded into a written card line; when they are what the slide is about, they are the cards; a **bullet_list** beside the main component only when they support it (the benefits or outcomes of a workflow)
 
 When a key_message contains MULTIPLE data points of the same type (e.g. 4 quarters of revenue), they belong in a SINGLE component (one chart with 4 data points), not 4 separate components.
 
@@ -115,7 +116,7 @@ Each component renders as a SPECIFIC visual shape. Choosing the wrong one for yo
 
 **matrix** — 2×2 positioning map with axis labels and positioned dot items. Items are placed by x,y coordinates (0-1 range). Best for: categorization along two dimensions — impact/effort, cost/value, risk/reward. Breaks when: items exceed {{ cap.matrix['items'][1] }} (dots overlap), when the two axes aren't genuinely independent dimensions, or when the key_messages don't say where each item sits (the positions would be made up). A grid of named rows × named columns is a table, not a matrix.
 
-**card_grid** — A grid of cards composed from stacks: each card has a title and, when the key_messages give them, a tag (a time window, "Phase 01", "Step 02"), a line of detail and a few bullets; an icon may head each card. Layouts: "grid" (parallel items, {{ span('card_grid', 'per_row') }} per row, wrapping to a second row), "steps" (an ordered sequence, cards joined by arrows) and "matrix" (named rows × named columns, a small card per cell). Highlight (design_hint "inverted panel on the <title> card"), by layout: steps → ONE card, the destination (the final step) unless the headline names another step; a hub or engine with inputs and outputs → ONE card, the centre; grid of parallel items → all cards equal, unless the brief or headline singles one out (then that one); matrix → every cell the brief marks as high-opportunity or priority (several allowed). The grid takes the slide's spare height, so a card_grid slide never looks empty. Best for: consumption moments, pillars, capabilities, data sources reviewed, impact areas, 90-day phases, levers × platforms. Card lines: copy the key_messages' own line for a card when there is one. When the brief gives a card only its name, you MAY write one short qualitative line (at most 12 words) that describes the item itself — no numbers, no company, person or place names, no claims about results or causes — and mark that card "body_source": "written"; these lines are shown to the user for review. Breaks when: the cells are numbers (use table or kpi_row), the items are one list of takeaways (use bullet_list), or there are more than {{ cap.card_grid['items'][1] }} cards.
+**card_grid** — A grid of cards composed from stacks: each card has a title and, when the key_messages give them, a tag (a time window, "Phase 01", "Step 02"), a line of detail and a few bullets; an icon may head each card. Layouts: "grid" (parallel items, {{ span('card_grid', 'per_row') }} per row, wrapping to a second row), "steps" (an ordered sequence, cards joined by arrows) and "matrix" (named rows × named columns, a small card per cell). Highlight (design_hint "inverted panel on the <title> card"), by layout: steps → ONE card, the destination (the final step) unless the headline names another step; a hub or engine with inputs and outputs → ONE card, the centre; grid of parallel items → all cards equal, unless the brief or headline singles one out (then that one); matrix → every cell the brief marks as high-opportunity or priority (several allowed). The grid takes the slide's spare height, so a card_grid slide never looks empty. Best for: consumption moments, pillars, capabilities, data sources reviewed, impact areas, 90-day phases, levers × platforms. Card lines: copy the key_messages' own line for a card when there is one. When the brief gives a card only its name, you MAY write one short qualitative line (at most 12 words) that describes the item itself — no numbers, no company, person or place names, no claims about results or causes — and mark that card "body_source": "written"; these lines are shown to the user for review. Breaks when: the cells are numbers (use table or kpi_row), the items are one list of takeaways (use bullet_list), the slide is already full of other content and the cards would hold only a name or a few words each (use bullet_list: many near-empty cards squeeze the rest of the slide), or there are more than {{ cap.card_grid['items'][1] }} cards.
 
 **tree** — Hierarchical node tree connected by lines, with a single root. Nodes are roughly 120×40px. Best for: org charts, hierarchical breakdowns, decision trees with parent-child relationships. Breaks when: labels exceed 2-3 words, or when the hierarchy has more than 3 levels deep (becomes too compressed).
 
@@ -448,17 +449,17 @@ Visual emphasis: the per-region breakdown; the growth vs margin trade-off
 
 ---
 
-### Example 4 — Categorized list → bullet_list (NOT one component per category)
+### Example 4 — Items grouped under labels → a card per group (NOT a flat list, NOT one component per group)
 
 **Input brief:**
-Title: Campaign Winners and Losers — Q3 FY26
-Narrative role: Summarise which campaign segments are working and which need action.
+Headline: Two of four library branches are ready to reopen
+Narrative role: Show where each branch stands after the renovation, so the board can set the reopening date.
 Key messages:
-1. Winners: brand exact, paneer (ROAS > 1.0x)
-2. Breakeven: dairy exact, instant food (ROAS 0.40–0.60x)
-3. Losing: butter chicken phrase, ready meals broad (ROAS < 0.40x)
-4. Immediate action: pause butter chicken phrase and reallocate ₹12L to brand exact
-Visual emphasis: The winner/loser split is the headline; action item should stand out
+1. Ready to reopen: Riverside branch, Hillcrest branch
+2. Waiting on inspection: Old Town branch
+3. Delayed: Northgate branch (roof repair)
+4. Next step: book the Old Town inspection before 12 May
+Visual emphasis: the three groups side by side; the next step stands out
 
 **Correct output:**
 ```json
@@ -469,28 +470,36 @@ Visual emphasis: The winner/loser split is the headline; action item should stan
       "component_id": "slide_title",
       "kind": "title",
       "weight": "minor",
-      "content_data_json": {"title": "Campaign Winners and Losers — Q3 FY26"}
+      "content_data_json": {"title": "Two of four library branches are ready to reopen"}
     },
     {
-      "component_id": "segment_list",
-      "kind": "bullet_list",
+      "component_id": "branch_status",
+      "kind": "card_grid",
+      "items": 3,
       "weight": "hero",
-      "design_hint": "color-code by sentiment — green prefix for Winners, amber for Breakeven, red for Losing; bold the action item",
+      "design_hint": "Ready in positive, Waiting on inspection in warning, Delayed in negative",
       "content_data_json": {
-        "bullets": [
-          "Winners (ROAS > 1.0x): brand exact, paneer",
-          "Breakeven (ROAS 0.40–0.60x): dairy exact, instant food",
-          "Losing (ROAS < 0.40x): butter chicken phrase, ready meals broad",
-          "Action: pause butter chicken phrase and reallocate ₹12L to brand exact"
+        "card_layout": "grid",
+        "cards": [
+          {"title": "Ready to reopen", "bullets": ["Riverside branch", "Hillcrest branch"], "tone": "good", "icon": "check-circle"},
+          {"title": "Waiting on inspection", "bullets": ["Old Town branch"], "tone": "watch", "icon": "clock"},
+          {"title": "Delayed", "bullets": ["Northgate branch (roof repair)"], "tone": "bad", "icon": "alert-triangle"}
         ]
       }
+    },
+    {
+      "component_id": "next_step",
+      "kind": "narrative",
+      "weight": "supporting",
+      "design_hint": "accent border on the callout",
+      "content_data_json": {"text": "Next step: book the Old Town inspection before 12 May"}
     }
   ],
-  "layout_hint": "segment_list is the whole slide — centered, generous line height"
+  "layout_hint": "branch_status fills the main band as three equal cards; next_step is a slim callout below"
 }
 ```
 
-**Why one bullet_list and not three separate components:** Items under different category labels (Winners / Breakeven / Losing) are still a SINGLE list of parallel statements. Splitting into three components would create three separate visual blocks for no reason. bullet_list supports inline formatting to differentiate the categories visually.
+**Why a card per group:** the group names (Ready / Waiting / Delayed) are the message, so each group keeps its name as a card title with its items listed under it, and the three groups read side by side. A flat list would bury the group names in the item text; three separate components would make three blocks of one kind. On a slide that is already full (a table and two other blocks), the same groups become one bullet_list, one item per group: "Ready to reopen: Riverside branch, Hillcrest branch".
 
 ---
 

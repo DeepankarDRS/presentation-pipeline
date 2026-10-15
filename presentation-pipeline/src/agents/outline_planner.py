@@ -28,6 +28,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.outline_planner_schema import OutlinePlannerOutput
 from src.agents.settings_mapper import DeckSettings, settings_to_constraints
+from src.agents.written_lines import settle_direction_lines
 from src.state import PresentationState
 from src.utils.llm_client import get_llm, unpack_raw, usage_record
 from src.utils.text_clean import clean_data
@@ -130,6 +131,9 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
     if cleaned != outline:
         logger.warning("outline_planner: the model's text had XML-illegal characters (a mangled separator); cleaned")
     outline = cleaned
+    for slide in outline["slides"]:
+        for note in settle_direction_lines(slide):  # presenter notes are not slide content
+            logger.info(f"outline_planner: slide {slide.get('slide_index', 0) + 1} {note}")
 
     logger.info(
         f"outline_planner: {len(result.slides)} slide(s), "
