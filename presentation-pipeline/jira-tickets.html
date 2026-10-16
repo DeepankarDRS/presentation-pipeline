@@ -1,0 +1,851 @@
+<title>Sprint Tickets — Presentation Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --bg:       #F2F6FA;
+    --surface:  #FFFFFF;
+    --surface2: #E8F0F7;
+    --border:   #D0DDE9;
+    --navy:     #0C1A2E;
+    --slate:    #1E3A5F;
+    --steel:    #4A90B8;
+    --steelHov: #3A7A9F;
+    --amber:    #F5A623;
+    --amberBg:  #FEF4E0;
+    --green:    #2ECC71;
+    --greenBg:  #E6FAF0;
+    --text:     #1A2A3A;
+    --textMid:  #4A6070;
+    --textDim:  #7A90A0;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Inter', system-ui, sans-serif;
+    --radius:   8px;
+    --shadow:   0 1px 3px rgba(12,26,46,.08), 0 4px 12px rgba(12,26,46,.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:       #080F1A;
+      --surface:  #111D2E;
+      --surface2: #162234;
+      --border:   #243447;
+      --navy:     #E0EAF5;
+      --slate:    #A8C4DC;
+      --steel:    #5BAAD3;
+      --steelHov: #4A9AC3;
+      --amber:    #F5A623;
+      --amberBg:  #2A1F08;
+      --green:    #3DD68C;
+      --greenBg:  #0C2018;
+      --text:     #D8E8F4;
+      --textMid:  #8AAABF;
+      --textDim:  #4A6A80;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:       #080F1A;
+    --surface:  #111D2E;
+    --surface2: #162234;
+    --border:   #243447;
+    --navy:     #E0EAF5;
+    --slate:    #A8C4DC;
+    --steel:    #5BAAD3;
+    --steelHov: #4A9AC3;
+    --amber:    #F5A623;
+    --amberBg:  #2A1F08;
+    --green:    #3DD68C;
+    --greenBg:  #0C2018;
+    --text:     #D8E8F4;
+    --textMid:  #8AAABF;
+    --textDim:  #4A6A80;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding-inline: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── Header ──────────────────────────────── */
+  .page-header {
+    background: var(--slate);
+    color: #fff;
+    padding: 28px 32px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--steel);
+  }
+  .page-header h1 {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+  }
+  .page-header p {
+    margin: 0;
+    font-size: 12px;
+    opacity: .75;
+    font-family: var(--mono);
+  }
+  .stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-val {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--amber);
+  }
+  .stat-lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    opacity: .65;
+  }
+
+  /* ── Table shell ─────────────────────────── */
+  .table-wrap {
+    padding: 24px 32px 48px;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+  }
+  thead th {
+    background: var(--surface2);
+    color: var(--textMid);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  thead th:first-child { border-radius: var(--radius) 0 0 0; }
+  thead th:last-child  { border-radius: 0 var(--radius) 0 0; }
+
+  /* ── Row ─────────────────────────────────── */
+  tr.day-row {
+    cursor: pointer;
+    transition: background .15s;
+  }
+  tr.day-row td {
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    background: var(--surface);
+  }
+  tr.day-row:hover td { background: var(--surface2); }
+  tr.day-row.open td { background: var(--surface2); }
+
+  .expand-row td {
+    padding: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .expand-inner {
+    padding: 0 14px 16px 56px;
+    display: none;
+  }
+  .expand-inner.open { display: block; }
+
+  /* ── Cell types ──────────────────────────── */
+  .col-date {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--textMid);
+    white-space: nowrap;
+  }
+  .col-day {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  .day-MON { color: var(--steel); }
+  .day-TUE { color: #5B8FD6; }
+  .day-WED { color: #9B6DD6; }
+  .day-THU { color: #D65B8F; }
+  .day-FRI { color: var(--amber); }
+  .day-SUN { color: #6DAE8F; }
+
+  .col-id {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--amberBg);
+    color: #B57800;
+    padding: 3px 7px;
+    border-radius: 4px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  :root[data-theme="dark"] .col-id,
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .col-id { color: var(--amber); } }
+
+  .col-goal {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text);
+  }
+  .col-desc {
+    font-size: 12.5px;
+    color: var(--textMid);
+    max-width: 340px;
+    line-height: 1.55;
+  }
+  .col-toggle {
+    text-align: right;
+    color: var(--steel);
+    font-size: 12px;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .chevron {
+    display: inline-block;
+    transition: transform .2s;
+    font-size: 10px;
+    margin-left: 4px;
+  }
+  tr.day-row.open .chevron { transform: rotate(180deg); }
+
+  /* ── Subgoals ────────────────────────────── */
+  .sub-heading {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--textDim);
+    margin: 12px 0 8px;
+  }
+  .subgoal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .subgoal-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--textMid);
+    line-height: 1.5;
+  }
+  .sub-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--steel);
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  /* ── Status badge ─────────────────────────── */
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 2px 7px;
+    border-radius: 20px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .badge-done { background: var(--greenBg); color: var(--green); }
+  .badge-today { background: var(--amberBg); color: var(--amber); }
+
+  @media (max-width: 600px) {
+    .page-header { padding: 20px 16px 18px; }
+    .table-wrap  { padding: 16px 0 40px; }
+    .expand-inner { padding-left: 16px; }
+    thead th, tr.day-row td { padding: 10px 10px; }
+  }
+</style>
+
+<div class="page-header">
+  <h1>Presentation Pipeline — Sprint Log</h1>
+  <p>Sep 4 – Oct 16, 2026 &nbsp;·&nbsp; One ticket per working session; weekend work folds into Fri (Sat) / Mon (Sun)</p>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-val">28</span>
+      <span class="stat-lbl">Tickets</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val">28</span>
+      <span class="stat-lbl">Work Days</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val">6</span>
+      <span class="stat-lbl">Weeks</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val">360</span>
+      <span class="stat-lbl">Commits</span>
+    </div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table id="ticket-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Day</th>
+        <th>Ticket</th>
+        <th>Main Goal</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<script>
+const tickets = [
+  {
+    date: "Sep 04",
+    day: "FRI",
+    id: "PP-001",
+    goal: "Bootstrap POM Presentation Pipeline",
+    desc: "Stand up the end-to-end LLM-driven pipeline (Phases 0–5) from prompt intake through POM XML generation, compile, and fix runtime blockers.",
+    today: false,
+    subs: [
+      "Implement Phases 0–5: intake, planning, generation, normalization, compile, output",
+      "Fix LLM run failures — load .env, set default contract, auto-fix common schema errors",
+      "Add design language system for production-grade visual output",
+      "Fix visual output issues: card borders, table columns, bullet lists, chart sizing",
+      "Move output to output/runs/<run_id> with per-run isolation",
+      "Route free-form prompts through planner with enriched content_data generation",
+      "Add Phase 6.1 manual critic mode (Accept / Reject / Edit CLI flow)",
+      "Add 5 enterprise stress-test cases for the pipeline"
+    ]
+  },
+  {
+    date: "Sep 07",
+    day: "MON",
+    id: "PP-002",
+    goal: "Layout System, YAML Fixes & Visual Critic",
+    desc: "Wire planner layout patterns to slide selection, fix YAML knowledge base syntax, add visual critic with interactive slide editing, and plan-stage NL feedback.",
+    today: false,
+    subs: [
+      "Add data-rich deck test cases to stress content distribution logic",
+      "Fix layout variety: wire planner layout_pattern to layout selection",
+      "Fix layout_hint to govern positioning only, not content selection",
+      "Fix narrative content dropped when content_data has only chart/kpi keys",
+      "Fix POM syntax errors in layout YAML verified_example blocks",
+      "Fix full-width-chart.yaml: padding syntax, showLegend, chartColors",
+      "Add error-driven knowledge lookup repairer (replaces full system prompt)",
+      "Add visual critic and interactive per-slide editing",
+      "Fix screenshot backend detection bugs and run 404 after server restart",
+      "Add plan-stage NL feedback loop and deck-mode critic/repair fixes"
+    ]
+  },
+  {
+    date: "Sep 08",
+    day: "TUE",
+    id: "PP-003",
+    goal: "Slide Editor Hardening & Hierarchical Planner",
+    desc: "Ground the slide editor in planner context, harden screenshot rendering with COM process isolation, and refactor the monolithic planner into a 4-phase hierarchical LLM pipeline.",
+    today: false,
+    subs: [
+      "Ground slide editor in planner context with gated single-slide replan",
+      "Fix missing theme injection when compiling an edited slide",
+      "Fix stale screenshot URL after a failed per-edit render",
+      "Harden screenshot rendering: diagnostics, retry delay, LibreOffice isolation",
+      "Kill orphaned PowerPoint COM processes that poison later screenshots",
+      "Fix root cause: CoInitialize never called on COM automation thread",
+      "Refactor monolithic planner into 4-phase hierarchical LLM pipeline",
+      "Wire elicitation and outline editing into the Angular frontend",
+      "Simplify plan-editor to a narrative-only outline view",
+      "Add per-slide regenerate to the outline editor"
+    ]
+  },
+  {
+    date: "Sep 09",
+    day: "WED",
+    id: "PP-004",
+    goal: "Repairer Simplification & XML Normalization",
+    desc: "Collapse the 3-tier repairer ladder into PATCH/REGENERATE, normalize slide XML through deck assembly, and add token cap and best-of-N guards.",
+    today: false,
+    subs: [
+      "Reuse tier-1 patch prompt from repairer in the slide edit service",
+      "Fix stall-signature mismatch blocking tier 2/3 escalation",
+      "Collapse repairer 3-tier ladder into PATCH / REGENERATE",
+      "Normalize slide XML uniformly through deck assembly and finalize",
+      "Add token cap guards, truncation/no-op guards, and best-of-N selection"
+    ]
+  },
+  {
+    date: "Sep 10",
+    day: "THU",
+    id: "PP-005",
+    goal: "House Layout Grammar Overhaul",
+    desc: "Replace per-slide layout templates with a single house layout grammar, inject compiled component recipes, and teach the LLM POM hierarchy and objectives.",
+    today: false,
+    subs: [
+      "Revert best-of-N and overflow promotion — compile-only loop is sufficient",
+      "Replace per-slide layout templates with one house layout grammar",
+      "Inject compiled component recipes; catch flexShrink band overflow",
+      "Teach LLM POM hierarchy, fix root alignment and bullet lists, add per-slide objectives",
+      "Make HStack a base node so all slides can use horizontal layouts",
+      "Use core_hook instead of full raw_request as deck context per slide",
+      "Move slide_type authority from outline_planner to slide_component_planner"
+    ]
+  },
+  {
+    date: "Sep 11",
+    day: "FRI",
+    id: "PP-006",
+    goal: "Deck Assembly Resilience — Slide Quarantine",
+    desc: "Quarantine failed slides before deck assembly so a single broken slide cannot sink the entire deck output.",
+    today: false,
+    subs: [
+      "Detect failed slides pre-assembly and route them to a quarantine bucket",
+      "Assemble valid slides into final deck regardless of quarantine count",
+      "Surface quarantine report in pipeline output for user review"
+    ]
+  },
+  {
+    date: "Sep 14",
+    day: "MON",
+    id: "PP-007",
+    goal: "Slide Component Planner — Designer Upgrade",
+    desc: "Port origin/main improvements (per-component content_data, Icon/shadow/gradient) and upgrade the slide_component_planner from a data mapper to a full slide designer.",
+    today: false,
+    subs: [
+      "Port origin/main: per-component content_data, OutlineSlide simplification",
+      "Add Icon, shadow, and gradient support to component knowledge",
+      "Upgrade slide_component_planner from data mapper to slide designer role",
+      "Add comparison test for slide designer upgrade",
+      "Fix weight/design_hint syntax to prevent POM attribute confusion"
+    ]
+  },
+  {
+    date: "Sep 15",
+    day: "TUE",
+    id: "PP-008",
+    goal: "Multi-Slide Bug Fixes & Component Composition",
+    desc: "Fix critical pipeline bugs — data dropped by amount_of_text, stall detection breaking repair, recursion error on 7+ slide decks — and add hierarchical component composition.",
+    today: false,
+    subs: [
+      "Fix amount_of_text dropping user data and layout_hint ignoring spatial intent",
+      "Fix stall detection breaking repair loop; enable full cost tracking",
+      "Fix repairer PATCH using deck-level objective instead of per-slide title",
+      "Fix GraphRecursionError for decks with 7+ slides",
+      "Add hierarchical component composition (group nodes)",
+      "Fix repairer REGENERATE path also using deck-level objective"
+    ]
+  },
+  {
+    date: "Sep 16",
+    day: "WED",
+    id: "PP-009",
+    goal: "Knowledge Graph Integration & Layout Positioning",
+    desc: "Integrate graphify knowledge graph output for codebase visibility, revert experimental height allocator, and fix height overflow / timeline / Layer positioning bugs.",
+    today: false,
+    subs: [
+      "Attempt deterministic height allocator + tighter layout audit (reverted — unstable)",
+      "Revert hierarchical component composition (reverted — needs more design work)",
+      "Add graphify-out knowledge graph output for codebase navigation",
+      "Fix height overflow, timeline collision, and Layer positioning in generator prompts"
+    ]
+  },
+  {
+    date: "Sep 17",
+    day: "THU",
+    id: "PP-010",
+    goal: "Visual Critic as Sole Quality Gate",
+    desc: "Promote the visual critic to replace the text critic and manual mode. Optimize the critic prompt and document the inline-tag same-line rule across all LLM-facing surfaces.",
+    today: false,
+    subs: [
+      "Add text content length limits to prevent auto-sized band overflow",
+      "Promote visual critic to sole quality gate; remove text critic and manual mode",
+      "Fix component_recipes rendering as character-per-line in visual critic prompt",
+      "Slim visual critic prompt: drop house_style, component_recipes, fix_xml_snippet",
+      "Document inline-tag same-line rule across all LLM-facing surfaces",
+      "Update repairer, graph, planner, and supporting infrastructure",
+      "Merge visual-critic-sole-gate branch; fix post-merge dead code and integration test mocks"
+    ]
+  },
+  {
+    date: "Sep 18",
+    day: "FRI",
+    id: "PP-011",
+    goal: "Composition Grammar Rewrite & Repair Budget Split",
+    desc: "Rewrite the composition grammar to allow free VStack/HStack nesting, thread visual_issues through the repair path, and split repair budgets between visual critic and compile repairs.",
+    today: false,
+    subs: [
+      "Rewrite composition grammar to teach free VStack/HStack nesting",
+      "Thread visual_issues through slide_edit_service repair path",
+      "Split repair budgets: separate visual critic repairs from compile repairs"
+    ]
+  },
+  {
+    date: "Sep 21",
+    day: "MON",
+    id: "PP-012",
+    goal: "Pipeline Hardening & Visual Rendering Fixes",
+    desc: "Port standalone improvements from group-composition branch, remove LibreOffice screenshot backend, fix table column widths and pyramid sizing, and harden all pipeline nodes.",
+    today: false,
+    subs: [
+      "Port standalone improvements from group-composition branch",
+      "Remove LibreOffice / ImageMagick screenshot backend — keep COM only",
+      "Fix table column widths: omit width on most columns so tables auto-fill containers",
+      "Harden table component for mixed-width Col pattern",
+      "Update docs, graphify graph, and pipeline changes for visual critic and repair budget split",
+      "Harden all pipeline nodes against unhandled exceptions",
+      "Fix pyramid sizing, font overflow, and text visibility issues"
+    ]
+  },
+  {
+    date: "Sep 22",
+    day: "TUE",
+    id: "PP-013",
+    goal: "Visual Critic Design Checks & Generator Bug Fixes",
+    desc: "Promote kicker/card-shell/KPI/panel checks to MEDIUM severity, wire the critic re-review loop with rollback, and fix generator bugs producing empty VStacks and margin misuse.",
+    today: false,
+    subs: [
+      "Optimize repair/regenerate routing for visual-only quality failures",
+      "Wire critic re-review loop and reset per-slide visual state",
+      "Promote kicker, card-shell, source-line, KPI/panel checks to MEDIUM severity",
+      "Expand visual critic design checks with slide-type gating",
+      "Fix generator producing h=0 empty VStacks, pixel spacers, margin misuse",
+      "Fix REGENERATE path losing slide content and giving contradictory guidance",
+      "Raise minimum font to 14pt across all knowledge and compiler",
+      "Add layout archetype system for slide variety enforcement",
+      "Fix stale font-floor references in normalizer and design-language",
+      "Production-ready critic loop: rollback, re-review, semantic coloring in blueprints"
+    ]
+  },
+  {
+    date: "Sep 23",
+    day: "WED",
+    id: "PP-014",
+    goal: "Two-Device Workflow & Sizing Roadmap",
+    desc: "Split work across a build machine and a key-holding eval machine, stand up the Phase 0 eval harness and gate cases, and draft the layout-sizing and POM composition roadmap.",
+    today: false,
+    subs: [
+      "Add two-device session kickoff (build without key, eval with key)",
+      "Phase 0: eval harness — per-slide quality metrics, bundle, import, compare",
+      "Phase 0 gate: add the user's 3 deck prompts, 2 runs per case",
+      "Add layout-sizing plan with verified POM sizing facts",
+      "Add nesting-enforcement plan and Cursor rule for POM content model",
+      "Enforce POM composition: scoped design hints, content-model nesting, exact icon names",
+      "Add fit-grow pass: fill spare space inside stacks before buildPptx",
+      "gj-h1 golden: tables and text cards fill their cards (reviewed against renders)",
+      "Audit knowledge against llm.md; strip zero strokes; add derived-components roadmap",
+      "Declare lxml + test deps; AGENTS.md testing workflow for new machines"
+    ]
+  },
+  {
+    date: "Sep 24",
+    day: "THU",
+    id: "PP-015",
+    goal: "Sizing Grammar, Table Sizing & Normalizer (Phases 0–5)",
+    desc: "Merge the Phase 0 baseline, Phase 1 sizing grammar, and Phase 5 table sizing branches; add deterministic normalizer fixes and a compile-fallback safety net.",
+    today: false,
+    subs: [
+      "Phase 0 baseline: normalizer fixes for compile blockers, 396 tests pass",
+      "Phase 1: sizing grammar — POM allocates height (grow/minH), no pixel budgets",
+      "Merge phase-1-sizing and phase-5-table-sizing branches",
+      "Phase 5 Step 3: size tables from their text (widths, rows, squeeze, spare)",
+      "Tables finished: centred cells, relaxed row cap, TABLE_TOO_WIDE_FOR_CARD audit",
+      "compile-pom: a pptx post-process failure keeps POM's pptx instead of failing the compile",
+      "Add eval metrics empty_cells + tables_overfull_slides; add scripts/eval_lineage.py",
+      "models.yaml: outline_planner max_tokens 4000 -> 12000",
+      "Architecture north star doc: evidence audit, revised plan, Tests 1–3",
+      "Session-kickoff cost rule: free replay first, one paid run per phase"
+    ]
+  },
+  {
+    date: "Sep 27",
+    day: "SUN",
+    id: "PP-016",
+    goal: "Planning v2 & Test 1 Validation",
+    desc: "Build planning v2 (storyline + slide design) as its own LangGraph graph and drive it through Test 1 to a user-approved pass against the CHEFFIN headline comparison.",
+    today: false,
+    subs: [
+      "Test 1: planning v2 (storyline + slide design) as its own LangGraph graph",
+      "Add gate-deck-cheffin-full case; slide headings with titles are sections",
+      "Test 1 round 1 & round 2 fixes: headlines, dropped data, label-only kinds",
+      "Test 1 review fixes: failure handling, retry flags, check/prompt consistency",
+      "Test 1 final run: headlines, numbers, invention, CHEFFIN pass; stability 8/14",
+      "Test 1 passed (user): verdict, carried-forward items, CHEFFIN headline comparison",
+      "Direction change (user): existing planners + plan_reviewer loop; Tests 2–3 dropped"
+    ]
+  },
+  {
+    date: "Sep 28",
+    day: "MON",
+    id: "PP-017",
+    goal: "Plan-Reviewer Loop Research",
+    desc: "Research and document a plan-reviewer feedback loop and an independent planner redesign, incorporating lessons from the Genspark benchmark.",
+    today: false,
+    subs: [
+      "Planner research docs: plan-reviewer loop proposal + independent planner redesign",
+      "docs: plan-reviewer loop design proposal (copied from test-1-planning)",
+      "Planner research: Genspark lessons (§3.6–3.7) and priority order (§9.1)",
+      "Update graphify graph and report (refresh from 2026-09-24)"
+    ]
+  },
+  {
+    date: "Sep 29",
+    day: "TUE",
+    id: "PP-018",
+    goal: "Layout Batch Fixes & Frontend Retune",
+    desc: "Fix layout-batch rendering (row heights, card counts, brief visuals, contrast), ground the planner's output in brief data only, and retune the frontend palette from test-PC feedback.",
+    today: false,
+    subs: [
+      "Layout batch: no KPI cap, card_grid, capacity.yaml, slides fill their height",
+      "Layout-batch run fixes 1–6: rows share height, cards per row, brief visuals",
+      "Report-only contrast check (LOW_CONTRAST) in the layout audit",
+      "Planner batch A: no invention, planned header, slide count from the brief",
+      "Strip borders POM rejects on cells and diagram nodes; accent border = card",
+      "A hero stat + C colour roles (from the Genspark trace)",
+      "Frontend redesign and palette retune (from the test PC)",
+      "Matrix routing fix, test-PC palettes, §9.1 items from our deck reviews"
+    ]
+  },
+  {
+    date: "Oct 01",
+    day: "THU",
+    id: "PP-019",
+    goal: "Reasoning-Model Support & Genspark Reference Deck",
+    desc: "Add reasoning-model support to the LLM client, test the planners on gpt-5-mini, and hand-write a Genspark-level reference deck for quality comparison.",
+    today: false,
+    subs: [
+      "Reasoning-model support in get_llm (gpt-5*, o-series)",
+      "Planners on gpt-5-mini (reasoning-model test)",
+      "Phase 0: hand-written Genspark-level reference slides (XTSY)"
+    ]
+  },
+  {
+    date: "Oct 05",
+    day: "MON",
+    id: "PP-020",
+    goal: "Phase 0b Code Renderer & Derived-Node Design Series",
+    desc: "Build the Phase 0b code-only renderer (fonts, sizing, fill, style packs) as proof that derived blocks beat free-form XML, then run it through design docs 13–14.9 to lock the build route, slot contract, and step 0 plan. Includes Sunday Oct 4 catch-up work.",
+    today: false,
+    subs: [
+      "Design doc: Phase 0b proof experiment (evidence, inputs, pass criteria)",
+      "Phase 0b: code-only renderer for saved plans; style pack, flexbox height allocation, fit-grow opt-out",
+      "Phase 0b: cards/KPI/titles/descriptions grow to fill; caption, linear-flow, timeline blocks",
+      "Font experiment: POM measures with Inter + JetBrains Mono; embed_fonts for several families",
+      "R1–R4: font replay/embedding tests; PowerPoint matches LibreOffice with embedded fonts",
+      "R2–R3: saved plans replayed through the Phase 0b renderer; two-pass sizing against POM's layout",
+      "compose_deck: draw a pipeline run's plans with the code composer as one .pptx",
+      "Design docs 13–14.9: research gate, build route, step 3 from saved plans, style packs",
+      "Planning session 2026-10-05/06: step 0 plan, slot contract, 1a protocol, theme source, checking loop (D1–D9 decided)",
+      "Branch feat/derived-blocks (+ step0) created for the 14.6 build"
+    ]
+  },
+  {
+    date: "Oct 06",
+    day: "TUE",
+    id: "PP-021",
+    goal: "Step 0 Build-Out: Plan Checks, Palette Research & Node Contract",
+    desc: "Implement step 0.1–0.4 (LLM call naming, plan checks, shrink guards, font subset-embedding), fix XML-illegal character corruption, research new palette tokens, and lock the node contract (D10) and house-style KPI rules.",
+    today: false,
+    subs: [
+      "Step 0.1–0.4: name every LLM call, plan checks + one re-ask, shrink guard in fit-grow, subset-embed fonts",
+      "Find and strip XML-illegal characters from model text (find_nul.py, normalize_xml)",
+      "Restore the mangled separator the outline planner wrote as a middle dot",
+      "Add gj-h1 and claude-cream palettes; palette token research + before/after preview",
+      "Node contract (D10): ref tags replace slots, block variants, look spec, variant gallery",
+      "House style: KPI tiles share one value size; hero_number -> single_stat",
+      "Step 0 step-end run imported: six cases, 37 slides, $1.74, all pass",
+      "1a protocol made exact on step 0's plans; D11 open, merge on hold",
+      "fit-grow: KPI row sizing fixes (one size per row, guard against undersized numbers)"
+    ]
+  },
+  {
+    date: "Oct 07",
+    day: "WED",
+    id: "PP-022",
+    goal: "1a Protocol Paid Run & Slide-Quality Items 1–2",
+    desc: "Approve and measure the 1a protocol's first paid run (compliance 91%, 0 invented), then land slide-quality items 1 (palette colour roles) and 2 (component geometry checks, spill fixes, critic-on validation).",
+    today: false,
+    subs: [
+      "D11/D12 decided: 1a protocol approved, first-try only, Phase 0b block variants drawn",
+      "1a node test built (LLM-free) and paid-run measured: compliance 91%, 0 invented, -75% output tokens",
+      "Palette research: gj-h1 and claude-cream palettes, quality research doc, preview script",
+      "Slide quality item 1: colour roles from palettes.yaml; paid check — 0 typed colours",
+      "Slide quality item 2: component-geometry check, tiered findings (error/warning/info), LOW_CONTRAST rule",
+      "fit-grow: fix spills by giving the room first, then the dense order",
+      "Item 2 step 3: centre sparse bodies, grow a sparse slide's only table",
+      "Critic-on paid check recorded: passed, 1 of 3 critic repairs useful"
+    ]
+  },
+  {
+    date: "Oct 08",
+    day: "THU",
+    id: "PP-023",
+    goal: "Hand-QBR Deck Comparison Drives Quality Fixes",
+    desc: "Trace 12 differences between a hand-built QBR deck and the pipeline's output, then land the resulting fixes: planner fact/headline rules, new type ramp, flat cards, and fit-grow sideways-growth guards.",
+    today: false,
+    subs: [
+      "Hand-written QBR deck vs the pipeline: 12 differences traced to planner, house style, code",
+      "Control chars fix, deck font Inter, planner fact/headline/filler rules, new type ramp, flat cards",
+      "Fixes from paid run: lone card grows, time-series focus on latest period, numeric table column widths",
+      "compose_deck: --palette deck|pack, code slides drawn in the run's own theme",
+      "deck_pack: readable highlight cards on dark themes",
+      "fit-grow never grows text sideways off its box; Layer diagrams scale into their card; one dark panel per deck"
+    ]
+  },
+  {
+    date: "Oct 12",
+    day: "MON",
+    id: "PP-024",
+    goal: "KPI Element-Ref Pilot → Tile Nodes",
+    desc: "Pilot KPI slides built from element refs instead of free-form XML (D13), validate with blind-marked replays and paid checks, then extend into tile nodes (KpiGrid/Kpi) that passed their gate on the third paid check. Includes Sunday Oct 11 catch-up work.",
+    today: false,
+    subs: [
+      "D13 decided: KPI nodes as element refs, LLM composes; look-spec decisions approved",
+      "KPI pilot: free + paid replays, blind marks scored across three rounds (0.556 -> 0.75)",
+      "fit-grow: unit size by length, run-aware measuring, content-sized rows, two-row wrap for pinned rows",
+      "KPI refs on by default; square tiles; readable colours on dark tiles",
+      "Planner prompt: numbers grouped into several kpi_rows by role, data conserved word for word",
+      "Tile nodes (POM_BLOCKS=tiles): KpiGrid/Kpi expand into ref tiles; variant gallery",
+      "Tile nodes paid checks 1–3: blind marks 0.5 -> 0.33 (gate failed) -> 0.67 (gate passed)",
+      "Planner kpi_tones: tiles draw the plan's tones by default",
+      "Cost: bill prompt-cache tokens at the model's cached-input rate"
+    ]
+  },
+  {
+    date: "Oct 13",
+    day: "TUE",
+    id: "PP-025",
+    goal: "Tile Nodes Wide Evaluation & Card Tile Nodes",
+    desc: "Run a 68-slide wide evaluation of tile nodes against element refs, tune padding/gap and tone defaults from the results, and build card tile nodes (CardGrid/Card) as the next POM_BLOCKS target.",
+    today: false,
+    subs: [
+      "Tile nodes wide free evaluation: 68 saved KPI slides, both routes, squeeze scan",
+      "P1/P2: house-look padding/gap from the LLM's median; kpi_tones from the design hint",
+      "Wider paid run: blind marks 0.6 as marked, 0.4 with the wrong-number slide (gate failed)",
+      "fill_refs: check a missing value against the plan's value, not its label",
+      "Planner: fall back to the brief's lines when a plan holds no content",
+      "Card tile nodes: <CardGrid>/<Card> under POM_BLOCKS=tiles (spec §11)",
+      "Cards: lifted default, highlighter key phrases, plan icons, span key phrases",
+      "Card paid check tooling: card_plan_only + card_paid; blind marks pending",
+      "Tile nodes: same-plan check comparing both KPI routes on the same 12 plans"
+    ]
+  },
+  {
+    date: "Oct 14",
+    day: "WED",
+    id: "PP-026",
+    goal: "Card Tile Nodes Pass Their Gate; Tile/Card Branches Merge",
+    desc: "Pass the card paid-check gate (0.692 blind marks), align card sizing and step text, merge the card and KPI tile-node branches, and prepare the combined paid check.",
+    today: false,
+    subs: [
+      "Tile nodes same-plan check: paid results, blind marks (gate failed)",
+      "Card paid check: blind marks 0.692 (B 6 / tie 6 / A 1), gate passed",
+      "Cards: one size per card grid across rows, steps share width by text; empty cards 7 -> 4",
+      "Cards: a step body of several points draws one point per line",
+      "Merge feat/tile-cards into feat/tile-nodes: card tile nodes + KPI tile fixes on one branch",
+      "State and LLM schemas: one source for closed value sets, chart types POM accepts",
+      "KPI icons from the planner; tile/card prompt lines write from the plan, never typed text",
+      "Tiles/cards layout fixes: w=\"max\" squeeze, lone card rows, letter-stacked broken words",
+      "Combined paid check prepared (not run); slide_component_planner max_tokens 16000 -> 24000"
+    ]
+  },
+  {
+    date: "Oct 15",
+    day: "THU",
+    id: "PP-027",
+    goal: "Planner Component-Choice Rules & Typed Output Schema",
+    desc: "Teach the planner K4 dense-slide direction and grouped-item rules to cut structure loss, draft the presentation rules doc, and make the typed planner output schema the default.",
+    today: false,
+    subs: [
+      "fit-grow: stretched card rows grow their text into the new height, one size per grid",
+      "Planner component choice: grouped items, K4 dense-slide list, direction lines, fewer re-asks",
+      "structure-loss README: paid planning check result (choice-plans, $1.48)",
+      "Presentation rules draft (2026-10-15): visual, layout and design rules, K4 and the user's decisions",
+      "Typed planner output schema behind PLANNER_SCHEMA=typed, then made the default",
+      "Items go under a card only when the brief says which"
+    ]
+  },
+  {
+    date: "Oct 16",
+    day: "FRI",
+    id: "PP-028",
+    goal: "Deck Output Fixes from the 2026-10-15 Eval",
+    desc: "Fix issues found in the 2026-10-15 eval run: brief instructions not honored, repeated layer blocks, tag-chip rendering, compile timeout, and flow direction.",
+    today: true,
+    subs: [
+      "Fix brief instructions dropped during generation",
+      "Fix repeated Layer diagram blocks on a slide",
+      "Fix tag-chip rendering",
+      "Fix compile timeout on larger decks",
+      "Fix flow-direction handling"
+    ]
+  }
+];
+
+const tbody = document.getElementById('tbody');
+
+tickets.forEach((t, i) => {
+  // Main row
+  const tr = document.createElement('tr');
+  tr.className = 'day-row';
+  tr.dataset.idx = i;
+  tr.innerHTML = `
+    <td class="col-date">${t.date}</td>
+    <td class="col-day day-${t.day}">${t.day}</td>
+    <td><span class="col-id">${t.id}</span></td>
+    <td class="col-goal">${t.goal}</td>
+    <td class="col-desc">${t.desc}</td>
+    <td><span class="badge ${t.today ? 'badge-today' : 'badge-done'}">${t.today ? 'Today' : 'Done'}</span></td>
+    <td class="col-toggle">Subgoals <span class="chevron">▼</span></td>
+  `;
+  tbody.appendChild(tr);
+
+  // Expand row
+  const er = document.createElement('tr');
+  er.className = 'expand-row';
+  const subsHtml = t.subs.map(s => `<li><span class="sub-dot"></span>${s}</li>`).join('');
+  er.innerHTML = `<td colspan="7">
+    <div class="expand-inner" id="exp-${i}">
+      <div class="sub-heading">Subgoals · ${t.subs.length} tasks</div>
+      <ul class="subgoal-list">${subsHtml}</ul>
+    </div>
+  </td>`;
+  tbody.appendChild(er);
+
+  tr.addEventListener('click', () => {
+    const inner = document.getElementById(`exp-${i}`);
+    const isOpen = inner.classList.contains('open');
+    inner.classList.toggle('open', !isOpen);
+    tr.classList.toggle('open', !isOpen);
+  });
+});
+</script>
