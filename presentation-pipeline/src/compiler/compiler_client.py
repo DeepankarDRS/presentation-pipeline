@@ -99,6 +99,15 @@ def compile_xml(xml: str, output_dir: Path, *, timeout: int = 120) -> dict[str, 
             "Set NODE_BIN env var or put node on PATH."
         ) from exc
     except subprocess.TimeoutExpired as exc:
+        # the result was written but Node did not exit (an open handle): the compile itself finished
+        if result_path.exists():
+            try:
+                data = json.loads(result_path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, ValueError):
+                data = None
+            if data and data.get("status"):
+                logger.warning(f"compile-pom.js wrote its result but did not exit within {timeout}s; result kept")
+                return _parse_result(data)
         raise CompilerError(f"compile-pom.js timed out after {timeout}s") from exc
 
     if not result_path.exists():

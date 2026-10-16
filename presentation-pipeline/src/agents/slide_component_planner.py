@@ -35,7 +35,7 @@ from src.agents.planner_schema_typed import PlannerSlideTyped, content_data_of
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
-                                      flag_written_lines, visual_directions)
+                                      flag_written_lines, instruction_lines, visual_directions)
 from src.state import ChartTypeLiteral, ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, length_limit_usage, unpack_raw, usage_record
 from src.utils.text_clean import clean_data
@@ -282,7 +282,7 @@ def plan_single_slide(
     notes = (drop_visual_directions(plan, directions, content_lines(slide, directions))
              + flag_written_lines(plan, brief_text))
     if finalize:
-        notes += finalize_plan(plan, brief_text)
+        notes += finalize_plan(plan, brief_text, instruction_lines(outline_plan))
     for note in notes:
         logger.info(f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} {note}")
     if notes:
@@ -359,7 +359,7 @@ def plan_with_reask(
                 first_problems = problems
             continue
         history.append(usage_record(usage, "slide_component_planner", idx, reask=bool(attempt)))
-        problems = find_problems(plan, brief_text)
+        problems = find_problems(plan, brief_text, instruction_lines(outline_plan))
         if best is None or len(problems) < best_count:
             best, best_count = plan, len(problems)
         if not problems:
@@ -375,7 +375,7 @@ def plan_with_reask(
         logger.error(f"slide_component_planner: slide {idx + 1} holds no content after {len(history)} "
                      f"tries, using the fallback plan")
         best = fallback
-    notes = finalize_plan(best, brief_text)
+    notes = finalize_plan(best, brief_text, instruction_lines(outline_plan))
     if best.get("plan_source") == "fallback":
         notes.append("planner failed twice: fallback plan")
     elif len(history) > 1:

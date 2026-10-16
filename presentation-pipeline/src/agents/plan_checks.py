@@ -20,7 +20,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from src.agents.written_lines import NOTES_LABEL, drop_repeated_bodies, from_brief
+from src.agents.written_lines import (NOTES_LABEL, drop_repeated_bodies, drop_shared_card_lines, from_brief,
+                                      matches_instruction)
 from src.compiler.value_parts import is_sentence
 
 PLAN_EMPTY = "PLAN_EMPTY"
@@ -70,13 +71,19 @@ _PLANNER_VERB = re.compile(
 _ADDRESSES_SLIDE = re.compile(r"\b(this slide|the audience|speaker notes?|presenter|talking points?)\b", re.I)
 
 
-def is_instruction_text(text: str, brief_text: str) -> bool:
-    """True when `text` is a direction to the presenter or slide builder, not audience content."""
+def is_instruction_text(text: str, brief_text: str, instructions: list[str] | tuple[str, ...] = ()) -> bool:
+    """True when `text` is a direction to the presenter or slide builder, not audience content. `instructions` are
+    the brief's own instruction lines (`written_lines.brief_instructions`): text that words one counts whatever its
+    label, unless the slide's other brief lines say it too."""
     t = (text or "").strip()
     if not t:
         return False
     if NOTES_LABEL.match(t) or _PRESENTER_VERB.match(t) or _ADDRESSES_SLIDE.search(t):
         return True
+    if instructions and matches_instruction(t, list(instructions)):
+        content = "\n".join(x for x in (brief_text or "").split("\n") if not matches_instruction(x, list(instructions)))
+        if not from_brief(t, content):
+            return True
     return bool(_PLANNER_VERB.match(t)) and not from_brief(t, brief_text)
 
 
@@ -118,7 +125,8 @@ def holds_no_content(plan: dict[str, Any]) -> bool:
 
 # ── problems that justify a re-ask ──────────────────────────────────────────
 
-def find_problems(plan: dict[str, Any], brief_text: str) -> list[dict[str, str]]:
+def find_problems(plan: dict[str, Any], brief_text: str,
+                  instructions: list[str] | tuple[str, ...] = ()) -> list[dict[str, str]]:
     """PLAN_EMPTY / PLAN_INSTRUCTION_TEXT flags for a plan. An empty caption alone is not one:
     nothing is lost by dropping it, so it is not worth a second call."""
     problems: list[dict[str, str]] = []
@@ -133,7 +141,7 @@ def find_problems(plan: dict[str, Any], brief_text: str) -> list[dict[str, str]]
             problems.append({"code": PLAN_EMPTY, "component_id": cid,
                              "detail": f"{comp.get('kind')} '{cid}' has no content"})
         for item in _text_items(comp):
-            if is_instruction_text(item, brief_text):
+            if is_instruction_text(item, brief_text, instructions):
                 problems.append({"code": PLAN_INSTRUCTION_TEXT, "component_id": cid,
                                  "detail": f"{comp.get('kind')} '{cid}' holds an instruction, not slide content: "
                                            f"{item[:90]}"})
@@ -270,7 +278,8 @@ def _flag(plan: dict[str, Any], code: str, component_id: str, detail: str) -> No
     plan.setdefault("plan_flags", []).append({"code": code, "component_id": component_id, "detail": detail})
 
 
-def drop_instruction_text(plan: dict[str, Any], brief_text: str) -> list[str]:
+def drop_instruction_text(plan: dict[str, Any], brief_text: str,
+                          instructions: list[str] | tuple[str, ...] = ()) -> list[str]:
     """What a re-ask did not remove: instruction paragraphs and bullets, and empty captions."""
     notes: list[str] = []
     keep = []
@@ -279,19 +288,83 @@ def drop_instruction_text(plan: dict[str, Any], brief_text: str) -> list[str]:
         if kind == "caption" and is_empty(comp):
             notes.append(f"dropped empty caption '{cid}'")
             continue
-        if kind in ("narrative", "caption") and any(is_instruction_text(t, brief_text) for t in _text_items(comp)):
+        if kind in ("narrative", "caption") and any(is_instruction_text(t, brief_text, instructions)
+                                                     for t in _text_items(comp)):
             notes.append(f"dropped {kind} '{cid}': it is an instruction to the presenter, not slide content")
             _flag(plan, PLAN_INSTRUCTION_TEXT, cid, notes[-1])
             continue
         if kind == "bullet_list":
             data = comp.get("content_data") or {}
-            bullets = [b for b in data.get("bullets") or [] if not is_instruction_text(str(b), brief_text)]
+            bullets = [b for b in data.get("bullets") or [] if not is_instruction_text(str(b), brief_text, instructions)]
             if len(bullets) != len(data.get("bullets") or []):
                 data["bullets"] = bullets
                 comp["items"] = len(bullets) or comp.get("items", 0)
                 notes.append(f"dropped instruction bullets from '{cid}'")
                 _flag(plan, PLAN_INSTRUCTION_TEXT, cid, notes[-1])
         keep.append(comp)
+    plan["components"] = keep
+    return notes
+
+
+# ── free-drawn layers beside a component that shows the content (eval 2026-10-15) ──
+
+LAYER_REPEATED = "LAYER_REPEATED"
+LAYER_REPEAT_SHARE = 0.8   # share of a layer's words another visual component already shows
+_NOT_VISUAL = ("title", "caption", "narrative", "layer")
+_LAYER_NAME_KEYS = {"description", "visual", "visual_suggestion", "title", "center", "center_label", "annotation"}
+
+
+def _layer_items(data: dict[str, Any]) -> int:
+    """The most items any list field of a layer holds (nodes, layers, platforms ...): 0 = it only names a visual."""
+    return max([len(v) for v in data.values() if isinstance(v, list)] or [0])
+
+
+def _visual_words(comps: list[dict[str, Any]]) -> set[str]:
+    return _tokens(" ".join(_strings(c.get("content_data") or {}) for c in comps))
+
+
+def _strings(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        return " ".join(_strings(v) for k, v in value.items() if k not in _NOT_TEXT)
+    if isinstance(value, (list, tuple)):
+        return " ".join(_strings(v) for v in value)
+    return ""
+
+
+def drop_repeated_layers(plan: dict[str, Any]) -> list[str]:
+    """A layer is drawn free-hand by the generator, so it earns its place only with content of its own. Dropped when
+    another visual component (cards, list, flow, table ...) holds content and the layer either only names a visual
+    (no list of items: "Visual: Growth Impact Framework" drawn as three empty boxes, XTSY 7) or shows words that
+    component already shows (TRACKING / INSIGHTS nodes beside TRACKING / INSIGHTS cards, XTSY 5). A layer that is
+    the slide's only visual stays: it is the slide's picture (XTSY cover ecosystem)."""
+    notes: list[str] = []
+    comps = list(plan.get("components") or [])
+    visuals = [c for c in comps if c.get("kind") not in _NOT_VISUAL and not is_empty(c)]
+    if not visuals:
+        return notes
+    shown = _visual_words(visuals)
+    keep = []
+    for comp in comps:
+        data = comp.get("content_data") or {}
+        if comp.get("kind") != "layer" or not isinstance(data, dict):
+            keep.append(comp)
+            continue
+        own = {w for w in _tokens(_strings({k: v for k, v in data.items() if k not in _LAYER_NAME_KEYS})) if len(w) > 2}
+        share = len(own & shown) / len(own) if own else 0.0
+        if _layer_items(data) >= 2 and share < LAYER_REPEAT_SHARE:
+            keep.append(comp)
+            continue
+        why = (f"{share:.0%} of its words are in {visuals[0].get('kind')} '{visuals[0].get('component_id', '')}'"
+               if _layer_items(data) >= 2 else "it only names a visual, with no items of its own")
+        cid = comp.get("component_id", "")
+        notes.append(f"dropped layer '{cid}': {why}")
+        _flag(plan, LAYER_REPEATED, cid, notes[-1])
+        if _WEIGHT_RANK.get(comp.get("weight", "peer"), 1) < min(_WEIGHT_RANK.get(v.get("weight", "peer"), 1)
+                                                                  for v in visuals):
+            heaviest = max(visuals, key=_text_mass)
+            heaviest["weight"] = comp.get("weight")   # the slide's hero moves to the component that shows it
     plan["components"] = keep
     return notes
 
@@ -576,12 +649,14 @@ def settle_card_fields(comp: dict[str, Any]) -> None:
 
 # ── entry point ─────────────────────────────────────────────────────────────
 
-def finalize_plan(plan: dict[str, Any], brief_text: str) -> list[str]:
+def finalize_plan(plan: dict[str, Any], brief_text: str, instructions: list[str] | tuple[str, ...] = ()) -> list[str]:
     """Run every code fix and the thin-slide report on a finished plan, in place.
     Returns the plain-words notes; `plan["plan_flags"]` lists what was found."""
-    notes = drop_instruction_text(plan, brief_text)
+    notes = drop_instruction_text(plan, brief_text, instructions)
     notes += drop_repeated_bodies(plan)
+    notes += drop_shared_card_lines(plan, brief_text)
     notes += drop_duplicate_items(plan)
+    notes += drop_repeated_layers(plan)
     notes += cards_to_list(plan)
     for comp in plan.get("components") or []:
         if is_empty(comp):

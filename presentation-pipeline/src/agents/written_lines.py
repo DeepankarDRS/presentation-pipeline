@@ -40,10 +40,15 @@ NOTES_LABEL = re.compile(r"^\W*((speaker|presenter|slide)\s+notes?|talking point
 _SHOW_LABEL = re.compile(r"^(\W*)show\s+(?!how\b|that\b|the\b|where\b|why\b)([A-Za-z][^:]{0,40}):", re.I)
 
 
-def settle_direction_lines(slide: dict[str, Any]) -> list[str]:
+def settle_direction_lines(slide: dict[str, Any], instructions: dict[str, list[str]] | None = None,
+                           content: str = "") -> list[str]:
     """Clean one outline slide's key_messages in place: presenter notes dropped, "Show <label>:" made "<Label>:".
     "Visual:" / "Show:" directions stay in key_messages (the planner reads them as design input; code keeps them out
-    of the slide's content, see `visual_directions`). Returns plain-words notes."""
+    of the slide's content, see `visual_directions`). With the brief's `instructions` (`brief_instructions`), a
+    message that rewords one loses its label too: the brief's speaker notes are dropped ("Note: End with
+    confidence ..." for "Speaker Notes: End with confidence ..."), an unlabelled design sentence becomes a "Visual:"
+    line ("Use arrow visuals rather than hard numbers."). A message whose words are also in the brief's `content`
+    (`brief_content`) stays as it is. Returns plain-words notes."""
     notes: list[str] = []
     keep = []
     for msg in slide.get("key_messages") or []:
@@ -51,6 +56,14 @@ def settle_direction_lines(slide: dict[str, Any]) -> list[str]:
         if NOTES_LABEL.match(text):
             notes.append(f"dropped presenter notes from key_messages: {text[:80]}")
             continue
+        if instructions and not _DIRECTION.match(text) and not (content and from_brief(_LEAD_LABEL.sub("", text, count=1),
+                                                                                      content)):
+            if matches_instruction(text, instructions.get("notes") or []):
+                notes.append(f"dropped the brief's presenter notes from key_messages: {text[:80]}")
+                continue
+            if matches_instruction(text, instructions.get("directions") or []):
+                text = "Visual: " + _LEAD_LABEL.sub("", text, count=1)
+                notes.append(f"marked the brief's design direction as a Visual: line: {text[8:88]}")
         m = _SHOW_LABEL.match(text)
         if m:
             label = m.group(2).strip()
@@ -61,6 +74,64 @@ def settle_direction_lines(slide: dict[str, Any]) -> list[str]:
 _TEXT_KINDS = {"narrative", "caption", "bullet_list"}
 _DESIGN_WORDS = re.compile(r"visual|theme|cues?\b|colou?r|icons?\b|imagery|illustrat|gradient|layout|style|mood|look and feel",
                            re.I)
+
+# ── the brief's own instruction lines (eval 2026-10-15: the outline rewords their labels) ──
+# A brief line for the presenter or the slide builder, not the audience, reaches the slide when the outline drops or
+# changes its label: agency "Speaker Notes: End with confidence ..." came back as "Note: End with confidence ...",
+# XTSY "Use arrow visuals rather than hard numbers." has no label at all. Both were printed as captions.
+
+# a short label in front of a line ("Note:", "Closing note:"); the outline may write its own in place of the brief's
+_LEAD_LABEL = re.compile(r"^\W*[A-Za-z][A-Za-z ]{0,24}:\s+")
+# a brief sentence that tells the slide builder how to draw: a build verb first, a design word in it
+_BUILD_VERB = re.compile(r"^\W*(use|avoid|show|display|depict|draw|keep|make|add|place|put|render|design)\b", re.I)
+_BUILD_WORDS = re.compile(_DESIGN_WORDS.pattern + r"|charts?\b|graphs?\b|diagrams?\b|graphics?\b", re.I)
+# brief pieces: lines, runs of 2+ spaces (folded YAML briefs), bullets; then sentences
+_BRIEF_PIECE = re.compile(r"\n|\s{2,}|(?:^|\s)[*•]\s")
+_SENTENCE_END = re.compile(r"(?<=[a-z0-9)])[.!?]\s+(?=[A-Z])")
+MIN_INSTRUCTION_WORDS = 3   # a shorter line matches an instruction by chance
+
+
+def brief_instructions(request: str) -> dict[str, list[str]]:
+    """The brief's lines that are not slide content: "notes" (the text after a speaker-notes label) and "directions"
+    (unlabelled sentences that start with a build verb and name a design element: "Use arrow visuals rather than hard
+    numbers."). Labelled directions ("Visual: ...") are left to `visual_directions`."""
+    notes: list[str] = []
+    directions: list[str] = []
+    for piece in _BRIEF_PIECE.split(request or ""):
+        piece = " ".join((piece or "").split())
+        if not piece:
+            continue
+        m = NOTES_LABEL.match(piece)
+        if m:
+            if piece[m.end():].strip():
+                notes.append(piece[m.end():].strip())
+            continue
+        if _DIRECTION.match(piece) or _LEAD_LABEL.match(piece):
+            continue
+        directions += [s for s in _SENTENCE_END.split(piece) if _BUILD_VERB.match(s) and _BUILD_WORDS.search(s)]
+    return {"notes": notes, "directions": directions}
+
+
+def brief_content(request: str, instructions: dict[str, list[str]]) -> str:
+    """The brief without its instruction lines: what a slide line may be copied from."""
+    out = request or ""
+    for line in [*(instructions.get("notes") or []), *(instructions.get("directions") or [])]:
+        out = out.replace(line, " ")
+    return " ".join(out.split())
+
+
+def matches_instruction(text: str, instructions: list[str]) -> bool:
+    """`text` (any short label in front taken off) words a brief instruction line: 70% of its words are in one."""
+    body = _LEAD_LABEL.sub("", str(text or ""), count=1)
+    if len(_words(body)) < MIN_INSTRUCTION_WORDS:
+        return False
+    return any(from_brief(body, line) for line in instructions)
+
+
+def instruction_lines(outline_plan: dict[str, Any] | None) -> list[str]:
+    """Every brief instruction line the outline planner found (`outline_plan["brief_instructions"]`)."""
+    found = (outline_plan or {}).get("brief_instructions") or {}
+    return [*(found.get("notes") or []), *(found.get("directions") or [])]
 
 
 def visual_directions(slide: dict[str, Any]) -> list[str]:
@@ -152,4 +223,37 @@ def drop_repeated_bodies(plan: dict[str, Any]) -> list[str]:
                 notes.append(f"removed card body that repeats its title: {card['body']}")
                 card.pop("body", None)
                 card.pop("body_source", None)
+    return notes
+
+
+SHARED_LINE_CARDS = 3   # a line on every card of a grid this large says nothing about any one card
+
+
+def _plain(text: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9₹%]+", (text or "").lower()))
+
+
+def drop_shared_card_lines(plan: dict[str, Any], brief_text: str) -> list[str]:
+    """Remove a body or bullet that is the same on every card of a grid of 3+ when the brief does not write it
+    itself: "Applies to: Zepto · Blinkit · Instamart" on all four lever cards (XTSY slide 3, 2026-10-15), composed
+    by the planner from the matrix columns. A line the brief writes word for word stays (its own status line)."""
+    notes: list[str] = []
+    brief = _plain(brief_text)
+    for comp in plan.get("components", []):
+        cards = [c for c in (comp.get("content_data") or {}).get("cards") or [] if isinstance(c, dict)]
+        if comp.get("kind") != "card_grid" or len(cards) < SHARED_LINE_CARDS:
+            continue
+        bodies = {_plain(str(c.get("body") or "")) for c in cards}
+        if len(bodies) == 1 and (line := bodies.pop()) and line not in brief:
+            notes.append(f"removed the line on every card of '{comp.get('component_id', '')}': {cards[0]['body']}")
+            for c in cards:
+                c.pop("body", None)
+                c.pop("body_source", None)
+        lists = [{_plain(str(b)) for b in c.get("bullets") or [] if str(b).strip()} for c in cards]
+        for line in sorted(set.intersection(*lists) if all(lists) else set()):
+            if not line or line in brief:
+                continue
+            notes.append(f"removed the bullet on every card of '{comp.get('component_id', '')}': {line}")
+            for c in cards:
+                c["bullets"] = [b for b in c.get("bullets") or [] if _plain(str(b)) != line]
     return notes

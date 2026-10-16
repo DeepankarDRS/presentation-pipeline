@@ -275,13 +275,16 @@ def placeholder_node(state: PresentationState) -> dict[str, Any]:
     out_dir = _pipeline_root / "output" / "runs" / run_id / f"placeholder-{idx}"
     compile_ok, cr = normalize_and_compile(xml, theme_el, out_dir)
 
+    # slide_router saves normalize_result's XML before current_xml: left as the failed slide's, the deck compiled
+    # the failed slide while the run reported a placeholder (eval 2026-10-15, agency slide 2)
     if compile_ok:
         cr["warnings"] = cr.get("warnings", []) + ["placeholder"]
-        return {"current_xml": xml, "compile_result": cr}
+        return {"current_xml": xml, "compile_result": cr, "normalize_result": None}
 
     logger.warning("placeholder: compile failed, using synthetic result")
     return {
         "current_xml": xml,
+        "normalize_result": None,
         "compile_result": {
             "ok": True,
             "pptx_path": None,

@@ -160,8 +160,18 @@ function setAttrs(xml, id, attrs) {
 
 // --- layout + measurement (POM's own engine) -----------------------------------
 
+// One font registry for every layout: POM's FontRegistry parses each font file when it is built (~70 ms a layout,
+// a third of a dense slide's fit: agency Keyword & City, 61 layouts, 4.4 of 13 s) and is read-only after that.
+let FONT_REGISTRY = null;
+// fitGrow's time budget, checked before every layout: a slide that runs out of time keeps its unfitted XML (the
+// per-slide try / catch in fitGrow), so one dense slide on a slow machine cannot run past the compile timeout
+// (eval 2026-10-15: agency slide 2 "compile-pom.js timed out after 120s" -> placeholder).
+let DEADLINE = Infinity;
+
 async function layout(xml) {
-  const ctx = createBuildContext("auto", loadFonts());
+  if (Date.now() > DEADLINE) throw new Error(`time budget ${BUDGET_MS}ms used`);
+  const ctx = createBuildContext("auto", []);
+  ctx.fontRegistry = FONT_REGISTRY ??= createBuildContext("auto", loadFonts()).fontRegistry;
   const slides = parseXml(xml);
   const maps = [];
   const byId = new Map();
@@ -383,6 +393,31 @@ async function respectHeights(xml, report) {
   for (const [id, h, type] of caps) {
     xml = setAttrs(xml, id, { maxH: h });
     report.push(`${type} kept at h=${h} (w="max" was stretching it)`);
+  }
+  return xml;
+}
+
+// --- phase 0b: a row of tag chips wider than its box wraps --------------------------
+// Children of an HStack shrink to fit (flexShrink 1): three platform tags (64 + 78 + 98 px) in a 144 px card were
+// squeezed to ~45 px each and every name broke letter by letter ("Z / e / p / t / o", XTSY slide 3, 12 of the deck's
+// 13 word breaks). A row of text shapes whose own widths do not fit wraps onto more lines at its widths instead.
+
+async function wrapChipRows(xml, report) {
+  const L = await layout(xml);
+  const rows = [];
+  try {
+    for (const root of L.slides) walk(root, (n) => {
+      const kids = n.children ?? [];
+      if (n.type !== "hstack" || !n.id || kids.length < 2 || n.flexWrap !== undefined) return;
+      if (!kids.every((c) => c.type === "shape" && typeof c.w === "number" && String(c.text ?? "").trim())) return;
+      const b = L.box(n);
+      const need = sum(kids.map((c) => c.w)) + (n.gap ?? 0) * (kids.length - 1);
+      if (need > b.w - b.pl - b.pr + 1) rows.push([n.id, kids.length, Math.round(need), Math.round(b.w - b.pl - b.pr)]);
+    });
+  } finally { L.free(); }
+  for (const [id, k, need, have] of rows) {
+    xml = setAttrs(xml, id, { flexWrap: "wrap" });
+    report.push(`row of ${k} tags wraps (needs ${need}px, has ${have}px)`);
   }
   return xml;
 }
@@ -2084,6 +2119,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   LONE_GROUPS.clear();
   let xml = tagNodes(inputXml);
   xml = await respectHeights(xml, report);
+  xml = await wrapChipRows(xml, report);
   xml = await splitLists(xml, report);
   xml = await fitTables(xml, report);
   xml = await sizeTables(xml, report);
@@ -2381,9 +2417,10 @@ async function centreBody(xml, report) {
   return out;
 }
 
-// Whole-pass time budget. Each slide takes ~1-3s; a deck is compiled in one
+// Whole-pass time budget. Each slide takes ~1-15s; a deck is compiled in one
 // call under a 120s subprocess timeout (compiler_client.compile_xml), so stop
-// early on slow machines — remaining slides compile unchanged.
+// early on slow machines — the slide being fitted and the remaining slides
+// compile unchanged (layout() checks the clock).
 const BUDGET_MS = Number(process.env.POM_FIT_GROW_BUDGET_MS ?? 60000);
 
 /**
@@ -2398,6 +2435,7 @@ export async function fitGrow(inputXml) {
   if (first < 0) return { xml: inputXml, report: [], warnings: [] };
   const prefix = inputXml.slice(0, first);
   const started = Date.now();
+  DEADLINE = started + BUDGET_MS;
   const report = [];
   const warnings = [];
   let index = 0;
