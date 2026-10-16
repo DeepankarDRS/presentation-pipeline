@@ -9,7 +9,8 @@ meta:
 description: >
   A chevron-style sequential process visualization. Steps render as connected
   arrow/chevron shapes in sequence. Use for showing a linear workflow,
-  methodology, or phase progression. For branching processes, use <Flow> instead.
+  methodology, or phase progression. For a process with a decision step, use <Flow>
+  (it also draws its nodes in one line, not as branches).
 
 structure: |
   <ProcessArrow direction="horizontal" w="1100" h="100"
@@ -43,7 +44,7 @@ notes:
   - "ProcessArrow needs explicit w and h. w=\"max\" works for width; h must be a pixel number."
   - "Capacity: 3-5 steps, labels of 1-2 short words, full slide width (in a band that spans the slide)."
   - "Use a gradient of related hues (light→dark or dark→light) across steps for visual flow."
-  - "For branching or non-linear processes, use <Flow> instead."
+  - "For a process with a decision step, use <Flow>; neither component lays out branches side by side."
   - "gap can be negative for overlapping chevron effect."
 
 pitfalls:

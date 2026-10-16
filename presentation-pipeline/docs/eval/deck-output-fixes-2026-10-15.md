@@ -197,6 +197,65 @@ one example; the cause is the plan. Renders of that try: `deck-output-fixes/xtsy
 - All of it is report-only (`REPORT_ONLY_CODES`): it never triggers a repair.
 Gap: inside one Layer, a text over a shape without text, and shape over shape, are not checked (item 4 above).
 
+## Review: what the prompts teach about each diagram node (2026-10-16)
+
+Every claim in the planner prompt (`system.j2`, component table + Visual Fitness Guide) and the generator knowledge
+(`src/knowledge/components/*.yaml`) about the six diagram nodes, checked against POM 10.3.0's renderer
+(`node_modules/@hirokisakabe/pom/dist/renderPptx/nodes/*.js`, `utils/scaleToFit.js`).
+
+**One fact for all six (flow, tree, timeline, matrix, process_arrow, pyramid)** — `calcScaleFactor`: a diagram is
+drawn at its own size (node / item sizes × count + gaps) and shrunk to fit its box, text included:
+`scale = min(boxW / natW, boxH / natH, 1)`. It is never enlarged (fit-grow's `growDiagrams` enlarges node sizes for
+flow / tree / process_arrow), and below 0.5 it stops shrinking, draws past its box and POM writes
+`SCALE_BELOW_THRESHOLD` (7 saved compiles, all flows). Shrinking between 50% and 100% is silent. Neither prompt says this.
+
+| node | how POM draws it | what we taught | verdict |
+|---|---|---|---|
+| flow | all nodes in one line, document order; a connection that skips or goes back is drawn across the nodes between | planner: "branching or decisions"; generator: "auto-layout", example with a "No" loop back | **wrong — fixed** (prompt table + routing row + guide, `flow.yaml`, `process-arrow.yaml`) |
+| process_arrow | chevrons in one line, `itemWidth` 150 fixed, text inside | "full slide width", ≤ 5 steps, 2-word labels; "for branching use Flow" | right, except the Flow pointer — **fixed** |
+| timeline | dots on one axis; date 12 px, title 14 px, description 11 px, all × scale | "fixed small sizes", ≤ 5 items | right |
+| tree | real tree layout (subtree widths); node text 12 px × scale | "≤ 3 levels, labels 2–3 words" | partly: a vertical tree's width is its **leaves** × nodeWidth, so breadth shrinks it more than depth — not taught |
+| matrix | dots by x, y (0–1); labels 11 px beside the dot, no collision avoidance | ≤ 4 items, short labels, ≥ 520 px wide (verified 2026-09) | right |
+| pyramid | bands up / down, text inside at `fontSize` (14) × scale | ≤ 5 levels, 3–6 word labels, funnels via down | right |
+
+Also in the generator files, not verified here: "needs explicit w and h — will not render correctly" (flow, tree,
+timeline, matrix, process-arrow). Saved flows with only `h="max"` and no `w` render fine, so the claim is at least
+too strong; the real rule is the shrink-to-fit above. To check with one compile per node before changing.
+
+**What the planner does with the direction** (all saved plans): it copies the example's value every time —
+process_arrow 58/58 horizontal, timeline 55/55 horizontal, flow 36/36 horizontal, tree 22/22 vertical, pyramid 18/18
+up. Over capacity: flow 11/36, timeline 6/55, matrix 3/21, process_arrow 2/58. Whether a fixed direction hurts depends
+on the box each diagram got (side by side vs stacked), which the plans do not show.
+
+**Measured (free, 2026-10-16):** the 70 unique saved slides with a diagram, each run through today's fit-grow, then
+per diagram its box, its natural size (POM's own `measureFlow` / `measureTimeline` / … ) and the scale POM draws it at
+(`min(box / natural, 1)`), plus the scale with the other direction and with the items cut to capacity. 6 slides
+skipped (unexpanded `<CardGrid>` tags), 82 diagrams measured.
+
+| node | diagrams | drawn < 75% | < 50% | in a box < 70% of the slide width | direction in the XML |
+|---|---|---|---|---|---|
+| flow | 16 | 7 | 6 | 13 | horizontal 16 |
+| timeline | 24 | 0 | 0 | 0 | horizontal 24 |
+| process_arrow | 21 | 0 | 0 | 2 | horizontal 21 |
+| matrix | 9 | 0 | 0 | 6 | — |
+| tree | 6 | 1 (0.52) | 0 | 6 | vertical 6 |
+| pyramid | 6 | 1 (0.71) | 0 | 6 | up 6 |
+
+- Shrinking is a flow problem: 6 of the 7 are XTSY 6 workflows (7 nodes, horizontal, in a 250–655 px box, drawn at
+  18–44%). The other direction alone gives 29–57% and cutting to 6 nodes 22–52%: neither alone is enough; it takes the
+  vertical direction **and** node sizes fitted to the box (fit-grow's `growDiagrams` sizes vertical flows).
+- Timelines and process arrows were always given a full-width band by the generator, so their fixed horizontal
+  direction never shrank them. What it costs is not visible as shrinking: the example decided the direction, so the
+  planner never weighed the space (user, 2026-10-16) and the slide had to give them the full width.
+- The tree (0.52) and the pyramid (0.71) are on the all-nodes-dense test deck, half-width boxes.
+
+**Built from it (planner prompt):** one rule for all diagram directions in the Visual Fitness Guide (drawn at their own
+size and shrunk to fit, never enlarged; horizontal when spanning the slide, vertical when sharing the width or with more
+items than fit side by side; tree horizontal for a wide tree in a tall box; pyramid up / down by meaning), and every
+diagram example shows the choice (`"horizontal | vertical"`, `"up | down"`, `"vertical | horizontal"`) instead of a
+fixed value. process_arrow: vertical in a half-width card instead of "needs the full slide width". Effect to check in
+the paid run (directions chosen, diagrams below 75%).
+
 ## Checks
 
 - Unit tests: before 1139 pass + the 4 known failures; after **1155 pass + the same 4** (15 new tests, and

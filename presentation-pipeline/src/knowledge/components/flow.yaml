@@ -7,10 +7,14 @@ meta:
   nodes: [Flow, FlowNode, FlowConnection]
 
 description: >
-  A flowchart with auto-layout. One <Flow> wraps <FlowNode> entries (the boxes)
-  and <FlowConnection> entries (the edges). The engine auto-positions nodes;
-  you do not set x/y manually. For a simple linear process without decision
-  branches, prefer <ProcessArrow> (Post-MVP) instead.
+  A flowchart of shaped nodes. One <Flow> wraps <FlowNode> entries (the boxes)
+  and <FlowConnection> entries (the edges). VERIFIED v10.3.0 (renderPptx/nodes/flow.js):
+  the engine places every node in ONE straight line in document order (horizontal
+  or vertical); connections never move a node, so branches are not laid out side
+  by side. A connection between two nodes that are not neighbours, or back to an
+  earlier node, is drawn as a line across the nodes between. Write a branch's
+  parallel steps as one node. For a linear process without a decision, prefer
+  <ProcessArrow>.
 
 structure: |
   <Flow direction="horizontal" w="1100" h="500" nodeWidth="140" nodeHeight="60" nodeGap="80">
@@ -24,7 +28,6 @@ structure: |
     <FlowConnection from="input" to="process" />
     <FlowConnection from="process" to="decision" />
     <FlowConnection from="decision" to="output" label="Yes" />
-    <FlowConnection from="decision" to="input" label="No" color="$negative" />
     <FlowConnection from="output" to="end" />
   </Flow>
 
@@ -54,12 +57,14 @@ FlowConnection_attributes:
   labelColor: { type: hex, default: "64748B", note: "Label text color, overrides connectorStyle.labelColor" }
 
 notes:
-  - "Flow auto-lays-out the nodes — do not try to set x/y."
+  - "Flow places the nodes in one line in document order — do not try to set x/y."
+  - "Connect neighbours only: a connection that skips nodes or goes back is drawn through the nodes between."
+  - "The whole flow (nodes, text) is drawn at nodeWidth / nodeHeight / nodeGap and shrunk to fit its box, never enlarged; below 50% it overflows the box. 7 nodes x 170px + gaps need ~1480px: in a half-width card set direction=vertical."
   - "Flow needs explicit w and h."
   - "Every FlowNode must have a unique id within the Flow."
   - "FlowConnection from/to must reference existing FlowNode ids."
   - "Common shapes: flowChartTerminator (start/end ovals), flowChartProcess (rectangles), flowChartDecision (diamonds), flowChartInputOutput (parallelograms)."
-  - "For a simple linear process without branches, use ProcessArrow (Post-MVP) instead."
+  - "For a simple linear process without a decision, use ProcessArrow instead."
 
 pitfalls:
   - "FlowNode id, shape, and text are all required — omitting any will fail."
