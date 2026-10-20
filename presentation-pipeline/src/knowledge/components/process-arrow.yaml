@@ -138,10 +138,34 @@ facts:
       - xml: '<ProcessArrow direction="vertical"><ProcessArrowStep label="A"/><ProcessArrowStep label="B"/><ProcessArrowStep label="C"/></ProcessArrow>'
         expect: [ok, 'near(box.w, 150) and near(box.h, 3 * 80 - 2 * 28)', 'same([f.cx for f in fills])']
 
+  - id: process_arrow.vertical_label
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Vertical: each label box is the chevron's full itemWidth wide and itemHeight - 0.7 x
+      itemHeight tall (24 px at the default 80; the first step 52 px), so a long label gets
+      the column's width on one line when itemWidth is that wide.
+    source: renderPptx/nodes/processArrow.js renderVerticalProcessArrow (textHeight = itemHeight - arrowDepth - textOffsetTop)
+    probes:
+      - xml: '<ProcessArrow direction="vertical" itemWidth="300"><ProcessArrowStep label="One"/><ProcessArrowStep label="Two"/><ProcessArrowStep label="Three"/></ProcessArrow>'
+        expect: [ok, 'all(near(t(x).w, 300) for x in ("One", "Two", "Three"))', 'near(t("Two").h, 24) and near(t("One").h, 52)', 't("Two").font == 14']
+
   - id: process_arrow.direction
     kind: advice
     for: [planner, generator]
     text: >-
-      direction is a layout choice per slide: horizontal when the row has the width its steps
-      need, vertical in a narrower card.
+      direction is a layout choice per slide, made with the row's space: horizontal when the
+      row has a full-width band to itself and its steps fit across at full size, vertical in
+      a column beside another component.
     source: follows from process_arrow.natural_size and process_arrow.vertical
+
+  - id: process_arrow.box_for_direction
+    kind: advice
+    for: [generator]
+    text: >-
+      Give the row the box its direction needs and size the chevrons to it: horizontal, a
+      full-width band, with itemWidth raised until the longest word of a label fits its label
+      box (itemWidth - 0.7 x itemHeight: 94 px at the defaults, about two short words) while
+      the row still fits the band; vertical, a column with itemWidth about the column's
+      width.
+    source: follows from process_arrow.label_box, process_arrow.natural_size, process_arrow.vertical_label and process_arrow.scale

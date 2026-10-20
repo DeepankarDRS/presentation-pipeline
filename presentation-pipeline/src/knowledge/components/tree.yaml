@@ -123,6 +123,16 @@ facts:
     kind: advice
     for: [planner, generator]
     text: >-
-      layout is a choice per slide: vertical for a shallow tree in a wide box, horizontal for a
-      tree with many leaves in a tall or narrow box.
+      layout is a choice per slide, made with the tree's space: vertical for a shallow tree in
+      a full-width band of its own, horizontal for a tree with many leaves or one in a column
+      beside another component.
     source: follows from tree.natural_size
+
+  - id: tree.box_for_layout
+    kind: advice
+    for: [generator]
+    text: >-
+      Give the tree the box its layout needs: vertical, a full-width band (as wide as leaves x
+      nodeWidth + gaps); horizontal, a column as tall as leaves x nodeHeight + gaps, with
+      nodeWidth sized so its levels fit the column's width.
+    source: follows from tree.natural_size and tree.scale

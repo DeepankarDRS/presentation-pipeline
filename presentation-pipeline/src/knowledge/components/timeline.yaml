@@ -131,6 +131,16 @@ facts:
     kind: advice
     for: [planner, generator]
     text: >-
-      direction is a layout choice per slide: horizontal across a wide box with short titles,
-      vertical in a narrow card or when titles are longer than two words.
+      direction is a layout choice per slide, made with the timeline's space: horizontal in a
+      full-width band of its own with titles of at most two words, vertical in a column
+      beside another component or when titles are longer than two words.
     source: follows from timeline.horizontal and timeline.vertical
+
+  - id: timeline.box_for_direction
+    kind: advice
+    for: [generator]
+    text: >-
+      Give the timeline the box its direction needs: horizontal, a full-width band at least
+      120 px per item wide; vertical, a column at least as tall as its natural height and
+      wide enough for its longest title (box width - 80 px).
+    source: follows from timeline.horizontal, timeline.vertical, timeline.natural_size and timeline.scale

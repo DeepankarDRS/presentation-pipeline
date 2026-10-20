@@ -201,11 +201,43 @@ facts:
       - xml: '<Flow><FlowNode id="a" shape="flowChartProcess" text="A"/><FlowNode id="b" shape="flowChartProcess" text="B"/><FlowConnection from="a" to="zz"/></Flow>'
         expect: [ok, 'len(lines) == 0']
 
+  - id: flow.vertical_size
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Vertical: the nodes stack down the box, each nodeWidth x nodeHeight with nodeGap between,
+      so a vertical flow is nodeWidth wide and nodes x nodeHeight + gaps x nodeGap tall at full
+      size (4 nodes of 240 x 60 with nodeGap 24: 240 x 312 px) — it fits a column.
+    source: calcYogaLayout/measureCompositeNodes.js measureFlow; renderPptx/nodes/flow.js calculateVerticalLayout
+    probes:
+      - xml: >-
+          <Flow direction="vertical" nodeWidth="240" nodeGap="24"><FlowNode id="a" shape="flowChartProcess" text="A"/>
+          <FlowNode id="b" shape="flowChartProcess" text="B"/><FlowNode id="c" shape="flowChartProcess" text="C"/>
+          <FlowNode id="d" shape="flowChartTerminator" text="D"/><FlowConnection from="a" to="b"/>
+          <FlowConnection from="b" to="c"/><FlowConnection from="c" to="d"/></Flow>
+        expect:
+          - ok
+          - near(box.w, 240) and near(box.h, 4 * 60 + 3 * 24)
+          - all(near(t(x).w, 240) and near(t(x).h, 60) for x in "ABCD")
+          - near(t("B").y - t("A").b, 24)
+
   - id: flow.direction
     kind: advice
     for: [planner, generator]
     text: >-
-      direction is a layout choice per slide: horizontal when the flow spans the slide width,
-      vertical when it shares the width with another component or has more nodes than fit
-      side by side.
-    source: "follows from flow.natural_size and flow.scale; XTSY 6, 7 horizontal nodes in a 250-655 px box drawn at 18-44% (docs/eval/deck-output-fixes-2026-10-15.md)"
+      direction is a layout choice per slide, made with the flow's space: horizontal only when
+      the flow has a full-width band to itself and its nodes fit across at full size;
+      vertical when it shares the width with another component (in a column beside it) or
+      has more nodes than fit across.
+    source: "follows from flow.natural_size, flow.vertical_size and flow.scale; XTSY 6, 7 horizontal nodes in a 250-655 px box drawn at 18-44% (docs/eval/deck-output-fixes-2026-10-15.md)"
+
+  - id: flow.box_for_direction
+    kind: advice
+    for: [generator]
+    text: >-
+      Give the flow the box its direction needs and size the nodes to it: horizontal, a
+      full-width band (nodes x nodeWidth + gaps x nodeGap no wider than the band); vertical,
+      a column with nodeWidth about the column's width (long labels and a node of parallel
+      steps get room) and nodeGap 24-40 when the column is short, so nodes x nodeHeight +
+      gaps x nodeGap fits its height and nothing is shrunk.
+    source: follows from flow.natural_size, flow.vertical_size and flow.scale

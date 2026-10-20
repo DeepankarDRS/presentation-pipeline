@@ -75,6 +75,7 @@ space (up to fixed caps), gives a spilling table or text the room it needs, shri
 about font size, gaps, padding, margins, `grow`, empty space or under-filled cards, and no patch of
 `fontSize`, `w`, `h`, `minH`, `gap`, `padding`, `margin` or `grow`. A VISIBLE defect is still yours:
 text overlapping, clipped, cut off or running off the slide, unreadable contrast.
+- **Diagram without its space**: a flow, chevron row, timeline or tree drawn well below its natural size (text visibly smaller than the slide's other text, a SCALE_BELOW_THRESHOLD warning) or with words broken inside its nodes or chevrons ("Profitabilit-y"). LOW, flag only: report the cause as "wrong direction or too little space" (e.g. "horizontal flow squeezed beside the list"), never a patch and never a new layout — the direction and the band are the planner's choice.
 - **Parallel items as a plain list**: 3+ parallel items (moments, pillars, phases, impact areas) drawn as a bare bullet or icon list in a mostly empty card, where a grid of cards would fill the space. LOW, flag only (the component was chosen by the planner; do not patch it).
 
 Only flag these if they are obviously present — do not invent problems on clean slides.

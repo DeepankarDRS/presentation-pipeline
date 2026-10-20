@@ -131,7 +131,11 @@ data_nodes: |
   Chart / Matrix / Flow / Tree / ProcessArrow: h="max" minH (Chart 180, Matrix 260,
     Flow/Tree 200, ProcessArrow 90), no w; the card takes the weight's grow.
     Diagram nodes are enlarged to fill after generation. A Flow or ProcessArrow
-    is one line: horizontal across the full width, vertical in a narrow card.
+    is one line. Direction and box go together (the plan's layout_hint names both):
+    horizontal = a full-width band of its own, other content above or below it;
+    vertical = a column beside the other content, nodes / chevrons about the column's
+    width. Never a horizontal diagram squeezed beside another card: POM shrinks it
+    to fit, text and all.
   Table: no h, no w (sizes to its rows); its card: no h, no grow. Set
     defaultRowHeight = 16 + 24 x wrapped lines of the longest cell (40 / 64 / 88)
     and header <Tr height="40"> - POM never grows rows; short rows spill text.

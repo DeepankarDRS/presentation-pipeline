@@ -135,8 +135,9 @@ callout: |
 timeline: |
   # Timeline in a card: NO h, NO grow on the card — size the box to the diagram.
   # <Timeline h="150">, no w (it never scales up). Max 5 items.
-  # direction: horizontal | vertical — the plan's choice: horizontal across a wide card,
-  # vertical in a narrow card or for titles longer than two words.
+  # direction: horizontal | vertical — the plan's choice, with its band: horizontal in a
+  # full-width band of its own, vertical in a column beside another component or for titles
+  # longer than two words (that column at least 24 + 60 px per further item tall).
   # STRICT (horizontal): date = 1-2 words, title = 1-2 words ONLY.
   # Every label is 120 px wide: full sentences wrap and collide.
   # Colour: the item the headline names (now / the goal) $accent, the rest $neutral.
@@ -170,8 +171,9 @@ matrix: |
 process_arrow: |
   # ProcessArrow in a card: card grow per weight, ProcessArrow h="max" minH="90"
   # (steps are enlarged to fill the box after generation). It is ONE line:
-  # direction: horizontal | vertical — the plan's choice: horizontal across the card's
-  # full width, vertical in a narrow card. Step labels are 1-2 SHORT words only (longer text clips inside the
+  # direction: horizontal | vertical — the plan's choice, with its band: horizontal in a
+  # full-width band of its own, vertical in a column beside another component (itemWidth
+  # about the column's width). Step labels are 1-2 SHORT words only (longer text clips inside the
   # chevron). 3-5 steps. fontSize MUST be >= 14. NEVER go below 14.
   # Colour: steps $accentSoft + $textMain, the destination (or current) step $accent + $onAccent.
   <VStack grow="1" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
@@ -188,8 +190,10 @@ flow: |
   # Flow in a card: card grow per weight, Flow h="max" minH="200" (nodes are
   # enlarged to fill the box after generation). Keep to 4-5 nodes; short
   # node text (6+ overflows at default nodeWidth). Use ProcessArrow for a simple line.
-  # direction: horizontal | vertical — the plan's choice: horizontal across the full width,
-  # vertical in a narrow card. Nodes are drawn in one line: connect each to the next only.
+  # direction: horizontal | vertical — the plan's choice, with its band: horizontal in a
+  # full-width band of its own, vertical in a column beside another component (nodeWidth
+  # about the column's width, nodeGap 24-40 when the column is short). Nodes are drawn in
+  # one line: connect each to the next only.
   # FlowNode text is 14 px (fixed by POM, no fontSize). 1-2 word labels only.
   # Colour: nodes $accentSoft + $textMain, the outcome node $accent + $onAccent,
   # a decision $warningSoft + $textMain, a "no" path $negative.
@@ -280,8 +284,8 @@ layer_diagram: |
 tree: |
   # Tree in a card: card grow per weight, Tree h="max" minH="200" (nodes are
   # enlarged to fill the box after generation). One root. Keep depth <= 3 and total nodes
-  # <= ~10; short labels. layout: vertical | horizontal — the plan's choice: horizontal
-  # for many leaves in a tall or narrow card. Colour: root $accent + textColor $onAccent, the rest
+  # <= ~10; short labels. layout: vertical | horizontal — the plan's choice, with its band:
+  # vertical in a full-width band, horizontal for many leaves or in a column beside another component. Colour: root $accent + textColor $onAccent, the rest
   # $accentSoft + $textMain.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Org structure</Text>
