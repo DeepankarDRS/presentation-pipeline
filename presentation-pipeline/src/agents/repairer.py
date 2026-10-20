@@ -24,6 +24,7 @@ Writes: current_xml, retry_tier, retry_count, stall_detected, generation_history
 from __future__ import annotations
 
 import logging
+import re
 from pathlib import Path
 from typing import Any
 
@@ -118,6 +119,9 @@ def _get_compile_diags(state: PresentationState) -> list[dict[str, Any]]:
 
 _RELIABLE_COMPONENTS = ["title", "narrative", "caption", "bullet_list", "table", "kpi_row"]
 _RISKY_COMPONENTS = {"timeline", "flow", "matrix", "tree", "pyramid", "process_arrow", "layer"}
+# an error about one attribute's value, not about a component's structure
+_ATTR_ERROR = re.compile(r"^(INVALID_VALUE|UNKNOWN_ATTRIBUTE|LITERAL_COLOR)\b|Cannot parse JSON value|Invalid value for "
+                         r"attribute|Attribute \"|conflicts with dot-notation|Invalid string")
 
 
 def _build_repair_context(
@@ -145,6 +149,16 @@ def _build_repair_context(
             "errors": problems[:5],
             "directive": directive,
         }
+
+    errors = [p for p in problems if not p.startswith(("VISUAL_", "CRITIC_"))]
+    if errors and all(_ATTR_ERROR.search(p) for p in errors):
+        # the XML had bad attribute values (XTSY 6, 2026-10-20: shadow="outer", then invented shapeTypes): the
+        # components were not at fault, and switching them turned a 7-step workflow into a one-cell table
+        directive = (
+            f"The previous plan's components [{', '.join(failed_kinds)}] are right; the slide failed on invalid "
+            f"attribute values in the XML, not on the component choice. Keep the same component kinds and content."
+        )
+        return {"failed_kinds": failed_kinds, "errors": problems[:5], "directive": directive}
 
     failed_set = set(failed_kinds)
     risky_failed = failed_set & _RISKY_COMPONENTS

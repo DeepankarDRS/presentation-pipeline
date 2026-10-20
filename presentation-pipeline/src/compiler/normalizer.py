@@ -268,6 +268,29 @@ def _drop_attr_conflicts(xml: str) -> tuple[str, list[str]]:
     return _ELEMENT_TAG_RE.sub(_fix, xml), dropped
 
 
+# a bare word where POM reads a JSON object: shadow="outer" (XTSY 6, 2026-10-20: "Cannot parse JSON value", two
+# patches failed and the slide was re-planned into a one-column table)
+_BARE_WORD_RE = re.compile(r"^\s*[A-Za-z][\w\s-]*$")
+_SHADOW_DOTS = ' shadow.blur="6" shadow.offset="2" shadow.color="000"'
+
+
+def _drop_bare_object_attrs(xml: str) -> tuple[str, list[str]]:
+    dropped: list[str] = []
+
+    def _fix(m: re.Match) -> str:
+        tag = m.group(0)
+        for base in _OBJECT_ATTR_BASES:
+            a = re.search(rf'\s{base}\s*=\s*"([^"]*)"', tag)
+            if a and _BARE_WORD_RE.match(a.group(1)) and a.group(1).strip() not in ("true", "false", "null"):
+                # 32 of 202 saved generated slides wrote shadow="outer": keep the lift, in the dot form they use elsewhere
+                keep = _SHADOW_DOTS if base == "shadow" and "shadow." not in tag else ""
+                tag = tag[:a.start()] + keep + tag[a.end():]
+                dropped.append(f'{base}="{a.group(1)}"')
+        return tag
+
+    return _ELEMENT_TAG_RE.sub(_fix, xml), dropped
+
+
 def _expand_border_shorthand(xml: str) -> tuple[str, int]:
     """CSS-style `border.width="0 0 0 5"` (top right bottom left) is not a number to POM; write
     one `border<Side>.width` (+ the border colour) per non-zero side instead."""
@@ -585,6 +608,10 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
         if dropped:
             note("ATTR_CONFLICT_FIXED", "Dropped bare attribute(s) that conflict with their dot-notation "
                  f"form: {', '.join(sorted(set(dropped)))}.")
+        xml, dropped = _drop_bare_object_attrs(xml)
+        if dropped:
+            note("BARE_OBJECT_ATTR_DROPPED", "Dropped attribute(s) whose value is a word where POM reads an object "
+                 f"(a shadow word becomes a dot-form shadow): {', '.join(sorted(set(dropped)))}.")
         xml, n = _expand_border_shorthand(xml)
         if n:
             note("BORDER_SHORTHAND_EXPANDED", f'Rewrote {n} CSS-style border.width="t r b l" as per-side borders.')

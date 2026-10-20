@@ -685,3 +685,23 @@ def test_invalid_child_guidance_and_signature():
              "auto_fixed": False, "parent": "Td", "child": "HStack"}
     assert "NESTING FIX" in build_error_guidance([issue], [])
     assert "INVALID_CHILD:Td>HStack" in error_signatures([issue], [])
+
+
+def test_attribute_value_errors_keep_the_components_on_a_replan():
+    """XTSY 6 (2026-10-20): shadow="outer" then invented shapeTypes; the re-plan was told to avoid card_grid and drew
+    a 7-step workflow as a one-cell table."""
+    plan = {"components": [{"kind": "card_grid"}, {"kind": "bullet_list"}, {"kind": "narrative"}]}
+    ctx = _build_repair_context(plan, [
+        'PARSE_ERROR: <VStack>: Cannot parse JSON value: "outer"',
+        'INVALID_VALUE: <Shape>: Invalid value for attribute "shapeType". Expected: "rect"'], has_compile_errors=True)
+    assert "Keep the same component kinds" in ctx["directive"] and "Avoid" not in ctx["directive"]
+    ctx = _build_repair_context(plan, ["UNKNOWN_TAG: div"], has_compile_errors=True)
+    assert "Keep the same component kinds" not in ctx["directive"]
+
+
+def test_a_bare_word_in_an_object_attribute_is_dropped():
+    from src.compiler.normalizer import normalize_xml
+    res = normalize_xml('<Slide><VStack shadow="outer" padding="16" border.color="$border"><Text>x</Text></VStack></Slide>')
+    assert 'shadow="outer"' not in res["cleaned_xml"] and 'border.color="$border"' in res["cleaned_xml"]
+    assert 'shadow.blur="6"' in res["cleaned_xml"]   # the lift is kept in the form POM reads
+    assert any(i["code"] == "BARE_OBJECT_ATTR_DROPPED" for i in res["issues"])
