@@ -56,6 +56,9 @@ def settle_direction_lines(slide: dict[str, Any], instructions: dict[str, list[s
         if NOTES_LABEL.match(text):
             notes.append(f"dropped presenter notes from key_messages: {text[:80]}")
             continue
+        if instructions and not _DIRECTION.match(text) and copies_visual(text, instructions.get("visuals") or []):
+            text = "Visual: " + _LEAD_LABEL.sub("", text, count=1)
+            notes.append(f"gave the brief's Visual: line its label back: {text[8:88]}")
         if instructions and not _DIRECTION.match(text) and not (content and from_brief(_LEAD_LABEL.sub("", text, count=1),
                                                                                       content)):
             if matches_instruction(text, instructions.get("notes") or []):
@@ -89,14 +92,18 @@ _BUILD_WORDS = re.compile(_DESIGN_WORDS.pattern + r"|charts?\b|graphs?\b|diagram
 _BRIEF_PIECE = re.compile(r"\n|\s{2,}|(?:^|\s)[*•]\s")
 _SENTENCE_END = re.compile(r"(?<=[a-z0-9)])[.!?]\s+(?=[A-Z])")
 MIN_INSTRUCTION_WORDS = 3   # a shorter line matches an instruction by chance
+# a figure, not a count in a name ("4-stage"): a decimal, 2+ digits, a currency or a unit after the number
+_FIGURE = re.compile(r"\d+[.,]\d|\d{2,}|[₹$€£]\s*\d|\d\s*(?:%|x\b|[kmbl]\b|cr\b|mn\b)", re.I)
 
 
 def brief_instructions(request: str) -> dict[str, list[str]]:
-    """The brief's lines that are not slide content: "notes" (the text after a speaker-notes label) and "directions"
+    """The brief's lines that are not slide content: "notes" (the text after a speaker-notes label), "directions"
     (unlabelled sentences that start with a build verb and name a design element: "Use arrow visuals rather than hard
-    numbers."). Labelled directions ("Visual: ...") are left to `visual_directions`."""
+    numbers.") and "visuals" (the text after a direction label: "Visual: 4-stage growth roadmap" → "4-stage growth
+    roadmap"), which the outline may copy without its label."""
     notes: list[str] = []
     directions: list[str] = []
+    visuals: list[str] = []
     for piece in _BRIEF_PIECE.split(request or ""):
         piece = " ".join((piece or "").split())
         if not piece:
@@ -106,18 +113,39 @@ def brief_instructions(request: str) -> dict[str, list[str]]:
             if piece[m.end():].strip():
                 notes.append(piece[m.end():].strip())
             continue
-        if _DIRECTION.match(piece) or _LEAD_LABEL.match(piece):
+        m = _DIRECTION.match(piece)
+        if m:
+            if piece[m.end():].strip():
+                visuals.append(piece[m.end():].strip())
+            continue
+        if _LEAD_LABEL.match(piece):
             continue
         directions += [s for s in _SENTENCE_END.split(piece) if _BUILD_VERB.match(s) and _BUILD_WORDS.search(s)]
-    return {"notes": notes, "directions": directions}
+    return {"notes": notes, "directions": directions, "visuals": visuals}
 
 
 def brief_content(request: str, instructions: dict[str, list[str]]) -> str:
     """The brief without its instruction lines: what a slide line may be copied from."""
     out = request or ""
-    for line in [*(instructions.get("notes") or []), *(instructions.get("directions") or [])]:
+    for line in [*(instructions.get("notes") or []), *(instructions.get("directions") or []),
+                 *(instructions.get("visuals") or [])]:
         out = out.replace(line, " ")
     return " ".join(out.split())
+
+
+def copies_visual(text: str, visuals: list[str]) -> bool:
+    """`text` (a short label in front taken off) is one of the brief's labelled directions without its label: the same
+    words ("Opportunity Matrix"), or 70% of each one's words in the other ("Quick Commerce ecosystem — Zepto, Blinkit and
+    Instamart connected to XTSY growth engine." for the brief's "Visual: Quick Commerce ecosystem showing ..."). Both
+    ways, so a longer content line that only mentions the direction's words stays content. A line with a figure
+    ("ROAS by city: Bengaluru 0.45x" from "Visual: bar chart of ROAS by city: ...") stays content: its numbers go on
+    the slide."""
+    body = _LEAD_LABEL.sub("", str(text or ""), count=1)
+    plain = _plain(body)
+    if not plain or _FIGURE.search(body):
+        return False
+    return any(plain == _plain(v) or (len(_words(body)) >= MIN_INSTRUCTION_WORDS and from_brief(body, v)
+                                       and from_brief(v, body)) for v in visuals)
 
 
 def matches_instruction(text: str, instructions: list[str]) -> bool:
@@ -131,15 +159,12 @@ def matches_instruction(text: str, instructions: list[str]) -> bool:
 def instruction_lines(outline_plan: dict[str, Any] | None) -> list[str]:
     """Every brief instruction line the outline planner found (`outline_plan["brief_instructions"]`)."""
     found = (outline_plan or {}).get("brief_instructions") or {}
-    return [*(found.get("notes") or []), *(found.get("directions") or [])]
+    return [*(found.get("notes") or []), *(found.get("directions") or []), *(found.get("visuals") or [])]
 
 
 def visual_directions(slide: dict[str, Any]) -> list[str]:
-    """The brief's design directions for this slide (a "Visual:" line, visual_emphasis)."""
+    """The brief's design directions for this slide: its "Visual:" / "Show:" lines, label taken off."""
     out = [_DIRECTION.sub("", m) for m in slide.get("key_messages") or [] if _DIRECTION.match(m or "")]
-    emphasis = str(slide.get("visual_emphasis") or "")
-    if _DESIGN_WORDS.search(emphasis):  # an emphasis note that restates content is not a direction
-        out.append(_DIRECTION.sub("", emphasis))
     return [d for d in out if d.strip()]
 
 
@@ -161,7 +186,7 @@ def content_lines(slide: dict[str, Any], directions: list[str]) -> str:
 def drop_visual_directions(plan: dict[str, Any], directions: list[str], content: str = "") -> list[str]:
     """Remove text components that only repeat a design direction ("Marketplace growth theme
     with FLIPCART and ZAROMA visual cues." printed as a card on the CHEFFIN cover). The
-    direction still reaches the generator through visual_emphasis / the design hints."""
+    direction still reaches the planner as its own block (layout only) and the generator through the design hints."""
     notes: list[str] = []
     keep = []
     for comp in plan.get("components", []):

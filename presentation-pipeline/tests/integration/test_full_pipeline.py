@@ -137,7 +137,6 @@ def test_pipeline_with_hierarchical_planner(
                 slide_index=0, slide_title="Key Metrics",
                 section="Metrics", narrative_role="Establishes baseline.",
                 key_messages=["ARR $12M", "NRR 115%"],
-                visual_emphasis="dashboard of metrics",
             )
         ],
     )

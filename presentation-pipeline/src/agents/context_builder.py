@@ -295,6 +295,10 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
             notes.append(f"{kind} structure:\n{str(struct).strip()}")
         for pitfall in (cy.get("pitfalls") or []):
             notes.append(pitfall)
+        # what POM draws: verified facts (knowledge/components/<kind>.yaml, tests/unit/test_node_facts.py)
+        for fact in (cy.get("facts") or []):
+            if "generator" in (fact.get("for") or []):
+                notes.append(" ".join(str(fact["text"]).split()))
 
     theme_name = theme_info.get("name", "")
     theme_mode = theme_info.get("mode", "light")

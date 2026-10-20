@@ -1,7 +1,7 @@
 """Pydantic models for the outline planner's structured output.
 
 The outline planner produces a rich per-slide skeleton (header, key_messages,
-narrative_role, visual_emphasis) but NOT slide_type, component-level details,
+narrative_role) but NOT slide_type, component-level details,
 or content_data JSON. Those are the slide_component_planner's job.
 """
 
@@ -72,19 +72,6 @@ class OutlineSlide(BaseModel):
                     "  - Count per slide: one message per data group the slide carries, plus "
                     "the narrative the amount_of_text setting asks for.\n"
                     "  - Hero/intro slides: 1-2 messages.",
-    )
-
-    visual_emphasis: str = Field(
-        description="One short phrase describing the slide's conceptual focus — "
-                    "NOT a spatial layout.\n"
-                    "\n"
-                    "Do NOT dictate spatial layouts (e.g. 'left column', 'top row', "
-                    "'right panel'). Provide only the conceptual focus.\n"
-                    "\n"
-                    "GOOD: 'dashboard of metrics', 'timeline progression', "
-                    "'side-by-side comparison', 'one dominant number', "
-                    "'data table with callout'\n"
-                    "BAD: 'KPI row on top, chart in the left column, table on the right'"
     )
 
 

@@ -1,6 +1,8 @@
 # pom-knowledge/components/process-arrow.yaml
 # <ProcessArrow> + <ProcessArrowStep>. Post-MVP.
 # Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+# What POM draws is stated ONLY in `facts` (each with a probe compiled by
+# tests/unit/test_node_facts.py); attribute lists are checked against POM's own rules.
 
 meta:
   phase: post_mvp
@@ -13,8 +15,8 @@ description: >
   (it also draws its nodes in one line, not as branches).
 
 structure: |
-  <ProcessArrow direction="horizontal" w="1100" h="100"
-                itemWidth="200" itemHeight="80" gap="8" fontSize="14">
+  <!-- direction: horizontal | vertical (by the box it gets: see facts process_arrow.direction) -->
+  <ProcessArrow direction="horizontal" h="max" minH="90" fontSize="14">
     <ProcessArrowStep label="Discover" color="$accentSoft" textColor="$textMain" />
     <ProcessArrowStep label="Define" color="$accentSoft" textColor="$textMain" />
     <ProcessArrowStep label="Develop" color="$accentSoft" textColor="$textMain" />
@@ -22,18 +24,19 @@ structure: |
   </ProcessArrow>
 
 ProcessArrow_attributes:
-  direction:  { type: enum, values: [horizontal, vertical], default: horizontal }
+  direction:  { type: enum, values: [horizontal, vertical], default: horizontal, note: "A layout choice per slide (facts process_arrow.direction)" }
   itemWidth:  { type: number, default: 150 }
   itemHeight: { type: number, default: 80 }
-  gap:        { type: number, note: "Gap between chevrons (can be negative for overlap)" }
+  gap:        { type: number, note: "Gap between chevrons; default -0.35 x itemHeight (the chevrons interlock)" }
   fontSize:   { type: number, default: 14 }
   bold:       { type: bool }
   italic:     { type: bool }
   strike:     { type: bool }
   underline:  { type: bool }
+  highlight:  { type: string, note: "Text highlight colour" }
   fontFamily: { type: string, default: "Noto Sans JP" }
-  w:          { type: number, note: "Explicit width — required" }
-  h:          { type: number, note: "Explicit height — required" }
+  w:          { type: number, note: "Optional: without it the box is the row's natural width (facts process_arrow.natural_size)" }
+  h:          { type: number, note: "Optional: without it the box is itemHeight" }
 
 ProcessArrowStep_attributes:
   label:     { type: string, required: true, note: "Step display label" }
@@ -41,19 +44,104 @@ ProcessArrowStep_attributes:
   textColor: { type: hex, default: "FFFFFF", note: "Label text color" }
 
 notes:
-  - "ProcessArrow needs explicit w and h. w=\"max\" works for width; h must be a pixel number."
-  - "Capacity: 3-5 steps, labels of 1-2 short words, full slide width (in a band that spans the slide)."
+  - "Capacity: 3-5 steps, labels of 1-2 short words (core/capacity.yaml)."
   - "Use a gradient of related hues (light→dark or dark→light) across steps for visual flow."
   - "For a process with a decision step, use <Flow>; neither component lays out branches side by side."
-  - "gap can be negative for overlapping chevron effect."
 
 pitfalls:
   - "label is required on every ProcessArrowStep."
-  - "Missing w/h on ProcessArrow — will not render correctly."
-  - "More than 5 steps, or a ProcessArrow in a half-width card, breaks labels into single letters (seen 2026-09-29: 7 impact areas drawn as chevrons). Put longer or unordered items in a bullet list instead."
-  - "VERIFIED v10.3.0 render: a ProcessArrowStep label longer than ~2 short words
-     clips / wraps badly inside the chevron at h<=70 (e.g. 'AUTONOMIZE' broke to
-     'AUTONOMI ZE'). Keep labels to 1-2 words. Put any longer phase description
-     in a caption Text or a card BELOW the ProcessArrow, not in the label.
-     Give a horizontal ProcessArrow h>=80 if labels must be two words."
+  - "More than 5 steps, or a horizontal ProcessArrow in a half-width card, shrinks the labels and breaks words (seen 2026-09-29: 7 impact areas drawn as chevrons). Put longer or unordered items in a bullet list instead."
+  - "Labels: 1-2 short words (seen 2026-09: 'AUTONOMIZE' broke to 'AUTONOMI ZE' at h<=70). Put a longer phase description in a caption Text or a card BELOW the ProcessArrow, not in the label."
   - "No newlines in a label — they do not render as line breaks."
+
+open_choices:
+  direction: { values: [horizontal, vertical], rule: process_arrow.direction }
+
+refuted:
+  - { pattern: 'ProcessArrow needs explicit w and h|Missing w/h on ProcessArrow', fact: process_arrow.natural_size }
+  - { pattern: 'Horizontal needs the full slide width', fact: process_arrow.natural_size, note: "4 steps are 516 px at full size" }
+
+facts:
+  - id: process_arrow.one_line
+    kind: layout
+    for: [generator]
+    text: >-
+      ProcessArrow draws its chevrons in one line at itemWidth x itemHeight (150 x 80 by
+      default), centred in its box: a wider box leaves space beside the row, it does not
+      stretch the chevrons.
+    source: renderPptx/nodes/processArrow.js renderHorizontalProcessArrow
+    probes:
+      - xml: '<ProcessArrow w="1100" h="200"><ProcessArrowStep label="One"/><ProcessArrowStep label="Two"/></ProcessArrow>'
+        expect:
+          - ok
+          - all(near(f.w, 150) and near(f.h, 80) for f in fills)
+          - same([f.cy for f in fills])
+          - near(extent(fills).cx, box.cx)
+
+  - id: process_arrow.natural_size
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Chevrons are 150 x 80 px at full size and interlock by 28 px (default gap -0.35 x
+      itemHeight), so a horizontal row is 394 px wide for 3 steps, 516 for 4, 638 for 5; a
+      narrower box shrinks it, labels included.
+    source: calcYogaLayout/measureCompositeNodes.js measureProcessArrow
+    probes:
+      - xml: '<ProcessArrow><ProcessArrowStep label="A"/><ProcessArrowStep label="B"/><ProcessArrowStep label="C"/><ProcessArrowStep label="D"/></ProcessArrow>'
+        expect: [ok, 'near(box.w, 4 * 150 - 3 * 28) and near(box.h, 80)', 'near(extent(fills).w, 516)']
+
+  - id: process_arrow.label_box
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Each label sits inside its chevron at 14 px in a box 94 px wide (the first step 122 px)
+      at full size — about two short words per line (the box is itemWidth - 0.7 x itemHeight).
+    source: renderPptx/nodes/processArrow.js (textWidth = itemWidth - arrowDepth - textOffsetLeft)
+    probes:
+      - xml: '<ProcessArrow><ProcessArrowStep label="One"/><ProcessArrowStep label="Two"/><ProcessArrowStep label="Three"/></ProcessArrow>'
+        expect: [ok, 'near(t("One").w, 122)', 'near(t("Two").w, 94) and near(t("Three").w, 94)', 't("Two").font == 14']
+
+  - id: process_arrow.wh_optional
+    kind: layout
+    for: [generator]
+    text: >-
+      w and h are optional: without them the box is the row's natural size (in a VStack it
+      stretches to the parent's width).
+    source: registry/definitions/compositeNodes.js applyCompositeMeasure
+    probes:
+      - xml: '<ProcessArrow><ProcessArrowStep label="A"/><ProcessArrowStep label="B"/></ProcessArrow>'
+        align: stretch
+        expect: [ok, 'near(box.w, 1200) and near(box.h, 80)']
+
+  - id: process_arrow.scale
+    kind: layout
+    for: [generator]
+    text: >-
+      POM draws the row at that natural size and shrinks it, text included, to fit its box
+      (never enlarges it); below 50% it stops shrinking, draws past its box and warns
+      SCALE_BELOW_THRESHOLD.
+    source: renderPptx/utils/scaleToFit.js calcScaleFactor
+    probes:
+      - xml: '<ProcessArrow w="258" h="200"><ProcessArrowStep label="A"/><ProcessArrowStep label="B"/><ProcessArrowStep label="C"/><ProcessArrowStep label="D"/></ProcessArrow>'
+        expect: [ok, '"SCALE_BELOW_THRESHOLD" not in warnings', 'near(t("B").font, 7, 0.1)']
+      - xml: '<ProcessArrow w="200" h="200"><ProcessArrowStep label="A"/><ProcessArrowStep label="B"/><ProcessArrowStep label="C"/><ProcessArrowStep label="D"/></ProcessArrow>'
+        expect: [ok, '"SCALE_BELOW_THRESHOLD" in warnings', 'extent(fills).w > box.w']
+
+  - id: process_arrow.vertical
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Vertical stacks the chevrons top to bottom: 150 px wide and 80 px per step, less 28 px
+      overlap each, tall at full size — it fits a narrow card.
+    source: renderPptx/nodes/processArrow.js renderVerticalProcessArrow
+    probes:
+      - xml: '<ProcessArrow direction="vertical"><ProcessArrowStep label="A"/><ProcessArrowStep label="B"/><ProcessArrowStep label="C"/></ProcessArrow>'
+        expect: [ok, 'near(box.w, 150) and near(box.h, 3 * 80 - 2 * 28)', 'same([f.cx for f in fills])']
+
+  - id: process_arrow.direction
+    kind: advice
+    for: [planner, generator]
+    text: >-
+      direction is a layout choice per slide: horizontal when the row has the width its steps
+      need, vertical in a narrower card.
+    source: follows from process_arrow.natural_size and process_arrow.vertical

@@ -1,6 +1,8 @@
 # pom-knowledge/components/timeline.yaml
 # <Timeline> + <TimelineItem>. Phase D.
 # Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+# What POM draws is stated ONLY in `facts` (each with a probe compiled by
+# tests/unit/test_node_facts.py); attribute lists are checked against POM's own rules.
 
 meta:
   phase: D
@@ -9,10 +11,11 @@ meta:
 description: >
   A timeline / roadmap visualization. One <Timeline> wraps one or more
   <TimelineItem> entries rendered as a connected sequence of dated milestones.
-  Use horizontal for left-to-right chronology, vertical for top-to-bottom roadmaps.
+  How it is drawn in each direction: see facts.
 
 structure: |
-  <Timeline direction="horizontal" w="1100" h="300"
+  <!-- direction: horizontal | vertical (by the box and the label length: see facts timeline.direction) -->
+  <Timeline direction="horizontal" h="150"
             dateColor="$textMuted" titleColor="$textMain"
             connectorColor="$accent">
     <TimelineItem date="Q1 2026" title="Alpha Launch" color="$neutral" />
@@ -22,29 +25,112 @@ structure: |
   </Timeline>
 
 Timeline_attributes:
-  direction:         { type: enum, values: [horizontal, vertical], default: horizontal }
+  direction:         { type: enum, values: [horizontal, vertical], default: horizontal, note: "A layout choice per slide (facts timeline.direction)" }
   dateColor:         { type: hex, default: "64748B", note: "Color for date labels" }
   titleColor:        { type: hex, default: "1E293B", note: "Color for title labels" }
-  connectorColor:    { type: hex, default: "E2E8F0", note: "Color for the connecting line/dots" }
+  descriptionColor:  { type: hex, default: "64748B", note: "Color for descriptions" }
+  connectorColor:    { type: hex, default: "E2E8F0", note: "Color for the connecting line" }
   connectorGradient: { type: string, note: "linear-gradient syntax for gradient connector" }
   useColorForDate:   { type: bool, note: "When true, date uses the item's color instead of dateColor" }
   fontFamily:        { type: string, default: "Noto Sans JP" }
-  w:                 { type: number, note: "Explicit width — required" }
-  h:                 { type: number, note: "Explicit height — required" }
+  w:                 { type: number, note: "Optional: without it the box is the natural width (facts timeline.natural_size)" }
+  h:                 { type: number, note: "Optional: without it the box is the natural height" }
 
 TimelineItem_attributes:
   date:        { type: string, required: true, note: "Date label (e.g. 'Q1 2026', 'Jan 2026', '2026-03-01')" }
   title:       { type: string, required: true, note: "Milestone title" }
-  color:       { type: hex, note: "Accent color for this milestone's dot/marker" }
+  description: { type: string, note: "Optional line under the title (11 px)" }
+  color:       { type: hex, note: "Accent color for this milestone's dot" }
   dateColor:   { type: hex, note: "Override timeline-level dateColor for this item" }
 
 notes:
-  - "Timeline needs explicit w and h — it does not auto-size."
-  - "3-5 items (core/capacity.yaml). More gets cramped horizontally at 1280 wide - put the rest in a table or cards."
-  - "Use horizontal for a left-to-right chronology, vertical for a top-to-bottom roadmap."
-  - "Each item's color sets the dot/marker accent. Use the palette's accent, positive, negative tokens for semantic milestones."
+  - "3-5 items (core/capacity.yaml)."
+  - "Each item's color sets the dot accent. Use the palette's accent, positive, negative tokens for semantic milestones."
 
 pitfalls:
-  - "Missing w/h on Timeline — will not render correctly."
   - "date and title are both required on every TimelineItem."
-  - "Too many items (>5) in horizontal mode will cause cramping or overflow."
+  - "Horizontal: each label is 120 px wide whatever the spacing (facts timeline.horizontal) — a title over ~2 words wraps; long titles read better vertical."
+
+open_choices:
+  direction: { values: [horizontal, vertical], rule: timeline.direction }
+
+refuted:
+  - { pattern: 'Timeline needs explicit w and h|does not auto-size|Missing w/h on Timeline', fact: timeline.natural_size }
+  - { pattern: 'each column is only w/N', fact: timeline.horizontal, note: "labels are 120 px wide, not a share of the width" }
+
+facts:
+  - id: timeline.horizontal
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Horizontal: the dots are spread evenly over the whole box width, whatever the item count;
+      each date (12 px), title (14 px bold) and description (11 px) is drawn in a 120 px-wide
+      box centred on its dot, so a title wraps at 120 px even when the dots are far apart, and
+      neighbouring labels overlap only when the dots are closer than 120 px.
+    source: renderPptx/nodes/timeline.js renderHorizontalTimeline
+    probes:
+      - xml: '<Timeline w="1180" h="200"><TimelineItem date="D0" title="T0"/><TimelineItem date="D1" title="T1"/><TimelineItem date="D2" title="T2" description="x"/><TimelineItem date="D3" title="T3"/><TimelineItem date="D4" title="T4"/><TimelineItem date="D5" title="T5"/><TimelineItem date="D6" title="T6"/></Timeline>'
+        expect:
+          - ok
+          - all(near(t(f"T{i}").w, 120) for i in range(7))
+          - near(t("T0").cx, box.x + 60) and near(t("T6").cx, box.r - 60)
+          - t("T1").x > t("T0").r
+          - t("D0").font == 12 and t("T0").font == 14 and t("x").font == 11
+
+  - id: timeline.vertical
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Vertical: the line runs down the left of the box and the dots are spread over its height;
+      dates sit beside the dots and titles / descriptions run to the right, as wide as the box
+      minus 80 px — long titles fit.
+    source: renderPptx/nodes/timeline.js renderVerticalTimeline
+    probes:
+      - xml: '<Timeline direction="vertical" w="800" h="400"><TimelineItem date="Q1" title="A"/><TimelineItem date="Q2" title="B"/><TimelineItem date="Q3" title="C"/></Timeline>'
+        expect: [ok, 'near(t("A").w, 800 - 80)', 'same([t(x).x for x in "ABC"])', 't("C").y - t("A").y > 300']
+
+  - id: timeline.natural_size
+    kind: layout
+    for: [generator]
+    text: >-
+      w and h are optional: the natural size is 120 px per item by 128 px (horizontal) or
+      180 px by 24 + 60 px per further item (vertical); in a VStack the box stretches to the
+      parent's width.
+    source: calcYogaLayout/measureCompositeNodes.js measureTimeline
+    probes:
+      - xml: '<Timeline><TimelineItem date="Q1" title="A"/><TimelineItem date="Q2" title="B"/><TimelineItem date="Q3" title="C"/></Timeline>'
+        expect: [ok, 'near(box.w, 360) and near(box.h, 128)']
+      - xml: '<Timeline direction="vertical"><TimelineItem date="Q1" title="A"/><TimelineItem date="Q2" title="B"/><TimelineItem date="Q3" title="C"/></Timeline>'
+        expect: [ok, 'near(box.w, 180) and near(box.h, 24 + 2 * 60)']
+
+  - id: timeline.scale
+    kind: layout
+    for: [generator]
+    text: >-
+      A box smaller than the natural size shrinks the dots and all text; a bigger box never
+      enlarges them (it only spreads the dots).
+    source: renderPptx/utils/scaleToFit.js calcScaleFactor
+    probes:
+      - xml: '<Timeline w="1000" h="400"><TimelineItem date="Q1" title="A"/><TimelineItem date="Q2" title="B"/></Timeline>'
+        expect: [ok, 't("A").font == 14', 'near(t("A").w, 120)']
+      - xml: '<Timeline w="240" h="200"><TimelineItem date="Q1" title="A"/><TimelineItem date="Q2" title="B"/><TimelineItem date="Q3" title="C"/></Timeline>'
+        expect: [ok, 'near(t("A").font, 14 * 240 / 360, 0.1)']
+
+  - id: timeline.description
+    kind: syntax
+    for: [generator]
+    text: >-
+      A TimelineItem may carry a description (one short line under the title, 11 px);
+      descriptionColor on the Timeline colours it.
+    source: types.js timelineItemSchema; parseXml/coercionRules.js TimelineItem
+    probes:
+      - xml: '<Timeline w="600" h="200"><TimelineItem date="Q1" title="A" description="first"/><TimelineItem date="Q2" title="B"/></Timeline>'
+        expect: [ok, 't("first").font == 11', 't("first").y > t("A").y']
+
+  - id: timeline.direction
+    kind: advice
+    for: [planner, generator]
+    text: >-
+      direction is a layout choice per slide: horizontal across a wide box with short titles,
+      vertical in a narrow card or when titles are longer than two words.
+    source: follows from timeline.horizontal and timeline.vertical

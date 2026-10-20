@@ -31,7 +31,7 @@ def test_brief_instructions_reads_notes_and_unlabelled_design_sentences():
         "End with confidence. The audit already shows immediate improvement areas, and deeper access will allow the "
         "agency to move from diagnosis to execution."]
     assert brief_instructions(XTSY)["directions"] == ["Use arrow visuals rather than hard numbers."]
-    assert brief_instructions(LAUNCH) == {"notes": [], "directions": []}   # a data note is content
+    assert brief_instructions(LAUNCH) == {"notes": [], "directions": [], "visuals": ["a badge row."]}   # a data note is content
 
 
 def test_outline_drops_reworded_notes_and_marks_unlabelled_directions():

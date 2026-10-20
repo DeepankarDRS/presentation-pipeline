@@ -2,8 +2,8 @@
 
 Takes the enriched request (raw_request + deck_settings + elicitation_answers +
 supplied_content) and produces a rich per-slide outline: the header (label,
-slide_title = headline, subtitle), section, narrative_role, key_messages,
-visual_emphasis.
+slide_title = headline, subtitle), section, narrative_role, key_messages (the
+request's own visual direction for a slide is a labelled "Visual:" message).
 
 key_messages carry each slide's content, copied from the request — every message
 carries semantic intent that the slide component planner routes to the right

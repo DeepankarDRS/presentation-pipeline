@@ -22,7 +22,6 @@ def test_regenerate_outline_slide_preserves_slide_index(mock_get_llm):
         section="",
         narrative_role="Addresses the competitive pressure half of the core hook.",
         key_messages=["New entrants are undercutting on price in the mid-market segment."],
-        visual_emphasis="side-by-side comparison",
     )
     mock_get_llm.return_value = _make_structured_llm(output)
 
@@ -32,7 +31,6 @@ def test_regenerate_outline_slide_preserves_slide_index(mock_get_llm):
         "section": "",
         "narrative_role": "Establishes traction.",
         "key_messages": ["Fable 5.1 generated $38M in revenue last year."],
-        "visual_emphasis": "one dominant number",
     }
 
     updated = regenerate_outline_slide(
@@ -52,7 +50,6 @@ def test_regenerate_outline_slide_defaults_index_when_missing(mock_get_llm):
         section="",
         narrative_role="Role",
         key_messages=["A message"],
-        visual_emphasis="big statement",
     )
     mock_get_llm.return_value = _make_structured_llm(output)
 

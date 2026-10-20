@@ -6,8 +6,7 @@ You produce per-slide entries with:
 - the slide header: label (kicker), slide_title (the headline), subtitle (the evidence line)
 - section
 - narrative_role (how the slide advances the core_hook)
-- key_messages (the points the slide makes and the content it carries, copied exactly from the request)
-- visual_emphasis (conceptual focus, NOT spatial layout)
+- key_messages (the points the slide makes and the content it carries, copied exactly from the request, plus the request's own visual direction for the slide as a "Visual:" line)
 
 You do NOT produce slide_type, component lists, or content_data JSON. Those are the slide component planner's job.
 
@@ -76,26 +75,16 @@ Rules:
   that captures the slide's essential content regardless of amount_of_text.
 - Hero/intro slides: keep to 1-2 messages regardless of setting (title + hook).
 
-## visual_emphasis Requirements
+## Visual Direction
 
-One short phrase describing the slide's conceptual focus and priority hierarchy.
-The slide component planner uses this to pick components and weight.
+When the request says how a slide should be drawn — a "Visual:" or "Show:" line, a named diagram ("ecosystem
+diagram", "4-stage roadmap", "opportunity matrix"), or an ordering ("KPIs across the top, chart below") — copy it into
+that slide's key_messages word for word, as ONE message that keeps its label: "Visual: 4-stage growth roadmap". The
+label is how the slide component planner knows the line decides the layout and is never printed. Never drop the label,
+merge the direction into a content message, or reword it.
 
-- Describe WHAT is prominent and its role (hero, supporting, accent).
-- Do NOT dictate pixel-level spatial layouts (e.g. "left column 62% width").
-- DO preserve the user's stated ordering or grouping preferences. If the user says
-  "KPIs across the top" or "chart below the scorecard", relay that ordering — it is
-  user intent, not a pixel spec. The downstream planner uses it to inform layout_hint.
-
-Examples:
-  - "revenue chart as hero, KPI scorecard across the top, segment table supporting"
-  - "one dominant number"
-  - "timeline progression"
-  - "data table with callout"
-  - "big statement, nothing else"
-  - "dashboard of metrics with KPIs first, detail chart below"
-  - "process workflow"
-  - "hierarchical breakdown"
+When the request gives a slide no direction, write none: the slide component planner chooses the layout from the
+shape of the content. Never make up a direction.
 
 ## Slide Count and Each Fact Once
 

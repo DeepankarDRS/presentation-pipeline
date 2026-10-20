@@ -36,6 +36,7 @@ from src.agents.settings_mapper import DeckSettings, compute_provenance, setting
 from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
                                       flag_written_lines, instruction_lines, visual_directions)
+from src.compiler.node_facts import facts_text
 from src.state import ChartTypeLiteral, ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, length_limit_usage, unpack_raw, usage_record
 from src.utils.text_clean import clean_data
@@ -63,8 +64,10 @@ _jinja_env = Environment(
     trim_blocks=True,
     lstrip_blocks=True,
 )
-# component capacity (knowledge/core/capacity.yaml) — the prompt's limits come from here
-_jinja_env.globals.update(cap=capacity(), span=span, content_field="content_data_json")
+# component capacity (knowledge/core/capacity.yaml) — the prompt's limits come from here;
+# what a diagram draws comes from its verified facts (knowledge/components/<kind>.yaml)
+_jinja_env.globals.update(cap=capacity(), span=span, content_field="content_data_json",
+                          facts=lambda kind: facts_text(kind, "planner"))
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
 
@@ -204,8 +207,7 @@ def brief_text_for(slide: dict[str, Any], supplied_content: dict[str, Any] | Non
     supplied_for_slide = _filter_supplied_content_for_slide(supplied_content, slide)
     # one line per message: `dropped_card_lines` reads a card's line within one message, never across two
     return "\n".join([*(slide.get("key_messages") or []), slide.get("slide_title", ""),
-                     slide.get("subtitle", ""), slide.get("visual_emphasis", ""),
-                     json.dumps(supplied_for_slide or {}, ensure_ascii=False)])
+                     slide.get("subtitle", ""), json.dumps(supplied_for_slide or {}, ensure_ascii=False)])
 
 
 def plan_single_slide(
@@ -238,9 +240,12 @@ def plan_single_slide(
 
     typed = planner_schema() == "typed"
     content_field = "content" if typed else "content_data_json"
+    directions = visual_directions(slide)
     user_msg = _jinja_env.get_template("user.j2").render(
         content_field=content_field,
         slide=slide,
+        content_messages=content_line_list(slide, directions),
+        visual_directions=directions,
         core_hook=outline_plan.get("core_hook", ""),
         deck_context=all_slide_titles,
         total_slides=total_slides,
@@ -278,7 +283,6 @@ def plan_single_slide(
         subtitle=slide.get("subtitle", ""),
     )
     brief_text = brief_text_for(slide, supplied_content)
-    directions = visual_directions(slide)
     notes = (drop_visual_directions(plan, directions, content_lines(slide, directions))
              + flag_written_lines(plan, brief_text))
     if finalize:

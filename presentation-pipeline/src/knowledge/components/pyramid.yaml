@@ -1,6 +1,8 @@
 # pom-knowledge/components/pyramid.yaml
 # <Pyramid> + <PyramidLevel>. Post-MVP.
 # Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+# What POM draws is stated ONLY in `facts` (each with a probe compiled by
+# tests/unit/test_node_facts.py); attribute lists are checked against POM's own rules.
 
 meta:
   phase: post_mvp
@@ -12,7 +14,8 @@ description: >
   Use for Maslow's hierarchy, strategic priority tiers, or any layered model.
 
 structure: |
-  <Pyramid direction="up" h="280" fontSize="14" bold="true">
+  <!-- direction: up | down (by meaning: see facts pyramid.direction) -->
+  <Pyramid direction="up" h="228" fontSize="14" bold="true">
     <PyramidLevel label="Self-Actualization" color="$accent" textColor="$onAccent" />
     <PyramidLevel label="Esteem" color="$accentSoft" textColor="$textMain" />
     <PyramidLevel label="Belonging" color="$accentSoft" textColor="$textMain" />
@@ -25,8 +28,8 @@ Pyramid_attributes:
   fontSize:   { type: number, default: 14 }
   bold:       { type: bool }
   fontFamily: { type: string, default: "Noto Sans JP" }
-  w:          { type: number, note: "Omit — the pyramid takes its card's width (never scales up)." }
-  h:          { type: number, note: "Pixel height — required: 52 x levels + 20." }
+  w:          { type: number, note: "Omit — the drawing is at most 400 px wide whatever the box (facts pyramid.size)." }
+  h:          { type: number, note: "Optional; 52 x levels + 20 leaves a little room around the bands." }
 
 PyramidLevel_attributes:
   label:     { type: string, required: true, note: "Level display label" }
@@ -34,19 +37,13 @@ PyramidLevel_attributes:
   textColor: { type: hex, default: "FFFFFF", note: "Label text color — MUST contrast with color" }
 
 sizing_rules: |
-  The POM renderer divides the total Pyramid height equally among levels. The
-  top level (narrowest in direction="up") gets the least horizontal space. As
-  levels increase, per-level height shrinks and the top narrows further.
+  Bands are a fixed 50 px tall and the base 400 px wide (facts pyramid.size): a
+  bigger box only adds empty space around the pyramid, a smaller one shrinks it.
+  The top band of an "up" pyramid is a triangle 400 / levels px wide at its base,
+  so its label has the least room — the more levels, the less: keep that label to
+  one or two words, or use fontSize 14 (never below 14).
 
-  fontSize MUST scale down with level count to prevent text overflow:
-    3 levels:  fontSize="16"   (comfortable)
-    4 levels:  fontSize="15"
-    5 levels:  fontSize="14"
-    6 levels:  fontSize="14"
-    7 levels:  fontSize="14"   (NEVER below 14)
-
-  The pyramid never scales up (sizing plan F6): size the box to the diagram,
-  h = 52 x levels + 20, no w, and no grow on its card.
+  Size the box to the diagram: h = 52 x levels + 20, no w, and no grow on its card.
 
 text_color_rules: |
   textColor on each PyramidLevel MUST contrast with that level's fill color.
@@ -64,16 +61,73 @@ text_color_rules: |
   use dark textColor on lighter fills.
 
 notes:
-  - "Pyramid needs a pixel h (52 x levels + 20); omit w."
-  - "3-7 levels work best. Scale fontSize DOWN as levels increase (see sizing_rules)."
+  - "3-7 levels work best."
   - "Direction 'up': first PyramidLevel = top/narrowest. Direction 'down': first PyramidLevel = top/widest."
   - "Use a gradient of related hues across levels for visual hierarchy."
   - "ALWAYS check textColor contrast per level — white text on light fills is invisible."
 
 pitfalls:
   - "label is required on every PyramidLevel."
-  - "Missing h on Pyramid — it needs a pixel h (52 x levels + 20); the width stretches."
   - "Direction 'up' vs 'down' controls which end is narrow — verify by reading the level order."
-  - "fontSize='24' (Text node default) causes overflow — Pyramid default is 14, scale DOWN with levels."
+  - "fontSize='24' (Text node default) causes overflow — Pyramid default is 14."
   - "the default white textColor on a pale fill — text is invisible. Set textColor on every level ($onAccent on $accent, $textMain on a *Soft fill)."
-  - "w='max' on a Pyramid in a VStack grows its HEIGHT, not its width — omit w."
+  - "w='max' on a Pyramid in a VStack grows its HEIGHT, not its width — omit w (facts pyramid.w_max)."
+
+open_choices:
+  direction: { values: [up, down], rule: pyramid.direction }
+
+refuted:
+  - { pattern: 'divides the total Pyramid height equally', fact: pyramid.size, note: "bands are 50 px whatever the height" }
+  - { pattern: 'Missing h on Pyramid|Pyramid needs a pixel h', fact: pyramid.size }
+
+facts:
+  - id: pyramid.size
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Bands are a fixed 50 px tall (2 px apart) and the base is 400 px wide, centred in the
+      box: a pyramid is never wider than 400 px or taller than 52 x levels whatever its w / h —
+      a bigger box only adds empty space around it, a smaller one shrinks it, text included.
+    source: renderPptx/nodes/pyramid.js (baseWidth 400, layerHeight 50, gap 2, all * scaleFactor)
+    probes:
+      - xml: '<Pyramid w="1000" h="600"><PyramidLevel label="A"/><PyramidLevel label="B"/><PyramidLevel label="C"/></Pyramid>'
+        expect: [ok, 'all(near(f.h, 50) for f in fills)', 'near(extent(fills).w, 400)', 'near(extent(fills).cy, box.cy)']
+      - xml: '<Pyramid><PyramidLevel label="A"/><PyramidLevel label="B"/><PyramidLevel label="C"/></Pyramid>'
+        expect: [ok, 'near(box.w, 400) and near(box.h, 3 * 52 - 2)']
+      - xml: '<Pyramid w="200" h="300"><PyramidLevel label="A"/><PyramidLevel label="B"/></Pyramid>'
+        expect: [ok, 'near(t("A").font, 7, 0.1)']
+
+  - id: pyramid.bands
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      With direction up the first level is the top band, a triangle; band k (1 = top) is
+      400 x k / levels px wide at its base, so the top label gets the least room (400 / levels
+      px). down mirrors it: the first level is the widest, on top. Labels are fontSize (14 px),
+      white unless textColor is set.
+    source: renderPptx/nodes/pyramid.js (topWidthRatio / bottomWidthRatio)
+    probes:
+      - xml: '<Pyramid><PyramidLevel label="A"/><PyramidLevel label="B"/><PyramidLevel label="C"/><PyramidLevel label="D"/></Pyramid>'
+        expect: [ok, 'near(t("A").w, 100) and near(t("D").w, 400)', 't("A").y < t("D").y', 't("A").font == 14']
+      - xml: '<Pyramid direction="down"><PyramidLevel label="A"/><PyramidLevel label="B"/><PyramidLevel label="C"/><PyramidLevel label="D"/></Pyramid>'
+        expect: [ok, 'near(t("A").w, 400) and near(t("D").w, 100)', 't("A").y < t("D").y']
+
+  - id: pyramid.w_max
+    kind: layout
+    for: [generator]
+    text: >-
+      w="max" on a Pyramid in a VStack grows its box's height (flex grow on the main axis), not
+      the drawing: omit w.
+    source: calcYogaLayout (w="max" = flexGrow on the main axis)
+    probes:
+      - xml: '<Pyramid w="max"><PyramidLevel label="A"/><PyramidLevel label="B"/></Pyramid><Text>x</Text>'
+        align: stretch
+        expect: [ok, 'box.h > 300', 'near(extent(fills).w, 400)']
+
+  - id: pyramid.direction
+    kind: advice
+    for: [planner, generator]
+    text: >-
+      direction is a choice by meaning: up puts the narrow end on top (priority tiers, a
+      hierarchy), down puts the wide end on top (a funnel).
+    source: follows from pyramid.bands

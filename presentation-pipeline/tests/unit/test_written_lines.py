@@ -43,8 +43,7 @@ def test_other_components_and_empty_cards_untouched():
 from src.agents.written_lines import content_lines, drop_visual_directions, visual_directions  # noqa: E402
 
 COVER = {"key_messages": ["Prepared by our agency",
-                          "Visual: Marketplace growth theme with FLIPCART and ZAROMA visual cues."],
-         "visual_emphasis": "Marketplace growth theme with FLIPCART and ZAROMA visual cues."}
+                          "Visual: Marketplace growth theme with FLIPCART and ZAROMA visual cues."]}
 
 
 def _cover_plan():
@@ -61,25 +60,74 @@ def test_visual_line_printed_as_a_card_is_dropped():
     assert [c["component_id"] for c in plan["components"]] == ["prep"] and "design direction" in notes[0]
 
 
-def test_direction_copied_into_key_messages_without_label_still_counts():
-    slide = {**COVER, "key_messages": ["Prepared by our agency", COVER["visual_emphasis"]]}
-    plan = _cover_plan()
-    dirs = visual_directions(slide)
-    drop_visual_directions(plan, dirs, content_lines(slide, dirs))
-    assert [c["component_id"] for c in plan["components"]] == ["prep"]
+def test_a_visual_line_is_not_a_content_line():
+    dirs = visual_directions(COVER)
+    assert dirs == ["Marketplace growth theme with FLIPCART and ZAROMA visual cues."]
+    assert content_line_list(COVER, dirs) == ["Prepared by our agency"]
 
 
-def test_content_that_is_also_in_the_visual_emphasis_is_kept():
-    slide = {"key_messages": ["Late fixes is the fastest-growing moment", "Stand-up and review drive daily use"],
-             "visual_emphasis": "Late fixes is the fastest-growing moment"}
-    plan = {"components": [{"kind": "narrative", "content_data": {"text": "Stand-up and review drive daily use"}}]}
-    dirs = visual_directions(slide)
-    assert drop_visual_directions(plan, dirs, content_lines(slide, dirs)) == [] and len(plan["components"]) == 1
-
-
-def test_emphasis_that_restates_content_never_drops_it():
-    slide = {"key_messages": ["Late fixes is the fastest-growing moment"],
-             "visual_emphasis": "Late fixes is the fastest-growing moment"}
+def test_unlabelled_content_is_never_a_direction():
+    slide = {"key_messages": ["Late fixes is the fastest-growing moment"]}
     plan = {"components": [{"kind": "narrative", "content_data": {"text": "Late fixes is the fastest-growing moment"}}]}
     dirs = visual_directions(slide)
     assert dirs == [] and drop_visual_directions(plan, dirs, content_lines(slide, dirs)) == []
+
+
+# ── the outline copies a brief "Visual:" line without its label (XTSY 2026-10-20) ──
+
+from src.agents.written_lines import (brief_content, brief_instructions, content_line_list,  # noqa: E402
+                                      copies_visual, settle_direction_lines)
+
+XTSY_BRIEF = ("SLIDE 1  TITLE: Unlocking the Next Phase of Growth for XTSY on Quick Commerce  Visual: Quick Commerce "
+              "ecosystem showing Zepto, Blinkit and Instamart connected to XTSY growth engine.  Key Message: Quick "
+              "Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories.  "
+              "SLIDE 4  TITLE: Our 4-Phase Framework to Build Category Share  Visual: 4-stage growth roadmap  "
+              "Phase 1: Foundation & Hygiene  SLIDE 5  Visual: Opportunity Matrix  Rows: Visibility Conversion")
+
+
+def test_brief_instructions_keep_the_text_of_labelled_directions():
+    assert brief_instructions(XTSY_BRIEF)["visuals"] == [
+        "Quick Commerce ecosystem showing Zepto, Blinkit and Instamart connected to XTSY growth engine.",
+        "4-stage growth roadmap", "Opportunity Matrix"]
+
+
+def test_outline_copy_without_its_label_gets_the_label_back():
+    ins = brief_instructions(XTSY_BRIEF)
+    slide = {"key_messages": [
+        "Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories.",
+        "Quick Commerce ecosystem — Zepto, Blinkit and Instamart connected to XTSY growth engine.",
+        "4-stage growth roadmap", "Opportunity Matrix"]}
+    notes = settle_direction_lines(slide, ins, brief_content(XTSY_BRIEF, ins))
+    assert len(notes) == 3
+    dirs = visual_directions(slide)
+    assert dirs == ["Quick Commerce ecosystem — Zepto, Blinkit and Instamart connected to XTSY growth engine.",
+                    "4-stage growth roadmap", "Opportunity Matrix"]
+    assert content_line_list(slide, dirs) == [slide["key_messages"][0]]
+
+
+def test_a_content_line_that_only_mentions_the_direction_stays_content():
+    ins = brief_instructions(XTSY_BRIEF)
+    line = ("Zepto, Blinkit and Instamart together reach most urban energy-drink buyers within ten minutes, and each "
+            "platform rewards visibility, availability and repeat purchase in its own way")
+    assert not copies_visual(line, ins["visuals"])
+
+
+def test_a_direction_copy_with_figures_stays_content():
+    visuals = brief_instructions("Visual: bar chart of ROAS by city: Bengaluru 0.45x, Hyderabad 0.31x")["visuals"]
+    assert not copies_visual("ROAS by city: Bengaluru 0.45x, Hyderabad 0.31x", visuals)
+    assert copies_visual("4-stage growth roadmap", ["4-stage growth roadmap"])
+
+
+def test_planner_prompt_gives_directions_apart_from_the_key_messages():
+    from src.agents.slide_component_planner import _jinja_env
+    slide = {"slide_index": 0, "slide_title": "Unlocking growth", "narrative_role": "r",
+             "key_messages": ["Quick Commerce is a primary consumption channel.",
+                              "Visual: Quick Commerce ecosystem showing Zepto, Blinkit and Instamart"]}
+    dirs = visual_directions(slide)
+    text = _jinja_env.get_template("user.j2").render(
+        content_field="content", slide=slide, content_messages=content_line_list(slide, dirs),
+        visual_directions=dirs, core_hook="", deck_context=[], total_slides=1, deck_settings={}, constraints={})
+    messages, direction = text.split("Visual direction from the brief", 1)
+    assert "1. Quick Commerce is a primary consumption channel." in messages and "Zepto" not in messages
+    assert "- Quick Commerce ecosystem showing Zepto, Blinkit and Instamart" in direction
+    assert "visual_emphasis" not in text

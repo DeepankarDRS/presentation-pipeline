@@ -119,7 +119,6 @@ export interface OutlineSlide {
   section: string;
   narrative_role: string;
   key_messages: string[];
-  visual_emphasis: string;
 }
 
 export interface OutlinePlan {

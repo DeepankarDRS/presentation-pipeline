@@ -193,7 +193,6 @@ def _plan_to_outline_slide(plan: dict[str, Any]) -> dict[str, Any]:
         "section": "",
         "narrative_role": "",
         "key_messages": key_messages,
-        "visual_emphasis": "",
     }
 
 

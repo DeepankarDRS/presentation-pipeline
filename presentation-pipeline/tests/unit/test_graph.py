@@ -88,8 +88,7 @@ def test_route_after_start_preloaded_outline_fans_out():
             "deck_title": "Test Deck", "core_hook": "hook",
             "slides": [
                 {"slide_index": 0, "slide_title": "Cover", "slide_type": "cover",
-                 "section": "", "narrative_role": "", "key_messages": [],
-                 "visual_emphasis": ""},
+                 "section": "", "narrative_role": "", "key_messages": []},
             ],
         },
     )

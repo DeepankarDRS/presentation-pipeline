@@ -543,6 +543,12 @@ def select_repair_knowledge(
                     + "\n".join(f"  - {p}" for p in pitfalls)
                 )
 
+            # What POM draws (verified by tests/unit/test_node_facts.py)
+            facts = [" ".join(str(f["text"]).split()) for f in data.get("facts") or []
+                     if "generator" in (f.get("for") or [])]
+            if facts:
+                sections.append("How POM draws it:\n" + "\n".join(f"  - {f}" for f in facts))
+
             # Key notes
             notes = data.get("notes", [])
             if notes:

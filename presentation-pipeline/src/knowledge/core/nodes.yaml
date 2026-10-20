@@ -192,16 +192,16 @@ phase_d:
     note: "color attribute sets stroke on the inner <svg>. Child elements with explicit stroke/fill override root."
   Timeline:
     description: "Timeline / roadmap visualization with connected milestones."
-    node_attributes: [direction, dateColor, titleColor, connectorColor, connectorGradient, useColorForDate, fontFamily, w, h]
+    node_attributes: [direction, dateColor, titleColor, descriptionColor, connectorColor, connectorGradient, useColorForDate, fontFamily, w, h]
     children: [TimelineItem]
     direction_values: [horizontal, vertical]
   TimelineItem:
     description: "Individual timeline milestone."
-    node_attributes: [date, title, color, dateColor]
+    node_attributes: [date, title, description, color, dateColor]
     required: [date, title]
     children: none
   Flow:
-    description: "Flowchart with auto-layout. Wraps FlowNode and FlowConnection entries."
+    description: "Flowchart: nodes drawn in one line in document order. Wraps FlowNode and FlowConnection entries."
     node_attributes: [direction, nodeWidth, nodeHeight, nodeGap, connectorStyle, w, h]
     children: [FlowNode, FlowConnection]
     direction_values: [horizontal, vertical]
@@ -236,6 +236,7 @@ post_mvp:
   MatrixQuadrants:
     description: "Label the four quadrants of a Matrix."
     node_attributes: [topLeft, topRight, bottomLeft, bottomRight]
+    required: [topLeft, topRight, bottomLeft, bottomRight]
     children: none
   MatrixItem:
     description: "Position an item on the Matrix by normalised coordinates."
@@ -258,7 +259,7 @@ post_mvp:
     note: "The one self-referencing node type — TreeItem nests inside TreeItem."
   ProcessArrow:
     description: "Chevron-style sequential process visualization."
-    node_attributes: [direction, itemWidth, itemHeight, gap, fontSize, bold, italic, strike, underline, fontFamily, w, h]
+    node_attributes: [direction, itemWidth, itemHeight, gap, fontSize, bold, italic, strike, underline, highlight, fontFamily, w, h]
     children: [ProcessArrowStep]
     direction_values: [horizontal, vertical]
     defaults: { itemWidth: 150, itemHeight: 80, fontSize: 14 }

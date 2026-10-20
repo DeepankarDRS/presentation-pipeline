@@ -1,6 +1,8 @@
 # pom-knowledge/components/matrix.yaml
 # <Matrix> + <MatrixAxes> + <MatrixQuadrants> + <MatrixItem>. Post-MVP.
 # Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+# What POM draws is stated ONLY in `facts` (each with a probe compiled by
+# tests/unit/test_node_facts.py); attribute lists are checked against POM's own rules.
 
 meta:
   phase: post_mvp
@@ -12,7 +14,7 @@ description: >
   coordinates where (0,0) is bottom-left and (1,1) is top-right.
 
 structure: |
-  <Matrix w="600" h="500" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
+  <Matrix h="max" minH="260" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
     <MatrixAxes x="Effort" y="Impact" />
     <MatrixQuadrants topLeft="Rethink" topRight="Do First" bottomLeft="Deprioritise" bottomRight="Quick Wins" />
     <MatrixItem label="Project Alpha" x="0.8" y="0.9" color="$accent" />
@@ -22,8 +24,8 @@ structure: |
   </Matrix>
 
 Matrix_attributes:
-  w:                  { type: number, note: "Explicit width — required" }
-  h:                  { type: number, note: "Explicit height — required" }
+  w:                  { type: number, note: "Optional: the map fills whatever box it gets (facts matrix.fills_box)" }
+  h:                  { type: number, note: "Optional: without it the box is 220 px" }
   axisLabelColor:     { type: hex, default: "64748B", note: "Color for axis labels" }
   quadrantLabelColor: { type: hex, default: "94A3B8", note: "Color for quadrant labels" }
   itemLabelColor:     { type: hex, default: "1E293B", note: "Default color for item labels" }
@@ -33,10 +35,10 @@ MatrixAxes_attributes:
   y: { type: string, required: true, note: "Vertical axis label (e.g. 'Impact', 'Value', 'Likelihood')" }
 
 MatrixQuadrants_attributes:
-  topLeft:     { type: string, note: "Label for the top-left quadrant" }
-  topRight:    { type: string, note: "Label for the top-right quadrant" }
-  bottomLeft:  { type: string, note: "Label for the bottom-left quadrant" }
-  bottomRight: { type: string, note: "Label for the bottom-right quadrant" }
+  topLeft:     { type: string, required: true, note: "Label for the top-left quadrant (all four or no MatrixQuadrants)" }
+  topRight:    { type: string, required: true, note: "Label for the top-right quadrant" }
+  bottomLeft:  { type: string, required: true, note: "Label for the bottom-left quadrant" }
+  bottomRight: { type: string, required: true, note: "Label for the bottom-right quadrant" }
 
 MatrixItem_attributes:
   label:     { type: string, required: true, note: "Item display label" }
@@ -46,25 +48,65 @@ MatrixItem_attributes:
   textColor: { type: hex, note: "Override itemLabelColor for this item" }
 
 notes:
-  - "Coordinate system is mathematical: (0,0) = bottom-left, (1,1) = top-right."
   - "MatrixAxes x and y are string labels, NOT numbers. MatrixItem x and y are 0-1 floats."
-  - "Matrix needs explicit w and h. w=\"max\" works for width; h must be a pixel number (>=200 so labels have room)."
   - "3-4 items (core/capacity.yaml). More items overlap."
   - "Common patterns: effort-impact, risk-likelihood, cost-value, urgency-importance."
   - "NOT for a grid of named rows × named columns (e.g. growth levers × platforms): that is a Table, even when a brief calls it a 'matrix'."
   - "Positions come from the slide plan's matrix_items (low / mid / high ≈ 0.2 / 0.5 / 0.8). The quadrant labels name regions of the map; they are not rows of a grid."
 
 pitfalls:
-  - "MatrixItem x and y must be between 0 and 1 (normalised coordinates, not pixel values)."
   - "Confusing MatrixAxes x/y (string labels) with MatrixItem x/y (float coordinates)."
-  - "Missing w/h on Matrix — will not render correctly."
   - "Too many items clustered in one quadrant will cause label overlap."
-  - "VERIFIED v10.3.0 render: item labels are drawn beside the dot with NO
-     collision avoidance and NO leader lines. A label of 2+ words WRAPS to
-     multiple lines and then collides with any neighbour within ~0.2 on either
-     axis, and long labels also collide with the quadrant labels near the
-     edges. Rules that actually hold up in render: (a) 4 items is the safe max,
-     5 only if widely spread; (b) labels 1 word, or a very short 2-word phrase;
-     (c) no two items within 0.18 on BOTH axes; (d) Matrix h >= 200, and give
-     it at least ~520px width (don't put a Matrix in a column narrower than
-     ~50% of the slide). Put the detail in a caption below, not in labels."
+  - "Labels are 100 px wide above their dot with no collision avoidance (facts matrix.labels). Rules that hold up in render (2026-09): (a) 4 items is the safe max, 5 only if widely spread; (b) labels 1 word, or a very short 2-word phrase; (c) no two items within 0.18 on BOTH axes; (d) give it at least ~520px width (not a column narrower than ~50% of the slide). Put the detail in a caption below, not in labels."
+
+refuted:
+  - { pattern: 'Matrix needs explicit w and h|Missing w/h on Matrix', fact: matrix.fills_box }
+  - { pattern: '(?i)label (is |are )?(drawn|renders) beside the dot', fact: matrix.labels, note: "the label is drawn above the dot" }
+
+facts:
+  - id: matrix.fills_box
+    kind: layout
+    for: [generator]
+    text: >-
+      The axes cross at the centre of the box and run to 60 px from its edges, so the map fills
+      whatever box it gets; w and h are optional (natural size 220 x 220).
+    source: renderPptx/nodes/matrix.js; calcYogaLayout/measureCompositeNodes.js measureMatrix
+    probes:
+      - xml: '<Matrix w="800" h="500"><MatrixAxes x="X" y="Y"/><MatrixItem label="A" x="0.2" y="0.8"/></Matrix>'
+        expect: [ok, 'any(l.h == 0 and near(l.w, 800 - 120) for l in lines)', 'any(l.w == 0 and near(l.h, 500 - 120) for l in lines)']
+      - xml: '<Matrix><MatrixAxes x="X" y="Y"/><MatrixItem label="A" x="0.2" y="0.8"/></Matrix>'
+        expect: [ok, 'near(box.w, 220) and near(box.h, 220)']
+
+  - id: matrix.labels
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      Dots are 24 px and each item label is 11 px bold in a 100 px-wide box just above its dot,
+      with no collision avoidance; axis labels are 12 px and quadrant labels 11 px in the
+      corners. None of these grow with the box: a bigger map only spreads the dots apart.
+    source: renderPptx/nodes/matrix.js (baseItemSize 24, fontSize 11 / 12 * scaleFactor)
+    probes:
+      - xml: '<Matrix w="800" h="500"><MatrixAxes x="X" y="Y"/><MatrixQuadrants topLeft="TL" topRight="TR" bottomLeft="BL" bottomRight="BR"/><MatrixItem label="A" x="0.2" y="0.8"/></Matrix>'
+        expect:
+          - ok
+          - t("A").font == 11 and near(t("A").w, 100)
+          - t("A").b <= min(f.y for f in fills if near(f.w, 24)) + 1
+          - t("X").font == 12 and t("TL").font == 11
+
+  - id: matrix.coordinates
+    kind: syntax
+    for: [generator]
+    text: "MatrixItem x and y must be between 0 and 1 ((0, 0) = bottom-left); a value outside fails to build."
+    source: types.js matrixItemSchema (z.number().min(0).max(1))
+    probes:
+      - xml: '<Matrix w="600" h="400"><MatrixAxes x="X" y="Y"/><MatrixItem label="A" x="1.5" y="0.8"/></Matrix>'
+        expect: [not ok, '"items" in errors']
+
+  - id: matrix.quadrants
+    kind: syntax
+    for: [generator]
+    text: "MatrixQuadrants needs all four labels (topLeft, topRight, bottomLeft, bottomRight) — or leave the element out."
+    source: types.js matrixQuadrantsSchema
+    probes:
+      - xml: '<Matrix w="600" h="400"><MatrixAxes x="X" y="Y"/><MatrixQuadrants topLeft="TL"/><MatrixItem label="A" x="0.2" y="0.8"/></Matrix>'
+        expect: [not ok, '"quadrants" in errors']

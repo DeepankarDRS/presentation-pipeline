@@ -32,7 +32,6 @@ def _mock_outline_output(
             section=kwargs.get("section", ""),
             narrative_role=kwargs.get("narrative_role", ""),
             key_messages=kwargs.get("key_messages", ["Message 1"]),
-            visual_emphasis=kwargs.get("visual_emphasis", ""),
         ))
     return OutlinePlannerOutput(deck_title=deck_title, core_hook=core_hook, slides=slides)
 
@@ -298,7 +297,6 @@ def test_outline_planner_header_reaches_slide_plan(mock_get_llm):
     output = OutlinePlannerOutput(deck_title="D", core_hook="H", slides=[OutlineSlide(
         slide_index=0, label="PLATFORM DEEP-DIVE", slide_title="Search carries sales",
         subtitle="₹1.32 Cr sales · 6.35x ROAS", narrative_role="r", key_messages=["m"],
-        visual_emphasis="e",
     )])
     mock_get_llm.return_value = _make_structured_llm(output)
     outline_slide = outline_planner_node(initial_state(run_id="op6", raw_request="x"))["outline_plan"]["slides"][0]
@@ -441,7 +439,8 @@ def test_slide_planner_prompt_examples_by_shape():
     assert "Source: Company" not in prompt                       # 13: no dated source example
     assert "Match Type Performance" not in prompt                # 15: examples outside the ad domain
     assert "One entity's metrics → kpi_row" in prompt
-    assert "labels ≤ 2 words, full slide width" in prompt        # 16: chevron capacity
+    assert "labels ≤ 2 words |" in prompt                        # 16: chevron capacity (the width it needs:
+    assert "516 for 4, 638 for 5" in prompt                      # facts process_arrow.natural_size, 2026-10-16)
     assert "The **matrix** kind is only a 2×2 positioning map" in prompt
 
 

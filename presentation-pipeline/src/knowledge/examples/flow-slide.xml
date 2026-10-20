@@ -6,7 +6,8 @@
     <Text fontSize="32" bold="true" color="$textMain">Data Processing Pipeline</Text>
     <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
 
-    <!-- Flowchart -->
+    <!-- Flowchart. direction: horizontal | vertical (by the box); nodes are drawn in one line,
+         so each connection goes to the next node -->
     <VStack grow="1" justifyContent="center" alignItems="center">
       <Flow direction="horizontal" w="1100" h="400" nodeWidth="140" nodeHeight="60" nodeGap="80">
         <FlowNode id="start" shape="flowChartTerminator" text="Start" color="2563EB" textColor="FFFFFF" />
@@ -21,7 +22,6 @@
         <FlowConnection from="ingest" to="validate" />
         <FlowConnection from="validate" to="check" />
         <FlowConnection from="check" to="transform" label="Yes" />
-        <FlowConnection from="check" to="ingest" label="No" color="DC2626" />
         <FlowConnection from="transform" to="store" />
         <FlowConnection from="store" to="end" />
       </Flow>

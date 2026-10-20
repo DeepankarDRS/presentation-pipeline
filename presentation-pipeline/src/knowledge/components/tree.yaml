@@ -1,6 +1,8 @@
 # pom-knowledge/components/tree.yaml
 # <Tree> + <TreeItem>. Post-MVP.
 # Source: pom.pptx.app/nodes. Verified against @hirokisakabe/pom v10.3.0.
+# What POM draws is stated ONLY in `facts` (each with a probe compiled by
+# tests/unit/test_node_facts.py); attribute lists are checked against POM's own rules.
 
 meta:
   phase: post_mvp
@@ -12,7 +14,8 @@ description: >
   trees, category hierarchies, or any parent-child structure.
 
 structure: |
-  <Tree layout="vertical" w="1000" h="500"
+  <!-- layout: vertical | horizontal (by the tree's shape and its box: see facts tree.layout) -->
+  <Tree layout="vertical" h="max" minH="200"
         nodeShape="roundRect" textColor="$textMain"
         nodeWidth="140" nodeHeight="50"
         levelGap="60" siblingGap="24"
@@ -35,31 +38,91 @@ structure: |
   </Tree>
 
 Tree_attributes:
-  layout:         { type: enum, values: [vertical, horizontal], default: vertical }
-  nodeShape:      { type: enum, values: [rect, roundRect, ellipse], default: roundRect }
+  layout:         { type: enum, values: [vertical, horizontal], default: vertical, note: "A layout choice per slide (facts tree.layout)" }
+  nodeShape:      { type: enum, values: [rect, roundRect, ellipse], default: rect }
   textColor:      { type: hex, default: "FFFFFF", note: "Default text color for all nodes" }
   nodeWidth:      { type: number, default: 120 }
   nodeHeight:     { type: number, default: 40 }
-  levelGap:       { type: number, default: 60, note: "Vertical gap between tree levels" }
-  siblingGap:     { type: number, default: 20, note: "Horizontal gap between sibling nodes" }
+  levelGap:       { type: number, default: 60, note: "Gap between tree levels" }
+  siblingGap:     { type: number, default: 20, note: "Gap between sibling nodes" }
   connectorStyle: { type: object, note: "connectorStyle.color, connectorStyle.width" }
-  w:              { type: number, note: "Explicit width — required" }
-  h:              { type: number, note: "Explicit height — required" }
+  w:              { type: number, note: "Optional: without it the box is the tree's natural width (facts tree.natural_size)" }
+  h:              { type: number, note: "Optional: without it the box is the tree's natural height" }
 
 TreeItem_attributes:
   label:     { type: string, required: true, note: "Node display label" }
-  color:     { type: hex, note: "Node fill color (overrides parent level)" }
+  color:     { type: hex, note: "Node fill color" }
   textColor: { type: hex, note: "Override tree-level textColor for this node" }
 
 notes:
   - "TreeItem is the one self-referencing node type — TreeItem nests inside TreeItem."
-  - "Tree must have exactly one root TreeItem."
-  - "Tree needs explicit w and h."
   - "Use different color values per level for visual hierarchy (darker = higher level)."
-  - "3-4 levels deep works well. Deeper trees need larger w/h to avoid cramping."
 
 pitfalls:
-  - "Tree must have exactly one root TreeItem — multiple roots will fail."
   - "label is required on every TreeItem."
-  - "Missing w/h on Tree — will not render correctly."
-  - "Deep trees (5+ levels) with many siblings can overflow the given w/h."
+  - "Many leaves make a vertical tree wide (facts tree.natural_size): in a narrow box it shrinks, text included."
+
+open_choices:
+  layout: { values: [vertical, horizontal], rule: tree.layout }
+
+refuted:
+  - { pattern: 'Tree needs explicit w and h|Missing w/h on Tree', fact: tree.natural_size }
+  - { pattern: 'nodeShape:.*default: roundRect', fact: tree.node }
+
+facts:
+  - id: tree.natural_size
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      A vertical tree is as wide as its bottom level (leaves x nodeWidth 120 + siblingGap 20
+      between) and as tall as its levels (levels x nodeHeight 40 + levelGap 60 between);
+      layout="horizontal" swaps the two (levels left to right, leaves stacked). Breadth, not
+      depth, is what shrinks a vertical tree in a narrow box.
+    source: calcYogaLayout/measureCompositeNodes.js measureTree; renderPptx/nodes/tree.js
+    probes:
+      - xml: '<Tree><TreeItem label="R"><TreeItem label="A"/><TreeItem label="B"/><TreeItem label="C"/></TreeItem></Tree>'
+        expect: [ok, 'near(box.w, 3 * 120 + 2 * 20) and near(box.h, 40 + 60 + 40)', 'same([t(x).cy for x in "ABC"])', 't("R").b < t("A").y']
+      - xml: '<Tree layout="horizontal"><TreeItem label="R"><TreeItem label="A"/><TreeItem label="B"/></TreeItem></Tree>'
+        expect: [ok, 'near(box.w, 120 + 60 + 120) and near(box.h, 2 * 40 + 20)', 't("R").r < t("A").x', 'same([t("A").cx, t("B").cx])']
+
+  - id: tree.node
+    kind: layout
+    for: [generator]
+    text: >-
+      Nodes are nodeWidth x nodeHeight rectangles by default (nodeShape rect; roundRect and
+      ellipse on request) with the label at 12 px, white unless textColor is set.
+    source: renderPptx/nodes/tree.js (nodeShape ?? "rect", fontSize 12 * sf)
+    probes:
+      - xml: '<Tree><TreeItem label="R"><TreeItem label="A"/></TreeItem></Tree>'
+        expect: [ok, 't("R").geom == "rect"', 't("R").font == 12', 'near(t("R").w, 120) and near(t("R").h, 40)']
+
+  - id: tree.one_root
+    kind: syntax
+    for: [generator]
+    text: "A Tree has exactly one root TreeItem; two or more fail to build."
+    source: parseXml/parseXml.js convertTreeChildren
+    probes:
+      - xml: '<Tree><TreeItem label="R"/><TreeItem label="S"/></Tree>'
+        expect: [not ok, '"exactly 1 <TreeItem>" in errors']
+
+  - id: tree.scale
+    kind: layout
+    for: [generator]
+    text: >-
+      w and h are optional (the box is then the natural size, stretched to the parent's width
+      in a VStack); a smaller box shrinks the whole tree, text included, and a bigger one never
+      enlarges it — it is drawn centred.
+    source: renderPptx/utils/scaleToFit.js calcScaleFactor; renderPptx/nodes/tree.js
+    probes:
+      - xml: '<Tree w="1000" h="400"><TreeItem label="R"><TreeItem label="A"/></TreeItem></Tree>'
+        expect: [ok, 'near(t("R").w, 120)', 'near(t("R").cx, box.cx)']
+      - xml: '<Tree w="200" h="400"><TreeItem label="R"><TreeItem label="A"/><TreeItem label="B"/><TreeItem label="C"/></TreeItem></Tree>'
+        expect: [ok, 'near(t("A").font, 12 * 200 / 400, 0.1)']
+
+  - id: tree.layout
+    kind: advice
+    for: [planner, generator]
+    text: >-
+      layout is a choice per slide: vertical for a shallow tree in a wide box, horizontal for a
+      tree with many leaves in a tall or narrow box.
+    source: follows from tree.natural_size

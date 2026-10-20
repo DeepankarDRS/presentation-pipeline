@@ -275,3 +275,40 @@ Cost ≈ $0.6 (the eval of the same two cases cost $0.585). What to look for: ag
 confidence" caption; XTSY 7 without "Use arrow visuals …" and without the framework layer; XTSY 5 cards only;
 XTSY 3 tags whole and no "Applies to" line; XTSY 6 flow vertical or ≤ 6 steps; compiled 100% (no placeholder); word
 breaks per slide below 0.93.
+
+## Paid check result (2026-10-16, test PC, commit `39cf10a`, $0.519)
+
+Bundle: `output/eval/deck-fixes-20261016-085148/` (local). Same two cases as the 2026-10-15 eval.
+
+| metric | 2026-10-15 (`4d07142`) | 2026-10-16 (`39cf10a`) |
+|---|---|---|
+| compiled | 92.9% | **100%** |
+| first pass | 64.3% | **100%** (0 retries) |
+| word breaks / slide | 0.93 | **0.14** (2, XTSY) |
+| layout issues / slide | 2.36 | **1.21** (`GEOM_COLLISION` 2 → 0, `GEOM_SPILL` 4 → 1) |
+| invented numbers | 0 | 2 — both section numbers in a kicker ("PLATFORM A · 01", "· 02"), not data |
+| low-fill cards | 22.7% | 21.5% |
+| cost / time | $0.585 / 1129 s | $0.519 / 432 s |
+
+Per problem:
+- **Instructions on slides:** none. This run's outline kept the "Speaker Notes:" label (6 notes dropped by the existing
+  check); XTSY 7 has no "Use arrow visuals" line. The new reworded-label check was not needed this time.
+- **Layers:** XTSY 5 and 7 drawn as cards only, no layer (the planner planned 1 layer in the deck: the XTSY cover).
+- **XTSY 3:** no "Applies to" line, no broken tags; the planner chose a card matrix this time (below).
+- **Compile:** no timeout, no placeholder.
+- **Flows / directions:** the planner planned no flow; XTSY 6's workflow became 7 "steps" cards (below).
+
+New issues found (open, not fixed):
+1. **XTSY 6 workflow lost its order.** The planner chose card_grid `steps` with 7 cards; `capacity.py` turns a steps
+   row longer than `card_grid.steps_max` into a plain `grid` ("7 steps are too many for one row -> card_grid (grid)"),
+   so the arrows and the order are gone and the cards come out in two sizes (4 + 3). The prompt's "at most 6 steps /
+   parallel steps are one step" did not stop 7 steps (1 run). Options: steps that wrap to a second row keeping arrows,
+   or a re-ask asking to merge parallel steps. Count how often steps > max in saved plans first.
+2. **XTSY 3 matrix cells repeat one written line per row.** The plan has 4 row cards with a planner-written line each
+   (flagged `written`), plus the 3 columns; the drawing copies each row's line into all 3 cells ("Expand presence in
+   search and category surfaces" × 3). The brief gives no cell content, so a matrix has nothing per cell to show.
+3. **Agency 6 closing line is planner-written prose**: "The audit findings above are the basis for a rapid takeover;
+   deeper access will enable execution of break-even CPC bidding, city/SKU budget tiers, and weekly harvesting." Its
+   facts are from slides 3–4, the "deeper access … execution" idea from the speaker notes, which reached the outline's
+   subtitle ("… to move from diagnosis to execution"). Written lines are only checked in card grids, not in
+   narratives.

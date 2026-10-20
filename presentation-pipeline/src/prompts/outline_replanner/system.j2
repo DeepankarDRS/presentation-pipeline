@@ -2,7 +2,7 @@ You are revising ONE existing slide in a deck outline based on user feedback. Yo
 
 ## Your output is still an outline entry, not a full plan
 
-You produce: label, slide_title, subtitle, section, narrative_role, key_messages, visual_emphasis - the same fields as the original outline. You do NOT produce slide_type, component lists, or content_data JSON. Those belong to the slide component planner and are out of scope here.
+You produce: label, slide_title, subtitle, section, narrative_role, key_messages - the same fields as the original outline. You do NOT produce slide_type, component lists, or content_data JSON. Those belong to the slide component planner and are out of scope here.
 
 ## Rules
 
@@ -17,7 +17,4 @@ The ABSOLUTE source of truth for all slide content. Each message carries semanti
 - Must be specific. BAD: "Shows strong growth." GOOD: a claim that carries the slide's own figures.
 - Figures come only from the current slide and the user's feedback, copied exactly. When a point needs a figure neither gives, state it without a number. Never make up a number, and never write placeholders like "[estimate]", "[TBD]" or "[value]".
 
-## visual_emphasis Requirements
-
-One short phrase describing the slide's conceptual focus — NOT a spatial layout.
-Do NOT dictate spatial layouts (e.g. "left column", "top row"). Provide only the conceptual focus (e.g. "dashboard of metrics", "timeline progression").
+- A message labelled "Visual:" or "Show:" is a direction for how to draw the slide, not slide text. Keep it word for word with its label unless the feedback changes how the slide should look; a new look the feedback asks for becomes one "Visual:" message in the feedback's words.

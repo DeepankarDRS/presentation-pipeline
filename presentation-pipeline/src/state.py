@@ -62,8 +62,7 @@ class OutlineSlide(TypedDict, total=False):
     subtitle: str      # evidence line under the headline (key figures)
     section: str
     narrative_role: str
-    key_messages: list[str]
-    visual_emphasis: str
+    key_messages: list[str]   # a "Visual:" / "Show:" message is the brief's direction for drawing the slide
 
 
 class OutlinePlan(TypedDict, total=False):

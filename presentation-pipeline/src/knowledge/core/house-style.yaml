@@ -130,15 +130,15 @@ sizing: |
 data_nodes: |
   Chart / Matrix / Flow / Tree / ProcessArrow: h="max" minH (Chart 180, Matrix 260,
     Flow/Tree 200, ProcessArrow 90), no w; the card takes the weight's grow.
-    Diagram nodes are enlarged to fill after generation. A horizontal Flow or
-    ProcessArrow is one row: give it full width, not a tall narrow card.
+    Diagram nodes are enlarged to fill after generation. A Flow or ProcessArrow
+    is one line: horizontal across the full width, vertical in a narrow card.
   Table: no h, no w (sizes to its rows); its card: no h, no grow. Set
     defaultRowHeight = 16 + 24 x wrapped lines of the longest cell (40 / 64 / 88)
     and header <Tr height="40"> - POM never grows rows; short rows spill text.
     One <Col> per column, width only where needed. Every <Td> sets backgroundColor + color.
   Timeline (horizontal): h="150", no w, no grow; max 5 items, 1-3 word labels.
   Pyramid: h = 52 x levels + 20, no w, no grow; fontSize 16 (3 levels), 15 (4), 14 (5+).
-  Layer: pixel w and h. ProcessArrow / FlowNode / Timeline fontSize >= 14.
+  Layer: pixel w and h. ProcessArrow fontSize >= 14 (FlowNode and Timeline text sizes are fixed by POM).
 
 # --- recipes (parameterised, not slides) ------------------------------
 recipes:
@@ -247,7 +247,7 @@ render_gotchas:
      one line more than POM expected, pushing siblings down. Keep headings on
      hero panels and cards SHORT and give panels/cards a little height slack.
      Never rely on a heading staying on N lines."
-  - "MatrixItem: the label renders BESIDE the dot on the CARD background, not on
+  - "MatrixItem: the label is drawn ABOVE the dot on the CARD background, not on
      the dot. Do NOT set a white textColor on a light card - the label
      vanishes. Leave textColor unset (inherits itemLabelColor)."
   - "ProcessArrowStep label: 1-2 short words only at h<=70; longer text clips."

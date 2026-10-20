@@ -6,7 +6,7 @@
     <Text fontSize="32" bold="true" color="$textMain">Product Roadmap 2026</Text>
     <Shape shapeType="rect" w="60" h="4" fill.color="$accent" />
 
-    <!-- Timeline -->
+    <!-- Timeline. direction: horizontal | vertical (horizontal: 120 px labels; vertical: wide titles) -->
     <VStack grow="1" justifyContent="center">
       <Timeline direction="horizontal" w="1160" h="280"
                 dateColor="$textMuted" titleColor="$textMain"

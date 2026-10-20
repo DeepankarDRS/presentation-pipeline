@@ -73,7 +73,6 @@ def _make_outline_llm():
             OutlineSlide(
                 slide_index=0, slide_title="Title Slide",
                 section="", narrative_role="", key_messages=["Hello"],
-                visual_emphasis="",
             )
         ],
     )
@@ -366,7 +365,6 @@ def test_refine_plan_returns_revised_plan(mock_outline_llm):
             OutlineSlide(
                 slide_index=0, slide_title="Cover",
                 section="", narrative_role="", key_messages=["Hello"],
-                visual_emphasis="",
             )
         ],
     )
@@ -389,7 +387,6 @@ def test_refine_plan_passes_feedback_to_planner(mock_outline_llm):
             OutlineSlide(
                 slide_index=0, slide_title="Cover",
                 section="", narrative_role="", key_messages=["Msg"],
-                visual_emphasis="",
             )
         ],
     )

@@ -128,7 +128,7 @@ def test_visual_suggestion_and_bare_show_are_directions_not_content():
         "Show: Category growth drivers, Consumer demand moments, Impulse purchase behaviour",
         "Speaker Notes: End with confidence.",
         "Include: Pre-workout consumption; Gaming sessions; Late-night work",
-    ], "visual_emphasis": ""}
+    ]}
     directions = visual_directions(slide)
     assert directions == ["Six-icon row, one icon per pillar",
                           "Category growth drivers, Consumer demand moments, Impulse purchase behaviour"]

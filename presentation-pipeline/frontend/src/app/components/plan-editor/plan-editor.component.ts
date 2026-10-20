@@ -14,14 +14,13 @@ function emptyOutlineSlide(index: number): OutlineSlide {
     section: '',
     narrative_role: '',
     key_messages: [],
-    visual_emphasis: '',
   };
 }
 
 /**
  * Narrative-only outline review — deck title, core hook, and per-slide
- * header (label, headline, subtitle) + key messages. Deliberately hides section/narrative_role/
- * visual_emphasis: those still travel on each OutlineSlide and still reach
+ * header (label, headline, subtitle) + key messages. Deliberately hides section/narrative_role:
+ * those still travel on each OutlineSlide and still reach
  * slide_component_planner untouched — they're implementation detail a
  * reviewer shouldn't have to read through to judge whether the outline
  * actually covers the core hook.
