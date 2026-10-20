@@ -88,7 +88,7 @@ def test_a_code_laid_row_of_four_tiles_becomes_two_rows_in_a_tall_band(tmp_path,
     assert any("KPI tiles of kpis in two rows" in r for r in on["fitGrow"]), on["fitGrow"]
     values = _values(on["xml"])
     assert len(values) == 4 and len(set(values)) == 1 and values[0] >= 75, (values, on["fitGrow"])   # row: 58
-    labels = [int(v) for v in re.findall(r'<Text color="\$textMuted" fontSize="(\d+)">', on["xml"])]
+    labels = [int(v) for v in re.findall(r'<Text color="\$textMuted" fontSize="(\d+)"[^>]*>', on["xml"])]
     assert labels and min(labels) >= 20, labels   # the labels grew with the numbers
     assert on["xml"].count("<HStack") >= 2 and 'id="kpig-kpis"' in on["xml"]
 

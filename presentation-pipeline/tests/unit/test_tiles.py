@@ -165,10 +165,10 @@ def test_resolution_order_house_group_variant_group_attrs_item_variant_item_attr
     # item 0: house padding, group variant (plain) fill, group attrs over the variant's colours
     t0, v0 = tile_of(xml, 0), value_of(xml, 0)
     assert 'padding="16"' in t0 and 'backgroundColor="$surfaceAlt"' in t0 and 'color="$accentText"' in v0
-    assert '<Text color="$accentText" fontSize="16">Spend</Text>' in xml
+    assert '<Text color="$accentText" fontSize="16">Spend</Text>' in re.sub(r' id="kpil-[^"]*"', "", xml)
     # item 1: its own variant (filled) wins over the group attrs; its own attribute wins over everything
     assert 'backgroundColor="$positiveSoft"' in tile_of(xml, 1) and 'color="$positiveText"' in value_of(xml, 1)
-    assert '<Text color="$textMain" fontSize="16">Revenue</Text>' in xml
+    assert '<Text color="$textMain" fontSize="16">Revenue</Text>' in re.sub(r' id="kpil-[^"]*"', "", xml)
     # item 3: no item variant, so the group's attributes stay; its box attribute wins
     assert 'backgroundColor="$accentSoft"' in tile_of(xml, 3) and 'color="$accentText"' in value_of(xml, 3)
 
@@ -206,7 +206,7 @@ def test_group_skips_the_item_placed_outside_it():
               '<Kpi ref="kpis.2" variant="inverted" size="hero" arrange="value-first" w="36%"/></HStack>')
     assert res["ok"] and not [c for c in codes(res) if c.startswith("NODE_")], res["issues"]
     xml = res["xml"]
-    assert xml.count('id="kpi') == 4 and 'id="kpih0-kpis-2"' not in xml and 'id="kpih1-kpis-2"' in xml
+    assert len(re.findall(r'id="kpi[vh]', xml)) == 4 and 'id="kpih0-kpis-2"' not in xml and 'id="kpih1-kpis-2"' in xml
     focus = tile_of(xml, 2)
     assert 'backgroundColor="$panelDark"' in focus and 'w="36%"' in focus
     # value first, then the label, then the note
@@ -486,7 +486,7 @@ def test_item_variant_replaces_the_group_variant_look():
     xml = run('<KpiGrid ref="kpis" variant="plain" label.bold="true"><Kpi ref="kpis.2" variant="inverted"/></KpiGrid>')["xml"]
     focus = tile_of(xml, 2)
     assert 'backgroundColor="$panelDark"' in focus and "border.color" not in focus   # no plain hairline under it
-    assert '<Text color="$onPanelDark" bold="true" fontSize="16">Blended ROAS</Text>' in xml   # the group's attrs still apply
+    assert '<Text color="$onPanelDark" bold="true" fontSize="16">Blended ROAS</Text>' in re.sub(r' id="kpil-[^"]*"', "", xml)   # the group's attrs still apply
 
 
 def test_a_row_with_a_hero_tile_gets_equal_columns():

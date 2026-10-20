@@ -34,6 +34,9 @@ from src.compiler.value_parts import is_sentence, split_value, unit_px, unit_sha
 ERROR, WARNING, REPORT = "error", "warning", "report"
 SEVERITY = {
     "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR,
+    # a label the LLM typed itself can sit beside the wrong value: CHEFFIN 4 (2026-10-20) typed 7 labels in
+    # another order (two not in the brief) while code placed the values in plan order - every tile mislabelled
+    "NODE_LABEL_MISSING": ERROR,
     "NODE_FIELD_MISSING": WARNING, "NODE_BYPASSED": WARNING, "NODE_ATTR_IGNORED": WARNING,
     "NODE_FOCUS_UNNAMED": REPORT, "NODE_VALUE_TEXT": WARNING,
 }
@@ -220,6 +223,8 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
             a["bold"] = "true"
             a["id"] = f"kpi{'h' if hero else 'v'}{WEIGHT_RANK.get(comp.get('weight') or 'peer', 1)}-{cid}-{i}"
             value_els[(cid, i)] = el
+        elif field == "label":
+            a["id"] = f"kpil-{cid}-{i}"   # a repaired slide comes back filled: the id says code placed it
         if "color" not in a:
             tones = _list(comp, "kpi_tones")
             role = TONE_ROLE.get(tones[i].lower()) if i < len(tones) else None
@@ -228,12 +233,15 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         _set_text(el, field, text, size, unit_share(_list(comp, "kpi_values")))
         placed[cid].setdefault(i, set()).add(field)
 
-    # values filled on an earlier pass (a repaired slide comes back already filled) count as placed
+    # values and labels filled on an earlier pass (a repaired slide comes back already filled) count as placed
     for t in root.iter("Text"):
         pm = re.match(r"^kpi[vh]\d?-(?P<cid>[\w-]+)-(?P<i>\d+)$", t.get("id", ""))
         if pm and pm["cid"] in comps and (pm["cid"], int(pm["i"])) not in value_els:
             placed[pm["cid"]].setdefault(int(pm["i"]), set()).add("value")
             value_els[(pm["cid"], int(pm["i"]))] = t
+        lm = re.match(r"^kpil-(?P<cid>[\w-]+)-(?P<i>\d+)$", t.get("id", ""))
+        if lm and lm["cid"] in comps:
+            placed[lm["cid"]].setdefault(int(lm["i"]), set()).add("label")
     # plain Texts that carry a plan value (typed instead of placed by ref)
     plain = {norm("".join(t.itertext())) for t in root.iter("Text")}
 
@@ -254,9 +262,12 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
                 else:
                     flag("NODE_ITEM_MISSING", f"{cid}.{i}.value", f'{cid} item {i} ("{labels[i] if i < len(labels) else ""}"): '
                          f'its value is not on the slide; add <Text ref="{cid}.{i}.value"/>.')
-            for field, planned in (("label", labels), ("note", notes)):
-                if field not in got and i < len(planned) and planned[i]:
-                    flag("NODE_FIELD_MISSING", f"{cid}.{i}.{field}", f'{cid} item {i}: no <Text ref="{cid}.{i}.{field}"/>.')
+            if "label" not in got and i < len(labels) and labels[i]:
+                flag("NODE_LABEL_MISSING", f"{cid}.{i}.label", f'{cid} item {i}: its label is not placed; put '
+                     f'<Text ref="{cid}.{i}.label"/> in the tile of its value ("{v}", <Text ref="{cid}.{i}.value"/>) and '
+                     "delete any label typed there - code writes every label so it matches its value.")
+            if "note" not in got and i < len(notes) and notes[i]:
+                flag("NODE_FIELD_MISSING", f"{cid}.{i}.note", f'{cid} item {i}: no <Text ref="{cid}.{i}.note"/>.')
         result["components"][cid] = stats
         _focus_check(comp, cid, value_els, flag)
 
@@ -363,7 +374,8 @@ def prompt_line(comp: dict) -> str:
         f"KPI REFS for {cid}: {n} items (index 0-{n - 1}); fields {fields}.",
         f'Place each item\'s text with self-closing <Text ref="{cid}.<index>.<field>"/> - never type a label, '
         "value or note yourself; code writes the text, the number sizes (one size for all values) and default colours.",
-        "Every value exactly once; label and note at most once" + (f" (no note for item {', '.join(no_note)})" if no_note else "") + ".",
+        "Every value and every label exactly once, the label in its value's tile; a note at most once"
+        + (f" (no note for item {', '.join(no_note)})" if no_note else "") + ".",
         f"Longest value {max((len(v) for v in values), default=0)} chars, longest label "
         f"{max((len(str(x).split()) for x in labels), default=0)} words"
         + (f", longest note {max((len(str(x).split()) for x in notes), default=0)} words" if any(notes) else "") + ".",

@@ -47,7 +47,7 @@ from src.compiler.nodes.element_refs import kpi_components  # noqa: E402
 INPUTS = ROOT / "docs" / "eval" / "kpi-node" / "paid-inputs.json"
 KPI_ARM = ROOT / "docs" / "eval" / "tile-nodes" / "paid-kpi-arm.json"   # {run case: final XML} of the 2026-10-11 paid check
 OUT = ROOT / "output" / "kpi-paid"
-REF_CODES = ("NODE_REF_UNKNOWN", "NODE_REF_DUPLICATE", "NODE_ITEM_MISSING", "NODE_FIELD_MISSING",
+REF_CODES = ("NODE_REF_UNKNOWN", "NODE_REF_DUPLICATE", "NODE_ITEM_MISSING", "NODE_LABEL_MISSING", "NODE_FIELD_MISSING",
              "NODE_BYPASSED", "NODE_ATTR_IGNORED", "NODE_FOCUS_UNNAMED", "NODE_VALUE_TEXT",
              "NODE_ATTR_UNKNOWN", "NODE_ATTR_DROPPED", "NODE_VARIANT_UNKNOWN", "NODE_VARIANT_UNMET", "LITERAL_COLOR")
 

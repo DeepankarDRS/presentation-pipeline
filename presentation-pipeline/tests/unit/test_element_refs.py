@@ -34,6 +34,10 @@ def value_tag(xml, vid):
     return re.search(rf'<Text[^>]*id="{vid}"[^>]*>', xml).group(0)
 
 
+def no_label_ids(xml):
+    return re.sub(r' id="kpil-[^"]*"', "", xml)
+
+
 def codes(res):
     return [i["code"] for i in res["issues"]]
 
@@ -105,12 +109,25 @@ def test_duplicate_ref_is_an_error():
     assert codes(res) == ["NODE_REF_DUPLICATE"] and not res["ok"]
 
 
-def test_missing_value_is_an_error_missing_label_a_warning():
+def test_missing_value_and_missing_label_are_errors():
     xml = slide(tile(0) + tile(1, note=False) + '<VStack><Text ref="kpis.2.note"/></VStack>')
     res = E.fill_refs(xml, PLAN)
     assert "NODE_ITEM_MISSING" in codes(res) and not res["ok"]
-    missing = [i for i in res["issues"] if i["code"] == "NODE_FIELD_MISSING"]
-    assert [i["ref"] for i in missing] == ["kpis.2.label"] and missing[0]["severity"] == "warning"
+    missing = [i for i in res["issues"] if i["code"] == "NODE_LABEL_MISSING"]
+    assert [i["ref"] for i in missing] == ["kpis.2.label"] and missing[0]["severity"] == "error"
+
+
+def test_labels_typed_by_hand_go_to_repair_and_a_filled_slide_passes():
+    """CHEFFIN 4 (2026-10-20): values by ref, labels typed in another order - every tile mislabelled."""
+    typed = "".join(f'<VStack><Text>{name}</Text><Text ref="kpis.{i}.value"/></VStack>'
+                    for i, name in enumerate(["NRR", "ARR", "Churn"]))
+    res = E.fill_refs(slide(typed), PLAN)
+    assert not res["ok"] and codes(res).count("NODE_LABEL_MISSING") == 3
+    assert "delete any label typed there" in E.repair_note(res["issues"])
+    filled = E.fill_refs(slide(tile(0) + tile(1) + tile(2)), PLAN)
+    assert filled["ok"] and 'id="kpil-kpis-0"' in filled["xml"]
+    again = E.fill_refs(filled["xml"], PLAN)   # the repairer gets the filled slide back
+    assert again["ok"] and "NODE_LABEL_MISSING" not in codes(again)
 
 
 def test_missing_note_is_a_warning():
@@ -135,9 +152,10 @@ def test_a_typed_label_with_a_wrong_typed_value_is_missing_not_bypassed():
     assert not res["ok"] and "NODE_BYPASSED" not in codes(res)
     missing = [i for i in res["issues"] if i["code"] == "NODE_ITEM_MISSING"]
     assert [i["ref"] for i in missing] == ["kpis.2.value"] and '("Blended ROAS")' in missing[0]["message"]
-    bypassed = E.fill_refs(xml.replace("4.2x", "0.33x"), PLAN)   # the right number typed: kept, reported
-    assert bypassed["ok"] and '"0.33x" is typed' in next(i["message"] for i in bypassed["issues"]
-                                                           if i["code"] == "NODE_BYPASSED")
+    bypassed = E.fill_refs(xml.replace("4.2x", "0.33x"), PLAN)   # the right number typed: reported; the typed label
+    assert '"0.33x" is typed' in next(i["message"] for i in bypassed["issues"]   # still goes to repair (2026-10-20)
+                                      if i["code"] == "NODE_BYPASSED")
+    assert [i["ref"] for i in bypassed["issues"] if i["severity"] == "error"] == ["kpis.2.label"]
 
 def test_attrs_ignored_font_size_text_and_literal_colour():
     xml = slide(tile(0, value_attrs=' fontSize="60" color="#FF0000"') + tile(1, note=False) + tile(2))
@@ -418,7 +436,7 @@ def test_kpi_text_on_a_dark_tile_gets_the_readable_colour():
         'ref="kpis.0.label"', 'ref="kpis.0.label" color="$surfaceAlt"')
     res = E.fill_refs(slide(dark + tile(1, note=False) + tile(2)), PLAN)
     assert value_tag(res["xml"], "kpiv1-kpis-0").count('color="$surface"') == 1
-    assert '<Text color="$surfaceAlt" fontSize="16">Spend</Text>' in res["xml"]   # a colour that reads stays
+    assert '<Text color="$surfaceAlt" fontSize="16">Spend</Text>' in no_label_ids(res["xml"])   # a colour that reads stays
     assert sum(i["code"] == "NODE_ATTR_IGNORED" for i in res["issues"]) == 2, res["issues"]
 
 
@@ -480,6 +498,6 @@ def test_a_ref_wrapped_in_a_styled_text_takes_the_wrappers_place():
                f'<Text ref="kpis.0.note"/></VStack>')
     res = E.fill_refs(slide(wrapped + tile(1, note=False) + tile(2)), PLAN)
     assert res["ok"] and "</Text></Text>" not in res["xml"]
-    assert '<Text fontSize="16" color="$textMuted">Spend</Text>' in res["xml"]
+    assert '<Text fontSize="16" color="$textMuted">Spend</Text>' in no_label_ids(res["xml"])
     assert 'color="$positiveText"' in value_tag(res["xml"], "kpiv1-kpis-0")
     assert sum("was wrapped" in i["message"] for i in res["issues"]) == 2
