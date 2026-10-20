@@ -43,7 +43,7 @@ _PIPELINE_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_PIPELINE_ROOT))
 
 from scripts.eval_metrics import (  # noqa: E402
-    LOW_FILL, card_metrics, empty_cells, invented_numbers, pattern_match, table_spill, text_overflows, word_breaks,
+    LOW_FILL, card_metrics, empty_cells, invented_numbers, kpi_label_mismatches, pattern_match, table_spill, text_overflows, word_breaks,
 )
 from src.compiler.layout_audit import audit_layout  # noqa: E402
 from src.utils.case_loader import load_case  # noqa: E402
@@ -174,8 +174,17 @@ def _slide_row(index: int, tries: list[dict[str, Any]], plan: dict[str, Any], br
         "components": [{k: c.get(k, "") for k in ("kind", "weight", "design_hint")}
                        for c in plan.get("components", [])],
         **_scored(pptx, brief),
+        **_kpi_labels(pptx, plan),
         "_dir": str(Path(pptx).parent) if pptx else None,
     }
+
+
+def _kpi_labels(pptx: str | None, plan: dict[str, Any]) -> dict[str, Any]:
+    xml = Path(pptx).parent / "input.xml" if pptx else None
+    if xml is None or not xml.exists():
+        return {}
+    wrong = kpi_label_mismatches(xml.read_text(encoding="utf-8"), plan)
+    return {"kpi_labels_wrong": len(wrong), "kpi_labels_wrong_examples": wrong[:8]}
 
 
 def evaluate_case(case: dict[str, Any], repeat: int) -> dict[str, Any]:
@@ -281,6 +290,7 @@ def aggregate(cases: list[dict[str, Any]]) -> dict[str, Any]:
         "tables_overfull_slides": sum(any("over-full slide" in r for r in s["fit_grow"]) for s in slides),
         "empty_cells": sum(s.get("empty_cells", 0) for s in slides),
         "invented_numbers": sum(s.get("invented_numbers", 0) for s in slides),
+        "kpi_labels_wrong": sum(s.get("kpi_labels_wrong", 0) for s in slides),
         "tokens_in": sum(c["tokens_in"] for c in cases),
         "tokens_out": sum(c["tokens_out"] for c in cases),
         "cost_usd": round(sum(c["cost"] for c in cases), 4),
@@ -311,18 +321,18 @@ def write_summary(results: dict[str, Any], path: Path) -> None:
     for key in ("runs_passed", "runs_errored", "slide_count_off", "compiled_pct", "first_pass_pct", "mean_retries",
                 "cards", "mean_fill", "low_fill_pct", "word_breaks_per_slide", "text_overflows_per_slide",
                 "table_spill_slides", "table_spill_px", "tables_overfull_slides", "empty_cells", "invented_numbers",
-                "auto_fixes_per_slide",
+                "kpi_labels_wrong", "auto_fixes_per_slide",
                 "layout_issues_per_slide", "fit_grow_changes_per_slide", "tokens_in", "tokens_out", "cost_usd",
                 "elapsed_s"):
         lines.append(f"| {key} | {agg.get(key, '-')} |")
     lines += ["", f"Fill = card content height ÷ inner height (1.0 = no dead space); low fill < {LOW_FILL}. "
               "Word breaks = text boxes narrower than their longest word; text overflows = text needing 2+ "
-              "lines more than its box; table spill = table rows past their frame (slides, px); tables over-full = slides where fit-grow could not fit a table (the slide holds more than 720 px); empty cells = blank table cells (dropped data); invented numbers = numbers on slides that are not in the brief; "
+              "lines more than its box; table spill = table rows past their frame (slides, px); tables over-full = slides where fit-grow could not fit a table (the slide holds more than 720 px); empty cells = blank table cells (dropped data); invented numbers = numbers on slides that are not in the brief; kpi labels wrong = KPI values drawn without their own label in their tile; "
               "slide_count_off = runs whose slide count differs from the case target.", "",
               "## Cases", "",
               "| case | run | pass | slides (target) | first-pass | retries | mean fill | low-fill cards | word breaks "
-              "| overflows | invented numbers | layout issues | golden match |",
-              "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+              "| overflows | invented numbers | kpi labels wrong | layout issues | golden match |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for c in results["cases"]:
         fills = [card["fill"] for s in c["slides"] for card in s["cards"]]
         lines.append(
@@ -333,6 +343,7 @@ def write_summary(results: dict[str, Any], path: Path) -> None:
             f"| {sum(f < LOW_FILL for f in fills)} | {sum(s.get('word_breaks', 0) for s in c['slides'])} "
             f"| {sum(s.get('text_overflows', 0) for s in c['slides'])} "
             f"| {sum(s.get('invented_numbers', 0) for s in c['slides'])} "
+            f"| {sum(s.get('kpi_labels_wrong', 0) for s in c['slides'])} "
             f"| {sum(sum(s['layout_issues'].values()) for s in c['slides'])} "
             f"| {c.get('golden_match', '-')} |")
     for title, key in (("Auto-fix codes (first attempt)", "auto_fix_codes"),

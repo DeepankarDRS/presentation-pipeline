@@ -117,17 +117,67 @@ def test_missing_value_and_missing_label_are_errors():
     assert [i["ref"] for i in missing] == ["kpis.2.label"] and missing[0]["severity"] == "error"
 
 
-def test_labels_typed_by_hand_go_to_repair_and_a_filled_slide_passes():
+def _label_of(xml, cid, i):
+    m = re.search(rf'<Text[^>]*id="kpil-{cid}-{i}"[^>]*>([^<]*)</Text>', xml)
+    return m.group(1) if m else None
+
+
+def test_labels_typed_by_hand_are_rewritten_by_code_in_each_values_tile():
     """CHEFFIN 4 (2026-10-20): values by ref, labels typed in another order - every tile mislabelled."""
-    typed = "".join(f'<VStack><Text>{name}</Text><Text ref="kpis.{i}.value"/></VStack>'
-                    for i, name in enumerate(["NRR", "ARR", "Churn"]))
+    typed = "".join(f'<VStack backgroundColor="$negativeSoft" borderLeft.color="$negative" borderLeft.width="4">'
+                    f'<HStack><Icon name="users" color="$negative"/><Text color="$negativeText">{name}</Text></HStack>'
+                    f'<Text ref="kpis.{i}.value" color="$negativeText"/></VStack>'
+                    for i, name in enumerate(["Blended ROAS", "Spend", "Churn"]))
     res = E.fill_refs(slide(typed), PLAN)
+    assert res["ok"] and codes(res).count("NODE_LABEL_PLACED") == 3, res["issues"]
+    assert [_label_of(res["xml"], "kpis", i) for i in range(3)] == ["Spend", "Revenue", "Blended ROAS"]
+    assert "Churn" not in res["xml"] and "borderLeft" not in res["xml"]   # the typed metric's accent went with it
+    assert 'color="$negativeText"' not in value_tag(res["xml"], "kpiv1-kpis-0")   # Spend has no tone: plain ink
+    again = E.fill_refs(res["xml"], PLAN)   # a repaired slide comes back filled
+    assert again["ok"] and not [c for c in codes(again) if c.startswith("NODE_LABEL")]
+
+
+def test_a_tile_with_no_typed_label_gets_one_above_its_value():
+    res = E.fill_refs(slide("".join(f'<VStack><Text ref="kpis.{i}.value"/></VStack>' for i in range(3))), PLAN)
+    assert res["ok"] and [_label_of(res["xml"], "kpis", i) for i in range(3)] == ["Spend", "Revenue", "Blended ROAS"]
+    assert res["xml"].index('id="kpil-kpis-0"') < res["xml"].index('id="kpiv1-kpis-0"')
+
+
+def test_a_lone_value_never_takes_the_slide_headline_as_its_label():
+    plan = {"components": [{"component_id": "hero", "kind": "kpi_row", "count": 1,
+                            "content_data": {"kpi_labels": ["Combined ROAS"], "kpi_values": ["0.33x"]}}]}
+    xml = ('<Slide><VStack w="1280" h="720"><Text>EXECUTIVE SUMMARY</Text><Text>The account is not yet profitable</Text>'
+           '<Text>Both platforms share the issue</Text><Text>Media economics, not hygiene</Text>'
+           '<HStack><Text ref="hero.0.value"/></HStack></VStack></Slide>')
+    res = E.fill_refs(xml, plan)
+    assert "The account is not yet profitable" in res["xml"] and _label_of(res["xml"], "hero", 0) == "Combined ROAS"
+
+
+def test_unclear_tile_goes_to_repair():
+    two = '<VStack><Text ref="kpis.{i}.value"/><Text>first line</Text><Text>second line</Text></VStack>'
+    res = E.fill_refs(slide("".join(two.format(i=i) for i in range(3))), PLAN)
     assert not res["ok"] and codes(res).count("NODE_LABEL_MISSING") == 3
     assert "delete any label typed there" in E.repair_note(res["issues"])
-    filled = E.fill_refs(slide(tile(0) + tile(1) + tile(2)), PLAN)
-    assert filled["ok"] and 'id="kpil-kpis-0"' in filled["xml"]
-    again = E.fill_refs(filled["xml"], PLAN)   # the repairer gets the filled slide back
-    assert again["ok"] and "NODE_LABEL_MISSING" not in codes(again)
+
+
+import json  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+FIXTURES = Path(__file__).parents[1] / "fixtures" / "kpi_labels"
+
+
+@pytest.mark.parametrize("name", ["cheffin4-2026-10-16", "cheffin4-2026-10-20"])
+def test_real_mislabelled_cheffin_slides_come_out_right(name):
+    """Both saved runs drew every KPI under another metric's label; code now writes each label beside its value."""
+    case = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
+    res = E.fill_refs(case["xml"], case["plan"])
+    assert res["ok"], res["issues"]
+    for comp in case["plan"]["components"]:
+        data = comp["content_data"]
+        for i, (label, value) in enumerate(zip(data["kpi_labels"], data["kpi_values"])):
+            assert _label_of(res["xml"], comp["component_id"], i) == label
+            drawn = re.search(rf'<Text[^>]*id="kpi[vh]\d-{comp["component_id"]}-{i}"[^>]*>(.*?)</Text>', res["xml"]).group(1)
+            assert re.sub(r"<[^>]+>", "", drawn) == value
 
 
 def test_missing_note_is_a_warning():
@@ -501,3 +551,11 @@ def test_a_ref_wrapped_in_a_styled_text_takes_the_wrappers_place():
     assert '<Text fontSize="16" color="$textMuted">Spend</Text>' in no_label_ids(res["xml"])
     assert 'color="$positiveText"' in value_tag(res["xml"], "kpiv1-kpis-0")
     assert sum("was wrapped" in i["message"] for i in res["issues"]) == 2
+
+
+@pytest.mark.parametrize("name,wrong", [("cheffin4-2026-10-16", 1), ("cheffin4-2026-10-20", 7)])
+def test_eval_counts_kpi_values_drawn_under_another_label(name, wrong):
+    from scripts.eval_metrics import kpi_label_mismatches
+    case = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
+    assert len(kpi_label_mismatches(case["xml"], case["plan"])) == wrong
+    assert kpi_label_mismatches(E.fill_refs(case["xml"], case["plan"])["xml"], case["plan"]) == []

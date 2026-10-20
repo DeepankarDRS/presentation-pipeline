@@ -1,0 +1,64 @@
+{
+ "note": "filled slide XML as the run saved it: values placed by ref, labels typed by the generator in another order",
+ "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">FLIPCART SNAPSHOT</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">FLIPCART is generating traffic, but at <Span color=\"$warningText\">weak revenue efficiency</Span>.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">FLIPCART SNAPSHOT | Platform</Text>\n    </VStack>\n    <VStack grow=\"1\" backgroundColor=\"$surfaceAlt\" padding=\"32\" border.color=\"$border\" border.width=\"1\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <VStack>\n        <HStack alignItems=\"stretch\">\n          <VStack w=\"max\" padding=\"18\" gap=\"4\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" backgroundColor=\"$accentSoft\">\n            <HStack gap=\"8\" alignItems=\"center\">\n              <Icon name=\"trending-down\" size=\"20\" color=\"$accent\"/>\n              <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">Allowable CPC for 1.0x ROAS</Text>\n            </HStack>\n            <Text fontSize=\"28\" color=\"$accentText\" bold=\"true\" id=\"kpiv0-metrics_table-0\">₹29.4<Span fontSize=\"17\">L</Span></Text>\n          </VStack>\n          <VStack w=\"max\" padding=\"18\" gap=\"4\">\n            <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">Ad sales</Text>\n            <Text fontSize=\"28\" color=\"$textMain\" bold=\"true\" id=\"kpiv0-metrics_table-1\">₹10.1<Span fontSize=\"17\">L</Span></Text>\n          </VStack>\n          <VStack w=\"max\" padding=\"18\" gap=\"4\">\n            <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">ROAS</Text>\n            <Text fontSize=\"28\" color=\"$negativeText\" bold=\"true\" id=\"kpiv0-metrics_table-2\">0.34<Span fontSize=\"17\">x</Span></Text>\n          </VStack>\n          <VStack w=\"max\" padding=\"18\" gap=\"4\">\n            <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">CPC</Text>\n            <Text fontSize=\"28\" color=\"$textMain\" bold=\"true\" id=\"kpiv0-metrics_table-3\">₹31.1</Text>\n          </VStack>\n        </HStack>\n        <HStack alignItems=\"stretch\">\n          <VStack w=\"max\" padding=\"18\" gap=\"4\">\n            <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">CVR</Text>\n            <Text fontSize=\"28\" color=\"$textMain\" bold=\"true\" id=\"kpiv0-metrics_table-4\">5.5<Span fontSize=\"17\">%</Span></Text>\n          </VStack>\n          <VStack w=\"max\" padding=\"18\" gap=\"4\">\n            <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">AOV</Text>\n            <Text fontSize=\"28\" color=\"$textMain\" bold=\"true\" id=\"kpiv0-metrics_table-5\">₹195</Text>\n          </VStack>\n          <VStack w=\"max\" padding=\"18\" gap=\"4\">\n            <Text fontSize=\"16\" color=\"$textMuted\" bold=\"true\">Allowable CPC for 1.0x ROAS</Text>\n            <Text fontSize=\"28\" color=\"$textMain\" bold=\"true\" id=\"kpiv0-metrics_table-6\">₹10.7</Text>\n          </VStack>\n          <VStack w=\"max\"/>\n        </HStack>\n      </VStack>\n    </VStack>\n    <VStack padding=\"16\" gap=\"4\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" borderRadius=\"12\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"1\">INSIGHT</Text>\n      <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">Main insight: FLIPCART’s CPC is <Span color=\"$negativeText\">almost 3x higher</Span> than the CPC the current AOV and CVR can support.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+ "plan": {
+  "components": [
+   {
+    "component_id": "metrics_table",
+    "kind": "kpi_row",
+    "count": 7,
+    "content_summary": "Two-column table of FLIPCART metrics and values",
+    "design_hint": "shade the 'Allowable CPC for 1.0x ROAS' row; color the ROAS cell in negative (weak) tone; lift the card",
+    "weight": "hero",
+    "content_data": {
+     "kpi_labels": [
+      "Spend",
+      "Ad sales",
+      "ROAS",
+      "CPC",
+      "CVR",
+      "AOV",
+      "Allowable CPC for 1.0x ROAS"
+     ],
+     "kpi_values": [
+      "₹29.4L",
+      "₹10.1L",
+      "0.34x",
+      "₹31.1",
+      "5.5%",
+      "₹195",
+      "₹10.7"
+     ],
+     "kpi_deltas": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ],
+     "kpi_directions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ],
+     "per_row": 4,
+     "kpi_tones": [
+      "",
+      "",
+      "bad",
+      "",
+      "",
+      "",
+      ""
+     ]
+    }
+   }
+  ]
+ }
+}

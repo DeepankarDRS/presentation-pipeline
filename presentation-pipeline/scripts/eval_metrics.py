@@ -248,3 +248,35 @@ def pattern_match(generated: list[str], golden: list[str]) -> float:
     a, b = Counter(generated), Counter(golden)
     union = sum((a | b).values())
     return round(sum((a & b).values()) / union, 3) if union else 1.0
+
+
+def kpi_label_mismatches(slide_xml: str, plan: dict) -> list[str]:
+    """KPI values drawn without their own label in their tile: "<value> (plan: <label>)". CHEFFIN 4 (2026-10-16 and
+    2026-10-20) passed with every tile under another metric's label. Reads the drawn text, so both routes count; a
+    value not on the slide is not counted here (that is a missing item)."""
+    from lxml import etree
+
+    from src.compiler.nodes.element_refs import _own_tile, kpi_components, norm
+
+    body = re.sub(r"<Theme\b[^>]*/>", "", slide_xml)
+    try:
+        root = etree.fromstring(f"<_r_>{body}</_r_>".encode("utf-8"))
+    except etree.XMLSyntaxError:
+        return []
+    texts = [t for t in root.iter("Text")]
+    drawn = [(t, norm("".join(t.itertext()))) for t in texts]
+    found: list[tuple[etree._Element, str, str]] = []
+    for comp in kpi_components(plan).values():
+        data = comp.get("content_data") or {}
+        for label, value in zip(data.get("kpi_labels") or [], data.get("kpi_values") or []):
+            el = next((t for t, n in drawn if n == norm(value) and all(t is not f[0] for f in found)), None)
+            if el is not None and label:
+                found.append((el, str(label), str(value)))
+    values = {f[0] for f in found}
+    out = []
+    for el, label, value in found:
+        tile = _own_tile(el, values)
+        inside = {norm("".join(t.itertext())) for t in (tile.iter("Text") if tile is not None else [])}
+        if norm(label) not in inside:
+            out.append(f"{value} (plan: {label})")
+    return out

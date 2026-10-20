@@ -36,7 +36,7 @@ SEVERITY = {
     "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR,
     # a label the LLM typed itself can sit beside the wrong value: CHEFFIN 4 (2026-10-20) typed 7 labels in
     # another order (two not in the brief) while code placed the values in plan order - every tile mislabelled
-    "NODE_LABEL_MISSING": ERROR,
+    "NODE_LABEL_MISSING": ERROR, "NODE_LABEL_PLACED": WARNING,
     "NODE_FIELD_MISSING": WARNING, "NODE_BYPASSED": WARNING, "NODE_ATTR_IGNORED": WARNING,
     "NODE_FOCUS_UNNAMED": REPORT, "NODE_VALUE_TEXT": WARNING,
 }
@@ -158,6 +158,7 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
     changed = _unwrap_refs(root, flag)
     placed: dict[str, dict[int, set[str]]] = {cid: {} for cid in comps}
     value_els: dict[tuple[str, int], etree._Element] = {}
+    filled: set[etree._Element] = set()
     seen: set[str] = set()
 
     for el in list(root.iter()):
@@ -226,12 +227,10 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         elif field == "label":
             a["id"] = f"kpil-{cid}-{i}"   # a repaired slide comes back filled: the id says code placed it
         if "color" not in a:
-            tones = _list(comp, "kpi_tones")
-            role = TONE_ROLE.get(tones[i].lower()) if i < len(tones) else None
-            dark = ON_FILL.get(_fill_of(el) or "")
-            a["color"] = dark or (f"${role}Text" if role else ROLE_COLOR[field])
+            a["color"] = _default_color(el, comp, i, field)
         _set_text(el, field, text, size, unit_share(_list(comp, "kpi_values")))
         placed[cid].setdefault(i, set()).add(field)
+        filled.add(el)
 
     # values and labels filled on an earlier pass (a repaired slide comes back already filled) count as placed
     for t in root.iter("Text"):
@@ -242,6 +241,7 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         lm = re.match(r"^kpil-(?P<cid>[\w-]+)-(?P<i>\d+)$", t.get("id", ""))
         if lm and lm["cid"] in comps:
             placed[lm["cid"]].setdefault(int(lm["i"]), set()).add("label")
+    changed |= _place_labels(comps, placed, value_els, filled, flag)
     # plain Texts that carry a plan value (typed instead of placed by ref)
     plain = {norm("".join(t.itertext())) for t in root.iter("Text")}
 
@@ -306,6 +306,100 @@ def _unwrap_refs(root: etree._Element, flag) -> bool:
         outer.getparent().replace(outer, el)
         flag("NODE_ATTR_IGNORED", el.get("ref"), f'ref="{el.get("ref")}" was wrapped in a <Text>; the ref Text '
              "took its place (a ref Text carries its own attributes).")
+        changed = True
+    return changed
+
+
+def _default_color(el: etree._Element, comp: dict, i: int, field: str) -> str:
+    """A KPI text with no colour of its own: light ink on a dark fill, else the item's tone ink, else the role default."""
+    tones = _list(comp, "kpi_tones")
+    role = TONE_ROLE.get(tones[i].lower()) if i < len(tones) else None
+    return ON_FILL.get(_fill_of(el) or "") or (f"${role}Text" if role else ROLE_COLOR[field])
+
+
+TILE_TEXTS = 3   # a tile holds its value and at most a label, a note and one more line; a wider stack is the slide
+
+
+def _own_tile(value: etree._Element, values: set) -> etree._Element | None:
+    """The widest stack around `value` that holds no other KPI value and at most TILE_TEXTS other texts: the item's
+    tile, fill or not (16 Oct CHEFFIN 4 drew some tiles with no fill or border). Never the slide around a lone value."""
+    tile, p = None, value.getparent()
+    while p is not None and p.tag in _STACKS:
+        others = [t for t in p.iter("Text") if t is not value]
+        if any(t in values for t in others) or len(others) > TILE_TEXTS:
+            break
+        tile, p = p, p.getparent()
+    return tile
+
+
+TONE_FILLS = {"$positiveSoft", "$negativeSoft", "$warningSoft"}
+MAX_LABEL_WORDS = 8  # a typed text longer than this is a sentence the LLM wrote, not a tile label
+
+
+def _place_labels(comps: dict, placed: dict, value_els: dict, filled: set, flag) -> bool:
+    """A value placed by ref whose label was not: code writes the plan's label in the value's own tile, over the
+    label the LLM typed there (the text before the value), or as a new Text just above the value. CHEFFIN 4
+    (2026-10-16 and 2026-10-20): the labels were typed in another order than the values, every tile mislabelled.
+    A tile code cannot tell apart (no own tile, or several typed texts and none before the value) stays
+    NODE_LABEL_MISSING, for the repairer."""
+    values = set(value_els.values())
+    changed = False
+    for (cid, i), value in value_els.items():
+        comp = comps[cid]
+        labels = _list(comp, "kpi_labels")
+        if "label" in placed[cid].get(i, set()) or i >= len(labels) or not labels[i]:
+            continue
+        tile = _own_tile(value, values)
+        if tile is None:
+            continue
+        order = list(tile.iter("Text"))
+        typed = [t for t in order if t is not value and t not in filled and value not in t.iterancestors()
+                 and not t.get("id", "").startswith("kpi")
+                 and 0 < len("".join(t.itertext()).split()) <= MAX_LABEL_WORDS]
+        before = [t for t in typed if order.index(t) < order.index(value)]
+        if before:
+            el = before[-1]
+        elif len(typed) == 1:
+            el = typed[0]
+        elif not typed:
+            el = etree.Element("Text")
+            value.addprevious(el)
+        else:
+            continue
+        old = " ".join("".join(el.itertext()).split())
+        for c in list(el):
+            el.remove(c)
+        el.text = labels[i]
+        for k in ("ref", "fontSize"):
+            el.attrib.pop(k, None)
+        if not el.get("color", "$").startswith("$") or (_fill_of(el) in READS_ON and el.get("color") not in READS_ON[_fill_of(el)]):
+            el.attrib.pop("color", None)
+        el.set("fontSize", str(LABEL_PX))
+        el.set("id", f"kpil-{cid}-{i}")
+        if "color" not in el.attrib:
+            el.set("color", _default_color(el, comp, i, "label"))
+        if old and norm(old) != norm(labels[i]):
+            # the LLM styled this tile for the metric it typed: its colours and icon follow that metric, not this one
+            # (20 Oct: Spend drawn red, styled as ROAS); the plan's tone and icon replace them
+            for t in (el, value):
+                t.set("color", _default_color(t, comp, i, "value" if t is value else "label"))
+                for span in t.iter("Span"):
+                    span.attrib.pop("color", None)
+            for k in [k for k in tile.attrib if k.startswith("borderLeft")]:
+                del tile.attrib[k]   # an accent bar marked the typed metric
+            if tile.get("backgroundColor") in TONE_FILLS:
+                tones = _list(comp, "kpi_tones")
+                role = TONE_ROLE.get(tones[i].lower()) if i < len(tones) else None
+                tile.set("backgroundColor", f"${role}Soft" if role else "$surfaceAlt")
+            icons = _list(comp, "kpi_icons")
+            for icon in tile.iter("Icon"):
+                if i < len(icons) and icons[i]:
+                    icon.set("name", icons[i])
+                icon.set("color", _default_color(value, comp, i, "label"))
+        placed[cid].setdefault(i, set()).add("label")
+        filled.add(el)
+        flag("NODE_LABEL_PLACED", f"{cid}.{i}.label", f'{cid} item {i}: code wrote the plan\'s label "{labels[i]}" in the '
+             f"tile of its value" + (f' over the typed "{old}"' if old else "") + ".")
         changed = True
     return changed
 
