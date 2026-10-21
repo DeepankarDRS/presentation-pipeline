@@ -1,0 +1,164 @@
+# Measured break points of the node break map's regression slice (scripts/node_break_map.py
+# TEST_SLICE), fit-grow on, POM 10.3.0. Written by `python -m scripts.node_break_map --write-points`
+# after a full run; tests/unit/test_node_break_map.py compiles each at holds_up_to and the count
+# after it. capacity_disagreements: capacity.yaml limits above the measured band point, kept
+# until the user decides (each with the reason); the test fails on any other.
+series:
+- kind: flow
+  placement: band
+  direction: horizontal
+  labels: w2
+  style: default
+  variant: process
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: flow
+  placement: band
+  direction: vertical
+  labels: w2
+  style: default
+  variant: process
+  holds_up_to: 7
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: process_arrow
+  placement: band
+  direction: horizontal
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - WORD_BROKEN
+- kind: process_arrow
+  placement: band
+  direction: horizontal
+  labels: w2
+  style: inter
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - WORD_BROKEN
+- kind: process_arrow
+  placement: band
+  direction: vertical
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: process_arrow
+  placement: split-40
+  direction: horizontal
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 3
+  swept:
+  - 3
+  - 10
+  first_break:
+  - WORD_BROKEN
+- kind: process_arrow
+  placement: split-40
+  direction: vertical
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: timeline
+  placement: band
+  direction: horizontal
+  labels: w3
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: timeline
+  placement: band
+  direction: vertical
+  labels: w3
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: timeline
+  placement: band
+  direction: horizontal
+  labels: long1
+  style: default
+  variant: ''
+  holds_up_to: null
+  swept:
+  - 3
+  - 10
+  first_break:
+  - WORD_BROKEN
+- kind: tree
+  placement: band
+  direction: vertical
+  labels: w2
+  style: default
+  variant: depth2
+  holds_up_to: 8
+  swept:
+  - 2
+  - 8
+  first_break: null
+- kind: matrix
+  placement: band
+  direction: '-'
+  labels: w2
+  style: default
+  variant: d0.18
+  holds_up_to: 8
+  swept:
+  - 2
+  - 8
+  first_break: null
+- kind: pyramid
+  placement: band
+  direction: up
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 5
+  swept:
+  - 3
+  - 7
+  first_break:
+  - WORD_BROKEN
+capacity_disagreements:
+  flow.vertical: "capacity 8 assumes the generator writes 40 px nodes + nodeGap 24 (flow.box_for_direction, advice,
+    not enforced); at POM's defaults (60 px, gap 80, fit-grow cuts the gap to 20) the band holds 7 (8th: drawn
+    < 14 px). Open for the user (2026-10-21): lower to 7, or have code write nodeHeight / nodeGap for vertical flows." 
