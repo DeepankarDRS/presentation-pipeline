@@ -11,7 +11,14 @@ import re
 from typing import Any
 
 from src.compiler.content_model import find_violations, flatten_text_containers
-from src.compiler.grow_fallback import ensure_growing_band, fill_lone_child, share_row_height, unsqueeze_text_boxes
+from src.compiler.grow_fallback import (
+    ensure_growing_band,
+    fill_lone_child,
+    share_row_height,
+    size_row_symbols,
+    stretch_peer_cards,
+    unsqueeze_text_boxes,
+)
 from src.compiler.kpi_grid import kpi_rows
 from src.compiler.icons import fix_icon_names
 from src.utils.text_clean import strip_illegal
@@ -897,6 +904,12 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     xml, grow_note = ensure_growing_band(xml)
     if grow_note:
         issues.append({"code": "GROW_BAND_ADDED", "message": grow_note, "auto_fixed": True})
+    xml, symbol_note = size_row_symbols(xml)
+    if symbol_note:
+        issues.append({"code": "ROW_SYMBOL_SIZED", "message": symbol_note, "auto_fixed": True})
+    xml, peers_note = stretch_peer_cards(xml)
+    if peers_note:
+        issues.append({"code": "PEER_CARDS_STRETCHED", "message": peers_note, "auto_fixed": True})
     xml, squeeze_note = unsqueeze_text_boxes(xml)
     if squeeze_note:
         issues.append({"code": "TEXT_BOX_UNSQUEEZED", "message": squeeze_note, "auto_fixed": True})

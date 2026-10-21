@@ -219,3 +219,97 @@ def unsqueeze_text_boxes(xml: str) -> tuple[str, str | None]:
         xml = xml[:a] + ' grow="1"' + xml[b:]
     return xml, (f'Gave grow="1" instead of w="max" to {len(edits)} box(es) of long text in a row, so they share '
                  "the row's width instead of taking their one-line width.")
+
+
+# ── a short symbol between w="max" boxes must not be squeezed to zero ───────
+# XTSY 4 (gpt-6.1-sol, 2026-10-21): four w="max" phase cards with a "→" <Text> between each pair. The cards'
+# basis is their text's one-line width, the arrows' basis 0, so the arrows got 0 px and POM threw "addTextBox: width
+# must be a finite positive EMU value". The repairer then pinned the cards and set the row to alignItems="start"
+# (unequal card heights). A short symbol Text (≤ 3 characters: arrows, "+", "·", "vs") with no w / grow in a row
+# that has a w="max" child gets a width from its font size (1.2 em), so it can never be squeezed out. A wrapping row
+# (flexWrap="wrap") is left alone: its children wrap instead of shrinking, and wider arrows pushed the last card of
+# gpt-5-mini's XTSY 4 onto a second row in the replay.
+
+_SYMBOL_MAX = 3
+_W_RE = re.compile(r"\s(?:w|grow)\s*=")
+_FONT_RE = re.compile(r"\sfontSize\s*=\s*\"(\d+(?:\.\d+)?)\"")
+_WRAP_RE = re.compile(r"\sflexWrap\s*=\s*\"wrap\"")
+
+
+def size_row_symbols(xml: str) -> tuple[str, str | None]:
+    """Return (xml, message); message is None when nothing changed."""
+    edits: list[tuple[int, str]] = []
+    for el in _elements(xml):
+        if el["name"] != "HStack" or _WRAP_RE.search(el["attrs"]):
+            continue
+        if not any(_W_MAX_RE.search(c["attrs"]) for c in el["children"]):
+            continue
+        for c in el["children"]:
+            if c["name"] != "Text" or c["children"] or _W_RE.search(c["attrs"]):
+                continue
+            text = _text_len(xml, c)
+            if not 0 < text <= _SYMBOL_MAX:
+                continue
+            m = _FONT_RE.search(c["attrs"])
+            w = max(16, round(float(m.group(1)) * 1.2)) if m else 22
+            edits.append((c["start"] + 1 + len("Text"), f' w="{w}"'))
+    if not edits:
+        return xml, None
+    for at, ins in sorted(edits, reverse=True):
+        xml = xml[:at] + ins + xml[at:]
+    return xml, (f"Gave {len(edits)} short symbol text(s) between w=\"max\" boxes a width from their font size, so "
+                 "the boxes beside them cannot squeeze them to zero width.")
+
+
+# ── peer cards in one row share one height ──────────────────────────────────
+# Rule K6 (peers look alike, presentation-rules-draft 2026-10-15): cards of the same kind side by side are one
+# size. With alignItems="start" / "center" / "end" on the row every card is as tall as its own text, so the card with
+# the longest text stands out (XTSY 4 after the repair above, 2026-10-21). A row whose boxed children (VStack /
+# HStack with a fill or border) number ≥ 2, share one structure (same attribute names and the same padding /
+# borderRadius; fills may differ, e.g. one focus card) and set no h / minH gets alignItems="stretch". Its other
+# children (arrows, icons) keep their old position through alignSelf.
+
+_ALIGN_RE = re.compile(r"\salignItems\s*=\s*\"(start|center|end)\"")
+_HEIGHT_RE = re.compile(r"\s(?:h|minH|maxH)\s*=")
+_BOX_RE = re.compile(r"\s(?:backgroundColor|border\.color|border\.width|borderLeft\.color|borderTop\.color)\s*=")
+_ALIGNSELF_RE = re.compile(r"\salignSelf\s*=")
+_ATTR_RE = re.compile(r"([\w.]+)\s*=\s*\"([^\"]*)\"")
+_SHAPE_KEYS = ("padding", "borderRadius")
+_IGNORED = {"w", "h", "grow", "id", "alignSelf", "minW", "maxW", "minH", "maxH", "backgroundColor",
+            "border.color", "borderLeft.color", "borderTop.color", "shadow.color"}
+
+
+def _signature(attrs: str) -> tuple:
+    kv = dict(_ATTR_RE.findall(attrs))
+    return (frozenset(k for k in kv if k not in _IGNORED), tuple(kv.get(k) for k in _SHAPE_KEYS))
+
+
+def stretch_peer_cards(xml: str) -> tuple[str, str | None]:
+    """Return (xml, message); message is None when nothing changed."""
+    edits: list[tuple[int, int, str]] = []
+    rows = 0
+    for el in _elements(xml):
+        if el["name"] != "HStack":
+            continue
+        m = _ALIGN_RE.search(el["attrs"])
+        if not m:
+            continue
+        boxes = [c for c in el["children"] if c["name"] in ("VStack", "HStack") and _BOX_RE.search(c["attrs"])]
+        if len(boxes) < 2 or any(_HEIGHT_RE.search(b["attrs"]) or _ALIGNSELF_RE.search(b["attrs"]) for b in boxes):
+            continue
+        if len({_signature(b["attrs"]) for b in boxes}) != 1:
+            continue
+        at = el["start"] + 1 + len("HStack") + m.start()
+        edits.append((at, at + len(m.group(0)), ' alignItems="stretch"'))
+        for c in el["children"]:
+            if c in boxes or _ALIGNSELF_RE.search(c["attrs"]):
+                continue
+            pos = c["start"] + 1 + len(c["name"])
+            edits.append((pos, pos, f' alignSelf="{m.group(1)}"'))
+        rows += 1
+    if not edits:
+        return xml, None
+    for a, b, ins in sorted(edits, reverse=True):
+        xml = xml[:a] + ins + xml[b:]
+    return xml, (f'Set alignItems="stretch" on {rows} row(s) of same-styled cards so the cards share one height '
+                 "(peers look alike); their other children keep their place.")

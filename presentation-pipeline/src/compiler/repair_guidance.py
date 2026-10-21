@@ -112,6 +112,15 @@ LAYOUT_SHRINK_GUIDANCE = """LAYOUT OVERFLOW FIX CHECKLIST (apply in order until 
 7. Use a 2-column HStack to place components side by side instead of stacked
 All dimensions must stay positive (never 0). Slide bounds: 1280x720."""
 
+# "addTextBox: width must be a finite positive EMU value": a box in an HStack squeezed to zero width, almost
+# always by w="max" siblings (POM gives them their text's one-line width as flex basis; a sibling without w gets
+# 0). The 6.1-sol XTSY run of 2026-10-21 fixed it by pinning widths AND switching the row to alignItems="start",
+# which compiled but left the peer cards at unequal heights. Fix the widths only.
+SQUEEZE_GUIDANCE = """SQUEEZED-BOX FIX ("width must be a finite positive EMU value"): a box in a row was squeezed to zero width.
+- Give the squeezed node a real width: a small symbol or arrow Text between cards gets w equal to about 1.2x its fontSize
+  (or use <Icon name="arrow-right" size="20"/>); a text box beside w="max" cards gets grow="1" instead of w="max".
+- Change widths only. Keep every alignItems, justifyContent, grow and h as they are: cards in one row keep sharing one height."""
+
 
 _MAX_MSG_LEN = 220
 # Matches "Expected: "val1", "val2", "val3", ..." — 3+ quoted values = enum listing.
@@ -238,6 +247,12 @@ def build_error_guidance(
                         f"STRUCTURE FIX: <{tag or '?'}> does not accept child elements. "
                         "Remove nested elements or use a container like VStack/HStack instead."
                     )
+
+        if "finite positive emu" in dmsg.lower():
+            key = "squeezed_to_zero"
+            if key not in seen:
+                seen.add(key)
+                sections.append(SQUEEZE_GUIDANCE)
 
         if dtype == "UNKNOWN_TAG":
             tag = _extract_tag_from_error(dmsg)
