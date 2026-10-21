@@ -41,7 +41,7 @@ def get_step_config(step: str) -> dict[str, Any]:
     return merged
 
 
-_REASONING_PREFIXES = ("gpt-5", "o1", "o3", "o4")
+_REASONING_PREFIXES = ("gpt-5", "gpt-6", "o1", "o3", "o4")
 
 
 def _is_reasoning_model(model: str) -> bool:

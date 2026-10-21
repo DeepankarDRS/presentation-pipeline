@@ -53,11 +53,15 @@ steps:
     temperature: 0.3
     max_tokens: 8000
     response_format: json_schema
+  # Generator + repairer on gpt-6.1-sol (2026-10-21): blind marks 0.75 vs gpt-4.1 0.36 / gpt-5-mini 0.39 on CHEFFIN + XTSY
+  # (docs/eval/model-compare-2026-10-21/); planners stay on gpt-5-mini to test the generator alone
+  # (scripts/gen_from_plans.py). Back to gpt-4.1: model: gpt-4.1, temperature 0.2, max_tokens 12000, no reasoning_effort.
   generator:
     provider: openai
-    model: gpt-4.1
-    temperature: 0.2
-    max_tokens: 12000  # a maximal single slide is 6-12k tokens of XML
+    model: gpt-6.1-sol
+    reasoning_effort: medium
+    temperature: 0.2  # ignored by reasoning models; used again on gpt-4.1
+    max_tokens: 24000  # reasoning tokens count here (the 2026-10-21 runs used 100-500 per slide); gpt-4.1 used 12000
   critic:
     provider: openai
     model: gpt-4.1
@@ -66,9 +70,10 @@ steps:
     enabled: true
   repairer:
     provider: openai
-    model: gpt-4.1
-    temperature: 0.1
-    max_tokens: 12000  # must be able to re-emit a full slide, not truncate mid-repair
+    model: gpt-6.1-sol
+    reasoning_effort: medium
+    temperature: 0.1  # ignored by reasoning models; used again on gpt-4.1
+    max_tokens: 24000  # must be able to re-emit a full slide, not truncate mid-repair; gpt-4.1 used 12000
   visual_critic:
     provider: openai
     model: gpt-4.1
@@ -96,5 +101,7 @@ pricing:
   gpt-5:        { input: 1.25, cached_input: 0.125, output: 10.00 }
   gpt-5-mini:   { input: 0.25, cached_input: 0.025, output: 2.00 }
   gpt-5-nano:   { input: 0.05, cached_input: 0.005, output: 0.40 }
+  # gpt-6.1-sol: rates read back from the test PC's 2026-10-21 run manifests (cost per call / tokens); check them.
+  gpt-6.1-sol:  { input: 2.00, cached_input: 0.50, output: 8.00 }
   o3:           { input: 2.00, cached_input: 0.50, output: 8.00 }
   o4-mini:      { input: 1.10, cached_input: 0.275, output: 4.40 }

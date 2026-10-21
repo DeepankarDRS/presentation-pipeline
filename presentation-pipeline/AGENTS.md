@@ -25,7 +25,7 @@ npm install --prefix frontend         # Angular UI (only if you use the web UI)
 ```
 
 `.env` is gitignored — it never travels with the repo; create it on every machine.
-Models per pipeline step (all OpenAI, mostly `gpt-4.1`) are set in `models.yaml`.
+Models per pipeline step (all OpenAI) are set in `models.yaml`. Since 2026-10-21 `generator` and `repairer` run on `gpt-6.1-sol` (blind marks 0.75 vs gpt-4.1 0.36 / gpt-5-mini 0.39, `docs/eval/model-compare-2026-10-21/`); planners stay on gpt-5-mini.
 Reasoning models (`gpt-5*`, `o1/o3/o4*`) work per step: `get_llm` drops `temperature` and sends `reasoning_effort` (default `medium`); give the step a much larger `max_tokens` (reasoning tokens count against it). Since 2026-10-01 `outline_planner`, `slide_component_planner` and `plan_reviewer` run on `gpt-5-mini` (`reasoning_effort: medium`) for the reasoning-model test; each step notes its gpt-4.1 `max_tokens` for switching back. Usage records `tokens_reasoning`.
 
 ## Testing outputs (with OPENAI_API_KEY)
@@ -45,6 +45,7 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Planning-only runs of the Test 1 path + scoring (paid; `--rescore` is free) | `python -m scripts.plan_only <cases> --repeat 1 --label <label> --bundle` |
 | How the slide component planner groups a slide's numbers into kpi_rows (main graph, planners only; paid, `--rescore` free) | `python -m scripts.kpi_plan_only --repeat 3 --label kpi-plans --bundle` — `output/kpi-plans/<label>/summary.md` |
 | LLM deck vs code-composer deck on the same runs (paid run, compose is free) | `python -m scripts.eval_run deck-qbr-data gate-deck-agency-takeover --repeat 1 --label longrun --compose --bundle` — `decks/<case>__rN/` holds `llm.pptx`, `composed.pptx`, `slides.json` (also in the bundle); one run folder: `python -m scripts.phase0b.compose_deck output/runs/<run_id>` (needs Pillow) |
+| Generator only on a saved run's plans (paid; planners skipped, models from `models.yaml`) | `python -m scripts.gen_from_plans output/runs/<run_id> ... --requests <brief.txt> ... --label <label> --bundle` (one exact brief per run; checked against the run's request_sha256) |
 | Card tile nodes, free: gallery / replay on every saved card slide (LLM layout kept, Inter render, blind sheets) | `python -m scripts.card_gallery` · `python -m scripts.card_replay` — `output/card-replay/sheets/` |
 | Card tile nodes, paid check on fresh plans (test PC, ~$1.90) | `python -m scripts.card_plan_only --repeat 3 --label card-plans --bundle`, then `python -m scripts.card_paid --plans card-plans --repeat 3 --label card-paid --bundle`; free: `--rescore`, `--dry` |
 
