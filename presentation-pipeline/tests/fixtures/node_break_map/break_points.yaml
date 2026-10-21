@@ -159,6 +159,6 @@ series:
   first_break:
   - WORD_BROKEN
 capacity_disagreements:
-  flow.vertical: "capacity 8 assumes the generator writes 40 px nodes + nodeGap 24 (flow.box_for_direction, advice,
-    not enforced); at POM's defaults (60 px, gap 80, fit-grow cuts the gap to 20) the band holds 7 (8th: drawn
-    < 14 px). Open for the user (2026-10-21): lower to 7, or have code write nodeHeight / nodeGap for vertical flows." 
+  flow.vertical: 'capacity 8 assumes the generator writes 40 px nodes + nodeGap 24 (flow.box_for_direction, advice, not enforced);
+    at POM''s defaults (60 px, gap 80, fit-grow cuts the gap to 20) the band holds 7 (8th: drawn < 14 px). Open for the user
+    (2026-10-21): lower to 7, or have code write nodeHeight / nodeGap for vertical flows.'

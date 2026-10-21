@@ -115,15 +115,20 @@ def test_a_slide_where_every_word_fits_has_no_guard_edits(tmp_path):
     assert _guard_lines(r) == [] and _warnings(r) == []
 
 
-def test_a_pinned_column_takes_width_from_its_wider_pinned_neighbour(tmp_path):
+def test_pinned_columns_keep_their_numbers_whole(tmp_path):
     """2026-10-07 (gj-h1 slide 14 in R1's replay): growing the left column's text pinned both w="max" columns, and
     the KPI numbers in the narrow right column ("₹59.8", "5.30x", 28px, at their floor) broke. The guard widens a
-    box fit-grow pinned, innermost first, from its wider pinned neighbour; the second pass makes no guard edit."""
+    box fit-grow pinned, innermost first, from its wider pinned neighbour. Since words are measured without POM's
+    10 px box padding (node break map §4 C1) these numbers fit their columns as drawn ("₹59.8" 78 px in 90,
+    checked on a LibreOffice render), so no widening is needed; the numbers stay >= 28 px, none is reported and
+    the second pass makes no guard edit. (The "Ad share" label, letterSpacing 1, is 52 px in its 52 px tile as POM
+    counts spacing after every letter: the guard may report it — LibreOffice drew it whole, PowerPoint unchecked.)"""
+    numbers = ("₹59.8", "5.30", "-3")
     first = _compile(_FIX / "g4-pinned-columns.xml", tmp_path / "a")
-    assert any("column widened" in r for r in first["fitGrow"]), first["fitGrow"]
-    assert _warnings(first) == []
+    assert not [w for w in _warnings(first) if any(v in w for v in numbers)]
     assert all(int(v) >= 28 for v in re.findall(r'fontSize="(\d+)" color="\$(?:positive|accent)" bold="true"[^>]*>[₹\d-]', first["xml"]))
     fitted = tmp_path / "g4-fitted.xml"
     fitted.write_text(first["xml"], encoding="utf-8")
     second = _compile(fitted, tmp_path / "b")
-    assert not any("column widened" in r or "wider than" in r for r in second["fitGrow"]) and _warnings(second) == []
+    assert not any("column widened" in r or "wider than" in r for r in second["fitGrow"])
+    assert _warnings(second) == _warnings(first)

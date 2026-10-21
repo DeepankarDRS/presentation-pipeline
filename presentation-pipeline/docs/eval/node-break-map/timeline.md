@@ -31,11 +31,10 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 
 800 cases. Holds with fit-grow: 492; raw: 472. **Rescued** (raw breaks, fit holds): 20. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 308.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 80, SHRUNK 260, SCALE_FLOOR 30, GUARD 10.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 80, SHRUNK 260, SCALE_FLOOR 30.
 
 ## What breaks first (one example per code)
 
 - **WORD_BROKEN** `timeline~band-under-kpi~horizontal~long1~default~-~03` box [1168, 364]: 'Implementation' 112 px in 101
 - **SHRUNK** `timeline~split-40~horizontal~long1~default~-~04` box [444, 538]: 'Q1 2025' 11.11 px; 'Implementation' 103 px in 92
 - **SCALE_FLOOR** `timeline~split-40~horizontal~long1~default~-~08` box [444, 538]: 'Q1 2025' 6 px; 'Profitability' 42 px in 41
-- **GUARD** `timeline~card~horizontal~long1~default~-~10` box [991, 194]: 'Q1 2025' 9.91 px; 'Reconciliation' 81 px in 80

@@ -84,11 +84,21 @@ fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 64 process_arrow, 20
 ## 4. What code can fix vs what the planner must choose
 
 **Code (proposed, not applied):**
-- **C1. fit-grow over-measures every word by 10 px.** `widestPiece` / `runWidest` / table `measureCell`
-  read `measureText(...).widthPx`, which includes POM's 10 px box padding (`calculateResult`);
-  `runWidest` adds it per run (a "₹114.9" + "L" value counts 20 px too much). Effect: false
-  `WORD_TOO_WIDE` (23 of the 170 process_arrow guard warnings are on labels whose word fits), chevrons / nodes widened or
-  fonts lowered for nothing. Fix: subtract 10 px (touches table sizing too — needs its own replay).
+- **C1. fit-grow over-measured every word by 10 px — FIXED (2026-10-21, user).** `widestPiece` /
+  `runWidest` / table `measureCell` / the one-line run check / the list split read
+  `measureText(...).widthPx`, which includes POM's 10 px box padding (`calculateResult`); `runWidest`
+  added it per run (a "₹114.9" + "L" value counted 20 px too much). Now one helper, `naturalWidth`.
+  The padding had hidden that fit-grow called a word 0.5 px *wider* than its box a fit: a LibreOffice
+  render breaks "Profitabilit-y" 0.3 px short, so a word now needs 0.5 px to spare (`WORD_MARGIN`, in
+  the diagram sizing, the shrink guard, its overflow total and the growth checks).
+  Replay of 577 saved slides (the main checkout's `output/`, every unique `input.xml`, fit-grow on,
+  words measured run by run): broken words 32 → 31 (no slide worse), `WORD_TOO_WIDE` 75 → 51; 170
+  slides laid out differently, total type larger on 118, smaller on 4. Tests changed: the narrow
+  chevron row now stops at 14 px with the word fitting (a new test keeps "never below 14, warns" with
+  "Reconciliation"); the g4 pinned-columns fixture no longer needs widening ("₹59.8" is 78 px in 90,
+  render-checked), so the pinned-neighbour widening path has no fixture now. Open edge: POM counts
+  letter spacing after the last letter too (LibreOffice draws "share", 52 px with it, whole in 52 px);
+  kept conservative until PowerPoint is checked.
 - **C2. `growDiagrams` grows chevron itemHeight 80 → 120**, which takes 2 × 0.35 × 40 = 28 px off every
   label box; at 9 steps "program" fits POM's raw drawing and breaks after fit-grow (15 cases). Fix:
   grow itemHeight only while every label's longest word still fits (or let phase 3' lower it again).

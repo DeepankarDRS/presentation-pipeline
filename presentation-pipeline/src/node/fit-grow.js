@@ -171,6 +171,23 @@ let FONT_REGISTRY = null;
 // (eval 2026-10-15: agency slide 2 "compile-pom.js timed out after 120s" -> placeholder).
 let DEADLINE = Infinity;
 
+// measureText reports a text's width plus POM's own 10 px box padding (calculateResult in
+// calcYogaLayout/measureText.js). A word or a run set in a box of ours is that much narrower: reading
+// widthPx as the text's width over-measured every word by 10 px (every run of a KPI value: 20 px for
+// "₹114.9" + "L") — false WORD_TOO_WIDE, chevrons widened and fonts lowered for nothing. Checked on a
+// LibreOffice render: "Reconciliation" at 14 px Inter bold is 97 px and fits a 101 px box
+// (docs/eval/node-break-map/README.md §1, §4 C1).
+const MEASURE_PAD = 10;
+// A word fits its room only with this much to spare: the renderer breaks a word that is 0.3 px wider than its
+// box ("Profitabilit-y" in a 90.8 px chevron label, LibreOffice, 2026-10-21); while words were measured 10 px
+// too wide, the old "up to 0.5 px over" tolerance never showed.
+const WORD_MARGIN = 0.5;
+
+/** The width of `text` on one line, without POM's box padding. */
+function naturalWidth(text, opts, ctx) {
+  return Math.max(0, measureText(text, Infinity, opts, ctx.textMeasurementMode, ctx.fontRegistry).widthPx - MEASURE_PAD);
+}
+
 async function layout(xml) {
   if (Date.now() > DEADLINE) throw new Error(`time budget ${BUDGET_MS}ms used`);
   const ctx = createBuildContext("auto", []);
@@ -263,10 +280,9 @@ async function splitLists(xml, report) {
       // cannot become two lists without breaking the reference or the box
       if (!n.id.startsWith(ID_PREFIX) || hasBoxStyle(n)) return;
       const w = L.box(n).w;
-      const widest = Math.max(...n.items.map((i) => measureText(i.text, Infinity,
+      const widest = Math.max(...n.items.map((i) => naturalWidth(i.text,
         { fontFamily: n.fontFamily ?? "Noto Sans JP", fontSizePx: i.fontSize ?? n.fontSize ?? 24,
-          fontWeight: n.bold ? "bold" : "normal", lineHeight: 1.3 },
-        L.ctx.textMeasurementMode, L.ctx.fontRegistry).widthPx)) + 36;
+          fontWeight: n.bold ? "bold" : "normal", lineHeight: 1.3 }, L.ctx))) + 36;
       if (widest < 0.45 * w) targets.push(n.id);
     });
   } finally { L.free(); }
@@ -462,7 +478,7 @@ function firstFit(lo, hi, ok) {
 function arrowWordsEdit(n, W, H, ctx) {
   if (!n.steps?.length) return null;
   const iw0 = n.itemWidth ?? 150, fs0 = n.fontSize ?? 14;
-  const short = (iw, f) => arrowShort(n, iw, f, W, H, ctx) <= 0.5;
+  const short = (iw, f) => arrowShort(n, iw, f, W, H, ctx) <= -WORD_MARGIN;
   if (short(iw0, fs0)) return null;
   const iwMax = widest(iw0, (iw) => fitScale(arrowLayout(n, iw), W, H), Math.floor(W));
   const iw = firstFit(iw0, iwMax, (v) => short(v, fs0));
@@ -482,22 +498,22 @@ function flowWordsEdit(n, W, H, ctx) {
   const nw0 = n.nodeWidth ?? 120, nh0 = n.nodeHeight ?? 60;
   const at = (nw, nh) => flowShort(n, nw, nh, W, H, ctx);
   const now = at(nw0, nh0);
-  if (now.word <= 0.5 && now.lines <= 0.5) return null;
+  if (now.word <= -WORD_MARGIN && now.lines <= 0.5) return null;
   const nwMax = widest(nw0, (nw) => fitScale(flowLayout(n, nw, nh0), W, H), Math.floor(W));
-  let nw = now.word <= 0.5 ? nw0 : firstFit(nw0, nwMax, (v) => at(v, nh0).word <= 0.5) ?? nwMax;
+  let nw = now.word <= -WORD_MARGIN ? nw0 : firstFit(nw0, nwMax, (v) => at(v, nh0).word <= -WORD_MARGIN) ?? nwMax;
   // the lines: the smallest height that holds them; when none in the box does, a wider node (fewer lines)
   let nh = nh0;
   for (let w = nw; w <= nwMax; w += 4) {
     const hMax = widest(nh0, (h) => fitScale(flowLayout(n, w, h), W, H), Math.floor(H));
     const h = firstFit(nh0, hMax, (v) => at(w, v).lines <= 0.5);
     if (h !== null) { nw = w; nh = h; break; }
-    if (at(w, nh0).word > 0.5) break;   // the words do not fit anyway: keep the narrowest
+    if (at(w, nh0).word > -WORD_MARGIN) break;   // the words do not fit anyway: keep the narrowest
   }
   const e = {};
   if (nw > nw0) e.nodeWidth = nw;
   if (nh > nh0) e.nodeHeight = nh;
   const end = at(nw, nh);
-  return Object.keys(e).length ? { attrs: e, fits: end.word <= 0.5 && end.lines <= 0.5 } : null;
+  return Object.keys(e).length ? { attrs: e, fits: end.word <= -WORD_MARGIN && end.lines <= 0.5 } : null;
 }
 
 /** The width and height a diagram may take: its box, or for a box sized to its content in a VStack, the
@@ -735,10 +751,10 @@ function planTable(n, grid, W, fontOf, ctx, floor) {
     if (span !== 1) continue;
     const fs = fontOf(c), text = cellText(c);
     for (const w of text.split(/\s+/).filter(Boolean)) {
-      word[col] = Math.max(word[col], measureCell(c, w, Infinity, fs, ctx).widthPx);
+      word[col] = Math.max(word[col], measureCell(c, w, Infinity, fs, ctx).widthPx - MEASURE_PAD);
       min[col] = Math.max(min[col], word[col] / 0.85);
     }
-    pref[col] = Math.max(pref[col], min[col], measureCell(c, text, Infinity, fs, ctx).widthPx / 0.85);
+    pref[col] = Math.max(pref[col], min[col], (measureCell(c, text, Infinity, fs, ctx).widthPx - MEASURE_PAD) / 0.85);
   }
   // HTML auto layout: pref widths if they fit, else min + the rest by (pref - min)
   const auto = (idx, room) => {
@@ -1662,9 +1678,9 @@ function lineCount(n, L, margin = 0.85) {
   // runs of their own size (a KPI number + its smaller unit): one line when the runs, each at its
   // size, fit side by side; measured at the Text's size a word unit wrapped and stopped the growth
   if ((n.runs ?? []).some((r) => r.fontSize !== undefined)) {
-    const w = n.runs.reduce((sum, r) => sum + measureText(r.text ?? "", Infinity, { fontFamily: family,
+    const w = n.runs.reduce((sum, r) => sum + naturalWidth(r.text ?? "", { fontFamily: family,
       fontSizePx: r.fontSize ?? fs, lineHeight: lh, fontWeight: (r.bold ?? n.bold) ? "bold" : "normal",
-      letterSpacingPx: n.letterSpacing }, L.ctx.textMeasurementMode, L.ctx.fontRegistry).widthPx, 0);
+      letterSpacingPx: n.letterSpacing }, L.ctx), 0);
     if (w <= room) return 1;
   }
   const { heightPx } = measureText(n.text ?? (n.runs ?? []).map((r) => r.text).join(""),
@@ -1798,18 +1814,19 @@ function overBy(L, n) {
   const texts = list ? n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""))
     : [n.text ?? (n.runs ?? []).map((r) => r.text).join("")];
   if (room <= 0) return 0;
-  if (!list) return Math.max(0, runWidest(n, 1, L.ctx).w - room);
-  return Math.max(0, widestPiece(texts, family, n.fontSize ?? 24, n.bold, n.letterSpacing, L.ctx).w - room);
+  // over = short of WORD_MARGIN to spare: growth may not leave a word that fits only on paper
+  if (!list) return Math.max(0, runWidest(n, 1, L.ctx).w - (room - WORD_MARGIN));
+  return Math.max(0, widestPiece(texts, family, n.fontSize ?? 24, n.bold, n.letterSpacing, L.ctx).w - (room - WORD_MARGIN));
 }
 
 function wordsOver(L, ids) {
-  return new Set(ids.filter((id) => overBy(L, L.byId.get(id)) > 0.5));
+  return new Set(ids.filter((id) => overBy(L, L.byId.get(id)) > 0));
 }
 
 /** Every text on the slide already wider than its box -> by how many px (growth may not make these worse). */
 function overAll(L) {
   const out = new Map();
-  for (const root of L.slides) walk(root, (n) => { const o = n.id ? overBy(L, n) : 0; if (o > 0.5) out.set(n.id, o); });
+  for (const root of L.slides) walk(root, (n) => { const o = n.id ? overBy(L, n) : 0; if (o > 0) out.set(n.id, o); });
   return out;
 }
 
@@ -1912,9 +1929,8 @@ const pieces = (text) => String(text ?? "").split(/\s+/).flatMap((w) => w.split(
 function widestPiece(texts, family, fs, bold, spacing, ctx) {
   let widest = { word: "", w: 0 };
   for (const word of texts.flatMap(pieces)) {
-    const w = measureText(word, Infinity, { fontFamily: family, fontSizePx: fs, lineHeight: 1.3,
-      fontWeight: bold ? "bold" : "normal", letterSpacingPx: spacing },
-    ctx.textMeasurementMode, ctx.fontRegistry).widthPx;
+    const w = naturalWidth(word, { fontFamily: family, fontSizePx: fs, lineHeight: 1.3,
+      fontWeight: bold ? "bold" : "normal", letterSpacingPx: spacing }, ctx);
     if (w > widest.w) widest = { word, w };
   }
   return widest;
@@ -1940,8 +1956,8 @@ function runWidest(n, k, ctx) {
       if (/^\s+$/.test(part)) { flush(); continue; }
       part.split(/(?<=[-–—])/).forEach((piece, j) => {
         if (j > 0) flush();
-        const w = measureText(piece, Infinity, { fontFamily: family, fontSizePx: fs, lineHeight: 1.3,
-          fontWeight: weight, letterSpacingPx: n.letterSpacing }, ctx.textMeasurementMode, ctx.fontRegistry).widthPx;
+        const w = naturalWidth(piece, { fontFamily: family, fontSizePx: fs, lineHeight: 1.3,
+          fontWeight: weight, letterSpacingPx: n.letterSpacing }, ctx);
         cur = { word: cur.word + piece, w: cur.w + w };
       });
     }
@@ -1960,8 +1976,8 @@ const exact = (ctx, family, bold) => ctx.fontRegistry.hasFont(family, bold ? "bo
 function guardSize(fs, at, room) {
   const floor = guardFloor(fs);
   let f = Math.max(floor, Math.min(fs, Math.floor(fs * (room / at(fs).w))));
-  while (f < fs && at(f + 1).w <= room + 0.5) f += 1;
-  while (f > floor && at(f).w > room + 0.5) f -= 1;
+  while (f < fs && at(f + 1).w <= room - WORD_MARGIN) f += 1;
+  while (f > floor && at(f).w > room - WORD_MARGIN) f -= 1;
   return f;
 }
 
@@ -1996,7 +2012,7 @@ async function scanWords(xml) {
         const b = L.box(n);
         const room = (b.w - b.pl - b.pr) * slack(n.bold);
         const at = (f) => runWidest(n, f / fs, ctx);
-        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "text", fs, own: n.fontSize, room, at, columns: columns(n) });
+        if (room > 0 && at(fs).w > room - WORD_MARGIN) found.push({ id: n.id, kind: "text", fs, own: n.fontSize, room, at, columns: columns(n) });
       } else if (n.type === "ul" || n.type === "ol") {
         if (n.items.some((i) => i.fontSize !== undefined || (i.runs ?? []).some((r) => r.fontSize !== undefined))) return;
         const fs = n.fontSize ?? 24;
@@ -2004,7 +2020,7 @@ async function scanWords(xml) {
         const room = (b.w - b.pl - b.pr - 36) * slack(n.bold);
         const texts = n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""));
         const at = (f) => widestPiece(texts, family, f, n.bold, undefined, ctx);
-        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "list item", fs, own: fs, room, at });
+        if (room > 0 && at(fs).w > room - WORD_MARGIN) found.push({ id: n.id, kind: "list item", fs, own: fs, room, at });
       } else if (n.type === "processArrow" || n.type === "flow") {
         // each label box less the renderer's default insets, at the size POM draws the diagram (phase 2d);
         // `at` gives the widest word's px over its own box, plus the smallest box (the first chevron's is wider)
@@ -2024,7 +2040,7 @@ async function scanWords(xml) {
           const p = widestPiece([arrow ? it.label : it.text], fam, f * s, arrow && n.bold, undefined, ctx);
           return { word: p.word, w: p.w - (rooms[i] - room) };
         }).reduce((a, x) => (x.w > a.w ? x : a), { word: "", w: 0 });
-        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: arrow ? "process step" : "flow node", fs, own: fs, room, at });
+        if (room > 0 && at(fs).w > room - WORD_MARGIN) found.push({ id: n.id, kind: arrow ? "process step" : "flow node", fs, own: fs, room, at });
       } else if (n.type === "table") {
         const grid = cellGrid(n);
         if (!grid || !n.rows.length) return;
@@ -2040,7 +2056,7 @@ async function scanWords(xml) {
           return { need, word };
         };
         const now = needAt((c) => c.fontSize ?? TD_FONT);
-        if (now.need.some((x, i) => x > widths[i] + 0.5)) {
+        if (now.need.some((x, i) => x > widths[i] - WORD_MARGIN)) {
           found.push({ id: n.id, kind: "table cell", table: true, widths, need: now.need, W, needAt,
             fs0: Math.max(...cells.map(({ c }) => c.fontSize ?? TD_FONT)) });
         }
@@ -2070,7 +2086,7 @@ function guardEdit(xml, t, widen = 0) {
       const own = c.fontSize ?? TD_FONT;
       return Math.max(guardFloor(own), Math.min(own, Math.round(own * f / t.fs0)));
     };
-    const fits = (f) => { const n = t.needAt(fontAt(f)).need; return n.every((x, i) => x <= widths[i] + 0.5); };
+    const fits = (f) => { const n = t.needAt(fontAt(f)).need; return n.every((x, i) => x <= widths[i] - WORD_MARGIN); };
     let fs = t.fs0;
     while (fs > guardFloor(t.fs0) && !fits(fs)) fs -= 1;
     if (fs >= t.fs0) return { xml, note: null };
@@ -2098,11 +2114,12 @@ function guardEdit(xml, t, widen = 0) {
   return { xml: out, note: `word "${t.at(t.fs).word}" wider than its box: ${t.kind} ${t.fs} -> ${fs}px` };
 }
 
-/** Total px the findings run past their boxes (a table: past its columns). */
+/** Total px the findings lack of fitting their boxes with WORD_MARGIN to spare (a table: its columns). Counted
+ * against the margin, so a word found 0.2 px over can be fixed: "the total goes down by 0.5" needs the 0.5 in it. */
 function overflow(found) {
   return found.reduce((total, t) => total + (t.table
-    ? sum(t.need.map((x, i) => Math.max(0, x - t.widths[i])))
-    : Math.max(0, t.at(t.fs).w - t.room)), 0);
+    ? sum(t.need.map((x, i) => Math.max(0, x - (t.widths[i] - WORD_MARGIN))))
+    : Math.max(0, t.at(t.fs).w - (t.room - WORD_MARGIN))), 0);
 }
 
 async function guardWords(xml, report, warnings) {
@@ -2133,7 +2150,7 @@ async function guardWords(xml, report, warnings) {
   const out = [];
   for (const t of found) {
     if (t.table) {
-      const i = t.need.findIndex((x, j) => x > t.widths[j] + 0.5);
+      const i = t.need.findIndex((x, j) => x > t.widths[j] - WORD_MARGIN);
       const now = t.needAt((c) => c.fontSize ?? TD_FONT);
       out.push({ code: "WORD_TOO_WIDE", message: `table cell: "${now.word[i]}" is ${Math.round(now.need[i] * GUARD_TABLE_SAFE)}px wide at`
         + ` ${t.fs0}px and needs ${Math.round(now.need[i])}px of column with cell insets, its column has ${Math.round(t.widths[i])}px`
@@ -2141,7 +2158,7 @@ async function guardWords(xml, report, warnings) {
     } else {
       const wide = t.at(t.fs);
       const smallest = guardSize(t.fs, t.at, t.room);
-      const why = t.at(smallest).w > t.room + 0.5 ? `it does not fit even at ${smallest}px, the smallest allowed`
+      const why = t.at(smallest).w > t.room - WORD_MARGIN ? `it does not fit even at ${smallest}px, the smallest allowed`
         : "a smaller size would break another word";
       out.push({ code: "WORD_TOO_WIDE", message: `${t.kind}: "${wide.word}" is ${Math.round(wide.w)}px wide at ${t.fs}px, its box has ${Math.round(t.room)}px`
         + ` (the renderer will break it; ${why})` });

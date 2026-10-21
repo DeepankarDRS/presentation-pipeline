@@ -24,14 +24,14 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 | split-40 | vertical | default | depth3 | 444×538 | 3 (S) | 3 (S) | 3 (S) | 3 (S) |
 | card | horizontal | default | depth2 | 750×225 | 5 (S) | 5 (S) | 5 (S) | 5 (S) |
 | card | horizontal | default | depth3 | 828×202 | 5 (S) | 5 (S) | 5 (S) | 5 (S) |
-| card | vertical | default | depth2 | 683×244 | 7 (SG) | 7 (SG) | 7 (SG) | 7 (SG) |
-| card | vertical | default | depth3 | 624×292 | 7 (SG) | 7 (SG) | 7 (SG) | 7 (SG) |
+| card | vertical | default | depth2 | 683×244 | 7 (S) | 7 (S) | 7 (S) | 7 (S) |
+| card | vertical | default | depth3 | 624×292 | 7 (S) | 7 (S) | 7 (S) | 7 (S) |
 
 ## fit-grow
 
 560 cases. Holds with fit-grow: 420; raw: 412. **Rescued** (raw breaks, fit holds): 8. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 140.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 8, TEXT_OVERFLOW 18, SHRUNK 140, SCALE_FLOOR 16, SPILL 9, GUARD 8.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 8, TEXT_OVERFLOW 18, SHRUNK 140, SCALE_FLOOR 16, SPILL 9.
 
 ## What breaks first (one example per code)
 
@@ -40,4 +40,3 @@ Failure codes with fit-grow (a case can have several): WORD_BROKEN 8, TEXT_OVERF
 - **WORD_BROKEN** `tree~split-40~vertical~long1~default~depth2~06` box [444, 538]: 'Profitability' 6.49 px; 'Implementation' 49 px in 46
 - **SCALE_FLOOR** `tree~split-40~vertical~long1~default~depth2~07` box [444, 538]: 'Profitability' 6 px; 'Implementation' 45 px in 41; 'Transformation' past the 444x538 box
 - **SPILL** `tree~split-40~vertical~long1~default~depth2~07` box [444, 538]: 'Profitability' 6 px; 'Implementation' 45 px in 41; 'Transformation' past the 444x538 box
-- **GUARD** `tree~card~vertical~long1~default~depth2~08` box [987, 200]: 'Profitability' 10.77 px

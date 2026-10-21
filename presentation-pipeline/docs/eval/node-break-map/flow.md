@@ -15,15 +15,15 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 | band-under-kpi | vertical | default | mixed | 1168×364 | 3 (S) | 3 (S) · raw – | 3 (S) | 3 (S) · raw – | 3 (S) · raw – |
 | band-under-kpi | vertical | default | process | 1168×364 | 3 (S) | 3 (S) · raw – | 3 (S) | 3 (S) | 3 (S) |
 | split-60 | horizontal | default | mixed | 665×538 | 5 (WG) · raw 3 | 3 (WG) · raw – | 4 (WG) · raw 3 | 3 (WG) · raw – | 3 (WG) · raw – |
-| split-60 | horizontal | default | process | 665×538 | 6 (S) · raw 3 | 4 (WG) · raw – | 6 (S) · raw 3 | 6 (SG) · raw 3 | 6 (SG) · raw 3 |
+| split-60 | horizontal | default | process | 665×538 | 6 (S) · raw 3 | 4 (WG) · raw – | 6 (S) · raw 3 | 6 (S) · raw 3 | 6 (S) · raw 3 |
 | split-60 | vertical | default | mixed | 665×538 | 7 (S) · raw 4 | 7 (S) · raw – | 7 (S) · raw 3 | 7 (S) · raw – | 7 (S) · raw – |
 | split-60 | vertical | default | process | 665×538 | 7 (S) · raw 4 | 7 (S) · raw – | 7 (S) · raw 4 | 7 (S) · raw 4 | 7 (S) · raw 4 |
 | split-40 | horizontal | default | mixed | 444×538 | 4 (WSFG) · raw – | – (WG) | 3 (WG) · raw – | 3 (WG) · raw – | 3 (WG) · raw – |
-| split-40 | horizontal | default | process | 444×538 | 4 (SF) · raw – | 3 (WG) · raw – | 4 (SFG) · raw – | 4 (SFG) · raw – | 4 (SFG) · raw – |
+| split-40 | horizontal | default | process | 444×538 | 4 (SF) · raw – | 3 (WG) · raw – | 4 (SF) · raw – | 4 (SF) · raw – | 4 (SF) · raw – |
 | split-40 | vertical | default | mixed | 444×538 | 7 (S) · raw 4 | 7 (S) · raw – | 7 (S) · raw 3 | 7 (S) · raw – | 7 (S) · raw – |
 | split-40 | vertical | default | process | 444×538 | 7 (S) · raw 4 | 7 (S) · raw – | 7 (S) · raw 4 | 7 (S) · raw 4 | 7 (S) · raw 4 |
 | card | horizontal | default | mixed | 838×195 | 5 (WG) | 3 (WG) · raw – | 6 (WG) · raw 3 | 6 (WG) · raw – | 6 (WG) · raw – |
-| card | horizontal | default | process | 838×195 | 8 (SG) · raw 5 | 6 (WG) · raw – | 8 (SG) · raw 5 | 8 (SG) · raw 5 | 8 (SG) · raw 5 |
+| card | horizontal | default | process | 838×195 | 8 (S) · raw 5 | 6 (WG) · raw – | 8 (S) · raw 5 | 8 (S) · raw 5 | 8 (S) · raw 5 |
 | card | vertical | default | mixed | 640×314 | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – |
 | card | vertical | default | process | 640×314 | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – |
 
@@ -31,7 +31,7 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 
 800 cases. Holds with fit-grow: 364; raw: 101. **Rescued** (raw breaks, fit holds): 263. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 436.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 150, TEXT_OVERFLOW 24, SHRUNK 370, SCALE_FLOOR 90, SPILL 80, OFF_SLIDE 70, GUARD 214.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 150, TEXT_OVERFLOW 24, SHRUNK 370, SCALE_FLOOR 90, SPILL 80, OFF_SLIDE 70, GUARD 167.
 
 ## What breaks first (one example per code)
 

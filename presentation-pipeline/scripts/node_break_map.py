@@ -421,7 +421,8 @@ def evaluate(cases: list[Case], built: dict[str, dict], workdir: Path) -> list[d
     for row, s, area in pending:
         m = keys[key(s, area)]
         c, bx, fills, others, _ = row["_ctx"]
-        if m["wordW"] > area.w + 0.5 and "WORD_BROKEN" not in row["codes"]:
+        # any deficit breaks: a word 0.3 px wider than its box broke in a LibreOffice render (2026-10-21)
+        if m["wordW"] > area.w and "WORD_BROKEN" not in row["codes"]:
             row["codes"].append("WORD_BROKEN")
             row["detail"].append(f"{m['word']!r} {m['wordW']:.0f} px in {area.w:.0f}")
         ext = _extent(s, area, m["lineW"], m["height"])

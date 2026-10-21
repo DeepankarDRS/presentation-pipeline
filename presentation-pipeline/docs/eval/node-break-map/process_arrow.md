@@ -22,16 +22,16 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 | split-40 | horizontal | inter | - | 444×538 | 3 (WG) | – (WG) | 3 (WG) | 3 (WG) | 3 (WG) |
 | split-40 | vertical | default | - | 444×538 | 9 (S) | 9 (S) | 9 (S) | 9 (S) | 9 (S) |
 | split-40 | vertical | inter | - | 444×538 | **≥10** | **≥10** | **≥10** | **≥10** | 6 (T) · raw – |
-| card | horizontal | default | - | 809×190 | 8 (WG) · raw 7 | 4 (WG) · raw – | 8 (WG) · raw 7 | 7 (WG) | 7 (WG) |
+| card | horizontal | default | - | 809×190 | 8 (WG) · raw 7 | 4 (WG) · raw – | 7 (WG) | 7 (WG) | 7 (WG) |
 | card | horizontal | inter | - | 809×190 | 8 (WG) | 4 (WG) · raw – | 7 (WG) · raw 8 | 6 (WG) · raw 7 | 6 (WG) · raw 7 |
 | card | vertical | default | - | 555×227 | 5 (S) | 5 (S) | 5 (S) | 5 (S) | 5 (S) |
 | card | vertical | inter | - | 555×227 | 9 (S) · raw 6 | 9 (S) · raw 6 | 9 (S) · raw 6 | 9 (S) · raw 6 | – (T) |
 
 ## fit-grow
 
-800 cases. Holds with fit-grow: 511; raw: 462. **Rescued** (raw breaks, fit holds): 64. **Made worse** (raw holds, fit breaks): 15. Breaks either way: 274.
+800 cases. Holds with fit-grow: 510; raw: 462. **Rescued** (raw breaks, fit holds): 63. **Made worse** (raw holds, fit breaks): 15. Breaks either way: 275.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 197, TEXT_OVERFLOW 51, OVERLAP 37, SHRUNK 70, GUARD 170.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 198, TEXT_OVERFLOW 51, OVERLAP 37, SHRUNK 70, GUARD 159.
 
 Made worse by fit-grow (first 12):
 
@@ -42,7 +42,7 @@ Made worse by fit-grow (first 12):
 - `process_arrow~band-under-kpi~horizontal~w3~inter~-~09`: GUARD, WORD_BROKEN — 'customer' 65 px in 64; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":163,"fontSize":20}; processArrow itemWidth 163 -> 167, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); KPI values x1.56 (40 -> 62px), fill 63% -> 87%; KPI labels / deltas grow with their numbers (-> 19px)
 - `process_arrow~band-under-kpi~horizontal~w4~inter~-~09`: GUARD, WORD_BROKEN — 'customer' 65 px in 64; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":163,"fontSize":20}; processArrow itemWidth 163 -> 167, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); KPI values x1.56 (40 -> 62px), fill 63% -> 87%; KPI labels / deltas grow with their numbers (-> 19px)
 - `process_arrow~band-under-kpi~vertical~w1~inter~-~08`: SHRUNK — 'Plan' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
-- `process_arrow~band-under-kpi~vertical~long1~inter~-~08`: SHRUNK — 'Profitability' 13.84 px; fit-grow: processArrow itemWidth 150 -> 156 (longest word fits its label box); spill fixed (space given): text height 41 -> 47px
+- `process_arrow~band-under-kpi~vertical~long1~inter~-~08`: SHRUNK — 'Profitability' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
 - `process_arrow~band-under-kpi~vertical~w2~inter~-~08`: SHRUNK — 'Market research' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
 - `process_arrow~band-under-kpi~vertical~w3~inter~-~08`: SHRUNK — 'Define pricing strategy' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
 - `process_arrow~split-60~horizontal~w3~inter~-~05`: GUARD, WORD_BROKEN — 'regional' 56 px in 55; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":154,"fontSize":20}; processArrow itemWidth 154 -> 158, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); text x2.98 (e.g. 18 -> 28pt), spacing x1.40, fill 15% -> 34%

@@ -35,16 +35,30 @@ def test_profitability_in_a_four_step_row_gets_a_wider_chevron_not_a_smaller_fon
     assert any("itemWidth 150 ->" in x and "fits its label box" in x for x in _phase_lines(r)), r["fitGrow"]
     assert not _warnings(r)
     label = next(s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.text == "Profitability")
-    assert label.font == 16 and label.w - label.pad >= 100   # "Profitability" at 16 px bold Inter is ~100 px
+    assert label.font == 16 and label.w - label.pad >= 91.6   # "Profitability" at 16 px bold Inter is 91.1 px; a word needs 0.5 px spare
 
 
-def test_a_row_that_cannot_widen_lowers_its_font_to_14_and_never_below(tmp_path):
+def test_a_row_that_cannot_widen_lowers_its_font_only_as_far_as_the_word_needs(tmp_path):
+    # 161 px chevrons leave a middle label 161 - 56 - 19.2 = 85.8 px: "Profitability" (bold Inter) is 85.4 px at
+    # 15 px (0.4 px spare, under WORD_MARGIN) and 79.7 px at 14, so the row stops at 14 and the word fits
+    # (measured without POM's 10 px box padding, node break map §4 C1)
     r = _compile(_FIX / "d2-arrow-narrow.xml", tmp_path)
     a = _attrs(r["xml"], "ProcessArrow", "narrow")
     assert a["w"] == "560" and a["fontSize"] == "14"
     assert int(a["itemWidth"]) == 161   # (560 + 3 x 28) / 4: the widest the row can be without shrinking
+    assert any("fits its label box" in x for x in _phase_lines(r)), r["fitGrow"]
+    assert not _warnings(r)
+
+
+def test_a_row_whose_word_never_fits_stops_at_14_and_warns(tmp_path):
+    # "Reconciliation" is 97 px at 14 px bold Inter: wider than the 85.8 px label at any allowed size
+    xml = (_FIX / "d2-arrow-narrow.xml").read_text(encoding="utf-8").replace("Profitability", "Reconciliation")
+    (tmp_path / "d2b.xml").write_text(xml, encoding="utf-8")
+    r = _compile(tmp_path / "d2b.xml", tmp_path / "out")
+    a = _attrs(r["xml"], "ProcessArrow", "narrow")
+    assert a["fontSize"] == "14" and int(a["itemWidth"]) == 161
     assert any("as far as its box allows" in x for x in _phase_lines(r)), r["fitGrow"]
-    assert any("Profitability" in w and "process step" in w for w in _warnings(r))
+    assert any("Reconciliation" in w and "process step" in w for w in _warnings(r))
 
 
 def test_a_seven_step_vertical_column_stays_vertical_and_widens(tmp_path):
