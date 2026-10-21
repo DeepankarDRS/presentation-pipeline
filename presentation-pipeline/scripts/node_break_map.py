@@ -64,7 +64,8 @@ FLOOR_PX = 14
 SPILL_TOL = 8   # px past its box a diagram may draw into the 24 px gap around it before it counts (a vertical
                 # timeline's first date sits 3 px above its box; POM's < 50 % overflow is tens of px)
 
-KINDS = ("flow", "process_arrow", "timeline", "tree", "matrix", "pyramid")
+DIAGRAMS = ("flow", "process_arrow", "timeline", "tree", "matrix", "pyramid")
+KINDS = DIAGRAMS + ("table", "kpi", "cards")   # the last three: scripts/node_break_map_blocks.py
 TAG = {"flow": "flow", "process_arrow": "processArrow", "timeline": "timeline", "tree": "tree",
        "matrix": "matrix", "pyramid": "pyramid"}
 PLACEMENTS = ("band", "band-under-kpi", "split-60", "split-40", "card")
@@ -221,6 +222,9 @@ def _card(title: str, inner: str) -> str:
 
 
 def slide_xml(c: Case) -> str:
+    if c.kind not in DIAGRAMS:
+        from scripts import node_break_map_blocks as blocks
+        return blocks.slide_xml(c)
     p = c.placement
     if p in ("band", "band-under-kpi"):
         body = diagram_xml(c, ' h="max"')
@@ -260,6 +264,10 @@ def grid(kinds: list[str], quick: bool = False) -> list[Case]:
     label_sets = {"tree": ("w1", "long1", "w2", "w3"), "matrix": ("w1", "long1", "w2")}
     out = []
     for kind in kinds:
+        if kind not in DIAGRAMS:
+            from scripts import node_break_map_blocks as blocks
+            out += blocks.grid(kind, quick)
+            continue
         places = ("band", "split-40") if quick else PLACEMENTS
         labs = label_sets.get(kind, tuple(LABELS))
         if quick:
@@ -368,6 +376,10 @@ def _container(s: Box, fills: list[Box]) -> Box | None:
 
 def evaluate(cases: list[Case], built: dict[str, dict], workdir: Path) -> list[dict]:
     """One row per (case, mode) with the failure codes and the measures behind them."""
+    if any(c.kind not in DIAGRAMS for c in cases):
+        from scripts import node_break_map_blocks as blocks
+        return (evaluate([c for c in cases if c.kind in DIAGRAMS], built, workdir)
+                + blocks.evaluate([c for c in cases if c.kind not in DIAGRAMS], built, workdir))
     rows, pending = [], []
     for c in cases:
         for mode in ("raw", "fit"):
@@ -575,6 +587,7 @@ TEST_SLICE = [
     ("matrix", "band", "-", "w2", "default", "d0.18"),
     ("pyramid", "band", "up", "w2", "default", ""),
 ]
+SERIES_KEYS = ("kind", "placement", "direction", "labels", "style", "variant")
 # capacity.yaml max_items per direction is checked against the band series at this label length
 CAPACITY_LABELS = {"flow": "w2", "process_arrow": "w2", "timeline": "w3"}
 
@@ -623,7 +636,11 @@ def main() -> None:
                 "# after a full run; tests/unit/test_node_break_map.py compiles each at holds_up_to and the count\n"
                 "# after it. capacity_disagreements: capacity.yaml limits above the measured band point, kept\n"
                 "# until the user decides (each with the reason); the test fails on any other.\n")
-        body = {"series": series_points(rows), "capacity_disagreements": old.get("capacity_disagreements") or {}}
+        # a series this checkout has no rows for (its kind not re-run here) keeps its recorded point
+        new = {tuple(p[k] for k in SERIES_KEYS): p for p in series_points(rows)}
+        kept = {tuple(p[k] for k in SERIES_KEYS): p for p in old.get("series") or []}
+        series = [new.get(s) or kept.get(s) for s in TEST_SLICE if new.get(s) or kept.get(s)]
+        body = {"series": series, "capacity_disagreements": old.get("capacity_disagreements") or {}}
         POINTS.write_text(head + yaml.safe_dump(body, sort_keys=False, width=120), encoding="utf-8")
         print(f"wrote {POINTS}")
         return
@@ -637,7 +654,12 @@ def main() -> None:
         rows = evaluate(cases, built, work)
         (OUT / f"{kind}.json").write_text(json.dumps(rows, indent=0), encoding="utf-8")
         if not a.no_docs:
-            (DOCS / f"{kind}.md").write_text(write_doc(kind, rows, {c.id: c for c in cases}), encoding="utf-8")
+            if kind in DIAGRAMS:
+                doc = write_doc(kind, rows, {c.id: c for c in cases})
+            else:
+                from scripts import node_break_map_blocks as blocks
+                doc = blocks.write_doc(kind, rows)
+            (DOCS / f"{kind}.md").write_text(doc, encoding="utf-8")
         print(f"{kind}: {len(cases)} cases x 2 in {time.time() - t0:.0f}s, "
               f"holding with fit-grow {sum(1 for r in rows if r['mode'] == 'fit' and not breaks(r))}")
 

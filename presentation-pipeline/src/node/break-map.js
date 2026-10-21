@@ -75,12 +75,78 @@ async function measure(texts) {
   });
 }
 
+// runs: a drawn text box as its paragraphs of runs, measured run by run (Table / KPI / card break map,
+// 2026-10-21): a word is every non-space character between two spaces, across runs, each run at its own
+// size ("₹114.9" at 95 px + "L" at 58 px is one word); lines wrap greedily at `width`, a paragraph's line
+// is its lnSpc (px) or 1.2 x its largest run, plus spcBef / spcAft.
+//   texts.json: [{paras: [{runs: [{text, family, px, bold, spc}], lnSpc, before, after}], width}]
+async function measureRuns(texts) {
+  const [{ measureText }, { createBuildContext }] = await Promise.all([
+    internal("calcYogaLayout/measureText.js"), internal("buildContext.js")]);
+  const ctx = createBuildContext("auto", loadFonts());
+  const cache = new Map();
+  const nat = (t, r) => {
+    const key = `${t}\u0000${r.family}\u0000${r.px}\u0000${r.bold}\u0000${r.spc ?? 0}`;
+    if (!cache.has(key)) {
+      const opts = { fontFamily: r.family || "Noto Sans JP", fontSizePx: r.px, lineHeight: LINE_HEIGHT,
+        fontWeight: r.bold ? "bold" : "normal", letterSpacingPx: r.spc ?? 0 };
+      // without POM's 10 px box padding (fit-grow naturalWidth)
+      cache.set(key, Math.max(0, measureText(t, Infinity, opts, ctx.textMeasurementMode, ctx.fontRegistry).widthPx - 10));
+    }
+    return cache.get(key);
+  };
+  const space = (r) => nat("a a", r) - nat("aa", r);
+  return texts.map(({ paras, width }) => {
+    let word = "", wordW = 0, lineW = 0, height = 0, lines = 0, exact = true;
+    for (const p of paras) {
+      // tokens: words (pieces across runs, split after a hyphen) and the spaces between them
+      const toks = [];
+      let cur = null;
+      const flush = () => { if (cur) toks.push(cur); cur = null; };
+      for (const r of p.runs) {
+        exact &&= ctx.fontRegistry.hasFont(r.family || "Noto Sans JP", r.bold ? "bold" : "normal");
+        for (const part of String(r.text ?? "").split(/(\s+)/)) {
+          if (!part) continue;
+          if (/^\s+$/.test(part)) { flush(); toks.push({ space: space(r) * part.length }); continue; }
+          part.split(/(?<=[-–—])/).forEach((piece, j) => {
+            if (j > 0) { flush(); }
+            cur = cur ?? { text: "", w: 0 };
+            cur.text += piece;
+            cur.w += nat(piece, r);
+          });
+        }
+      }
+      flush();
+      const maxPx = Math.max(...p.runs.map((r) => r.px), 1);
+      const lh = p.lnSpc || maxPx * LINE_HEIGHT;
+      let n = 1, x = 0, pending = 0;
+      for (const t of toks) {
+        if (t.space !== undefined) { pending += t.space; continue; }
+        if (t.w > wordW) { word = t.text; wordW = t.w; }
+        if (x > 0 && x + pending + t.w > width) { n += 1; lineW = Math.max(lineW, x); x = t.w; }
+        else x += (x > 0 ? pending : 0) + t.w;
+        if (t.w > width) {  // the renderer breaks it: its letters run on over more lines
+          n += Math.ceil(t.w / width) - 1;
+          x = t.w % width;
+        }
+        pending = 0;
+      }
+      lineW = Math.max(lineW, Math.min(x, width));
+      lines += n;
+      height += n * lh + (p.before ?? 0) + (p.after ?? 0);
+    }
+    return { word, wordW, lineW, height, lines, exact };
+  });
+}
+
 const [mode, inPath, out] = process.argv.slice(2);
 const input = JSON.parse(readFileSync(inPath, "utf8"));
 if (mode === "build") {
   writeFileSync(path.join(out, "build-results.json"), JSON.stringify(await build(input, out)), "utf8");
 } else if (mode === "measure") {
   writeFileSync(out, JSON.stringify(await measure(input)), "utf8");
+} else if (mode === "runs") {
+  writeFileSync(out, JSON.stringify(await measureRuns(input)), "utf8");
 } else {
   throw new Error(`unknown mode ${mode}`);
 }
