@@ -1,0 +1,25 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" accentSoft="E3EBFC" onAccent="FFFFFF" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="24" alignItems="stretch" backgroundColor="$surface">
+    <Text fontFamily="Inter" fontSize="36" color="$textMain" bold="true">The engine acts on four levers</Text>
+    <HStack grow="1" gap="24" alignItems="stretch">
+      <VStack w="300" alignItems="stretch">
+        <Flow id="flow" direction="vertical" h="max" nodeWidth="110" nodeHeight="44" nodeGap="24">
+          <FlowNode id="a" shape="flowChartInputOutput" text="Platform data" color="$accentSoft" textColor="$textMain" />
+          <FlowNode id="b" shape="flowChartProcess" text="Decision engine" color="$accentSoft" textColor="$textMain" />
+          <FlowNode id="c" shape="flowChartProcess" text="Bid optimization" color="$accentSoft" textColor="$textMain" />
+          <FlowNode id="d" shape="flowChartProcess" text="Budget reallocation" color="$accentSoft" textColor="$textMain" />
+          <FlowNode id="e" shape="flowChartProcess" text="Keyword expansion" color="$accentSoft" textColor="$textMain" />
+          <FlowNode id="f" shape="flowChartProcess" text="Placement optimization" color="$accentSoft" textColor="$textMain" />
+          <FlowNode id="g" shape="flowChartTerminator" text="Business outcome" color="$accent" textColor="$onAccent" />
+          <FlowConnection from="a" to="b" /><FlowConnection from="b" to="c" /><FlowConnection from="c" to="d" />
+          <FlowConnection from="d" to="e" /><FlowConnection from="e" to="f" /><FlowConnection from="f" to="g" />
+        </Flow>
+      </VStack>
+      <VStack grow="1" padding="24" gap="12" backgroundColor="$surfaceAlt">
+        <Text fontFamily="Inter" fontSize="18" color="$textMain" bold="true">What it changes</Text>
+        <Text fontFamily="Inter" fontSize="16" color="$textMain">Brands react in hours instead of weeks.</Text>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

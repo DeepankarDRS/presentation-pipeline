@@ -18,14 +18,37 @@ bullet_list:
   two_columns_from: 6    # 6+ points: two lists side by side
 chart:
   min_points: 3          # fewer -> kpi_row
+# Diagrams: the most items per DIRECTION (2026-10-21, user: more steps than fit across -> vertical,
+# never merged or dropped to hit a number). Derived from the verified sizes in
+# knowledge/components/{flow,process-arrow,timeline}.yaml `facts`, on the slide's main band:
+#   1280 x 720 slide, padding 56 -> 1168 px wide; header (label + 36 px headline + gaps) ~110 px
+#   -> a band ~500 px tall (720 - 112 - 110) for a diagram that is the slide's hero.
+# Each item keeps POM's full size there (no scale-to-fit, so no smaller text, no broken words).
+#   flow horizontal: nodes 120 x 60, nodeGap 80        n*120 + (n-1)*80 <= 1168 -> n <= 1248/200 = 6.2 -> 6
+#   flow vertical:   one-line nodes 40 px (a 14 px line + 2 x 4.8 px insets), nodeGap 24 (box_for_direction)
+#                                                       n*40 + (n-1)*24 <= 500   -> n <= 524/64  = 8.2 -> 8
+#   process_arrow horizontal: chevrons interlock 28 px; itemWidth 176 holds a 100 px word ("Profitability",
+#                    16 px bold) in its label box (176 - 0.7 x 80 - 2 x 9.6 px insets = 101)
+#                                                       n*176 - (n-1)*28 <= 1168 -> n <= 1140/148 = 7.7 -> 7
+#   process_arrow vertical: 80 px per step less 28 overlap  n*80 - (n-1)*28 <= 500 -> n <= 472/52 = 9.1 -> 9
+#   timeline horizontal: 120 px labels centred on dots spread over the width (the outer ones 60 px in),
+#                    12 px between labels               (n-1)*132 <= 1168 - 120 -> n <= 1048/132 + 1 = 8.9 -> 8
+#   timeline vertical: natural 24 + 60 px per further item (date, title, a description line)
+#                                                       24 + (n-1)*60 <= 500 -> n <= 476/60 + 1 = 8.9 -> 8
+# Past the vertical limit too: group steps that belong together into one node (labels joined with " · ",
+# word for word) or use card_grid steps. Code (enforce_capacity) turns a process_arrow / timeline past the
+# limit of its own direction into a card_grid; a flow past it is only reported.
 timeline:
-  items: [3, 5]          # horizontal; labels collide past 5
+  min_items: 3
+  max_items: {horizontal: 8, vertical: 8}
   max_label_words: 3
 process_arrow:
-  items: [3, 5]          # chevrons break words past 5 or in a half-width card
+  min_items: 3
+  max_items: {horizontal: 7, vertical: 9}
   max_label_words: 2
 flow:
-  items: [4, 6]
+  min_items: 4
+  max_items: {horizontal: 6, vertical: 8}
 matrix:
   items: [3, 4]          # dots and labels overlap past 4 (recipes.yaml matrix)
 pyramid:

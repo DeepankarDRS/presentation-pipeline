@@ -1,0 +1,19 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" accentSoft="E3EBFC" onAccent="FFFFFF" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="24" alignItems="stretch" backgroundColor="$surface">
+    <Text fontFamily="Inter" fontSize="36" color="$textMain" bold="true">Spend moves in four steps</Text>
+    <HStack alignItems="stretch">
+    <Flow id="row" w="1168" h="90" nodeWidth="100" nodeHeight="60" nodeGap="60">
+      <FlowNode id="a" shape="flowChartProcess" text="Signals" color="$accentSoft" textColor="$textMain" />
+      <FlowNode id="b" shape="flowChartProcess" text="Budget reallocation" color="$accentSoft" textColor="$textMain" />
+      <FlowNode id="c" shape="flowChartProcess" text="Placement" color="$accentSoft" textColor="$textMain" />
+      <FlowNode id="d" shape="flowChartTerminator" text="Outcome" color="$accent" textColor="$onAccent" />
+      <FlowConnection from="a" to="b" /><FlowConnection from="b" to="c" /><FlowConnection from="c" to="d" />
+    </Flow>
+    </HStack>
+    <HStack grow="1" gap="24" alignItems="stretch">
+      <VStack w="max" padding="24" backgroundColor="$surfaceAlt"><Text fontFamily="Inter" fontSize="16" color="$textMain">Signals arrive hourly from each platform.</Text></VStack>
+      <VStack w="max" padding="24" backgroundColor="$surfaceAlt"><Text fontFamily="Inter" fontSize="16" color="$textMain">The outcome is read weekly.</Text></VStack>
+    </HStack>
+  </VStack>
+</Slide>

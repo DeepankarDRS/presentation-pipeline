@@ -10,9 +10,11 @@ meta:
 
 description: >
   A flowchart of shaped nodes. One <Flow> wraps <FlowNode> entries (the boxes)
-  and <FlowConnection> entries (the edges). How it is drawn: see facts. Write a
-  branch's parallel steps as one node. For a linear process without a decision,
-  prefer <ProcessArrow>.
+  and <FlowConnection> entries (the edges). How it is drawn: see facts. Every step
+  the plan names is its own node with the plan's words, parallel steps included (one
+  after another, in the plan's order); a node lists several steps (joined with " · ")
+  only when the plan already grouped them. Items per direction: core/capacity.yaml.
+  For a linear process without a decision, prefer <ProcessArrow>.
 
 structure: |
   <!-- direction: horizontal | vertical (by the box it gets: see facts flow.direction) -->
@@ -221,6 +223,17 @@ facts:
           - all(near(t(x).w, 240) and near(t(x).h, 60) for x in "ABCD")
           - near(t("B").y - t("A").b, 24)
 
+  - id: flow.label_inset
+    kind: layout
+    for: [generator]
+    text: >-
+      A node's text keeps the renderer's default inner margin, about 10 px each side (POM sets
+      none), so a word fits in nodeWidth less 19 px: 101 px at the default 120.
+    source: renderPptx/nodes/flow.js (addText without margin); OOXML bodyPr lIns / rIns default 91440 EMU
+    probes:
+      - xml: '<Flow><FlowNode id="a" shape="flowChartProcess" text="A"/><FlowNode id="b" shape="flowChartProcess" text="B"/><FlowConnection from="a" to="b"/></Flow>'
+        expect: [ok, 'near(t("A").w, 120)', 'near(t("A").pad, 19.2, 0.1) and near(t("B").pad, 19.2, 0.1)']
+
   - id: flow.direction
     kind: advice
     for: [planner, generator]
@@ -237,7 +250,7 @@ facts:
     text: >-
       Give the flow the box its direction needs and size the nodes to it: horizontal, a
       full-width band (nodes x nodeWidth + gaps x nodeGap no wider than the band); vertical,
-      a column with nodeWidth about the column's width (long labels and a node of parallel
-      steps get room) and nodeGap 24-40 when the column is short, so nodes x nodeHeight +
-      gaps x nodeGap fits its height and nothing is shrunk.
+      a column with nodeWidth about the column's width (long labels get room) and nodeGap
+      24-40 when the column is short, so nodes x nodeHeight + gaps x nodeGap fits its height
+      and nothing is shrunk. Code widens the nodes to their longest word within that box.
     source: follows from flow.natural_size, flow.vertical_size and flow.scale

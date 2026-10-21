@@ -23,7 +23,10 @@ def test_capacity_file_loads_with_ranges():
     cap = capacity()
     for kind in ("kpi_row", "table", "timeline", "process_arrow", "matrix", "card_grid"):
         assert kind in cap
-    assert span("process_arrow") == "3-5" and max_of("table", "max_rows") == 10
+    assert span("process_arrow") == "3-7 horizontal, up to 9 vertical" and max_of("table", "max_rows") == 10
+    assert max_of("process_arrow") == 7 and max_of("process_arrow", direction="vertical") == 9
+    assert max_of("flow") == 6 and max_of("flow", direction="vertical") == 8
+    assert max_of("timeline") == 8 and max_of("timeline", direction="vertical") == 8
 
 
 def test_planner_prompt_renders_capacity():
@@ -31,6 +34,8 @@ def test_planner_prompt_renders_capacity():
     assert "{{" not in p
     assert f"items = steps ({span('process_arrow')}), labels ≤ {capacity()['process_arrow']['max_label_words']} words" in p
     assert f"items = milestones ({span('timeline')})" in p
+    assert f"items = nodes ({span('flow')})" in p
+    assert f"flow {span('flow')}; process_arrow {span('process_arrow')}; timeline {span('timeline')}" in p
     assert f"items = positioned items ({span('matrix')})" in p
     assert f"({span('kpi_row', 'per_row')} per row;" in p
 
@@ -47,10 +52,10 @@ def test_knowledge_files_agree_with_capacity():
     house = (_K / "core" / "house-style.yaml").read_text(encoding="utf-8")
     timeline = (_K / "components" / "timeline.yaml").read_text(encoding="utf-8")
     matrix = (_K / "components" / "matrix.yaml").read_text(encoding="utf-8")
-    t_max, m_max = cap["timeline"]["items"][1], cap["matrix"]["items"][1]
-    assert f"Max {t_max} items" in recipes and f"max {t_max} items" in house
+    t_max, m_max = max_of("timeline"), cap["matrix"]["items"][1]
+    assert f"Max {t_max} items horizontal" in recipes and f"max {t_max} items" in house
     assert f"{m_max} items max" in recipes
-    assert f'"{span("timeline")} items' in timeline and f'"{span("matrix")} items' in matrix
+    assert "Items per direction: core/capacity.yaml" in timeline and f'"{span("matrix")} items' in matrix
     # no kpi tile cap anywhere in the knowledge: rows of tiles replace it
     assert not re.search(r"Max 3-4 tiles|Max 4 tiles|more than 5 tiles", recipes + house, re.I)
 
@@ -60,17 +65,41 @@ def test_knowledge_files_agree_with_capacity():
 from src.agents.capacity import enforce_capacity  # noqa: E402
 
 
-def test_seven_chevrons_become_a_card_grid():
-    """XTSY slide 7: 7 impact areas as chevrons broke words into letters ('Consume r')."""
-    steps = ["Category visibility", "Search share", "Sponsored placement share", "New consumer acquisition",
-             "Repeat purchase rate", "Market share", "Sales velocity"]
+def test_chevrons_past_their_directions_limit_become_a_card_grid():
+    """XTSY slide 7: 7 impact areas as chevrons broke words into letters ('Consume r'); the limit is per
+    direction since 2026-10-21 (capacity.yaml: 7 across, 9 down)."""
+    steps = ["Category", "Search", "Sponsored", "Acquisition", "Repeat", "Market", "Velocity", "Profit"]
     comps = [{"component_id": "impact", "kind": "process_arrow", "orientation": "horizontal",
               "content_data": {"direction": "horizontal", "process_steps": steps}}]
     notes = enforce_capacity(comps)
     assert comps[0]["kind"] == "card_grid" and "orientation" not in comps[0]
     assert comps[0]["content_data"]["card_layout"] == "grid"
     assert [c["title"] for c in comps[0]["content_data"]["cards"]] == steps
-    assert "7 steps" in notes[0]
+    assert "8 steps (horizontal holds 7)" in notes[0]
+
+
+def test_a_vertical_chevron_column_keeps_more_steps_than_a_row():
+    """A 7-step vertical column is within its limit (9) and is kept; 10 vertical steps become cards."""
+    seven = [{"kind": "process_arrow", "content_data": {"direction": "vertical", "process_steps": [f"Step{i}" for i in range(7)]}}]
+    eight_across = [{"kind": "process_arrow", "content_data": {"direction": "horizontal",
+                                                              "process_steps": [f"Step{i}" for i in range(8)]}}]
+    eight_down = [{"kind": "process_arrow", "orientation": "vertical",
+                   "content_data": {"process_steps": [f"Step{i}" for i in range(8)]}}]
+    ten = [{"kind": "process_arrow", "content_data": {"direction": "vertical", "process_steps": [f"Step{i}" for i in range(10)]}}]
+    assert enforce_capacity(seven) == [] and seven[0]["kind"] == "process_arrow"
+    assert enforce_capacity(eight_down) == [] and eight_down[0]["kind"] == "process_arrow"
+    assert enforce_capacity(eight_across) and eight_across[0]["kind"] == "card_grid"
+    notes = enforce_capacity(ten)
+    assert ten[0]["kind"] == "card_grid" and "10 steps (vertical holds 9)" in notes[0]
+
+
+def test_timeline_limit_follows_its_direction():
+    items = [{"date": f"W{i}", "label": f"Step {i}"} for i in range(8)]
+    across = [{"kind": "timeline", "content_data": {"direction": "horizontal", "timeline_items": items}}]
+    down = [{"kind": "timeline", "content_data": {"direction": "vertical", "timeline_items": items + items[:1]}}]
+    assert enforce_capacity(across) == [] and across[0]["kind"] == "timeline"
+    notes = enforce_capacity(down)
+    assert down[0]["kind"] == "card_grid" and "9 items (vertical holds 8)" in notes[0]
 
 
 def test_short_sequence_with_long_labels_becomes_steps():
@@ -80,7 +109,7 @@ def test_short_sequence_with_long_labels_becomes_steps():
 
 
 def test_long_timeline_keeps_dates_as_tags():
-    items = [{"date": f"Week {i}", "label": f"Step {i}", "description": "detail"} for i in range(1, 8)]
+    items = [{"date": f"Week {i}", "label": f"Step {i}", "description": "detail"} for i in range(1, 10)]
     comps = [{"kind": "timeline", "content_data": {"timeline_items": items}}]
     enforce_capacity(comps)
     card = comps[0]["content_data"]["cards"][0]
@@ -118,7 +147,16 @@ def test_seven_steps_become_a_grid_and_a_long_flow_stays_a_flow():
     flow = [{"kind": "flow", "content_data": {"flow_steps": [f"Node {i}" for i in range(7)]}}]
     n1, n2 = enforce_capacity(steps), enforce_capacity(flow)
     assert steps[0]["content_data"]["card_layout"] == "grid" and "too many for one row" in n1[0]
-    assert flow[0]["kind"] == "flow" and "over its capacity" in n2[0] and "kept as a flow" in n2[0]
+    assert flow[0]["kind"] == "flow" and "over its horizontal capacity (6)" in n2[0] and "kept as a flow" in n2[0]
+
+
+def test_a_flow_is_measured_against_its_own_direction():
+    """8 nodes fit down a column (capacity.yaml flow vertical 8): no note; 9 are noted, never switched."""
+    eight = [{"kind": "flow", "content_data": {"direction": "vertical", "flow_steps": [f"N{i}" for i in range(8)]}}]
+    nine = [{"kind": "flow", "content_data": {"direction": "vertical", "flow_steps": [f"N{i}" for i in range(9)]}}]
+    assert enforce_capacity(eight) == []
+    notes = enforce_capacity(nine)
+    assert nine[0]["kind"] == "flow" and "over its vertical capacity (8)" in notes[0]
 
 
 def test_metric_value_table_of_one_entity_becomes_one_kpi_row():

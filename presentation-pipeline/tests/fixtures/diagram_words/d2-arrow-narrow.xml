@@ -1,0 +1,9 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" accentSoft="E3EBFC" onAccent="FFFFFF" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="32" alignItems="stretch" backgroundColor="$surface">
+    <Text fontFamily="Inter" fontSize="36" color="$textMain" bold="true">A row in a fixed box</Text>
+    <ProcessArrow id="narrow" w="560" fontFamily="Inter" direction="horizontal" fontSize="20" bold="true">
+      <ProcessArrowStep label="Discovery" /><ProcessArrowStep label="Profitability" /><ProcessArrowStep label="Scale" /><ProcessArrowStep label="Repeat" />
+    </ProcessArrow>
+  </VStack>
+</Slide>

@@ -14,7 +14,8 @@ diagram's direction: examples must show every value, never fix one) and ``refute
 Probe assertions are Python expressions over:
   ok, errors (joined text), warnings (codes)
   box            the diagram's own box (positioned tree): .x .y .w .h .r .b .cx .cy
-  t("A")         the drawn shape whose text is "A" (same fields, + .font px, .geom)
+  t("A")         the drawn shape whose text is "A" (same fields, + .font px, .geom, .pad: left + right
+                 text inset px, the OOXML default 0.1 in each side where bodyPr sets none)
   shapes, fills  every drawn shape / the textless filled ones (chevrons, bands, dots)
   lines          textless zero-thickness shapes (connectors, axes)
   near(a, b, tol=1.5), same(values, tol=1.5), extent(shapes) -> box of their union
@@ -49,6 +50,7 @@ PROBED_KINDS = ("syntax", "layout")  # a claim about POM must be shown by POM
 
 _NS = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
 _EMU = 9525
+_DEFAULT_INSET = 91440  # EMU: OOXML bodyPr lIns / rIns when not written (0.1 in)
 _PROBE_ROOT = '<VStack w="1280" h="720" padding="40" alignItems="{align}">'
 
 
@@ -115,6 +117,7 @@ class Box:
     text: str = ""
     font: float | None = None
     geom: str = ""
+    pad: float = 0.0
 
     @property
     def r(self) -> float:
@@ -146,11 +149,13 @@ def drawn_shapes(pptx: str | Path) -> list[Box]:
         text = "".join(t.text or "" for t in el.iter(f"{{{_NS['a']}}}t")).strip()
         sz = next((r.get("sz") for r in el.iter(f"{{{_NS['a']}}}rPr") if r.get("sz")), None)
         prst = el.find(".//a:prstGeom", _NS)
+        body = el.find(".//a:bodyPr", _NS)
+        ins = [int(body.get(k, _DEFAULT_INSET)) if body is not None else _DEFAULT_INSET for k in ("lIns", "rIns")]
         out.append(Box(int(off.get("x")) / _EMU, int(off.get("y")) / _EMU,
                        int(ext.get("cx")) / _EMU, int(ext.get("cy")) / _EMU, text,
                        round(int(sz) / 100 / 0.75, 2) if sz else None,
                        prst.get("prst") if prst is not None else
-                       "cust" if el.find(".//a:custGeom", _NS) is not None else ""))
+                       "cust" if el.find(".//a:custGeom", _NS) is not None else "", sum(ins) / _EMU))
     return out
 
 

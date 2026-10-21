@@ -140,7 +140,7 @@ data_nodes: |
     defaultRowHeight = 16 + 24 x wrapped lines of the longest cell (40 / 64 / 88)
     and header <Tr height="40"> - POM never grows rows; short rows spill text.
     One <Col> per column, width only where needed. Every <Td> sets backgroundColor + color.
-  Timeline (horizontal): h="150", no w, no grow; max 5 items, 1-3 word labels.
+  Timeline (horizontal): h="150", no w, no grow; max 8 items, 1-3 word labels.
   Pyramid: h = 52 x levels + 20, no w, no grow; fontSize 16 (3 levels), 15 (4), 14 (5+).
   Layer: pixel w and h. ProcessArrow fontSize >= 14 (FlowNode and Timeline text sizes are fixed by POM).
 
@@ -255,7 +255,7 @@ render_gotchas:
      the dot. Do NOT set a white textColor on a light card - the label
      vanishes. Leave textColor unset (inherits itemLabelColor)."
   - "ProcessArrowStep label: 1-2 short words only at h<=70; longer text clips."
-  - "Horizontal Timeline: max 5 items, 1-3 word labels. Sentences collide."
+  - "Horizontal Timeline: max 8 items, 1-3 word labels. Sentences collide."
   - "A data node (Chart/Matrix/Table) placed in a column narrower than ~45% of
      the slide gets cramped - axis labels and legends collide. Give it room."
   - "roundRect <Shape> with text: keep the label short; it does not wrap

@@ -1,0 +1,19 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" accentSoft="E3EBFC" onAccent="FFFFFF" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="24" alignItems="stretch" backgroundColor="$surface">
+    <Text fontFamily="Inter" fontSize="36" color="$textMain" bold="true">Seven steps from audit to scale</Text>
+    <HStack grow="1" gap="24" alignItems="stretch">
+      <VStack w="420" alignItems="stretch">
+        <ProcessArrow id="column" fontFamily="Inter" direction="vertical" h="max" fontSize="20" bold="true">
+          <ProcessArrowStep label="Audit" /><ProcessArrowStep label="Benchmark" /><ProcessArrowStep label="Prioritization" />
+          <ProcessArrowStep label="Activation" /><ProcessArrowStep label="Optimization" /><ProcessArrowStep label="Incrementality" />
+          <ProcessArrowStep label="Scale" />
+        </ProcessArrow>
+      </VStack>
+      <VStack grow="1" padding="24" gap="12" backgroundColor="$surfaceAlt">
+        <Text fontFamily="Inter" fontSize="18" color="$textMain" bold="true">Why this order</Text>
+        <Text fontFamily="Inter" fontSize="16" color="$textMain">Each step needs the data of the one before it.</Text>
+      </VStack>
+    </HStack>
+  </VStack>
+</Slide>

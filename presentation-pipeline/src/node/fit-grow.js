@@ -23,6 +23,9 @@
 //   3. diagrams     — a Chart/Flow/Tree/ProcessArrow absorbs the spare height of
 //                     its card, then Flow/Tree/ProcessArrow nodes are enlarged
 //                     to fill their box.
+//   3'. words       — a chevron's itemWidth / a flow's nodeWidth (and nodeHeight) go up until the
+//                     longest word of every label fits its label box (renderer insets included);
+//                     a chevron row that cannot widen lowers its fontSize toward 14 (POM_FIT_WORDS=0 off).
 //   3a. share height — a KPI row beside a sparse growing text band gets the same
 //                     grow, so both have room to fill.
 //   3b. KPI values  — a sparse row of stat tiles grows its hero numbers (and
@@ -367,6 +370,170 @@ async function growDiagrams(xml, report) {
 const LAYER_CAP = 1.8;
 const LAYER_FONT_CAP = 28;
 const LAYER_NUM_RE = /\s(x|y|w|h|x1|y1|x2|y2|fontSize|size)="(\d+(?:\.\d+)?)"/g;
+
+// --- phase 2d: chevrons and flow nodes as wide as their longest word ----------------
+// The generator left a horizontal ProcessArrow at the default itemWidth 150 (a 94 px label box)
+// with fontSize 16 bold, and "Profitability" broke across two lines (XTSY slide 4, four runs to
+// 2026-10-20). POM writes the label with no lIns / rIns, so the renderer's default 0.1 in each side
+// applies (facts process_arrow.label_inset, flow.label_inset): 75 px of text in that box. Measurement
+// only — never a change of direction, band, kind or plan:
+//   ProcessArrow — itemWidth goes up until the longest word of every label fits its label box
+//                  (horizontal itemWidth - 0.7 x itemHeight, the first step - 0.35 x; vertical
+//                  itemWidth) at the drawn size, as long as POM does not shrink the row more for it;
+//                  when no width in the box is enough, fontSize goes down toward 14, never below.
+//   Flow         — nodeWidth goes up until every node's longest word fits at 14 px (node text has
+//                  no size of its own), then nodeHeight until every label's lines fit, within the box.
+// The drawn size is the attribute x POM's scale-to-fit (facts *.scale): natural size vs the box.
+
+const BODY_INSET = 9.6;    // px each side: OOXML's default lIns / rIns (0.1 in)
+const BODY_INSET_V = 4.8;  // px top / bottom: default tIns / bIns (0.05 in)
+const DIAGRAM_FONT_FLOOR = 14;
+const FLOW_FONT = 14;
+const FLOW_FAMILY = "Noto Sans JP";   // FlowNode has no fontFamily: POM writes its text in this one
+// The share of a flow shape's width / height its text rectangle takes (OOXML preset shape definitions,
+// rounded); a shape not listed gives its text the whole box.
+const FLOW_TEXT_RECT = {
+  flowChartDecision: [0.5, 0.5], flowChartInputOutput: [0.6, 1], flowChartTerminator: [0.9, 0.7],
+  flowChartPredefinedProcess: [0.75, 1], flowChartPreparation: [0.6, 1], flowChartManualOperation: [0.6, 1],
+  flowChartConnector: [0.7, 0.7], flowChartDelay: [0.85, 0.7], flowChartDocument: [1, 0.8],
+  flowChartManualInput: [1, 0.8], flowChartMagneticDisk: [1, 0.5],
+};
+
+/** A ProcessArrow's natural size and each step's label-box width at itemWidth `iw` (facts process_arrow.*). */
+function arrowLayout(n, iw) {
+  const count = n.steps.length, ih = n.itemHeight ?? 80, depth = ih * ARROW_DEPTH_RATIO;
+  const gap = n.gap ?? -depth;
+  if ((n.direction ?? "horizontal") === "vertical") {
+    return { w: iw, h: count * ih + (count - 1) * gap, rooms: n.steps.map(() => iw) };
+  }
+  return { w: count * iw + (count - 1) * gap, h: ih, rooms: n.steps.map((_, i) => iw - (i === 0 ? depth : 2 * depth)) };
+}
+
+/** A Flow's natural size at nodeWidth / nodeHeight `nw` / `nh` (facts flow.natural_size, flow.vertical_size). */
+function flowLayout(n, nw, nh) {
+  const count = n.nodes.length, gap = n.nodeGap ?? 80;
+  return (n.direction ?? "horizontal") === "vertical"
+    ? { w: nw, h: count * nh + (count - 1) * gap }
+    : { w: count * nw + (count - 1) * gap, h: nh };
+}
+
+const fitScale = (g, W, H) => Math.min(1, W / g.w, H / g.h);
+
+/** The px the widest word of each chevron label lacks at itemWidth `iw` and font `f` (<= 0: fits). */
+function arrowShort(n, iw, f, W, H, ctx) {
+  const g = arrowLayout(n, iw), s = fitScale(g, W, H);
+  const family = n.fontFamily ?? "Noto Sans JP";
+  const slack = exact(ctx, family, n.bold) ? 1 : GUARD_SLACK;
+  return Math.max(...n.steps.map((st, i) => widestPiece([st.label], family, f * s, n.bold, undefined, ctx).w
+    - (g.rooms[i] * s - 2 * BODY_INSET) * slack));
+}
+
+/** Per flow node: the px its widest word lacks, and the px its lines lack in height (<= 0: fits). */
+function flowShort(n, nw, nh, W, H, ctx) {
+  const s = fitScale(flowLayout(n, nw, nh), W, H);
+  const slack = exact(ctx, FLOW_FAMILY, false) ? 1 : GUARD_SLACK;
+  let word = -Infinity, lines = -Infinity;
+  for (const node of n.nodes) {
+    const [fw, fh] = FLOW_TEXT_RECT[node.shape] ?? [1, 1];
+    const room = ((node.width ?? nw) * fw * s - 2 * BODY_INSET) * slack;
+    word = Math.max(word, widestPiece([node.text], FLOW_FAMILY, FLOW_FONT * s, false, undefined, ctx).w - room);
+    const tall = measureText(node.text ?? "", Math.max(room, 1), { fontFamily: FLOW_FAMILY, fontSizePx: FLOW_FONT * s,
+      lineHeight: 1.3, fontWeight: "normal" }, ctx.textMeasurementMode, ctx.fontRegistry).heightPx;
+    lines = Math.max(lines, tall - ((node.height ?? nh) * fh * s - 2 * BODY_INSET_V));
+  }
+  return { word, lines };
+}
+
+/** The largest value from `v0` up (step 1) at which POM shrinks the diagram no more than at `v0`; capped. */
+function widest(v0, scaleAt, cap) {
+  const s0 = scaleAt(v0);
+  let v = v0;
+  while (v < cap && scaleAt(v + 1) >= s0 - 1e-6) v += 1;
+  return v;
+}
+
+/** The smallest integer in [lo, hi] for which ok(v) holds (ok monotone); null when none. */
+function firstFit(lo, hi, ok) {
+  if (lo > hi || !ok(hi)) return null;
+  while (lo < hi) { const mid = Math.floor((lo + hi) / 2); if (ok(mid)) hi = mid; else lo = mid + 1; }
+  return lo;
+}
+
+function arrowWordsEdit(n, W, H, ctx) {
+  if (!n.steps?.length) return null;
+  const iw0 = n.itemWidth ?? 150, fs0 = n.fontSize ?? 14;
+  const short = (iw, f) => arrowShort(n, iw, f, W, H, ctx) <= 0.5;
+  if (short(iw0, fs0)) return null;
+  const iwMax = widest(iw0, (iw) => fitScale(arrowLayout(n, iw), W, H), Math.floor(W));
+  const iw = firstFit(iw0, iwMax, (v) => short(v, fs0));
+  if (iw !== null) return { attrs: { itemWidth: iw }, fits: true };
+  const e = iwMax > iw0 ? { itemWidth: iwMax } : {};
+  let f = fs0;
+  if (fs0 > DIAGRAM_FONT_FLOOR) {
+    f = fs0 - 1;
+    while (f > DIAGRAM_FONT_FLOOR && !short(iwMax, f)) f -= 1;
+    e.fontSize = f;
+  }
+  return Object.keys(e).length ? { attrs: e, fits: short(iwMax, f) } : null;
+}
+
+function flowWordsEdit(n, W, H, ctx) {
+  if (!n.nodes?.length) return null;
+  const nw0 = n.nodeWidth ?? 120, nh0 = n.nodeHeight ?? 60;
+  const at = (nw, nh) => flowShort(n, nw, nh, W, H, ctx);
+  const now = at(nw0, nh0);
+  if (now.word <= 0.5 && now.lines <= 0.5) return null;
+  const nwMax = widest(nw0, (nw) => fitScale(flowLayout(n, nw, nh0), W, H), Math.floor(W));
+  let nw = now.word <= 0.5 ? nw0 : firstFit(nw0, nwMax, (v) => at(v, nh0).word <= 0.5) ?? nwMax;
+  // the lines: the smallest height that holds them; when none in the box does, a wider node (fewer lines)
+  let nh = nh0;
+  for (let w = nw; w <= nwMax; w += 4) {
+    const hMax = widest(nh0, (h) => fitScale(flowLayout(n, w, h), W, H), Math.floor(H));
+    const h = firstFit(nh0, hMax, (v) => at(w, v).lines <= 0.5);
+    if (h !== null) { nw = w; nh = h; break; }
+    if (at(w, nh0).word > 0.5) break;   // the words do not fit anyway: keep the narrowest
+  }
+  const e = {};
+  if (nw > nw0) e.nodeWidth = nw;
+  if (nh > nh0) e.nodeHeight = nh;
+  const end = at(nw, nh);
+  return Object.keys(e).length ? { attrs: e, fits: end.word <= 0.5 && end.lines <= 0.5 } : null;
+}
+
+/** The width and height a diagram may take: its box, or for a box sized to its content in a VStack, the
+ * VStack's inner width (the box grows with the nodes up to it). */
+function diagramRoom(n, parent, L) {
+  const b = L.box(n);
+  let W = b.w - b.pl - b.pr;
+  const H = b.h - b.pt - b.pb;
+  if (typeof n.w !== "number" && parent?.type === "vstack") {
+    const p = L.box(parent);
+    W = Math.max(W, p.w - p.pl - p.pr - b.pl - b.pr);
+  }
+  return { W, H };
+}
+
+async function sizeDiagramWords(xml, report) {
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const root of L.slides) walk(root, (n, parent) => {
+      if (!n.id || (n.type !== "processArrow" && n.type !== "flow")) return;
+      const { W, H } = diagramRoom(n, parent, L);
+      const r = n.type === "processArrow" ? arrowWordsEdit(n, W, H, L.ctx) : flowWordsEdit(n, W, H, L.ctx);
+      if (!r) return;
+      const was = n.type === "processArrow"
+        ? { itemWidth: n.itemWidth ?? 150, fontSize: n.fontSize ?? 14 } : { nodeWidth: n.nodeWidth ?? 120, nodeHeight: n.nodeHeight ?? 60 };
+      edits.push([n.id, r.attrs, `${n.type} ${Object.entries(r.attrs).map(([k, v]) => `${k} ${was[k]} -> ${v}`).join(", ")}`
+        + (r.fits ? " (longest word fits its label box)" : " (as far as its box allows; a word is still wider than its label box)")]);
+    });
+  } finally { L.free(); }
+  for (const [id, e, note] of edits) {
+    xml = setAttrs(xml, id, e);
+    report.push(note);
+  }
+  return xml;
+}
 
 // --- phase 0: respect an explicit h --------------------------------------------
 // In POM, w="max" is flexGrow:1 on the MAIN axis — inside a VStack that grows
@@ -1838,13 +2005,26 @@ async function scanWords(xml) {
         const texts = n.items.map((i) => i.text ?? (i.runs ?? []).map((r) => r.text).join(""));
         const at = (f) => widestPiece(texts, family, f, n.bold, undefined, ctx);
         if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "list item", fs, own: fs, room, at });
-      } else if (n.type === "processArrow") {
-        if (!n.steps.length) return;
-        const fs = n.fontSize ?? 14;
-        const depth = (n.itemHeight ?? 80) * ARROW_DEPTH_RATIO;   // POM's text box: width - depth on each side
-        const room = ((n.itemWidth ?? 150) - 2 * depth) * slack(false);
-        const at = (f) => widestPiece(n.steps.map((s) => s.label), family, f, n.bold, undefined, ctx);
-        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: "process step", fs, own: fs, room, at });
+      } else if (n.type === "processArrow" || n.type === "flow") {
+        // each label box less the renderer's default insets, at the size POM draws the diagram (phase 2d);
+        // `at` gives the widest word's px over its own box, plus the smallest box (the first chevron's is wider)
+        const b = L.box(n);
+        const W = b.w - b.pl - b.pr, H = b.h - b.pt - b.pb;
+        const arrow = n.type === "processArrow";
+        const items = arrow ? n.steps : n.nodes;
+        if (!items.length) return;
+        const g = arrow ? arrowLayout(n, n.itemWidth ?? 150) : flowLayout(n, n.nodeWidth ?? 120, n.nodeHeight ?? 60);
+        const s = fitScale(g, W, H);
+        const fam = arrow ? family : FLOW_FAMILY;
+        const rooms = items.map((it, i) => (arrow ? g.rooms[i] : (it.width ?? n.nodeWidth ?? 120) * (FLOW_TEXT_RECT[it.shape] ?? [1])[0])
+          * s - 2 * BODY_INSET).map((r) => r * slack(arrow && n.bold));
+        const room = Math.min(...rooms);
+        const fs = arrow ? n.fontSize ?? 14 : FLOW_FONT;
+        const at = (f) => items.map((it, i) => {
+          const p = widestPiece([arrow ? it.label : it.text], fam, f * s, arrow && n.bold, undefined, ctx);
+          return { word: p.word, w: p.w - (rooms[i] - room) };
+        }).reduce((a, x) => (x.w > a.w ? x : a), { word: "", w: 0 });
+        if (room > 0 && at(fs).w > room + 0.5) found.push({ id: n.id, kind: arrow ? "process step" : "flow node", fs, own: fs, room, at });
       } else if (n.type === "table") {
         const grid = cellGrid(n);
         if (!grid || !n.rows.length) return;
@@ -1905,6 +2085,7 @@ function guardEdit(xml, t, widen = 0) {
       return { xml: out, note: `column widened by ${need}px for "${t.at(t.fs).word}" (from its pinned neighbour)` };
     }
   }
+  if (t.kind === "flow node") return { xml, note: null };   // node text has no size of its own: report only
   const fs = guardSize(t.fs, t.at, t.room);
   if (fs >= t.fs) return { xml, note: null };
   let out;
@@ -2124,6 +2305,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   xml = await fitTables(xml, report);
   xml = await sizeTables(xml, report);
   xml = await growDiagrams(xml, report);
+  if (process.env.POM_FIT_WORDS !== "0") xml = await sizeDiagramWords(xml, report);
   xml = await shareHeight(xml, report);
   xml = await regridTiles(xml, report);
   xml = await regridCards(xml, report);

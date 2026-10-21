@@ -44,7 +44,7 @@ TimelineItem_attributes:
   dateColor:   { type: hex, note: "Override timeline-level dateColor for this item" }
 
 notes:
-  - "3-5 items (core/capacity.yaml)."
+  - "Items per direction: core/capacity.yaml."
   - "Each item's color sets the dot accent. Use the palette's accent, positive, negative tokens for semantic milestones."
 
 pitfalls:

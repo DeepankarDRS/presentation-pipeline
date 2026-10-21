@@ -44,13 +44,13 @@ ProcessArrowStep_attributes:
   textColor: { type: hex, default: "FFFFFF", note: "Label text color" }
 
 notes:
-  - "Capacity: 3-5 steps, labels of 1-2 short words (core/capacity.yaml)."
+  - "Capacity: steps per direction and label words in core/capacity.yaml; a vertical column holds more steps than a horizontal row."
   - "Use a gradient of related hues (light→dark or dark→light) across steps for visual flow."
   - "For a process with a decision step, use <Flow>; neither component lays out branches side by side."
 
 pitfalls:
   - "label is required on every ProcessArrowStep."
-  - "More than 5 steps, or a horizontal ProcessArrow in a half-width card, shrinks the labels and breaks words (seen 2026-09-29: 7 impact areas drawn as chevrons). Put longer or unordered items in a bullet list instead."
+  - "A horizontal ProcessArrow in a half-width card, or with more steps than fit across, shrinks the labels and breaks words (seen 2026-09-29: 7 impact areas drawn as chevrons in a narrow box). Draw it vertical in a column instead; unordered items are cards."
   - "Labels: 1-2 short words (seen 2026-09: 'AUTONOMIZE' broke to 'AUTONOMI ZE' at h<=70). Put a longer phase description in a caption Text or a card BELOW the ProcessArrow, not in the label."
   - "No newlines in a label — they do not render as line breaks."
 
@@ -100,6 +100,20 @@ facts:
     probes:
       - xml: '<ProcessArrow><ProcessArrowStep label="One"/><ProcessArrowStep label="Two"/><ProcessArrowStep label="Three"/></ProcessArrow>'
         expect: [ok, 'near(t("One").w, 122)', 'near(t("Two").w, 94) and near(t("Three").w, 94)', 't("Two").font == 14']
+
+  - id: process_arrow.label_inset
+    kind: layout
+    for: [generator]
+    text: >-
+      A label keeps the renderer's default inner margin, about 10 px each side of its label
+      box (POM sets none), so its longest word must fit the label box less 19 px: 75 px at
+      the defaults (a 100 px word needs itemWidth 176 at the default itemHeight).
+    source: renderPptx/nodes/processArrow.js (addText without margin); OOXML bodyPr lIns / rIns default 91440 EMU
+    probes:
+      - xml: '<ProcessArrow><ProcessArrowStep label="One"/><ProcessArrowStep label="Two"/><ProcessArrowStep label="Three"/></ProcessArrow>'
+        expect: [ok, 'near(t("Two").w, 94)', 'near(t("Two").pad, 19.2, 0.1) and near(t("One").pad, 19.2, 0.1)']
+      - xml: '<ProcessArrow itemWidth="176"><ProcessArrowStep label="One"/><ProcessArrowStep label="Two"/></ProcessArrow>'
+        expect: [ok, 'near(t("Two").w - t("Two").pad, 176 - 56 - 19.2, 0.6)']
 
   - id: process_arrow.wh_optional
     kind: layout
@@ -165,7 +179,7 @@ facts:
     text: >-
       Give the row the box its direction needs and size the chevrons to it: horizontal, a
       full-width band, with itemWidth raised until the longest word of a label fits its label
-      box (itemWidth - 0.7 x itemHeight: 94 px at the defaults, about two short words) while
-      the row still fits the band; vertical, a column with itemWidth about the column's
-      width.
+      box less its inner margin (itemWidth - 0.7 x itemHeight - 19 px: 75 px at the defaults)
+      while the row still fits the band; vertical, a column with itemWidth about the column's
+      width. Code widens the chevrons to their longest word within that box.
     source: follows from process_arrow.label_box, process_arrow.natural_size, process_arrow.vertical_label and process_arrow.scale

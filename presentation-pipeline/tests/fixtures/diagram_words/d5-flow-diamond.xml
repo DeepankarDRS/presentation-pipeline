@@ -1,0 +1,13 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" accentSoft="E3EBFC" onAccent="FFFFFF" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="24" alignItems="stretch" backgroundColor="$surface">
+    <Text fontFamily="Inter" fontSize="36" color="$textMain" bold="true">A decision in a row</Text>
+    <Flow id="diamond" w="700" h="120" nodeGap="40">
+      <FlowNode id="a" shape="flowChartProcess" text="Receive" />
+      <FlowNode id="b" shape="flowChartDecision" text="Reconciliation" />
+      <FlowNode id="c" shape="flowChartProcess" text="Save" />
+      <FlowNode id="d" shape="flowChartProcess" text="Report" />
+      <FlowConnection from="a" to="b" /><FlowConnection from="b" to="c" /><FlowConnection from="c" to="d" />
+    </Flow>
+  </VStack>
+</Slide>

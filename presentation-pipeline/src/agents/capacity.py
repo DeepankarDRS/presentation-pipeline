@@ -24,20 +24,35 @@ def capacity() -> dict[str, dict[str, Any]]:
 
 
 def span(kind: str, key: str = "items") -> str:
-    """A range as prompt text: [3, 5] -> "3-5"."""
-    lo, hi = capacity()[kind][key]
+    """A range as prompt text: [3, 5] -> "3-5"; a diagram's items by direction -> "3-7 horizontal, up to 9 vertical"."""
+    c = capacity()[kind]
+    if key == "items" and "max_items" in c:
+        m = c["max_items"]
+        return f"{c['min_items']}-{m['horizontal']} horizontal, up to {m['vertical']} vertical"
+    lo, hi = c[key]
     return f"{lo}-{hi}"
 
 
-def max_of(kind: str, key: str = "items") -> int:
-    value = capacity()[kind][key]
+def direction_of(comp: dict[str, Any]) -> str:
+    """A planned diagram's direction: content_data.direction, else the plan's orientation, else POM's default."""
+    d = (comp.get("content_data") or {}).get("direction") or comp.get("orientation") or "horizontal"
+    return "vertical" if str(d).lower() == "vertical" else "horizontal"
+
+
+def max_of(kind: str, key: str = "items", direction: str | None = None) -> int:
+    """The largest value; a diagram's items by direction (no direction: horizontal, POM's default)."""
+    c = capacity()[kind]
+    if key == "items" and "max_items" in c:
+        return c["max_items"]["vertical" if direction == "vertical" else "horizontal"]
+    value = c[key]
     return value[1] if isinstance(value, list) else value
 
 
 # ── Plan check: components past their capacity become cards ────────────────
 # Chevrons with 7 items or sentence labels break words into letters ("Consume r",
-# XTSY slide 7); a horizontal timeline past 5 items collides. A card_grid holds the
-# same items legibly, so the plan is fixed in code — no re-plan call.
+# XTSY slide 7); a timeline past its items collides. A card_grid holds the same items
+# legibly, so the plan is fixed in code — no re-plan call. Each limit is the one for the
+# component's own direction (2026-10-21): a 7-step vertical chevron column is kept.
 # A flow past capacity is only reported, not switched (2026-10-04): as cards it lost
 # its arrows and stopped reading as a sequence (XTSY slide 6, two UI decks).
 
@@ -133,24 +148,29 @@ def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
     for comp in components:
         kind, data = comp.get("kind"), comp.get("content_data") or {}
         cid = comp.get("component_id") or kind
+        direction = direction_of(comp)
         if kind == "process_arrow":
             steps = data.get("process_steps") or []
-            too_many = len(steps) > max_of("process_arrow")
+            most = max_of("process_arrow", direction=direction)
+            too_many = len(steps) > most
             max_words = capacity()["process_arrow"]["max_label_words"]
             long = [s for s in map(_label, steps) if len(s.split()) > max_words]
             if steps and (too_many or long):
-                why = f"{len(steps)} steps" if too_many else f"label '{long[0]}' over {max_words} words"
+                why = f"{len(steps)} steps ({direction} holds {most})" if too_many else f"label '{long[0]}' over {max_words} words"
                 _to_cards(comp, _as_cards(steps))
                 notes.append(f"{cid}: process_arrow with {why} -> card_grid ({comp['content_data']['card_layout']})")
         elif kind == "timeline":
             items = data.get("timeline_items") or []
-            if len(items) > max_of("timeline"):
+            most = max_of("timeline", direction=direction)
+            if len(items) > most:
                 _to_cards(comp, _as_cards(items, tag_key="date"))
-                notes.append(f"{cid}: timeline with {len(items)} items -> card_grid ({comp['content_data']['card_layout']})")
+                notes.append(f"{cid}: timeline with {len(items)} items ({direction} holds {most}) "
+                             f"-> card_grid ({comp['content_data']['card_layout']})")
         elif kind == "flow":
             steps = data.get("flow_steps") or []
-            if len(steps) > max_of("flow"):
-                notes.append(f"{cid}: flow with {len(steps)} nodes is over its capacity ({max_of('flow')}); kept as a flow")
+            most = max_of("flow", direction=direction)
+            if len(steps) > most:
+                notes.append(f"{cid}: flow with {len(steps)} nodes is over its {direction} capacity ({most}); kept as a flow")
         elif kind == "table":
             kpis = _metric_table_to_kpis(comp)
             if kpis:

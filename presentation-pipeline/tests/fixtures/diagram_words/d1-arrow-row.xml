@@ -1,0 +1,26 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" accentSoft="E3EBFC" onAccent="FFFFFF" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="32" alignItems="stretch" backgroundColor="$surface">
+    <Text fontFamily="Inter" fontSize="36" color="$textMain" bold="true">Four phases build category share</Text>
+    <VStack grow="1" gap="18" alignItems="stretch">
+      <VStack alignItems="stretch">
+      <ProcessArrow id="row" fontFamily="Inter" h="max" minH="90" direction="horizontal" fontSize="16" bold="true">
+        <ProcessArrowStep label="Visibility" color="$accent" textColor="$onAccent" />
+        <ProcessArrowStep label="Offtakes" color="$accentSoft" textColor="$textMain" />
+        <ProcessArrowStep label="Market Share" color="$accentSoft" textColor="$textMain" />
+        <ProcessArrowStep label="Profitability" color="$accent" textColor="$onAccent" />
+      </ProcessArrow>
+      </VStack>
+      <HStack grow="2" gap="18" alignItems="stretch">
+        <VStack w="max" padding="24" gap="12" backgroundColor="$surfaceAlt">
+          <Text fontFamily="Inter" fontSize="18" color="$textMain" bold="true">Phase 1: Foundation</Text>
+          <Ul fontFamily="Inter" fontSize="14" color="$textMain"><Li>Availability tracking</Li><Li>Search audit</Li><Li>OOS reduction</Li></Ul>
+        </VStack>
+        <VStack w="max" padding="24" gap="12" backgroundColor="$surfaceAlt">
+          <Text fontFamily="Inter" fontSize="18" color="$textMain" bold="true">Phase 4: Scale</Text>
+          <Ul fontFamily="Inter" fontSize="14" color="$textMain"><Li>Automation-led optimization</Li><Li>Portfolio scaling</Li></Ul>
+        </VStack>
+      </HStack>
+    </VStack>
+  </VStack>
+</Slide>

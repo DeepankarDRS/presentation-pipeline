@@ -28,7 +28,7 @@ from typing import Any, get_args
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.capacity import capacity, enforce_capacity, span
+from src.agents.capacity import capacity, enforce_capacity, max_of, span
 from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.planner_schema_typed import PlannerSlideTyped, content_data_of
@@ -66,7 +66,7 @@ _jinja_env = Environment(
 )
 # component capacity (knowledge/core/capacity.yaml) — the prompt's limits come from here;
 # what a diagram draws comes from its verified facts (knowledge/components/<kind>.yaml)
-_jinja_env.globals.update(cap=capacity(), span=span, content_field="content_data_json",
+_jinja_env.globals.update(cap=capacity(), span=span, max_of=max_of, content_field="content_data_json",
                           facts=lambda kind: facts_text(kind, "planner"))
 
 # ── Conversion helpers ──────────────────────────────────────────────────────

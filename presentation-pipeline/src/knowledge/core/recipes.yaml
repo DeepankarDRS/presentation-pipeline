@@ -134,7 +134,7 @@ callout: |
 
 timeline: |
   # Timeline in a card: NO h, NO grow on the card — size the box to the diagram.
-  # <Timeline h="150">, no w (it never scales up). Max 5 items.
+  # <Timeline h="150">, no w (it never scales up). Max 8 items horizontal.
   # direction: horizontal | vertical — the plan's choice, with its band: horizontal in a
   # full-width band of its own, vertical in a column beside another component or for titles
   # longer than two words (that column at least 24 + 60 px per further item tall).
@@ -174,7 +174,7 @@ process_arrow: |
   # direction: horizontal | vertical — the plan's choice, with its band: horizontal in a
   # full-width band of its own, vertical in a column beside another component (itemWidth
   # about the column's width). Step labels are 1-2 SHORT words only (longer text clips inside the
-  # chevron). 3-5 steps. fontSize MUST be >= 14. NEVER go below 14.
+  # chevron). One chevron per step the plan names. fontSize MUST be >= 14. NEVER go below 14.
   # Colour: steps $accentSoft + $textMain, the destination (or current) step $accent + $onAccent.
   <VStack grow="1" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Delivery process</Text>
