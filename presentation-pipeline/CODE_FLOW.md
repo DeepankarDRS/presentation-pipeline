@@ -1,48 +1,54 @@
 # Presentation Pipeline — Line-by-Line Code & State Flow
 
-> Hand-traced from source on 2026-09-05. Traces **which function runs when**, **which file it lives in**, and **exactly which keys of `PresentationState` change** at each step.
+> Traced from the source on 2026-10-21 (commit `a75760f`; first hand-traced 2026-09-05). Traces **which function runs when**, **which file it lives in**, and **exactly which keys of `PresentationState` change** at each step.
 >
-> Entry points: `src/graph.py::run()` (CLI/library) and `src/api.py::/generate` (HTTP + SSE).
-> Single state object: `PresentationState` (TypedDict) defined in [`src/state.py:81`](src/state.py).
+> Entry points: `src/graph.py::run()` (CLI / library), `src/api.py` (`/generate`, `/generate-from-plan` over HTTP + SSE, plus the plan and edit endpoints), and `src/runner.py` (regression cases).
+> Single state object: `PresentationState` (TypedDict, `total=False`) defined in [`src/state.py:211`](src/state.py:211).
 
 ---
 
 ## 0. The state object
 
-`PresentationState` ([`src/state.py:81-135`](src/state.py)) is a flat `TypedDict`. Every node function receives the **whole** state and returns a **partial dict** of only the keys it owns; LangGraph merges that partial back in. Two keys use `operator.add` reducers so returns are *appended* not *replaced*:
+`PresentationState` ([`src/state.py:211-300`](src/state.py:211)) is a flat `TypedDict`. Every node receives the **whole** state and returns a **partial dict** of only the keys it owns; LangGraph merges that partial back in. Four keys use `operator.add` reducers, so returns are *appended*, not *replaced*:
 
 | Key | Reducer | Written by |
 |---|---|---|
-| `completed_slides` | `operator.add` (list concat) | `slide_router` |
-| `generation_history` | `operator.add` (list concat) | `generator`, `repairer` |
+| `assembled_slide_plans` | `operator.add` (list concat) | `slide_component_planner` (one per `Send`), `slide_plan_serial` |
+| `completed_slides` | `operator.add` | `slide_router` |
+| `generation_history` | `operator.add` | every LLM node (usage / `AttemptRecord` per call) |
+| `slide_critic_results` | `operator.add` | `slide_router` |
 
-Everything else is last-write-wins.
+Everything else is last-write-wins. The API's `_merge_state` ([`src/api.py:289`](src/api.py:289)) mirrors the same four keys (`_ACCUMULATOR_KEYS`) when it keeps a running copy of the streamed state.
 
-`initial_state()` ([`src/state.py:138-186`](src/state.py)) sets every key to a zero value. Notable initial values:
-`mode="single"`, `retry_tier=0`, `retry_count=0`, `retry_budget=2`, `current_slide_index=0`, `passed=False`, `current_xml=""`, all result dicts `None`, all lists `[]`.
+Key groups (in the order `state.py` declares them): run settings (`run_id`, `mode`, `raw_request`, `theme_name`, `test_case`, `supplied_content`, `deck_min_threshold`, `interactive`, `audience_context`, `deck_settings`) · elicitation (`elicitation_needed`, `elicitation_questions`, `elicitation_answers`) · planning (`outline_plan`, `current_outline_slide`, `assembled_slide_plans`, `plan_review`, `core_hook`, `deck_plan`, `slide_plans`, `prior_plan`, `refine_feedback`) · context (`contract`, `theme_element`, `resolved_theme`) · deck loop (`current_slide_index`, `completed_slides`) · generation (`current_xml`, `speaker_notes`, `generation_history`) · validation (`normalize_result`, `validate_result`, `compile_result`, `layout_issues`) · critique (`critic_result`, `critic_mode`, `visual_critic_result`, `slide_screenshots`, `slide_critic_results`, `pre_critic_*`) · retry (`retry_tier`, `retry_count`, `retry_budget`, `visual_repair_budget`, `visual_repair_count`, `visual_repair_outcome`, `stall_detected`) · output (`excluded_slides`, `evaluation`, `pptx_path`, `passed`).
+
+`initial_state()` ([`src/state.py:303-382`](src/state.py:303)) sets every key. It raises `ValueError` at run start on a theme name `palettes.yaml` doesn't have (`""` = the default theme). Notable defaults:
+`mode="single"`, `deck_min_threshold=1`, `critic_mode="off"`, `retry_budget=3` (PATCH, REGENERATE, cleanup PATCH), `visual_repair_budget=2`, `retry_tier=0`, `retry_count=0`, `current_slide_index=0`, `passed=False`, `current_xml=""`, `outline_plan` / `elicitation_answers` as passed (both `None` by default), all result dicts `None`, all lists `[]`.
 
 ---
 
 ## 1. Startup
 
-### `run()` — [`src/graph.py:175-214`](src/graph.py)
-1. `L188-190` import + `setup_logging()`.
-2. `L192` `rid = run_id or uuid.uuid4().hex[:12]` — the run id.
-3. `L193` `set_context(run_id=rid)` — binds run id to the logger.
-4. `L195-205` `state = initial_state(...)` — **builds the full state** from the call args (`raw_request`, `theme_name`, `deck_min_threshold`, `critic_mode`, `supplied_content`, `test_case`, `audience_context`).
-5. `L207` `app = compile_graph()` → `build_graph().compile()` ([`src/graph.py:131-170`](src/graph.py)).
-6. `L213` `final = app.invoke(state, config=config)` — runs the graph to completion, returns final state.
+### `run()` — [`src/graph.py:386-428`](src/graph.py:386)
+1. `setup_logging()`; `rid = run_id or uuid.uuid4().hex[:12]`; `set_context(run_id=rid)` binds the run id to the logger.
+2. `state = initial_state(...)` from the call args: `raw_request`, `theme_name`, `deck_min_threshold`, `critic_mode`, `supplied_content`, `test_case`, `audience_context`, `deck_settings`, `interactive`.
+3. `app = compile_graph()` → `build_graph().compile()` ([`src/graph.py:298-382`](src/graph.py:298)).
+4. `final = app.invoke(state, config=...)` with `recursion_limit=150` (a deck loops through many nodes per slide) and LangSmith run name / tags / metadata; returns the final state.
 
-### API path — [`src/api.py:212-284`](src/api.py)
-- `/generate` (`L212`): make `run_id` (`L215`), register `_runs[run_id] = RunRecord(status="running")` (`L216`).
-- `_run_pipeline_sync()` (`L183-203`): builds `initial_state()`, then `graph.stream(state)` — yields `(node_name, state_update)` **per node** instead of one final blob.
-- `event_stream()` (`L218-278`): a background thread (`_producer`, `L224`) drains the graph into a `queue`; the async side pulls items, calls `_merge_state(accumulated, state_update)` (`L253` → `L173-178`) to keep a running copy, `_build_event()` (`L260` → `L141-170`) to turn the node name into an SSE event (`planning`/`styling`/`generating_slide`/`validating`/`repairing`/`reviewing`/`assembling`/`complete`), and `_estimate_progress()` (`L258` → `L130-136`) for the % bar.
+`python -m src.graph "<request>"` (`__main__`, `L431`) calls `run(request, interactive=True)`, so with no audience context it starts with the CLI **questionnaire**, then prints `passed`, `pptx_path`, retries, the plan review and the evaluation.
+
+### API path — [`src/api.py`](src/api.py)
+- **`POST /generate`** (`L341`): new `run_id`, `_runs[run_id] = RunRecord(status="running")`. `_run_pipeline_sync()` (`L299-332`) builds `initial_state()` (`deck_settings` defaults to `{theme}` when not given; `outline_plan` from the edited-outline cache when `outline_run_id` is given) and runs `graph.stream(state)`, which yields `(node_name, state_update)` **per node**. `event_stream()` (`L347-407`) drains it from a worker thread through a queue, `_merge_state` keeps the running copy, `_build_event()` (`L253`) maps the node to an SSE event via `NODE_EVENT_MAP` (`L212`: `planning` / `elicitation_needed` / `reviewing_plan` / `styling` / `generating_slide` / `validating` / `repairing` / `reviewing` / `assembling` / `complete`; `visual_repairer` and `placeholder` have no entry and are sent under their own names), and `_estimate_progress()` (`L242`) gives the % bar.
+- **Planning endpoints** (run single nodes, not the graph): `POST /elicit` (`L634`), `POST /plan/outline` (`L659`: elicitor check, then `outline_planner_node`; returns questions or the editable outline), `PUT /plan/{run_id}/outline` (`L733`: stores the edited outline in `_edited_outlines`; a later `/generate` with `outline_run_id` routes `START → fan_out_slide_plans`), `POST /plan/outline/regenerate-slide` (`L745`, `outline_replanner`), `POST /plan/review` (`L762`, `plan_reviewer_node`), `POST /plan/refine` (`L783`).
+- **`POST /generate-from-plan`** (`L855`): `_run_pipeline_from_plan_sync()` (`L818-852`) puts the user's `slide_plans`, `core_hook`, `mode` and `deck_plan` into the state, so `route_after_start` goes straight to `style_resolver`.
+- **Edit session**: `POST /runs/{run_id}/edit-session` (`L1070`, from the evaluator's slides data), `POST /runs/{run_id}/slides/{i}/edit` (`L1100`, `slide_edit_service`, model step `slide_editor`), slide screenshot / XML getters, `POST /runs/{run_id}/finalize` (`L1234`: `assemble_deck_xml` + `compile_xml` into `finalized/`, updates the manifest's `pptx_path`).
+- `GET /runs/{run_id}/status`, `GET /runs/{run_id}/download`, `GET /deck-settings-schema`, `GET /health`.
 
 ---
 
 ## 2. Graph topology — [`src/graph.py:298-376`](src/graph.py)
 
-> Checked against the source on 2026-10-21 (commit `58c93b6`). Routing functions: [`src/graph.py:74-238`](src/graph.py). Sections 3 and 4 below were re-traced on the same date; sections 5–7 are still the 2026-09-05 trace.
+> Checked against the source on 2026-10-21. Routing functions: [`src/graph.py:74-238`](src/graph.py). The whole file was re-traced on that date.
 
 ```mermaid
 graph TD
@@ -102,7 +108,7 @@ graph TD
 
 ## 3. Routing functions (no state writes — read only)
 
-> Traced from the source on 2026-10-21 (commit `e04963c`). All in [`src/graph.py`](src/graph.py).
+> All in [`src/graph.py`](src/graph.py).
 
 ### `route_after_start` — [`src/graph.py:74-100`](src/graph.py:74)
 Returns a node name or a list of `Send` (via `fan_out_slide_plans`).
@@ -158,7 +164,7 @@ A lambda: `_slide_done_target(state)`.
 
 ## 4. Node-by-node execution & state mutations
 
-> Traced from the source on 2026-10-21 (commit `e04963c`). Keys marked **append** use an `operator.add` reducer in [`src/state.py`](src/state.py): `assembled_slide_plans`, `completed_slides`, `generation_history`, `slide_critic_results`. Most LLM nodes append a usage record (`usage_record(...)` or `AttemptRecord`) to `generation_history`; the evaluator sums them for tokens and cost.
+> Keys marked **append** use an `operator.add` reducer in [`src/state.py`](src/state.py): `assembled_slide_plans`, `completed_slides`, `generation_history`, `slide_critic_results`. Most LLM nodes append a usage record (`usage_record(...)` or `AttemptRecord`) to `generation_history`; the evaluator sums them for tokens and cost.
 
 ### 4.1 `questionnaire_node` — [`src/agents/questionnaire.py:99-150`](src/agents/questionnaire.py:99) — **no LLM**
 **Runs only when** `interactive=True` and `audience_context` is empty (else returns `{}`).
@@ -427,95 +433,147 @@ Saves the slide that just finished and resets the per-slide keys. The saved XML 
 
 ---
 
-## 5. Two canonical end-to-end traces
+## 5. Canonical end-to-end traces
 
-### 5.1 Single slide, clean compile, critic passes
+### 5.1 Single slide, clean compile, critic on and passing
 ```
-initial_state                  → mode=single, retry_count=0, current_xml=""
-route_after_start              → planner            (interactive=False, no components)
-planner_node          [LLM]    → mode, core_hook, deck_plan=None, slide_plans=[1]
-style_resolver_node            → theme_element, resolved_theme
-context_builder_node           → contract
-generator_node        [LLM]    → current_xml=<xml>, generation_history=[a0]
-validator_node        [node]   → normalize_result, validate_result, compile_result{ok:True,pptx_path}, speaker_notes, layout_issues
-route_after_validator          → critic             (ok, critic_mode=auto)
-critic_node           [LLM]    → critic_result{passed:True}, visual_critic_result
-route_after_critic             → evaluator          (len(slide_plans)==1)
-evaluator_node        [node]   → evaluation, pptx_path, passed=True
+initial_state                    → mode=single, retry_count=0, critic_mode=auto
+route_after_start                → elicitor            (no plans, no outline, not interactive)
+elicitor_node           [LLM]    → elicitation_needed=False, generation_history+=[elicitor]
+route_after_elicitor             → outline_planner
+outline_planner_node    [LLM]    → outline_plan{slides:[1]}, generation_history+=[outline_planner]
+fan_out_slide_plans              → Send(slide_component_planner) ×1
+slide_component_planner [LLM]    → assembled_slide_plans+=[plan], generation_history+=[1-2 planner calls]
+slide_plan_sorter_node           → slide_plans=[1], core_hook, deck_plan, mode=single
+plan_reviewer_node      [LLM]    → plan_review, generation_history+=[plan_reviewer]
+route_after_plan_review          → style_resolver      (always)
+style_resolver_node              → theme_element, resolved_theme
+context_builder_node             → contract
+generator_node          [LLM]    → current_xml, generation_history+=[generator]
+validator_node          [node]   → normalize_result, validate_result, compile_result{ok, pptx_path}, speaker_notes, layout_issues
+route_after_validator            → critic              (ok, critic_mode != off)
+critic_node             [LLM]    → critic_result{passed}, visual_critic_result, pre_critic_*, slide_screenshots
+route_after_critic               → evaluator           (_slide_done_target: 1 plan)
+evaluator_node                   → embed fonts, run-manifest.json, evaluation, pptx_path, passed=True
 END
 ```
+With `critic_mode="off"` (the default) `route_after_validator` goes straight to `evaluator`.
 
 ### 5.2 Single slide, compile fails twice then succeeds
 ```
-generator_node        [LLM]    → current_xml=v1, generation_history=[a0(tier0)]
-validator_node                 → compile_result{ok:False, retryable:True}
-route_after_validator          → repairer           (retry_count 0 < 3)
-repairer_node         [LLM]    → current_xml=v2, retry_tier=1, retry_count=1, generation_history+=[a1(PATCH)]
-route_after_repairer           → validator
-validator_node                 → compile_result{ok:False, retryable:True}   (same errors)
-route_after_validator          → repairer           (retry_count 1 < 4)
-repairer_node         [LLM]    → is_stalled → retry_tier=2 (REGENERATE), retry_count=2, current_xml=v3, generation_history+=[a2]
-route_after_repairer           → validator
-validator_node                 → compile_result{ok:True, pptx_path}
-route_after_validator          → critic → ... → evaluator
-evaluator_node                 → passed = compile_ok and critic_ok
+generator_node          [LLM]    → current_xml=v1
+validator_node                   → compile_result{ok:False, retryable:True}
+route_after_validator            → repairer            (retry_count 0 < 3, no stall)
+repairer_node           [LLM]    → attempt 1 = PATCH: current_xml=v2, retry_tier=1, retry_count=1
+route_after_repairer             → validator
+validator_node                   → compile_result{ok:False, retryable:True}
+route_after_validator            → repairer            (1 < 3)
+repairer_node           [LLM×2]  → REGENERATE (still failing / structural / no-op PATCH): re-plan + generate,
+                                   current_xml=v3, slide_plans[i], contract, retry_tier=2, retry_count=2
+route_after_repairer             → validator
+validator_node                   → compile_result{ok:True, pptx_path}
+route_after_validator            → critic or evaluator
 ```
-Budget exhaustion: once `retry_count == retry_budget (2)`, `route_after_validator`/`route_after_critic` fall through to `evaluator` (single) or `slide_router` (deck) with the last (failing) `compile_result`, so `evaluator` sets `passed=False`.
+Exhaustion: when `retry_count == retry_budget` (3), on a stall (`stall_detected`: ≥ 65% of this attempt's error signatures were in the previous one, `repair_guidance.is_stalled`) or on a non-retryable failure, `route_after_validator` goes to **`placeholder`**: a "Slide could not be generated." slide is compiled and the run continues (`_slide_done_target`). The placeholder compiles, so `compile_ok` and `evaluation.passed` can still be true. For a one-slide run the manifest's `warnings` carry `"placeholder"`; in a deck the final `compile_result` is the deck compile's, so nothing in the manifest marks the placeholder slide.
 
-### 5.3 Deck (planner returns > 1 slide — driven by `deck_min_threshold` target or an explicit multi-slide request)
+### 5.3 Critic fails, visual repair
 ```
-planner_node                   → mode=deck, slide_plans=[N], deck_plan=DeckPlan
-style_resolver_node            → resolved_theme            (once)
-┌── per slide i = 0..N-1 ──────────────────────────────────
-│ context_builder_node         → contract                  (for slide i)
-│ generator_node       [LLM]   → current_xml, generation_history+=[...]
-│ validator_node               → *_result                  (+ repairer loop as needed)
-│ critic_node          [LLM]   → critic_result
-│ route_after_critic           → slide_router              (len>1)
-│ slide_router_node            → completed_slides+=[slide i], current_slide_index=i+1, RESET per-slide keys
-│ route_after_slide_router     → context_builder (i<N)  |  deck_assembler (i==N)
-└──────────────────────────────────────────────────────────
-deck_assembler_node   [node]   → current_xml=combined, compile_result (final), pptx_path
-evaluator_node                 → evaluation, passed
+critic_node             [LLM]    → critic_result{passed:False}, pre_critic_xml / plans / contract / score saved
+route_after_critic               → visual_repairer     (visual_repair_count 0 < 2)
+visual_repairer_node    [LLM]    → PATCH or REGENERATE per repair_hints.strategy; compiles into visual-repair-1/
+                                   → outcome improved: current_xml, compile_result, visual_repair_count=1
+route_after_visual_repairer      → critic              (improved, 1 < 2)
+critic_node             [LLM]    → re-review; still failing and score ≤ pre_critic_score → roll back to pre_critic_*, passed=True
+route_after_critic               → _slide_done_target
+```
+A `noop` / `error` outcome ends the slide with the XML it had.
+
+### 5.4 Deck (outline returns N > 1 slides)
+```
+outline_planner_node    [LLM]    → outline_plan{slides:[N]}
+fan_out_slide_plans              → Send(slide_component_planner) ×N   (parallel; SERIALIZE_SLIDES → slide_plan_serial)
+slide_component_planner ×N [LLM] → assembled_slide_plans += [plan_i]  (fan-in, any order)
+slide_plan_sorter_node           → slide_plans sorted by slide_index, mode=deck, deck_plan
+plan_reviewer_node      [LLM]    → plan_review                        (advisory)
+style_resolver_node              → resolved_theme                     (once)
+┌── per slide i = 0..N-1 ─────────────────────────────────────────────
+│ context_builder_node           → contract (slide i)
+│ generator_node         [LLM]   → current_xml
+│ validator_node                 → *_result → slide-i/ (retry-n/)      (+ repairer / placeholder as needed)
+│ critic_node            [LLM]   → critic_result                       (when critic on; + visual repair loop)
+│ _slide_done_target             → slide_router                        (len(slide_plans) > 1)
+│ slide_router_node              → completed_slides += [slide i], slide_critic_results += [verdict],
+│                                  current_slide_index = i+1, per-slide keys reset
+│ route_after_slide_router       → context_builder (i+1 < N) | deck_assembler (done)
+└─────────────────────────────────────────────────────────────────────
+deck_assembler_node              → one <Theme> + every compiled <Slide> → deck/ (ZIP merge if that fails),
+                                   embed_deck_fonts, current_xml, compile_result, pptx_path, excluded_slides
+evaluator_node                   → evaluation (all slide verdicts), passed
 END
 ```
+
+### 5.5 Short paths
+- **Edited outline** (`/generate` with `outline_run_id`, or `initial_state(outline_plan=...)`): `START → fan_out_slide_plans → …` (no elicitor, no outline planner).
+- **Given plans** (`/generate-from-plan`, or `slide_plans` in state) and **test cases with `components`**: `START → style_resolver → …` (no planning, no plan review). With no `slide_plans`, `context_builder` builds a default plan (`_build_default_plan`).
+- **Elicitation needed** (elicitor finds the brief too thin, no answers): `elicitor → elicitation_wait → END` with `elicitation_questions` set and no deck. `/generate` takes no answers; the UI asks first through `/plan/outline`, which passes `elicitation_answers` into the outline call.
 
 ---
 
 ## 6. Where each state key is written (index)
 
-| Key | Written by (file:node) |
+| Key | Written by (file::node) |
 |---|---|
-| `run_id`, `mode`, `raw_request`, `theme_name`, `test_case`, `supplied_content`, `deck_min_threshold`, `interactive`, `retry_budget` | `state.py::initial_state` |
+| all keys (initial values) | `state.py::initial_state` |
 | `audience_context`, `theme_name`, `deck_min_threshold` | `questionnaire.py::questionnaire_node` |
-| `mode`, `core_hook`, `deck_plan`, `slide_plans` | `planner.py::planner_node` |
+| `elicitation_needed`, `elicitation_questions` | `elicitor.py::elicitor_node` |
+| `elicitation_answers`, `outline_plan` (edited), `slide_plans` / `core_hook` / `mode` / `deck_plan` (given plans), `prior_plan`, `refine_feedback` | `api.py` before the run starts |
+| `outline_plan` | `outline_planner.py::outline_planner_node` |
+| `current_outline_slide` | `graph.py::fan_out_slide_plans` (in each `Send` payload) |
+| `assembled_slide_plans` (**append**) | `slide_component_planner.py::slide_component_planner_node`, `slide_plan_serial_node` |
+| `slide_plans`, `core_hook`, `deck_plan`, `mode` | `graph.py::slide_plan_sorter_node` |
+| `slide_plans` (one slide replaced) | `repairer.py::repairer_node` (REGENERATE), `visual_repairer.py::visual_repairer_node` (improved REGENERATE), `critic.py::critic_node` (rollback) |
+| `plan_review` | `plan_reviewer.py::plan_reviewer_node` |
 | `theme_element`, `resolved_theme` | `style_resolver.py::style_resolver_node` |
-| `contract` | `context_builder.py::context_builder_node` |
-| `current_xml`, `generation_history` | `generator.py::generator_node`, `repairer.py::repairer_node` |
-| `normalize_result`, `validate_result`, `compile_result`, `speaker_notes`, `layout_issues` | `validator.py::validator_node` |
+| `contract` | `context_builder.py::context_builder_node`; replaced by `repairer` / `visual_repairer` (REGENERATE) and `critic` (rollback) |
+| `current_xml` | `generator`, `repairer`, `visual_repairer` (improved), `critic` (rollback), `placeholder`, `slide_router` (reset to `""`), `deck_assembler` (combined deck) |
+| `generation_history` (**append**) | `elicitor`, `outline_planner`, `slide_component_planner`, `slide_plan_serial`, `plan_reviewer`, `generator`, `repairer`, `critic`, `visual_repairer` |
+| `normalize_result`, `validate_result`, `speaker_notes`, `layout_issues` | `validator.py::validator_node` (reset by `slide_router`; `normalize_result=None` by `placeholder`) |
+| `compile_result` | `validator`, `visual_repairer` (improved), `placeholder`, `deck_assembler`; reset by `slide_router` |
 | `retry_tier`, `retry_count`, `stall_detected` | `repairer.py::repairer_node` (reset by `slide_router`) |
-| `critic_result` | `critic.py::critic_node` |
-| `completed_slides`, `current_slide_index` | `deck_nodes.py::slide_router_node` |
-| `current_xml`, `compile_result`, `pptx_path` | `deck_nodes.py::deck_assembler_node` |
-| `evaluation`, `pptx_path`, `passed` | `evaluator.py::evaluator_node` |
+| `critic_result`, `visual_critic_result`, `pre_critic_xml`, `pre_critic_slide_plans`, `pre_critic_contract`, `pre_critic_score` | `critic.py::critic_node` (reset by `slide_router`) |
+| `slide_screenshots` | `critic.py::critic_node`, `evaluator.py::evaluator_node` |
+| `visual_repair_count`, `visual_repair_outcome` | `visual_repairer.py::visual_repairer_node` (reset by `slide_router`) |
+| `completed_slides`, `slide_critic_results` (**append**), `current_slide_index` | `deck_nodes.py::slide_router_node` |
+| `excluded_slides` | `deck_nodes.py::deck_assembler_node` |
+| `pptx_path` | `deck_assembler_node`, `evaluator_node` |
+| `evaluation`, `passed` | `evaluator.py::evaluator_node` |
 
 ---
 
 ## 7. External calls summary
 
-| Node | LLM? | Subprocess? | models.yaml step |
+| Node | LLM? | Subprocess? | `models.yaml` step |
 |---|---|---|---|
-| questionnaire | no | no | – |
-| planner | **yes** (structured `PlannerOutput`) | no | `planner` |
-| style_resolver | no | no | – |
-| context_builder | no | no | – |
-| generator | **yes** (free text) | no | `generator` |
-| validator | no | **yes** — `node compile-pom.js` (validate + compile) | – |
-| repairer | **yes** (free text) | no | `repairer` |
-| critic | **yes** (vision LLM, `VisualCriticOutput`) | no | `visual_critic` |
-| slide_router | no | no | – |
-| deck_assembler | no | **yes** — `node compile-pom.js` (final) | – |
-| evaluator | no | no | – |
+| questionnaire | no (CLI prompts) | no | – |
+| elicitor | **yes** (structured) | no | `elicitor` |
+| outline_planner | **yes** (structured `OutlinePlannerOutput`) | no | `outline_planner` |
+| slide_component_planner / slide_plan_serial | **yes** (structured, 1–2 calls per slide) | no | `slide_component_planner` |
+| plan_reviewer | **yes** (structured `PlanReviewerOutput`) | no | `plan_reviewer` |
+| style_resolver, context_builder, slide_plan_sorter, slide_router | no | no | – |
+| generator | **yes** (free text XML) | no | `generator` |
+| validator | no | **yes**: `node compile-pom.js` (validate-only, then compile) | – |
+| repairer | **yes** (PATCH; REGENERATE = planner + generator calls) | no (the validator compiles next) | `repairer`, `slide_component_planner`, `generator` |
+| critic | **yes** (vision, via `visual_critic.py`) | **yes**: LibreOffice screenshot (`render_screenshots`) | `visual_critic` |
+| visual_repairer | **yes** (PATCH or REGENERATE) | **yes**: `compile-pom.js` (`normalize_and_compile`) | `repairer`, `slide_component_planner`, `generator` |
+| placeholder | no | **yes**: `compile-pom.js` | – |
+| deck_assembler | no | **yes**: `compile-pom.js` (deck); `fonttools` embedding in-process | – |
+| evaluator | no | **yes**: LibreOffice final screenshots; font embedding for one-slide runs | – |
 
-LLM construction: [`src/utils/llm_client.py:40-69`](src/utils/llm_client.py) `get_llm(step)` — merges `models.yaml` `defaults` + `steps.<step>`, provider `openai` or `azure_openai`.
-Compiler bridge: [`src/compiler/compiler_client.py`](src/compiler/compiler_client.py) — always reads `compile-result.json`, never parses stderr.
+Models today (`models.yaml`): `gpt-5-mini` for `outline_planner`, `slide_component_planner` and `plan_reviewer` (reasoning, `reasoning_effort: medium`); `gpt-4.1` for the rest. `models.yaml` also lists `storyline` / `slide_designer` (Test 1 path, `src/planning/`), `planner` (old single planner) and `critic`, which no graph node calls.
+
+LLM construction: [`src/utils/llm_client.py:65`](src/utils/llm_client.py:65) `get_llm(step)` merges `models.yaml` `defaults` + `steps.<step>`, provider `openai` or `azure_openai`; reasoning models drop `temperature` and get `reasoning_effort`. `extract_usage` / `usage_record` / `unpack_raw` (`L101-152`) turn responses into the `generation_history` records the evaluator prices with `models.yaml` `pricing` (cached input at `cached_input`).
+Compiler bridge: [`src/compiler/compiler_client.py`](src/compiler/compiler_client.py): `validate_xml` / `compile_xml` always read `compile-result.json`, never parse stderr; `compile_xml` applies the deck font first (`POM_DECK_FONT`, default Inter).
+
+### Known gaps found while tracing (2026-10-21)
+- `POST /plan/refine` puts `prior_plan` and `refine_feedback` in the state, but `outline_planner_node` reads neither, so a refine is a fresh outline of the same prompt.
+- `POST /runs/{run_id}/finalize` (`api.py:1248`) treats `assemble_deck_xml`'s return as a string, but it returns `(xml, count)`. `compile_xml` then gets a tuple.
