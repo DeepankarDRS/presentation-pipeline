@@ -61,6 +61,16 @@ def test_a_row_whose_word_never_fits_stops_at_14_and_warns(tmp_path):
     assert any("Reconciliation" in w and "process step" in w for w in _warnings(r))
 
 
+def test_a_chevron_row_grows_only_as_tall_as_its_words_allow(tmp_path):
+    # A taller chevron has a narrower label box (itemWidth - 0.7 x itemHeight): growing 9 steps to 120 px tall
+    # left "customer" 62 px in 59 (node break map §4 C2). The row grows to the tallest height every word fits at.
+    r = _compile(_FIX / "d7-arrow-nine-steps.xml", tmp_path)
+    a = _attrs(r["xml"], "ProcessArrow", "row")
+    assert 88 < int(a["itemHeight"]) < 120, r["fitGrow"]
+    assert not any("still wider" in x for x in _phase_lines(r)), r["fitGrow"]
+    assert not _warnings(r)
+
+
 def test_a_seven_step_vertical_column_stays_vertical_and_widens(tmp_path):
     r = _compile(_FIX / "d3-arrow-column.xml", tmp_path)
     a = _attrs(r["xml"], "ProcessArrow", "column")

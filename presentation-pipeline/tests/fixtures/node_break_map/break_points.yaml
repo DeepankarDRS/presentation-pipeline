@@ -34,24 +34,22 @@ series:
   labels: w2
   style: default
   variant: ''
-  holds_up_to: 9
+  holds_up_to: 10
   swept:
   - 3
   - 10
-  first_break:
-  - WORD_BROKEN
+  first_break: null
 - kind: process_arrow
   placement: band
   direction: horizontal
   labels: w2
   style: inter
   variant: ''
-  holds_up_to: 9
+  holds_up_to: 10
   swept:
   - 3
   - 10
-  first_break:
-  - WORD_BROKEN
+  first_break: null
 - kind: process_arrow
   placement: band
   direction: vertical
@@ -70,7 +68,7 @@ series:
   labels: w2
   style: default
   variant: ''
-  holds_up_to: 3
+  holds_up_to: 4
   swept:
   - 3
   - 10

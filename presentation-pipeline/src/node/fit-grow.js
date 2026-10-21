@@ -342,7 +342,7 @@ async function growDiagrams(xml, report) {
       if (!n.id || !["flow", "tree", "processArrow"].includes(n.type)) return;
       const b = L.box(n);
       const W = (b.w - b.pl - b.pr) * 0.97, H = (b.h - b.pt - b.pb) * 0.95;
-      const e = diagramEdit(n, W, H);
+      const e = diagramEdit(n, W, H, L.ctx);
       if (e) edits.push([n.id, e, n.type]);
     });
   } finally { L.free(); }
@@ -990,7 +990,7 @@ async function growMainTable(xml, id, report, onlyTable, caps = { font: TD_FONT_
   return writeTable(K.xml, id, { rows });
 }
 
-function diagramEdit(n, W, H) {
+function diagramEdit(n, W, H, ctx) {
   const horizontal = (n.direction ?? "horizontal") === "horizontal";
   if (n.type === "flow") {
     const count = n.nodes.length;
@@ -1012,13 +1012,23 @@ function diagramEdit(n, W, H) {
     const count = n.steps.length;
     if (count === 0) return null;
     const h0 = n.itemHeight ?? 80;
-    const h = Math.floor(Math.min(horizontal ? H * 0.85 : (H / count) * 1.1, 120));
-    if (h <= h0 + 8) return null;
-    const gap = n.gap ?? -h * ARROW_DEPTH_RATIO;
-    const w = Math.floor(horizontal ? (W - (count - 1) * gap) / count : W * 0.9);
-    const e = { itemHeight: h, itemWidth: w };
-    if (n.fontSize) e.fontSize = Math.min(Math.round(n.fontSize * Math.sqrt(h / h0)), 20);
-    return e;
+    const hMax = Math.floor(Math.min(horizontal ? H * 0.85 : (H / count) * 1.1, 120));
+    const at = (h) => {
+      const gap = n.gap ?? -h * ARROW_DEPTH_RATIO;
+      const e = { itemHeight: h, itemWidth: Math.floor(horizontal ? (W - (count - 1) * gap) / count : W * 0.9) };
+      if (n.fontSize) e.fontSize = Math.min(Math.round(n.fontSize * Math.sqrt(h / h0)), 20);
+      return e;
+    };
+    // A taller chevron has a narrower label box (itemWidth - 0.7 x itemHeight in a row) and a larger font: grow only
+    // as tall as every label's longest word still fits (node break map §4 C2: 80 -> 120 broke "program" at 9 steps,
+    // which POM's own size held). None does: keep the height and font, and only fit the chevrons' width to the box
+    // as before (a row wider than its box would be scaled down by POM); phase 3' then widens them for their words.
+    if (hMax <= h0 + 8) return null;
+    for (let h = hMax; h > h0 + 8; h--) {
+      const e = at(h);
+      if (arrowShort({ ...n, itemHeight: h }, e.itemWidth, e.fontSize ?? n.fontSize ?? 14, W, H, ctx) <= -WORD_MARGIN) return e;
+    }
+    return { itemWidth: at(h0).itemWidth };
   }
   // tree: uniform scale of every spacing attribute
   const intr = measureTree(n);

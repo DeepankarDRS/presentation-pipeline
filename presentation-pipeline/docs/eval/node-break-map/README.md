@@ -48,14 +48,15 @@ mine (POM's `measureText` adds 10 px to every width; corrected before the final 
 | node | holds well | breaks |
 |---|---|---|
 | flow | horizontal band 9 (2–4 words; raw POM 6), vertical 7 anywhere 538 px tall | a 1-long-word horizontal flow 7; decision / terminator shapes ("mixed") 6–7 (their text rect is half / 0.9 of the node); split-40 horizontal 3–4; vertical under a KPI row or in a card 3 |
-| process_arrow | horizontal band 9 at ≤ 4 words; vertical 9 in any 538 px column, Inter 16 bold ≥ 10 | **one long word: 6 across the band**, 3–4 in split-60 / card; **horizontal in split-40: 3 at best, a long word never**; 4-word Inter labels overflow a vertical chevron from 6 |
+| process_arrow | horizontal band ≥ 10 at ≤ 4 words; vertical 9 in any 538 px column, Inter 16 bold ≥ 10 | **one long word: 7 across the band**, 3–5 in split-60 / card; **horizontal in split-40: 4 at best, a long word never**; 4-word Inter labels overflow a vertical chevron from 6 |
 | timeline | horizontal band 9, vertical 9 | **a title of one long word breaks at any count** (120 px label box); split-60 horizontal 5, split-40 horizontal 3; vertical under a KPI row 6, in a card 5 |
 | tree | band ≥ 8 leaves either layout | vertical layout in split-60: 4 leaves, split-40: 3; depth-3 horizontal in split-40: none; any shrink is below its 12 px default |
 | matrix | ≥ 8 items of 1–2 words when ≥ 0.18 apart (band, split-60, card) | **one long word: breaks at 2** (100 px label at 11 px bold); 0.1 apart in a ≤ 665 px box overlaps |
 | pyramid | short words ≥ 7 levels | long word: 4 levels (Inter 16: 3); 2–3 words: 5 (Inter: 4 / 3); 4 words: 4 levels (Inter: none) — the top band is 400 / levels px wide whatever the box |
 
-fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 64 process_arrow, 20 timeline, 8 tree;
-**makes 15 process_arrow cases worse and 1 matrix case** (§4 C2).
+fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 102 process_arrow, 20 timeline, 8 tree;
+makes 4 process_arrow cases worse (vertical under a KPI row: the spill fix takes labels to 13.8 px) and 1
+matrix case. (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevron height growth.)
 
 ## 3. capacity.yaml against the map (band placement, the capacity's label length)
 
@@ -63,7 +64,7 @@ fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 64 process_arrow, 20
 |---|---|---|---|
 | flow horizontal | 6 | 9 (2 words; 1 long word 7) | capacity is safe; could be 7 |
 | **flow vertical** | **8** | **7** | **over** — capacity assumes 40 px nodes + gap 24 (`flow.box_for_direction`, advice the generator may not follow); at POM's sizes the 8th node draws < 14 px. Recorded in the fixture as open |
-| process_arrow horizontal | 7 | 9 (2 words); **6 with one long word** | holds for the 2-word cap only when no word is longer than "Profitability" |
+| process_arrow horizontal | 7 | ≥ 10 (2 words); **7 with one long word** | holds, with a long word just at the limit |
 | process_arrow vertical | 9 | 9 | matches |
 | timeline horizontal | 8 | 9 (3 words); **0 with one long word** | count is safe; `max_label_words: 3` is safe (titles wrap, nothing below them), the long word is not |
 | timeline vertical | 8 | 9 | safe |
@@ -73,7 +74,7 @@ fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 64 process_arrow, 20
 **Proposed (not applied, needs your OK):**
 1. flow vertical 8 → 7, *or* keep 8 and have code write `nodeHeight="40" nodeGap="24"` on vertical flows.
 2. A **longest-word** limit beside `max_label_words` (the word count is not what breaks): px at the
-   drawn size, e.g. process_arrow horizontal ≤ 90 px at 14 px (≈ 12 letters) past 6 steps, timeline
+   drawn size, e.g. process_arrow horizontal ≤ 90 px at 14 px (≈ 12 letters) past 7 steps, timeline
    horizontal title ≤ 100 px, matrix item ≤ 80 px, pyramid top band 400 / levels − 19 px. The plan check
    can measure it (POM's `measureText`), not guess it from letters.
 3. **Placement-aware limits**: today's numbers are the band's. In split-40 a horizontal process_arrow /
@@ -99,9 +100,14 @@ fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 64 process_arrow, 20
   render-checked), so the pinned-neighbour widening path has no fixture now. Open edge: POM counts
   letter spacing after the last letter too (LibreOffice draws "share", 52 px with it, whole in 52 px);
   kept conservative until PowerPoint is checked.
-- **C2. `growDiagrams` grows chevron itemHeight 80 → 120**, which takes 2 × 0.35 × 40 = 28 px off every
-  label box; at 9 steps "program" fits POM's raw drawing and breaks after fit-grow (15 cases). Fix:
-  grow itemHeight only while every label's longest word still fits (or let phase 3' lower it again).
+- **C2. `growDiagrams` grew chevron itemHeight 80 → 120 — FIXED (2026-10-21, user).** A taller chevron
+  has a narrower label box (itemWidth − 0.7 × itemHeight) and a larger font: at 9 steps "program" fit
+  POM's raw drawing and broke after fit-grow (15 map cases). `diagramEdit` now grows the row only to the
+  tallest height at which every label's longest word fits (`arrowShort`, `WORD_MARGIN`); when none does,
+  it keeps height and font and only fits the chevrons' width to the box, as before, and phase 3' widens
+  them for their words. Map: process_arrow holds 510 → 560 of 800, made worse 15 → 4, the band's 2-word
+  row 9 → ≥ 10 steps, split-40 horizontal 3 → 4. Replay of the 577 saved slides: 2 slides change,
+  broken words 31 → 30, none worse. New test: 9 three-word steps grow to 99 px (was 120), every word fits.
 - **C3. Diagram text is written in "Noto Sans JP"** (POM's default) when no `fontFamily` is given — not
   installed on this PC, not embedded (`font_embed.py` embeds src/node/fonts only), so viewers see a
   substitute. Flow, Tree and Matrix take no `fontFamily` at all. Fix: pptx-post rewrites the diagram

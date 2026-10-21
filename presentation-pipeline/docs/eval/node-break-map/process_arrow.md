@@ -6,52 +6,45 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 
 | placement | direction | style | variant | box (fit, at the smallest count) | 1 short word | 1 long word | 2 words | 3 words | 4 words |
 |---|---|---|---|---|---|---|---|---|---|
-| band | horizontal | default | - | 1168×538 | **≥10** · raw 9 | 6 (WG) · raw – | 9 (WG) | 9 (WG) | 9 (WG) |
-| band | horizontal | inter | - | 1168×538 | **≥10** | 6 (WG) · raw – | 9 (WG) · raw 10 | 8 (WG) · raw 9 | 8 (WG) · raw 9 |
+| band | horizontal | default | - | 1168×538 | **≥10** · raw 9 | 7 (WG) · raw – | **≥10** · raw 9 | **≥10** · raw 9 | **≥10** · raw 9 |
+| band | horizontal | inter | - | 1168×538 | **≥10** | 7 (WG) · raw – | **≥10** | **≥10** · raw 9 | **≥10** · raw 9 |
 | band | vertical | default | - | 1168×538 | 9 (S) | 9 (S) | 9 (S) | 9 (S) | 9 (S) |
 | band | vertical | inter | - | 1168×538 | **≥10** | **≥10** | **≥10** | **≥10** | 6 (T) · raw – |
-| band-under-kpi | horizontal | default | - | 1168×364 | **≥10** · raw 9 | 6 (WG) · raw – | 9 (WG) | 9 (WG) | 9 (WG) |
-| band-under-kpi | horizontal | inter | - | 1168×364 | **≥10** | 6 (WG) · raw – | 9 (WG) · raw 10 | 8 (WG) · raw 9 | 8 (WG) · raw 9 |
+| band-under-kpi | horizontal | default | - | 1168×364 | **≥10** · raw 9 | 7 (WG) · raw – | **≥10** · raw 9 | **≥10** · raw 9 | **≥10** · raw 9 |
+| band-under-kpi | horizontal | inter | - | 1168×364 | **≥10** | 7 (WG) · raw – | **≥10** | **≥10** · raw 9 | **≥10** · raw 9 |
 | band-under-kpi | vertical | default | - | 1168×364 | 6 (S) | 6 (S) | 6 (S) | 6 (S) | 6 (S) |
 | band-under-kpi | vertical | inter | - | 1168×364 | 7 (S) · raw 8 | 7 (S) · raw 8 | 7 (S) · raw 8 | 7 (S) · raw 8 | 4 (T) · raw – |
-| split-60 | horizontal | default | - | 665×538 | 5 (WG) · raw 4 | 3 (WG) · raw – | 5 (WG) · raw 4 | 4 (WG) | 4 (WG) |
-| split-60 | horizontal | inter | - | 665×538 | 5 (WG) | 3 (WG) · raw – | 5 (WG) | 4 (WG) · raw 5 | 4 (WG) · raw 5 |
+| split-60 | horizontal | default | - | 665×538 | 6 (WG) · raw 4 | 3 (WG) · raw – | 6 (WG) · raw 4 | 5 (WG) · raw 4 | 5 (WG) · raw 4 |
+| split-60 | horizontal | inter | - | 665×538 | 6 (WG) · raw 5 | 3 (WG) · raw – | 6 (WG) · raw 5 | 5 (WG) | 5 (WG) |
 | split-60 | vertical | default | - | 665×538 | 9 (S) | 9 (S) | 9 (S) | 9 (S) | 9 (S) |
 | split-60 | vertical | inter | - | 665×538 | **≥10** | **≥10** | **≥10** | **≥10** | 6 (T) · raw – |
-| split-40 | horizontal | default | - | 444×538 | 3 (WG) | – (WG) | 3 (WG) | 3 (WG) | 3 (WG) |
-| split-40 | horizontal | inter | - | 444×538 | 3 (WG) | – (WG) | 3 (WG) | 3 (WG) | 3 (WG) |
+| split-40 | horizontal | default | - | 444×538 | 4 (WG) · raw 3 | – (WG) | 4 (WG) · raw 3 | 4 (WG) · raw 3 | 4 (WG) · raw 3 |
+| split-40 | horizontal | inter | - | 444×538 | 4 (WG) · raw 3 | – (WG) | 4 (WG) · raw 3 | 4 (WG) · raw 3 | 4 (WG) · raw 3 |
 | split-40 | vertical | default | - | 444×538 | 9 (S) | 9 (S) | 9 (S) | 9 (S) | 9 (S) |
 | split-40 | vertical | inter | - | 444×538 | **≥10** | **≥10** | **≥10** | **≥10** | 6 (T) · raw – |
-| card | horizontal | default | - | 809×190 | 8 (WG) · raw 7 | 4 (WG) · raw – | 7 (WG) | 7 (WG) | 7 (WG) |
-| card | horizontal | inter | - | 809×190 | 8 (WG) | 4 (WG) · raw – | 7 (WG) · raw 8 | 6 (WG) · raw 7 | 6 (WG) · raw 7 |
+| card | horizontal | default | - | 809×190 | 9 (WG) · raw 7 | 5 (WG) · raw – | 9 (WG) · raw 7 | 8 (WG) · raw 7 | 8 (WG) · raw 7 |
+| card | horizontal | inter | - | 809×190 | 9 (WG) · raw 8 | 5 (WG) · raw – | 9 (WG) · raw 8 | 8 (WG) · raw 7 | 8 (WG) · raw 7 |
 | card | vertical | default | - | 555×227 | 5 (S) | 5 (S) | 5 (S) | 5 (S) | 5 (S) |
 | card | vertical | inter | - | 555×227 | 9 (S) · raw 6 | 9 (S) · raw 6 | 9 (S) · raw 6 | 9 (S) · raw 6 | – (T) |
 
 ## fit-grow
 
-800 cases. Holds with fit-grow: 510; raw: 462. **Rescued** (raw breaks, fit holds): 63. **Made worse** (raw holds, fit breaks): 15. Breaks either way: 275.
+800 cases. Holds with fit-grow: 560; raw: 462. **Rescued** (raw breaks, fit holds): 102. **Made worse** (raw holds, fit breaks): 4. Breaks either way: 236.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 198, TEXT_OVERFLOW 51, OVERLAP 37, SHRUNK 70, GUARD 159.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 148, TEXT_OVERFLOW 29, OVERLAP 17, SHRUNK 70, SPILL 4, GUARD 141.
 
 Made worse by fit-grow (first 12):
 
-- `process_arrow~band~horizontal~w2~inter~-~10`: GUARD, WORD_BROKEN — 'cleanup' 55 px in 51; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":151,"fontSize":20}; processArrow itemWidth 151 -> 154, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box)
-- `process_arrow~band~horizontal~w3~inter~-~09`: GUARD, WORD_BROKEN — 'customer' 65 px in 64; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":163,"fontSize":20}; processArrow itemWidth 163 -> 167, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box)
-- `process_arrow~band~horizontal~w4~inter~-~09`: GUARD, WORD_BROKEN — 'customer' 65 px in 64; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":163,"fontSize":20}; processArrow itemWidth 163 -> 167, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box)
-- `process_arrow~band-under-kpi~horizontal~w2~inter~-~10`: GUARD, WORD_BROKEN — 'cleanup' 55 px in 51; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":151,"fontSize":20}; processArrow itemWidth 151 -> 154, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); KPI values x1.56 (40 -> 62px), fill 63% -> 87%; KPI labels / deltas grow with their numbers (-> 19px)
-- `process_arrow~band-under-kpi~horizontal~w3~inter~-~09`: GUARD, WORD_BROKEN — 'customer' 65 px in 64; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":163,"fontSize":20}; processArrow itemWidth 163 -> 167, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); KPI values x1.56 (40 -> 62px), fill 63% -> 87%; KPI labels / deltas grow with their numbers (-> 19px)
-- `process_arrow~band-under-kpi~horizontal~w4~inter~-~09`: GUARD, WORD_BROKEN — 'customer' 65 px in 64; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":163,"fontSize":20}; processArrow itemWidth 163 -> 167, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); KPI values x1.56 (40 -> 62px), fill 63% -> 87%; KPI labels / deltas grow with their numbers (-> 19px)
 - `process_arrow~band-under-kpi~vertical~w1~inter~-~08`: SHRUNK — 'Plan' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
 - `process_arrow~band-under-kpi~vertical~long1~inter~-~08`: SHRUNK — 'Profitability' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
 - `process_arrow~band-under-kpi~vertical~w2~inter~-~08`: SHRUNK — 'Market research' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
 - `process_arrow~band-under-kpi~vertical~w3~inter~-~08`: SHRUNK — 'Define pricing strategy' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
-- `process_arrow~split-60~horizontal~w3~inter~-~05`: GUARD, WORD_BROKEN — 'regional' 56 px in 55; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":154,"fontSize":20}; processArrow itemWidth 154 -> 158, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); text x2.98 (e.g. 18 -> 28pt), spacing x1.40, fill 15% -> 34%
-- `process_arrow~split-60~horizontal~w4~inter~-~05`: GUARD, WORD_BROKEN — 'regional' 56 px in 55; fit-grow: processArrow nodes -> {"itemHeight":120,"itemWidth":154,"fontSize":20}; processArrow itemWidth 154 -> 158, fontSize 20 -> 14 (as far as its box allows; a word is still wider than its label box); text x2.98 (e.g. 18 -> 28pt), spacing x1.40, fill 15% -> 34%
 
 ## What breaks first (one example per code)
 
 - **TEXT_OVERFLOW** `process_arrow~card~vertical~w4~inter~-~03` box [555, 227]: 'Review all supplier contracts' 3 lines, 58 x 83 px out of its 150 x 80 shape
-- **GUARD** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 73
-- **WORD_BROKEN** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 73
+- **GUARD** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 91
+- **WORD_BROKEN** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 91
 - **SHRUNK** `process_arrow~card~vertical~long1~default~-~06` box [555, 321]: 'Profitability' 13.21 px
-- **OVERLAP** `process_arrow~split-40~horizontal~long1~default~-~07` box [444, 538]: 'Profitability' 77 px in 38; 'Implementation' 1 lines, 17 x 106 px out of its 99 x 120 shape; 'Reconciliation' / 'Implementation'
+- **OVERLAP** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 77 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box
+- **SPILL** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 77 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box
