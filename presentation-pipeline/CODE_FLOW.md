@@ -42,7 +42,7 @@ Everything else is last-write-wins.
 
 ## 2. Graph topology — [`src/graph.py:298-376`](src/graph.py)
 
-> Checked against the source on 2026-10-21 (commit `58c93b6`). Routing functions: [`src/graph.py:74-238`](src/graph.py). Section 3 below is the 2026-09-05 trace and predates the planning split and the visual repairer.
+> Checked against the source on 2026-10-21 (commit `58c93b6`). Routing functions: [`src/graph.py:74-238`](src/graph.py). Sections 3 and 4 below were re-traced on the same date; sections 5–7 are still the 2026-09-05 trace.
 
 ```mermaid
 graph TD
@@ -102,136 +102,164 @@ graph TD
 
 ## 3. Routing functions (no state writes — read only)
 
-### `route_after_start` — [`src/graph.py:53-63`](src/graph.py)
-- `L55-57` if `state["test_case"]["components"]` present → **`"style_resolver"`** (skip planner entirely; the plan is built later by `context_builder._build_default_plan`).
-- `L59-61` elif `state["interactive"]` and no `state["audience_context"]` → **`"questionnaire"`**.
-- `L62-63` else → **`"planner"`**.
+> Traced from the source on 2026-10-21 (commit `e04963c`). All in [`src/graph.py`](src/graph.py).
 
-### `route_after_validator` — [`src/graph.py:74-93`](src/graph.py)
-Reads `compile_result`, `retry_budget`, `retry_count`, `critic_mode`, `slide_plans`.
-- `L76-77` `cr = compile_result`; if `not cr["ok"] and cr["retryable"]`:
-  - `L80-82` if `retry_count < retry_budget` → **`"repairer"`**.
-  - `L83-85` else → `_slide_done_target()` = `"slide_router"` if `len(slide_plans) > 1` else `"evaluator"`.
-- `L87-88` if `critic_mode == "off"` → `_slide_done_target()`.
-- `L92-93` else → **`"critic"`**.
+### `route_after_start` — [`src/graph.py:74-100`](src/graph.py:74)
+Returns a node name or a list of `Send` (via `fan_out_slide_plans`).
+- `L77-79` `slide_plans` already in state → **`"style_resolver"`** (all planning skipped).
+- `L81-84` `test_case["components"]` present → **`"style_resolver"`** (`context_builder._build_default_plan` builds the plan later).
+- `L89-92` `outline_plan["slides"]` present (a user-edited outline, `PUT /plan/{run_id}/outline`) → **`fan_out_slide_plans(state)`**: elicitor and outline planner skipped, so the edited outline is kept.
+- `L95-97` `interactive` and no `audience_context` → **`"questionnaire"`**.
+- `L99-100` else → **`"elicitor"`**.
 
-### `route_after_critic` — [`src/graph.py:96-110`](src/graph.py)
-Reads `critic_result`, `retry_budget`, `retry_count`.
-- `L98-99` `cr = critic_result`; if `not cr["passed"]`:
-  - `L101-104` `retry_count < retry_budget` → **`"repairer"`**.
-  - `L105-107` else → `_slide_done_target()`.
-- `L108-110` else (passed) → `_slide_done_target()`.
+### `route_after_elicitor` — [`src/graph.py:103-108`](src/graph.py:103)
+- `elicitation_needed` and no `elicitation_answers` → **`"elicitation_wait"`** (→ END; the API resumes the run once the user answers).
+- else → **`"outline_planner"`**.
 
-### `route_after_repairer` — [`src/graph.py:124-126`](src/graph.py)
-Always returns **`"validator"`** (repairer already produced XML, so re-validate directly, skipping generator).
+### `fan_out_slide_plans` — [`src/graph.py:111-129`](src/graph.py:111)
+- `SERIALIZE_SLIDES` (env, `slide_component_planner.py`) → **`"slide_plan_serial"`**.
+- `outline_plan["slides"]` empty → **`"slide_plan_serial"`** (logged as a warning).
+- else → one **`Send("slide_component_planner", {**state, "current_outline_slide": slide})`** per outline slide (parallel; fan-in through the `assembled_slide_plans` reducer).
 
-### `route_after_slide_router` — [`src/graph.py:113-121`](src/graph.py)
-Reads `current_slide_index`, `slide_plans`.
-- `L117-119` `idx < total` → **`"context_builder"`** (next slide).
-- `L120-121` else → **`"deck_assembler"`**.
+### `route_after_plan_review` — [`src/graph.py:158-164`](src/graph.py:158)
+Logs `plan_review.confidence_score` / `approved`, always **`"style_resolver"`**: the review is advisory (the feedback loop in `docs/plan-reviewer-loop.md` is not built).
+
+### `_slide_done_target` — [`src/graph.py:167-171`](src/graph.py:167)
+`len(slide_plans) > 1` → **`"slide_router"`**, else **`"evaluator"`**. Every "slide finished" exit below goes through it.
+
+### `route_after_validator` — [`src/graph.py:174-196`](src/graph.py:174)
+Reads `compile_result`, `retry_budget` (default 3), `retry_count`, `stall_detected`, `critic_mode`.
+- compile failed, `retryable`, `retry_count < retry_budget` and not `stall_detected` → **`"repairer"`**.
+- compile failed otherwise (budget used up, stall, or not retryable such as `HARNESS_ERROR`) → **`"placeholder"`**.
+- compile ok, `critic_mode == "off"` → `_slide_done_target()`.
+- compile ok, any other `critic_mode` → **`"critic"`**.
+
+### `route_after_critic` — [`src/graph.py:199-212`](src/graph.py:199)
+Reads `critic_result`, `visual_repair_budget`, `visual_repair_count`.
+- not passed and `visual_repair_count < visual_repair_budget` → **`"visual_repairer"`**.
+- not passed, budget used up → `_slide_done_target()`.
+- passed → `_slide_done_target()`.
+
+### `route_after_visual_repairer` — [`src/graph.py:215-224`](src/graph.py:215)
+- `visual_repair_outcome == "improved"` and `visual_repair_count < visual_repair_budget` → **`"critic"`** (re-review).
+- else (`noop`, `error`, or budget used up) → `_slide_done_target()`.
+
+### `route_after_repairer` — [`src/graph.py:237-238`](src/graph.py:237)
+Always **`"validator"`**: the repairer already produced XML, so it is validated directly, without the generator.
+
+### `placeholder` exit — [`src/graph.py:365-368`](src/graph.py:365)
+A lambda: `_slide_done_target(state)`.
+
+### `route_after_slide_router` — [`src/graph.py:227-234`](src/graph.py:227)
+- `current_slide_index < len(slide_plans)` → **`"context_builder"`** (next slide).
+- else → **`"deck_assembler"`**.
 
 ---
 
 ## 4. Node-by-node execution & state mutations
 
-### 4.1 `questionnaire_node` — [`src/agents/questionnaire.py:96-147`](src/agents/questionnaire.py)
-**Runs only when** `interactive=True` and `audience_context` empty (else `L98-104` return `{}` — no change).
-- `L115-116` asks fixed Qs (`audience`, `data_density`) via `_ask()` (`L71-86`, blocking `input()`).
-- `L119-126` loads theme names from `knowledge/theme/palettes.yaml` (`_load_palette_names`, `L55-68`), asks "Which theme?".
-- `L129-130` asks `slide_count`, `focus`.
-- `L132` `threshold = _slide_count_to_threshold(...)` (`L89-93`): `"Single slide" → 0`, else `3`.
+> Traced from the source on 2026-10-21 (commit `e04963c`). Keys marked **append** use an `operator.add` reducer in [`src/state.py`](src/state.py): `assembled_slide_plans`, `completed_slides`, `generation_history`, `slide_critic_results`. Most LLM nodes append a usage record (`usage_record(...)` or `AttemptRecord`) to `generation_history`; the evaluator sums them for tokens and cost.
 
-**State writes** (`L143-147`):
+### 4.1 `questionnaire_node` — [`src/agents/questionnaire.py:99-150`](src/agents/questionnaire.py:99) — **no LLM**
+**Runs only when** `interactive=True` and `audience_context` is empty (else returns `{}`).
+- Asks audience and data density, then the theme (names from `palettes.yaml`), then slide count and focus, on the CLI.
+- `_slide_count_to_threshold(slide_count)` → `deck_min_threshold`.
+
 | key | value |
 |---|---|
-| `audience_context` | `{audience, data_density, theme, slide_count, focus}` |
-| `theme_name` | selected palette name |
-| `deck_min_threshold` | target slide count: `1` / `4` / `8` / `12` |
+| `audience_context` | answers dict |
+| `theme_name` | chosen palette |
+| `deck_min_threshold` | from the slide-count answer |
 
----
+### 4.2 `elicitor_node` — [`src/agents/elicitor.py:93-134`](src/agents/elicitor.py:93)
+- `elicitation_answers` already present → `{"elicitation_needed": False}` (no LLM call).
+- else `check_and_elicit(raw_request, additional_instructions, deck_settings, supplied_content)`: an LLM judges whether the brief is enough.
+- An LLM error is swallowed: `elicitation_needed=False` (the run carries on without questions).
 
-### 4.2 `planner_node` — [`src/agents/planner.py:133-185`](src/agents/planner.py)
-**Skipped** when `route_after_start` sent flow to `style_resolver`.
-- `L137` `system_msg = _render_system()` — renders `prompts/planner/system.j2`.
-- `L138` `user_msg = _render_user(state)` (`L39-52`) — injects `raw_request`, `theme_name`, `supplied_content`, `components_hint` (from `test_case`), `audience_context`.
-- `L140-141` `llm = get_llm("planner")` ([`src/utils/llm_client.py:40`](src/utils/llm_client.py)), `.with_structured_output(PlannerOutput, method="json_schema")`.
-- `L143-146` **LLM CALL** → `PlannerOutput` (pydantic; schema in `src/agents/planner_schema.py`).
-- `L148` `core_hook = result.core_hook`.
-- `L150-153` `slide_plans = [_slide_to_state(i, s, supplied) for i,s in enumerate(result.slides)]`.
-  - `_slide_to_state` (`L67-104`): maps each pydantic slide → `SlidePlan` TypedDict; parses `content_data_json` (`L88-92`, falls back to `{}` on bad JSON); `_compute_provenance` (`L55-64`) tags each `content_data` key `"user"` (in `supplied_content`) or `"sample"`.
-- `L155-157` `_enforce_layout_variety(slide_plans)` (`L111-130`) — mutates `layout_pattern` on adjacent content/data slides that repeat a pattern.
-- `_render_user` passes `deck_min_threshold` into the planner prompt as `target_slides`; when `> 1` the prompt says "TARGET DECK SIZE: exactly N slides" so the LLM produces that many (an explicit per-slide breakdown in the request still wins).
-- decide `mode`: `mode = "deck" if len(slide_plans) > 1 else "single"`, build `DeckPlan` only when `> 1`. (Previously gated on `deck_min_threshold`; now `mode` just tracks the real slide count.)
-
-**State writes** (`L180-185`):
 | key | value |
 |---|---|
-| `mode` | `"single"` \| `"deck"` |
-| `core_hook` | narrative anchor string |
-| `deck_plan` | `DeckPlan` or `None` |
-| `slide_plans` | `list[SlidePlan]` |
+| `elicitation_needed` | `not result.is_sufficient` |
+| `elicitation_questions` | `[]`, or the questions as dicts |
+| `generation_history` | **append** usage record `elicitor` |
 
----
+### 4.3 `elicitation_wait` — [`src/graph.py:243-250`](src/graph.py:243)
+No-op (`{}`) → END. It makes the suspend point explicit; the API resumes the run after the user answers.
 
-### 4.3 `style_resolver_node` — [`src/agents/style_resolver.py:90-98`](src/agents/style_resolver.py)
-Runs **once** per run (multi-slide loop re-enters at `context_builder`, not here).
-- `L92` `theme_name = state["theme_name"]`.
-- `L93` `theme = resolve_theme(theme_name)` (`L58-87`):
-  - `L64-65` empty or `"corporate-slate"` → `dict(DEFAULT_THEME)` (`L38-48`).
-  - `L67-71` else load `knowledge/theme/palettes.yaml`; missing → warn + default.
-  - `L73-87` build `<Theme .../>` element string from the 12 `_TOKEN_KEYS`, pull `chartColors`, set `is_dark = mode=="dark"`.
+### 4.4 `outline_planner_node` — [`src/agents/outline_planner.py:86-150`](src/agents/outline_planner.py:86)
+- `_get_constraints(deck_settings)` → narrative / text mode / provenance rules for the prompt.
+- Slide count: the test case's `slide_count`, else the count the request states (`stated_slide_count`), else `deck_min_threshold` from the settings.
+- One structured LLM call (`OutlinePlannerOutput`, `json_schema`; model from `models.yaml` step `outline_planner`).
+- `clean_data(outline)` strips XML-illegal control characters.
+- `brief_instructions(raw_request)` → `outline["brief_instructions"]` (the plan checks read them); `settle_direction_lines` moves presenter notes / visual directions off each slide's content.
 
-**State writes** (`L95-98`):
 | key | value |
 |---|---|
-| `theme_element` | `"<Theme surface=... />"` string |
-| `resolved_theme` | `{name, mode, is_dark, chart_colors, chart_colors_json, element}` |
+| `outline_plan` | `{deck_title, core_hook, slides: [...], brief_instructions}` |
+| `generation_history` | **append** usage record `outline_planner` |
 
----
+### 4.5 `slide_component_planner_node` — [`src/agents/slide_component_planner.py:423-453`](src/agents/slide_component_planner.py:423)
+Runs once per outline slide (the `Send` payload carries `current_outline_slide`). No slide → `{"assembled_slide_plans": []}`.
+- `plan_with_reask(slide, ...)` (`L324-391`): up to two `plan_single_slide` calls.
+  - `find_problems(plan, brief_text, instructions)` scores each plan (empty plan, instruction text, etc.); the second call gets `reask_context(problems)`. The plan with fewer problems wins (a tie keeps the first).
+  - Both calls failed, or the winner holds no content → `fallback_plan(slide)`: the slide's own brief lines as one `bullet_list`, `plan_source="fallback"`.
+  - `finalize_plan` runs the code fixes (capacity, written-line checks, ...). Its notes and the re-ask reason go to `plan["capacity_fixes"]`.
 
-### 4.4 `context_builder_node` — [`src/agents/context_builder.py:501-521`](src/agents/context_builder.py)
-Runs once per slide (re-entered per slide in deck mode).
-- `L503-504` `slide_plans`, `idx = current_slide_index`.
-- `L506-507` if `slide_plans` empty → `slide_plans = [_build_default_plan(state)]` (`L460-498`): source priority **test_case.components → keyword intent detection (`_detect_components_from_text`, `L44-53`) → `["title","narrative","bullet_list"]` fallback**; forces `"title"` first; sets `layout_hint` from test case.
-- `L509` `plan = slide_plans[idx]` (or `[0]`).
-- `L511-513` `theme_info = state["resolved_theme"] or resolve_theme(state["theme_name"])`.
-- `L514` `contract = build_contract(plan, theme_info)` (`L400-457`):
-  - `L411` `kinds` = component kinds list.
-  - `L414-416` load `core/nodes.yaml`, `core/validation.yaml`, `components/text.yaml`.
-  - `L418-422` load per-kind component YAML.
-  - `L424` `allowed_nodes = _select_nodes(kinds)` (`L173-200`) — base nodes + per-kind nodes + inline nodes, ordered.
-  - `L425` `allowed_attributes = _select_attributes(...)` (`L224-242`) — per-node attr whitelist.
-  - `L426-427` `forbidden_tags`, `forbidden_attributes` from validation.yaml (`_clean_list`).
-  - `L430` `notes = _select_notes(...)` (`L247-322`) — translations, semantic rules, pitfalls, KPI numeral note, per-component structure+pitfalls, theme note, **chart literal-hex note**, **dark-theme chart-axis wrapper note**, **table Td styling note**, design-language rules.
-  - `L432-433` `example = _select_example(kinds, compress)` (`L369-379`) — ≤1 XML example, compressed unless `density=="tight_fit"`.
-  - `L435` `layout_pattern = _select_layout(kinds)` (`L327-350`) — picks a `layouts/*.yaml`, renders to text.
-  - `component_count`: number of component kinds on the slide.
+| key | value |
+|---|---|
+| `assembled_slide_plans` | **append** `[plan]` |
+| `generation_history` | **append** one record per planner call (`reask` / `failed="length"` marked) |
 
-**State writes** (`L521`): **only** `contract` (a dict with `allowed_nodes`, `allowed_attributes`, `forbidden_tags`, `forbidden_attributes`, `theme_element`, `theme_name`, `theme_mode`, `chart_colors`, `notes`, `example`, `layout_pattern`, `component_count`).
+### 4.6 `slide_plan_serial_node` — [`src/agents/slide_component_planner.py:396-418`](src/agents/slide_component_planner.py:396)
+Same as 4.5 but loops over every outline slide in one node (`SERIALIZE_SLIDES`, or an empty outline). Writes the same two keys, with all plans at once.
 
----
+### 4.7 `slide_plan_sorter_node` — [`src/graph.py:132-155`](src/graph.py:132) — **no LLM**
+Sorts `assembled_slide_plans` by `slide_index`.
 
-### 4.5 `generator_node` — [`src/agents/generator.py:70-106`](src/agents/generator.py)
-- `L74` `system_prompt, user_prompt = _render_prompts(state)` (`L32-68`):
-  - `L36-37` `plan = slide_plans[current_slide_index]`.
-  - `L42-54` **system** = `prompts/generator/system.j2` with `forbidden_*`, `theme_element`, `allowed_nodes`, `allowed_attributes`, `component_count`, `layout_pattern`, `example`, `notes`, `core_hook`, `slide_type`.
-  - `L57-66` **user** = `prompts/generator/user.j2` with `objective` (=`raw_request`), `components`, `layout_hint`, `content_data`, `supplied_content`, `slide_type`.
-- `L76` `llm = get_llm("generator")`.
-- `L82-83` **LLM CALL** → `raw_xml = response.content` (plain text, may have ``` fences — cleaned later by normalizer).
-- `L85-88` pull `tokens_in`, `tokens_out`, `model` from `response.response_metadata`.
-- `L92-101` build `AttemptRecord` with `attempt=retry_count`, `tier=retry_tier`, empty `errors_in/out`, token counts, model.
+| key | value |
+|---|---|
+| `slide_plans` | the sorted plans |
+| `core_hook` | `outline_plan.core_hook` |
+| `deck_plan` | `DeckPlan(core_hook, slide_count, theme, slides)` |
+| `mode` | `"deck"` if more than 1 plan, else `"single"` |
 
-**State writes** (`L103-106`):
-| key | value | reducer |
-|---|---|---|
-| `current_xml` | raw LLM XML string | replace |
-| `generation_history` | `[record]` | **append** |
+### 4.8 `plan_reviewer_node` — [`src/agents/plan_reviewer.py:38-107`](src/agents/plan_reviewer.py:38)
+- No `slide_plans`, or the LLM call fails → neutral review (`confidence_score=0.5`, `approved=True`, no issues).
+- else one structured LLM call (`PlanReviewerOutput`); high-severity issues are logged as warnings. Nothing acts on the review yet (see `route_after_plan_review`).
 
----
+| key | value |
+|---|---|
+| `plan_review` | `{confidence_score, approved, summary, issues}` |
+| `generation_history` | **append** usage record `plan_reviewer` (not on the neutral path) |
 
-### 4.6 `validator_node` — [`src/agents/validator.py:35-204`](src/agents/validator.py) — **no LLM**
+### 4.9 `style_resolver_node` — [`src/agents/style_resolver.py:102-110`](src/agents/style_resolver.py:102) — **no LLM**
+`resolve_theme(theme_name)` from `theme/palettes.yaml`; an unknown or empty name gives the default palette.
 
-> Diagram checked against the source on 2026-10-21 (commit `58c93b6`): `validator.py`, `compiler_client.py`, `src/node/compile-pom.js`, `src/compiler/nodes/{element_refs,tiles}.py`. The line-by-line bullets after it are the 2026-09-05 trace (no ref filling, dark panels, nesting check, deck font or geometry audit).
+| key | value |
+|---|---|
+| `theme_element` | `<Theme ... />` string with the palette tokens |
+| `resolved_theme` | `{name, mode, is_dark, chart_colors, chart_colors_json, chart_focus, element}` |
+
+### 4.10 `context_builder_node` — [`src/agents/context_builder.py:716-736`](src/agents/context_builder.py:716) — **no LLM**
+Runs once per slide.
+- No `slide_plans` (test-case path) → `_build_default_plan(state)` (`L685-713`): kinds from `test_case.components`, else intent detection on the request, else title / narrative / bullet list.
+- `plan = slide_plans[current_slide_index]`; theme from `resolved_theme` (or `resolve_theme`).
+- `build_contract(plan, theme)` (`L558-682`): allowed nodes / attributes and hierarchy from `nodes.yaml`, forbidden tags / attributes, notes, house style, component recipes, visual-intent techniques, hint scopes, icon names. Golden examples and blueprint reference XML only with `POM_EXAMPLES=on`. Under `POM_BLOCKS=tiles`, the recipes and techniques for KPI rows and card grids that code draws are left out.
+
+| key | value |
+|---|---|
+| `contract` | the dict above |
+
+### 4.11 `generator_node` — [`src/agents/generator.py:95-147`](src/agents/generator.py:95)
+- `_render_prompts` (`L30-93`): `prompts/generator/system.j2` + `user.j2` from the contract and the slide plan. With refs on (`POM_BLOCKS=kpi|tiles`), a `kpi_row`'s values are removed from the prompt and replaced by a ref line (`element_refs.prompt_line` / `tiles.prompt_line`); under `tiles` the same happens for card grids code draws, and the tile / card node lines go in the system prompt.
+- One LLM call (step `generator`); `finish_reason == "length"` marks the record `truncated`.
+- An LLM error → `{"current_xml": ""}` (the validator then fails it as empty, retryable).
+
+| key | value |
+|---|---|
+| `current_xml` | the LLM's raw XML |
+| `generation_history` | **append** `AttemptRecord(step="generator", ...)` |
+
+### 4.12 `validator_node` — [`src/agents/validator.py:35-204`](src/agents/validator.py:35) — **no LLM**
 
 ```mermaid
 graph TD
@@ -288,130 +316,114 @@ graph TD
     FAIL_H --> END_VAL
 ```
 
-- `L33-45` if `current_xml` blank → write failing `normalize_result`/`validate_result`/`compile_result` (`retryable=True`), `layout_issues=[]`, return.
-- `L47-52` build `output_dir = output/runs/{run_id}/` (+ `retry-{n}/` when `retry_count>0`).
-- `L54-56` `norm = normalize_xml(xml)` ([`src/compiler/normalizer.py`](src/compiler/normalizer.py)) → `{cleaned_xml, issues, auto_fixed, blocking, speaker_notes}`. Strips ``` fences, `#RRGGBB`→`RRGGBB`, removes `<br>/<hr>`, flags zero dims, extracts `<Notes>`.
-- `L58-62` log normalize issues.
-- `L64` `val_result = validate_xml(cleaned, output_dir)` ([`src/compiler/compiler_client.py:97-135`](src/compiler/compiler_client.py)) — runs `node compile-pom.js --validate-only`, reads `compile-result.json`. Returns `None` if Node/compiler unavailable.
-- `L66-89` **fallback branch** (`val_result is None`): `pre_validate(xml, contract)` regex check; if `blocking` → return failing results (`retryable=True`).
-- `L91-104` **parse-fail branch** (`not val_result["ok"]`): return `validate_result=val_result` + `compile_result` with those diagnostics, `retryable` from `val_result`.
-- `L106-119` `compile_result = compile_xml(cleaned, output_dir)` ([`compiler_client.py:52-94`](src/compiler/compiler_client.py)) — writes `input.xml`, runs `node compile-pom.js`, reads `compile-result.json`, `_parse_result` (`L29-49`) sets `ok = status=="success"`, `pptx_path`, and `retryable = any(diag.type in {UNKNOWN_TAG, UNKNOWN_ATTRIBUTE, PARSE_ERROR, INVALID_VALUE, INVALID_CHILD, THEME_ERROR, DIAGNOSTIC})`. `CompilerError` → return `retryable=False` (harness broken, don't loop).
-- `L121-123` `layout_issues = audit_layout(cleaned)` ([`src/compiler/layout_audit.py`](src/compiler/layout_audit.py)) — mechanical spatial checks.
+Notes on the diagram:
+- Output folder: `output/runs/{run_id}/`, plus `slide-{idx}/` in a deck and `retry-{n}/` when `retry_count > 0`.
+- Ref fill issues that are not errors are kept and put in front of the normalizer's issues (`auto_fixed=True`).
+- `validate_xml` returns `None` when Node / the compiler is not available; the regex `pre_validate` then stands in.
+- `compile_xml` (`compiler_client.py:68`) marks a result `retryable` from its diagnostic types; a `CompilerError` (harness broken) is `retryable=False`, so the slide goes to `placeholder` instead of looping.
 
-**State writes** (`L131-137`, happy path):
 | key | value |
 |---|---|
-| `normalize_result` | `norm` dict |
+| `normalize_result` | `{cleaned_xml, issues, auto_fixed, blocking, speaker_notes}` |
 | `validate_result` | `{ok, diagnostics, warnings}` |
 | `compile_result` | `{ok, pptx_path, diagnostics, warnings, retryable}` |
-| `speaker_notes` | extracted `<Notes>` text |
-| `layout_issues` | `list[dict]` |
+| `speaker_notes` | extracted `<Notes>` text (success path only) |
+| `layout_issues` | layout audit + geometry audit findings (`[]` on early failures) |
 
----
+### 4.13 `repairer_node` — [`src/agents/repairer.py:361-633`](src/agents/repairer.py:361)
+Reached from `route_after_validator` only (compile failed, retryable, budget left, no stall).
+- `_collect_problems` (`L81`): normalize issues not auto-fixed + compile diagnostics + visual issues as lines.
+- `error_signatures(...)` vs the last record's `error_sigs` → `is_stalled` (from the second attempt on).
+- `_choose_strategy` (`L261-298`): attempt 1 = **PATCH**; the attempt after a REGENERATE = PATCH (cleanup); a previous no-op / truncated PATCH, a structural error (`needs_regeneration`) or a stall = **REGENERATE**; from attempt 2 a slide that still doesn't compile = REGENERATE.
+- **PATCH**: `build_patch_prompts` with the normalizer's cleaned XML + problems → `_call_llm_and_return` (`L301`, step `repairer`). A PATCH that returns the same XML is marked `noop`.
+- **REGENERATE**: `plan_single_slide(outline slide, repair_context=...)` re-plans the slide (from the outline's own slide when there is one), `build_contract`, then the generator prompts and one `generator` LLM call. If re-planning or generating fails it falls back to PATCH. A truncated result keeps the old XML / plan / contract.
+- An unhandled error burns the attempt: `retry_count + 1`, `stall_detected=True` (→ placeholder next).
 
-### 4.7 `repairer_node` — [`src/agents/repairer.py:158-254`](src/agents/repairer.py)
-Reached from `route_after_validator` (compile failed + retryable + budget left) **or** `route_after_critic` (critic failed + budget left).
-- `L160-161` `current_tier = retry_tier`, `current_count = retry_count`.
-- `L162` `problems = _collect_problems(state)` (`L63-82`) — un-auto-fixed normalize issues + compile diagnostics + `CRITIC_<SEV>: msg` lines.
-- `L166` `curr_sigs = error_signatures(pre_issues, compile_diags)` ([`src/compiler/repair_guidance.py`](src/compiler/repair_guidance.py)).
-- `L168-177` reconstruct `prev_sigs` from the last `generation_history` record that had `errors_in`.
-- `L179` `stalled = current_count > 0 and is_stalled(prev_sigs, curr_sigs)` (≥65% signature overlap).
-- **strategy choice** (`_choose_strategy`): attempt 1 → PATCH; the pass right after a REGENERATE → PATCH; `needs_regeneration(...)` / `stalled` / attempt ≥ 3 → REGENERATE; else PATCH.
-- build the repair user prompt by strategy:
-  - **PATCH**: `prompts/repairer/patch.j2` with `objective`, `failing_xml` (from `normalize_result.cleaned_xml`), `problems`, `guidance` (`build_error_guidance`).
-  - **REGENERATE**: `prompts/repairer/regenerate.j2` with `previous_user` (original plan), `problems`, `allowed_nodes`, and `template_xml` from `_select_template(state)` (a verified skeleton, or `""` for a free-form simplified rebuild).
-- `system_prompt`: PATCH → `build_patch_prompts`; REGENERATE → `_render_repair_system` (repairer `system.j2` + error-scoped knowledge).
-- `L222-228` **LLM CALL** → `repaired_xml = response.content`.
-- `AttemptRecord` with `attempt=current_count+1`, `tier=strategy` (1=PATCH, 2=REGENERATE), `errors_in=problems`, `error_sigs=sorted(curr_sigs)`, `stalled`.
-
-**State writes** (`L248-254`):
-| key | value | reducer |
-|---|---|---|
-| `current_xml` | repaired XML | replace |
-| `retry_tier` | escalated tier (1-3) | replace |
-| `retry_count` | `current_count + 1` | replace |
-| `stall_detected` | bool | replace |
-| `generation_history` | `[record]` | **append** |
-
-→ then `route_after_repairer` always → `validator` (loop).
-
----
-
-### 4.8 `critic_node` — [`src/agents/critic.py:72-111`](src/agents/critic.py)
-Visual quality gate — screenshot-based review using a vision LLM. Runs after a **successful** compile.
-- `_run_visual_review(state)` (`L25-69`):
-  - Takes a screenshot of the compiled PPTX via `render_screenshots`.
-  - Calls `run_visual_critic` with the screenshot, current XML, slide plan, theme, contract, compile warnings, and layout issues.
-  - Returns `(issues, screenshot_path, usage, repair_hints)`.
-- `L79` `passed = not any(severity=="high")`.
-
-**State writes** (`L88-109`):
-| key | value | reducer |
-|---|---|---|
-| `critic_result` | `{passed: bool, issues: list}` | replace |
-| `visual_critic_result` | `{passed, issues, screenshot_path, repair_hints}` | replace |
-| `slide_screenshots` | `{idx: screenshot_path}` | replace |
-
-→ `route_after_critic`: not passed + budget → `repairer`; else → `slide_router`/`evaluator`.
-
----
-
-### 4.9 `slide_router_node` — [`src/agents/deck_nodes.py:25-50`](src/agents/deck_nodes.py)
-Only reachable when `len(slide_plans) > 1`. Runs after each slide finishes.
-- `L26-27` `idx = current_slide_index`, `xml = current_xml`.
-- `L32-36` `completed = {slide_index: idx, xml, speaker_notes}`.
-
-**State writes** (`L38-50`) — saves the slide and **resets per-slide state for the next iteration**:
-| key | value | reducer |
-|---|---|---|
-| `completed_slides` | `[completed]` | **append** |
-| `current_slide_index` | `idx + 1` | replace |
-| `current_xml` | `""` | reset |
-| `speaker_notes` | `""` | reset |
-| `normalize_result` / `validate_result` / `compile_result` / `critic_result` | `None` | reset |
-| `retry_tier` / `retry_count` | `0` | reset |
-| `stall_detected` | `False` | reset |
-
-→ `route_after_slide_router`: `idx < total` → `context_builder` (next slide, theme already resolved); else → `deck_assembler`.
-
----
-
-### 4.10 `deck_assembler_node` — [`src/agents/deck_nodes.py:65-133`](src/agents/deck_nodes.py)
-- `L67-68` `sorted_slides = sorted(completed_slides, key=slide_index)`.
-- `L70-78` empty → failing `compile_result` (`retryable=False`).
-- `L80-85` `theme = _extract_theme(...)` (`L53-56`, regex `<Theme .../>`) from the first slide that has one.
-- `L87-93` `_extract_slide_block` (`L59-62`, regex `<Slide>...</Slide>`) from each slide.
-- `L95-103` no blocks → failing `compile_result`.
-- `L105` `combined_xml = theme + "\n" + "\n".join(slide_blocks)`.
-- `L108-122` `compile_xml(combined_xml, output/runs/{run_id}/deck/)` — **final compile of the whole deck**. `CompilerError` → failing result but still writes `current_xml`.
-
-**State writes** (`L129-133`):
 | key | value |
 |---|---|
-| `current_xml` | combined multi-slide XML |
-| `compile_result` | final deck compile result |
-| `pptx_path` | `compile_result["pptx_path"]` |
+| `current_xml` | repaired XML (not on a truncated REGENERATE) |
+| `retry_tier` | `1` PATCH / `2` REGENERATE |
+| `retry_count` | `+1` |
+| `stall_detected` | stall result |
+| `slide_plans`, `contract` | REGENERATE only: the re-planned slide and its contract |
+| `generation_history` | **append** `AttemptRecord(step="repairer")`; REGENERATE also a `slide_component_planner` record |
 
----
+### 4.14 `critic_node` — [`src/agents/critic.py:122-218`](src/agents/critic.py:122)
+Runs when `critic_mode != "off"` after a successful compile, and again after an improved visual repair.
+- `_run_visual_review` (`L67-119`): renders the slide's pptx (`render_screenshots`, LibreOffice) to `screenshots/slide-{idx}/` (`re-review-{n}/` on later rounds), then `run_visual_critic` with the screenshot, the fitted XML (`fitted.xml`, what was drawn), the plan, compile warnings and `critic_layout_issues(layout_issues)`. No pptx or no screenshot → no issues (pass).
+- `passed` = no high and no medium issues; `compute_critic_score(issues, assessment)`.
+- First review: saves the pre-repair XML / plans / contract / score.
+- Re-review that still fails with a score no better than before → **rolls back** to the pre-repair XML, plans and contract, and marks the slide passed.
+- Any unhandled error fails open (`passed=True`).
 
-### 4.11 `evaluator_node` — [`src/agents/evaluator.py:78-161`](src/agents/evaluator.py) — **no LLM**, terminal node
-- `L80-83` read `run_id`, `compile_result`, `critic_result`, `generation_history`.
-- `L85-87` `passed = compile_result["ok"] and critic_result.get("passed", True)`.
-- `L89-90` sum `tokens_in`/`tokens_out` over history.
-- `L92-97` `models_used`, `total_cost` via `_compute_cost` (`L31-36` → `get_pricing` from `models.yaml`).
-- `L99` `step_summary = _build_step_summary(history)` (`L39-59`) — per-attempt cost rows.
-- `L101-114` critic issue counts + `data_provenance` user/sample tally from `slide_plans`.
-- `L116-146` assemble `manifest` dict.
-- `L148` `_write_manifest(manifest, run_id)` (`L62-75`) → `output/runs/{run_id}/run-manifest.json`.
-
-**State writes** (`L157-161`):
 | key | value |
 |---|---|
-| `evaluation` | full manifest dict |
-| `pptx_path` | `compile_result["pptx_path"]` |
-| `passed` | final bool |
+| `critic_result` | `{passed, issues}` |
+| `visual_critic_result` | `{passed, issues, screenshot_path, repair_hints}` |
+| `pre_critic_xml`, `pre_critic_slide_plans`, `pre_critic_contract`, `pre_critic_score` | first review only |
+| `current_xml`, `slide_plans`, `contract` | rollback only |
+| `slide_screenshots` | `{idx: png}` merged in |
+| `generation_history` | **append** usage record `critic` (when the LLM ran) |
 
-→ `evaluator → END`. `run()` returns the final state; API emits the `complete` SSE event.
+### 4.15 `visual_repairer_node` — [`src/agents/visual_repairer.py:130-205`](src/agents/visual_repairer.py:130)
+- Strategy from `visual_critic_result.repair_hints.strategy`: `"regenerate"` → `_do_regenerate` (`L74`: re-plan with `plan_single_slide`, new contract, one `generator` call); anything else → `_do_patch` (`L56`: one `repairer` call with the visual issues).
+- Then `normalize_and_compile` into `output/runs/{run_id}/visual-repair-{n}/`.
+- Outcome: call failed, truncated, or the new XML doesn't compile → `"error"` (old XML kept); a PATCH returning the same XML → `"noop"`; compiles → `"improved"`.
+
+| key | value |
+|---|---|
+| `visual_repair_count` | `+1` (every outcome) |
+| `visual_repair_outcome` | `improved` / `noop` / `error` |
+| `current_xml`, `compile_result` | `improved` only |
+| `slide_plans`, `contract` | `improved` REGENERATE only |
+| `generation_history` | **append** `AttemptRecord(step="visual_repairer")` (+ planner record on REGENERATE) |
+
+### 4.16 `placeholder_node` — [`src/graph.py:253-295`](src/graph.py:253) — **no LLM**
+When repair is exhausted / stalled / not retryable: a minimal slide (the plan's title + "Slide could not be generated.") compiled into `placeholder-{idx}/`. If even that fails, a synthetic ok result.
+
+| key | value |
+|---|---|
+| `current_xml` | the placeholder XML |
+| `compile_result` | its result, `warnings` + `"placeholder"` |
+| `normalize_result` | `None` (so `slide_router` saves the placeholder, not the failed slide) |
+
+### 4.17 `slide_router_node` — [`src/agents/deck_nodes.py:61-105`](src/agents/deck_nodes.py:61) — **no LLM**
+Saves the slide that just finished and resets the per-slide keys. The saved XML is `normalize_result.cleaned_xml` (what the validator compiled) or `current_xml`.
+
+| key | value |
+|---|---|
+| `completed_slides` | **append** `{slide_index, xml, speaker_notes, compile_ok, pptx_path}` |
+| `slide_critic_results` | **append** `critic_result` (or `{"passed": True}`) |
+| `current_slide_index` | `+1` |
+| per-slide keys reset | `current_xml`, `speaker_notes`, `normalize_result`, `validate_result`, `compile_result`, `critic_result`, `visual_critic_result`, `visual_repair_count`, `visual_repair_outcome`, `pre_critic_*`, `layout_issues`, `retry_tier`, `retry_count`, `stall_detected` |
+
+### 4.18 `deck_assembler_node` — [`src/agents/deck_nodes.py:155-246`](src/agents/deck_nodes.py:155) — **no LLM**
+- Sorts `completed_slides`; slides with `compile_ok=False` are excluded.
+- `assemble_deck_xml` (`L31-58`): each `<Slide>` block without its theme, one `<Theme>`, then `normalize_xml` + `ensure_single_theme` again.
+- `compile_xml(combined, output/runs/{run_id}/deck/)`; if the combined compile fails → `_zip_merge_fallback` merges the per-slide pptx files (`ZIP_MERGE` warning).
+- On success, `embed_deck_fonts(pptx)` subset-embeds the deck fonts; skipped fonts become warnings.
+- No slides, all slides failed, or no `<Slide>` block → a failed `compile_result` (`retryable=False`).
+
+| key | value |
+|---|---|
+| `current_xml` | the combined deck XML |
+| `compile_result` | deck compile (or ZIP merge) result |
+| `pptx_path` | the deck file |
+| `excluded_slides` | indexes of the slides left out |
+
+### 4.19 `evaluator_node` — [`src/agents/evaluator.py:195-319`](src/agents/evaluator.py:195) — **no LLM**, terminal node
+- One-slide run: `embed_deck_fonts` on the slide's own pptx (decks were embedded by `deck_assembler`).
+- Critic verdict: deck → all `slide_critic_results`; single slide → `critic_result`.
+- `passed = compile_ok and critic_ok and no excluded slides`.
+- Tokens (in / out / reasoning / cached) and cost (`_compute_cost`, cached input at the model's `cached_input` rate) summed over `generation_history`; `_build_step_summary` per step.
+- Writes `output/runs/{run_id}/run-manifest.json` (with `_run_provenance`: commit, dirty flag, theme, request hash), final screenshots if the critic took none, and the per-slide edit data (`_write_slides_data`).
+
+| key | value |
+|---|---|
+| `evaluation` | the manifest dict |
+| `pptx_path` | final pptx |
+| `passed` | bool |
+| `slide_screenshots` | when screenshots were made |
 
 ---
 
