@@ -40,25 +40,63 @@ Everything else is last-write-wins.
 
 ---
 
-## 2. Graph topology — [`src/graph.py:131-165`](src/graph.py)
+## 2. Graph topology — [`src/graph.py:298-376`](src/graph.py)
 
-```
-START
- └─ route_after_start ─────────────► questionnaire | planner | style_resolver
-questionnaire ──► planner
-planner ──► style_resolver
-style_resolver ──► context_builder
-context_builder ──► generator
-generator ──► validator
-validator ─ route_after_validator ─► repairer | critic | evaluator | slide_router
-critic ─ route_after_critic ───────► repairer | evaluator | slide_router
-repairer ─ route_after_repairer ───► validator            (always)
-slide_router ─ route_after_slide_router ─► context_builder | deck_assembler
-deck_assembler ──► evaluator
-evaluator ──► END
-```
+> Checked against the source on 2026-10-21 (commit `58c93b6`). Routing functions: [`src/graph.py:74-238`](src/graph.py). Section 3 below is the 2026-09-05 trace and predates the planning split and the visual repairer.
 
-Nodes registered `L135-145`; edges `L147-163`.
+```mermaid
+graph TD
+    START((START)) --> route_after_start{route_after_start}
+
+    route_after_start -->|slide_plans given OR test_case.components| style_resolver
+    route_after_start -->|outline_plan given - edited outline| fan_out_slide_plans
+    route_after_start -->|interactive and no audience_context| questionnaire
+    route_after_start -->|default| elicitor
+
+    questionnaire --> elicitor
+    elicitor --> route_after_elicitor{route_after_elicitor}
+    route_after_elicitor -->|elicitation needed, no answers| elicitation_wait
+    route_after_elicitor -->|answers / not needed| outline_planner
+    elicitation_wait --> END((END))
+
+    outline_planner --> fan_out_slide_plans{fan_out_slide_plans}
+    fan_out_slide_plans -->|"Send() per slide (parallel)"| slide_component_planner
+    fan_out_slide_plans -->|SERIALIZE_SLIDES or no outline slides| slide_plan_serial
+    slide_component_planner --> slide_plan_sorter
+    slide_plan_serial --> slide_plan_sorter
+    slide_plan_sorter -->|sort by slide_index, build DeckPlan, mode| plan_reviewer
+    plan_reviewer -->|route_after_plan_review: advisory, always| style_resolver
+
+    style_resolver --> context_builder
+    context_builder --> generator
+    generator --> validator
+
+    validator --> route_after_validator{route_after_validator}
+    route_after_validator -->|failed, retryable, retries left, no stall| repairer
+    route_after_validator -->|failed: non-retryable OR budget exhausted OR stall| placeholder
+    route_after_validator -->|ok, critic_mode != off| critic
+    route_after_validator -->|ok, critic_mode = off| slide_done_target
+    repairer --> validator
+
+    critic --> route_after_critic{route_after_critic}
+    route_after_critic -->|failed, visual budget left| visual_repairer
+    route_after_critic -->|passed OR budget exhausted| slide_done_target
+    visual_repairer --> route_after_visual_repairer{route_after_visual_repairer}
+    route_after_visual_repairer -->|improved and budget left| critic
+    route_after_visual_repairer -->|noop / error / exhausted| slide_done_target
+
+    placeholder -->|fallback slide, normalize_result cleared| slide_done_target
+
+    slide_done_target{_slide_done_target} -->|1 slide plan| evaluator
+    slide_done_target -->|more than 1 slide plan| slide_router
+
+    slide_router --> route_after_slide_router{route_after_slide_router}
+    route_after_slide_router -->|slides left| context_builder
+    route_after_slide_router -->|all done| deck_assembler
+
+    deck_assembler -->|merge + embed_deck_fonts| evaluator
+    evaluator --> END
+```
 
 ---
 
@@ -191,7 +229,65 @@ Runs once per slide (re-entered per slide in deck mode).
 
 ---
 
-### 4.6 `validator_node` — [`src/agents/validator.py:31-137`](src/agents/validator.py) — **no LLM**
+### 4.6 `validator_node` — [`src/agents/validator.py:35-204`](src/agents/validator.py) — **no LLM**
+
+> Diagram checked against the source on 2026-10-21 (commit `58c93b6`): `validator.py`, `compiler_client.py`, `src/node/compile-pom.js`, `src/compiler/nodes/{element_refs,tiles}.py`. The line-by-line bullets after it are the 2026-09-05 trace (no ref filling, dark panels, nesting check, deck font or geometry audit).
+
+```mermaid
+graph TD
+    LLM[Generator LLM output: raw XML] --> EMPTY{XML empty?}
+    EMPTY -->|Yes| FAIL_R[FAIL retryable=True]
+    EMPTY -->|No| DIR[output_dir = runs/id/slide-N/retry-N]
+
+    DIR --> REF_CHECK{"refs_on: POM_BLOCKS in kpi, tiles? (default kpi)"}
+    REF_CHECK -->|No: off| NORMALIZE
+    REF_CHECK -->|Yes| SAVE_GEN["save generated.xml (if ref= present)"]
+    SAVE_GEN --> AMP["escape bare ampersands (_BARE_AMP_RE)"]
+    AMP --> FILL{POM_BLOCKS = tiles?}
+    FILL -->|Yes| TILES["tiles.fill: cards.expand, tiles.expand, then fill_refs"]
+    FILL -->|No| REFS["element_refs.fill_refs (incl. _unwrap_refs)"]
+    TILES --> REF_ERR{"any ref issue severity=error?"}
+    REFS --> REF_ERR
+    REF_ERR -->|Yes| FAIL_R
+    REF_ERR -->|No| NORMALIZE
+
+    NORMALIZE["normalizer.normalize_xml (ref issues prepended to issues)"] --> DARK{"earlier slide has a dark panel?"}
+    DARK -->|Yes| SOFTEN["soften_dark_panels: DARK_PANEL_SOFTENED"]
+    DARK -->|No| THEME
+    SOFTEN --> THEME[ensure_single_theme]
+    THEME --> NEST["content_model.nesting_compile_failure"]
+    NEST -->|nesting violations| FAIL_R
+    NEST -->|none| VALIDATE["compiler_client.validate_xml (node --validate-only, parseXml)"]
+
+    VALIDATE -->|None: parseXml unavailable| PRE["normalizer.pre_validate fallback"]
+    PRE -->|blocking| FAIL_R
+    PRE -->|ok| COMPILE
+    VALIDATE -->|not ok| FAIL_V["FAIL retryable = val_result.retryable"]
+    VALIDATE -->|ok| COMPILE
+
+    COMPILE["compiler_client.compile_xml: deck_font (Inter) + write input.xml"] --> NS
+    COMPILE -->|CompilerError| FAIL_H["FAIL HARNESS_ERROR retryable=False"]
+
+    subgraph NS [compile-pom.js subprocess]
+        FG{"POM_FIT_GROW=0 or fit-grow: off comment?"} -->|No| FIT["fit-grow.fitGrow: write fitted.xml"]
+        FG -->|Yes| BUILD
+        FIT --> BUILD["buildPptx with loadFonts (fitted fails: build original)"]
+        BUILD --> POST["postProcessPptx (fails: PPTX_POST_SKIPPED, keep POM pptx)"]
+        POST --> WRITE[write presentation.pptx]
+        WRITE --> GEOM_DUMP["geometry.js: geometry.json (never fatal)"]
+        GEOM_DUMP --> RESULT[compile-result.json]
+    end
+
+    NS --> LAYOUT["layout_audit.audit_layout (always)"]
+    LAYOUT --> OK{compile ok?}
+    OK -->|Yes| GEOM_AUDIT["geometry_audit.audit_run_folder (slide_type, brief)"]
+    OK -->|No| END_VAL
+    GEOM_AUDIT --> END_VAL(("Return: normalize_result, validate_result, compile_result, speaker_notes, layout_issues"))
+    FAIL_R --> END_VAL
+    FAIL_V --> END_VAL
+    FAIL_H --> END_VAL
+```
+
 - `L33-45` if `current_xml` blank → write failing `normalize_result`/`validate_result`/`compile_result` (`retryable=True`), `layout_issues=[]`, return.
 - `L47-52` build `output_dir = output/runs/{run_id}/` (+ `retry-{n}/` when `retry_count>0`).
 - `L54-56` `norm = normalize_xml(xml)` ([`src/compiler/normalizer.py`](src/compiler/normalizer.py)) → `{cleaned_xml, issues, auto_fixed, blocking, speaker_notes}`. Strips ``` fences, `#RRGGBB`→`RRGGBB`, removes `<br>/<hr>`, flags zero dims, extracts `<Notes>`.
