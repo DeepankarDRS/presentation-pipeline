@@ -55,7 +55,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
-import { loadFonts } from "./fonts.js";
+import { DEFAULT_FAMILY, loadFonts } from "./fonts.js";
 
 const POM_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)),
   "node_modules", "@hirokisakabe", "pom");
@@ -226,7 +226,7 @@ function natural(n, L) {
     if ((n.runs ?? []).some((r) => r.fontSize !== undefined) && lineCount(n, L, 1) === 1) {
       return b.pt + b.pb + fs * (n.lineHeight ?? 1.3);
     }
-    return b.pt + b.pb + measureText(text, innerW, { fontFamily: n.fontFamily ?? "Noto Sans JP",
+    return b.pt + b.pb + measureText(text, innerW, { fontFamily: n.fontFamily ?? DEFAULT_FAMILY,
       fontSizePx: fs, lineHeight: n.lineHeight ?? 1.3, fontWeight: n.bold ? "bold" : "normal",
       letterSpacingPx: n.letterSpacing }, L.ctx.textMeasurementMode, L.ctx.fontRegistry).heightPx;
   }
@@ -235,7 +235,7 @@ function natural(n, L) {
     const fs = Math.max(base, ...n.items.map((i) => i.fontSize ?? base));
     const weight = n.bold ? "bold" : "normal";
     return b.pt + b.pb + measureText(n.items.map((i) => i.text).join("\n"), Math.max(0, innerW - 36),
-      { fontFamily: n.fontFamily ?? "Noto Sans JP", fontSizePx: fs, fontWeight: weight,
+      { fontFamily: n.fontFamily ?? DEFAULT_FAMILY, fontSizePx: fs, fontWeight: weight,
         lineHeight: measureFontLineHeightRatio(weight) * (n.lineHeight ?? 1.3) },
       L.ctx.textMeasurementMode, L.ctx.fontRegistry).heightPx;
   }
@@ -281,7 +281,7 @@ async function splitLists(xml, report) {
       if (!n.id.startsWith(ID_PREFIX) || hasBoxStyle(n)) return;
       const w = L.box(n).w;
       const widest = Math.max(...n.items.map((i) => naturalWidth(i.text,
-        { fontFamily: n.fontFamily ?? "Noto Sans JP", fontSizePx: i.fontSize ?? n.fontSize ?? 24,
+        { fontFamily: n.fontFamily ?? DEFAULT_FAMILY, fontSizePx: i.fontSize ?? n.fontSize ?? 24,
           fontWeight: n.bold ? "bold" : "normal", lineHeight: 1.3 }, L.ctx))) + 36;
       if (widest < 0.45 * w) targets.push(n.id);
     });
@@ -405,7 +405,7 @@ const BODY_INSET = 9.6;    // px each side: OOXML's default lIns / rIns (0.1 in)
 const BODY_INSET_V = 4.8;  // px top / bottom: default tIns / bIns (0.05 in)
 const DIAGRAM_FONT_FLOOR = 14;
 const FLOW_FONT = 14;
-const FLOW_FAMILY = "Noto Sans JP";   // FlowNode has no fontFamily: POM writes its text in this one
+const FLOW_FAMILY = DEFAULT_FAMILY;   // FlowNode has no fontFamily: pptx-post draws its text in the deck font
 // The share of a flow shape's width / height its text rectangle takes (OOXML preset shape definitions,
 // rounded); a shape not listed gives its text the whole box.
 const FLOW_TEXT_RECT = {
@@ -438,7 +438,7 @@ const fitScale = (g, W, H) => Math.min(1, W / g.w, H / g.h);
 /** The px the widest word of each chevron label lacks at itemWidth `iw` and font `f` (<= 0: fits). */
 function arrowShort(n, iw, f, W, H, ctx) {
   const g = arrowLayout(n, iw), s = fitScale(g, W, H);
-  const family = n.fontFamily ?? "Noto Sans JP";
+  const family = n.fontFamily ?? DEFAULT_FAMILY;
   const slack = exact(ctx, family, n.bold) ? 1 : GUARD_SLACK;
   return Math.max(...n.steps.map((st, i) => widestPiece([st.label], family, f * s, n.bold, undefined, ctx).w
     - (g.rooms[i] * s - 2 * BODY_INSET) * slack));
@@ -626,7 +626,7 @@ function tableTextFits(n, tableW, k, rowH, ctx) {
       col += span;
       const f = c.fontSize ?? TD_FONT; // POM draws a <Td> without fontSize at 18 px
       const lines = (fs) => {
-        const { heightPx } = measureText(c.text ?? "", w, { fontFamily: c.fontFamily ?? "Noto Sans JP",
+        const { heightPx } = measureText(c.text ?? "", w, { fontFamily: c.fontFamily ?? DEFAULT_FAMILY,
           fontSizePx: fs, lineHeight: 1.3, fontWeight: c.bold ? "bold" : "normal" },
         ctx.textMeasurementMode, ctx.fontRegistry);
         return Math.round(heightPx / (fs * 1.3));
@@ -721,7 +721,7 @@ function cellGrid(n) {
 }
 
 function measureCell(c, text, w, fs, ctx) {
-  return measureText(text, w, { fontFamily: c.fontFamily ?? "Noto Sans JP", fontSizePx: fs,
+  return measureText(text, w, { fontFamily: c.fontFamily ?? DEFAULT_FAMILY, fontSizePx: fs,
     lineHeight: 1.3, fontWeight: c.bold ? "bold" : "normal" }, ctx.textMeasurementMode, ctx.fontRegistry);
 }
 
@@ -1682,7 +1682,7 @@ function overflows(L) {
 function lineCount(n, L, margin = 0.85) {
   const b = L.box(n);
   const fs = n.fontSize ?? 24, lh = n.lineHeight ?? 1.3;
-  const family = n.fontFamily ?? "Noto Sans JP";
+  const family = n.fontFamily ?? DEFAULT_FAMILY;
   const real = L.ctx.fontRegistry.hasFont(family, n.bold ? "bold" : "normal");
   const room = Math.max(0, b.w - b.pl - b.pr) * (real ? 1 : margin);
   // runs of their own size (a KPI number + its smaller unit): one line when the runs, each at its
@@ -1817,7 +1817,7 @@ function cardOf(L, n) {
 /** px by which a text's / list's widest unbreakable piece runs past its box (0 when it fits). */
 function overBy(L, n) {
   if (!n || !["text", "ul", "ol"].includes(n.type)) return 0;
-  const family = n.fontFamily ?? "Noto Sans JP";
+  const family = n.fontFamily ?? DEFAULT_FAMILY;
   const b = L.box(n);
   const list = n.type !== "text";
   const room = (b.w - b.pl - b.pr - (list ? 36 : 0)) * (exact(L.ctx, family, n.bold) ? 1 : GUARD_SLACK);
@@ -1954,7 +1954,7 @@ function widestPiece(texts, family, fs, bold, spacing, ctx) {
  * 2026-10-11) and the guard shrank numbers whose unit was what looked too wide.
  */
 function runWidest(n, k, ctx) {
-  const family = n.fontFamily ?? "Noto Sans JP";
+  const family = n.fontFamily ?? DEFAULT_FAMILY;
   const runs = n.runs?.length ? n.runs : [{ text: n.text ?? "" }];
   let widest = { word: "", w: 0 }, cur = { word: "", w: 0 };
   const flush = () => { if (cur.w > widest.w) widest = cur; cur = { word: "", w: 0 }; };
@@ -2014,7 +2014,7 @@ async function scanWords(xml) {
   try {
     for (const root of L.slides) walk(root, (n) => {
       if (!n.id) return;
-      const family = n.fontFamily ?? "Noto Sans JP";
+      const family = n.fontFamily ?? DEFAULT_FAMILY;
       const slack = (bold) => (exact(ctx, family, bold) ? 1 : GUARD_SLACK);
       if (n.type === "text") {
         const runs = n.runs ?? [];
@@ -2060,7 +2060,7 @@ async function scanWords(xml) {
         const needAt = (fontOf) => {   // per column: the width its longest piece needs
           const need = widths.map(() => 0), word = widths.map(() => "");
           for (const { c, col } of cells) {
-            const wide = widestPiece([cellText(c)], c.fontFamily ?? "Noto Sans JP", fontOf(c), c.bold, undefined, ctx);
+            const wide = widestPiece([cellText(c)], c.fontFamily ?? DEFAULT_FAMILY, fontOf(c), c.bold, undefined, ctx);
             if (wide.w / GUARD_TABLE_SAFE > need[col]) { need[col] = wide.w / GUARD_TABLE_SAFE; word[col] = wide.word; }
           }
           return { need, word };
