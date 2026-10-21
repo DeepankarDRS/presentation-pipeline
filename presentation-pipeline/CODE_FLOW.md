@@ -576,4 +576,3 @@ Compiler bridge: [`src/compiler/compiler_client.py`](src/compiler/compiler_clien
 
 ### Known gaps found while tracing (2026-10-21)
 - `POST /plan/refine` puts `prior_plan` and `refine_feedback` in the state, but `outline_planner_node` reads neither, so a refine is a fresh outline of the same prompt.
-- `POST /runs/{run_id}/finalize` (`api.py:1248`) treats `assemble_deck_xml`'s return as a string, but it returns `(xml, count)`. `compile_xml` then gets a tuple.

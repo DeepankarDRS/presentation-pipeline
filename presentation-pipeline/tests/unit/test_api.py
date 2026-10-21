@@ -544,3 +544,43 @@ def test_payload_to_slide_plans_keeps_header():
         None,
     )
     assert (plans[0]["label"], plans[0]["slide_title"], plans[0]["subtitle"]) == ("KPIS", "Headline", "3 figures")
+
+
+def test_finalize_compiles_the_assembled_deck_xml():
+    # assemble_deck_xml returns (xml, count): finalize passed the tuple to compile_xml (2026-10-21)
+    from src.api import EditSession, EditSlideState, _edit_sessions
+    theme = '<Theme surface="F7F9FC" accent="2563EB" textMain="16202E" />'
+    slides = [EditSlideState(slide_index=i, current_xml=f"{theme}\n<Slide><Text>S{i}</Text></Slide>", original_xml="")
+              for i in (1, 0)]
+    _edit_sessions["finalize-test"] = EditSession(run_id="finalize-test", slides=slides, theme_element=theme)
+    seen = []
+
+    def fake_compile(xml, output_dir):
+        seen.append(xml)
+        return {"ok": True, "pptx_path": "deck.pptx", "diagnostics": [], "warnings": [], "retryable": False}
+
+    try:
+        with patch("src.compiler.compiler_client.compile_xml", side_effect=fake_compile):
+            resp = client.post("/runs/finalize-test/finalize")
+        body = resp.json()
+        assert resp.status_code == 200 and body["ok"] is True
+        assert body["pptx_path"] == "deck.pptx"
+        assert len(seen) == 1 and isinstance(seen[0], str)
+        assert seen[0].index("S0") < seen[0].index("S1")
+        assert seen[0].count("<Theme") == 1
+    finally:
+        _edit_sessions.pop("finalize-test", None)
+        _runs.pop("finalize-test", None)
+
+
+def test_finalize_without_slide_blocks():
+    from src.api import EditSession, EditSlideState, _edit_sessions
+    slides = [EditSlideState(slide_index=0, current_xml="no slide here", original_xml="")]
+    _edit_sessions["finalize-empty-test"] = EditSession(run_id="finalize-empty-test", slides=slides)
+    try:
+        with patch("src.compiler.compiler_client.compile_xml") as compile_mock:
+            body = client.post("/runs/finalize-empty-test/finalize").json()
+        assert body["ok"] is False and body["error"] == "No valid slide blocks found"
+        compile_mock.assert_not_called()
+    finally:
+        _edit_sessions.pop("finalize-empty-test", None)

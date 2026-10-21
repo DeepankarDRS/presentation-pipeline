@@ -1245,7 +1245,7 @@ async def finalize_deck(run_id: str) -> FinalizeResponse:
         # Same normalize + single-theme assembly the pipeline's deck_assembler
         # uses, so an edited slide that reintroduces br/hr / #-hex / etc. still
         # compiles instead of hard-failing here.
-        combined_xml = assemble_deck_xml(
+        combined_xml, _ = assemble_deck_xml(
             [s.current_xml for s in sorted(session.slides, key=lambda x: x.slide_index)],
             session.theme_element,
         )
