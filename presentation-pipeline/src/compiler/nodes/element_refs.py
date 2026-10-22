@@ -429,10 +429,21 @@ def _fill_rows(cards: list) -> bool:
     return changed
 
 
+def _shown_fill(card: etree._Element | None) -> str | None:
+    """The fill behind a card: its own, else its nearest filled stack's (a divided strip's tiles have none of their
+    own; the first, with no hairline, found the strip itself as its card and read as drawn apart)."""
+    p = card
+    while p is not None and p.tag in _STACKS:
+        if p.get("backgroundColor"):
+            return p.get("backgroundColor")
+        p = p.getparent()
+    return None
+
+
 def _focus_check(comp: dict, cid: str, value_els: dict, flag) -> None:
     """One item's card drawn apart from its peers (a different fill) that the plan does not single out."""
     cards = {i: _container(el) for (c, i), el in value_els.items() if c == cid}
-    fills = {i: (card.get("backgroundColor") if card is not None else None) for i, card in cards.items()}
+    fills = {i: _shown_fill(card) for i, card in cards.items()}
     if len(fills) < 3:
         return
     counts: dict[Any, int] = {}

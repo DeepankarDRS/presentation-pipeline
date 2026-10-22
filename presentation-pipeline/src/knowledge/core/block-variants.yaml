@@ -319,8 +319,10 @@ tile_nodes:
     item_attributes:
       ref:     {required: true}
       variant: {default: "the group's variant, else plain"}
-      arrange: {values: [label-first, value-first, icon-top, side], default: label-first}
+      arrange: {values: [label-first, value-first, icon-top, side, inline], default: label-first}
                # side = icon (or marker) left, label / value / note stacked right
+               # inline = one line: icon, label over note on the left, value right-aligned (a group of inline
+               # tiles defaults to layout="column")
       size:    {values: [normal, hero], default: normal, requires: [is_emphasis_item], fallback: normal}
       color:   {values: [$accent, $positive, $negative, $warning, $neutral], default: "plan tone"}
       icon:    {type: icon name, default: none}
@@ -390,6 +392,20 @@ tile_nodes:
       bare:
         prompt: "number and label only, no tile"
         look: {padding: 0, label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
+      divided:
+        prompt: "group only: the items share one box, split by hairlines (a strip; with arrange=\"inline\" and
+                 layout=\"column\", a ruled list)"
+        # a group variant: the tiles draw bare and the group draws the box (group_look) and a hairline before each
+        # tile after the first in its row (column: above it). A divided row stays one row (no regrid: a tile moved
+        # to a second row would keep its divider). Strip / ruled-list patterns, 2026-10-22 review of 25 examples
+        requires: [is_group]
+        fallback: plain
+        with_color: toned
+        with_tone: {bad: {value.color: "${role}Text"}, watch: {value.color: "${role}Text"},
+                    good: {value.color: "${role}Text"}}
+        look: {padding: 0, label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
+        group_look: {backgroundColor: $surfaceAlt, border.color: $border, border.width: 1, padding: 22}
+        divider: {color: $border, width: 1, space: 22}
 
   # ── Card ──────────────────────────────────────────────────────────────────────
   # Built 2026-10-13 (spec §11): src/compiler/nodes/cards.py. Code writes the text itself (no fill pass): ids

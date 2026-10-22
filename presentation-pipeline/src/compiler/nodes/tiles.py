@@ -51,6 +51,7 @@ ROLE_OF = {"$accent": "accent", "$positive": "positive", "$negative": "negative"
            "$neutral": "neutral"}
 ICON_PX = 22      # code-owned (T3): beside a 16 px tile label (element_refs.LABEL_PX)
 GROUP_GAP = 14    # between tiles (the pilot gallery)
+INLINE_GAP = 14   # between the label column and the value of an inline tile (the house gap 6 lets them touch)
 _ITEM_REF = re.compile(r"^(?P<cid>[\w-]+)\.(?P<i>\d+)$")
 _HEX = re.compile(r"^#?[0-9A-Fa-f]{6}(?:[0-9A-Fa-f]{2})?$")
 
@@ -174,10 +175,11 @@ def _choice(name: str, value: str | None, values: list[str], ref: str | None, fl
 
 # ── one tile ──────────────────────────────────────────────────────────────────
 
-def _variant(comp: dict, i: int, asked: str | None, ref: str, flag) -> str:
-    """`ref`: the tag that asked (a group's id, so its fallback is reported once)."""
+def _variant(comp: dict, i: int, asked: str | None, ref: str, flag, group: bool = False) -> str:
+    """`ref`: the tag that asked (a group's id, so its fallback is reported once); `group`: a group's variant
+    (is_group: divided is a group look)."""
     vs = kpi()["variants"]
-    extra = {"is_emphasis_item": emphasis_index(comp) == i}
+    extra = {"is_emphasis_item": emphasis_index(comp) == i, "is_group": group}
     name, code, note = spec.resolve_variant("kpi_row", ITEM, comp, asked, vs=vs, extra=extra)
     if code:
         flag(code, ref, f"ref=\"{ref}\": {note}.")
@@ -237,10 +239,11 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
     # hairline under an inverted tile); the group's attributes still apply under it
     layers = [_look(kpi()["house_look"], role)]
     if not imeta.get("variant"):
-        name = _variant(comp, i, gmeta.get("variant"), cid, flag)
+        name = _variant(comp, i, gmeta.get("variant"), cid, flag, group=group is not None)
         patch: dict = {}
         if imeta.get("color") in ROLE_OF:   # the item's own colour is its tone: a look that shows it
-            name = vs[name].get("with_color", name)
+            how = vs[name].get("with_color", name)
+            name, patch = (how, {}) if isinstance(how, str) else (name, how)
         elif not gmeta.get("color") and tone_of(comp, i):   # the plan's tone, no colour asked: its look
             how = (vs[name].get("with_tone") or {}).get(tone_of(comp, i))
             name, patch = (how, {}) if isinstance(how, str) else (name, how or {})
@@ -290,9 +293,22 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
     marker = _marker(parts["marker"])
 
     side = arrange == "side"
-    tile = etree.Element("HStack" if side else "VStack")
+    tile = etree.Element("HStack" if arrange in ("side", "inline") else "VStack")
     for k, v in box.items():
         tile.set(k, v)
+    if arrange == "inline":
+        # one line: [icon] label over note, the value right-aligned at the end (the label column takes the spare)
+        tile.set("alignItems", tile.get("alignItems") or "center")
+        tile.set("gap", str(max(INLINE_GAP, int(float(tile.get("gap") or 0)))))
+        if icon is not None:
+            tile.append(icon)
+        body = etree.SubElement(tile, "VStack", gap="4", grow="1")
+        for el in (_row(marker, label, 8), note):
+            if el is not None:
+                body.append(el)
+        value.set("textAlign", value.get("textAlign") or "right")
+        tile.append(value)
+        return tile
     if side:
         tile.set("alignItems", tile.get("alignItems") or "center")
         lead = icon if icon is not None else marker
@@ -340,8 +356,10 @@ def _balanced_cols(n: int) -> int:
 
 def build_group(tiles: list[etree._Element], meta: dict[str, str], box: _Layer, ref: str, flag) -> etree._Element:
     layouts = kpi()["group_attributes"]["layout"]["values"]
-    layout = _choice("layout", meta.get("layout"), layouts, ref, flag) or ("grid" if len(tiles) > 4 else "row")
-    gap = box.box.pop("gap", str(GROUP_GAP))
+    layout = (_choice("layout", meta.get("layout"), layouts, ref, flag)
+              or ("column" if meta.get("arrange") == "inline" else "grid" if len(tiles) > 4 else "row"))
+    divided = kpi()["variants"]["divided"] if meta.get("variant") == "divided" else None
+    gap = box.box.pop("gap", str(divided["divider"]["space"] if divided else GROUP_GAP))
     cols = None
     if meta.get("cols") is not None:
         try:
@@ -356,31 +374,64 @@ def build_group(tiles: list[etree._Element], meta: dict[str, str], box: _Layer, 
     # tiles share the row: content width + an even share of the spare (element_refs._fill_rows). A row holding a
     # hero tile gets equal columns: the peers' numbers grow first and would take the hero's width (CHEFFIN 1 dry
     # run 2026-10-12: peers 28 -> 79 px, the hero cut from 72 to 35 px by the shrink guard)
-    hero = any(t.find(".//Text[@size='hero']") is not None for t in tiles)
+    # (side by side only: in a column w="1" is a 1 px wide tile; the gallery's inverted hero in an inline column)
+    hero = layout != "column" and any(t.find(".//Text[@size='hero']") is not None for t in tiles)
     for t in tiles:
         if t.get("w") is None and t.get("grow") is None:
             if hero:
                 t.set("w", "1")
             t.set("grow", "1")
+    if divided:
+        for t in tiles:
+            _spread_padding(t)
     if layout == "grid":
         cols = cols or _balanced_cols(len(tiles))
         outer = etree.Element("VStack", gap=gap)
-        for k in range(0, len(tiles), cols):
+        for r, k in enumerate(range(0, len(tiles), cols)):
             row = etree.SubElement(outer, "HStack", gap=gap, grow="1", alignItems="stretch")
-            for t in tiles[k:k + cols]:
+            if divided and r:
+                _divide(row, "Top", divided["divider"])
+            for j, t in enumerate(tiles[k:k + cols]):
+                if divided and j:
+                    _divide(t, "Left", divided["divider"])
                 row.append(t)
     else:
         outer = etree.Element("HStack" if layout == "row" else "VStack", gap=gap, alignItems="stretch")
-        for t in tiles:
+        for j, t in enumerate(tiles):
+            if divided and j:
+                _divide(t, "Left" if layout == "row" else "Top", divided["divider"])
             outer.append(t)
         # a row fit-grow may make two rows (regridTiles), also when the LLM wrote layout="row" / cols >= the count:
         # a pinned row of 4-5 stayed width-bound (QBR paid 1: 69 px, 95 as two rows; wide-paid CHEFFIN 1: 51 px in
         # one row under a 130 px empty band, labels grown to 24 / 28 px and wrapped). A grid or column stays as written.
-        if layout == "row" and cols is None:
+        # A divided row stays one row: a tile moved to the second row would keep its hairline.
+        if layout == "row" and cols is None and not divided:
             outer.set("id", f"kpig-{ref}")
+    for k, v in (divided or {}).get("group_look", {}).items():   # the strip's box, under the LLM's box attributes
+        outer.set(k, str(v))
     for k, v in box.box.items():
         outer.set(k, v)
     return outer
+
+
+def _spread_padding(el: etree._Element) -> None:
+    """`padding` as padding.top / right / bottom / left. Every divided tile gets it: the normalizer drops
+    padding="0", and a tile with no box attribute left hands its value to the strip's box in fit-grow's refGroups
+    (a full box: the strip's numbers stayed at 28 px, gallery example 6)."""
+    pad = el.attrib.pop("padding", None)
+    if pad is not None:
+        for s in ("top", "right", "bottom", "left"):
+            el.set(f"padding.{s}", el.get(f"padding.{s}") or pad)
+
+
+def _divide(el: etree._Element, side: str, divider: dict) -> None:
+    """A hairline on el's `side` (Left / Top) and the divider's space inside it (padding spread first: padding with
+    padding.<side> beside it is two values for one side)."""
+    _spread_padding(el)
+    own = int(float(el.get(f"padding.{side.lower()}") or 0))
+    el.set(f"padding.{side.lower()}", str(own or divider["space"]))   # a filled tile keeps its own padding
+    el.set(f"border{side}.color", str(divider["color"]))
+    el.set(f"border{side}.width", str(divider["width"]))
 
 
 # ── the slide ─────────────────────────────────────────────────────────────────
@@ -537,7 +588,7 @@ def node_lines() -> str:
         'marker. = <Shape> (value.glow.size="6" icon.variant="circle-filled"); a Kpi also size="hero" and box attributes.',
         "Code writes the text and sizes: no fontSize, lineHeight, borderRadius or children in a Kpi.",
         f'variant: {variants}. inverted / size="hero": the line\'s emphasis item only.',
-        f"arrange: {arranges} (side = icon left). color: $accent $positive $negative $warning $neutral (default: the tone).",
+        f"arrange: {arranges} (side = icon left; inline = label left, value right on one line, a column by default). color: $accent $positive $negative $warning $neutral (default: the tone).",
         "The component's visual-intent is drawn with these attributes (a bare tag draws none of it):",
         *(f"- {t}: {how}" for t, how in treatments().items()),
     ])
@@ -555,7 +606,7 @@ def scope(planner_treatments: list[str]) -> str:
 
 def variants_for(comp: dict) -> list[str]:
     """The variants this component can use (requires met; inverted needs the plan's emphasis item)."""
-    extra = {"is_emphasis_item": emphasis_index(comp) is not None}
+    extra = {"is_emphasis_item": emphasis_index(comp) is not None, "is_group": True}
     return [n for n, v in kpi()["variants"].items() if not spec.failed_requires(v, comp, extra)]
 
 

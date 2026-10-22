@@ -8,7 +8,7 @@ The tile tags are hand-written as the generator would write them under POM_BLOCK
 that is the real pipeline: tiles.fill (expand + element_refs.fill_refs) -> normalize_xml -> compile-pom.js
 (fit-grow, POM) -> LibreOffice. Each slide compiles and renders on its own (merged decks reuse media
 names). Writes <out>/<palette>-variants.png (rows: variants, columns: arranges), <out>/<palette>-examples.png
-(spec §2.2 examples 1-5) and every slide's folder (in.xml, fitted.xml, presentation.pptx / .pdf).
+(spec §2.2 examples 1-5; 6-7 divided / inline) and every slide's folder (in.xml, fitted.xml, presentation.pptx / .pdf).
 """
 
 from __future__ import annotations
@@ -72,6 +72,12 @@ EXAMPLES = [
      '<KpiGrid ref="kpi_metrics" variant="plain" cols="3">'
      '<Kpi ref="kpi_metrics.0" icon="trending-up" icon.variant="circle-filled" icon.bgColor="$accentSoft" '
      'value.textGradient="linear-gradient(90deg, $accent 0%, $accentText 100%)"/></KpiGrid>'),
+    # divided / inline (2026-10-22): the strip and ruled-list patterns of the reviewed example decks
+    ("6 hero over a divided strip", [HERO, SUPPORT],
+     '<KpiGrid ref="kpi_hero" variant="bare"/><KpiGrid ref="kpi_support" variant="divided"/>'),
+    ("7 ruled list + dark focus", [METRICS],
+     '<HStack gap="18" grow="1"><KpiGrid ref="kpi_metrics" variant="divided" arrange="inline" w="58%"/>'
+     '<Kpi ref="kpi_metrics.4" variant="inverted" size="hero" grow="1"/></HStack>'),
 ]
 
 

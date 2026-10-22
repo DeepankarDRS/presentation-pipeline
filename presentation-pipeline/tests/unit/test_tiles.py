@@ -42,7 +42,7 @@ def tile_of(xml, i, cid="kpis"):
     head = xml[:m.start()]
     opens = [o for o in re.finditer(r"<(VStack|HStack)\b[^>]*>", head)]
     for o in reversed(opens):
-        if re.search(r'backgroundColor=|border|padding=', o.group(0)):
+        if re.search(r'backgroundColor=|border|padding(?:\.\w+)?=', o.group(0)):
             return o.group(0)
     raise AssertionError("no tile")
 
@@ -363,14 +363,14 @@ def test_plan_icons_draw_unless_the_llm_names_one():
 
 def test_prompt_line_lists_the_variants_this_component_can_use():
     line = T.prompt_line(PLAN["components"][1])                         # tones + an emphasis item
-    assert "variants plain filled toned bar dot inverted bare" in line
+    assert "variants plain filled toned bar dot inverted bare divided" in line
     line = T.prompt_line(PLAN2["components"][-1])                       # 2 items, no tones, no hint
-    assert "variants plain filled bar dot bare;" in line
+    assert "variants plain filled bar dot bare divided;" in line
     assert "no emphasis item (no hero, inverted or focus)" in line and "no tones;" in line
     hinted = dict(PLAN["components"][1], design_hint="show Revenue in positive colour",
                   content_data={k: v for k, v in PLAN["components"][1]["content_data"].items() if k != "kpi_tones"})
     line = T.prompt_line(hinted)
-    assert "no tones (colour by the visual-intent)" in line and "variants plain filled bar dot bare;" in line
+    assert "no tones (colour by the visual-intent)" in line and "variants plain filled bar dot bare divided;" in line
 
 
 def test_node_lines_name_every_variant_and_arrange():
@@ -494,3 +494,84 @@ def test_a_row_with_a_hero_tile_gets_equal_columns():
     assert all(" w=\"1\"" in tile_of(xml, i) and "grow=\"1\"" in tile_of(xml, i) for i in range(4))
     plain = run('<KpiGrid ref="kpis"/>')["xml"]
     assert " w=\"1\"" not in tile_of(plain, 0) and "grow=\"1\"" in tile_of(plain, 0)
+
+
+# ── divided (a group look) and inline ─────────────────────────────────────────
+
+def _open_tags(xml, tag):
+    return re.findall(rf"<{tag}\b[^>]*>", xml)
+
+
+def test_divided_row_shares_one_box_with_a_hairline_before_every_tile_but_the_first():
+    res = run('<KpiGrid ref="kpis" variant="divided"/>')
+    assert res["ok"], res["issues"]
+    assert "NODE_FOCUS_UNNAMED" not in codes(res)       # the first tile shows the strip's fill, as its peers do
+    xml = res["xml"]
+    group = next(t for t in _open_tags(xml, "HStack") if 'backgroundColor="$surfaceAlt"' in t)
+    assert 'border.color="$border"' in group and 'padding="22"' in group and 'gap="22"' in group
+    assert 'id="kpig-' not in xml                       # a strip stays one row (no regrid)
+    tiles = [tile_of(xml, i) for i in range(4)]
+    assert "borderLeft" not in tiles[0]
+    # padding spread on every tile: the normalizer drops padding="0", and a tile with no box attribute hands its
+    # value to the strip's box in fit-grow (the strip never grew)
+    assert all('padding.top="0"' in t and ' padding="' not in t for t in tiles)
+    for t in tiles[1:]:
+        assert 'borderLeft.color="$border"' in t and 'borderLeft.width="1"' in t and 'padding.left="22"' in t
+        assert ' padding="' not in t                     # spread to the four sides, never two values for one
+    assert not any("backgroundColor" in t for t in tiles)
+
+
+def test_divided_tones_show_in_the_number_not_a_tinted_tile():
+    xml = run('<KpiGrid ref="kpis" variant="divided"/>')["xml"]
+    assert 'color="$negativeText"' in value_of(xml, 2) and 'color="$positiveText"' in value_of(xml, 1)
+    assert "Soft" not in tile_of(xml, 2)
+    own = run('<KpiGrid ref="kpis" variant="divided"><Kpi ref="kpis.0" color="$warning"/></KpiGrid>')["xml"]
+    assert 'color="$warningText"' in value_of(own, 0)   # an item's own colour shows without a note or icon
+
+
+def test_divided_grid_rules_rows_and_columns_and_a_column_rules_rows():
+    xml = run('<KpiGrid ref="kpis" variant="divided" cols="2"/>')["xml"]
+    rows = [t for t in _open_tags(xml, "HStack") if 'grow="1" alignItems="stretch"' in t]
+    assert len(rows) == 2 and "borderTop" not in rows[0] and 'borderTop.color="$border"' in rows[1]
+    assert "borderLeft" not in tile_of(xml, 2) and "borderLeft" in tile_of(xml, 3)
+    col = run('<KpiGrid ref="kpis" variant="divided" layout="column"/>')["xml"]
+    assert "borderTop" not in tile_of(col, 0) and all('borderTop.width="1"' in tile_of(col, i) for i in (1, 2, 3))
+    assert "borderLeft" not in col
+
+
+def test_divided_is_a_group_look_only():
+    res = run('<KpiGrid ref="kpis"><Kpi ref="kpis.1" variant="divided"/></KpiGrid>')
+    assert "NODE_VARIANT_UNMET" in codes(res) and "is_group" in " ".join(i["message"] for i in res["issues"])
+    assert 'border.color="$border"' in tile_of(res["xml"], 1)   # plain used
+
+
+def test_divided_keeps_a_filled_tiles_own_padding_and_the_llms_box_wins():
+    xml = run('<KpiGrid ref="kpis" variant="divided" backgroundColor="$surface" padding="30">'
+              '<Kpi ref="kpis.2" variant="inverted"/></KpiGrid>')["xml"]
+    assert 'backgroundColor="$panelDark"' in tile_of(xml, 2) and 'padding.left="16"' in tile_of(xml, 2)
+    group = next(t for t in _open_tags(xml, "HStack") if 'border.color="$border"' in t and "gap=" in t)
+    assert 'backgroundColor="$surface"' in group and 'padding="30"' in group
+
+
+def test_inline_puts_the_label_left_and_the_value_right_in_a_column():
+    res = run('<KpiGrid ref="kpis" arrange="inline" icon="gauge"/>')
+    assert res["ok"], res["issues"]
+    xml = re.sub(r' id="kpi[lnh]-[^"]*"', "", res["xml"])
+    assert '<VStack gap="14" alignItems="stretch">' in xml        # inline tiles default to a column
+    tile = re.search(r'<HStack[^>]*>(?:(?!<HStack).)*?id="kpiv1-kpis-2"', res["xml"], re.S).group(0)
+    assert tile.index("<Icon") < tile.index("Blended ROAS") < tile.index("ACOS ~307%") < tile.index("kpiv1-kpis-2")
+    assert 'textAlign="right"' in value_of(res["xml"], 2)
+    assert tile_of(res["xml"], 2).startswith("<HStack") and 'gap="14"' in tile_of(res["xml"], 2)
+    row = run('<KpiGrid ref="kpis" arrange="inline" layout="row"/>')["xml"]
+    assert 'id="kpig-kpis"' in row                                  # an asked layout stays
+
+
+def test_divided_inline_column_is_a_ruled_list():
+    xml = run('<KpiGrid ref="kpis" variant="divided" arrange="inline"/>')["xml"]
+    assert "borderLeft" not in xml and sum('borderTop.color="$border"' in tile_of(xml, i) for i in range(4)) == 3
+    assert all(tile_of(xml, i).startswith("<HStack") for i in range(4))
+
+
+def test_a_column_with_a_hero_tile_keeps_its_width():
+    xml = run('<KpiGrid ref="kpis" arrange="inline"><Kpi ref="kpis.2" variant="inverted" size="hero"/></KpiGrid>')["xml"]
+    assert all(' w="1"' not in tile_of(xml, i) for i in range(4))   # w="1" in a column is a 1 px tile
