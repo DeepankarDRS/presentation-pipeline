@@ -15,7 +15,7 @@ description: >
 structure: |
   <VStack w="max" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="13" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
-    <Chart chartType="bar" w="max" h="196" showLegend="false" chartColors='["2563EB", "0EA5E9", "14B8A6"]'>
+    <Chart chartType="bar" w="max" h="196" showLegend="false" chartColors='["$chart1","$chart2","$chart3"]'>
       <ChartSeries name="Revenue">
         <ChartDataPoint label="Q1" value="100" />
         <ChartDataPoint label="Q2" value="150" />
@@ -30,7 +30,7 @@ Chart_attributes:
   showLegend:  { type: bool, values: [true, false] }
   showTitle:   { type: bool, values: [true, false] }
   title:       { type: string }
-  chartColors: { type: string, note: "JSON array string of bare hex, e.g. '[\"2563EB\",\"0EA5E9\"]'. NOT $tokens — literal hex only. Copy the active palette's chartColors." }
+  chartColors: { type: string, note: "JSON array of theme chart tokens, e.g. '[\"$chart1\",\"$chart2\"]' ($chart1..$chart5)." }
   radarStyle:  { type: enum, values: [standard, marker, filled], note: "radar only" }
   sparkline:   { type: bool, note: "hides legend/axes/gridlines for a compact inline chart (bar/line/area, e.g. h=40)" }
 
@@ -42,7 +42,7 @@ ChartDataPoint_attributes:
   value: { type: number, required: true, note: "may be a decimal string, e.g. value=\"42.8\"" }
 
 notes:
-  - "chartColors is a JSON string with literal hex — theme $tokens do NOT resolve inside it. Copy the ACTIVE palette's chartColors values (the contract lists them); take as many leading entries as you have series / bars."
+  - "chartColors references the theme: chartColors='[\"$chart1\",\"$chart2\"]' — one token per series (per bar for a single-series bar), in order, up to $chart5."
   - "Give the Chart an explicit w/h sized to its container. A Chart with no w/h will fail at render."
   - "In a two-column chart+table band, the Chart is w=\"max\" inside its column VStack; the column's % width sets the actual size."
   - "One series is enough for most MVP slides; add series only when the request compares groups."
@@ -51,7 +51,7 @@ notes:
 
 examples:
   full_width_bar: |
-    <Chart chartType="bar" w="1136" h="452" showLegend="false" chartColors='["2563EB"]'>
+    <Chart chartType="bar" w="1136" h="452" showLegend="false" chartColors='["$chart1"]'>
       <ChartSeries name="Revenue ($M)">
         <ChartDataPoint label="Q2 FY25" value="28.4" />
         <ChartDataPoint label="Q3 FY25" value="31.2" />
@@ -59,7 +59,7 @@ examples:
       </ChartSeries>
     </Chart>
   two_series_line: |
-    <Chart chartType="line" w="720" h="360" showLegend="true" chartColors='["2563EB","0EA5E9"]'>
+    <Chart chartType="line" w="720" h="360" showLegend="true" chartColors='["$chart1","$chart2"]'>
       <ChartSeries name="Plan">
         <ChartDataPoint label="Jan" value="100" />
         <ChartDataPoint label="Feb" value="120" />
@@ -73,7 +73,7 @@ examples:
 pitfalls:
   - "chartType is required and must be one of bar/line/pie/area/doughnut/radar. A wrong value is a ParseXmlError."
   - "Missing w/h on <Chart> -> render error."
-  - "Do not put '#' or $token inside chartColors."
+  - "No '#' or raw hex inside chartColors — only $chart1..$chart5."
   - "<ChartDataPoint> is self-closing; it has no text body."
   - "Chart on a dark slide with no $chartSurface wrapper -> axis labels are black-on-dark and invisible. This compiles clean; it is a visual failure the compiler will not flag."
-  - "A single-color chartColors (e.g. '[\"2563EB\"]') makes every bar identical. For >3 bars or multiple series, pass the full palette sequence so bars are distinguishable."
+  - "A single token (e.g. '[\"$chart1\"]') makes every bar identical. For >3 bars or multiple series, list $chart1..$chart5 so bars are distinguishable."

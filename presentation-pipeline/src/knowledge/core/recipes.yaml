@@ -32,7 +32,7 @@ chart_card: |
   # 2*padding minus the ~28 title. Never omit chart h.
   <VStack w="max" h="300" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="13" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
-    <Chart w="max" h="236" chartType="bar" showLegend="false" chartColors='["2563EB","0EA5E9","10B981","F59E0B"]'>
+    <Chart w="max" h="236" chartType="bar" showLegend="false" chartColors='["$chart1","$chart2","$chart3","$chart4"]'>
       <ChartSeries name="Revenue">
         <ChartDataPoint label="Q1" value="36.1" />
         <ChartDataPoint label="Q2" value="39.1" />

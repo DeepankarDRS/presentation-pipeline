@@ -8,8 +8,8 @@ three things a bare <Theme> swap misses:
    (attribute-aware when several tokens share a value); anything else maps
    to the nearest token in the attribute's role and is reported in
    ``approximated`` — a leftover light tint would be unreadable on dark.
-2. chartColors (literal JSON — tokens don't resolve there) -> the new
-   palette's chart colors, by series position.
+2. chartColors -> the new theme's $chart1..$chartN tokens, by series
+   position, so later switches recolor charts with no rewrite.
 3. Dark target: wrap any <Chart> not already sitting on $chartSurface,
    because POM hard-codes axis text to black. Existing wrappers are kept on
    light targets ($chartSurface resolves to a light card there).
@@ -157,16 +157,19 @@ def _remap_hex(xml: str, old_tokens: dict[str, str], result: SwapResult) -> str:
     return out
 
 
-def _swap_chart_colors(xml: str, chart_colors: list[str]) -> str:
-    if not chart_colors:
+_CHART_TOKEN_RE = re.compile(r"chart\d+")
+
+
+def _swap_chart_colors(xml: str, n_tokens: int) -> str:
+    if not n_tokens:
         return xml
 
     def repl(m: re.Match[str]) -> str:
         try:
             n = len(json.loads(m.group("val")))
         except (ValueError, TypeError):
-            n = len(chart_colors)
-        new = [chart_colors[i % len(chart_colors)] for i in range(max(n, 1))]
+            n = n_tokens
+        new = [f"$chart{i % n_tokens + 1}" for i in range(max(n, 1))]
         return f"chartColors='{json.dumps(new, separators=(',', ':'))}'"
 
     return _CHART_COLORS_RE.sub(repl, xml)
@@ -233,34 +236,18 @@ def _wrap_charts(xml: str, result: SwapResult) -> str:
     return "".join(out)
 
 
-def with_chart_tokens(theme_element: str) -> str:
-    """Add chartSurface/chartInk to a <Theme> that lacks them (light palettes).
-
-    A slide switched away from a dark theme keeps its $chartSurface wrapper;
-    on a light theme it should resolve to a plain card, not fail to compile.
-    """
-    tokens = theme_tokens(theme_element)
-    extra = []
-    if "chartSurface" not in tokens:
-        extra.append(f'chartSurface="{tokens.get("surfaceAlt", "FFFFFF")}"')
-    if "chartInk" not in tokens:
-        extra.append(f'chartInk="{tokens.get("textMain", "16202E")}"')
-    if not extra:
-        return theme_element
-    return re.sub(r"\s*/>\s*$", " " + " ".join(extra) + " />", theme_element.strip(), count=1)
-
-
 def swap_theme(
     slide_xml: str,
     old_theme_element: str,
-    new_chart_colors: list[str],
+    new_theme_element: str,
     new_is_dark: bool,
 ) -> SwapResult:
     """Rewrite one theme-less slide so it renders correctly under a new theme."""
     result = SwapResult(xml="")
     xml = strip_theme(slide_xml)
     xml = _remap_hex(xml, theme_tokens(old_theme_element), result)
-    xml = _swap_chart_colors(xml, new_chart_colors)
+    n_chart = sum(1 for t in theme_tokens(new_theme_element) if _CHART_TOKEN_RE.fullmatch(t))
+    xml = _swap_chart_colors(xml, n_chart)
     if new_is_dark:
         xml = _wrap_charts(xml, result)
     result.xml = xml

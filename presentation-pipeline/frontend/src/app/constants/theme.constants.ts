@@ -15,6 +15,16 @@ export const THEME_PALETTES: ThemePalette[] = [
   { id: 'midnight-indigo',  label: 'Midnight Indigo',  tone: 'Deep indigo dark',                mode: 'dark',  accent: '818CF8' },
   { id: 'forest-dark',      label: 'Forest Dark',      tone: 'Dark green',                      mode: 'dark',  accent: '4ADE80' },
   { id: 'carbon-dark',      label: 'Carbon Dark',      tone: 'Charcoal neutral, warm orange',   mode: 'dark',  accent: 'FB923C' },
+  { id: 'boardroom-orange', label: 'Boardroom Orange', tone: 'Boardroom white, orange + purple', mode: 'light', accent: 'F4541E' },
+  { id: 'paper-clay',       label: 'Paper Clay',       tone: 'Warm paper, clay + deep teal',     mode: 'light', accent: 'C0472A' },
+  { id: 'bone-copper',      label: 'Bone Copper',      tone: 'Editorial bone, copper hero',      mode: 'light', accent: 'C46A3F' },
+  { id: 'ocean-light',      label: 'Ocean Light',      tone: 'Ocean blues on white',             mode: 'light', accent: '0077B6' },
+  { id: 'terracotta-light', label: 'Terracotta Light', tone: 'Verdigris + burnt peach',          mode: 'light', accent: '2A9D8F' },
+  { id: 'ink-copper',       label: 'Ink Copper',       tone: 'Deep slate, copper hero',          mode: 'dark',  accent: 'C46A3F' },
+  { id: 'lime-ink',         label: 'Lime Ink',         tone: 'Near-black, electric lime + rust', mode: 'dark',  accent: 'C9F24D' },
+  { id: 'ocean-dark',       label: 'Ocean Dark',       tone: 'Deep twilight, aqua accents',      mode: 'dark',  accent: '48CAE4' },
+  { id: 'tropic-dark',      label: 'Tropic Dark',      tone: 'Dark teal, emerald / pink / gold', mode: 'dark',  accent: '06D6A0' },
+  { id: 'terracotta-dark',  label: 'Terracotta Dark',  tone: 'Charcoal blue, tuscan sun',        mode: 'dark',  accent: 'E9C46A' },
 ];
 
 export const STEP_LABELS: Record<string, string> = {

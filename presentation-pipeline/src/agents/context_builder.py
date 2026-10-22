@@ -298,8 +298,8 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     if "chart" in kinds:
         chart_colors = theme_info.get("chart_colors_json", "")
         notes.append(
-            "Chart chartColors must be LITERAL hex (no $tokens). Use: "
-            f"chartColors='{chart_colors}'"
+            f"Chart chartColors uses theme tokens, in order: chartColors='{chart_colors}' "
+            "(take one per series/bar)."
         )
         if theme_info.get("is_dark"):
             notes.append(

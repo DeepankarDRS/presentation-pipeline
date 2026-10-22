@@ -1224,17 +1224,6 @@ async def get_slide_xml(run_id: str, slide_index: int) -> dict[str, Any]:
     }
 
 
-def _palette_names() -> list[str]:
-    import yaml
-
-    path = _PIPELINE_ROOT / "src" / "knowledge" / "theme" / "palettes.yaml"
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    except OSError:
-        return []
-    return list((data.get("palettes") or {}).keys())
-
-
 @app.post("/runs/{run_id}/theme")
 async def switch_theme(run_id: str, request: ThemeSwitchRequest) -> ThemeSwitchResponse:
     """Re-skin every slide in the edit session with another palette (no LLM).
@@ -1246,7 +1235,9 @@ async def switch_theme(run_id: str, request: ThemeSwitchRequest) -> ThemeSwitchR
     session = _edit_sessions.get(run_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Edit session not found. Create one first.")
-    if request.theme not in _palette_names():
+    from src.agents.style_resolver import palette_names
+
+    if request.theme not in palette_names():
         raise HTTPException(status_code=400, detail=f"Unknown theme '{request.theme}'")
 
     held: list[asyncio.Lock] = []
@@ -1262,14 +1253,13 @@ async def switch_theme(run_id: str, request: ThemeSwitchRequest) -> ThemeSwitchR
     from src.agents.style_resolver import resolve_theme
     from src.compiler.compiler_client import CompilerError, compile_xml
     from src.compiler.screenshot import render_screenshots
-    from src.compiler.theme_swap import swap_theme, with_chart_tokens
+    from src.compiler.theme_swap import swap_theme
 
     def _do_switch() -> ThemeSwitchResponse:
         theme = resolve_theme(request.theme)
-        theme["element"] = with_chart_tokens(theme["element"])
         ordered = sorted(session.slides, key=lambda x: x.slide_index)
         swaps = [
-            swap_theme(s.current_xml, session.theme_element, theme["chart_colors"], theme["is_dark"])
+            swap_theme(s.current_xml, session.theme_element, theme["element"], theme["is_dark"])
             for s in ordered
         ]
         approximated = sorted({a for r in swaps for a in r.approximated})
