@@ -75,7 +75,8 @@ def test_theme_element_carries_derived_tokens(name):
 def test_default_theme_is_the_yaml_entry():
     built = resolve_theme("corporate-slate")
     assert DEFAULT_THEME["element"] == built["element"]
-    assert DEFAULT_THEME["chart_colors"] == _PALETTES["corporate-slate"]["chartColors"]
+    assert DEFAULT_THEME["chart_colors"] == built["chart_colors"]
+    assert DEFAULT_THEME["chart_colors"][0] == _PALETTES["corporate-slate"]["chartColors"][0]
     assert resolve_theme("no-such-palette")["element"] == DEFAULT_THEME["element"]
 
 

@@ -21,7 +21,9 @@ from typing import Any
 
 import yaml
 
-from src.compiler.palette_tokens import MAX_CHART_COLORS, derive_tokens, expand_seed
+from src.compiler.palette_tokens import (
+    MAX_CHART_COLORS, derive_tokens, expand_seed, separate_chart_colors, separate_polarity,
+)
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
@@ -57,12 +59,16 @@ def _build_theme(name: str, palette_data: dict[str, Any]) -> dict[str, Any]:
     if "seed" in palette_data:
         palette_data = expand_seed(palette_data["seed"])
     mode = palette_data.get("mode", "light")
+    # positive / negative apart in lightness + for colour-blind readers before the derived roles
+    # (2026-10-22 chart pass, palette_tokens.separate_polarity)
+    palette_data = {**palette_data, **separate_polarity(palette_data)}
     tokens = {k: palette_data[k] for k in _TOKEN_KEYS if k in palette_data}
     tokens.setdefault("chartSurface", palette_data["surfaceAlt"])
     tokens.setdefault("chartInk", palette_data["textMain"])
     tokens.update(derive_tokens(palette_data))
     chart_colors = [str(c).upper() for c in (palette_data.get("chartColors") or [palette_data["accent"]])]
-    chart_colors = chart_colors[:MAX_CHART_COLORS]
+    # separable series (lightness band, colour-blind + normal-vision gaps, 2026-10-22 chart pass)
+    chart_colors = separate_chart_colors(chart_colors, tokens["chartSurface"])[:MAX_CHART_COLORS]
     # chart1..chartMAX always exist (a short list repeats), so any $chartN a slide uses resolves
     tokens.update({f"chart{i + 1}": chart_colors[i % len(chart_colors)] for i in range(MAX_CHART_COLORS)})
     chart_refs = [f"$chart{i}" for i in range(1, len(chart_colors) + 1)]

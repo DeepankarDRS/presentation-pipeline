@@ -77,7 +77,8 @@ usage:
                or color="$textMain" (values). cellBorder.color="$border".'
   chart_colors: 'chartColors references tokens: chartColors=''["$chart1","$chart2"]''
                  (POM 10.3.0 resolves $tokens there, verified 2026-10-22). One per
-                 series / bar; $accent + $neutral for one series in focus.'
+                 series; one series = one token for every bar. The bar / series the
+                 headline names (else the latest period) $accent, the rest $neutral.'
   chart_on_dark: 'POM v10.3.0 hard-codes chart axis/label text to 000000 and
                   gridlines to 888888 (renderPptx/nodes/chart.js) — unfixable in
                   XML. On a DARK palette, wrap the chart in

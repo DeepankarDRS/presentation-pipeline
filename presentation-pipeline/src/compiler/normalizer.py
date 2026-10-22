@@ -461,43 +461,110 @@ def strip_control_chars(text: str) -> tuple[str, int]:
     return cleaned, n
 
 
-# A one-series bar / column chart over time highlights the latest period (2026-10-08: two QBR runs
-# put the focus colour on the first quarter). Only when the chart already uses one focus colour
-# against one base colour, and the slide's text names no other period.
+# Chart focus colour (house-style chart_rules; 2026-10-08 for one-series bars over time, every chart
+# type since the 2026-10-22 chart pass): the bar / series the headline names wears the focus colour,
+# otherwise the latest period; the rest the base colour. Code only MOVES a focus the LLM already drew
+# (one focus colour against one grey or pale base), so a good / bad colouring is never touched. A
+# one-series bar chart painted $chart1, $chart2, ... bar by bar (one series = one hue) is made one hue,
+# or $accent on the named / latest bar and $neutral on the rest.
 _PERIOD_RE = re.compile(r"^(?:Q[1-4]|H[12]|FY|CY|W\d|(?:19|20)\d\d|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", re.I)
 _CHART_RE = re.compile(r"<Chart\b(?P<attrs>[^>]*)>(?P<body>.*?)</Chart>", re.S)
+_CHART_COLORS_RE = re.compile(r"""chartColors=(?:'(?P<sq>\[[^']*\])'|"(?P<dq>\[[^"]*\])")""")
+_COLOR_ITEM_RE = re.compile(r'(?:"|&quot;)\s*([^"&,\]]+?)\s*(?:"|&quot;)')
+_HEADLINE_RE = re.compile(r'<Text\b[^>]*\bfontSize="(\d+(?:\.\d+)?)"[^>]*>(.*?)</Text>', re.S)
+_HEADLINE_MIN_PX = 24
+_REST_TOKENS = {"$neutral", "$border", "$surfaceAlt", "$surface", "$textMuted", "$accentSoft"}
+_CHART_TOKEN_RE = re.compile(r"^\$chart(\d)$")
+_TIME_KINDS = ("bar", "column", "line", "area")
 
 
-def _focus_latest_period(xml: str) -> tuple[str, int]:
-    count = 0
+def _headline(xml: str) -> str:
+    """The slide's headline: its first Text of >= 24 px outside a chart ('' when none)."""
+    for m in _HEADLINE_RE.finditer(_CHART_RE.sub("", xml)):
+        if float(m.group(1)) >= _HEADLINE_MIN_PX:
+            return re.sub(r"<[^>]+>", "", m.group(2))
+    return ""
+
+
+def _name_at(name: str, text: str) -> int:
+    """Where `text` names `name` as a whole word (-1 when it does not)."""
+    m = re.search(rf"(?<!\w){re.escape(name.strip())}(?!\w)", text, re.I) if name.strip() else None
+    return m.start() if m else -1
+
+
+def _names(name: str, text: str) -> bool:
+    return _name_at(name, text) >= 0
+
+
+def _is_rest_colour(c: str) -> bool:
+    """A colour that reads as "everything else": a rest token, a grey or a pale tint."""
+    if c.startswith("$"):
+        return c in _REST_TOKENS
+    if not re.fullmatch(r"#?[0-9A-Fa-f]{6}", c):
+        return False
+    r, g, b = (int(c.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    hi, lo = max(r, g, b), min(r, g, b)
+    return hi - lo < 0.12 or (hi + lo) / 2 > 0.78
+
+
+def _chart_focus(xml: str) -> tuple[str, dict[str, int]]:
+    counts = {"latest": 0, "named": 0, "one_hue": 0}
+    headline = _headline(xml)
     slide_text = " ".join(re.findall(r">([^<>]+)<", _CHART_RE.sub("", xml)))
 
     def _fix(m: re.Match) -> str:
-        nonlocal count
         attrs, body = m.group("attrs"), m.group("body")
-        if body.count("<ChartSeries") != 1 or not re.search(r'chartType="(?:bar|column)"', attrs):
+        cm = _CHART_COLORS_RE.search(attrs)
+        km = re.search(r'chartType="(\w+)"', attrs)
+        if not cm or not km:
             return m.group(0)
-        labels = re.findall(r'<ChartDataPoint[^>]*\blabel="([^"]*)"', body)
-        cm = re.search(r"chartColors='(\[[^']*\])'", attrs)
-        if len(labels) < 3 or not cm or not all(_PERIOD_RE.match(x.strip()) for x in labels):
+        kind = km.group(1)
+        colors = _COLOR_ITEM_RE.findall(cm.group("sq") or cm.group("dq"))
+        n_series = body.count("<ChartSeries")
+        if n_series == 1 and kind in ("bar", "column", "pie", "doughnut"):
+            names = re.findall(r'<ChartDataPoint[^>]*\blabel="([^"]*)"', body)   # colour per bar / slice
+        elif n_series > 1 and kind in _TIME_KINDS:
+            names = re.findall(r'<ChartSeries[^>]*\bname="([^"]*)"', body)       # colour per series
+        else:
             return m.group(0)
-        colors = re.findall(r'"([^"]+)"', cm.group(1))
+        if len(names) < 2 or len(colors) != len(names):
+            return m.group(0)
+
+        named = [i for i, nm in enumerate(names) if _names(nm, headline)]
+        periods = kind in _TIME_KINDS and all(_PERIOD_RE.match(nm.strip()) for nm in names) and (
+            n_series > 1 or len(names) >= 3)
+        if len(named) > 1:       # "Actual beat plan": the subject, i.e. the first named; periods: the latest
+            named = [named[-1]] if periods else [min(named, key=lambda i: _name_at(names[i], headline))]
+        target, why = (named[0], "named") if named else (
+            (len(names) - 1, "latest") if periods else (None, ""))
+
         distinct = set(colors)
-        if len(colors) != len(labels) or len(distinct) != 2:
+        if len(distinct) == 2:
+            rest = [c for c in distinct if _is_rest_colour(c)]
+            if len(rest) != 1 or target is None:
+                return m.group(0)        # no grey / pale base: a good / bad or series colouring
+            base, focus = rest[0], (distinct - set(rest)).pop()
+            if why == "latest" and colors.count(focus) == 1 and any(
+                    names[i] in slide_text for i, c in enumerate(colors) if c == focus):
+                return m.group(0)        # the slide names the highlighted period: keep it
+            want = [base] * len(names)
+            want[target] = focus
+        elif n_series == 1 and kind in ("bar", "column") and [
+                int(t.group(1)) for t in map(_CHART_TOKEN_RE.match, colors) if t] == list(
+                range(1, len(colors) + 1)):
+            why = "one_hue"
+            want = ["$chart1"] if target is None else ["$neutral"] * len(names)
+            if target is not None:
+                want[target] = "$accent"
+        else:
             return m.group(0)
-        base = max(distinct, key=colors.count)
-        focus = (distinct - {base}).pop()
-        if colors.count(focus) == 1 and any(lab in slide_text for i, lab in enumerate(labels)
-                                             if colors[i] == focus):
-            return m.group(0)        # the headline names the highlighted period: keep it
-        want = [base] * (len(labels) - 1) + [focus]
         if want == colors:
             return m.group(0)
-        count += 1
+        counts[why] += 1
         new = "chartColors='[" + ",".join(f'"{c}"' for c in want) + "]'"
         return m.group(0).replace(cm.group(0), new, 1)
 
-    return _CHART_RE.sub(_fix, xml), count
+    return _CHART_RE.sub(_fix, xml), counts
 
 
 # Numeric table columns share the width equally (2026-10-08: the QBR segment table pinned 180 / 140 /
@@ -667,9 +734,16 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
     xml, n = _share_numeric_columns(xml)
     if n:
         note("TABLE_NUMERIC_COLS_SHARED", f"Removed the pixel width of {n} numeric table column(s) so they share the width.")
-    xml, n = _focus_latest_period(xml)
-    if n:
-        note("CHART_FOCUS_LATEST", f"Moved the focus colour to the latest period on {n} time-series chart(s).")
+    xml, focus = _chart_focus(xml)
+    if focus["named"]:
+        note("CHART_FOCUS_NAMED", f"Moved the focus colour to the bar / series the headline names on "
+             f"{focus['named']} chart(s).")
+    if focus["latest"]:
+        note("CHART_FOCUS_LATEST", f"Moved the focus colour to the latest period on {focus['latest']} "
+             "time-series chart(s).")
+    if focus["one_hue"]:
+        note("CHART_ONE_HUE", f"Gave the bars of {focus['one_hue']} one-series chart(s) one colour "
+             "(a colour per bar reads as separate series).")
     xml, n = strip_control_chars(xml)
     if n:
         note("CONTROL_CHAR_REMOVED", f"Removed {n} control character(s) (drawn as a box glyph).")
