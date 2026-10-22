@@ -97,7 +97,11 @@ matrix case. (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevro
   slides laid out differently, total type larger on 118, smaller on 4. Tests changed: the narrow
   chevron row now stops at 14 px with the word fitting (a new test keeps "never below 14, warns" with
   "Reconciliation"); the g4 pinned-columns fixture no longer needs widening ("₹59.8" is 78 px in 90,
-  render-checked), so the pinned-neighbour widening path has no fixture now. Open edge: POM counts
+  render-checked), so the pinned-neighbour widening path lost its fixture. Its fixture now is
+  `g5-pinned-column-widened.xml` (2026-10-22): "spend" and "₹12" in a pinned KPI tile break in
+  LibreOffice without the widening and are whole with it. Two guard fixes came with it: the column's
+  need now includes `WORD_MARGIN` (before: 63 px given, "spend" left at 48 px in 48), and an edit that
+  clears every overflow is kept even when the total was under the 0.5 px step. Open edge: POM counts
   letter spacing after the last letter too (LibreOffice draws "share", 52 px with it, whole in 52 px);
   kept conservative until PowerPoint is checked.
 - **C2. `growDiagrams` grew chevron itemHeight 80 → 120 — FIXED (2026-10-21, user).** A taller chevron

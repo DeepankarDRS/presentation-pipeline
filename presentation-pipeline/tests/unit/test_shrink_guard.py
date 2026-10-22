@@ -132,3 +132,20 @@ def test_pinned_columns_keep_their_numbers_whole(tmp_path):
     second = _compile(fitted, tmp_path / "b")
     assert not any("column widened" in r or "wider than" in r for r in second["fitGrow"])
     assert _warnings(second) == _warnings(first)
+
+
+def test_a_pinned_column_is_widened_when_its_word_needs_it(tmp_path):
+    """g4 no longer needs the widening (its numbers fit since words are measured without POM's 10 px padding), so
+    g5 builds a slide that does: the third KPI tile's "spend" and "₹12" are wider than the tile fit-grow pinned, and
+    the wide left column can give room. Without the widening both break in the LibreOffice render ("spen|d",
+    "₹1|2"); with it both are drawn whole. Before the fix the column's need left out WORD_MARGIN (63 px given,
+    "spend" still 48 px in 48), so this also checks that the widening clears every report."""
+    first = _compile(_FIX / "g5-pinned-column-widened.xml", tmp_path / "a")
+    assert any('column widened' in r and '"₹12"' in r for r in first["fitGrow"])
+    assert _warnings(first) == []
+    assert all(int(v) >= 28 for v in re.findall(r'fontSize="(\d+)" color="\$(?:positive|accent)" bold="true"[^>]*>[₹\d]', first["xml"]))
+    fitted = tmp_path / "g5-fitted.xml"
+    fitted.write_text(first["xml"], encoding="utf-8")
+    second = _compile(fitted, tmp_path / "b")
+    assert not any("column widened" in r or "wider than" in r for r in second["fitGrow"])
+    assert _warnings(second) == []

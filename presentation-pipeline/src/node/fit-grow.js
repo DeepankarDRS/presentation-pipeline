@@ -2075,7 +2075,7 @@ async function scanWords(xml) {
   } finally { L.free(); }
   // a box shares its width with what is beside the text (tiles in a column): widen it by what the word
   // lacks, scaled by the word's share of the box
-  for (const t of found) for (const c of t.columns ?? []) c.need = Math.ceil(c.w * (t.at(t.fs).w - t.room) / t.room) + 2;
+  for (const t of found) for (const c of t.columns ?? []) c.need = Math.ceil(c.w * (t.at(t.fs).w - (t.room - WORD_MARGIN)) / t.room) + 2;
   return found;
 }
 
@@ -2144,9 +2144,11 @@ async function guardWords(xml, report, warnings) {
         const after = await scanWords(edit.xml);
         // keep an edit only when the slide's total overflow (px) goes down and no piece elsewhere is newly
         // too wide: a smaller label can narrow the tile that was sized by it and break the number beside
-        // it (R1 replay: "Projected" -> "₹59.8"), which the total shows even when the count does not
+        // it (R1 replay: "Projected" -> "₹59.8"), which the total shows even when the count does not. An edit
+        // that leaves no overflow at all is kept however small the total was (a word 0.1 px inside WORD_MARGIN)
         const before = new Set(found.map((f) => f.id));
-        if (overflow(after) >= overflow(found) - 0.5 || after.some((f) => !before.has(f.id))) continue;
+        const was = overflow(found), now = overflow(after);
+        if ((now >= was - 0.5 && !(now === 0 && was > 0)) || after.some((f) => !before.has(f.id))) continue;
         xml = edit.xml;
         found = after;
         report.push(edit.note);
