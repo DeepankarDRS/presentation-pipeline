@@ -128,3 +128,15 @@ def test_a_spill_fix_does_not_take_a_diagram_below_14_px(tmp_path):
     assert not r.get("warnings")
     labels = [s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.text in ("Plan", "Build", "Train")]
     assert len(labels) == 3 and all(s.font >= 14 for s in labels), [(s.text, s.font) for s in labels]
+
+
+def test_eight_vertical_flow_nodes_fit_the_band_at_14_px(tmp_path):
+    """User decision 2026-10-21: code sizes vertical flows so capacity's 8 hold. At POM's own 60 px nodes and
+    nodeGap 80 (fit-grow cut the gap to 20) eight nodes needed 620 px of a ~500 px band and were drawn below
+    14 px (break map: the band held 7); the nodes now take the height the band gives them, one line each."""
+    r = _compile(_FIX / "d9-flow-vertical-eight.xml", tmp_path)
+    a = _attrs(r["xml"], "Flow", "col")
+    assert a["direction"] == "vertical" and int(a["nodeHeight"]) < 60 and int(a["nodeGap"]) <= 24
+    nodes = [s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.geom == "flowChartProcess"]
+    assert len(nodes) == 8 and all(s.font >= 13.9 for s in nodes), [(s.text, s.font) for s in nodes]
+    assert not _warnings(r)
