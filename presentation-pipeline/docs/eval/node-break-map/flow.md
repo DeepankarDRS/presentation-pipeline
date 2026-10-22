@@ -18,27 +18,27 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 | split-60 | horizontal | default | process | 665×538 | 6 (S) · raw 3 | 4 (WG) · raw – | 6 (S) · raw 3 | 6 (S) · raw 3 | 6 (S) · raw 3 |
 | split-60 | vertical | default | mixed | 665×538 | 7 (T) · raw 4 | 7 (T) · raw – | 7 (T) · raw 3 | 7 (T) · raw – | 7 (T) · raw – |
 | split-60 | vertical | default | process | 665×538 | **≥10** · raw 4 | **≥10** · raw – | **≥10** · raw 4 | **≥10** · raw 4 | **≥10** · raw 4 |
-| split-40 | horizontal | default | mixed | 444×538 | 4 (WSFG) · raw – | – (WG) | 3 (WG) · raw – | 3 (WG) · raw – | 3 (WG) · raw – |
+| split-40 | horizontal | default | mixed | 444×538 | 3 (WG) · raw – | – (WG) | 3 (WG) · raw – | 3 (WG) · raw – | 3 (WG) · raw – |
 | split-40 | horizontal | default | process | 444×538 | 4 (SF) · raw – | 3 (WG) · raw – | 4 (SF) · raw – | 4 (SF) · raw – | 4 (SF) · raw – |
 | split-40 | vertical | default | mixed | 444×538 | 7 (T) · raw 4 | 7 (T) · raw – | 7 (T) · raw 3 | 7 (T) · raw – | 7 (T) · raw – |
 | split-40 | vertical | default | process | 444×538 | **≥10** · raw 4 | **≥10** · raw – | **≥10** · raw 4 | **≥10** · raw 4 | **≥10** · raw 4 |
-| card | horizontal | default | mixed | 838×195 | 5 (WG) | 3 (WG) · raw – | 6 (WG) · raw 3 | 6 (WG) · raw – | 6 (WG) · raw – |
+| card | horizontal | default | mixed | 838×195 | 5 (WG) | 3 (WG) · raw – | 6 (WG) · raw 3 | 5 (WG) · raw – | 5 (WG) · raw – |
 | card | horizontal | default | process | 838×195 | 8 (S) · raw 5 | 6 (WG) · raw – | 8 (S) · raw 5 | 8 (S) · raw 5 | 8 (S) · raw 5 |
-| card | vertical | default | mixed | 640×314 | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – |
-| card | vertical | default | process | 640×314 | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – | 3 (S) · raw – |
+| card | vertical | default | mixed | 640×314 | 4 (S) · raw – | 4 (S) · raw – | 4 (S) · raw – | 4 (S) · raw – | 4 (TS) · raw – |
+| card | vertical | default | process | 640×314 | 4 (S) · raw – | 4 (S) · raw – | 4 (S) · raw – | 4 (S) · raw – | 4 (S) · raw – |
 
 ## fit-grow
 
-800 cases. Holds with fit-grow: 414; raw: 101. **Rescued** (raw breaks, fit holds): 313. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 386.
+800 cases. Holds with fit-grow: 419; raw: 101. **Rescued** (raw breaks, fit holds): 318. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 381.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 150, TEXT_OVERFLOW 92, SHRUNK 270, SCALE_FLOOR 90, SPILL 80, OFF_SLIDE 70, GUARD 167.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 155, TEXT_OVERFLOW 92, SHRUNK 260, SCALE_FLOOR 90, SPILL 80, OFF_SLIDE 70, GUARD 157.
 
 ## What breaks first (one example per code)
 
-- **GUARD** `flow~split-40~horizontal~long1~default~mixed~03` box [444, 538]: 'Implementation' 106 px in 101
-- **WORD_BROKEN** `flow~split-40~horizontal~long1~default~mixed~03` box [444, 538]: 'Implementation' 106 px in 101
+- **GUARD** `flow~split-40~horizontal~long1~default~mixed~03` box [444, 538]: 'Implementation' 102 px in 101
+- **WORD_BROKEN** `flow~split-40~horizontal~long1~default~mixed~03` box [444, 538]: 'Implementation' 102 px in 101
 - **SHRUNK** `flow~band-under-kpi~vertical~long1~default~mixed~04` box [1168, 368]: 'Profitability' 13.71 px
-- **TEXT_OVERFLOW** `flow~card~vertical~w4~default~mixed~05` box [640, 322]: 'Review all supplier contracts' 13.07 px; 'Hire two regional leads' 2 lines, 31 x 107 px out of its 130 x 15 shape
-- **SCALE_FLOOR** `flow~split-40~horizontal~long1~default~mixed~05` box [444, 538]: 'Profitability' 7 px; 'Profitability' 38 px in 35
-- **OFF_SLIDE** `flow~split-40~horizontal~long1~default~mixed~06` box [444, 538]: 'Profitability' 7 px; 'Profitability' 38 px in 35; 'Profitability' past the 444x538 box
-- **SPILL** `flow~split-40~horizontal~long1~default~mixed~06` box [444, 538]: 'Profitability' 7 px; 'Profitability' 38 px in 35; 'Profitability' past the 444x538 box
+- **TEXT_OVERFLOW** `flow~card~vertical~w4~default~mixed~05` box [646, 340]: 'Review all supplier contracts' 13.8 px; 'Hire two regional leads' 2 lines, 33 x 115 px out of its 138 x 17 shape
+- **SCALE_FLOOR** `flow~split-40~horizontal~long1~default~mixed~05` box [444, 538]: 'Profitability' 7 px; 'Profitability' 37 px in 35
+- **OFF_SLIDE** `flow~split-40~horizontal~long1~default~mixed~06` box [444, 538]: 'Profitability' 7 px; 'Profitability' 37 px in 35; 'Profitability' past the 444x538 box
+- **SPILL** `flow~split-40~horizontal~long1~default~mixed~06` box [444, 538]: 'Profitability' 7 px; 'Profitability' 37 px in 35; 'Profitability' past the 444x538 box

@@ -289,7 +289,7 @@ def _node(args: list[str]) -> None:
 
 
 def compile_cases(cases: list[Case], workdir: Path, jobs: int = 4, chunk: int = 60,
-                  modes: tuple[str, ...] = ("raw", "fit")) -> dict[str, dict]:
+                  modes: tuple[str, ...] = ("raw", "fit"), resume: bool = False) -> dict[str, dict]:
     """(case id, raw | fit) -> build result; `jobs` node processes, `chunk` slides each."""
     items = [{"id": f"{c.id}~{mode}", "xml": slide_xml(c), "fit": mode == "fit"} for c in cases for mode in modes]
     batches = [items[i:i + chunk] for i in range(0, len(items), chunk)]
@@ -299,8 +299,9 @@ def compile_cases(cases: list[Case], workdir: Path, jobs: int = 4, chunk: int = 
         d = workdir / f"b{i:04d}"
         d.mkdir(parents=True, exist_ok=True)
         cases_json, done = json.dumps(batch), d / "build-results.json"
-        # resume: a batch already built from the same cases (an interrupted run) is reused
-        if done.exists() and (d / "cases.json").exists() and (d / "cases.json").read_text(encoding="utf-8") == cases_json:
+        # --resume: a batch already built from the same cases (an interrupted run) is reused; off by default,
+        # since the build does not record the code it ran (a stale batch from older code would be scored as new)
+        if resume and done.exists() and (d / "cases.json").exists() and (d / "cases.json").read_text(encoding="utf-8") == cases_json:
             return json.loads(done.read_text(encoding="utf-8"))
         done.unlink(missing_ok=True)
         (d / "cases.json").write_text(cases_json, encoding="utf-8")
@@ -636,6 +637,7 @@ def main() -> None:
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--quick", action="store_true", help="a slice of the grid (edges only)")
     ap.add_argument("--no-docs", action="store_true", help="write output/ only")
+    ap.add_argument("--resume", action="store_true", help="reuse batches an interrupted run of the SAME code built")
     ap.add_argument("--write-points", action="store_true",
                     help="write the regression slice's break points (tests/fixtures/node_break_map) from output/")
     a = ap.parse_args()
@@ -664,7 +666,7 @@ def main() -> None:
         t0 = time.time()
         cases = grid([kind], a.quick)
         work = OUT / "work" / kind
-        built = compile_cases(cases, work, jobs=a.jobs)
+        built = compile_cases(cases, work, jobs=a.jobs, resume=a.resume)
         rows = evaluate(cases, built, work)
         (OUT / f"{kind}.json").write_text(json.dumps(rows, indent=0), encoding="utf-8")
         if not a.no_docs:
