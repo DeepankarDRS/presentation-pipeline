@@ -61,8 +61,11 @@ def _header_slide(tmp_path, headline: str, font: str = ""):
 
 def test_headline_at_the_wrap_edge_reserves_its_second_line(tmp_path):
     """CHEFFIN cf98c42b5371 slide 3: POM laid the headline out on 1 line (39 px box); the
-    renderer wrapped it to 2 and the second line ran into the subtitle."""
-    on = _header_slide(tmp_path, "CPC is nearly 3x higher than what current conversion economics can support.")
+    renderer wrapped it to 2 and the second line ran into the subtitle. The headline then had no fontFamily
+    (POM's "Noto Sans JP", not loaded: measured at 85 % of the box); text without one is in the deck font
+    since C3, so the unloaded font is named here to keep that path checked."""
+    on = _header_slide(tmp_path, "CPC is nearly 3x higher than what current conversion economics can support.",
+                       ' fontFamily="Noto Sans JP"')
     assert any("heading 1 -> 2 lines reserved" in r for r in on["fitGrow"]), on["fitGrow"]
     assert re.search(r'<Text[^>]*\sminH="\d+"[^>]*>CPC is nearly', on["xml"])
 

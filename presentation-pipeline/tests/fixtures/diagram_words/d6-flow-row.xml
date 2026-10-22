@@ -5,7 +5,7 @@
     <HStack alignItems="stretch">
     <Flow id="row" w="1168" h="90" nodeWidth="100" nodeHeight="60" nodeGap="60">
       <FlowNode id="a" shape="flowChartProcess" text="Signals" color="$accentSoft" textColor="$textMain" />
-      <FlowNode id="b" shape="flowChartProcess" text="Budget reallocation" color="$accentSoft" textColor="$textMain" />
+      <FlowNode id="b" shape="flowChartProcess" text="Budget reconciliation" color="$accentSoft" textColor="$textMain" />
       <FlowNode id="c" shape="flowChartProcess" text="Placement" color="$accentSoft" textColor="$textMain" />
       <FlowNode id="d" shape="flowChartTerminator" text="Outcome" color="$accent" textColor="$onAccent" />
       <FlowConnection from="a" to="b" /><FlowConnection from="b" to="c" /><FlowConnection from="c" to="d" />
