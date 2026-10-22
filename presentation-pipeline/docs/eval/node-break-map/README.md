@@ -82,6 +82,24 @@ matrix case. (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevro
    with these numbers, instead of one count per direction.
 4. flow horizontal 6 → 7 (optional; the 2-word band holds 9).
 
+**Built (2026-10-22, the user's decisions of 2026-10-21 on 1-3; 4 not taken):**
+1. **Vertical flows sized by code, the limit stays 8.** fit-grow phase 2b: when POM's own nodes (60 px, gap
+   80) make a column taller than its box, the nodes take the height the box gives them (gap 20), down to one
+   14 px line (28 px, fact `flow.vertical_one_line` with a probe); phase 3' grows a node for its lines. Map:
+   flow holds 359 -> 414 of 800, the band's vertical series 7 -> ≥ 10; the fixture has no capacity
+   disagreement left. Not fixed: under a KPI row or in a card a vertical flow still holds 3 (fit-grow sizes
+   the nodes before a later phase, the KPI row's growth, takes height from the box).
+2. **Longest-word plan check** (`src/agents/label_room.py`, after `enforce_capacity` in the planner): every
+   process_arrow / timeline / matrix / pyramid label's longest word measured by POM in the deck font (one
+   node spawn per slide plan) against the rooms above. Past it: a horizontal row or timeline turns vertical
+   when the vertical room and count hold, else card_grid steps; a pyramid becomes card_grid steps; a matrix
+   is only reported (cards would lose its positions). Words are never dropped or shortened. Matrix labels are
+   measured in the deck font: right once the diagram-deck-font branch (C3) is merged, until then POM draws
+   them in Noto Sans JP.
+3. **Limits per placement** (`capacity.yaml` `placement`, rendered into the planner prompt by
+   `capacity.placements`): the most items that hold in the band, under a KPI row, in a 60 % and a 40 %
+   column and in a card, per direction, from these maps, capped at the band's `max_items`.
+
 ## 4. What code can fix vs what the planner must choose
 
 **Code (proposed, not applied):**

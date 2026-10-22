@@ -405,6 +405,8 @@ const BODY_INSET = 9.6;    // px each side: OOXML's default lIns / rIns (0.1 in)
 const BODY_INSET_V = 4.8;  // px top / bottom: default tIns / bIns (0.05 in)
 const DIAGRAM_FONT_FLOOR = 14;
 const FLOW_FONT = 14;
+// one 14 px line (lineHeight 1.3) and the default top / bottom insets: the smallest node a vertical column gets
+const FLOW_LINE_H = Math.ceil(FLOW_FONT * 1.3 + 2 * BODY_INSET_V);
 const FLOW_FAMILY = "Noto Sans JP";   // FlowNode has no fontFamily: POM writes its text in this one
 // The share of a flow shape's width / height its text rectangle takes (OOXML preset shape definitions,
 // rounded); a shape not listed gives its text the whole box.
@@ -1005,6 +1007,10 @@ function diagramEdit(n, W, H, ctx) {
     }
     const h = Math.floor(Math.min((H - (count - 1) * gap) / count, 110));
     const w = Math.floor(Math.min(W * 0.8, 320));
+    // a column shorter than POM's own nodes need (60 px, gap 80): smaller nodes instead of a flow scaled down,
+    // text and all, below 14 px — one 14 px line each at least; phase 3' makes a node taller for its lines
+    // (decision 2026-10-21: code sizes vertical flows so capacity's 8 hold in the band)
+    if (flowLayout(n, w0, h0).h > H && h < h0) return { nodeWidth: Math.max(w, w0), nodeHeight: Math.max(h, FLOW_LINE_H), nodeGap: gap };
     if (h <= h0 + 8 && w <= w0 + 16) return null;
     return { nodeWidth: Math.max(w, w0), nodeHeight: Math.max(h, h0), nodeGap: gap };
   }

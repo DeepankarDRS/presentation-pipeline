@@ -116,3 +116,15 @@ def test_compiling_the_fitted_xml_again_changes_nothing(tmp_path, name):
     tags = re.findall(r"<(?:ProcessArrow|Flow) [^>]*>", first["xml"]), re.findall(r"<(?:ProcessArrow|Flow) [^>]*>", second["xml"])
     pick = lambda t: {k: v for k, v in re.findall(r'\s([\w.]+)="([^"]*)"', t) if k in keys}  # noqa: E731
     assert [pick(t) for t in tags[0]] == [pick(t) for t in tags[1]]
+
+
+def test_eight_vertical_flow_nodes_fit_the_band_at_14_px(tmp_path):
+    """User decision 2026-10-21: code sizes vertical flows so capacity's 8 hold. At POM's own 60 px nodes and
+    nodeGap 80 (fit-grow cut the gap to 20) eight nodes needed 620 px of a ~500 px band and were drawn below
+    14 px (break map: the band held 7); the nodes now take the height the band gives them, one line each."""
+    r = _compile(_FIX / "d8-flow-vertical-eight.xml", tmp_path)
+    a = _attrs(r["xml"], "Flow", "col")
+    assert a["direction"] == "vertical" and int(a["nodeHeight"]) < 60 and int(a["nodeGap"]) <= 24
+    nodes = [s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.geom == "flowChartProcess"]
+    assert len(nodes) == 8 and all(s.font >= 13.9 for s in nodes), [(s.text, s.font) for s in nodes]
+    assert not _warnings(r)

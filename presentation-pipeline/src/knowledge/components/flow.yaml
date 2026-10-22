@@ -223,6 +223,28 @@ facts:
           - all(near(t(x).w, 240) and near(t(x).h, 60) for x in "ABCD")
           - near(t("B").y - t("A").b, 24)
 
+  - id: flow.vertical_one_line
+    kind: layout
+    for: [planner, generator]
+    text: >-
+      A vertical node 28 px tall holds one 14 px line (its text box is the node, less the
+      renderer's 5 px top and bottom margins): eight such nodes with nodeGap 20 are 364 px
+      tall and drawn at full size, so a column of eight fits the main band (about 500 px).
+    source: renderPptx/nodes/flow.js calculateVerticalLayout; fit-grow phase 2b (a column shorter than POM's 60 px nodes need)
+    probes:
+      - xml: >-
+          <Flow direction="vertical" h="500" nodeWidth="320" nodeHeight="28" nodeGap="20"><FlowNode id="a" shape="flowChartProcess" text="A"/>
+          <FlowNode id="b" shape="flowChartProcess" text="B"/><FlowNode id="c" shape="flowChartProcess" text="C"/>
+          <FlowNode id="d" shape="flowChartProcess" text="D"/><FlowNode id="e" shape="flowChartProcess" text="E"/>
+          <FlowNode id="f" shape="flowChartProcess" text="F"/><FlowNode id="g" shape="flowChartProcess" text="G"/>
+          <FlowNode id="h" shape="flowChartProcess" text="H"/><FlowConnection from="a" to="b"/><FlowConnection from="b" to="c"/>
+          <FlowConnection from="c" to="d"/><FlowConnection from="d" to="e"/><FlowConnection from="e" to="f"/>
+          <FlowConnection from="f" to="g"/><FlowConnection from="g" to="h"/></Flow>
+        expect:
+          - ok
+          - all(near(t(x).h, 28) and t(x).font == 14 for x in "ABCDEFGH")
+          - near(t("H").b - t("A").y, 8 * 28 + 7 * 20)
+
   - id: flow.label_inset
     kind: layout
     for: [generator]
@@ -250,7 +272,7 @@ facts:
     text: >-
       Give the flow the box its direction needs and size the nodes to it: horizontal, a
       full-width band (nodes x nodeWidth + gaps x nodeGap no wider than the band); vertical,
-      a column with nodeWidth about the column's width (long labels get room) and nodeGap
-      24-40 when the column is short, so nodes x nodeHeight + gaps x nodeGap fits its height
-      and nothing is shrunk. Code widens the nodes to their longest word within that box.
+      a column with nodeWidth about the column's width (long labels get room). Code fits a
+      vertical column to its box (nodeHeight down to one line, flow.vertical_one_line; nodeGap
+      20) and widens the nodes to their longest word within that box.
     source: follows from flow.natural_size, flow.vertical_size and flow.scale
