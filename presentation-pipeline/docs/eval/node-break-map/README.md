@@ -54,9 +54,8 @@ mine (POM's `measureText` adds 10 px to every width; corrected before the final 
 | matrix | ≥ 8 items of 1–2 words when ≥ 0.18 apart (band, split-60, card) | **one long word: breaks at 2** (100 px label at 11 px bold); 0.1 apart in a ≤ 665 px box overlaps |
 | pyramid | short words ≥ 7 levels | long word: 4 levels (Inter 16: 3); 2–3 words: 5 (Inter: 4 / 3); 4 words: 4 levels (Inter: none) — the top band is 400 / levels px wide whatever the box |
 
-fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 102 process_arrow, 20 timeline, 8 tree;
-makes 4 process_arrow cases worse (vertical under a KPI row: the spill fix takes labels to 13.8 px) and 1
-matrix case. (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevron height growth.)
+fit-grow: rescues 263 flow cases (raw POM holds 101 / 800), 107 process_arrow, 20 timeline, 8 tree;
+makes 1 matrix case worse (the 4 process_arrow cases under a KPI row are fixed, C2b). (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevron height growth.)
 
 ## 3. capacity.yaml against the map (band placement, the capacity's label length)
 
@@ -114,6 +113,14 @@ matrix case. (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevro
   them for their words. Map: process_arrow holds 510 → 560 of 800, made worse 15 → 4, the band's 2-word
   row 9 → ≥ 10 steps, split-40 horizontal 3 → 4. Replay of the 577 saved slides: 2 slides change,
   broken words 31 → 30, none worse. New test: 9 three-word steps grow to 99 px (was 120), every word fits.
+- **C2b. The spill fix shrank a diagram below 14 px — FIXED (2026-10-22).** A vertical 8-step chevron
+  column under a KPI row squeezes the title to 41 px for its 47 px line; phase 7 gave the title its room
+  from the `h="max"` diagram, which POM then drew at 13.84 px (raw 14.01): a 6 px title overhang into an
+  empty 24 px gap traded for labels under the floor. `fixSpills` now rejects a fix that takes a
+  ProcessArrow / Flow below `DIAGRAM_FONT_FLOOR` when it was not (drawn size = attribute × scale-to-fit,
+  as phase 2d), so the dense steps run: gaps × 0.75 give the title its line, labels 14.16 px (test d8).
+  Map: process_arrow holds 560 → 569, made worse 4 → 0; the vertical card column (default style) holds
+  5 → 8 steps. Replay of the 577 saved slides: the check changes none of them.
 - **C3. Diagram text is written in "Noto Sans JP"** (POM's default) when no `fontFamily` is given — not
   installed on this PC, not embedded (`font_embed.py` embeds src/node/fonts only), so viewers see a
   substitute. Flow, Tree and Matrix take no `fontFamily` at all. Fix: pptx-post rewrites the diagram

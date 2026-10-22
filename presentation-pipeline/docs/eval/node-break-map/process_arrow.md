@@ -13,7 +13,7 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 | band-under-kpi | horizontal | default | - | 1168×364 | **≥10** · raw 9 | 7 (WG) · raw – | **≥10** · raw 9 | **≥10** · raw 9 | **≥10** · raw 9 |
 | band-under-kpi | horizontal | inter | - | 1168×364 | **≥10** | 7 (WG) · raw – | **≥10** | **≥10** · raw 9 | **≥10** · raw 9 |
 | band-under-kpi | vertical | default | - | 1168×364 | 6 (S) | 6 (S) | 6 (S) | 6 (S) | 6 (S) |
-| band-under-kpi | vertical | inter | - | 1168×364 | 7 (S) · raw 8 | 7 (S) · raw 8 | 7 (S) · raw 8 | 7 (S) · raw 8 | 4 (T) · raw – |
+| band-under-kpi | vertical | inter | - | 1168×364 | 8 (S) | 8 (S) | 8 (S) | 8 (S) | 4 (T) · raw – |
 | split-60 | horizontal | default | - | 665×538 | 6 (WG) · raw 4 | 3 (WG) · raw – | 6 (WG) · raw 4 | 5 (WG) · raw 4 | 5 (WG) · raw 4 |
 | split-60 | horizontal | inter | - | 665×538 | 6 (WG) · raw 5 | 3 (WG) · raw – | 6 (WG) · raw 5 | 5 (WG) | 5 (WG) |
 | split-60 | vertical | default | - | 665×538 | 9 (S) | 9 (S) | 9 (S) | 9 (S) | 9 (S) |
@@ -24,27 +24,20 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 | split-40 | vertical | inter | - | 444×538 | **≥10** | **≥10** | **≥10** | **≥10** | 6 (T) · raw – |
 | card | horizontal | default | - | 809×190 | 9 (WG) · raw 7 | 5 (WG) · raw – | 9 (WG) · raw 7 | 8 (WG) · raw 7 | 8 (WG) · raw 7 |
 | card | horizontal | inter | - | 809×190 | 9 (WG) · raw 8 | 5 (WG) · raw – | 9 (WG) · raw 8 | 8 (WG) · raw 7 | 8 (WG) · raw 7 |
-| card | vertical | default | - | 555×227 | 5 (S) | 5 (S) | 5 (S) | 5 (S) | 5 (S) |
+| card | vertical | default | - | 555×227 | 8 (S) · raw 5 | 8 (S) · raw 5 | 8 (S) · raw 5 | 8 (S) · raw 5 | 8 (S) · raw 5 |
 | card | vertical | inter | - | 555×227 | 9 (S) · raw 6 | 9 (S) · raw 6 | 9 (S) · raw 6 | 9 (S) · raw 6 | – (T) |
 
 ## fit-grow
 
-800 cases. Holds with fit-grow: 560; raw: 462. **Rescued** (raw breaks, fit holds): 102. **Made worse** (raw holds, fit breaks): 4. Breaks either way: 236.
+800 cases. Holds with fit-grow: 569; raw: 462. **Rescued** (raw breaks, fit holds): 107. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 231.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 148, TEXT_OVERFLOW 29, OVERLAP 17, SHRUNK 70, SPILL 4, GUARD 141.
-
-Made worse by fit-grow (first 12):
-
-- `process_arrow~band-under-kpi~vertical~w1~inter~-~08`: SHRUNK — 'Plan' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
-- `process_arrow~band-under-kpi~vertical~long1~inter~-~08`: SHRUNK — 'Profitability' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
-- `process_arrow~band-under-kpi~vertical~w2~inter~-~08`: SHRUNK — 'Market research' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
-- `process_arrow~band-under-kpi~vertical~w3~inter~-~08`: SHRUNK — 'Define pricing strategy' 13.84 px; fit-grow: spill fixed (space given): text height 41 -> 47px
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 148, TEXT_OVERFLOW 29, OVERLAP 17, SHRUNK 60, SPILL 4, GUARD 141.
 
 ## What breaks first (one example per code)
 
 - **TEXT_OVERFLOW** `process_arrow~card~vertical~w4~inter~-~03` box [555, 227]: 'Review all supplier contracts' 3 lines, 58 x 83 px out of its 150 x 80 shape
 - **GUARD** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 91
 - **WORD_BROKEN** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 91
-- **SHRUNK** `process_arrow~card~vertical~long1~default~-~06` box [555, 321]: 'Profitability' 13.21 px
+- **SHRUNK** `process_arrow~band-under-kpi~vertical~long1~default~-~07` box [1168, 373]: 'Profitability' 13.32 px
 - **OVERLAP** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 77 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box
 - **SPILL** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 77 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box

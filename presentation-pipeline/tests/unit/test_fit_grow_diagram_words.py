@@ -116,3 +116,15 @@ def test_compiling_the_fitted_xml_again_changes_nothing(tmp_path, name):
     tags = re.findall(r"<(?:ProcessArrow|Flow) [^>]*>", first["xml"]), re.findall(r"<(?:ProcessArrow|Flow) [^>]*>", second["xml"])
     pick = lambda t: {k: v for k, v in re.findall(r'\s([\w.]+)="([^"]*)"', t) if k in keys}  # noqa: E731
     assert [pick(t) for t in tags[0]] == [pick(t) for t in tags[1]]
+
+
+def test_a_spill_fix_does_not_take_a_diagram_below_14_px(tmp_path):
+    """Node break map (process_arrow, band-under-kpi, vertical, Inter, 8 steps): the column's 8 chevrons squeeze
+    the title to 41 px for its 47 px line. Giving the title its room took 6 px from the diagram and POM drew the
+    labels at 13.84 px (raw POM: 14.01). The spill fix may not take a diagram's labels below 14 px, so it falls
+    through to the dense steps: smaller gaps give the title its line and the labels stay above 14."""
+    r = _compile(_FIX / "d8-arrow-under-kpi.xml", tmp_path)
+    assert any(x.startswith("slide 1: spill fixed (dense: gap") for x in r["fitGrow"]), r["fitGrow"]
+    assert not r.get("warnings")
+    labels = [s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.text in ("Plan", "Build", "Train")]
+    assert len(labels) == 3 and all(s.font >= 14 for s in labels), [(s.text, s.font) for s in labels]

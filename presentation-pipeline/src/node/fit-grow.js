@@ -2507,7 +2507,7 @@ async function settle(xml) {
       L = await layout(xml);
     }
     return { xml, spills: spillsOf(L).map(({ n, kind, need, have }) => ({ id: n.id, type: n.type, kind, need, have })),
-      over: overSlide(L) };
+      over: overSlide(L), fonts: diagramFonts(L) };
   } finally { L.free(); }
 }
 
@@ -2523,13 +2523,33 @@ function scaleSpacing(xml, scales) {
   return xml;
 }
 
+/** The size POM draws each ProcessArrow's / Flow's labels at (attribute x its scale-to-fit), by id. */
+function diagramFonts(L) {
+  const out = new Map();
+  for (const root of L.slides) walk(root, (n) => {
+    if (!n.id || !(n.type === "processArrow" ? n.steps : n.type === "flow" ? n.nodes : null)?.length) return;
+    const b = L.box(n);
+    const arrow = n.type === "processArrow";
+    const g = arrow ? arrowLayout(n, n.itemWidth ?? 150) : flowLayout(n, n.nodeWidth ?? 120, n.nodeHeight ?? 60);
+    out.set(n.id, (arrow ? n.fontSize ?? 14 : FLOW_FONT) * fitScale(g, b.w - b.pl - b.pr, b.h - b.pt - b.pb));
+  });
+  return out;
+}
+
+// Giving a text its room can take the room from a diagram beside it, which POM then draws smaller: a fix may
+// not take a diagram's labels below DIAGRAM_FONT_FLOOR when they were not (node break map, 2026-10-22: a
+// vertical 8-step ProcessArrow under a KPI row went 16 -> 13.84 px so the title above could be 6 px taller).
+const shrinksDiagram = (fonts, before) => [...fonts].some(([id, f]) =>
+  f < DIAGRAM_FONT_FLOOR - 0.01 && f < (before.get(id) ?? Infinity) - 0.01);
+
 const describeSpill = (s) => `${s.type} ${s.kind === "w" ? "width" : "height"} ${Math.round(s.have)} -> ${Math.round(s.need)}px`;
 
 async function fixSpills(xml, report, warnings) {
   const L = await layout(xml);
-  let first;
+  let first, fonts;
   try {
     first = spillsOf(L).map(({ n, kind, need, have }) => ({ id: n.id, type: n.type, kind, need, have }));
+    fonts = diagramFonts(L);
   } finally { L.free(); }
   // stacks follow their content: name the leaves (tables / texts) when there are any
   const named = (sp) => {
@@ -2538,8 +2558,9 @@ async function fixSpills(xml, report, warnings) {
   };
   if (!first.length) return xml;
 
+  const fixed = (o) => !o.spills.length && o.over <= 0 && !shrinksDiagram(o.fonts, fonts);
   let out = await settle(xml);
-  if (!out.spills.length && out.over <= 0) {
+  if (fixed(out)) {
     report.push(`spill fixed (space given): ${named(first)}`);
     return out.xml;
   }
@@ -2547,13 +2568,14 @@ async function fixSpills(xml, report, warnings) {
   for (const [attr, s] of DENSE_STEPS) {
     scales[attr] = s;
     out = await settle(scaleSpacing(xml, scales));
-    if (!out.spills.length && out.over <= 0) {
+    if (fixed(out)) {
       report.push(`spill fixed (dense: ${Object.entries(scales).map(([a, v]) => `${a} x${v}`).join(", ")}): ${named(first)}`);
       return out.xml;
     }
   }
+  const why = !out.spills.length && out.over <= 0 ? ` (the room would draw a diagram's labels below ${DIAGRAM_FONT_FLOOR}px)` : "";
   warnings.push({ code: "SLIDE_DENSE", message: `content needs more room than the slide has after gaps, padding and `
-    + `fonts down to 14px; left as generated: ${named(first)}` });
+    + `fonts down to 14px${why}; left as generated: ${named(first)}` });
   report.push(`spill left (slide too dense): ${named(first)}`);
   return xml;
 }
