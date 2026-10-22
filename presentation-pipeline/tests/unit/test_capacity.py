@@ -206,3 +206,16 @@ def test_real_matrix_is_kept():
                                                     "cards": [{"title": "Search visibility"}, {"title": "Home-screen placement"}]}}]
     enforce_capacity(comps)
     assert comps[0]["content_data"]["card_layout"] == "matrix"
+
+
+def test_placement_limits_are_rendered_and_never_above_the_band():
+    """capacity.yaml `placement` (2026-10-22, node break map): the planner prompt states the measured items per
+    place from the file, and no place promises more than the band's max_items."""
+    from src.agents.capacity import placements
+    p = _prompt()
+    for kind in ("process_arrow", "timeline", "flow", "tree"):
+        assert f"{kind}: {placements(kind)}." in p
+    for kind in ("process_arrow", "timeline", "flow"):
+        for direction, places in capacity()["placement"][kind].items():
+            assert max(places.values()) <= max_of(kind, direction=direction), (kind, direction)
+            assert places["band"] == max_of(kind, direction=direction)

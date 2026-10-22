@@ -1,0 +1,14 @@
+<Slide><VStack w="1280" h="720" padding="56" gap="24" alignItems="stretch" backgroundColor="FFFFFF">
+<Text fontSize="36" bold="true" fontFamily="Inter" color="16202E">A headline that states the point</Text>
+<HStack gap="24" h="150" alignItems="stretch"><VStack w="max" padding="16" gap="4" backgroundColor="F1F5F9" alignItems="stretch"><Text fontSize="40" bold="true" fontFamily="Inter">$4.2M</Text><Text fontSize="14" fontFamily="Inter" color="55627A">Revenue</Text></VStack><VStack w="max" padding="16" gap="4" backgroundColor="F1F5F9" alignItems="stretch"><Text fontSize="40" bold="true" fontFamily="Inter">18%</Text><Text fontSize="14" fontFamily="Inter" color="55627A">Margin</Text></VStack><VStack w="max" padding="16" gap="4" backgroundColor="F1F5F9" alignItems="stretch"><Text fontSize="40" bold="true" fontFamily="Inter">212</Text><Text fontSize="14" fontFamily="Inter" color="55627A">Stores</Text></VStack></HStack>
+<ProcessArrow direction="vertical" h="max" fontFamily="Inter" bold="true" fontSize="16">
+  <ProcessArrowStep label="Plan"/>
+  <ProcessArrowStep label="Build"/>
+  <ProcessArrowStep label="Test"/>
+  <ProcessArrowStep label="Launch"/>
+  <ProcessArrowStep label="Scale"/>
+  <ProcessArrowStep label="Audit"/>
+  <ProcessArrowStep label="Hire"/>
+  <ProcessArrowStep label="Train"/>
+</ProcessArrow>
+</VStack></Slide>

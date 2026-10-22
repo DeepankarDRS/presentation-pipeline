@@ -51,6 +51,7 @@ PROBED_KINDS = ("syntax", "layout")  # a claim about POM must be shown by POM
 _NS = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
 _EMU = 9525
 _DEFAULT_INSET = 91440  # EMU: OOXML bodyPr lIns / rIns when not written (0.1 in)
+_DEFAULT_INSET_V = 45720  # EMU: tIns / bIns when not written (0.05 in)
 _PROBE_ROOT = '<VStack w="1280" h="720" padding="40" alignItems="{align}">'
 
 
@@ -118,6 +119,12 @@ class Box:
     font: float | None = None
     geom: str = ""
     pad: float = 0.0
+    vpad: float = 0.0     # top + bottom text inset px (OOXML default 0.05 in each)
+    bold: bool = False
+    family: str = ""      # the first run's latin typeface ("" = the theme font)
+    filled: bool = False  # spPr has a fill (a visible shape, not a bare text box)
+    anchor: str = "t"     # bodyPr anchor: t / ctr / b
+    algn: str = "l"       # the first paragraph's alignment: l / ctr / r
 
     @property
     def r(self) -> float:
@@ -151,11 +158,21 @@ def drawn_shapes(pptx: str | Path) -> list[Box]:
         prst = el.find(".//a:prstGeom", _NS)
         body = el.find(".//a:bodyPr", _NS)
         ins = [int(body.get(k, _DEFAULT_INSET)) if body is not None else _DEFAULT_INSET for k in ("lIns", "rIns")]
+        vins = [int(body.get(k, _DEFAULT_INSET_V)) if body is not None else _DEFAULT_INSET_V for k in ("tIns", "bIns")]
+        rpr = next((r for r in el.iter(f"{{{_NS['a']}}}rPr")), None)
+        ppr = el.find(".//a:pPr", _NS)
+        sppr = next((c for c in el if c.tag.endswith("}spPr")), None)
+        latin = rpr.find("a:latin", _NS) if rpr is not None else None
         out.append(Box(int(off.get("x")) / _EMU, int(off.get("y")) / _EMU,
                        int(ext.get("cx")) / _EMU, int(ext.get("cy")) / _EMU, text,
                        round(int(sz) / 100 / 0.75, 2) if sz else None,
                        prst.get("prst") if prst is not None else
-                       "cust" if el.find(".//a:custGeom", _NS) is not None else "", sum(ins) / _EMU))
+                       "cust" if el.find(".//a:custGeom", _NS) is not None else "", sum(ins) / _EMU,
+                       sum(vins) / _EMU, rpr is not None and rpr.get("b") in ("1", "true"),
+                       latin.get("typeface", "") if latin is not None else "",
+                       sppr is not None and any(sppr.find(f"a:{f}", _NS) is not None for f in ("solidFill", "gradFill")),
+                       body.get("anchor", "t") if body is not None else "t",
+                       ppr.get("algn", "l") if ppr is not None else "l"))
     return out
 
 

@@ -1,0 +1,11 @@
+<Theme surface="FFFFFF" surfaceAlt="F3F4F6" accent="2563EB" accentSoft="E3EBFC" onAccent="FFFFFF" textMain="111827" textMuted="6B7280" border="E5E7EB" />
+<Slide>
+  <VStack w="1280" h="720" padding="56" gap="24" alignItems="stretch" backgroundColor="$surface">
+    <Text fontFamily="Inter" fontSize="36" color="$textMain" bold="true">Nine steps across the band</Text>
+    <ProcessArrow id="row" direction="horizontal" h="max">
+      <ProcessArrowStep label="Define pricing strategy" /><ProcessArrowStep label="Run pilot stores" /><ProcessArrowStep label="Hire regional leads" />
+      <ProcessArrowStep label="Audit vendor costs" /><ProcessArrowStep label="Launch loyalty program" /><ProcessArrowStep label="Clean customer data" />
+      <ProcessArrowStep label="Train sales teams" /><ProcessArrowStep label="Review risk register" /><ProcessArrowStep label="Expand delivery zones" />
+    </ProcessArrow>
+  </VStack>
+</Slide>

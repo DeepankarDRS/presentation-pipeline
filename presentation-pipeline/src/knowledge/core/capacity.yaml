@@ -49,6 +49,33 @@ process_arrow:
 flow:
   min_items: 4
   max_items: {horizontal: 6, vertical: 8}
+# Where the diagram sits (2026-10-22, user: limits per placement as measured facts). The most items that
+# hold with fit-grow on (no broken word, overflow or text below 14 px), measured by the node break map
+# (docs/eval/node-break-map/<kind>.md, labels of 2 words, timeline 3) and capped at the band's max_items
+# above. Boxes: band 1168 x ~538 (the slide's main band); under_kpi 1168 x ~364 (a KPI row above it);
+# split_60 ~665 x 538 and split_40 ~444 x 538 (the columns of a 60 / 40 slide); card ~560-680 x ~200-320.
+#   process_arrow vertical: n*80 - (n-1)*28 <= H        band (538-28)/52 = 9.8 -> 9; under_kpi 336/52 = 6.5 -> 6;
+#                                                       card ~300: 272/52 = 5.2 -> 5
+#   process_arrow horizontal: fit-grow sizes the chevrons to the column, label room (W*0.97 + (n-1)*28)/n - 75 px:
+#                    split_60 6 (55 px each), split_40 4 (54 px) for 2-word labels (measured); a longer word is
+#                    the label-room check's (src/agents/label_room.py)
+#   timeline horizontal: 120 px labels on dots >= 132 px apart   (n-1)*132 <= W - 120:
+#                                                       split_60 545/132 + 1 = 5.1 -> 5; split_40 324/132 + 1 = 3.5 -> 3
+#   timeline vertical: 24 + (n-1)*60 <= H               under_kpi 340/60 + 1 = 6.7 -> 6; card 276/60 + 1 = 5.6 -> 5
+#   flow vertical: one-line nodes 28 px + gaps 20 (flow.vertical_one_line), so a 538 px column holds 10+; under a
+#                    KPI row or in a card only 3 hold: fit-grow sizes the nodes for the box before later phases
+#                    (the KPI row's growth) take height from it, and the flow is scaled below 14 px
+#   flow horizontal: nodes at least 101 px for their words + gaps 20: split_60 6, split_40 4 (measured)
+#   tree: layout horizontal grows sideways (good in a column), vertical spreads leaves across (good in a band)
+placement:
+  process_arrow: {horizontal: {band: 7, under_kpi: 7, split_60: 6, split_40: 4, card: 7},
+                  vertical: {band: 9, under_kpi: 6, split_60: 9, split_40: 9, card: 5}}
+  timeline: {horizontal: {band: 8, under_kpi: 8, split_60: 5, split_40: 3, card: 8},
+             vertical: {band: 8, under_kpi: 6, split_60: 8, split_40: 8, card: 5}}
+  flow: {horizontal: {band: 6, under_kpi: 6, split_60: 6, split_40: 4, card: 6},
+         vertical: {band: 8, under_kpi: 3, split_60: 8, split_40: 8, card: 3}}
+  tree: {horizontal: {band: 8, under_kpi: 6, split_60: 8, split_40: 8, card: 5},
+         vertical: {band: 8, under_kpi: 8, split_60: 4, split_40: 3, card: 7}}
 matrix:
   items: [3, 4]          # dots and labels overlap past 4 (recipes.yaml matrix)
 pyramid:

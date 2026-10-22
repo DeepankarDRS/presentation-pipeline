@@ -33,6 +33,20 @@ def span(kind: str, key: str = "items") -> str:
     return f"{lo}-{hi}"
 
 
+_PLACES = (("band", "the main band"), ("under_kpi", "under a KPI row"), ("split_60", "a 60 % column"),
+           ("split_40", "a 40 % column"), ("card", "a card"))
+
+
+def placements(kind: str) -> str:
+    """Items that hold per placement as prompt text: "the main band 7 across / 9 down; under a KPI row 7 / 6; ...";
+    tree's two layouts are its directions (capacity.yaml `placement`, measured by the node break map)."""
+    p = capacity()["placement"][kind]
+    first, *rest = _PLACES
+    out = [f"{first[1]} {p['horizontal'][first[0]]} across / {p['vertical'][first[0]]} down"]
+    out += [f"{name} {p['horizontal'][key]} / {p['vertical'][key]}" for key, name in rest]
+    return "; ".join(out)
+
+
 def direction_of(comp: dict[str, Any]) -> str:
     """A planned diagram's direction: content_data.direction, else the plan's orientation, else POM's default."""
     d = (comp.get("content_data") or {}).get("direction") or comp.get("orientation") or "horizontal"

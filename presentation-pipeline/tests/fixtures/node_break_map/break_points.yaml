@@ -1,0 +1,245 @@
+# Measured break points of the node break map's regression slice (scripts/node_break_map.py
+# TEST_SLICE), fit-grow on, POM 10.3.0. Written by `python -m scripts.node_break_map --write-points`
+# after a full run; tests/unit/test_node_break_map.py compiles each at holds_up_to and the count
+# after it. capacity_disagreements: capacity.yaml limits above the measured band point, kept
+# until the user decides (each with the reason); the test fails on any other.
+series:
+- kind: flow
+  placement: band
+  direction: horizontal
+  labels: w2
+  style: default
+  variant: process
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: flow
+  placement: band
+  direction: vertical
+  labels: w2
+  style: default
+  variant: process
+  holds_up_to: 10
+  swept:
+  - 3
+  - 10
+  first_break: null
+- kind: process_arrow
+  placement: band
+  direction: horizontal
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 10
+  swept:
+  - 3
+  - 10
+  first_break: null
+- kind: process_arrow
+  placement: band
+  direction: horizontal
+  labels: w2
+  style: inter
+  variant: ''
+  holds_up_to: 10
+  swept:
+  - 3
+  - 10
+  first_break: null
+- kind: process_arrow
+  placement: band
+  direction: vertical
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: process_arrow
+  placement: split-40
+  direction: horizontal
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 4
+  swept:
+  - 3
+  - 10
+  first_break:
+  - WORD_BROKEN
+- kind: process_arrow
+  placement: split-40
+  direction: vertical
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: timeline
+  placement: band
+  direction: horizontal
+  labels: w3
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: timeline
+  placement: band
+  direction: vertical
+  labels: w3
+  style: default
+  variant: ''
+  holds_up_to: 9
+  swept:
+  - 3
+  - 10
+  first_break:
+  - SHRUNK
+- kind: timeline
+  placement: band
+  direction: horizontal
+  labels: long1
+  style: default
+  variant: ''
+  holds_up_to: null
+  swept:
+  - 3
+  - 10
+  first_break:
+  - WORD_BROKEN
+- kind: tree
+  placement: band
+  direction: vertical
+  labels: w2
+  style: default
+  variant: depth2
+  holds_up_to: 8
+  swept:
+  - 2
+  - 8
+  first_break: null
+- kind: matrix
+  placement: band
+  direction: '-'
+  labels: w2
+  style: default
+  variant: d0.18
+  holds_up_to: 8
+  swept:
+  - 2
+  - 8
+  first_break: null
+- kind: pyramid
+  placement: band
+  direction: up
+  labels: w2
+  style: default
+  variant: ''
+  holds_up_to: 5
+  swept:
+  - 3
+  - 7
+  first_break:
+  - WORD_BROKEN
+- kind: table
+  placement: band
+  direction: c10
+  labels: w36
+  style: long
+  variant: ''
+  holds_up_to: 8
+  swept:
+  - 2
+  - 14
+  first_break:
+  - SPILL
+- kind: table
+  placement: band-under-kpi
+  direction: c4
+  labels: num
+  style: short
+  variant: ''
+  holds_up_to: 10
+  swept:
+  - 2
+  - 14
+  first_break:
+  - SPILL
+- kind: table
+  placement: split-40
+  direction: c5
+  labels: long1
+  style: short
+  variant: ''
+  holds_up_to: null
+  swept:
+  - 2
+  - 14
+  first_break:
+  - WORD_BROKEN
+- kind: kpi
+  placement: band
+  direction: pinned
+  labels: short
+  style: long1
+  variant: ''
+  holds_up_to: 7
+  swept:
+  - 2
+  - 8
+  first_break:
+  - WORD_BROKEN
+  - OVERLAP
+- kind: kpi
+  placement: split-40
+  direction: auto
+  labels: short
+  style: w1
+  variant: ''
+  holds_up_to: 6
+  swept:
+  - 2
+  - 8
+  first_break:
+  - WORD_BROKEN
+  - OVERLAP
+- kind: cards
+  placement: band
+  direction: steps
+  labels: short
+  style: w1
+  variant: ''
+  holds_up_to: 7
+  swept:
+  - 2
+  - 12
+  first_break:
+  - WORD_BROKEN
+  - OVERLAP
+- kind: cards
+  placement: split-60
+  direction: grid
+  labels: long
+  style: w1
+  variant: ''
+  holds_up_to: 6
+  swept:
+  - 2
+  - 12
+  first_break:
+  - SPILL
+capacity_disagreements: {}
