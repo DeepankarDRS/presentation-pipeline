@@ -298,7 +298,12 @@ def compile_cases(cases: list[Case], workdir: Path, jobs: int = 4, chunk: int = 
         i, batch = i_batch
         d = workdir / f"b{i:04d}"
         d.mkdir(parents=True, exist_ok=True)
-        (d / "cases.json").write_text(json.dumps(batch), encoding="utf-8")
+        cases_json, done = json.dumps(batch), d / "build-results.json"
+        # resume: a batch already built from the same cases (an interrupted run) is reused
+        if done.exists() and (d / "cases.json").exists() and (d / "cases.json").read_text(encoding="utf-8") == cases_json:
+            return json.loads(done.read_text(encoding="utf-8"))
+        done.unlink(missing_ok=True)
+        (d / "cases.json").write_text(cases_json, encoding="utf-8")
         _node(["build", str(d / "cases.json"), str(d)])
         return json.loads((d / "build-results.json").read_text(encoding="utf-8"))
 
@@ -586,6 +591,15 @@ TEST_SLICE = [
     ("tree", "band", "vertical", "w2", "default", "depth2"),
     ("matrix", "band", "-", "w2", "default", "d0.18"),
     ("pyramid", "band", "up", "w2", "default", ""),
+    # table: (columns, cell text, header) -> body rows; kpi: (arrangement, value, label) -> tiles;
+    # cards: (layout, body, title) -> cards (scripts/node_break_map_blocks.py)
+    ("table", "band", "c10", "w36", "long", ""),
+    ("table", "band-under-kpi", "c4", "num", "short", ""),
+    ("table", "split-40", "c5", "long1", "short", ""),
+    ("kpi", "band", "pinned", "short", "long1", ""),
+    ("kpi", "split-40", "auto", "short", "w1", ""),
+    ("cards", "band", "steps", "short", "w1", ""),
+    ("cards", "split-60", "grid", "long", "w1", ""),
 ]
 SERIES_KEYS = ("kind", "placement", "direction", "labels", "style", "variant")
 # capacity.yaml max_items per direction is checked against the band series at this label length
