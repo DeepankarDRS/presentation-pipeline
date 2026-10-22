@@ -103,7 +103,9 @@ matrix case. (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevro
   need now includes `WORD_MARGIN` (before: 63 px given, "spend" left at 48 px in 48), and an edit that
   clears every overflow is kept even when the total was under the 0.5 px step. Open edge: POM counts
   letter spacing after the last letter too (LibreOffice draws "share", 52 px with it, whole in 52 px);
-  kept conservative until PowerPoint is checked.
+  kept conservative until PowerPoint is checked. LibreOffice probe (2026-10-22, `letter-spacing/`): five
+  words, spacing 1–4 px, all drawn whole at count − spacing + 0.5, so LibreOffice does not need the
+  trailing spacing; PowerPoint is not installed here, `letter-spacing/probe.pptx` is ready for the test PC.
 - **C2. `growDiagrams` grew chevron itemHeight 80 → 120 — FIXED (2026-10-21, user).** A taller chevron
   has a narrower label box (itemWidth − 0.7 × itemHeight) and a larger font: at 9 steps "program" fit
   POM's raw drawing and broke after fit-grow (15 map cases). `diagramEdit` now grows the row only to the
