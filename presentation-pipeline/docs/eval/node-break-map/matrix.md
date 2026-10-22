@@ -35,4 +35,4 @@ Made worse by fit-grow (first 12):
 ## What breaks first (one example per code)
 
 - **OVERLAP** `matrix~card~-~long1~default~d0.1~02` box [590, 245]: 'Profitability' / 'Reconciliation'
-- **WORD_BROKEN** `matrix~band-under-kpi~-~long1~default~d0.18~03` box [1168, 364]: 'Implementation' 88 px in 81
+- **WORD_BROKEN** `matrix~band-under-kpi~-~long1~default~d0.18~03` box [1168, 364]: 'Implementation' 84 px in 81

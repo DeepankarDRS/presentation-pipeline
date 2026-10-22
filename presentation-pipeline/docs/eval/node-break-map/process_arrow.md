@@ -31,7 +31,7 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 
 800 cases. Holds with fit-grow: 560; raw: 462. **Rescued** (raw breaks, fit holds): 102. **Made worse** (raw holds, fit breaks): 4. Breaks either way: 236.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 148, TEXT_OVERFLOW 29, OVERLAP 17, SHRUNK 70, SPILL 4, GUARD 141.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 148, TEXT_OVERFLOW 29, OVERLAP 18, SHRUNK 70, SPILL 3, GUARD 129.
 
 Made worse by fit-grow (first 12):
 
@@ -46,5 +46,5 @@ Made worse by fit-grow (first 12):
 - **GUARD** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 91
 - **WORD_BROKEN** `process_arrow~split-40~horizontal~long1~default~-~03` box [444, 538]: 'Reconciliation' 93 px in 91
 - **SHRUNK** `process_arrow~card~vertical~long1~default~-~06` box [555, 321]: 'Profitability' 13.21 px
-- **OVERLAP** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 77 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box
-- **SPILL** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 77 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box
+- **OVERLAP** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 75 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box
+- **SPILL** `process_arrow~split-40~horizontal~long1~default~-~09` box [444, 538]: 'Profitability' 75 px in 27; 'Reconciliation' 1 lines, 17 x 93 px out of its 74 x 80 shape; 'Reconciliation' / 'Implementation'; 'Benchmarking' past the 444x538 box
