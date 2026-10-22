@@ -126,7 +126,8 @@ matrix case. (Before C1 / C2 were fixed: 64 rescued, 15 made worse by the chevro
   every Noto run is now drawn in Inter (before: Liberation Sans, bold matrix labels in Arial Black).
 - **C4. Fixed small sizes POM gives no attribute for:** tree labels 12 px, matrix labels 11 px, timeline
   dates 12 / descriptions 11 px. Only pptx-post can raise them; any scale-to-fit puts them further
-  below 14. **Options measured (2026-10-22, not applied):** POM's renderer constants (matrix item /
+  below 14. **Decision (user, 2026-10-22): keep POM's own sizes for now**; the options below stay on record.
+  **Options measured (2026-10-22, not applied):** POM's renderer constants (matrix item /
   quadrant labels 11, axis labels 12; timeline dates 12, descriptions 11; tree labels 12, each × the
   diagram's scale) raised to 13 or 14 px in a patched copy, maps re-run with fit-grow (C3 in). "Clean" =
   no word broken, overflow, overlap or spill (shrink codes left out, they move with the size itself):
