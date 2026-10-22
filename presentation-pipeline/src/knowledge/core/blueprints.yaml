@@ -141,7 +141,7 @@ kpi_snapshot:
       <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="60%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMuted">Chart title</Text>
-          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["0D6B4E","$accent","F59E0B"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["$accent"]'>
             <ChartSeries name="Series"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
@@ -197,7 +197,7 @@ chart_hero__sidebar_cards:
       <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="62%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart h="max" minH="180" chartType="line" showLegend="true" chartColors='["0D6B4E","$accent","F59E0B"]'>
+          <Chart h="max" minH="180" chartType="line" showLegend="false" chartColors='["$accent"]'>
             <ChartSeries name="Series"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
@@ -395,7 +395,7 @@ dense_deepdive:
         <VStack w="50%" gap="10">
           <VStack grow="1" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1">
             <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-            <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["0D6B4E"]'>
+            <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["$chart1"]'>
               <ChartSeries name="Sales">
                 <ChartDataPoint label="A" value="20" />
                 <ChartDataPoint label="B" value="10" />
@@ -649,27 +649,28 @@ dashboard_3band:
             <VStack gap="2"><Text fontSize="14" color="$textMuted">METRIC</Text><Text fontSize="28" color="$textMain" bold="true">$VALUE</Text></VStack>
             <Shape shapeType="roundRect" w="108" h="26" fill.color="$accentSoft" color="$accentText" fontSize="14" bold="true" borderRadius="999">DELTA</Shape>
           </HStack>
-          <Chart h="max" minH="180" chartType="area" showLegend="true" chartColors='["184D43","72D6B5"]'>
+          <Chart h="max" minH="180" chartType="area" showLegend="false" chartColors='["$accent"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
         <VStack w="38%" padding="18" gap="10" backgroundColor="$textMain" borderRadius="16" justifyContent="center">
           <Text fontSize="14" color="$accentAlt" bold="true" letterSpacing="1">SECONDARY CHART</Text>
-          <Chart h="max" minH="180" chartType="doughnut" showLegend="true" chartColors='["72D6B5","F2C14E","E66B5B","9FB0AC"]'>
-            <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
+          <Chart h="max" minH="180" chartType="doughnut" showLegend="false" chartColors='["$accent","$neutral"]'>
+            <ChartSeries name="S"><ChartDataPoint label="Focus part" value="62" /><ChartDataPoint label="Rest" value="38" /></ChartSeries>
           </Chart>
+          <Text fontSize="14" color="$surface">62% focus part (accent) · 38% rest</Text>
         </VStack>
       </HStack>
       <HStack grow="2" gap="14" alignItems="stretch">
         <VStack w="34%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["184D43"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["$chart1"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
         <VStack w="34%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart h="max" minH="180" chartType="radar" showLegend="false" chartColors='["72D6B5"]'>
+          <Chart h="max" minH="180" chartType="radar" showLegend="false" chartColors='["$chart1"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>
@@ -768,7 +769,7 @@ chart_and_table:
       <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="50%" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["0D6B4E","$accent"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["$accent"]'>
             <ChartSeries name="Series"><ChartDataPoint label="Q1" value="10" /></ChartSeries>
           </Chart>
         </VStack>
@@ -822,7 +823,7 @@ chart_left__narrative_right:
       <HStack grow="1" gap="14" alignItems="stretch">
         <VStack w="60%" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
           <Text fontSize="14" color="$textMain" bold="true">Chart title</Text>
-          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["0D6B4E","$accent"]'>
+          <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["$accent"]'>
             <ChartSeries name="S"><ChartDataPoint label="A" value="10" /></ChartSeries>
           </Chart>
         </VStack>

@@ -312,13 +312,13 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
         chart_colors = theme_info.get("chart_colors_json", "")
         notes.append(
             f"Chart chartColors uses theme tokens, in order: chartColors='{chart_colors}' "
-            "(one per series/bar)."
+            "(one per series)."
         )
         focus = theme_info.get("chart_focus")
         if focus:
             notes.append(
-                "One series or bar in focus (the one the headline names): give it "
-                f"{focus['focus']} and every other series {focus['rest']}."
+                f"Focus: the bar / series the headline names (else the latest period) {focus['focus']}, "
+                f"the rest {focus['rest']}; no legend box (CHART RULES)."
             )
         if theme_info.get("is_dark"):
             notes.append(
@@ -407,6 +407,7 @@ _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("spacing_scale", "SPACING SCALE"),
     ("color_discipline", "COLOR DISCIPLINE"),
     ("color_roles", "COLOR ROLES (meaning, the same on every slide)"),
+    ("chart_rules", "CHART RULES (focus colour, no legend box)"),
     ("render_gotchas", "RENDER GOTCHAS"),
     ("design_variety", "DESIGN VARIETY"),
     ("checklist", "PRE-EMIT CHECKLIST"),

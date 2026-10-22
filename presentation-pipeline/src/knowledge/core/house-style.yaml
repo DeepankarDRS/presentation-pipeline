@@ -234,6 +234,12 @@ color_roles: >
   Never use a role for decoration, never give one meaning two colours, never
   more than one item in focus per component.
 
+chart_rules: >
+  The bar / series / slice the headline names = $accent, the rest $neutral; none named
+  and periods = the LATEST period. One series = one colour for every bar. $chart1.. only
+  for 2-3 equal series. showLegend="false": name 2-3 series in the chart title row
+  (12 px square of the colour + name), put the key number in the title row or a caption.
+
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:
   - "FONT SHRINK (the #1 quality killer): the generator tends to shrink fonts
