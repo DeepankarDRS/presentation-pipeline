@@ -125,10 +125,37 @@ makes 1 matrix case worse (the 4 process_arrow cases under a KPI row are fixed, 
   installed on this PC, not embedded (`font_embed.py` embeds src/node/fonts only), so viewers see a
   substitute. Flow, Tree and Matrix take no `fontFamily` at all. Fix: pptx-post rewrites the diagram
   runs' typeface to the deck font (and fit-grow measures in it), or the generator always writes
-  `fontFamily` where POM accepts it.
+  `fontFamily` where POM accepts it. **FIXED (2026-10-21, `3ff0f94`):** pptx-post names the deck font
+  (`POM_DECK_FONT`, default Inter) in POM's "Noto Sans JP" runs, font_embed embeds it, fit-grow measures
+  in it; `POM_DECK_FONT=none` is the old behaviour. Measured 2026-10-22 (same code, the env switch as
+  "before"): map holds with fit-grow unchanged for timeline 492, process_arrow 560, pyramid 119, tree 420,
+  matrix 186 of their grids; flow 364 -> 359: 5 horizontal flows with decision / terminator shapes now
+  score a word 0-1 px over its estimated text rectangle ("Scale" 36 px in 36) where the guard's 8 %
+  slack for an unloadable Noto used to hide it; LibreOffice draws all 5 whole (checked by render), so the
+  scorer's shape rectangle (FLOW_TEXT_RECT) is the soft spot, not the font. Replay of the 38 unique saved
+  slides with a Flow / Tree / Matrix (C:\dev output/, LibreOffice renders): broken words 27 -> 27
+  ("leadershi|p" fixed, "Bough|t" in a decision diamond that already could not hold "before?" newly
+  broken: Inter is wider than the Liberation Sans LibreOffice substituted), WORD_TOO_WIDE 16 -> 16;
+  every Noto run is now drawn in Inter (before: Liberation Sans, bold matrix labels in Arial Black).
 - **C4. Fixed small sizes POM gives no attribute for:** tree labels 12 px, matrix labels 11 px, timeline
   dates 12 / descriptions 11 px. Only pptx-post can raise them; any scale-to-fit puts them further
-  below 14.
+  below 14. **Decision (user, 2026-10-22): keep POM's own sizes for now**; the options below stay on record.
+  **Options measured (2026-10-22, not applied):** POM's renderer constants (matrix item /
+  quadrant labels 11, axis labels 12; timeline dates 12, descriptions 11; tree labels 12, each × the
+  diagram's scale) raised to 13 or 14 px in a patched copy, maps re-run with fit-grow (C3 in). "Clean" =
+  no word broken, overflow, overlap or spill (shrink codes left out, they move with the size itself):
+
+  | kind (grid) | as POM draws | all to 13 | all to 14 | per diagram: largest of 14 / 13 / 12 that is clean |
+  |---|---|---|---|---|
+  | tree (560) | 532 clean, 0 at ≥ 14 px | 510 (22 newly broken) | 405 (127 newly broken: POM lays nodes out for 12 px, 14 px wraps and overflows them), 372 at ≥ 14 | 532 clean: 405 at 14, 105 at 13, 22 at 12 |
+  | matrix (315) | 186 clean, 0 at ≥ 12 px | 156 (30 newly broken) | 158 (29 newly broken: 100 px item label, "Reconciliati-on"), 158 at ≥ 14 | 187 clean: 158 at 14, 29 at 12 |
+  | timeline (800) | 720 clean, 0 at ≥ 14 | 720 | 720, 492 at ≥ 14 | 720 at 14 |
+
+  Checked by render: tree at 14 wraps "Market research" in its 30 px node, matrix at 14 breaks and
+  overlaps its labels in a card. The timeline grid has short dates and no descriptions, so descriptions
+  at 13 / 14 are not measured yet. Implementation note: tree and matrix runs are the ones POM writes in
+  "Noto Sans JP", so pptx-post can find them before it renames the font; timeline runs carry the deck
+  font like all other text, so a per-diagram size needs fit-grow to pass which runs to change.
 - **C5. Vertical flow sizing** (§3 item 1) and **chevron width from the longest word** (phase 3' already
   does this; with C1 / C2 fixed it rescues more).
 

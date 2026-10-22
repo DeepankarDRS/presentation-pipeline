@@ -35,6 +35,6 @@ Failure codes with fit-grow (a case can have several): WORD_BROKEN 80, SHRUNK 26
 
 ## What breaks first (one example per code)
 
-- **WORD_BROKEN** `timeline~band-under-kpi~horizontal~long1~default~-~03` box [1168, 364]: 'Implementation' 112 px in 101
-- **SHRUNK** `timeline~split-40~horizontal~long1~default~-~04` box [444, 538]: 'Q1 2025' 11.11 px; 'Implementation' 103 px in 92
-- **SCALE_FLOOR** `timeline~split-40~horizontal~long1~default~-~08` box [444, 538]: 'Q1 2025' 6 px; 'Profitability' 42 px in 41
+- **WORD_BROKEN** `timeline~band-under-kpi~horizontal~long1~default~-~03` box [1168, 364]: 'Implementation' 107 px in 101
+- **SHRUNK** `timeline~split-40~horizontal~long1~default~-~04` box [444, 538]: 'Q1 2025' 11.11 px; 'Implementation' 99 px in 92
+- **SCALE_FLOOR** `timeline~split-40~horizontal~long1~default~-~08` box [444, 538]: 'Q1 2025' 6 px; 'Reconciliation' 49 px in 41

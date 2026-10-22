@@ -31,12 +31,12 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 
 560 cases. Holds with fit-grow: 420; raw: 412. **Rescued** (raw breaks, fit holds): 8. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 140.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 8, TEXT_OVERFLOW 18, SHRUNK 140, SCALE_FLOOR 16, SPILL 9.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 6, TEXT_OVERFLOW 20, SHRUNK 140, SCALE_FLOOR 16, SPILL 9.
 
 ## What breaks first (one example per code)
 
 - **SHRUNK** `tree~split-40~horizontal~long1~default~depth3~02` box [444, 538]: 'Profitability' 11.11 px
-- **TEXT_OVERFLOW** `tree~split-40~vertical~w3~default~depth2~05` box [444, 538]: 'Define pricing strategy' 7.84 px; 'Define pricing strategy' 2 lines, 19 x 52 px out of its 59 x 17 shape
-- **WORD_BROKEN** `tree~split-40~vertical~long1~default~depth2~06` box [444, 538]: 'Profitability' 6.49 px; 'Implementation' 49 px in 46
-- **SCALE_FLOOR** `tree~split-40~vertical~long1~default~depth2~07` box [444, 538]: 'Profitability' 6 px; 'Implementation' 45 px in 41; 'Transformation' past the 444x538 box
-- **SPILL** `tree~split-40~vertical~long1~default~depth2~07` box [444, 538]: 'Profitability' 6 px; 'Implementation' 45 px in 41; 'Transformation' past the 444x538 box
+- **TEXT_OVERFLOW** `tree~split-40~vertical~w2~default~depth2~05` box [444, 538]: 'Market research' 7.84 px; 'Market research' 2 lines, 19 x 33 px out of its 59 x 17 shape
+- **WORD_BROKEN** `tree~split-40~vertical~long1~default~depth2~06` box [444, 538]: 'Profitability' 6.49 px; 'Implementation' 47 px in 46
+- **SCALE_FLOOR** `tree~split-40~vertical~long1~default~depth2~07` box [444, 538]: 'Profitability' 6 px; 'Implementation' 44 px in 41; 'Transformation' past the 444x538 box
+- **SPILL** `tree~split-40~vertical~long1~default~depth2~07` box [444, 538]: 'Profitability' 6 px; 'Implementation' 44 px in 41; 'Transformation' past the 444x538 box

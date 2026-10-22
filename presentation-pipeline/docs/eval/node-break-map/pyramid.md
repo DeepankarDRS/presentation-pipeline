@@ -6,22 +6,22 @@ Codes: W word broken · T text overflows its box · O labels overlap · S shrunk
 
 | placement | direction | style | variant | box (fit, at the smallest count) | 1 short word | 1 long word | 2 words | 3 words | 4 words |
 |---|---|---|---|---|---|---|---|---|---|
-| band | up | default | - | 1168×538 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (T) |
+| band | up | default | - | 1168×538 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (WT) |
 | band | up | inter | - | 1168×538 | **≥7** | 3 (W) | 4 (W) | 3 (T) | – (T) |
-| band-under-kpi | up | default | - | 1168×364 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (T) |
+| band-under-kpi | up | default | - | 1168×364 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (WT) |
 | band-under-kpi | up | inter | - | 1168×364 | **≥7** | 3 (W) | 4 (W) | 3 (T) | – (T) |
-| split-60 | up | default | - | 665×538 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (T) |
+| split-60 | up | default | - | 665×538 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (WT) |
 | split-60 | up | inter | - | 665×538 | **≥7** | 3 (W) | 4 (W) | 3 (T) | – (T) |
-| split-40 | up | default | - | 444×538 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (T) |
+| split-40 | up | default | - | 444×538 | **≥7** | 4 (W) | 5 (W) | 5 (W) | 4 (WT) |
 | split-40 | up | inter | - | 444×538 | **≥7** | 3 (W) | 4 (W) | 3 (T) | – (T) |
-| card | up | default | - | 680×207 | 6 (S) | 4 (W) | 5 (W) | 5 (W) | 4 (T) |
+| card | up | default | - | 680×207 | 6 (S) | 4 (W) | 5 (W) | 5 (W) | 4 (WT) |
 | card | up | inter | - | 680×207 | **≥7** | 3 (W) | 4 (W) | 3 (T) | – (T) |
 
 ## fit-grow
 
 250 cases. Holds with fit-grow: 119; raw: 119. **Rescued** (raw breaks, fit holds): 0. **Made worse** (raw holds, fit breaks): 0. Breaks either way: 131.
 
-Failure codes with fit-grow (a case can have several): WORD_BROKEN 110, TEXT_OVERFLOW 60, OVERLAP 15, SHRUNK 5, SPILL 4.
+Failure codes with fit-grow (a case can have several): WORD_BROKEN 115, TEXT_OVERFLOW 60, OVERLAP 15, SHRUNK 5, SPILL 4.
 
 ## What breaks first (one example per code)
 
@@ -29,4 +29,4 @@ Failure codes with fit-grow (a case can have several): WORD_BROKEN 110, TEXT_OVE
 - **WORD_BROKEN** `pyramid~band-under-kpi~up~long1~inter~-~04` box [1168, 364]: 'Profitability' 91 px in 81
 - **OVERLAP** `pyramid~band-under-kpi~up~w4~inter~-~05` box [1168, 364]: 'contracts' 75 px in 61; 'Review all supplier contracts' 4 lines, 77 x 61 px out of its 80 x 50 shape; 'Review all supplier contracts' / 'Open three pilot stores'
 - **SPILL** `pyramid~card~up~w4~inter~-~06` box [680, 315]: 'contracts' 75 px in 47; 'Review all supplier contracts' 4 lines, 77 x 47 px out of its 67 x 50 shape; 'Review all supplier contracts' / 'Open three pilot stores'; 'Review all supplier contracts' past the 680x315 box
-- **SHRUNK** `pyramid~card~up~long1~default~-~07` box [692, 352]: 'Profitability' 13.61 px; 'Profitability' 75 px in 36
+- **SHRUNK** `pyramid~card~up~long1~default~-~07` box [692, 352]: 'Profitability' 13.61 px; 'Profitability' 73 px in 36
