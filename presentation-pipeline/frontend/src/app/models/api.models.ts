@@ -179,6 +179,17 @@ export interface EditSessionStatus {
   run_id: string;
   slide_count: number;
   slides: SlideInfoReview[];
+  theme: string;
+}
+
+export interface ThemeSwitchResponse {
+  ok: boolean;
+  theme: string;
+  mode: 'light' | 'dark';
+  slides: SlideInfoReview[];
+  screenshots_updated: boolean;
+  approximated_colors: string[];
+  error: string | null;
 }
 
 export interface SlideEditResponse {

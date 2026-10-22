@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { GenerationService } from '../../services/generation.service';
 import { ApiService } from '../../services/api.service';
 import { SlideInfoReview, SlideEditResponse } from '../../models/api.models';
+import { THEME_PALETTES } from '../../constants/theme.constants';
 
 interface EditHistoryEntry {
   feedback: string;
@@ -32,12 +33,35 @@ interface EditHistoryEntry {
           </button>
           <button
             (click)="finalize()"
-            [disabled]="isEditing() || isFinalizing()"
+            [disabled]="isBusy()"
             class="text-sm bg-green-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {{ isFinalizing() ? 'Finalizing...' : 'Finalize Deck' }}
           </button>
         </div>
+      </div>
+
+      <!-- Theme switcher -->
+      <div class="flex items-center gap-3 px-6 py-2.5 border-b border-gray-200 bg-white">
+        <span class="text-xs font-medium text-gray-500 shrink-0">Theme</span>
+        <div class="flex flex-wrap gap-1.5">
+          @for (p of palettes; track p.id) {
+            <button
+              (click)="switchTheme(p.id)"
+              [disabled]="isBusy()"
+              [title]="p.label + ' — ' + p.tone"
+              [attr.aria-label]="'Switch to ' + p.label + ' theme'"
+              [attr.aria-pressed]="currentTheme() === p.id"
+              class="w-7 h-7 rounded-full border-2 transition-transform disabled:cursor-not-allowed disabled:opacity-60 hover:scale-110"
+              [class.border-gray-900]="currentTheme() === p.id"
+              [class.border-gray-200]="currentTheme() !== p.id"
+              [style.background]="swatchBackground(p)"
+            ></button>
+          }
+        </div>
+        @if (currentThemeLabel()) {
+          <span class="text-xs text-gray-500 truncate">{{ currentThemeLabel() }}</span>
+        }
       </div>
 
       <div class="flex" style="min-height: 500px">
@@ -76,11 +100,11 @@ interface EditHistoryEntry {
         <div class="flex-1 flex flex-col">
           <!-- Screenshot display -->
           <div class="flex-1 p-4 flex items-center justify-center bg-gray-100 relative">
-            @if (isEditing()) {
+            @if (isEditing() || isSwitchingTheme()) {
               <div class="absolute inset-0 bg-white/70 flex items-center justify-center z-10">
                 <div class="flex flex-col items-center gap-3">
                   <div class="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent"></div>
-                  <span class="text-sm text-gray-600">Applying edit...</span>
+                  <span class="text-sm text-gray-600">{{ isSwitchingTheme() ? 'Applying theme to all slides...' : 'Applying edit...' }}</span>
                 </div>
               </div>
             }
@@ -108,6 +132,11 @@ interface EditHistoryEntry {
                 {{ editError() }}
               </div>
             }
+            @if (themeNotice()) {
+              <div class="mb-2 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                {{ themeNotice() }}
+              </div>
+            }
             @if (lastEditResult() && lastEditResult()!.ok) {
               <div class="mb-2 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">
                 Edit applied successfully
@@ -129,11 +158,11 @@ interface EditHistoryEntry {
                 (keydown.enter)="applyEdit()"
                 placeholder="Describe what to change... (e.g., 'make the title larger', 'move chart to the left')"
                 class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                [disabled]="isEditing()"
+                [disabled]="isBusy()"
               />
               <button
                 (click)="applyEdit()"
-                [disabled]="isEditing() || !feedbackText.trim()"
+                [disabled]="isBusy() || !feedbackText.trim()"
                 class="bg-indigo-600 text-white font-medium py-2 px-5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm shrink-0"
               >
                 Apply Edit
@@ -185,6 +214,17 @@ export class SlideReviewComponent {
   readonly editHistoryMap = signal<Map<number, EditHistoryEntry[]>>(new Map());
   readonly slideVersions = signal<Map<number, number>>(new Map());
   readonly screenshotVersions = signal<Map<number, number>>(new Map());
+  readonly isSwitchingTheme = signal<boolean>(false);
+  readonly themeOverride = signal<string | null>(null);
+  readonly themeNotice = signal<string | null>(null);
+
+  readonly palettes = THEME_PALETTES;
+  readonly isBusy = computed(() => this.isEditing() || this.isFinalizing() || this.isSwitchingTheme());
+  readonly currentTheme = computed(() => this.themeOverride() ?? this.gen.editSession()?.theme ?? '');
+  readonly currentThemeLabel = computed(() => {
+    const p = this.palettes.find(x => x.id === this.currentTheme());
+    return p ? `${p.label} · ${p.mode}` : 'Custom theme';
+  });
 
   feedbackText = '';
 
@@ -216,6 +256,44 @@ export class SlideReviewComponent {
     if (!runId) return '';
     const ver = this.screenshotVersions().get(slideIndex) ?? 0;
     return this.api.getScreenshotUrl(runId, slideIndex, ver);
+  }
+
+  swatchBackground(p: { mode: string; accent: string }): string {
+    const base = p.mode === 'dark' ? '#1F2937' : '#F8FAFC';
+    return `linear-gradient(135deg, ${base} 50%, #${p.accent} 50%)`;
+  }
+
+  async switchTheme(theme: string): Promise<void> {
+    const runId = this.gen.runId();
+    if (!runId || theme === this.currentTheme() || this.isBusy()) return;
+
+    this.isSwitchingTheme.set(true);
+    this.editError.set(null);
+    this.lastEditResult.set(null);
+    this.themeNotice.set(null);
+
+    try {
+      const result = await this.api.switchTheme(runId, theme);
+      if (!result.ok) {
+        this.editError.set(result.error ?? 'Theme switch failed');
+        return;
+      }
+      this.themeOverride.set(result.theme);
+      const screenshotMap = new Map(this.screenshotVersions());
+      for (const s of result.slides) {
+        screenshotMap.set(s.slide_index, (screenshotMap.get(s.slide_index) ?? 0) + 1);
+      }
+      this.screenshotVersions.set(screenshotMap);
+      if (!result.screenshots_updated) {
+        this.themeNotice.set(
+          'The theme was applied, but some previews could not be refreshed — your download will use the new theme.',
+        );
+      }
+    } catch (err) {
+      this.editError.set(err instanceof Error ? err.message : 'Theme switch request failed');
+    } finally {
+      this.isSwitchingTheme.set(false);
+    }
   }
 
   selectSlide(index: number): void {

@@ -527,3 +527,110 @@ def test_edit_endpoint_screenshot_failure_does_not_go_stale_looking():
     finally:
         _edit_sessions.pop("edit-screenshot-stale-test", None)
         shutil.rmtree(run_dir)
+
+
+def _themed_run(run_id: str) -> Path:
+    return _write_run_files(
+        run_id,
+        manifest={
+            "theme_element": '<Theme surface="F7F9FC" surfaceAlt="FFFFFF" accent="2563EB" textMain="16202E" />',
+            "resolved_theme": {"name": "corporate-slate", "mode": "light"},
+            "pptx_path": None,
+        },
+        slides=[
+            {"slide_index": i,
+             "xml": f'<Slide><VStack backgroundColor="F7F9FC"><Text color="$textMain">S{i}</Text></VStack></Slide>',
+             "screenshot_path": None, "slide_plan": {}}
+            for i in range(2)
+        ],
+    )
+
+
+def test_switch_theme_rewrites_slides_and_session():
+    from src.api import _edit_sessions
+    from src.compiler.screenshot import ScreenshotBatchResult, ScreenshotResult
+
+    run_dir = _themed_run("theme-switch-test")
+    compiled: list[str] = []
+
+    def fake_compile(xml, out_dir, **kw):
+        compiled.append(xml)
+        return {"ok": True, "pptx_path": str(Path(out_dir) / "x.pptx"), "diagnostics": []}
+
+    batch = ScreenshotBatchResult(ok=True, slides=[
+        ScreenshotResult(ok=True, png_path=f"/tmp/t{i}.png", slide_index=i) for i in range(2)
+    ])
+    try:
+        assert client.post("/runs/theme-switch-test/edit-session").json()["theme"] == "corporate-slate"
+        with patch("src.compiler.compiler_client.compile_xml", side_effect=fake_compile), \
+             patch("src.compiler.screenshot.render_screenshots", return_value=batch):
+            resp = client.post("/runs/theme-switch-test/theme", json={"theme": "graphite-dark"})
+
+        body = resp.json()
+        assert body["ok"] is True and body["mode"] == "dark" and body["screenshots_updated"] is True
+        assert compiled[0].startswith("<Theme ") and "chartSurface=" in compiled[0]
+        session = _edit_sessions["theme-switch-test"]
+        assert session.theme_info["name"] == "graphite-dark"
+        assert 'backgroundColor="$surface"' in session.slides[0].current_xml
+        assert session.slides[1].screenshot_path == "/tmp/t1.png"
+        saved = json.loads((run_dir / "slides.json").read_text(encoding="utf-8"))
+        assert 'backgroundColor="$surface"' in saved[0]["xml"]
+        manifest = json.loads((run_dir / "run-manifest.json").read_text(encoding="utf-8"))
+        assert manifest["resolved_theme"]["name"] == "graphite-dark"
+    finally:
+        _edit_sessions.pop("theme-switch-test", None)
+        shutil.rmtree(run_dir)
+
+
+def test_switch_theme_compile_failure_leaves_session_untouched():
+    from src.api import _edit_sessions
+
+    run_dir = _themed_run("theme-switch-fail-test")
+    try:
+        client.post("/runs/theme-switch-fail-test/edit-session")
+        before = [s.current_xml for s in _edit_sessions["theme-switch-fail-test"].slides]
+        with patch("src.compiler.compiler_client.compile_xml",
+                   return_value={"ok": False, "diagnostics": [{"message": "boom"}]}):
+            body = client.post("/runs/theme-switch-fail-test/theme", json={"theme": "carbon-dark"}).json()
+        assert body["ok"] is False and "boom" in body["error"]
+        session = _edit_sessions["theme-switch-fail-test"]
+        assert [s.current_xml for s in session.slides] == before
+        assert session.theme_info["name"] == "corporate-slate"
+    finally:
+        _edit_sessions.pop("theme-switch-fail-test", None)
+        shutil.rmtree(run_dir)
+
+
+def test_switch_theme_unknown_theme_400():
+    from src.api import _edit_sessions
+
+    run_dir = _themed_run("theme-switch-bad-test")
+    try:
+        client.post("/runs/theme-switch-bad-test/edit-session")
+        assert client.post("/runs/theme-switch-bad-test/theme", json={"theme": "nope"}).status_code == 400
+    finally:
+        _edit_sessions.pop("theme-switch-bad-test", None)
+        shutil.rmtree(run_dir)
+
+
+def test_finalize_compiles_assembled_xml_string():
+    """Regression: finalize passed assemble_deck_xml's (xml, count) tuple to compile_xml."""
+    from src.api import _edit_sessions
+
+    run_dir = _themed_run("finalize-tuple-test")
+    seen: list[object] = []
+
+    def fake_compile(xml, out_dir, **kw):
+        seen.append(xml)
+        return {"ok": True, "pptx_path": "/tmp/f.pptx"}
+
+    try:
+        client.post("/runs/finalize-tuple-test/edit-session")
+        with patch("src.compiler.compiler_client.compile_xml", side_effect=fake_compile):
+            body = client.post("/runs/finalize-tuple-test/finalize").json()
+        assert body["ok"] is True
+        assert isinstance(seen[0], str) and seen[0].startswith("<Theme")
+    finally:
+        _edit_sessions.pop("finalize-tuple-test", None)
+        _runs.pop("finalize-tuple-test", None)
+        shutil.rmtree(run_dir)
