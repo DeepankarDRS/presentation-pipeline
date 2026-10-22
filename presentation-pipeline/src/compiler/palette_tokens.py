@@ -24,6 +24,7 @@ mixing turns saturated orange into brown.
 from __future__ import annotations
 
 import colorsys
+import re
 from typing import Any
 
 STATUS_ROLES = ("accent", "positive", "negative", "warning")
@@ -126,4 +127,104 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
     out["panelDark"] = panel.upper()
     out["onPanelDark"] = (palette.get("onPanelDark") or max(
         (surface, text_main, "FFFFFF"), key=lambda c: contrast(c, panel))).upper()
+    return out
+
+
+# --- seed palettes (2026-10-22) ------------------------------------------------
+# A palette may be written as a `seed:` of brand colours instead of every token
+# (palettes.yaml). expand_seed() turns it into an ordinary authored entry, which
+# then goes through derive_tokens() like any other palette.
+
+SEED_TEXT_MIN = 4.5     # textMain / textMuted on surface + surfaceAlt
+SEED_ACCENT_MIN = 3.0   # accent / accentAlt / positive / negative / warning (the *Text tokens cover small text)
+CHART_MIN = 2.0         # a chart series on the surface the chart is drawn on
+CHART_MIN_DELTA_E = 15.0
+MAX_CHART_COLORS = 6
+_SEMANTIC_DEFAULTS = {
+    "light": {"positive": "15803D", "negative": "DC2626", "warning": "B45309"},
+    "dark": {"positive": "4ADE80", "negative": "F87171", "warning": "FBBF24"},
+}
+_RGBA_RE = re.compile(r"rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)", re.I)
+
+
+def parse_color(value: Any, background: str = "FFFFFF") -> str:
+    """CSS-style colour -> 6-digit hex. Alpha (#RRGGBBAA, rgba()) is laid over `background`:
+    POM tokens are 6-digit hex only."""
+    s = str(value).strip()
+    m = _RGBA_RE.fullmatch(s)
+    if m:
+        rgb = _hex(tuple(int(m.group(i)) / 255 for i in (1, 2, 3)))  # type: ignore[arg-type]
+        return mix(rgb, background, float(m.group(4)) if m.group(4) is not None else 1.0)
+    s = s.lstrip("#").upper()
+    if len(s) == 8:
+        return mix(s[:6], background, int(s[6:], 16) / 255)
+    if len(s) == 3:
+        s = "".join(c * 2 for c in s)
+    if not re.fullmatch(r"[0-9A-F]{6}", s):
+        raise ValueError(f"not a colour: {value!r}")
+    return s
+
+
+def guard_chart_colors(colors: list[str], chart_bg: str) -> list[str]:
+    """Up to MAX_CHART_COLORS legible, distinguishable series colours, in the given order.
+    Each is stepped (hue kept) to CHART_MIN on the chart surface — lime on cream would
+    vanish; one that lands too close to an earlier pick is skipped."""
+    from src.compiler.theme_swap import _lab     # lazy: theme_swap imports the normalizer
+
+    darken = luminance(chart_bg) >= 0.5
+    picked: list[str] = []
+    for c in colors:
+        c = _step_lightness(c, [chart_bg], darken=darken, target=CHART_MIN)
+        lab = _lab(c)
+        if all(sum((x - y) ** 2 for x, y in zip(lab, _lab(p))) ** 0.5 >= CHART_MIN_DELTA_E for p in picked):
+            picked.append(c)
+        if len(picked) == MAX_CHART_COLORS:
+            break
+    return picked
+
+
+def expand_seed(seed: dict[str, Any]) -> dict[str, Any]:
+    """A seed (mode, background, ink, accent + optional card, muted, border, accentAlt,
+    positive, negative, warning, neutral, chart) -> a full authored palette entry.
+
+    Missing colours are mixed from background and ink; text and accent colours are stepped
+    in lightness until they meet SEED_TEXT_MIN / SEED_ACCENT_MIN on surface and surfaceAlt."""
+    mode = seed.get("mode", "light")
+    dark = mode == "dark"
+    bg = parse_color(seed["background"])
+
+    def color(key: str) -> str | None:
+        return parse_color(seed[key], bg) if seed.get(key) else None
+
+    ink = parse_color(seed["ink"], bg)
+    card = color("card") or (mix(ink, bg, 0.08) if dark else ("FFFFFF" if bg != "FFFFFF" else mix(ink, bg, 0.03)))
+    out: dict[str, Any] = {
+        "mode": mode, "surface": bg, "surfaceAlt": card, "textMain": ink,
+        "textMuted": color("muted") or mix(bg, ink, 0.38),
+        "border": color("border") or mix(ink, bg, 0.2 if dark else 0.12),
+        "accent": color("accent"),
+    }
+    chart_seed = [parse_color(c, bg) for c in seed.get("chart") or []]
+    out["accentAlt"] = color("accentAlt") or (chart_seed[1] if len(chart_seed) > 1 else mix(ink, out["accent"], 0.3))
+    taken = {out["accent"]}
+    for role, default in _SEMANTIC_DEFAULTS[mode].items():
+        c = color(role)
+        # house-style color_roles (A4): never two meanings in one colour
+        out[role] = c if c and c not in taken else default
+        taken.add(out[role])
+    if color("neutral"):
+        out["neutral"] = color("neutral")
+
+    surfaces = [bg, card]
+    for k in ("textMain", "textMuted"):
+        out[k] = _step_lightness(out[k], surfaces, darken=not dark, target=SEED_TEXT_MIN)
+    for k in ("accent", "accentAlt", "positive", "negative", "warning"):
+        out[k] = _step_lightness(out[k], surfaces, darken=not dark, target=SEED_ACCENT_MIN)
+
+    if dark:   # charts sit on a light card there (POM draws axis text black)
+        out["chartSurface"] = mix("FFFFFF", out["textMain"], 0.5)
+        out["chartInk"] = card
+    chart_bg = out.get("chartSurface", card)
+    fallback = [out[k] for k in ("accent", "accentAlt", "positive", "warning", "negative", "textMuted")]
+    out["chartColors"] = guard_chart_colors(chart_seed + fallback, chart_bg)
     return out

@@ -7,6 +7,7 @@ import {
   RunStatus,
   EditSessionStatus,
   SlideEditResponse,
+  ThemeSwitchResponse,
   FinalizeResponse,
   DeckSettings,
   DeckSettingsSchema,
@@ -115,6 +116,19 @@ export class ApiService {
       body: JSON.stringify({ feedback }),
     });
     if (!res.ok) throw new Error(`Edit failed: ${res.status}`);
+    return res.json();
+  }
+
+  async switchTheme(runId: string, theme: string): Promise<ThemeSwitchResponse> {
+    const res = await fetch(`${API_BASE}/runs/${runId}/theme`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.detail ?? `Theme switch failed: ${res.status}`);
+    }
     return res.json();
   }
 

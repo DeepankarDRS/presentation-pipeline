@@ -212,12 +212,11 @@ color_discipline: >
   for the eyebrow / kicker, $accent for one large figure or one edge - not
   whole blocks. Pale fills are $accentSoft / $positiveSoft / $negativeSoft /
   $warningSoft, never a typed hex. Card bg is $surfaceAlt;
-  slide bg $surface; inverted panel $textMain. chartColors is literal hex,
-  copied from the resolved palette - $tokens do NOT resolve inside it.
+  slide bg $surface; inverted panel $textMain. chartColors uses $chart1.. tokens.
   Do NOT emit a <Theme> - the pipeline injects exactly one.
   COVER/HERO slides follow the SAME token rules — never hardcode raw hex
   for large backgrounds (use $surface, $surfaceAlt, $textMain, $accent).
-  Raw hex is acceptable ONLY in chartColors and a shadow colour (000).
+  Raw hex is acceptable ONLY in a shadow colour (000).
 
 color_roles: >
   Colour carries meaning, the SAME on every slide of the deck, so the reader

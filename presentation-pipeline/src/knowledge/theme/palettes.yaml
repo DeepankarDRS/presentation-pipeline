@@ -1,8 +1,16 @@
 # pom-knowledge/theme/palettes.yaml
 # ---------------------------------------------------------------------------
-# The theme LIBRARY for the MVP. Each entry is a complete <Theme> token set.
-# Resolved by python/theme.py; selected per deck/slide via a project-root
-# theme.yaml, a test-case `theme:` field, or the --theme CLI flag.
+# The theme LIBRARY. Resolved by src/agents/style_resolver.py. Two forms:
+#   full — every token written out; used as authored.
+#   seed — `seed:` with mode / background / ink / accent (+ optional card, muted,
+#          border, accentAlt, positive, negative, warning, neutral, chart).
+#          src/compiler/palette_tokens.expand_seed derives the rest and steps text
+#          (4.5:1) and accent / status colours (3:1) on surface + surfaceAlt, and
+#          chart colours (2:1 on the chart surface, near-duplicates dropped).
+#          Seed colours may be #RRGGBB, #RRGGBBAA or rgba(r,g,b,a); alpha is laid
+#          over the background. Add a brand theme as a seed.
+# Every theme then gets the derived roles (palette_tokens.derive_tokens) and
+# chart1..chartN tokens from its chartColors.
 #
 # This file replaces the old theme/default.yaml. All the usage guidance that
 # used to live there is folded in below (see `usage:` and `token_roles:`).
@@ -67,8 +75,9 @@ usage:
                Header row: backgroundColor="$surfaceAlt" color="$textMain" bold="true".
                Body rows: backgroundColor="$surface" color="$textMuted" (labels)
                or color="$textMain" (values). cellBorder.color="$border".'
-  chart_colors: 'chartColors is a JSON string of LITERAL hex — $tokens do NOT
-                 resolve inside it. Copy the palette''s `chartColors` values in.'
+  chart_colors: 'chartColors references tokens: chartColors=''["$chart1","$chart2"]''
+                 (POM 10.3.0 resolves $tokens there, verified 2026-10-22). One per
+                 series / bar; $accent + $neutral for one series in focus.'
   chart_on_dark: 'POM v10.3.0 hard-codes chart axis/label text to 000000 and
                   gridlines to 888888 (renderPptx/nodes/chart.js) — unfixable in
                   XML. On a DARK palette, wrap the chart in
@@ -371,3 +380,143 @@ palettes:
     chartSurface: "FAFAF9"
     chartInk: "262626"
     chartColors: ["FB923C", "FBBF24", "A3E635", "38BDF8", "F472B6"]
+
+  # ---- SEEDS (expanded + contrast-stepped by palette_tokens.expand_seed) ----
+  # Light
+  boardroom-orange:
+    tone: "Clean boardroom white, orange + purple brand accents"
+    seed:
+      mode: light
+      background: "#FFFFFF"
+      card: "#F8FAFC"
+      ink: "#0F172A"
+      muted: "#6B7280"
+      border: "#E5E7EB"
+      accent: "#F4541E"
+      accentAlt: "#5B2A86"
+      positive: "#15803D"
+      negative: "#B23A2D"
+      chart: ["#F4541E", "#5B2A86", "#B23A2D", "#15803D", "#6B7280"]
+
+  paper-clay:
+    tone: "Warm editorial paper, clay + deep teal"
+    seed:
+      mode: light
+      background: "#F1E9D6"
+      card: "#FAF4E5"
+      ink: "#1A1814"
+      muted: "#5A544A"
+      border: "#C8B891"
+      accent: "#C0472A"
+      accentAlt: "#2D5063"
+      positive: "#4A7752"
+      negative: "#8E2F18"
+      warning: "#B07A1E"
+      chart: ["#C0472A", "#2D5063", "#4A7752", "#B07A1E", "#6F8FA0"]
+
+  bone-copper:
+    tone: "Editorial bone canvas, slate ink, copper hero"
+    seed:
+      mode: light
+      background: "#EEE7D5"
+      card: "#F4EEDE"
+      ink: "#18222F"
+      muted: "#4A5A6E"
+      border: "rgba(24, 34, 47, 0.12)"
+      accent: "#C46A3F"
+      accentAlt: "#233246"
+      positive: "#5F7A60"
+      warning: "#B6873B"
+      chart: ["#C46A3F", "#233246", "#5F7A60", "#B6873B", "#8C9CAD"]
+
+  ocean-light:
+    tone: "Ocean blue serenity — white canvas, deep twilight ink"
+    seed:
+      mode: light
+      background: "#F4FBFD"
+      card: "#FFFFFF"
+      ink: "#03045E"
+      border: "#ADE8F4"
+      accent: "#0077B6"
+      accentAlt: "#00B4D8"
+      chart: ["#0077B6", "#00B4D8", "#023E8A", "#48CAE4", "#90E0EF"]
+
+  terracotta-light:
+    tone: "Charcoal blue ink, verdigris + burnt peach on warm white"
+    seed:
+      mode: light
+      background: "#FAF7F2"
+      card: "#FFFFFF"
+      ink: "#264653"
+      accent: "#2A9D8F"
+      accentAlt: "#E76F51"
+      negative: "#E76F51"
+      warning: "#F4A261"
+      chart: ["#2A9D8F", "#E76F51", "#264653", "#F4A261", "#E9C46A"]
+
+  # Dark
+  ink-copper:
+    tone: "Deep slate statement slides, copper hero"
+    seed:
+      mode: dark
+      background: "#18222F"
+      card: "#233246"
+      ink: "#F5EFE0"
+      muted: "#8C9CAD"
+      border: "rgba(245, 239, 224, 0.18)"
+      accent: "#C46A3F"
+      accentAlt: "#B6873B"
+      positive: "#5F7A60"
+      warning: "#B6873B"
+      chart: ["#C46A3F", "#233246", "#5F7A60", "#B6873B", "#8C9CAD"]
+
+  lime-ink:
+    tone: "Premium investor near-black, electric lime + rust"
+    seed:
+      mode: dark
+      background: "#0E1116"
+      card: "#1A1F2A"
+      ink: "#F2EEE3"
+      muted: "#908A7D"
+      border: "rgba(255, 255, 255, 0.12)"
+      accent: "#C9F24D"
+      accentAlt: "#C7572C"
+      negative: "#C7572C"
+      chart: ["#C9F24D", "#C7572C", "#6E7E6D", "#908A7D", "#1A1F2A"]
+
+  ocean-dark:
+    tone: "Ocean blue serenity — deep twilight canvas, aqua accents"
+    seed:
+      mode: dark
+      background: "#03045E"
+      card: "#0B1470"
+      ink: "#CAF0F8"
+      muted: "#90E0EF"
+      accent: "#48CAE4"
+      accentAlt: "#90E0EF"
+      chart: ["#0077B6", "#00B4D8", "#023E8A", "#48CAE4", "#90E0EF"]
+
+  tropic-dark:
+    tone: "Dark teal canvas, emerald / pink / golden pop"
+    seed:
+      mode: dark
+      background: "#073B4C"
+      ink: "#F7FAFB"
+      accent: "#06D6A0"
+      accentAlt: "#FFD166"
+      negative: "#EF476F"
+      warning: "#FFD166"
+      chart: ["#118AB2", "#EF476F", "#06D6A0", "#FFD166", "#073B4C"]
+
+  terracotta-dark:
+    tone: "Charcoal blue canvas, tuscan sun + sandy brown"
+    seed:
+      mode: dark
+      background: "#264653"
+      ink: "#F8F5EF"
+      accent: "#E9C46A"
+      accentAlt: "#F4A261"
+      positive: "#2A9D8F"
+      negative: "#E76F51"
+      warning: "#F4A261"
+      chart: ["#2A9D8F", "#E76F51", "#264653", "#F4A261", "#E9C46A"]

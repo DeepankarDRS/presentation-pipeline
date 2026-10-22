@@ -5,7 +5,6 @@ parser, panelDark tokens, the generator prompt under POM_BLOCKS=kpi and the vali
 import re
 
 import pytest
-import yaml
 
 from src.compiler.nodes import element_refs as E
 from src.compiler.palette_tokens import TEXT_MIN, contrast, derive_tokens
@@ -275,7 +274,9 @@ def test_fill_writes_no_literal_colour():
     assert all(c.startswith("$") for c in re.findall(r'color="([^"]*)"', out))
 
 
-_PALETTES = yaml.safe_load(open("src/knowledge/theme/palettes.yaml", encoding="utf-8"))["palettes"]
+from src.agents.style_resolver import palette_entry, theme_names  # noqa: E402
+
+_PALETTES = {name: palette_entry(name) for name in theme_names()}   # seeds expanded
 
 
 @pytest.mark.parametrize("name", sorted(_PALETTES))

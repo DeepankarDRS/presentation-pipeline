@@ -584,3 +584,88 @@ def test_finalize_without_slide_blocks():
         compile_mock.assert_not_called()
     finally:
         _edit_sessions.pop("finalize-empty-test", None)
+
+
+# --- theme switching on a finished deck (2026-10-22) ----------------------------
+
+def _themed_run(run_id: str) -> Path:
+    from src.agents.style_resolver import resolve_theme
+    theme = resolve_theme("corporate-slate")
+    return _write_run_files(
+        run_id,
+        manifest={"theme_element": theme["element"], "resolved_theme": theme, "pptx_path": None},
+        slides=[
+            {"slide_index": i,
+             "xml": f'<Slide><VStack backgroundColor="F7F9FC"><Text color="$textMain">S{i}</Text></VStack></Slide>',
+             "screenshot_path": None, "slide_plan": {}}
+            for i in range(2)
+        ],
+    )
+
+
+def test_switch_theme_rewrites_slides_and_session():
+    import shutil
+    from src.api import _edit_sessions
+    from src.compiler.screenshot import ScreenshotBatchResult, ScreenshotResult
+
+    run_dir = _themed_run("theme-switch-test")
+    compiled: list[str] = []
+
+    def fake_compile(xml, out_dir, **kw):
+        compiled.append(xml)
+        return {"ok": True, "pptx_path": str(Path(out_dir) / "x.pptx"), "diagnostics": []}
+
+    batch = ScreenshotBatchResult(ok=True, slides=[
+        ScreenshotResult(ok=True, png_path=f"/tmp/t{i}.png", slide_index=i) for i in range(2)])
+    try:
+        assert client.post("/runs/theme-switch-test/edit-session").json()["theme"] == "corporate-slate"
+        with patch("src.compiler.compiler_client.compile_xml", side_effect=fake_compile), \
+             patch("src.compiler.screenshot.render_screenshots", return_value=batch):
+            body = client.post("/runs/theme-switch-test/theme", json={"theme": "lime-ink"}).json()
+
+        assert body["ok"] is True and body["mode"] == "dark" and body["screenshots_updated"] is True
+        assert compiled[0].count("<Theme") == 1 and "chart1=" in compiled[0]
+        session = _edit_sessions["theme-switch-test"]
+        assert session.theme_info["name"] == "lime-ink"
+        assert 'backgroundColor="$surface"' in session.slides[0].current_xml
+        assert session.slides[1].screenshot_path == "/tmp/t1.png"
+        saved = json.loads((run_dir / "slides.json").read_text(encoding="utf-8"))
+        assert 'backgroundColor="$surface"' in saved[0]["xml"]
+        manifest = json.loads((run_dir / "run-manifest.json").read_text(encoding="utf-8"))
+        assert manifest["resolved_theme"]["name"] == "lime-ink"
+    finally:
+        _edit_sessions.pop("theme-switch-test", None)
+        shutil.rmtree(run_dir)
+
+
+def test_switch_theme_compile_failure_leaves_the_session_untouched():
+    import shutil
+    from src.api import _edit_sessions
+
+    run_dir = _themed_run("theme-switch-fail-test")
+    try:
+        client.post("/runs/theme-switch-fail-test/edit-session")
+        before = [s.current_xml for s in _edit_sessions["theme-switch-fail-test"].slides]
+        with patch("src.compiler.compiler_client.compile_xml",
+                   return_value={"ok": False, "diagnostics": [{"message": "boom"}]}):
+            body = client.post("/runs/theme-switch-fail-test/theme", json={"theme": "carbon-dark"}).json()
+        assert body["ok"] is False and "boom" in body["error"]
+        session = _edit_sessions["theme-switch-fail-test"]
+        assert [s.current_xml for s in session.slides] == before
+        assert session.theme_info["name"] == "corporate-slate"
+    finally:
+        _edit_sessions.pop("theme-switch-fail-test", None)
+        shutil.rmtree(run_dir)
+
+
+def test_switch_theme_unknown_theme_400():
+    import shutil
+    from src.api import _edit_sessions
+
+    run_dir = _themed_run("theme-switch-bad-test")
+    try:
+        client.post("/runs/theme-switch-bad-test/edit-session")
+        assert client.post("/runs/theme-switch-bad-test/theme", json={"theme": "nope"}).status_code == 400
+    finally:
+        _edit_sessions.pop("theme-switch-bad-test", None)
+        shutil.rmtree(run_dir)
