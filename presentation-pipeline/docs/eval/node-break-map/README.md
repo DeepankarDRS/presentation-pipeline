@@ -183,3 +183,48 @@ graph routing tests). New: `scripts/node_break_map.py`, `src/node/break-map.js`,
 `node_facts.drawn_shapes` reads vertical insets, bold, typeface, fill, anchor, alignment (the
 node-facts probes still pass). Not yet mapped: Table, KpiGrid / Kpi, CardGrid / Card, Text, Ul, Chart,
 Icon, Shape, Layer (next batch, same harness).
+
+## 7. Table, KPI and card nodes (batch 2, 2026-10-22)
+
+Maps: [table.md](table.md) (3640 cases), [kpi.md](kpi.md) (840), [cards.md](cards.md) (792). KpiGrid / Kpi and
+CardGrid / Card go through the pipeline's own expansion (`scripts/node_break_map_blocks.py`) before compile;
+words are measured run by run (a KPI value "₹114.9" + a smaller "L" span is two runs); table cells are read
+with the insets the pptx gives them (0). Scorer checked by LibreOffice renders: a 10-column table in the 38 %
+column breaks its words ("Busin-ess", "Recon-ciliati-on") as scored; a 13-row two-column table in a card holds
+(fit-grow gives the card the height); a matrix of 3-6-word cells in the band at 9 rows holds, but with 0 cell
+insets neighbouring columns touch ("Volume falls after|Fill rate held"; insets left at 0 by the user's choice).
+
+**fit-grow:** table holds 1152 -> 2787 (rescued 1635, made worse 0); kpi 646 -> 680 (34 / 0); cards 356 -> 396
+(44 / 4: a steps row under a KPI band and a 7-card long-body grid in split-60 where the dense spill fix leaves
+'a tile' past its box). **POM crashes** (`addTextBox: width / height must be a finite positive EMU value`): cards
+108 with fit-grow (102 raw), all steps rows in split-60 / split-40 past what fits; table 5 with fit-grow (112 raw,
+fit-grow re-plans the rest), 8-10 columns of 3-6-word cells in a card. A crash fails the slide's compile.
+
+What holds (fit-grow on; rows / tiles / cards, the first break in brackets):
+
+| node | band 1168 × 537 | under a KPI row 1168 × 331-363 | split-60 555-724 px | split-40 419-444 px | card 550-970 × 214 |
+|---|---|---|---|---|---|
+| table, ≤ 6 columns, short cells | ≥ 14 rows | 10 (P) | ≥ 14 | ≥ 14 up to 4 columns; 5+ columns with a long word: none (W) | 13 (P) |
+| table, 3-6-word cells | 11 rows at 5-6 cols, 8-9 at 8-10 | 9-10 at ≤ 6 cols, 6-8 at 8-10 | 8-11 at 4-6 cols, 7 at 8 | 11 at 3 cols, 9-10 at 4, 4-8 at 5-6 | 7-11 at 3-5 cols, 6-7 at 6-10 |
+| kpi, code's grid (auto) | ≥ 8 tiles | ≥ 8 | ≥ 8 | 6 (W, O) | ≥ 8 |
+| kpi, one row (pinned) | 7 with a long-word label, else ≥ 8 | same | 5 | 3 | 4-5 |
+| cards grid, title / short body | ≥ 12 | ≥ 12 | ≥ 12 (one-long-word title: 7-9) | 6 (W) | |
+| cards grid, ~22-word body | 9 (P) | 6 (P) | 6 (P) | 4 (P) | |
+| cards steps | 5 (long-word title) - 7 | 6-7; long body 4 | 3-4 | 2 | |
+
+KPI number size falls with tiles in one row (pinned, band): 4 tiles 67-88 px, 5 -> 51-61, 8 -> 28-33; split-60
+3 tiles 53-70 px; split-40 2 tiles 49-65 px. Code's grid keeps 67-95 px in the band up to 8 tiles.
+
+**Proposed capacity changes (not applied; for the user):**
+- `table.max_cols` per placement instead of one 8: band 10 (holds ≥ 14 rows of short cells; 3-6-word cells 8-9
+  rows), split-60 6 (8 columns with a long word break at once), split-40 4 (5 columns with a long word break at
+  once). `layout.table_cols_half: 3` is stricter than the measured 4 in the 38 % column; keep 3 for 3-6-word
+  cells (4 columns hold 9-10 rows), allow 4 for numbers / one-word cells.
+- `table.max_rows: 10` holds under a KPI row (10, then P) and everywhere for short cells; with 3-6-word cells
+  in 8+ columns the measured limit is 6-9 rows: a plan check on (columns × words per cell) rather than rows alone.
+- `kpi_row.per_row: [2, 4]` stays (number size, not breaks, sets it: 5 tiles in a row drop the number to
+  ~51-61 px); per placement for one row: split-60 3, split-40 2 (3 hold but at 28-38 px), a card 4 (4-5 hold, numbers 32-44 px).
+- `card_grid.steps_max: 5` holds in the band; per placement: under a KPI row 4 with body text, split-60 3,
+  split-40 2 (and the planner must not put more steps there: POM crashes, above).
+- `card_grid.items: [2, 12]` holds for titles / short bodies in the band, split-60 and under a KPI row; with
+  ~22-word bodies: band 9, under a KPI row or split-60 6, split-40 4.

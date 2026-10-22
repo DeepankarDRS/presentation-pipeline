@@ -156,6 +156,93 @@ series:
   - 7
   first_break:
   - WORD_BROKEN
+- kind: table
+  placement: band
+  direction: c10
+  labels: w36
+  style: long
+  variant: ''
+  holds_up_to: 8
+  swept:
+  - 2
+  - 14
+  first_break:
+  - SPILL
+- kind: table
+  placement: band-under-kpi
+  direction: c4
+  labels: num
+  style: short
+  variant: ''
+  holds_up_to: 10
+  swept:
+  - 2
+  - 14
+  first_break:
+  - SPILL
+- kind: table
+  placement: split-40
+  direction: c5
+  labels: long1
+  style: short
+  variant: ''
+  holds_up_to: null
+  swept:
+  - 2
+  - 14
+  first_break:
+  - WORD_BROKEN
+- kind: kpi
+  placement: band
+  direction: pinned
+  labels: short
+  style: long1
+  variant: ''
+  holds_up_to: 7
+  swept:
+  - 2
+  - 8
+  first_break:
+  - WORD_BROKEN
+  - OVERLAP
+- kind: kpi
+  placement: split-40
+  direction: auto
+  labels: short
+  style: w1
+  variant: ''
+  holds_up_to: 6
+  swept:
+  - 2
+  - 8
+  first_break:
+  - WORD_BROKEN
+  - OVERLAP
+- kind: cards
+  placement: band
+  direction: steps
+  labels: short
+  style: w1
+  variant: ''
+  holds_up_to: 7
+  swept:
+  - 2
+  - 12
+  first_break:
+  - WORD_BROKEN
+  - OVERLAP
+- kind: cards
+  placement: split-60
+  direction: grid
+  labels: long
+  style: w1
+  variant: ''
+  holds_up_to: 6
+  swept:
+  - 2
+  - 12
+  first_break:
+  - SPILL
 capacity_disagreements:
   flow.vertical: 'capacity 8 assumes the generator writes 40 px nodes + nodeGap 24 (flow.box_for_direction, advice, not enforced);
     at POM''s defaults (60 px, gap 80, fit-grow cuts the gap to 20) the band holds 7 (8th: drawn < 14 px). Open for the user
