@@ -47,8 +47,7 @@ def test_every_step_name_written_in_src_is_a_known_step():
         text = path.read_text(encoding="utf-8")
         written |= set(re.findall(r'usage_record\([^,]+,\s*"([a-z_]+)"', text))
         written |= set(re.findall(r'\bstep="([a-z_]+)"', text))
-        written |= set(re.findall(r'\b_call\("([a-z_]+)"', text))   # src/planning/graph.py
-    assert {"slide_component_planner", "storyline"} <= written <= set(get_args(StepLiteral))
+    assert {"slide_component_planner"} <= written <= set(get_args(StepLiteral))
 
 
 def test_planner_answers_only_pom_chart_types():

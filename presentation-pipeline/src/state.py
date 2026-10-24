@@ -45,10 +45,9 @@ PlanFlagCodeLiteral = Literal[            # what plan_checks writes to plan_flag
     "LAYER_REPEATED",
 ]                                         # CARD_LINES_DROPPED only drives a re-ask
 RetryTierLiteral = Literal[0, 1, 2]       # 0 = initial, 1 = PATCH, 2 = REGENERATE (repairer.py)
-StepLiteral = Literal[                    # step names in usage records (llm_client.usage_record, src/planning)
+StepLiteral = Literal[                    # step names in usage records (llm_client.usage_record)
     "elicitor", "outline_planner", "slide_component_planner", "plan_reviewer",
     "generator", "repairer", "critic", "visual_critic", "visual_repairer", "slide_editor",
-    "storyline", "slide_designer",        # Test 1 planning path (src/planning/graph.py)
 ]
 VisualRepairOutcomeLiteral = Literal["improved", "noop", "error"]
 

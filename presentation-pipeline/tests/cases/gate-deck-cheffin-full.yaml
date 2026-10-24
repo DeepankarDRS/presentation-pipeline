@@ -1,7 +1,7 @@
 # GATE deck, fuller paste (user, 2026-09-27): same brief as gate-deck-cheffin-audit plus the per-slide
 # specs for slides 1-6 (the paste stops after slide 6 of the original 18). Edited only: "18-SLIDE" ->
-# "6-SLIDE", chat timestamps removed, agency name anonymised. Test 1:
-#   python -m scripts.eval.plan_only gate-deck-cheffin-full --repeat 1 --label cheffin-full --bundle
+# "6-SLIDE", chat timestamps removed, agency name anonymised. Test 1 case (the Test-1 path and its runner
+# scripts/eval/plan_only.py were removed 2026-10-24, last in 0cadac5).
 name: gate-deck-cheffin-full
 objective: 6-slide ads audit deck where every slide is specified (headline, table, chart, insight); tests that the planner follows a per-slide spec verbatim.
 request: |
@@ -197,7 +197,7 @@ expect:
   watch: >
     each slide's brief headline used verbatim; CPC-vs-allowable table + bar chart on slide 3; ad-type table
     and match-type ROAS on slide 6; no numbers beyond the brief.
-# Test 1 (scripts/eval/plan_only.py)
+# Test 1 checks (read by scripts/eval/plan_only.py, removed 2026-10-24; nothing reads them now)
 plan_checks:
   - name: brief headlines used on their slides
     headlines_from_brief: true

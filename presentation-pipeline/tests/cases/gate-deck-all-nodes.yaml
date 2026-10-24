@@ -3,7 +3,6 @@
 # intended kind, inside its limits — the kind is noted in the expect.watch list below.
 # Full pipeline (same graph as the UI; planner kinds are reported per slide):
 #   python -m scripts.eval.eval_run gate-deck-all-nodes --label all-nodes --repeat 1
-# Not for scripts/eval/plan_only.py: that runs planning v2 (src/planning), which has no card_grid.
 name: gate-deck-all-nodes
 objective: 14-slide growth-strategy deck where each slide is built to exercise one component kind (title, hero stat, kpi_row, chart, table, process_arrow, timeline, flow, tree, pyramid, matrix, layer, card_grid grid / steps / matrix, bullet_list).
 request: |
