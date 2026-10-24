@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Folder Structure Standard</title>
+<style>
+:root {
+  --bg: #fbfaf7; --panel: #ffffff; --ink: #1d1d1b; --muted: #66645e; --line: #e4e1da;
+  --code-bg: #f3f1ec; --accent: #2f5d8a;
+  --done: #2e7d4f; --done-bg: #e5f3ea;
+  --keep: #5c5a55; --keep-bg: #eeece7;
+  --next: #8a5a00; --next-bg: #fbefd6;
+  --ask: #9b2c3c; --ask-bg: #f8e3e6;
+  --mono: ui-monospace, "Cascadia Code", Consolas, "JetBrains Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161614; --panel: #1f1f1c; --ink: #ecebe6; --muted: #a3a19a; --line: #34332f;
+    --code-bg: #262622; --accent: #8db8e3;
+    --done: #7fd19f; --done-bg: #1d3326; --keep: #c2c0b8; --keep-bg: #2c2b27;
+    --next: #f0c46a; --next-bg: #3a2e14; --ask: #f19aa7; --ask-bg: #3d1f24;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161614; --panel: #1f1f1c; --ink: #ecebe6; --muted: #a3a19a; --line: #34332f;
+  --code-bg: #262622; --accent: #8db8e3;
+  --done: #7fd19f; --done-bg: #1d3326; --keep: #c2c0b8; --keep-bg: #2c2b27;
+  --next: #f0c46a; --next-bg: #3a2e14; --ask: #f19aa7; --ask-bg: #3d1f24;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Inter, sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 19px; margin: 40px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+p.lede { color: var(--muted); margin: 0 0 20px; }
+code { font-family: var(--mono); font-size: 0.92em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+.tag { display: inline-block; font: 600 11px/1 var(--mono); padding: 4px 7px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+.t-done { color: var(--done); background: var(--done-bg); }
+.t-keep { color: var(--keep); background: var(--keep-bg); }
+.t-next { color: var(--next); background: var(--next-bg); }
+.t-ask  { color: var(--ask);  background: var(--ask-bg); }
+.tree { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 16px; overflow-x: auto; font: 13px/1.75 var(--mono); }
+.tree ul { list-style: none; margin: 0; padding-left: 20px; border-left: 1px dashed var(--line); }
+.tree > ul { padding-left: 0; border-left: 0; }
+.row > * { margin-right: 10px; }
+.name { font-weight: 600; white-space: nowrap; }
+.dir { color: var(--accent); }
+.note { color: var(--muted); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 13px; }
+.tree .tag { font-size: 10px; padding: 3px 5px; }
+table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; overflow: hidden; font-size: 14px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); background: var(--code-bg); }
+tr:last-child td { border-bottom: 0; }
+.scroll { overflow-x: auto; }
+.phases { display: grid; gap: 12px; }
+.phase { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+.phase h3 { margin: 0 0 6px; font-size: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.phase p, .phase ul { margin: 6px 0 0; }
+.phase ul { padding-left: 20px; }
+@media (max-width: 600px) { th, td { padding: 8px; } .tree { font-size: 12px; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Folder structure standard</h1>
+<p class="lede">presentation-pipeline · target layout, placement rules and migration phases · 2026-10-24 · branch <code>refactor/folder-layout</code></p>
+
+<p>The code folders (<code>src/</code>, <code>tests/</code>, <code>frontend/</code>) are already in reasonable shape. The mess is around them: design notes, reference files, binaries and stale copies at the project root, 40 flat scripts, and an <code>agents/</code> package that mixes LLM steps, schemas and pure-code checks. Phase 1 below is done in this branch; later phases change import paths or commands people run, so each is its own PR.</p>
+<div class="legend">
+  <span class="tag t-done">done</span> moved or removed in this branch
+  <span class="tag t-keep">keep</span> already right, leave it
+  <span class="tag t-next">proposed</span> later phase
+  <span class="tag t-ask">decide</span> needs your call
+</div>
+
+<h2>Target hierarchy</h2>
+<div class="tree"><ul>
+<li><div class="row"><span class="name dir">C:\dev\presentation-pipeline\</span><span class="note">git root (holds only the project folder)</span><span class="tag t-ask">decide</span><span class="note">flatten into one level? see Phase 4</span></div>
+<ul>
+ <li><div class="row"><span class="name">.gitignore</span><span class="tag t-keep">keep</span></div></li>
+ <li><div class="row"><span class="name dir">presentation-pipeline/</span><span class="note">project root: config + entry docs only, no loose notes or binaries</span></div>
+ <ul>
+  <li><div class="row"><span class="name">AGENTS.md</span><span class="note">entry point for any coding agent / new reader</span><span class="tag t-keep">keep</span></div></li>
+  <li><div class="row"><span class="name">pyproject.toml · uv.lock · requirements.txt · models.yaml · .env.example</span><span class="tag t-keep">keep</span></div></li>
+  <li><div class="row"><span class="name dir">.cursor/rules/</span><span class="note">agent memory, one rule per topic</span><span class="tag t-keep">keep</span></div></li>
+
+  <li><div class="row"><span class="name dir">src/</span><span class="note">the Python package; only production code</span></div>
+  <ul>
+   <li><div class="row"><span class="name">graph.py · state.py · runner.py · api.py</span><span class="note">entry points (<code>python -m src.graph</code>, <code>src.runner</code>, <code>src.api</code>) stay put</span><span class="tag t-keep">keep</span></div></li>
+   <li><div class="row"><span class="name dir">agents/</span><span class="note">one module per pipeline step; split by stage</span><span class="tag t-next">proposed</span></div>
+   <ul>
+    <li><div class="row"><span class="name dir">planning/</span><span class="note">elicitor, questionnaire, outline_planner, outline_replanner, slide_component_planner, slide_replanner, plan_reviewer, plan_checks, capacity, written_lines, context_builder, settings_mapper, style_resolver, blueprint_selector, hint_capabilities</span></div></li>
+    <li><div class="row"><span class="name dir">generation/</span><span class="note">generator, repairer, validator, deck_nodes</span></div></li>
+    <li><div class="row"><span class="name dir">review/</span><span class="note">critic, visual_critic, visual_repairer, evaluator</span></div></li>
+    <li><div class="row"><span class="name dir">schemas/</span><span class="note">every <code>*_schema*.py</code> (LLM structured-output models)</span></div></li>
+   </ul></li>
+   <li><div class="row"><span class="name dir">services/</span><span class="note">non-graph services used by the API: slide_edit_service</span><span class="tag t-next">proposed</span></div></li>
+   <li><div class="row"><span class="name dir">planning/</span><span class="note">Test-1 storyline path, not in production</span><span class="tag t-ask">decide</span><span class="note">port brief_index / checks / adapter, delete the rest</span></div></li>
+   <li><div class="row"><span class="name dir">compiler/</span><span class="note">XML normalise → compile → audit (Python side)</span><span class="tag t-keep">keep</span></div>
+   <ul><li><div class="row"><span class="name dir">nodes/</span><span class="note">derived node expansion (tiles, cards, refs)</span><span class="tag t-keep">keep</span></div></li></ul></li>
+   <li><div class="row"><span class="name dir">node/</span><span class="note">Node.js POM bridge: compile-pom.js, fit-grow.js, geometry.js, pptx-post.js, fonts/</span><span class="tag t-keep">keep</span></div>
+   <ul><li><div class="row"><span class="name">compile-pom.txt · package.txt</span><span class="note">stale Sep copies of the .js/.json, unreferenced</span><span class="tag t-done">removed</span></div></li></ul></li>
+   <li><div class="row"><span class="name dir">knowledge/</span><span class="note">data the prompts and code read: core/, components/, examples/, theme/</span><span class="tag t-keep">keep</span></div></li>
+   <li><div class="row"><span class="name dir">prompts/&lt;step&gt;/</span><span class="note">system.j2 + user.j2; folder name = agent module name</span><span class="tag t-keep">keep</span></div></li>
+   <li><div class="row"><span class="name dir">utils/</span><span class="note">cross-cutting helpers only (llm client, logging, text cleaning)</span><span class="tag t-keep">keep</span></div></li>
+  </ul></li>
+
+  <li><div class="row"><span class="name dir">scripts/</span><span class="note">runnable tools; never imported by <code>src/</code></span><span class="tag t-next">proposed</span></div>
+  <ul>
+   <li><div class="row"><span class="name dir">eval/</span><span class="note">eval_run, eval_compare, eval_import, eval_lineage, eval_metrics, plan_only, plan_flags_report, structure_loss, usage_report, variety, geometry_replay, render_check</span></div></li>
+   <li><div class="row"><span class="name dir">tools/</span><span class="note">embed_fonts, export_icon_names, find_nul, palette_preview, label_sizes, variant_gallery, make_gj_h1_case, verify_li_nesting, from_plans, gen_from_plans, planner_schema_compare</span></div></li>
+   <li><div class="row"><span class="name dir">experiments/&lt;name&gt;/</span><span class="note">one folder per experiment: kpi/, cards/, tiles/, node_test/, phase0b/ — archived or deleted when the experiment closes</span></div></li>
+  </ul></li>
+
+  <li><div class="row"><span class="name dir">tests/</span><span class="tag t-keep">keep</span></div>
+  <ul>
+   <li><div class="row"><span class="name dir">unit/</span><span class="note">no key, no network; <code>test_&lt;module&gt;.py</code></span></div></li>
+   <li><div class="row"><span class="name dir">integration/</span><span class="note">needs the API key</span></div></li>
+   <li><div class="row"><span class="name dir">cases/</span><span class="note">regression prompts (yaml) for <code>src.runner</code> / eval_run</span></div></li>
+   <li><div class="row"><span class="name dir">fixtures/&lt;topic&gt;/</span><span class="note">saved XML / plans the unit tests read</span></div></li>
+   <li><div class="row"><span class="name dir">comparison/</span><span class="note">reference output for the slide designer</span></div></li>
+  </ul></li>
+
+  <li><div class="row"><span class="name dir">docs/</span><span class="note">every note, spec and result — nothing of this kind at the project root</span></div>
+  <ul>
+   <li><div class="row"><span class="name">*.md</span><span class="note">design notes and specs, kebab-case, dated when point-in-time (<code>tile-nodes-spec-2026-10-12.md</code>)</span><span class="tag t-keep">keep</span></div></li>
+   <li><div class="row"><span class="name dir">architecture/</span><span class="note">ARCHITECTURE.md, CODE_FLOW.md, EDITING_ARCHITECTURE.md, flow.md, this page</span><span class="tag t-done">done</span></div></li>
+   <li><div class="row"><span class="name dir">reference/</span><span class="note">upstream / external material: llm.md (POM reference), gj-h1-performance-deck.pptx</span><span class="tag t-done">done</span></div></li>
+   <li><div class="row"><span class="name dir">archive/</span><span class="note">retired context kept for provenance: plan.txt, NEW_CHAT_CONTEXT.txt</span><span class="tag t-done">done</span></div></li>
+   <li><div class="row"><span class="name dir">eval/&lt;experiment&gt;/</span><span class="note">result summaries and renders worth sharing (+ otherpc_test.txt)</span><span class="tag t-keep">keep</span></div></li>
+   <li><div class="row"><span class="name dir">mockups/</span><span class="tag t-keep">keep</span></div></li>
+  </ul></li>
+
+  <li><div class="row"><span class="name dir">frontend/</span><span class="note">Angular app, standard CLI layout (components/, services/, models/, constants/)</span><span class="tag t-keep">keep</span></div></li>
+  <li><div class="row"><span class="name dir">graphify-out/</span><span class="note">generated code graph</span><span class="tag t-ask">decide</span><span class="note">untrack <code>cache/</code> (long names break Windows checkout)</span></div></li>
+  <li><div class="row"><span class="name dir">output/ · llm_test/ · .venv/</span><span class="note">local only, gitignored — never commit</span><span class="tag t-keep">keep</span></div></li>
+ </ul></li>
+</ul></li>
+</ul></div>
+
+<h2>Where does a new file go?</h2>
+<div class="scroll"><table>
+<thead><tr><th>You are adding…</th><th>Put it in</th><th>Rule</th></tr></thead>
+<tbody>
+<tr><td>A new LLM step or graph node</td><td><code>src/agents/&lt;stage&gt;/&lt;step&gt;.py</code> + <code>src/prompts/&lt;step&gt;/</code> + <code>models.yaml</code> entry</td><td>Same name in all three places.</td></tr>
+<tr><td>Structured-output model for a step</td><td><code>src/agents/schemas/&lt;step&gt;_schema.py</code></td><td>Schemas hold no logic.</td></tr>
+<tr><td>A deterministic check / fix on plans</td><td><code>src/agents/planning/</code></td><td>Pure code, unit-tested, no LLM call.</td></tr>
+<tr><td>A deterministic fix on XML</td><td><code>src/compiler/</code> (Python) or <code>src/node/</code> (needs POM measurement)</td><td>Rules as data go to <code>src/knowledge/</code>.</td></tr>
+<tr><td>Rule, limit, palette, icon list</td><td><code>src/knowledge/core|components|theme/</code></td><td>Data, not code; one source per fact.</td></tr>
+<tr><td>A one-off experiment runner</td><td><code>scripts/experiments/&lt;name&gt;/</code></td><td>Never imported from <code>src/</code>; close it out when the experiment ends.</td></tr>
+<tr><td>A reusable eval / maintenance tool</td><td><code>scripts/eval/</code> or <code>scripts/tools/</code></td><td>Run as <code>python -m scripts.&lt;group&gt;.&lt;name&gt;</code>.</td></tr>
+<tr><td>A test</td><td><code>tests/unit/test_&lt;module&gt;.py</code>; data in <code>tests/fixtures/&lt;topic&gt;/</code></td><td>Unit tests never need a key.</td></tr>
+<tr><td>A design note, spec, research doc</td><td><code>docs/&lt;topic&gt;-YYYY-MM-DD.md</code></td><td>Never at the project root.</td></tr>
+<tr><td>Results of a run worth keeping</td><td><code>docs/eval/&lt;experiment&gt;/</code> (text + small renders)</td><td>Raw runs stay in <code>output/</code> / <code>llm_test/</code>.</td></tr>
+<tr><td>Upstream / client reference material</td><td><code>docs/reference/</code></td><td>Client-confidential files never go in git.</td></tr>
+</tbody></table></div>
+
+<h2>Naming</h2>
+<div class="scroll"><table>
+<thead><tr><th>Kind</th><th>Convention</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Python modules, packages</td><td>snake_case</td><td><code>slide_component_planner.py</code></td></tr>
+<tr><td>Node.js files</td><td>kebab-case</td><td><code>fit-grow.js</code></td></tr>
+<tr><td>Knowledge YAML</td><td>kebab-case</td><td><code>block-variants.yaml</code></td></tr>
+<tr><td>Docs</td><td>kebab-case, date suffix when point-in-time</td><td><code>look-and-feel-review-2026-10-21.md</code></td></tr>
+<tr><td>Binaries / reference files</td><td>kebab-case, no spaces</td><td><code>gj-h1-performance-deck.pptx</code></td></tr>
+<tr><td>Existing UPPERCASE docs</td><td>kept as-is to avoid link churn; new docs use kebab-case</td><td><code>CODE_FLOW.md</code></td></tr>
+</tbody></table></div>
+
+<h2>Migration phases</h2>
+<div class="phases">
+
+<div class="phase"><h3>Phase 1 · Root clean-up <span class="tag t-done">done in this branch</span></h3>
+<p>No Python import or command changes. References updated in <code>AGENTS.md</code>, <code>.cursor/rules/pom-compiler-constraints.mdc</code>, <code>tests/LLM_TEST_PLAN.md</code>, <code>docs/CODE_REVIEW.md</code> and <code>tests/unit/test_upstream_reference.py</code> (reads <code>llm.md</code>). Unit suite unchanged against the baseline.</p>
+<ul>
+<li><code>ARCHITECTURE.md</code>, <code>CODE_FLOW.md</code>, <code>EDITING_ARCHITECTURE.md</code>, <code>flow.md</code> → <code>docs/architecture/</code></li>
+<li><code>CODE_REVIEW.md</code>, <code>GENOFFICE_FEATURE_ADOPTION.md</code> → <code>docs/</code></li>
+<li><code>llm.md</code>, <code>GJ_H1 performance deck.pptx</code> → <code>docs/reference/</code> (pptx renamed <code>gj-h1-performance-deck.pptx</code>)</li>
+<li><code>plan.txt</code>, <code>NEW_CHAT_CONTEXT.txt</code> (git root) → <code>docs/archive/</code>; <code>otherpc_test.txt</code> → <code>docs/eval/</code></li>
+<li>Deleted <code>src/node/compile-pom.txt</code>, <code>src/node/package.txt</code> (stale copies, no references)</li>
+</ul></div>
+
+<div class="phase"><h3>Phase 2 · Group <code>scripts/</code> <span class="tag t-next">after feat/tile-nodes merges</span></h3>
+<p>Move into <code>eval/</code>, <code>tools/</code>, <code>experiments/&lt;name&gt;/</code>. Every moved script's <code>ROOT = parent.parent</code> becomes <code>parents[2]</code> (or <code>[3]</code>), ~30 <code>from scripts.x import</code> lines and the test imports change, and every <code>python -m scripts.x</code> command in AGENTS.md and the docs changes. Wait until the tile experiment closes so the test-PC commands don't break mid-run. Closed experiments are the moment to delete rather than move.</p></div>
+
+<div class="phase"><h3>Phase 3 · Split <code>src/agents/</code> <span class="tag t-next">one mechanical PR</span></h3>
+<p>Create <code>planning/</code>, <code>generation/</code>, <code>review/</code>, <code>schemas/</code> and <code>src/services/</code>; rewrite imports with a script, run the full unit suite, no behaviour change in the same PR. Do it between feature branches, when no other branch has open edits in <code>src/agents/</code>, to avoid merge conflicts.</p></div>
+
+<div class="phase"><h3>Phase 4 · Decisions for you <span class="tag t-ask">decide</span></h3>
+<ul>
+<li><b>Test-1 path</b> (<code>src/planning/graph.py</code>, <code>schemas.py</code>, prompts <code>storyline/</code>, <code>slide_designer/</code>, <code>scripts/plan_only.py</code>): AGENTS.md says it isn't going to production. Port <code>brief_index</code> / <code>checks</code> / <code>adapter</code> into <code>agents/planning/</code> and delete the rest?</li>
+<li><b><code>graphify-out/cache/</code></b> (~580 tracked files): untrack and gitignore; AGENTS.md already warns its long names break Windows checkout.</li>
+<li><b>Nested root</b> (<code>presentation-pipeline/presentation-pipeline/</code>): flattening makes the git root the project root, but changes every absolute path in AGENTS.md, memory notes, launch configs and the test-PC clone. Worth it only if you're touching those anyway.</li>
+</ul></div>
+
+</div>
+</main>
+</body>
+</html>

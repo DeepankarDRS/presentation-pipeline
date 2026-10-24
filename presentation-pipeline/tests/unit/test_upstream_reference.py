@@ -15,7 +15,7 @@ import pytest
 from src.compiler.normalizer import ensure_single_theme, normalize_xml
 
 _ROOT = Path(__file__).resolve().parents[2]
-_LLM_MD = _ROOT / "llm.md"
+_LLM_MD = _ROOT / "docs" / "reference" / "llm.md"
 _COMPILER = _ROOT / "src" / "node" / "compile-pom.js"
 _POM = _ROOT / "src" / "node" / "node_modules" / "@hirokisakabe" / "pom"
 _THEME = '<Theme surface="0F172A" accent="38BDF8" textMain="F8FAFC" textMuted="94A3B8" />'

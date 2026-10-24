@@ -3,7 +3,7 @@ description: Verified @hirokisakabe/pom v10.3.0 validation behavior for the POM 
 alwaysApply: false
 ---
 
-These facts were first verified in the POM XML generation MVP (`presentation-mvp/`, a sibling folder that no longer exists). The original plan survives as `plan.txt` + `NEW_CHAT_CONTEXT.txt` at the git root (`C:\dev\presentation-pipeline`).
+These facts were first verified in the POM XML generation MVP (`presentation-mvp/`, a sibling folder that no longer exists). The original plan survives as `docs/archive/plan.txt` + `docs/archive/NEW_CHAT_CONTEXT.txt`.
 
 **Hypothesis SETTLED (2026-09-02): selective context wins, baseline removed.** The full-llm.txt baseline (~12k in / ~5.4k out on complex-dashboard) hallucinated attributes (`uppercase` on `<Text>`, invented Shape/VStack attrs) and leaked HTML; the selective pipeline ran clean. Decision: production path is selective-only. REMOVED from the codebase: `python/experiment.py`, `prompts/system-baseline.txt`, `prompts/user-baseline.txt`, `models.Strategy` enum, `config.LLM_TXT`/`Settings.llm_txt`, the `--strategy` flag (generate.py + deck.py), the `strategy` param/field everywhere (generate.run, deck.generate_deck, evaluator.evaluate, EvaluationResult, DeckEvaluationResult). `prompt_builder.build(ir, contract)` is now the only builder. `llm.txt` file KEPT in the parent dir as KB provenance (the `# Source: llm.txt` comments) — pipeline never reads it. Output dirs lost the `/<strategy>/` level.
 

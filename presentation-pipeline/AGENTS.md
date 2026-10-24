@@ -3,9 +3,9 @@
 Prompt → LangGraph pipeline → LLM writes POM XML → Node.js compiler (`@hirokisakabe/pom` v10.3.0) → `.pptx`.
 
 ## Read first
-- `ARCHITECTURE.md` — system overview, graph nodes, compiler bridge
-- `CODE_FLOW.md` — which function runs when, which `PresentationState` keys change
-- `llm.md` — POM's own XML reference (upstream). Audit source for our knowledge YAML, NOT a prompt: pasting it in lost to selective context (2026-09-02). `tests/unit/test_upstream_reference.py` compiles every example in it.
+- `docs/architecture/ARCHITECTURE.md` — system overview, graph nodes, compiler bridge
+- `docs/architecture/CODE_FLOW.md` — which function runs when, which `PresentationState` keys change
+- `docs/reference/llm.md` — POM's own XML reference (upstream). Audit source for our knowledge YAML, NOT a prompt: pasting it in lost to selective context (2026-09-02). `tests/unit/test_upstream_reference.py` compiles every example in it.
 - `.cursor/rules/` — project memory carried over from Claude Code (working style is always applied; the rest load when relevant)
 
 ## Setup on a new machine

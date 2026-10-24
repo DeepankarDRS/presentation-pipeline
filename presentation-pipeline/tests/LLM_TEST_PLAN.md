@@ -1,7 +1,7 @@
 # LLM Test Plan — Planner & Generator Output
 
 > Focus: exercise the **LLM path** end to end and eyeball what actually comes out.
-> Created 2026-09-06. Companion to [`../CODE_FLOW.md`](../CODE_FLOW.md) and [`../CODE_REVIEW.md`](../CODE_REVIEW.md).
+> Created 2026-09-06. Companion to [`CODE_FLOW.md`](../docs/architecture/CODE_FLOW.md) and [`CODE_REVIEW.md`](../docs/CODE_REVIEW.md).
 
 ---
 
@@ -147,7 +147,7 @@ The request enumerates slides ("Slide 1: … Slide 2: …"). The planner must em
 
 ## 6. Known-broken paths to watch during these runs
 
-From [`../CODE_REVIEW.md`](../CODE_REVIEW.md) — expect these to misbehave; the test
+From [`CODE_REVIEW.md`](../docs/CODE_REVIEW.md) — expect these to misbehave; the test
 runs are a good chance to confirm/measure:
 
 1. **Deck `passed` ignores the critic** (#1) — a deck with a bad slide can still

@@ -1,6 +1,6 @@
 # Presentation Pipeline — In-Depth Flow & Critical Review
 
-> Companion to [`CODE_FLOW.md`](CODE_FLOW.md). Hand-traced from source 2026-09-05.
+> Companion to [`CODE_FLOW.md`](architecture/CODE_FLOW.md). Hand-traced from source 2026-09-05.
 > Part 1 explains the flow and the design problems it *solves*.
 > Part 2 is an adversarial review — bugs, gaps, and design smells, ranked.
 
