@@ -70,9 +70,9 @@ tr:last-child td { border-bottom: 0; }
 <main>
 
 <h1>Folder structure standard</h1>
-<p class="lede">presentation-pipeline · target layout, placement rules and migration phases · 2026-10-24 · branch <code>refactor/folder-layout</code></p>
+<p class="lede">presentation-pipeline · target layout, placement rules and migration phases · 2026-10-24 · branch <code>refactor/folder-layout-phases</code></p>
 
-<p>The code folders (<code>src/</code>, <code>tests/</code>, <code>frontend/</code>) are already in reasonable shape. The mess is around them: design notes, reference files, binaries and stale copies at the project root, 40 flat scripts, and an <code>agents/</code> package that mixes LLM steps, schemas and pure-code checks. Phase 1 below is done in this branch; later phases change import paths or commands people run, so each is its own PR.</p>
+<p>The code folders (<code>src/</code>, <code>tests/</code>, <code>frontend/</code>) are already in reasonable shape. The mess is around them: design notes, reference files, binaries and stale copies at the project root, 40 flat scripts, and an <code>agents/</code> package that mixes LLM steps, schemas and pure-code checks. Phases 1–3 and two of the three Phase 4 decisions are done, one commit each; every commit passed the unit suite against the baseline. Only flattening the nested root is left, deferred on purpose.</p>
 <div class="legend">
   <span class="tag t-done">done</span> moved or removed in this branch
   <span class="tag t-keep">keep</span> already right, leave it
@@ -82,7 +82,7 @@ tr:last-child td { border-bottom: 0; }
 
 <h2>Target hierarchy</h2>
 <div class="tree"><ul>
-<li><div class="row"><span class="name dir">C:\dev\presentation-pipeline\</span><span class="note">git root (holds only the project folder)</span><span class="tag t-ask">decide</span><span class="note">flatten into one level? see Phase 4</span></div>
+<li><div class="row"><span class="name dir">C:\dev\presentation-pipeline\</span><span class="note">git root (holds only the project folder)</span><span class="tag t-next">later</span><span class="note">flatten after open branches merge (Phase 4)</span></div>
 <ul>
  <li><div class="row"><span class="name">.gitignore</span><span class="tag t-keep">keep</span></div></li>
  <li><div class="row"><span class="name dir">presentation-pipeline/</span><span class="note">project root: config + entry docs only, no loose notes or binaries</span></div>
@@ -94,15 +94,15 @@ tr:last-child td { border-bottom: 0; }
   <li><div class="row"><span class="name dir">src/</span><span class="note">the Python package; only production code</span></div>
   <ul>
    <li><div class="row"><span class="name">graph.py · state.py · runner.py · api.py</span><span class="note">entry points (<code>python -m src.graph</code>, <code>src.runner</code>, <code>src.api</code>) stay put</span><span class="tag t-keep">keep</span></div></li>
-   <li><div class="row"><span class="name dir">agents/</span><span class="note">one module per pipeline step; split by stage</span><span class="tag t-next">proposed</span></div>
+   <li><div class="row"><span class="name dir">agents/</span><span class="note">one module per pipeline step, split by stage; <code>__init__.py</code> re-exports the graph nodes</span><span class="tag t-done">done</span></div>
    <ul>
-    <li><div class="row"><span class="name dir">planning/</span><span class="note">elicitor, questionnaire, outline_planner, outline_replanner, slide_component_planner, slide_replanner, plan_reviewer, plan_checks, capacity, written_lines, context_builder, settings_mapper, style_resolver, blueprint_selector, hint_capabilities</span></div></li>
-    <li><div class="row"><span class="name dir">generation/</span><span class="note">generator, repairer, validator, deck_nodes</span></div></li>
+    <li><div class="row"><span class="name dir">planning/</span><span class="note">elicitor, questionnaire, outline_planner, outline_replanner, slide_component_planner, slide_replanner, plan_reviewer, plan_checks, capacity, written_lines, settings_mapper, style_resolver, blueprint_selector, hint_capabilities</span></div></li>
+    <li><div class="row"><span class="name dir">generation/</span><span class="note">context_builder, generator, validator, repairer, deck_nodes</span></div></li>
     <li><div class="row"><span class="name dir">review/</span><span class="note">critic, visual_critic, visual_repairer, evaluator</span></div></li>
     <li><div class="row"><span class="name dir">schemas/</span><span class="note">every <code>*_schema*.py</code> (LLM structured-output models)</span></div></li>
    </ul></li>
-   <li><div class="row"><span class="name dir">services/</span><span class="note">non-graph services used by the API: slide_edit_service</span><span class="tag t-next">proposed</span></div></li>
-   <li><div class="row"><span class="name dir">planning/</span><span class="note">Test-1 storyline path, not in production</span><span class="tag t-ask">decide</span><span class="note">port brief_index / checks / adapter, delete the rest</span></div></li>
+   <li><div class="row"><span class="name dir">services/</span><span class="note">non-graph services used by the API: slide_edit_service</span><span class="tag t-done">done</span></div></li>
+   <li><div class="row"><span class="name dir">planning/</span><span class="note">Test-1 storyline path; nothing in production imported it</span><span class="tag t-done">removed</span></div></li>
    <li><div class="row"><span class="name dir">compiler/</span><span class="note">XML normalise → compile → audit (Python side)</span><span class="tag t-keep">keep</span></div>
    <ul><li><div class="row"><span class="name dir">nodes/</span><span class="note">derived node expansion (tiles, cards, refs)</span><span class="tag t-keep">keep</span></div></li></ul></li>
    <li><div class="row"><span class="name dir">node/</span><span class="note">Node.js POM bridge: compile-pom.js, fit-grow.js, geometry.js, pptx-post.js, fonts/</span><span class="tag t-keep">keep</span></div>
@@ -112,9 +112,9 @@ tr:last-child td { border-bottom: 0; }
    <li><div class="row"><span class="name dir">utils/</span><span class="note">cross-cutting helpers only (llm client, logging, text cleaning)</span><span class="tag t-keep">keep</span></div></li>
   </ul></li>
 
-  <li><div class="row"><span class="name dir">scripts/</span><span class="note">runnable tools; never imported by <code>src/</code></span><span class="tag t-next">proposed</span></div>
+  <li><div class="row"><span class="name dir">scripts/</span><span class="note">runnable tools; never imported by <code>src/</code></span><span class="tag t-done">done</span></div>
   <ul>
-   <li><div class="row"><span class="name dir">eval/</span><span class="note">eval_run, eval_compare, eval_import, eval_lineage, eval_metrics, plan_only, plan_flags_report, structure_loss, usage_report, variety, geometry_replay, render_check</span></div></li>
+   <li><div class="row"><span class="name dir">eval/</span><span class="note">eval_run, eval_compare, eval_import, eval_lineage, eval_metrics, plan_flags_report, structure_loss, usage_report, variety, geometry_replay, render_check</span></div></li>
    <li><div class="row"><span class="name dir">tools/</span><span class="note">embed_fonts, export_icon_names, find_nul, palette_preview, label_sizes, variant_gallery, make_gj_h1_case, verify_li_nesting, from_plans, gen_from_plans, planner_schema_compare</span></div></li>
    <li><div class="row"><span class="name dir">experiments/&lt;name&gt;/</span><span class="note">one folder per experiment: kpi/, cards/, tiles/, node_test/, phase0b/ — archived or deleted when the experiment closes</span></div></li>
   </ul></li>
@@ -139,7 +139,7 @@ tr:last-child td { border-bottom: 0; }
   </ul></li>
 
   <li><div class="row"><span class="name dir">frontend/</span><span class="note">Angular app, standard CLI layout (components/, services/, models/, constants/)</span><span class="tag t-keep">keep</span></div></li>
-  <li><div class="row"><span class="name dir">graphify-out/</span><span class="note">generated code graph</span><span class="tag t-ask">decide</span><span class="note">untrack <code>cache/</code> (long names break Windows checkout)</span></div></li>
+  <li><div class="row"><span class="name dir">graphify-out/</span><span class="note">generated code graph; <code>cache/</code> untracked + gitignored (long names broke Windows checkout)</span><span class="tag t-done">done</span></div></li>
   <li><div class="row"><span class="name dir">output/ · llm_test/ · .venv/</span><span class="note">local only, gitignored — never commit</span><span class="tag t-keep">keep</span></div></li>
  </ul></li>
 </ul></li>
@@ -177,7 +177,7 @@ tr:last-child td { border-bottom: 0; }
 <h2>Migration phases</h2>
 <div class="phases">
 
-<div class="phase"><h3>Phase 1 · Root clean-up <span class="tag t-done">done in this branch</span></h3>
+<div class="phase"><h3>Phase 1 · Root clean-up <span class="tag t-done">done · 6cd03a4</span></h3>
 <p>No Python import or command changes. References updated in <code>AGENTS.md</code>, <code>.cursor/rules/pom-compiler-constraints.mdc</code>, <code>tests/LLM_TEST_PLAN.md</code>, <code>docs/CODE_REVIEW.md</code> and <code>tests/unit/test_upstream_reference.py</code> (reads <code>llm.md</code>). Unit suite unchanged against the baseline.</p>
 <ul>
 <li><code>ARCHITECTURE.md</code>, <code>CODE_FLOW.md</code>, <code>EDITING_ARCHITECTURE.md</code>, <code>flow.md</code> → <code>docs/architecture/</code></li>
@@ -187,17 +187,17 @@ tr:last-child td { border-bottom: 0; }
 <li>Deleted <code>src/node/compile-pom.txt</code>, <code>src/node/package.txt</code> (stale copies, no references)</li>
 </ul></div>
 
-<div class="phase"><h3>Phase 2 · Group <code>scripts/</code> <span class="tag t-next">after feat/tile-nodes merges</span></h3>
-<p>Move into <code>eval/</code>, <code>tools/</code>, <code>experiments/&lt;name&gt;/</code>. Every moved script's <code>ROOT = parent.parent</code> becomes <code>parents[2]</code> (or <code>[3]</code>), ~30 <code>from scripts.x import</code> lines and the test imports change, and every <code>python -m scripts.x</code> command in AGENTS.md and the docs changes. Wait until the tile experiment closes so the test-PC commands don't break mid-run. Closed experiments are the moment to delete rather than move.</p></div>
+<div class="phase"><h3>Phase 2 · Group <code>scripts/</code> <span class="tag t-done">done · a854cc1</span></h3>
+<p>40 scripts into <code>eval/</code>, <code>tools/</code>, <code>experiments/{kpi,cards,tiles,node_test,phase0b}/</code>. Repo-root depth in each moved script, the <code>from scripts…</code> imports in scripts and tests, and every <code>python -m scripts.x</code> command in AGENTS.md, docs (including <code>docs/eval/**/*.md</code>), case comments and <code>.cursor/rules/</code> were rewritten. Every moved module answers <code>--help</code> or imports cleanly. <b>Commands changed:</b> <code>python -m scripts.tile_combined</code> is now <code>python -m scripts.experiments.tiles.tile_combined</code>, <code>scripts.eval_run</code> is now <code>scripts.eval.eval_run</code>, and so on. AGENTS.md lists the new forms.</p></div>
 
-<div class="phase"><h3>Phase 3 · Split <code>src/agents/</code> <span class="tag t-next">one mechanical PR</span></h3>
-<p>Create <code>planning/</code>, <code>generation/</code>, <code>review/</code>, <code>schemas/</code> and <code>src/services/</code>; rewrite imports with a script, run the full unit suite, no behaviour change in the same PR. Do it between feature branches, when no other branch has open edits in <code>src/agents/</code>, to avoid merge conflicts.</p></div>
+<div class="phase"><h3>Phase 3 · Split <code>src/agents/</code> <span class="tag t-done">done · 0cadac5</span></h3>
+<p>Modules moved into <code>planning/</code>, <code>generation/</code>, <code>review/</code>, <code>schemas/</code>; <code>slide_edit_service</code> into <code>src/services/</code>. File-relative paths (<code>Path(__file__)…/"prompts"</code>, <code>/"knowledge"</code>, pipeline root) gained one level; imports, <code>patch("src.agents…")</code> targets and doc paths were rewritten; three tests that built paths from the old layout were fixed. <code>from src.agents import generator_node</code> and the other node re-exports still work.</p></div>
 
-<div class="phase"><h3>Phase 4 · Decisions for you <span class="tag t-ask">decide</span></h3>
+<div class="phase"><h3>Phase 4 · Decisions <span class="tag t-done">2 of 3 done</span></h3>
 <ul>
-<li><b>Test-1 path</b> (<code>src/planning/graph.py</code>, <code>schemas.py</code>, prompts <code>storyline/</code>, <code>slide_designer/</code>, <code>scripts/eval/plan_only.py</code>): AGENTS.md says it isn't going to production. Port <code>brief_index</code> / <code>checks</code> / <code>adapter</code> into <code>agents/planning/</code> and delete the rest?</li>
-<li><b><code>graphify-out/cache/</code></b> (~580 tracked files): untrack and gitignore; AGENTS.md already warns its long names break Windows checkout.</li>
-<li><b>Nested root</b> (<code>presentation-pipeline/presentation-pipeline/</code>): flattening makes the git root the project root, but changes every absolute path in AGENTS.md, memory notes, launch configs and the test-PC clone. Worth it only if you're touching those anyway.</li>
+<li><b>Test-1 path</b> <span class="tag t-done">removed · 431c369</span>: <code>src/planning/</code>, prompts <code>storyline/</code> + <code>slide_designer/</code>, <code>models.yaml</code> steps, <code>StepLiteral</code> entries, <code>scripts/eval/plan_only.py</code>, <code>test_planning_v2.py</code> (22 tests). Nothing in production imported it; git history keeps it. The cases' <code>plan_checks:</code> blocks stay but nothing reads them.</li>
+<li><b><code>graphify-out/cache/</code></b> <span class="tag t-done">untracked · 3bc276b</span>: 584 files gitignored; local caches stay; a machine that pulls rebuilds its cache on the next graphify run.</li>
+<li><b>Nested root</b> <span class="tag t-next">deferred</span>: flattening changes every absolute path in AGENTS.md, memory notes, launch configs and the test-PC clone, and would conflict with every open branch. Do it once <code>feat/tile-nodes</code> and this branch have merged.</li>
 </ul></div>
 
 </div>
