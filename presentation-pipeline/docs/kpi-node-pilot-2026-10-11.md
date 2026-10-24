@@ -169,7 +169,7 @@ Spec names → `palette_tokens.py`: `accentTint` → `accentSoft`, `accentInk` �
 
 `src/compiler/pptx_merge.py` does not rename slide media: in a merged deck a later slide's `image1.png` is
 replaced by the first slide's (reproduced on `output/kpi-variants/b/`: slide 4 showed slide 1's wallet icon
-for its gauge). Used by `src/agents/deck_nodes.py`, so merged decks with icons can show wrong icons. Proposed
+for its gauge). Used by `src/agents/generation/deck_nodes.py`, so merged decks with icons can show wrong icons. Proposed
 as its own fix session; may explain 1a mark 6.4 ("1 has wrong icons") if the sheets were made from merged decks.
 
 ## 7. Build (§3) and free replay (§2) — done 2026-10-11

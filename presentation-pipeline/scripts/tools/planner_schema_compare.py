@@ -7,7 +7,7 @@ round-trip of every saved plan component, and the output tokens each form costs.
 
 Candidates (docs/planner-output-schema-research-2026-10-15.md):
   string   today's PlannerSlide: content as JSON inside the `content_data_json` string
-  union    PlannerSlideTyped (src/agents/planner_schema_typed.py): one component model per kind (anyOf)
+  union    PlannerSlideTyped (src/agents/schemas/planner_schema_typed.py): one component model per kind (anyOf)
   slots    one PlannerComponent with a nullable typed field per kind; the model fills the one for its kind
   superset one PlannerComponent with one `content` object holding every kind's keys, all nullable
 
@@ -30,8 +30,8 @@ from typing import Any, Optional, Union, get_args
 import tiktoken
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, create_model
 
-from src.agents.planner_schema import PlannerComponent, PlannerSlide
-from src.agents.planner_schema_typed import (COMPONENT_BY_KIND, CONTENT_BY_KIND, PlannerSlideTyped, _trim,
+from src.agents.schemas.planner_schema import PlannerComponent, PlannerSlide
+from src.agents.schemas.planner_schema_typed import (COMPONENT_BY_KIND, CONTENT_BY_KIND, PlannerSlideTyped, _trim,
                                              content_data_of, content_from_data)
 from src.state import ChartTypeLiteral, ComponentKindLiteral, OrientationLiteral, SlideTypeLiteral, WeightLiteral
 from src.utils.strict_schema import sent_schema, strict_problems

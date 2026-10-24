@@ -19,10 +19,10 @@ from typing import Any
 
 import yaml
 
-from src.agents.blueprint_selector import select_blueprint
-from src.agents.hint_capabilities import hint_scopes, kind_treatments, visual_intent_techniques
-from src.agents.capacity import layout_rules
-from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
+from src.agents.planning.blueprint_selector import select_blueprint
+from src.agents.planning.hint_capabilities import hint_scopes, kind_treatments, visual_intent_techniques
+from src.agents.planning.capacity import layout_rules
+from src.agents.planning.style_resolver import DEFAULT_THEME, resolve_theme
 from src.compiler.nodes import cards, tiles
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
@@ -59,7 +59,7 @@ def _detect_components_from_text(text: str) -> list[str]:
                 break
     return found
 
-_SRC_DIR = Path(__file__).resolve().parent.parent
+_SRC_DIR = Path(__file__).resolve().parents[2]
 _KNOWLEDGE_DIR = _SRC_DIR / "knowledge"
 
 # ── Component kind → POM node mapping ────────────────────────────────────────

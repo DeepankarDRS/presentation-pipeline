@@ -4,7 +4,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.agents.context_builder import (
+from src.agents.generation.context_builder import (
     _select_nodes,
     _select_attributes,
     _select_notes,
@@ -14,7 +14,7 @@ from src.agents.context_builder import (
     context_builder_node,
     _load_yaml,
 )
-from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
+from src.agents.planning.style_resolver import DEFAULT_THEME, resolve_theme
 from src.state import ComponentPlan, SlidePlan, initial_state
 
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "src" / "prompts" / "generator"

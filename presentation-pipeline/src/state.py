@@ -322,7 +322,7 @@ def initial_state(
     An unknown theme_name raises here, at run start; "" = the default theme.
     """
     if theme_name:
-        from src.agents.style_resolver import theme_names  # lazy: src.agents imports state
+        from src.agents.planning.style_resolver import theme_names  # lazy: src.agents imports state
         if theme_name not in theme_names():
             raise ValueError(f"unknown theme '{theme_name}'; palettes.yaml has: {', '.join(theme_names())}")
     return PresentationState(

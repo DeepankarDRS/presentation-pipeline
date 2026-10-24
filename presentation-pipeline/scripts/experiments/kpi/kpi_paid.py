@@ -41,7 +41,7 @@ sys.path.insert(0, str(ROOT))
 os.environ.setdefault("POM_BLOCKS", "kpi")   # read per call; main() sets it from --blocks
 
 from scripts.experiments.kpi.kpi_replay import compile_slide, score  # noqa: E402
-from src.agents.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.nodes.element_refs import kpi_components  # noqa: E402
 
 INPUTS = ROOT / "docs" / "eval" / "kpi-node" / "paid-inputs.json"
@@ -161,7 +161,7 @@ def run(label: str, repeat: int, dry: bool = False, plans: str | None = None) ->
             try:
                 if dry:
                     from scripts.experiments.kpi.kpi_replay import map_refs
-                    from src.agents import generator
+                    from src.agents.generation import generator
                     skel = map_refs(it["xml_today"], it["plan"])[0]
                     if os.environ.get("POM_BLOCKS") == "tiles":   # the same tiles as tile tags
                         from scripts.experiments.tiles.tile_replay import rewrite

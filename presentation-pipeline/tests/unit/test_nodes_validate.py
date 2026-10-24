@@ -117,7 +117,7 @@ def test_empty_plan_draws_nothing():
 
 
 def test_every_plan_kind_has_a_tag_except_title_and_layer():
-    from src.agents.planner_schema import ComponentKindLiteral
+    from src.agents.schemas.planner_schema import ComponentKindLiteral
     import typing
     kinds = set(typing.get_args(ComponentKindLiteral))
     for k in kinds - spec.NO_REF_KINDS:

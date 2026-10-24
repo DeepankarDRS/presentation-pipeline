@@ -20,7 +20,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from src.agents.written_lines import (NOTES_LABEL, drop_repeated_bodies, drop_shared_card_lines, from_brief,
+from src.agents.planning.written_lines import (NOTES_LABEL, drop_repeated_bodies, drop_shared_card_lines, from_brief,
                                       matches_instruction)
 from src.compiler.value_parts import is_sentence
 

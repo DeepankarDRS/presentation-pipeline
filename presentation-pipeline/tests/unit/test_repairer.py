@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
-from src.agents.repairer import (
+from src.agents.generation.repairer import (
     repairer_node, _collect_problems, build_patch_prompts,
     _get_pre_issues, _get_compile_diags, _choose_strategy,
     _build_repair_context, _plan_to_outline_slide, _cap_xml,
@@ -262,7 +262,7 @@ def test_build_patch_prompts():
 
 # ── Repairer node (mocked LLM) ───────────────────────────────────────────
 
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_tier1_patch(mock_get_llm):
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>Fixed</Text></VStack></Slide>'
@@ -315,9 +315,9 @@ def _mock_replan(mock_plan, mock_contract):
     }
 
 
-@patch("src.agents.repairer.build_contract")
-@patch("src.agents.repairer.plan_single_slide")
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.build_contract")
+@patch("src.agents.generation.repairer.plan_single_slide")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_escalates_on_stall(mock_get_llm, mock_plan, mock_contract):
     _mock_replan(mock_plan, mock_contract)
     mock_response = MagicMock()
@@ -354,9 +354,9 @@ def test_repairer_escalates_on_stall(mock_get_llm, mock_plan, mock_contract):
     assert mock_plan.called  # REGENERATE now calls plan_single_slide
 
 
-@patch("src.agents.repairer.build_contract")
-@patch("src.agents.repairer.plan_single_slide")
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.build_contract")
+@patch("src.agents.generation.repairer.plan_single_slide")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_stall_detected_from_compile_diags(mock_get_llm, mock_plan, mock_contract):
     """Regression: a recurring compiler diagnostic must be recognised as a stall."""
     _mock_replan(mock_plan, mock_contract)
@@ -388,9 +388,9 @@ def test_repairer_stall_detected_from_compile_diags(mock_get_llm, mock_plan, moc
     assert result["retry_tier"] == REGENERATE
 
 
-@patch("src.agents.repairer.build_contract")
-@patch("src.agents.repairer.plan_single_slide")
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.build_contract")
+@patch("src.agents.generation.repairer.plan_single_slide")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_no_stall_when_errors_change(mock_get_llm, mock_plan, mock_contract):
     _mock_replan(mock_plan, mock_contract)
     mock_response = MagicMock()
@@ -429,7 +429,7 @@ def _mock_llm(mock_get_llm, content='<Theme />\n<Slide><VStack><Text>x</Text></V
     return mock_llm
 
 
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_flags_noop_patch(mock_get_llm):
     state = _make_state(retry_tier=0, retry_count=0)
     identical = state["normalize_result"]["cleaned_xml"]
@@ -440,9 +440,9 @@ def test_repairer_flags_noop_patch(mock_get_llm):
     assert result["generation_history"][0]["noop"] is True
 
 
-@patch("src.agents.repairer.build_contract")
-@patch("src.agents.repairer.plan_single_slide")
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.build_contract")
+@patch("src.agents.generation.repairer.plan_single_slide")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_regenerates_after_noop(mock_get_llm, mock_plan, mock_contract):
     _mock_replan(mock_plan, mock_contract)
     _mock_llm(mock_get_llm)
@@ -459,7 +459,7 @@ def test_repairer_regenerates_after_noop(mock_get_llm, mock_plan, mock_contract)
     assert mock_plan.called
 
 
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_flags_truncation(mock_get_llm):
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>x</Text></VStack></Slide>'
@@ -477,9 +477,9 @@ def test_repairer_flags_truncation(mock_get_llm):
     assert result["generation_history"][0]["truncated"] is True
 
 
-@patch("src.agents.repairer.build_contract")
-@patch("src.agents.repairer.plan_single_slide")
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.build_contract")
+@patch("src.agents.generation.repairer.plan_single_slide")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_regenerate_replans_slide(mock_get_llm, mock_plan, mock_contract):
     """REGENERATE now calls plan_single_slide + generator LLM instead of repairer LLM."""
     _mock_replan(mock_plan, mock_contract)
@@ -496,9 +496,9 @@ def test_repairer_regenerate_replans_slide(mock_get_llm, mock_plan, mock_contrac
     assert "contract" in result
 
 
-@patch("src.agents.repairer.build_contract")
-@patch("src.agents.repairer.plan_single_slide")
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.build_contract")
+@patch("src.agents.generation.repairer.plan_single_slide")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_regenerate_passes_repair_context(mock_get_llm, mock_plan, mock_contract):
     """REGENERATE passes repair_context to plan_single_slide with failed component kinds."""
     _mock_replan(mock_plan, mock_contract)
@@ -516,9 +516,9 @@ def test_repairer_regenerate_passes_repair_context(mock_get_llm, mock_plan, mock
     assert "timeline" in repair_ctx["failed_kinds"]
 
 
-@patch("src.agents.repairer.build_contract")
-@patch("src.agents.repairer.plan_single_slide")
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.build_contract")
+@patch("src.agents.generation.repairer.plan_single_slide")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_regenerate_on_structural_error(mock_get_llm, mock_plan, mock_contract):
     _mock_replan(mock_plan, mock_contract)
     mock_llm = _mock_llm(mock_get_llm)
@@ -535,7 +535,7 @@ def test_repairer_regenerate_on_structural_error(mock_get_llm, mock_plan, mock_c
     assert result["retry_tier"] == REGENERATE
 
 
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_patch_cleanup_after_regenerate(mock_get_llm):
     mock_llm = _mock_llm(mock_get_llm)
 
@@ -553,7 +553,7 @@ def test_repairer_patch_cleanup_after_regenerate(mock_get_llm):
     assert "PATCH" in user_msg
 
 
-@patch("src.agents.repairer.get_llm")
+@patch("src.agents.generation.repairer.get_llm")
 def test_repairer_records_attempt(mock_get_llm):
     mock_response = MagicMock()
     mock_response.content = '<Slide><Text>OK</Text></Slide>'
@@ -637,7 +637,7 @@ def test_collect_problems_caps_large_invalid_value():
         "diagnostics": [{"type": "INVALID_VALUE",
                           "message": f'<Icon>: Invalid value for "name". Expected: {huge_enum}'}],
     }
-    from src.agents.repairer import _collect_problems
+    from src.agents.generation.repairer import _collect_problems
     problems = _collect_problems(state)
     assert len(problems) == 1
     assert len(problems[0]) <= 250  # must be capped, not thousands of chars

@@ -32,7 +32,7 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.experiments.kpi import kpi_paid as KP  # noqa: E402
 from scripts.experiments.kpi.kpi_replay import compile_slide, score  # noqa: E402
-from src.agents.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.compiler_client import deck_font  # noqa: E402
 from src.compiler.nodes.element_refs import kpi_components  # noqa: E402
 
@@ -100,7 +100,7 @@ def run(label: str, repeat: int, dry: bool = False) -> list[dict]:
                 print(f"run {case} {blocks} ...", flush=True)
                 try:
                     if dry:
-                        from src.agents import generator
+                        from src.agents.generation import generator
                         generator.get_llm = lambda step, _x=_dry_xml(it, blocks): KP._FakeLLM(_x)
                     res = KP.run_one(it, rid)
                 except Exception as e:   # one failure must not cost the other runs

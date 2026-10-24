@@ -27,12 +27,12 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import AfterValidator, BaseModel, Field
 
-from src.agents.planner_schema import (
+from src.agents.schemas.planner_schema import (
     ComponentKindLiteral,
     SlideTypeLiteral,
 )
-from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
-from src.agents.style_resolver import theme_names
+from src.agents.planning.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
+from src.agents.planning.style_resolver import theme_names
 from src.graph import compile_graph
 from src.state import (
     ComponentPlan,
@@ -542,7 +542,7 @@ class ElicitAnswerRequest(BaseModel):
 @app.get("/deck-settings-schema")
 async def deck_settings_schema() -> dict[str, Any]:
     """Return the Gamma-style deck settings form schema for the frontend to render."""
-    from src.agents.settings_mapper import DeckSettings as DS
+    from src.agents.planning.settings_mapper import DeckSettings as DS
     import inspect
 
     # Load available themes from palettes.yaml
@@ -634,7 +634,7 @@ async def deck_settings_schema() -> dict[str, Any]:
 @app.post("/elicit")
 async def elicit(request: ElicitRequest) -> dict[str, Any]:
     """Run the elicitor on a prompt and return questions if needed."""
-    from src.agents.elicitor import check_and_elicit
+    from src.agents.planning.elicitor import check_and_elicit
 
     run_id = uuid.uuid4().hex[:12]
     try:
@@ -659,9 +659,9 @@ async def elicit(request: ElicitRequest) -> dict[str, Any]:
 @app.post("/plan/outline")
 async def create_outline(request: OutlineRequest) -> dict[str, Any]:
     """Run elicitor + outline_planner; return the editable deck skeleton."""
-    from src.agents.elicitor import check_and_elicit
-    from src.agents.outline_planner import outline_planner_node
-    from src.agents.settings_mapper import DeckSettings as DS, settings_to_constraints
+    from src.agents.planning.elicitor import check_and_elicit
+    from src.agents.planning.outline_planner import outline_planner_node
+    from src.agents.planning.settings_mapper import DeckSettings as DS, settings_to_constraints
 
     run_id = uuid.uuid4().hex[:12]
     deck_settings = request.deck_settings or {}
@@ -745,7 +745,7 @@ async def update_outline(run_id: str, outline: dict[str, Any]) -> dict[str, Any]
 @app.post("/plan/outline/regenerate-slide")
 async def regenerate_outline_slide_endpoint(request: RegenerateOutlineSlideRequest) -> dict[str, Any]:
     """Regenerate one outline slide's content from user feedback. Stateless — no run_id."""
-    from src.agents.outline_replanner import regenerate_outline_slide
+    from src.agents.planning.outline_replanner import regenerate_outline_slide
 
     try:
         return await asyncio.to_thread(
@@ -762,7 +762,7 @@ async def regenerate_outline_slide_endpoint(request: RegenerateOutlineSlideReque
 @app.post("/plan/review")
 async def review_plan(run_id: str, slides: list[SlidePlanPayload]) -> dict[str, Any]:
     """Run the plan reviewer on a set of slide plans (for standalone plan review)."""
-    from src.agents.plan_reviewer import plan_reviewer_node
+    from src.agents.planning.plan_reviewer import plan_reviewer_node
 
     slide_plans = _payload_to_slide_plans(slides, None)
     state = initial_state(run_id=run_id, raw_request="")
@@ -802,7 +802,7 @@ async def refine_plan(request: RefinePlanRequest) -> dict[str, Any]:
     }
     state["refine_feedback"] = request.feedback
 
-    from src.agents.outline_planner import outline_planner_node
+    from src.agents.planning.outline_planner import outline_planner_node
     try:
         result = await asyncio.to_thread(outline_planner_node, state)
     except Exception as exc:
@@ -1118,8 +1118,8 @@ async def edit_slide(
         raise HTTPException(status_code=409, detail="Edit already in progress for this slide")
 
     try:
-        from src.agents.slide_edit_service import edit_slide_xml
-        from src.agents.slide_replanner import resolve_slide_plan
+        from src.services.slide_edit_service import edit_slide_xml
+        from src.agents.planning.slide_replanner import resolve_slide_plan
 
         try:
             updated_plan, contract = resolve_slide_plan(
@@ -1238,7 +1238,7 @@ async def finalize_deck(run_id: str) -> FinalizeResponse:
     if session is None:
         raise HTTPException(status_code=404, detail="Edit session not found")
 
-    from src.agents.deck_nodes import assemble_deck_xml
+    from src.agents.generation.deck_nodes import assemble_deck_xml
     from src.compiler.compiler_client import CompilerError, compile_xml
 
     def _do_finalize() -> FinalizeResponse:

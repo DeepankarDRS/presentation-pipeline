@@ -45,7 +45,7 @@ HEADLINE_SIZES = {"26", "27", "28", "42"}
 
 
 def _cost(call: dict) -> float:
-    from src.agents.evaluator import _compute_cost
+    from src.agents.review.evaluator import _compute_cost
     return round(_compute_cost(call.get("tokens_in", 0), call.get("tokens_out", 0), call.get("model", ""),
                                call.get("tokens_cached", 0)), 5)
 

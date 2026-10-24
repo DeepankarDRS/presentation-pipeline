@@ -8,9 +8,9 @@ ask for more than the generator's recipe could draw (2026-09-29 deck reviews).
 import re
 from pathlib import Path
 
-from src.agents.capacity import capacity, max_of, span
-from src.agents.hint_capabilities import planner_capabilities_section
-from src.agents.slide_component_planner import _jinja_env
+from src.agents.planning.capacity import capacity, max_of, span
+from src.agents.planning.hint_capabilities import planner_capabilities_section
+from src.agents.planning.slide_component_planner import _jinja_env
 
 _K = Path(__file__).resolve().parents[2] / "src" / "knowledge"
 
@@ -62,7 +62,7 @@ def test_knowledge_files_agree_with_capacity():
 
 # ── plan check: past capacity -> card_grid (fix 8) ──────────────────────────
 
-from src.agents.capacity import enforce_capacity  # noqa: E402
+from src.agents.planning.capacity import enforce_capacity  # noqa: E402
 
 
 def test_chevrons_past_their_directions_limit_become_a_card_grid():
@@ -126,7 +126,7 @@ def test_components_within_capacity_are_untouched():
 
 # ── layout-batch run fixes (2026-09-29, XTSY + CHEFFIN) ─────────────────────
 
-from src.agents.capacity import per_row  # noqa: E402
+from src.agents.planning.capacity import per_row  # noqa: E402
 
 
 def test_per_row_balances_rows():

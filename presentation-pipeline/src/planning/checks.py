@@ -6,7 +6,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from src.agents.capacity import max_of
+from src.agents.planning.capacity import max_of
 from src.planning.adapter import LABEL_ONLY_KINDS, fill_component, shown_text
 from src.planning.brief_index import by_id, data_numbers, numbers
 

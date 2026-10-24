@@ -37,7 +37,7 @@ def test_deck_font_fills_missing_family_only():
 
 
 def test_examples_off_by_default():
-    import src.agents.context_builder as cb
+    import src.agents.generation.context_builder as cb
     assert cb.EXAMPLES_ON is False
 
 
@@ -79,7 +79,7 @@ def test_numeric_columns_share_width():
 
 
 def test_card_body_repeating_title_and_tag_is_dropped():
-    from src.agents.written_lines import drop_repeated_bodies
+    from src.agents.planning.written_lines import drop_repeated_bodies
     plan = {"components": [{"kind": "card_grid", "content_data": {"cards": [
         {"title": "Close 3 enterprise logos", "tag": "$4M+ combined ARR",
          "body": "Close 3 enterprise logos worth $4M+ combined ARR"}]}}]}

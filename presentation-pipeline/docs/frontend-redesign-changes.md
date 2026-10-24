@@ -66,7 +66,7 @@ Nine light palettes are retuned. Before, every light palette had a near-white ba
 | `graphite-mono` | Pure white, charcoal, electric blue, grey cards |
 
 Unchanged:
-- `corporate-slate`: the default, hardcoded as `DEFAULT_THEME` in `src/agents/style_resolver.py`.
+- `corporate-slate`: the default, hardcoded as `DEFAULT_THEME` in `src/agents/planning/style_resolver.py`.
 - `navy-orange` and `saascolor`: brand palettes from the test PC (the test PC copy still used the old agency-named ID; merged with the neutral name from `f51c3f6`).
 - The 4 dark palettes.
 

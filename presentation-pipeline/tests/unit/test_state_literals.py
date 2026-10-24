@@ -12,10 +12,11 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from src.agents import plan_checks, repairer
-from src.agents.planner_schema import PlannerComponent
-from src.agents.slide_component_planner import _settle_chart_type
-from src.agents.style_resolver import theme_names
+from src.agents.planning import plan_checks
+from src.agents.generation import repairer
+from src.agents.schemas.planner_schema import PlannerComponent
+from src.agents.planning.slide_component_planner import _settle_chart_type
+from src.agents.planning.style_resolver import theme_names
 from src.state import (ChartTypeLiteral, PlanFlagCodeLiteral, RetryTierLiteral, StepLiteral,
                        initial_state)
 
@@ -29,7 +30,7 @@ def test_chart_types_are_the_ones_pom_accepts():
 
 def test_plan_flag_codes_are_the_ones_plan_checks_writes():
     # read from the code that writes plan_flags, so a new flag code fails here until it is listed
-    text = (_SRC / "agents" / "plan_checks.py").read_text(encoding="utf-8")
+    text = (_SRC / "agents" / "planning" / "plan_checks.py").read_text(encoding="utf-8")
     codes = {getattr(plan_checks, name) for name in re.findall(r"\b_flag\(\w+, ([A-Z_]+),", text)}
     thin = {"slide_type": "content", "components": [{"kind": "narrative", "content_data": {"text": "Hi"}}]}
     codes.add(plan_checks.sparse_flag(thin)["code"])

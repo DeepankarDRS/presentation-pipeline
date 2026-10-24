@@ -21,13 +21,13 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.plan_reviewer_schema import PlanReviewerOutput
+from src.agents.schemas.plan_reviewer_schema import PlanReviewerOutput
 from src.state import PresentationState
 from src.utils.llm_client import get_llm, unpack_raw, usage_record
 
 logger = logging.getLogger(__name__)
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "plan_reviewer"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts" / "plan_reviewer"
 _jinja_env = Environment(
     loader=FileSystemLoader(str(_PROMPTS_DIR)),
     trim_blocks=True,

@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.agents.planner_schema import PlannerComponent, PlannerSlide
+from src.agents.schemas.planner_schema import PlannerComponent, PlannerSlide
 from src.graph import compile_graph
 from src.state import initial_state
 from src.utils.case_loader import load_all_cases, case_to_state
@@ -58,10 +58,10 @@ _COMPONENT_NAMES = [c.get("name", "unknown") for c in _COMPONENT_CASES]
 
 
 @pytest.mark.parametrize("case", _COMPONENT_CASES, ids=_COMPONENT_NAMES)
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.generator.get_llm")
 def test_pipeline_runs_for_case(
     mock_gen_llm,
     mock_compile,
@@ -100,14 +100,14 @@ def test_pipeline_runs_for_case(
     assert result["current_xml"] == MOCK_XML
 
 
-@patch("src.agents.plan_reviewer.get_llm")
-@patch("src.agents.slide_component_planner.get_llm")
-@patch("src.agents.outline_planner.get_llm")
-@patch("src.agents.elicitor.get_llm")
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.planning.plan_reviewer.get_llm")
+@patch("src.agents.planning.slide_component_planner.get_llm")
+@patch("src.agents.planning.outline_planner.get_llm")
+@patch("src.agents.planning.elicitor.get_llm")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.generator.get_llm")
 def test_pipeline_with_hierarchical_planner(
     mock_gen_llm,
     mock_compile,
@@ -119,9 +119,9 @@ def test_pipeline_with_hierarchical_planner(
     mock_reviewer_llm,
 ):
     """Pipeline runs through the full hierarchical planning pipeline."""
-    from src.agents.elicitor_schema import ElicitorOutput
-    from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide as OSlide
-    from src.agents.plan_reviewer_schema import PlanReviewerOutput
+    from src.agents.schemas.elicitor_schema import ElicitorOutput
+    from src.agents.schemas.outline_planner_schema import OutlinePlannerOutput, OutlineSlide as OSlide
+    from src.agents.schemas.plan_reviewer_schema import PlanReviewerOutput
 
     # Elicitor: prompt is sufficient — no questions needed
     elicitor_output = ElicitorOutput(is_sufficient=True, reasoning="Prompt is specific.", questions=[])
@@ -194,11 +194,11 @@ def test_pipeline_with_hierarchical_planner(
     assert plan_review.get("confidence_score", 0) >= 0.9
 
 
-@patch("src.agents.repairer.get_llm")
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.generation.repairer.get_llm")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.generator.get_llm")
 def test_pipeline_compile_failure_retries(
     mock_gen_llm,
     mock_compile,

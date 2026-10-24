@@ -2,8 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from src.agents.outline_planner_schema import OutlineSlide
-from src.agents.outline_replanner import regenerate_outline_slide
+from src.agents.schemas.outline_planner_schema import OutlineSlide
+from src.agents.planning.outline_replanner import regenerate_outline_slide
 
 
 def _make_structured_llm(output):
@@ -14,7 +14,7 @@ def _make_structured_llm(output):
     return llm
 
 
-@patch("src.agents.outline_replanner.get_llm")
+@patch("src.agents.planning.outline_replanner.get_llm")
 def test_regenerate_outline_slide_preserves_slide_index(mock_get_llm):
     output = OutlineSlide(
         slide_index=0,
@@ -42,7 +42,7 @@ def test_regenerate_outline_slide_preserves_slide_index(mock_get_llm):
     assert updated["key_messages"] == ["New entrants are undercutting on price in the mid-market segment."]
 
 
-@patch("src.agents.outline_replanner.get_llm")
+@patch("src.agents.planning.outline_replanner.get_llm")
 def test_regenerate_outline_slide_defaults_index_when_missing(mock_get_llm):
     output = OutlineSlide(
         slide_index=5,

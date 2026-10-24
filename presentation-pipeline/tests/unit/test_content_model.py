@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.agents.validator import validator_node
+from src.agents.generation.validator import validator_node
 from src.compiler.content_model import (
     TEXT_ONLY, content_model, find_violations, flatten_text_containers,
 )
@@ -107,8 +107,8 @@ def test_normalizer_auto_flattens():
     assert find_violations(result["cleaned_xml"]) == []
 
 
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.validator.validate_xml")
 def test_validator_blocks_before_parsexml(mock_validate, mock_compile):
     state = initial_state(run_id="nest1", raw_request="test")
     state["current_xml"] = _slide(
@@ -140,10 +140,10 @@ def test_nesting_compile_failure_shape():
     assert fail["diagnostics"][0]["type"] == "INVALID_CHILD"
 
 
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.validator.validate_xml")
 def test_normalize_and_compile_skips_compiler_on_bad_nesting(mock_validate, mock_compile, tmp_path):
-    from src.agents.validator import normalize_and_compile
+    from src.agents.generation.validator import normalize_and_compile
     ok, result = normalize_and_compile(_TD_CHART, "", output_dir=tmp_path)
     assert ok is False and result["diagnostics"][0]["type"] == "INVALID_CHILD"
     mock_validate.assert_not_called()

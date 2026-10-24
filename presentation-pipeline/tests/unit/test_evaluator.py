@@ -4,7 +4,7 @@ import json
 import shutil
 from pathlib import Path
 
-from src.agents.evaluator import evaluator_node, _compute_cost, _build_step_summary
+from src.agents.review.evaluator import evaluator_node, _compute_cost, _build_step_summary
 from src.state import initial_state
 
 
@@ -275,17 +275,17 @@ def test_evaluator_provenance_no_plans():
 
 def test_run_provenance_fields():
     from unittest.mock import patch
-    from src.agents.evaluator import _run_provenance
+    from src.agents.review.evaluator import _run_provenance
 
     state = _make_state(theme_name="saascolor", supplied_content={"kpi": "1"})
-    with patch("src.agents.evaluator._git", side_effect=["abc1234", " M src/api.py"]):
+    with patch("src.agents.review.evaluator._git", side_effect=["abc1234", " M src/api.py"]):
         prov = _run_provenance(state)
     assert prov["git_commit"] == "abc1234"
     assert prov["git_uncommitted_changes"] is True
     assert prov["theme"] == "saascolor"
     assert len(prov["request_sha256"]) == 16
 
-    with patch("src.agents.evaluator._git", return_value=None):   # no git on the machine
+    with patch("src.agents.review.evaluator._git", return_value=None):   # no git on the machine
         prov2 = _run_provenance(state)
     assert prov2["git_commit"] == "unknown" and prov2["git_uncommitted_changes"] is None
     assert prov2["request_sha256"] == prov["request_sha256"]         # same request, same hash
@@ -295,7 +295,7 @@ def test_run_provenance_fields():
 
 
 def test_run_provenance_real_git():
-    from src.agents.evaluator import _run_provenance
+    from src.agents.review.evaluator import _run_provenance
     prov = _run_provenance(_make_state())
     assert prov["git_commit"] != "unknown"                          # this checkout is a git repo
     assert isinstance(prov["git_uncommitted_changes"], bool)

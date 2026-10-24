@@ -65,7 +65,7 @@ style_resolver → context_builder → generator (LLM writes POM XML) → valida
 
 ### 1.1 Outline planner
 
-Files: [outline_planner.py](../src/agents/outline_planner.py), [outline_planner_schema.py](../src/agents/outline_planner_schema.py), [prompts/outline_planner/](../src/prompts/outline_planner/).
+Files: [outline_planner.py](../src/agents/planning/outline_planner.py), [outline_planner_schema.py](../src/agents/schemas/outline_planner_schema.py), [prompts/outline_planner/](../src/prompts/outline_planner/).
 
 | Aspect | Today |
 |---|---|
@@ -79,7 +79,7 @@ Files: [outline_planner.py](../src/agents/outline_planner.py), [outline_planner_
 
 ### 1.2 Slide component planner
 
-Files: [slide_component_planner.py](../src/agents/slide_component_planner.py), [planner_schema.py](../src/agents/planner_schema.py), [prompts/slide_component_planner/](../src/prompts/slide_component_planner/).
+Files: [slide_component_planner.py](../src/agents/planning/slide_component_planner.py), [planner_schema.py](../src/agents/schemas/planner_schema.py), [prompts/slide_component_planner/](../src/prompts/slide_component_planner/).
 
 | Aspect | Today |
 |---|---|
@@ -103,7 +103,7 @@ Files: [slide_component_planner.py](../src/agents/slide_component_planner.py), [
 
 ### 1.4 Deck settings
 
-Sources: [deck-settings-form.component.ts](../frontend/src/app/components/deck-settings-form/deck-settings-form.component.ts), [`/deck-settings-schema`](../src/api.py:525), [settings_mapper.py](../src/agents/settings_mapper.py).
+Sources: [deck-settings-form.component.ts](../frontend/src/app/components/deck-settings-form/deck-settings-form.component.ts), [`/deck-settings-schema`](../src/api.py:525), [settings_mapper.py](../src/agents/planning/settings_mapper.py).
 
 | Field | What it does today |
 |---|---|
@@ -115,7 +115,7 @@ Sources: [deck-settings-form.component.ts](../frontend/src/app/components/deck-s
 
 ### 1.5 What the generator takes from the plan
 
-Sources: [generator.py](../src/agents/generator.py), [generator/user.j2](../src/prompts/generator/user.j2).
+Sources: [generator.py](../src/agents/generation/generator.py), [generator/user.j2](../src/prompts/generator/user.j2).
 
 - **From the plan:**
   - `slide_title` (shown as "SLIDE OBJECTIVE"), `slide_type`, `layout_hint`;

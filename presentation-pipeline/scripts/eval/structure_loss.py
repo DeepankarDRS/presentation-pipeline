@@ -28,8 +28,8 @@ from pathlib import Path
 
 import yaml
 
-from src.agents import plan_checks
-from src.agents.written_lines import (NOTES_LABEL, content_lines, drop_visual_directions, from_brief,
+from src.agents.planning import plan_checks
+from src.agents.planning.written_lines import (NOTES_LABEL, content_lines, drop_visual_directions, from_brief,
                                       settle_direction_lines, visual_directions)
 
 ROOT = Path(__file__).resolve().parents[2]

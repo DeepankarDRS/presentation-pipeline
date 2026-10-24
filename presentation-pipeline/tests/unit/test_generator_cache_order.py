@@ -1,9 +1,9 @@
 """Cache order of the generator system prompt (docs/tile-nodes-spec-2026-10-12.md §5): every part that varies
 per slide comes after "## THIS SLIDE", so two slides of one deck share everything before it (the cached prefix)."""
 
-from src.agents.context_builder import build_contract
-from src.agents.generator import _render_prompts
-from src.agents.style_resolver import resolve_theme
+from src.agents.generation.context_builder import build_contract
+from src.agents.generation.generator import _render_prompts
+from src.agents.planning.style_resolver import resolve_theme
 
 MARK = "\n## THIS SLIDE\n"
 

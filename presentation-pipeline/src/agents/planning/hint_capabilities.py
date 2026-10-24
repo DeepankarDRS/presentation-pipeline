@@ -16,7 +16,7 @@ from typing import Any
 
 import yaml
 
-_CAPABILITIES_YAML = Path(__file__).resolve().parent.parent / "knowledge" / "core" / "hint-capabilities.yaml"
+_CAPABILITIES_YAML = Path(__file__).resolve().parents[2] / "knowledge" / "core" / "hint-capabilities.yaml"
 
 
 @functools.lru_cache(maxsize=1)

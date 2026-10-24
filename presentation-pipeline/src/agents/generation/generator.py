@@ -18,7 +18,7 @@ from src.utils.llm_client import extract_usage, get_llm
 
 logger = logging.getLogger(__name__)
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "generator"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts" / "generator"
 _jinja_env = Environment(
     loader=FileSystemLoader(str(_PROMPTS_DIR)),
     keep_trailing_newline=True,

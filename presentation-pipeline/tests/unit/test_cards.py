@@ -178,7 +178,7 @@ def test_prompt_lines():
 
 
 def test_generator_and_context_hooks(monkeypatch):
-    from src.agents import context_builder as CB
+    from src.agents.generation import context_builder as CB
     plan = {"slide_type": "content", "components": [GRID, MATRIX]}
     kinds = [CB._recipe_kind(c) for c in plan["components"]]
     assert kinds == ["card_grid", "card_matrix"]

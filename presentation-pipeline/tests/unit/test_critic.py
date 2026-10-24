@@ -2,8 +2,8 @@
 
 from unittest.mock import patch
 
-from src.agents.critic import critic_node
-from src.agents.visual_critic import _filter_visual_notes
+from src.agents.review.critic import critic_node
+from src.agents.review.visual_critic import _filter_visual_notes
 from src.state import initial_state
 
 
@@ -65,8 +65,8 @@ def _mock_visual_result(issues=None, assessment="good", strategy="none"):
 
 # ── Visual critic — clean pass ──────────────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.critic.run_visual_critic")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.review.critic.run_visual_critic")
 def test_critic_clean_pass(mock_vc, mock_screenshots):
     mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
     mock_vc.return_value = _mock_visual_result()
@@ -80,8 +80,8 @@ def test_critic_clean_pass(mock_vc, mock_screenshots):
 
 # ── Visual critic — high severity fails ─────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.critic.run_visual_critic")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.review.critic.run_visual_critic")
 def test_critic_high_severity_fails(mock_vc, mock_screenshots):
     mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
     mock_vc.return_value = _mock_visual_result(
@@ -106,8 +106,8 @@ def test_critic_high_severity_fails(mock_vc, mock_screenshots):
 
 # ── Visual critic — medium only passes ──────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.critic.run_visual_critic")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.review.critic.run_visual_critic")
 def test_critic_medium_only_passes(mock_vc, mock_screenshots):
     mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
     mock_vc.return_value = _mock_visual_result(
@@ -130,7 +130,7 @@ def test_critic_medium_only_passes(mock_vc, mock_screenshots):
 
 # ── Screenshot failure — fail-open ──────────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
+@patch("src.agents.review.critic.render_screenshots")
 def test_critic_screenshot_failure_passes(mock_screenshots):
     mock_screenshots.return_value = _mock_batch(None, ok=False, error="LibreOffice timeout")
 
@@ -151,8 +151,8 @@ def test_critic_no_pptx_skips_visual():
 
 # ── Compile warnings passed through ────────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.critic.run_visual_critic")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.review.critic.run_visual_critic")
 def test_critic_passes_compile_warnings(mock_vc, mock_screenshots):
     mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
     mock_vc.return_value = _mock_visual_result()
@@ -169,8 +169,8 @@ def test_critic_passes_compile_warnings(mock_vc, mock_screenshots):
 
 # ── Layout issues passed through ────────────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.critic.run_visual_critic")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.review.critic.run_visual_critic")
 def test_critic_passes_layout_issues(mock_vc, mock_screenshots):
     mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
     mock_vc.return_value = _mock_visual_result()
@@ -187,8 +187,8 @@ def test_critic_passes_layout_issues(mock_vc, mock_screenshots):
 
 # ── Repair hints propagation ───────────────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.critic.run_visual_critic")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.review.critic.run_visual_critic")
 def test_repair_hints_in_visual_result(mock_vc, mock_screenshots):
     mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
     mock_vc.return_value = _mock_visual_result(
@@ -213,8 +213,8 @@ def test_repair_hints_in_visual_result(mock_vc, mock_screenshots):
 
 # ── Screenshot tracking ────────────────────────────────────────────────
 
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.critic.run_visual_critic")
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.review.critic.run_visual_critic")
 def test_critic_tracks_screenshot(mock_vc, mock_screenshots):
     mock_screenshots.return_value = _mock_batch("/tmp/slide-0.png")
     mock_vc.return_value = _mock_visual_result()
@@ -245,7 +245,7 @@ def test_filter_visual_notes_removes_structural():
 # ── Repairer reads critic issues ───────────────────────────────────────
 
 def test_repairer_collect_problems_reads_visual_issues():
-    from src.agents.repairer import _collect_problems
+    from src.agents.generation.repairer import _collect_problems
 
     state = _make_state()
     state["critic_result"] = {

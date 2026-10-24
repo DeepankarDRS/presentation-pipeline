@@ -114,7 +114,7 @@ Defined in `src/state.py`. Every agent reads and writes only its slice. The full
 |-|-|
 | **Status** | ✅ Complete |
 | **File** | `src/agents/planner.py` |
-| **Schema** | `src/agents/planner_schema.py` |
+| **Schema** | `src/agents/schemas/planner_schema.py` |
 | **LLM** | Yes (structured output, json_schema) |
 
 Determines **what** a slide needs (components, layout hint) without prescribing **how**. Uses OpenAI structured output for guaranteed-valid JSON.
@@ -159,7 +159,7 @@ result: PlannerOutput = structured.invoke([SystemMessage, HumanMessage])
 | | |
 |-|-|
 | **Status** | ✅ Complete |
-| **File** | `src/agents/context_builder.py` |
+| **File** | `src/agents/generation/context_builder.py` |
 | **LLM** | No (mechanical) |
 
 Assembles the **knowledge base contract** — a dict that tells the generator exactly which POM nodes, attributes, notes, examples, and layouts to use. Purely mechanical: reads YAML files from `presentation-mvp/pom-knowledge/`, selects by component kind.
@@ -218,7 +218,7 @@ pyramid     → Pyramid, PyramidLevel
 | | |
 |-|-|
 | **Status** | ✅ Complete |
-| **File** | `src/agents/generator.py` |
+| **File** | `src/agents/generation/generator.py` |
 | **LLM** | Yes |
 
 Produces raw POM XML by rendering Jinja2 templates from the contract and calling the LLM. The shrink checklist is included when `component_count >= 5`.
@@ -243,7 +243,7 @@ All tiers include the **critical rules** block: forbidden tags/attrs, color form
 | | |
 |-|-|
 | **Status** | ✅ Complete |
-| **File** | `src/agents/validator.py` |
+| **File** | `src/agents/generation/validator.py` |
 | **LLM** | No (mechanical) |
 
 Mechanical ground truth — runs the 3-step validation pipeline. No LLM involved.
@@ -278,8 +278,8 @@ INVALID_VALUE, INVALID_CHILD, THEME_ERROR, DIAGNOSTIC
 | | |
 |-|-|
 | **Status** | ✅ Complete |
-| **File** | `src/agents/critic.py`, `src/agents/visual_critic.py` |
-| **Schema** | `src/agents/critic_schema.py` |
+| **File** | `src/agents/review/critic.py`, `src/agents/review/visual_critic.py` |
+| **Schema** | `src/agents/schemas/critic_schema.py` |
 | **LLM** | Yes (vision LLM, screenshot-based) |
 
 Visual quality gate — screenshot-reviews the rendered slide against the plan, theme, contract, and compile warnings.
@@ -302,7 +302,7 @@ The visual critic takes a screenshot of the compiled PPTX and sends it to a visi
 | | |
 |-|-|
 | **Status** | ✅ Complete |
-| **File** | `src/agents/repairer.py` |
+| **File** | `src/agents/generation/repairer.py` |
 | **LLM** | Yes |
 
 Two repair strategies. Builds a repair prompt and calls the LLM; the graph routes back to the validator.
@@ -337,7 +337,7 @@ else                    → "" (free-form simplified rebuild)
 | | |
 |-|-|
 | **Status** | ✅ Complete |
-| **File** | `src/agents/evaluator.py` |
+| **File** | `src/agents/review/evaluator.py` |
 | **LLM** | No (mechanical) |
 
 Mechanical scoring. Computes pass/fail, token usage, cost estimates, and writes `run-manifest.json`.

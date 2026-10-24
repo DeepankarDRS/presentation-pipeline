@@ -33,7 +33,7 @@ sys.path.insert(0, str(_PIPELINE_ROOT))
 
 
 def request_fingerprint(request: str, supplied_content: Any = None) -> str:
-    """The evaluator's request_sha256 (src/agents/evaluator.py _run_provenance)."""
+    """The evaluator's request_sha256 (src/agents/review/evaluator.py _run_provenance)."""
     blob = json.dumps({"request": request, "supplied_content": supplied_content},
                       sort_keys=True, ensure_ascii=False, default=str)
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]

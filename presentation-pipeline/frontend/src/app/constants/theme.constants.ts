@@ -72,7 +72,7 @@ export const PIPELINE_PHASES: PipelinePhase[] = [
   { label: 'Assembling deck',       events: ['assembling'] },
 ];
 
-// Mirrors SLIDE_COUNT_TO_THRESHOLD in src/agents/settings_mapper.py
+// Mirrors SLIDE_COUNT_TO_THRESHOLD in src/agents/planning/settings_mapper.py
 export const SLIDE_COUNT_TO_THRESHOLD: Record<string, number> = {
   '1': 1, '3-5': 4, '6-10': 8, '10-15': 12, '15+': 16,
 };

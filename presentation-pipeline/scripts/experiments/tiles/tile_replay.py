@@ -34,7 +34,7 @@ os.environ["POM_BLOCKS"] = "tiles"
 from lxml import etree  # noqa: E402
 
 from scripts.experiments.kpi.kpi_replay import compile_slide, map_refs, score  # noqa: E402
-from src.agents.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.nodes import element_refs as E  # noqa: E402
 from src.compiler.nodes import tiles as T  # noqa: E402
 

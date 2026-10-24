@@ -42,7 +42,7 @@ def _num(s: str) -> str:
 
 def plan_case(case: dict[str, Any], run_id: str) -> dict[str, Any]:
     """The graph up to the plan reviewer; returns the outline, the slide plans and the cost."""
-    from src.agents.evaluator import _compute_cost
+    from src.agents.review.evaluator import _compute_cost
     from src.graph import compile_graph
     from src.state import initial_state
     from src.utils.logging_config import set_context

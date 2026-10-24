@@ -43,7 +43,7 @@ Most of the gap is **planning** (1-4, 7) and **house-style numbers / rules** (6,
 | 7 | No filler components (summary / intent boxes) in the component planner | `src/prompts/slide_component_planner/system.j2` |
 | 6, 9-11 | Type ramp (title 36, subtitle 18, body 18, stats 44-56, table 20-22), root padding 48-56 / gap 24-36, flat cards, content top + pinned footer in tall tiles, one card style per deck, at most one dark panel per deck; table rows 56-88, grid gap 20-24 | `house-style.yaml`, `capacity.yaml`, `generator/system.j2` |
 | 10 | Critic: kicker issue only when the header has no uppercase label (stops the second eyebrow); "dark anchor panel" and "bare table/chart" rules removed; new "filler box" issue. Repairer adds no panels or wrappers | `visual_critic/*.j2`, `repairer.py`, `repairer/patch.j2` |
-| - | Golden examples and blueprint reference XML off by default (written in the old sizes); `POM_EXAMPLES=on` for an A/B | `src/agents/context_builder.py` |
+| - | Golden examples and blueprint reference XML off by default (written in the old sizes); `POM_EXAMPLES=on` for an A/B | `src/agents/generation/context_builder.py` |
 
 Checked: replaying the saved slides 1-3 and 5 through normalize + compile_xml gives no DEL character and every run in Inter; Inter is embedded.
 Not done: the chart block (#8), and a paid run to see what the planners and generator now write.

@@ -1,8 +1,8 @@
 """Visual critic vs code (2026-10-07): code owns size / spacing / fill (fit-grow), the critic owns
 what code cannot measure and confirms borderline geometry warnings on the screenshot."""
 
-from src.agents.critic import critic_layout_issues
-from src.agents.visual_critic import _jinja_env, code_owned
+from src.agents.review.critic import critic_layout_issues
+from src.agents.review.visual_critic import _jinja_env, code_owned
 
 
 def test_size_and_space_issues_are_code_owned():

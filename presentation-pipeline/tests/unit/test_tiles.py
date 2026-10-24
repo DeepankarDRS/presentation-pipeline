@@ -382,7 +382,7 @@ def test_node_lines_name_every_variant_and_arrange():
 
 
 def test_node_lines_map_the_kpi_treatments_to_tile_attributes():
-    from src.agents.hint_capabilities import kind_treatments
+    from src.agents.planning.hint_capabilities import kind_treatments
     lines = T.node_lines()
     planner = kind_treatments("kpi_row")
     for t in T.treatments():
@@ -393,8 +393,8 @@ def test_node_lines_map_the_kpi_treatments_to_tile_attributes():
 
 
 def _gen_state():
-    from src.agents.context_builder import build_contract
-    from src.agents.style_resolver import resolve_theme
+    from src.agents.generation.context_builder import build_contract
+    from src.agents.planning.style_resolver import resolve_theme
     from src.state import initial_state
     state = initial_state(run_id="tiles-test", raw_request="QBR", deck_min_threshold=0)
     plan = {"slide_index": 0, "slide_type": "data", "slide_title": "ROAS fell", "components": PLAN["components"]}
@@ -404,7 +404,7 @@ def _gen_state():
 
 
 def test_generator_prompt_under_tiles(monkeypatch):
-    from src.agents.generator import _render_prompts
+    from src.agents.generation.generator import _render_prompts
     system, user = _render_prompts(_gen_state())
     assert "KPI TILES kpis:" in user and "KPI REFS" not in user and "₹114.9L" not in user
     head = system.split("\n## THIS SLIDE\n")[0]
@@ -422,8 +422,8 @@ def test_generator_prompt_under_tiles(monkeypatch):
 
 
 def test_kpi_row_without_an_id_keeps_the_techniques():
-    from src.agents.context_builder import build_contract
-    from src.agents.style_resolver import resolve_theme
+    from src.agents.generation.context_builder import build_contract
+    from src.agents.planning.style_resolver import resolve_theme
     plan = {"slide_index": 0, "slide_type": "data", "components": [
         {"kind": "kpi_row", "count": 2, "content_data": {"kpi_labels": ["A", "B"], "kpi_values": ["1", "2"]}}]}
     contract = build_contract(plan, resolve_theme("corporate-slate"))
@@ -436,7 +436,7 @@ def test_kpi_recipes_stay_on_the_other_routes(monkeypatch):
 
 
 def test_validator_expands_tiles(monkeypatch):
-    from src.agents import validator
+    from src.agents.generation import validator
     state = _gen_state()
     state["current_xml"] = slide('<KpiGrid ref="kpis" variant="dot"/><Kpi ref="kpis.9"/>')
     out = validator.validator_node(state)
@@ -454,7 +454,7 @@ def test_validator_expands_tiles(monkeypatch):
 
 
 def test_validator_expands_tiles_after_a_bare_ampersand(monkeypatch):
-    from src.agents import validator
+    from src.agents.generation import validator
     state = _gen_state()
     seen = {}
 

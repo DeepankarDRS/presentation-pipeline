@@ -10,10 +10,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 from pydantic import BaseModel, Field, ValidationError
 
-from src.agents.planner_schema import PlannerComponent, PlannerSlide
-from src.agents.planner_schema_typed import (COMPONENT_BY_KIND, CONTENT_BY_KIND, PlannerSlideTyped,
+from src.agents.schemas.planner_schema import PlannerComponent, PlannerSlide
+from src.agents.schemas.planner_schema_typed import (COMPONENT_BY_KIND, CONTENT_BY_KIND, PlannerSlideTyped,
                                              content_data_of, content_from_data)
-from src.agents.slide_component_planner import _planner_slide_to_state, plan_single_slide, planner_schema
+from src.agents.planning.slide_component_planner import _planner_slide_to_state, plan_single_slide, planner_schema
 from src.state import ComponentKindLiteral
 from src.utils.strict_schema import sent_schema, strict_problems
 
@@ -133,7 +133,7 @@ def test_planner_schema_switch(monkeypatch, env, expected):
 
 @pytest.mark.parametrize("env,model,field", [("typed", PlannerSlideTyped, "content"),
                                              ("string", PlannerSlide, "content_data_json")])
-@patch("src.agents.slide_component_planner.get_llm")
+@patch("src.agents.planning.slide_component_planner.get_llm")
 def test_plan_single_slide_uses_the_chosen_schema_and_names_its_field(mock_get_llm, monkeypatch, env, model, field):
     monkeypatch.setenv("PLANNER_SCHEMA", env)
     reply = _typed_reply() if model is PlannerSlideTyped else PlannerSlide(

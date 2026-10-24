@@ -1,6 +1,6 @@
 """KPI_ROWS (src/compiler/kpi_grid.py, 2026-10-07) and the generator's layout rules."""
 
-from src.agents.capacity import capacity, layout_rules
+from src.agents.planning.capacity import capacity, layout_rules
 from src.compiler.kpi_grid import kpi_rows
 
 

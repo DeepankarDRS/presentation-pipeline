@@ -277,7 +277,7 @@ audience_context: dict[str, str] | None  # audience, tone, focus, style
 
 Graph topology change: `START → questionnaire → planner → ...` (when interactive).
 
-**Files to modify:** New `agents/questionnaire.py`, `state.py`, `graph.py`, new prompt templates
+**Files to modify:** New `agents/planning/questionnaire.py`, `state.py`, `graph.py`, new prompt templates
 
 ---
 
@@ -333,7 +333,7 @@ def style_resolver_node(state: PresentationState) -> dict[str, Any]:
 
 This extracts style resolution from `context_builder` into its own node, making it independently triggerable.
 
-**Files to modify:** New `agents/style_resolver.py`, `graph.py`, `state.py`, prompt templates
+**Files to modify:** New `agents/planning/style_resolver.py`, `graph.py`, `state.py`, prompt templates
 
 ---
 
@@ -362,7 +362,7 @@ def audit_layout(xml: str) -> list[dict]:
 
 This runs after the compiler succeeds but before the visual critic. Issues feed into the critic's assessment.
 
-**Files to modify:** New function in `compiler/` or `agents/validator.py`, `prompts/visual_critic/system.j2`
+**Files to modify:** New function in `compiler/` or `agents/generation/validator.py`, `prompts/visual_critic/system.j2`
 
 ---
 

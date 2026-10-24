@@ -122,7 +122,7 @@ def test_a_large_hero_grows_after_the_other_kpi_numbers(tmp_path, monkeypatch):
     import json
 
     from scripts.experiments.kpi.kpi_replay import compile_slide
-    from src.agents.style_resolver import resolve_theme
+    from src.agents.planning.style_resolver import resolve_theme
     from src.compiler.nodes import tiles
     monkeypatch.setenv("POM_BLOCKS", "tiles")
     it = next(i for i in json.loads((_FIT.parents[2] / "docs" / "eval" / "kpi-node" / "paid-inputs.json")

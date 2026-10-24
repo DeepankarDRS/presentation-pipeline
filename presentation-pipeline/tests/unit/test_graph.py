@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from langgraph.types import Send
 
-from src.agents.planner_schema import PlannerComponent, PlannerSlide
+from src.agents.schemas.planner_schema import PlannerComponent, PlannerSlide
 from src.graph import (
     build_graph, compile_graph,
     route_after_start, route_after_validator, route_after_critic,
@@ -151,11 +151,11 @@ def test_route_after_critic_fail_visual_budget_exhausted():
     assert route_after_critic(state) == "evaluator"
 
 
-@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.review.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.generator.get_llm")
 def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc):
     """End-to-end: the graph runs to completion with mocked LLM + compiler."""
     mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
@@ -194,11 +194,11 @@ def test_full_graph_runs_with_mocked_llm(mock_gen_llm, mock_compile, mock_valida
     assert result["retry_count"] == 0
 
 
-@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.review.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.generator.get_llm")
 def test_full_graph_with_preloaded_plans(mock_gen_llm, mock_compile, mock_validate, mock_screenshots, mock_vc):
     """End-to-end: graph runs with pre-provided slide_plans (skips planning phase)."""
     mock_screenshots.return_value = _mock_screenshot_batch("/tmp/slide-0.png")
@@ -319,12 +319,12 @@ def test_route_single_slide_still_goes_evaluator():
     assert route_after_critic(state) == "evaluator"
 
 
-@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.generator.get_llm")
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.review.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.generator.get_llm")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_multi_slide_e2e(
     mock_deck_compile, mock_gen_llm,
     mock_compile, mock_validate, mock_screenshots, mock_vc,
@@ -387,12 +387,12 @@ def test_multi_slide_e2e(
     assert mock_deck_compile.called
 
 
-@patch("src.agents.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
-@patch("src.agents.critic.render_screenshots")
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
-@patch("src.agents.generator.get_llm")
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.review.critic.run_visual_critic", side_effect=_mock_visual_critic_pass)
+@patch("src.agents.review.critic.render_screenshots")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
+@patch("src.agents.generation.generator.get_llm")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_8_slide_deck_no_recursion_error(
     mock_deck_compile, mock_gen_llm,
     mock_compile, mock_validate, mock_screenshots, mock_vc,

@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from src.agents.style_resolver import resolve_theme
+from src.agents.planning.style_resolver import resolve_theme
 from tests.unit.test_fit_grow_tables import _compile
 
 _PLAN = {"components": [{"component_id": "k", "kind": "kpi_row", "count": 4, "content_data": {

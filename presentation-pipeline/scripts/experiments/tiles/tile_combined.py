@@ -132,7 +132,7 @@ def draw(out: Path, items: list[dict], repeat: int, dry: bool = False) -> list[d
                 print(f"run {case} {blocks} ...", flush=True)
                 try:
                     if dry:
-                        from src.agents import generator
+                        from src.agents.generation import generator
                         generator.get_llm = lambda step, _x=_dry_xml(it["plan"], blocks): KP._FakeLLM(_x)
                     res = KP.run_one(it, rid)
                 except Exception as e:   # one failure must not cost the other runs
@@ -177,7 +177,7 @@ def _score(arm: str, d: Path, xml: str, theme: str, plan: dict, case: str, rende
 
 
 def rescore(out: Path, render: bool = True) -> list[dict]:
-    from src.agents.style_resolver import resolve_theme
+    from src.agents.planning.style_resolver import resolve_theme
     items = {it["name"]: it for it in json.loads((out / "plans.json").read_text(encoding="utf-8"))["items"]}
     runs = json.loads((out / "runs.json").read_text(encoding="utf-8"))
     for row in runs:

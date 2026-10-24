@@ -20,12 +20,12 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.outline_planner_schema import OutlineSlide
+from src.agents.schemas.outline_planner_schema import OutlineSlide
 from src.utils.llm_client import get_llm
 
 logger = logging.getLogger(__name__)
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "outline_replanner"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts" / "outline_replanner"
 _jinja_env = Environment(
     loader=FileSystemLoader(str(_PROMPTS_DIR)),
     trim_blocks=True,

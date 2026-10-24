@@ -161,7 +161,7 @@ Each `SlidePlan` contains:
 
 ### 2. Context Builder (mechanical, no LLM)
 
-**File**: `src/agents/context_builder.py`
+**File**: `src/agents/generation/context_builder.py`
 
 Assembles a **generation contract** by reading the POM knowledge base YAML files. The contract tells the generator exactly what POM nodes, attributes, and patterns are available.
 
@@ -191,7 +191,7 @@ component kind → _KIND_TO_NODES map → POM tags
 
 ### 3. Generator (LLM)
 
-**File**: `src/agents/generator.py`
+**File**: `src/agents/generation/generator.py`
 
 Calls the LLM to produce POM XML using tiered Jinja2 prompts:
 
@@ -208,7 +208,7 @@ Each `AttemptRecord` tracks: attempt number, tier, token counts (in/out), model 
 
 ### 4. Validator (mechanical, no LLM)
 
-**File**: `src/agents/validator.py`
+**File**: `src/agents/generation/validator.py`
 
 Three-stage mechanical check — no LLM involved:
 
@@ -227,7 +227,7 @@ current_xml → normalize → parseXml (validate) → buildPptx (compile)
 
 ### 5. Critic — Visual Quality Gate (LLM)
 
-**File**: `src/agents/critic.py`, `src/agents/visual_critic.py`
+**File**: `src/agents/review/critic.py`, `src/agents/review/visual_critic.py`
 
 Screenshot-based quality gate using a vision LLM. Takes a screenshot of the compiled PPTX and reviews it against the slide plan, theme, contract, and compile warnings.
 
@@ -238,7 +238,7 @@ Screenshot-based quality gate using a vision LLM. Takes a screenshot of the comp
 
 ### 6. Repairer (LLM)
 
-**File**: `src/agents/repairer.py`
+**File**: `src/agents/generation/repairer.py`
 
 Three-tier escalating repair strategy:
 
@@ -257,7 +257,7 @@ After repair, the graph routes back to **Generator** → **Validator** for anoth
 
 ### 7. Evaluator (mechanical, no LLM)
 
-**File**: `src/agents/evaluator.py`
+**File**: `src/agents/review/evaluator.py`
 
 Scores the run and writes a manifest. No LLM — pure computation.
 
@@ -383,7 +383,7 @@ prompts/
 `src/utils/logging_config.py` uses Python `contextvars` to inject `run_id`, `step`, and `model` into every log line:
 
 ```
-src.agents.generator | [3b5c1e89f110] [generator] [gpt-4.1-mini] tokens_in=1200 tokens_out=800
+src.agents.generation.generator | [3b5c1e89f110] [generator] [gpt-4.1-mini] tokens_in=1200 tokens_out=800
 ```
 
 ### LangSmith Tracing

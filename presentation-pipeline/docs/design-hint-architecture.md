@@ -23,7 +23,7 @@ Root cause, three layers that lined up:
 | | `knowledge/core/hint-capabilities.yaml` | Treatments each component kind may receive (+ `never:`) and the POM technique for each |
 | | `knowledge/core/icon-names.txt` | Exact POM icon set (generated) |
 | | `knowledge/components/icon.yaml` `recommended_names` | Curated vocabulary shown to the generator |
-| Planner | `agents/hint_capabilities.py` → `slide_component_planner/system.j2`, `planner_schema.py` | Hints chosen only from the kind's treatments; no logos; pick another kind if icons are essential |
+| Planner | `agents/planning/hint_capabilities.py` → `slide_component_planner/system.j2`, `planner_schema.py` | Hints chosen only from the kind's treatments; no logos; pick another kind if icons are essential |
 | Generator | `context_builder.py` → `generator/system.j2` (techniques for THIS slide's kinds + icon names), `generator/user.j2` (`scope:` line per component) | Builds intents at the right place; out-of-scope intents skipped |
 | Auto-fix (no LLM) | `compiler/content_model.py::flatten_text_containers`, `compiler/icons.py::fix_icon_names` via `normalizer.normalize_xml` | Td/Li with Icon+Text → plain text; icon name respelled to exact slug, else the Icon is removed (no fuzzy guessing) |
 | Hard stop | `content_model.find_violations` (in `normalize_xml`) + `nesting_compile_failure` in `validator_node`, `normalize_and_compile`, `slide_edit_service` | Any remaining bad pair → `INVALID_CHILD`, compiler skipped, precise `NESTING FIX` guidance; repair policy unchanged (PATCH first) |

@@ -23,7 +23,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from src.agents.visual_critic import run_visual_critic
+from src.agents.review.visual_critic import run_visual_critic
 from src.utils.llm_client import usage_record
 from src.compiler.layout_audit import REPORT_ONLY_CODES
 from src.compiler.screenshot import render_screenshots
@@ -83,7 +83,7 @@ def _run_visual_review(
     idx = state.get("current_slide_index", 0)
     v_count = state.get("visual_repair_count", 0)
     output_dir = (
-        Path(__file__).resolve().parent.parent.parent
+        Path(__file__).resolve().parents[3]
         / "output" / "runs" / run_id / "screenshots" / f"slide-{idx}"
     )
     if v_count > 0:

@@ -1,7 +1,7 @@
 """Fixes from the 2026-10-15 full-deck eval (docs/eval/deck-output-fixes-2026-10-15.md)."""
 
-from src.agents.plan_checks import PLAN_INSTRUCTION_TEXT, find_problems, finalize_plan, is_instruction_text
-from src.agents.written_lines import (brief_content, brief_instructions, instruction_lines, matches_instruction,
+from src.agents.planning.plan_checks import PLAN_INSTRUCTION_TEXT, find_problems, finalize_plan, is_instruction_text
+from src.agents.planning.written_lines import (brief_content, brief_instructions, instruction_lines, matches_instruction,
                                       settle_direction_lines, visual_directions)
 
 
@@ -85,7 +85,7 @@ def test_a_data_note_and_short_lines_are_not_instructions():
 
 # ── step 2: a layer beside a component that already shows its content ──────
 
-from src.agents.plan_checks import LAYER_REPEATED, drop_repeated_layers  # noqa: E402
+from src.agents.planning.plan_checks import LAYER_REPEATED, drop_repeated_layers  # noqa: E402
 
 CARDS = comp("cards", "card_grid", {"card_layout": "grid", "cards": [
     {"title": "TRACKING", "bullets": ["Share of Search", "Share of Shelf", "Availability Monitoring"]},
@@ -146,7 +146,7 @@ def test_a_timeout_without_a_result_still_fails(tmp_path):
 
 def test_the_placeholder_replaces_the_failed_slides_xml_for_the_deck():
     from src import graph
-    from src.agents.deck_nodes import slide_router_node
+    from src.agents.generation.deck_nodes import slide_router_node
     state = {"slide_plans": [{"slide_title": "Exact match"}], "current_slide_index": 0, "run_id": "t",
              "current_xml": "<Slide><Text>failed slide</Text></Slide>",
              "normalize_result": {"cleaned_xml": "<Slide><Text>failed slide</Text></Slide>"}}
@@ -160,8 +160,8 @@ def test_the_placeholder_replaces_the_failed_slides_xml_for_the_deck():
 
 import re  # noqa: E402
 
-from src.agents.style_resolver import resolve_theme  # noqa: E402
-from src.agents.written_lines import drop_shared_card_lines  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.written_lines import drop_shared_card_lines  # noqa: E402
 from tests.unit.test_fit_grow_tables import _compile  # noqa: E402
 
 _CHIPS = "".join(f'<Shape shapeType="roundRect" w="{w}" h="26" backgroundColor="$accentSoft" text="{t}" fontSize="14" '

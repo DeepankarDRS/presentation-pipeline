@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from src.agents.validator import validator_node
+from src.agents.generation.validator import validator_node
 from src.compiler.normalizer import (
     ensure_single_theme,
     normalize_xml,
@@ -220,8 +220,8 @@ def test_validator_empty_xml():
     assert result["compile_result"]["retryable"] is True
 
 
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
 def test_validator_success_path(mock_compile, mock_validate):
     mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
     mock_compile.return_value = {
@@ -239,7 +239,7 @@ def test_validator_success_path(mock_compile, mock_validate):
     mock_compile.assert_called_once()
 
 
-@patch("src.agents.validator.validate_xml")
+@patch("src.agents.generation.validator.validate_xml")
 def test_validator_parsexml_failure_skips_compile(mock_validate):
     mock_validate.return_value = {
         "ok": False,
@@ -257,7 +257,7 @@ def test_validator_parsexml_failure_skips_compile(mock_validate):
     assert len(result["compile_result"]["diagnostics"]) > 0
 
 
-@patch("src.agents.validator.validate_xml")
+@patch("src.agents.generation.validator.validate_xml")
 def test_validator_falls_back_to_pre_validate(mock_validate):
     mock_validate.return_value = None
 
@@ -269,8 +269,8 @@ def test_validator_falls_back_to_pre_validate(mock_validate):
     assert result["compile_result"]["retryable"] is True
 
 
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
 def test_validator_compile_error_not_retryable(mock_compile, mock_validate):
     from src.compiler.compiler_client import CompilerError
     mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
@@ -285,8 +285,8 @@ def test_validator_compile_error_not_retryable(mock_compile, mock_validate):
     assert "HARNESS_ERROR" in result["compile_result"]["diagnostics"][0]["type"]
 
 
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
 def test_validator_returns_layout_issues(mock_compile, mock_validate):
     mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
     mock_compile.return_value = {
@@ -302,8 +302,8 @@ def test_validator_returns_layout_issues(mock_compile, mock_validate):
     assert isinstance(result["layout_issues"], list)
 
 
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
 def test_validator_empty_xml_has_layout_issues_key(mock_compile, mock_validate):
     state = initial_state(run_id="v-empty-layout", raw_request="test")
     state["current_xml"] = ""
@@ -312,8 +312,8 @@ def test_validator_empty_xml_has_layout_issues_key(mock_compile, mock_validate):
     assert result["layout_issues"] == []
 
 
-@patch("src.agents.validator.validate_xml")
-@patch("src.agents.validator.compile_xml")
+@patch("src.agents.generation.validator.validate_xml")
+@patch("src.agents.generation.validator.compile_xml")
 def test_validator_normalizes_before_compile(mock_compile, mock_validate):
     mock_validate.return_value = {"ok": True, "diagnostics": [], "warnings": [], "retryable": False}
     mock_compile.return_value = {

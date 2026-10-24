@@ -16,7 +16,7 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-_KNOWLEDGE_DIR = Path(__file__).resolve().parent.parent / "knowledge"
+_KNOWLEDGE_DIR = Path(__file__).resolve().parents[2] / "knowledge"
 
 
 @functools.lru_cache(maxsize=1)

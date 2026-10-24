@@ -3,9 +3,9 @@
 import json
 from pathlib import Path
 
-from src.agents import generator as G
-from src.agents.context_builder import build_contract
-from src.agents.style_resolver import resolve_theme
+from src.agents.generation import generator as G
+from src.agents.generation.context_builder import build_contract
+from src.agents.planning.style_resolver import resolve_theme
 from src.compiler.nodes import prompt_lines
 from src.compiler.nodes.spec import items
 

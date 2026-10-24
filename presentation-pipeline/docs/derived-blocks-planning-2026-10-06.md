@@ -89,7 +89,7 @@ Everything is verified LLM-free first; one paid run at the end.
 | # | Item | Files | Why this order |
 |---|---|---|---|
 | 0.1 | **Usage logging** | `src/utils/llm_client.py` (`extract_usage` adds `tokens_cached` from `token_usage.prompt_tokens_details.cached_tokens`; `_ZERO_USAGE`); `src/state.py` (`AttemptRecord`: `step`, `slide_index`, `tokens_reasoning`, `tokens_cached`); one helper `usage_record(usage, step, slide_index=None)` in `llm_client.py`; the 12 writers of `generation_history` call it: `elicitor.py` (2), `outline_planner.py`, `slide_component_planner.py` (serial + fan-out), `plan_reviewer.py`, `generator.py`, `repairer.py` (3), `critic.py`, `visual_repairer.py` (2); `evaluator._build_step_summary` and the manifest `tokens` block (add `total_reasoning`, `total_cached`); new `scripts/eval/usage_report.py` (per case × step × slide table from manifests); `eval_run._collect_run` copies `run-manifest.json` into `decks/<case>__rN/` | everything after is measured with it; pure plumbing |
-| 0.2 | **Planner checks + re-ask** | new `src/agents/plan_checks.py`; `slide_component_planner.py` (one wrapper `plan_with_reask` used by `slide_plan_serial_node` and `slide_component_planner_node`, replacing both `except` branches); `written_lines.py` (card body = title); `src/state.py` (`SlidePlan.plan_flags`); `src/prompts/slide_component_planner/user.j2` (the existing `repair_context` block carries the named problems) | largest visible gap in the hold-out |
+| 0.2 | **Planner checks + re-ask** | new `src/agents/planning/plan_checks.py`; `slide_component_planner.py` (one wrapper `plan_with_reask` used by `slide_plan_serial_node` and `slide_component_planner_node`, replacing both `except` branches); `written_lines.py` (card body = title); `src/state.py` (`SlidePlan.plan_flags`); `src/prompts/slide_component_planner/user.j2` (the existing `repair_context` block carries the named problems) | largest visible gap in the hold-out |
 | 0.3 | **Shrink guard** | `src/node/fit-grow.js` (+ `tests/unit/test_fit_grow_*.py`) | independent of 0.2; free replay |
 | 0.4 | **Font embedding** | new `src/compiler/font_embed.py` (from `scripts/tools/embed_fonts.py` + `fontTools.subset`); called by `deck_assembler` after `merge_pptx_files`; `scripts/experiments/phase0b/compose_deck.py` switched to it; `pyproject.toml` + `requirements.txt` + `uv.lock` add `fonttools` | last: dormant for LLM decks (below) |
 | 0.5 | Docs, push, hand-over commands | AGENTS.md, this file, `docs/session-kickoff.md` | |
@@ -192,7 +192,7 @@ space the layout gives it.
 
 ### 3.1 One rule: every plan component is placed by one self-closing tag with `ref`
 
-The tag follows the plan kind (`ComponentKindLiteral`, `src/agents/planner_schema.py`):
+The tag follows the plan kind (`ComponentKindLiteral`, `src/agents/schemas/planner_schema.py`):
 
 | Plan kind | Tag the LLM writes | Family | Code writes |
 |---|---|---|---|
@@ -574,7 +574,7 @@ REGENERATE. Manifest `steps` entries and `tokens.total_reasoning` / `total_cache
 `python -m scripts.eval.usage_report <folders>` (`--per-slide`); the eval bundle copies `run-manifest.json` into
 `decks/<case>__rN/`. Old manifests read as step "unknown".
 
-**0.2 Plan checks and one re-ask** (`src/agents/plan_checks.py`, `plan_with_reask` in
+**0.2 Plan checks and one re-ask** (`src/agents/planning/plan_checks.py`, `plan_with_reask` in
 `slide_component_planner.py`, `scripts/eval/plan_flags_report.py`). As §2, with these differences found while
 calibrating on the 17 hold-out plans:
 - **C17 keeps the component with more text, not the hero** (launch 3: chevrons with 5 words vs cards with 53

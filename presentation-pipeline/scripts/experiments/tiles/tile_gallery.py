@@ -26,7 +26,7 @@ sys.path.insert(0, str(ROOT))
 os.environ["POM_BLOCKS"] = "tiles"
 
 from scripts.experiments.kpi.kpi_gallery import sheet  # noqa: E402
-from src.agents.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.nodes import tiles  # noqa: E402
 from src.compiler.normalizer import ensure_single_theme, normalize_xml  # noqa: E402
 

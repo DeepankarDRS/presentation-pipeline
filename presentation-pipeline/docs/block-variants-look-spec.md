@@ -278,7 +278,7 @@ not tokens: 1a reports the default share and the fallback rate per check (below)
 Scope: Latin-script text only (user, 2026-10-07), so font coverage beyond Inter / JetBrains Mono is
 out of scope.
 
-### Capacity rules that change the plan (`enforce_capacity`, `src/agents/capacity.py`)
+### Capacity rules that change the plan (`enforce_capacity`, `src/agents/planning/capacity.py`)
 
 They run inside the slide component planner (`slide_component_planner.py`, before the plan is
 saved), so a component's prompt line, its tag and its offered variants always come from the plan

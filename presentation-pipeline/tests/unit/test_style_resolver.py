@@ -1,6 +1,6 @@
 """Tests for the style resolver — theme resolution utility and graph node."""
 
-from src.agents.style_resolver import DEFAULT_THEME, resolve_theme, style_resolver_node
+from src.agents.planning.style_resolver import DEFAULT_THEME, resolve_theme, style_resolver_node
 from src.state import initial_state
 
 

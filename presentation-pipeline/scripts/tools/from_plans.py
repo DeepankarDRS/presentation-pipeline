@@ -20,7 +20,7 @@ def load_run(folder: Path) -> dict[str, Any]:
     manifest = json.loads(manifest_file.read_text(encoding="utf-8")) if manifest_file.exists() else {}
     theme = manifest.get("resolved_theme")
     if not theme or not manifest.get("theme_element"):
-        from src.agents.style_resolver import resolve_theme
+        from src.agents.planning.style_resolver import resolve_theme
         theme = resolve_theme(manifest.get("theme") or "")
     else:
         theme = {**theme, "element": manifest["theme_element"]}

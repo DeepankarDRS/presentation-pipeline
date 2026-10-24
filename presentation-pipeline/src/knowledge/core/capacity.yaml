@@ -1,6 +1,6 @@
 # pom-knowledge/core/capacity.yaml
 # The ONE place a component's capacity is stated. The slide component planner
-# prompt renders these numbers (src/agents/capacity.py), the plan checks enforce
+# prompt renders these numbers (src/agents/planning/capacity.py), the plan checks enforce
 # them, and tests/unit/test_capacity.py fails when a prompt or knowledge file
 # states a different number. Change a limit here, never in prose.
 #
@@ -60,7 +60,7 @@ card_grid:
 
 # The generator's layout rules (2026-10-07, user: "add an LLM-level rule" for layouts code does
 # not fix; adapted from a 1920x1080 reference deck guide, scaled to 1280x720). Rendered by
-# src/agents/capacity.py layout_rules() into the generator prompt; state the numbers only here.
+# src/agents/planning/capacity.py layout_rules() into the generator prompt; state the numbers only here.
 layout:
   kpi_tile_min_w: 260        # px; narrower tiles cap the number's size
   hero_number_px: [64, 120]  # one number the headline rests on (fit-grow HERO_CAP 120)

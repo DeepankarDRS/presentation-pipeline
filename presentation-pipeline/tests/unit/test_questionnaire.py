@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from src.agents.questionnaire import questionnaire_node
+from src.agents.planning.questionnaire import questionnaire_node
 from src.state import initial_state
 
 

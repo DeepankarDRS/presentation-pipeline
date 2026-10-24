@@ -3,8 +3,8 @@
 import json
 import xml.etree.ElementTree as ET
 
-from src.agents.planner_schema import PlannerSlide
-from src.agents.slide_component_planner import _planner_slide_to_state
+from src.agents.schemas.planner_schema import PlannerSlide
+from src.agents.planning.slide_component_planner import _planner_slide_to_state
 from src.compiler.normalizer import normalize_xml
 from src.utils.text_clean import clean_data, strip_illegal
 

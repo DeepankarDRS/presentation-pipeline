@@ -17,8 +17,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.agents.context_builder import _detect_components_from_text, build_contract
-from src.agents.slide_component_planner import plan_single_slide
+from src.agents.generation.context_builder import _detect_components_from_text, build_contract
+from src.agents.planning.slide_component_planner import plan_single_slide
 from src.state import SlidePlan
 
 logger = logging.getLogger(__name__)

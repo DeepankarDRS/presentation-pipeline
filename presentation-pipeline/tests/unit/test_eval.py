@@ -179,10 +179,10 @@ def test_stream_case_tags_validator_attempts_on_real_graph():
 
     real_initial_state, seen = src.state.initial_state, {}
     ok = {"ok": True, "pptx_path": "/tmp/x.pptx", "diagnostics": [], "warnings": [], "retryable": False}
-    with patch("src.agents.generator.get_llm") as get_llm, \
-         patch("src.agents.validator.validate_xml", return_value={"ok": True, "diagnostics": [], "warnings": []}), \
-         patch("src.agents.validator.compile_xml", return_value=ok), \
-         patch("src.agents.deck_nodes.compile_xml", return_value=ok), \
+    with patch("src.agents.generation.generator.get_llm") as get_llm, \
+         patch("src.agents.generation.validator.validate_xml", return_value={"ok": True, "diagnostics": [], "warnings": []}), \
+         patch("src.agents.generation.validator.compile_xml", return_value=ok), \
+         patch("src.agents.generation.deck_nodes.compile_xml", return_value=ok), \
          patch("src.state.initial_state", side_effect=with_plans):
         get_llm.return_value.invoke.side_effect = gen
         final, attempts = eval_run._stream_case({"name": "t", "request": "two slides"}, "eval-test")

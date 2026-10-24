@@ -26,16 +26,16 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.outline_planner_schema import OutlinePlannerOutput
-from src.agents.settings_mapper import DeckSettings, settings_to_constraints
-from src.agents.written_lines import brief_content, brief_instructions, settle_direction_lines
+from src.agents.schemas.outline_planner_schema import OutlinePlannerOutput
+from src.agents.planning.settings_mapper import DeckSettings, settings_to_constraints
+from src.agents.planning.written_lines import brief_content, brief_instructions, settle_direction_lines
 from src.state import PresentationState
 from src.utils.llm_client import get_llm, unpack_raw, usage_record
 from src.utils.text_clean import clean_data
 
 logger = logging.getLogger(__name__)
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "outline_planner"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts" / "outline_planner"
 _jinja_env = Environment(
     loader=FileSystemLoader(str(_PROMPTS_DIR)),
     trim_blocks=True,

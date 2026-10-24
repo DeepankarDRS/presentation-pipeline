@@ -34,7 +34,7 @@ from lxml import etree
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from src.agents.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.geometry_audit import audit_run_folder  # noqa: E402
 from src.compiler.layout_audit import audit_layout  # noqa: E402
 from src.compiler.nodes.element_refs import FIELDS, PLAN_KEY, fill_refs, kpi_components, norm  # noqa: E402

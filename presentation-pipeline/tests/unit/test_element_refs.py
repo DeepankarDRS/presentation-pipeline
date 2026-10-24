@@ -349,7 +349,7 @@ def test_sentence_value_is_drawn_as_body_text():
 
 
 def test_plan_check_reasks_on_sentence_kpi_values():
-    from src.agents.plan_checks import KPI_VALUE_TEXT, REASK_CODES, finalize_plan, find_problems, reask_context
+    from src.agents.planning.plan_checks import KPI_VALUE_TEXT, REASK_CODES, finalize_plan, find_problems, reask_context
     plan = {"components": [{"component_id": "k", "kind": "kpi_row", "count": 2, "content_data": {
         "kpi_labels": ["Generic search", "Brand"],
         "kpi_values": ["Generic search consumed the largest budget pool.", "0.99x"]}}]}
@@ -391,7 +391,7 @@ def _gen_state():
 
 
 def test_generator_prompt_under_kpi_has_refs_not_values(monkeypatch):
-    from src.agents.generator import _render_prompts
+    from src.agents.generation.generator import _render_prompts
     monkeypatch.setenv("POM_BLOCKS", "kpi")
     _, user = _render_prompts(_gen_state())
     assert "KPI REFS for kpis" in user and "₹114.9L" not in user and "0.33x" not in user
@@ -401,7 +401,7 @@ def test_generator_prompt_under_kpi_has_refs_not_values(monkeypatch):
 
 
 def test_validator_blocks_on_ref_errors_and_fills_otherwise(monkeypatch, tmp_path):
-    from src.agents import validator
+    from src.agents.generation import validator
     monkeypatch.setenv("POM_BLOCKS", "kpi")
     state = _gen_state()
     state["current_xml"] = full().replace("</HStack>", '<Text ref="kpis.9.value"/></HStack>')
@@ -438,7 +438,7 @@ def test_fit_grow_sizes_ref_values_as_one_group_and_the_hero_alone(tmp_path):
             '</HStack></VStack></Slide>')
     res = E.fill_refs(skel, plan)
     assert res["ok"], res["issues"]
-    from src.agents.style_resolver import resolve_theme
+    from src.agents.planning.style_resolver import resolve_theme
     xml = tmp_path / "t.xml"
     xml.write_text(resolve_theme("corporate-slate")["element"] + "\n" + res["xml"], encoding="utf-8")
     out = _compile(xml, tmp_path / "o")
@@ -451,7 +451,7 @@ def test_fit_grow_sizes_ref_values_as_one_group_and_the_hero_alone(tmp_path):
 
 def test_fit_grow_keeps_a_lower_weight_component_at_or_below_the_hero_row(tmp_path):
     """Paid check 2026-10-11: a "peer" row of two wide tiles grew to 92 px under the "hero" row at 72."""
-    from src.agents.style_resolver import resolve_theme
+    from src.agents.planning.style_resolver import resolve_theme
     from tests.unit.test_fit_grow_tables import _compile
     plan = {"components": [
         {"component_id": "top", "kind": "kpi_row", "weight": "hero", "content_data": {
@@ -502,7 +502,7 @@ def test_a_row_of_content_sized_tiles_spans_its_width_and_loses_its_spacer():
 
 def test_fit_grow_puts_the_icon_above_the_label_in_a_sparse_tile(tmp_path):
     """CHEFFIN slide 1: five narrow tiles in a grow="3" row, numbers bound by the width, half empty."""
-    from src.agents.style_resolver import resolve_theme
+    from src.agents.planning.style_resolver import resolve_theme
     from tests.unit.test_fit_grow_tables import _compile
     plan = {"components": [{"component_id": "k", "kind": "kpi_row", "content_data": {
         "kpi_labels": ["Combined spend", "Combined revenue", "Combined ROAS", "FLIPCART ROAS", "ZAROMA ROAS"],
@@ -523,7 +523,7 @@ def test_fit_grow_puts_the_icon_above_the_label_in_a_sparse_tile(tmp_path):
 
 
 def test_validator_keeps_the_llm_xml_before_the_fill(monkeypatch, tmp_path):
-    from src.agents import validator
+    from src.agents.generation import validator
     monkeypatch.setenv("POM_BLOCKS", "kpi")
     monkeypatch.setattr(validator, "validate_xml",
                         lambda xml, out_dir: {"ok": False, "diagnostics": [{"type": "X", "message": "stop"}], "warnings": []})
@@ -532,7 +532,7 @@ def test_validator_keeps_the_llm_xml_before_the_fill(monkeypatch, tmp_path):
     state["current_xml"] = full()
     validator.validator_node(state)
     from pathlib import Path
-    saved = Path(validator.__file__).resolve().parents[2] / "output" / "runs" / state["run_id"] / "generated.xml"
+    saved = Path(validator.__file__).resolve().parents[3] / "output" / "runs" / state["run_id"] / "generated.xml"
     try:
         assert saved.read_text(encoding="utf-8") == full()
     finally:

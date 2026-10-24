@@ -14,8 +14,8 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.agents.repairer import build_patch_prompts
-from src.agents.visual_critic import run_visual_critic
+from src.agents.generation.repairer import build_patch_prompts
+from src.agents.review.visual_critic import run_visual_critic
 from src.compiler.compiler_client import CompilerError, compile_xml
 from src.compiler.normalizer import ensure_single_theme, normalize_xml
 from src.compiler.content_model import nesting_compile_failure

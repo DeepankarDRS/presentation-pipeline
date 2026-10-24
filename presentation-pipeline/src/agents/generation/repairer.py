@@ -30,8 +30,8 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.agents.context_builder import build_contract
-from src.agents.slide_component_planner import plan_single_slide
+from src.agents.generation.context_builder import build_contract
+from src.agents.planning.slide_component_planner import plan_single_slide
 from src.compiler.repair_guidance import (
     build_error_guidance,
     cap_diag_msg,
@@ -45,7 +45,7 @@ from src.utils.llm_client import extract_usage, get_llm, usage_record
 
 logger = logging.getLogger(__name__)
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts"
 _REPAIRER_DIR = _PROMPTS_DIR / "repairer"
 _GENERATOR_DIR = _PROMPTS_DIR / "generator"
 
@@ -60,7 +60,7 @@ _gen_env = Environment(
     lstrip_blocks=True,
 )
 
-_SRC_DIR = Path(__file__).resolve().parent.parent
+_SRC_DIR = Path(__file__).resolve().parents[2]
 _EXAMPLES_DIR = _SRC_DIR / "knowledge" / "examples"
 
 PATCH, REGENERATE = 1, 2

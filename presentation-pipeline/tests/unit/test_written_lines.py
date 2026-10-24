@@ -1,6 +1,6 @@
 """Card lines the planner writes itself are flagged, never trusted (user decision 2026-09-29)."""
 
-from src.agents.written_lines import flag_written_lines, from_brief
+from src.agents.planning.written_lines import flag_written_lines, from_brief
 
 BRIEF = "Consumption occasions: Pre-workout consumption, Gaming sessions, Late-night work/study. " \
         "Travel & commuting: energy on the go between meetings"
@@ -40,7 +40,7 @@ def test_other_components_and_empty_cards_untouched():
 
 # ── design directions are not content (fix 6, CHEFFIN cover) ────────────────
 
-from src.agents.written_lines import content_lines, drop_visual_directions, visual_directions  # noqa: E402
+from src.agents.planning.written_lines import content_lines, drop_visual_directions, visual_directions  # noqa: E402
 
 COVER = {"key_messages": ["Prepared by our agency",
                           "Visual: Marketplace growth theme with FLIPCART and ZAROMA visual cues."]}
@@ -75,7 +75,7 @@ def test_unlabelled_content_is_never_a_direction():
 
 # ── the outline copies a brief "Visual:" line without its label (XTSY 2026-10-20) ──
 
-from src.agents.written_lines import (brief_content, brief_instructions, content_line_list,  # noqa: E402
+from src.agents.planning.written_lines import (brief_content, brief_instructions, content_line_list,  # noqa: E402
                                       copies_visual, settle_direction_lines)
 
 XTSY_BRIEF = ("SLIDE 1  TITLE: Unlocking the Next Phase of Growth for XTSY on Quick Commerce  Visual: Quick Commerce "
@@ -119,7 +119,7 @@ def test_a_direction_copy_with_figures_stays_content():
 
 
 def test_planner_prompt_gives_directions_apart_from_the_key_messages():
-    from src.agents.slide_component_planner import _jinja_env
+    from src.agents.planning.slide_component_planner import _jinja_env
     slide = {"slide_index": 0, "slide_title": "Unlocking growth", "narrative_role": "r",
              "key_messages": ["Quick Commerce is a primary consumption channel.",
                               "Visual: Quick Commerce ecosystem showing Zepto, Blinkit and Instamart"]}

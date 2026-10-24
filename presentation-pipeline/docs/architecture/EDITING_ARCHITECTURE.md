@@ -655,13 +655,13 @@ Refactor each agent from a state-coupled function to a Tool + LangGraph adapter 
 
 Before:
 ```
-src/agents/generator.py  ← one function that reads state, calls LLM, writes state
+src/agents/generation/generator.py  ← one function that reads state, calls LLM, writes state
 ```
 
 After:
 ```
 src/tools/generator.py   ← GeneratorTool.invoke(plan, contract, ...) → GeneratorResult
-src/agents/generator.py  ← generator_node(state) calls GeneratorTool, writes state
+src/agents/generation/generator.py  ← generator_node(state) calls GeneratorTool, writes state
 ```
 
 ### Phase 3: Add Editing API

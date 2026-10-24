@@ -6,12 +6,12 @@ import xml.etree.ElementTree as ET
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.agents.context_builder import build_contract
-from src.agents.hint_capabilities import (
+from src.agents.generation.context_builder import build_contract
+from src.agents.planning.hint_capabilities import (
     hint_scopes, load_capabilities, planner_capabilities_section, visual_intent_techniques,
 )
-from src.agents.planner_schema import ComponentKindLiteral, PlannerComponent
-from src.agents.style_resolver import DEFAULT_THEME
+from src.agents.schemas.planner_schema import ComponentKindLiteral, PlannerComponent
+from src.agents.planning.style_resolver import DEFAULT_THEME
 from src.compiler.content_model import find_violations
 
 _CAPS = load_capabilities()
@@ -65,7 +65,7 @@ def test_hint_scopes():
 
 
 def test_planner_prompt_renders_capabilities():
-    from src.agents.slide_component_planner import _jinja_env
+    from src.agents.planning.slide_component_planner import _jinja_env
     prompt = _jinja_env.get_template("system.j2").render(hint_capabilities=planner_capabilities_section())
     assert "- **table**:" in prompt and "NEVER: icons, logos" in prompt
     assert "NO brand or company logos" in prompt

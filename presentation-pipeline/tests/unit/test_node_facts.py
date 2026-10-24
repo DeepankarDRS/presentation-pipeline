@@ -210,7 +210,7 @@ def test_lint_catches_a_fixed_choice():
 # ── both prompts render the facts ──────────────────────────────────────────────
 
 def test_planner_prompt_renders_planner_facts():
-    from src.agents.slide_component_planner import _jinja_env
+    from src.agents.planning.slide_component_planner import _jinja_env
     text = " ".join(_jinja_env.get_template("system.j2").render(
         content_field="content_data_json").split())
     for kind in nf.DIAGRAM_TAGS:
@@ -218,7 +218,7 @@ def test_planner_prompt_renders_planner_facts():
 
 
 def test_generator_notes_render_generator_facts():
-    from src.agents.context_builder import _select_notes
+    from src.agents.generation.context_builder import _select_notes
     notes = _select_notes(list(nf.DIAGRAM_TAGS), {}, {}, {k: nf.component(k) for k in nf.DIAGRAM_TAGS},
                           {"name": ""}, has_grammar=True)
     joined = " ".join(" ".join(n.split()) for n in notes)

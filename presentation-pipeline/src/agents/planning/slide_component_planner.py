@@ -28,13 +28,13 @@ from typing import Any, get_args
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.capacity import capacity, enforce_capacity, max_of, span
-from src.agents.hint_capabilities import planner_capabilities_section
-from src.agents.planner_schema import PlannerSlide
-from src.agents.planner_schema_typed import PlannerSlideTyped, content_data_of
-from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
-from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
-from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
+from src.agents.planning.capacity import capacity, enforce_capacity, max_of, span
+from src.agents.planning.hint_capabilities import planner_capabilities_section
+from src.agents.schemas.planner_schema import PlannerSlide
+from src.agents.schemas.planner_schema_typed import PlannerSlideTyped, content_data_of
+from src.agents.planning.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
+from src.agents.planning.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
+from src.agents.planning.written_lines import (content_line_list, content_lines, drop_visual_directions,
                                       flag_written_lines, instruction_lines, visual_directions)
 from src.compiler.node_facts import facts_text
 from src.state import ChartTypeLiteral, ComponentPlan, PresentationState, SlidePlan
@@ -58,7 +58,7 @@ def planner_schema() -> str:
 
 # ── Prompt env ──────────────────────────────────────────────────────────────
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "slide_component_planner"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts" / "slide_component_planner"
 _jinja_env = Environment(
     loader=FileSystemLoader(str(_PROMPTS_DIR)),
     trim_blocks=True,

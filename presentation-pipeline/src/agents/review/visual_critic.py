@@ -19,12 +19,12 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.agents.critic_schema import VisualCriticOutput
+from src.agents.schemas.critic_schema import VisualCriticOutput
 from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "visual_critic"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts" / "visual_critic"
 _jinja_env = Environment(
     loader=FileSystemLoader(str(_PROMPTS_DIR)),
     keep_trailing_newline=True,

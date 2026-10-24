@@ -1,8 +1,8 @@
 """C — colour carries meaning, the same on every slide (Genspark: clay = leak, teal = fix)."""
 
-from src.agents.context_builder import _render_house_style
-from src.agents.hint_capabilities import planner_capabilities_section, visual_intent_techniques
-from src.agents.slide_component_planner import _jinja_env
+from src.agents.generation.context_builder import _render_house_style
+from src.agents.planning.hint_capabilities import planner_capabilities_section, visual_intent_techniques
+from src.agents.planning.slide_component_planner import _jinja_env
 
 
 def test_generator_sees_colour_roles_and_no_deltas_only_rule():

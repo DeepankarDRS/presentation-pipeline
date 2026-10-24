@@ -21,17 +21,17 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.agents.context_builder import build_contract
-from src.agents.repairer import build_patch_prompts, _build_repair_context, _plan_to_outline_slide
-from src.agents.slide_component_planner import plan_single_slide
-from src.agents.validator import normalize_and_compile
+from src.agents.generation.context_builder import build_contract
+from src.agents.generation.repairer import build_patch_prompts, _build_repair_context, _plan_to_outline_slide
+from src.agents.planning.slide_component_planner import plan_single_slide
+from src.agents.generation.validator import normalize_and_compile
 from src.compiler.repair_guidance import cap_diag_msg
 from src.state import AttemptRecord, PresentationState
 from src.utils.llm_client import extract_usage, get_llm, usage_record
 
 logger = logging.getLogger(__name__)
 
-_GENERATOR_DIR = Path(__file__).resolve().parent.parent / "prompts" / "generator"
+_GENERATOR_DIR = Path(__file__).resolve().parents[2] / "prompts" / "generator"
 _gen_env = Environment(
     loader=FileSystemLoader(str(_GENERATOR_DIR)),
     keep_trailing_newline=True,
@@ -174,7 +174,7 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
         return {"visual_repair_count": count, "visual_repair_outcome": "noop"}
 
     run_id = state.get("run_id", "unknown")
-    _pipeline_root = Path(__file__).resolve().parent.parent.parent
+    _pipeline_root = Path(__file__).resolve().parents[3]
     out_dir = _pipeline_root / "output" / "runs" / run_id / f"visual-repair-{count}"
     compile_ok, new_cr = normalize_and_compile(xml, theme_el, out_dir)
 

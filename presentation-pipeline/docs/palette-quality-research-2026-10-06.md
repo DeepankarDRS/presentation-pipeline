@@ -29,7 +29,7 @@ Plus fixes to existing palettes (role collisions, `gj-h1` warning, one duplicate
 | Step | File | What happens |
 |---|---|---|
 | Library | `src/knowledge/theme/palettes.yaml` | 18 palettes, 10 colour tokens each plus `chartColors`; dark palettes add `chartSurface` / `chartInk` |
-| Resolve | `src/agents/style_resolver.py` | `_TOKEN_KEYS` (12 names) become one `<Theme .../>` element; `corporate-slate` (or no name) returns a **hard-coded `DEFAULT_THEME`**, not the YAML entry |
+| Resolve | `src/agents/planning/style_resolver.py` | `_TOKEN_KEYS` (12 names) become one `<Theme .../>` element; `corporate-slate` (or no name) returns a **hard-coded `DEFAULT_THEME`**, not the YAML entry |
 | Prompt | `context_builder.py` → `generator.py` | The `<Theme>` element, `chartColors` and role text (`house-style.yaml` `color_roles`, `design-language.yaml` `color_usage`) go into the generator prompt |
 | Compile | POM | `$token` references resolve against the `<Theme>`; chart colours are literal hex (`$tokens` do not resolve in `chartColors`) |
 | Checks | `layout_audit.py` `LOW_CONTRAST` (report-only), `normalizer.py` highlight darkening | Contrast is measured against fixed colours (white, or `(22,32,46)` for dark), not the slide's own theme or gradient |
@@ -281,7 +281,7 @@ arms in one palette; add one row of badge, callout and highlighted-row slides on
 - Okabe-Ito and categorical / sequential / diverging guidance: [Andrew Heiss, colour palettes](https://datavizs25.classes.andrewheiss.com/resource/colors.html), [Aimpoint Digital](https://www.aimpointdigital.com/blog/color-best-practices-in-data-visualization)
 - 60-30-10 for presentations: [Ethos3](https://ethos3.com/color-rules-for-presentation-design/), [Prezi](https://prezi.com/blog/designer-tips-volume-2-common-color-mistakes-and-the-60-30-10-rule/)
 - Anthropic published styling: [skills.sh brand-guidelines](https://www.skills.sh/anthropics/skills/brand-guidelines), [designpieces Claude palette](https://www.designpieces.com/palette/claude-color-palette-hex-and-rgb/)
-- Internal: `docs/derived-blocks-planning-2026-10-06.md` §1a (D1), `docs/planner-redesign-research.md` R2, `docs/derived-nodes-design.md` §14.3b and §14.8, `docs/frontend-redesign-changes.md`, `src/knowledge/theme/palettes.yaml`, `src/agents/style_resolver.py`, `src/knowledge/core/recipes.yaml`
+- Internal: `docs/derived-blocks-planning-2026-10-06.md` §1a (D1), `docs/planner-redesign-research.md` R2, `docs/derived-nodes-design.md` §14.3b and §14.8, `docs/frontend-redesign-changes.md`, `src/knowledge/theme/palettes.yaml`, `src/agents/planning/style_resolver.py`, `src/knowledge/core/recipes.yaml`
 
 ## 13. Built: slide-quality item 1 (2026-10-07, branch `feat/slide-quality`)
 
@@ -293,7 +293,7 @@ with a default; **P3** palette fixes now; **P5** only role tokens reach the LLM 
 | Part | What |
 |---|---|
 | `src/compiler/palette_tokens.py` | derives `accentSoft` / `positiveSoft` / `negativeSoft` / `warningSoft` (13% mix into `surfaceAlt`, 22% dark), `*Text` (HLS lightness step, hue kept, ≥ 4.5:1 on `surface`, `surfaceAlt` and its own Soft), `onAccent` (white, else the palette ink), `neutral` (authored, else `textMain` 22% into `surface`, 32% dark) |
-| `src/agents/style_resolver.py` | every `<Theme>` carries the 10 derived tokens; a light palette gets `chartSurface` / `chartInk` = `surfaceAlt` / `textMain`; `DEFAULT_THEME` is built from the YAML entry (default chart colours now the YAML's 5); `chart_focus` = literal accent + neutral hex for a focus chart (prompt note in `context_builder`) |
+| `src/agents/planning/style_resolver.py` | every `<Theme>` carries the 10 derived tokens; a light palette gets `chartSurface` / `chartInk` = `surfaceAlt` / `textMain`; `DEFAULT_THEME` is built from the YAML entry (default chart colours now the YAML's 5); `chart_focus` = literal accent + neutral hex for a focus chart (prompt note in `context_builder`) |
 | `palettes.yaml` (P3) | `gj-h1` positive `2E7D32`, negative `B83A22`, warning `A15C00`; `forest-editorial` positive `1F6F5C`; `forest-dark` positive `5EEAD4`; `saascolor`, `navy-orange` warning `8A6A00` |
 | Roles (`house-style.yaml` `color_roles`, `hint-capabilities.yaml`) | good / bad / watch = `*Text` text, `*Soft` fill, base colour for dots / bars; ONE focus item = `$accentSoft` + `$accentText`; the rest `$neutral` / `$textMuted`; new treatment `focus` on kpi_row, table, card_grid, timeline, flow, process_arrow; every good / bad mark carries a sign or arrow |
 | Literal hex removed | recipes, blueprints, golden examples, component files, prompts: ≈ 200 → 0 outside `chartColors`, a black shadow, `<Theme>` and "wrong" examples (`tests/unit/test_literal_colors.py` fails on a new one) |

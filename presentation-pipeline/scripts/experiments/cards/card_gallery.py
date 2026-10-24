@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.experiments.tiles import tile_gallery as TG  # noqa: E402  (sets POM_BLOCKS=tiles)
 from scripts.experiments.kpi.kpi_gallery import sheet  # noqa: E402
-from src.agents.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.nodes import cards  # noqa: E402
 
 OUT = ROOT / "output" / "card-gallery"

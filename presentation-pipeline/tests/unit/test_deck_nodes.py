@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from src.agents.deck_nodes import (
+from src.agents.generation.deck_nodes import (
     _extract_slide_block,
     _extract_theme,
     assemble_deck_xml,
@@ -114,7 +114,7 @@ def test_slide_router_defaults_verdict_when_critic_off():
     assert result["slide_critic_results"] == [{"passed": True}]
 
 
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_deck_assembler_combines_slides(mock_compile):
     mock_compile.return_value = {
         "ok": True, "pptx_path": "/tmp/deck.pptx",
@@ -141,7 +141,7 @@ def test_deck_assembler_combines_slides(mock_compile):
     assert compiled_xml.count("<Theme") == 1
 
 
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_deck_assembler_normalizes_before_compile(mock_compile):
     """A per-slide <br/> that reached completed_slides must be stripped before the deck compile."""
     mock_compile.return_value = {
@@ -161,7 +161,7 @@ def test_deck_assembler_normalizes_before_compile(mock_compile):
     assert "<br" not in compiled_xml
 
 
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_deck_assembler_dedupes_theme_inside_slide(mock_compile):
     """LLM sometimes emits <Theme> as the first child of <Slide>; assembler must strip it."""
     mock_compile.return_value = {
@@ -193,8 +193,8 @@ def test_deck_assembler_dedupes_theme_inside_slide(mock_compile):
     assert "Slide 1" in compiled_xml and "Slide 2" in compiled_xml
 
 
-@patch("src.agents.deck_nodes.merge_pptx_files")
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.generation.deck_nodes.merge_pptx_files")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_deck_assembler_falls_back_to_zip_merge(mock_compile, mock_merge):
     mock_compile.return_value = {
         "ok": False, "pptx_path": None,
@@ -209,7 +209,7 @@ def test_deck_assembler_falls_back_to_zip_merge(mock_compile, mock_merge):
         {"slide_index": 1, "xml": _SLIDE_XML_2, "compile_ok": True, "pptx_path": "/tmp/s1.pptx"},
     ]
 
-    with patch("src.agents.deck_nodes.Path.exists", return_value=True):
+    with patch("src.agents.generation.deck_nodes.Path.exists", return_value=True):
         result = deck_assembler_node(state)
 
     assert mock_merge.call_count == 1
@@ -217,8 +217,8 @@ def test_deck_assembler_falls_back_to_zip_merge(mock_compile, mock_merge):
     assert result["pptx_path"] == "/tmp/merged.pptx"
 
 
-@patch("src.agents.deck_nodes.merge_pptx_files")
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.generation.deck_nodes.merge_pptx_files")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_deck_assembler_zip_merge_also_fails(mock_compile, mock_merge):
     mock_compile.return_value = {
         "ok": False, "pptx_path": None,
@@ -232,7 +232,7 @@ def test_deck_assembler_zip_merge_also_fails(mock_compile, mock_merge):
         {"slide_index": 0, "xml": _SLIDE_XML_1, "compile_ok": True, "pptx_path": "/tmp/s0.pptx"},
     ]
 
-    with patch("src.agents.deck_nodes.Path.exists", return_value=True):
+    with patch("src.agents.generation.deck_nodes.Path.exists", return_value=True):
         result = deck_assembler_node(state)
 
     assert result["compile_result"]["ok"] is False
@@ -246,7 +246,7 @@ def test_deck_assembler_no_slides():
     assert result["compile_result"]["ok"] is False
 
 
-@patch("src.agents.deck_nodes.compile_xml")
+@patch("src.agents.generation.deck_nodes.compile_xml")
 def test_deck_assembler_sorts_by_index(mock_compile):
     mock_compile.return_value = {
         "ok": True, "pptx_path": "/tmp/deck.pptx",

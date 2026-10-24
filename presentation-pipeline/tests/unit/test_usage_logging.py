@@ -3,8 +3,8 @@
 import json
 from unittest.mock import MagicMock, patch
 
-from src.agents.evaluator import _build_step_summary
-from src.agents.generator import generator_node
+from src.agents.review.evaluator import _build_step_summary
+from src.agents.generation.generator import generator_node
 from src.state import initial_state
 from src.utils.llm_client import extract_usage, unpack_raw, usage_record
 
@@ -55,7 +55,7 @@ def test_usage_record_names_step_and_slide():
     assert usage_record(usage, "outline_planner")["slide_index"] is None
 
 
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.generation.generator.get_llm")
 def test_generator_record_carries_step_slide_and_tokens(mock_get_llm):
     mock_get_llm.return_value.invoke.return_value = _response(prompt=500, completion=200, reasoning=0, cached=128,
                                                               model="gpt-4.1")

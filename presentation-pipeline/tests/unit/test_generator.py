@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock, patch
 
-from src.agents.generator import generator_node, _render_prompts
+from src.agents.generation.generator import generator_node, _render_prompts
 from src.state import initial_state
 
 
@@ -96,7 +96,7 @@ def test_render_prompts_empty_contract():
 
 # ── LLM call ──────────────────────────────────────────────────────────────
 
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.generation.generator.get_llm")
 def test_generator_calls_llm_and_returns_xml(mock_get_llm):
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>Hello</Text></VStack></Slide>'
@@ -123,7 +123,7 @@ def test_generator_calls_llm_and_returns_xml(mock_get_llm):
     assert record["truncated"] is False
 
 
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.generation.generator.get_llm")
 def test_generator_flags_truncation(mock_get_llm):
     mock_response = MagicMock()
     mock_response.content = '<Theme />\n<Slide><VStack><Text>cut o'
@@ -141,7 +141,7 @@ def test_generator_flags_truncation(mock_get_llm):
     assert result["generation_history"][0]["truncated"] is True
 
 
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.generation.generator.get_llm")
 def test_generator_records_retry_attempt(mock_get_llm):
     mock_response = MagicMock()
     mock_response.content = '<Slide><VStack><Text>Fixed</Text></VStack></Slide>'
@@ -161,7 +161,7 @@ def test_generator_records_retry_attempt(mock_get_llm):
     assert record["tier"] == 1
 
 
-@patch("src.agents.generator.get_llm")
+@patch("src.agents.generation.generator.get_llm")
 def test_generator_handles_missing_token_usage(mock_get_llm):
     mock_response = MagicMock()
     mock_response.content = '<Slide><Text>OK</Text></Slide>'

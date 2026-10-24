@@ -17,13 +17,13 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.elicitor_schema import ElicitorOutput
+from src.agents.schemas.elicitor_schema import ElicitorOutput
 from src.state import PresentationState
 from src.utils.llm_client import get_llm, unpack_raw, usage_record
 
 logger = logging.getLogger(__name__)
 
-_PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "elicitor"
+_PROMPTS_DIR = Path(__file__).resolve().parents[2] / "prompts" / "elicitor"
 _jinja_env = Environment(
     loader=FileSystemLoader(str(_PROMPTS_DIR)),
     trim_blocks=True,

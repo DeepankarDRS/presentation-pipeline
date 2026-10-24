@@ -4,13 +4,13 @@ import copy
 import json
 from unittest.mock import MagicMock, patch
 
-from src.agents import slide_component_planner as scp
-from src.agents.plan_checks import (
+from src.agents.planning import slide_component_planner as scp
+from src.agents.planning.plan_checks import (
     PLAN_DUPLICATE_ITEMS, PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, SLIDE_SPARSE,
     find_problems, finalize_plan, is_instruction_text, label_overlap, reask_context, tones_from_hint,
 )
-from src.agents.planner_schema import PlannerSlide
-from src.agents.written_lines import drop_repeated_bodies
+from src.agents.schemas.planner_schema import PlannerSlide
+from src.agents.planning.written_lines import drop_repeated_bodies
 
 BRIEF = "Q3 review. ARR $48.2M. Close 3 enterprise logos. Ship analytics v2 before the board meeting."
 
@@ -361,7 +361,7 @@ def test_finalize_takes_hint_tones_only_when_the_planner_wrote_none_and_says_so(
 
 def test_the_planner_prompt_asks_for_kpi_tones_by_meaning():
     from pathlib import Path
-    text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
+    text = (Path(scp.__file__).resolve().parents[2] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
     assert '"kpi_tones": ["good", "good", "bad"]' in text and "not which way it moved" in text
     assert "kpi_tones" in PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
 
@@ -409,7 +409,7 @@ def test_focus_card_singles_out_its_card_before_the_hint():
 
 def test_the_planner_prompt_asks_for_card_tones_phrases_and_focus():
     from pathlib import Path
-    text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
+    text = (Path(scp.__file__).resolve().parents[2] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
     assert '"focus_card": 4' in text and "key_phrase (card_grid" in text and "tone (card_grid)" in text
     desc = PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
     assert "focus_card" in desc and "key_phrase" in desc and '\\"tone\\"' not in desc and '"tone"' in desc
@@ -447,7 +447,7 @@ def test_an_unreadable_content_data_json_logs_its_start_and_the_text_near_the_er
 
 
 def test_a_title_only_card_whose_line_the_brief_gives_is_re_asked():
-    from src.agents.plan_checks import CARD_LINES_DROPPED, find_problems, reask_context
+    from src.agents.planning.plan_checks import CARD_LINES_DROPPED, find_problems, reask_context
     brief = ("Key messages:\n1. Stand-up (09:00-09:30): the board is reviewed live with the whole team\n"
              "2. Late fixes - urgent edits from mobile, the fastest-growing moment\n* Hand-off")
     c = comp("moments", "card_grid", {"card_layout": "grid", "cards": [

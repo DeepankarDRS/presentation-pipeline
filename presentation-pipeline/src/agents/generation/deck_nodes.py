@@ -25,7 +25,7 @@ from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
 
-_PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
+_PIPELINE_ROOT = Path(__file__).resolve().parents[3]
 
 
 def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> tuple[str, int]:

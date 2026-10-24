@@ -87,7 +87,7 @@ generator → validator
 
 ## Strategy Decision: Compile Repairer
 
-The main repairer (`src/agents/repairer.py`) picks PATCH or REGENERATE
+The main repairer (`src/agents/generation/repairer.py`) picks PATCH or REGENERATE
 via `_choose_strategy()`:
 
 | Condition | Strategy |
@@ -106,7 +106,7 @@ back to PATCH.
 
 ## Strategy Decision: Visual Repairer
 
-The visual repairer (`src/agents/visual_repairer.py`) respects the
+The visual repairer (`src/agents/review/visual_repairer.py`) respects the
 critic's `repair_hints.strategy` directly:
 
 | Critic says | Visual repairer does |
@@ -166,8 +166,8 @@ Both budgets are set in `initial_state()` and passed through the API.
 | File | Change |
 |---|---|
 | `src/state.py` | Added `visual_repair_budget` (default 1) and `visual_repair_count` fields |
-| `src/agents/visual_repairer.py` | **New.** One-shot PATCH or REGENERATE node with compile-check and discard-on-fail |
-| `src/agents/validator.py` | Added `normalize_and_compile()` helper for quick compile verification |
+| `src/agents/review/visual_repairer.py` | **New.** One-shot PATCH or REGENERATE node with compile-check and discard-on-fail |
+| `src/agents/generation/validator.py` | Added `normalize_and_compile()` helper for quick compile verification |
 | `src/graph.py` | Added `visual_repairer_node`, `route_after_critic` routes to it instead of main repairer |
-| `src/agents/slide_edit_service.py` | Threaded `visual_issues` through `_call_repair_llm` → `build_patch_prompts` |
+| `src/services/slide_edit_service.py` | Threaded `visual_issues` through `_call_repair_llm` → `build_patch_prompts` |
 | `tests/unit/test_graph.py` | Updated routing tests for split-budget behavior |

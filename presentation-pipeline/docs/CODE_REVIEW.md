@@ -67,7 +67,7 @@ table in `CODE_FLOW.md §6`).
    the pass after a REGENERATE is a PATCH cleanup.
 7. **Dark-theme chart axis bug** — POM v10.3.0 hardcodes chart axis text to black;
    `context_builder` injects a "wrap `<Chart>` in `$chartSurface` VStack" note only
-   for dark palettes. ([`context_builder.py:288-293`](src/agents/context_builder.py))
+   for dark palettes. ([`context_builder.py:288-293`](src/agents/generation/context_builder.py))
 8. **Unstyled table cells** — POM emits no fill so PowerPoint's white default takes
    over; contract forces explicit `backgroundColor`+`color` on every `<Td>`.
 9. **Token budget** — tiered prompt assembly keeps maximal-density under the ~6K
@@ -88,7 +88,7 @@ Ranked. Severity = impact × likelihood.
 ### 1. Deck mode silently ignores the critic in the final verdict
 Per-slide flow is `critic_node` (writes `critic_result`) → `route_after_critic` →
 `slide_router`, and `slide_router` **resets `critic_result` to `None`**
-([`deck_nodes.py:45`](src/agents/deck_nodes.py)). After the loop, `deck_assembler`
+([`deck_nodes.py:45`](src/agents/generation/deck_nodes.py)). After the loop, `deck_assembler`
 never sets it. So in `evaluator`:
 ```python
 critic_ok = critic_result.get("passed", True)   # → True, always, in deck mode
@@ -123,7 +123,7 @@ _Original finding:_
 But `prev_sigs` is reconstructed from `generation_history[].errors_in`, which
 `_collect_problems` stored as `"<type>: <message>"` strings, then re-parsed as
 `{"code": e.split(":")[0], "message": e}` and passed to `error_signatures` **as
-`pre_issues`** ([`repairer.py:174-177`](src/agents/repairer.py)). So a compile
+`pre_issues`** ([`repairer.py:174-177`](src/agents/generation/repairer.py)). So a compile
 error that recurs identically produces `COMPILE:UNKNOWN_TAG:...` this round and
 `UNKNOWN_TAG:div` (or a `:msg[:40]` fallback) from last round — **they never
 match**, overlap ratio stays low, `is_stalled` returns `False`. Consequence: tier
@@ -174,7 +174,7 @@ supports it) or re-inject per slide during assembly.
 
 ### 6. Visual critic is fail-open on a fragile path
 `_run_visual_review` returns `[]` if the screenshot fails or the vision LLM errors
-([`critic.py:34-51`](src/agents/critic.py)). A backend that consistently fails to
+([`critic.py:34-51`](src/agents/review/critic.py)). A backend that consistently fails to
 render screenshots makes the critic a silent no-op — `passed` degrades to "did it
 compile". At minimum log this at `error` with a run-level counter and surface
 "critic degraded" in the manifest.
@@ -183,7 +183,7 @@ compile". At minimum log this at `error` with a run-level counter and surface
 `planner._enforce_layout_variety` swaps `layout_pattern` on adjacent duplicate
 slides ([`planner.py:111-130`](src/agents/planner.py)). But `context_builder.build_contract`
 **recomputes `layout_pattern` from component kinds** via `_select_layout` and puts
-*that* in the contract ([`context_builder.py:435`](src/agents/context_builder.py)).
+*that* in the contract ([`context_builder.py:435`](src/agents/generation/context_builder.py)).
 The generator's system prompt gets the recomputed one; the plan's
 `layout_pattern` reaches the generator only indirectly through the freeform
 `layout_hint`. So two adjacent chart-slides still get the same layout skeleton.
@@ -211,7 +211,7 @@ user/sample tally is `0/0` for those runs and the critic can't check "supplied
 values present" against provenance.
 
 ### 10. `_build_default_plan` produces an under-specified plan
-[`context_builder.py:460-498`](src/agents/context_builder.py) — no `slide_type`, no
+[`context_builder.py:460-498`](src/agents/generation/context_builder.py) — no `slide_type`, no
 `content_data`, `slide_index=0` hardcoded, `count=1` for every component (ignores
 "4 KPIs" in the request). The generator then gets `slide_type=""`. The non-planner
 path is a second-class citizen.
@@ -234,7 +234,7 @@ is order-dependent on a `set()` → nondeterministic.
 
 ### 13. `deck_assembler` theme/slide extraction is regex on untrusted LLM output
 `_extract_slide_block` = `<Slide\b[^>]*>.*?</Slide>` with `DOTALL` + non-greedy
-([`deck_nodes.py:61`](src/agents/deck_nodes.py)). Fails on: a slide with no closing
+([`deck_nodes.py:61`](src/agents/generation/deck_nodes.py)). Fails on: a slide with no closing
 tag, `<Slide/>` self-closed, or (non-greedy) stops at the first `</Slide>` which is
 fine unless a slide legitimately contains the substring. A dropped slide only logs
 a warning — the deck silently ships with fewer slides than planned, and `evaluator`
@@ -280,7 +280,7 @@ Same `budget/count/_slide_done_target` block copy-pasted
 helper would remove the risk of them drifting.
 
 ### 20. `resolve_theme` special-cases `"corporate-slate"` by string
-[`style_resolver.py:64`](src/agents/style_resolver.py) — `if not theme_name or
+[`style_resolver.py:64`](src/agents/planning/style_resolver.py) — `if not theme_name or
 theme_name == "corporate-slate": return DEFAULT_THEME`. If `palettes.yaml` ever
 defines `corporate-slate` with different tokens, the hardcoded `DEFAULT_THEME`
 wins and diverges silently.

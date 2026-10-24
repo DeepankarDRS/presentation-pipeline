@@ -20,7 +20,7 @@ from src.state import PresentationState
 logger = logging.getLogger(__name__)
 
 _PALETTES_PATH = (
-    Path(__file__).resolve().parent.parent / "knowledge" / "theme" / "palettes.yaml"
+    Path(__file__).resolve().parents[2] / "knowledge" / "theme" / "palettes.yaml"
 )
 
 _QUESTIONS: list[dict[str, Any]] = [

@@ -35,7 +35,7 @@ os.environ["POM_BLOCKS"] = "tiles"
 from scripts.experiments.cards import card_replay as R  # noqa: E402
 from scripts.experiments.kpi.kpi_paid import REF_CODES, _FakeLLM, run_one  # noqa: E402
 from scripts.experiments.kpi.kpi_replay import score  # noqa: E402
-from src.agents.style_resolver import resolve_theme  # noqa: E402
+from src.agents.planning.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.nodes import cards as C  # noqa: E402
 
 INPUTS = ROOT / "docs" / "eval" / "card-nodes" / "paid-inputs.json"
@@ -89,7 +89,7 @@ def run(label: str, repeat: int, plans: str | None, dry: bool = False) -> None:
             print(f"run {name} r{r} ...", flush=True)
             try:
                 if dry:   # the LLM's saved slide with its cards as bare tags (card_replay), answered by a fake generator
-                    from src.agents import generator
+                    from src.agents.generation import generator
                     root = R._parse(it["xml_today"])
                     for comp in C.card_components(plan).values():
                         R.rewrite_component(root, comp)

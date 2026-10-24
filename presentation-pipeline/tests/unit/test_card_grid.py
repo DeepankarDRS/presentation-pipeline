@@ -7,10 +7,10 @@ recipe, so moments / pillars / phases / impact areas rendered as half-empty icon
 
 import json
 
-from src.agents.context_builder import _recipe_kind, _render_component_recipes
-from src.agents.hint_capabilities import hint_scopes, planner_capabilities_section
-from src.agents.planner_schema import PlannerComponent
-from src.agents.slide_component_planner import _jinja_env
+from src.agents.generation.context_builder import _recipe_kind, _render_component_recipes
+from src.agents.planning.hint_capabilities import hint_scopes, planner_capabilities_section
+from src.agents.schemas.planner_schema import PlannerComponent
+from src.agents.planning.slide_component_planner import _jinja_env
 
 
 def _prompt() -> str:

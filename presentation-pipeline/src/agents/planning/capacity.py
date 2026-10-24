@@ -14,7 +14,7 @@ from typing import Any
 
 import yaml
 
-_CAPACITY_FILE = Path(__file__).resolve().parent.parent / "knowledge" / "core" / "capacity.yaml"
+_CAPACITY_FILE = Path(__file__).resolve().parents[2] / "knowledge" / "core" / "capacity.yaml"
 
 
 @functools.lru_cache(maxsize=1)

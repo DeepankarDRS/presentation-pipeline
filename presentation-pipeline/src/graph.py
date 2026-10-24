@@ -46,24 +46,24 @@ load_dotenv()
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
-from src.agents.context_builder import context_builder_node
-from src.agents.critic import critic_node
-from src.agents.deck_nodes import deck_assembler_node, slide_router_node
-from src.agents.elicitor import elicitor_node
-from src.agents.evaluator import evaluator_node
-from src.agents.generator import generator_node
-from src.agents.outline_planner import outline_planner_node
-from src.agents.plan_reviewer import plan_reviewer_node
-from src.agents.questionnaire import questionnaire_node
-from src.agents.repairer import repairer_node
-from src.agents.visual_repairer import visual_repairer_node
-from src.agents.slide_component_planner import (
+from src.agents.generation.context_builder import context_builder_node
+from src.agents.review.critic import critic_node
+from src.agents.generation.deck_nodes import deck_assembler_node, slide_router_node
+from src.agents.planning.elicitor import elicitor_node
+from src.agents.review.evaluator import evaluator_node
+from src.agents.generation.generator import generator_node
+from src.agents.planning.outline_planner import outline_planner_node
+from src.agents.planning.plan_reviewer import plan_reviewer_node
+from src.agents.planning.questionnaire import questionnaire_node
+from src.agents.generation.repairer import repairer_node
+from src.agents.review.visual_repairer import visual_repairer_node
+from src.agents.planning.slide_component_planner import (
     SERIALIZE_SLIDES,
     slide_component_planner_node,
     slide_plan_serial_node,
 )
-from src.agents.style_resolver import style_resolver_node
-from src.agents.validator import normalize_and_compile, validator_node
+from src.agents.planning.style_resolver import style_resolver_node
+from src.agents.generation.validator import normalize_and_compile, validator_node
 from src.state import DeckPlan, PresentationState, SlidePlan, initial_state
 
 logger = logging.getLogger(__name__)

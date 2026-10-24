@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
+from src.agents.planning.style_resolver import DEFAULT_THEME, resolve_theme
 from src.compiler.palette_tokens import (
     DERIVED_KEYS, STATUS_ROLES, TEXT_MIN, contrast, derive_tokens,
 )

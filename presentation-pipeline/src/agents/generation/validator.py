@@ -49,7 +49,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         }
 
     run_id = state.get("run_id", "unknown")
-    _pipeline_root = Path(__file__).resolve().parent.parent.parent
+    _pipeline_root = Path(__file__).resolve().parents[3]
     output_dir = _pipeline_root / "output" / "runs" / run_id
     slide_plans = state.get("slide_plans", [])
     if len(slide_plans) > 1:

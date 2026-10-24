@@ -1,6 +1,6 @@
 # Planner output schema for a reasoning model (2026-10-15)
 
-**Question.** The slide component planner (`src/agents/slide_component_planner.py`, gpt-5-mini, reasoning effort
+**Question.** The slide component planner (`src/agents/planning/slide_component_planner.py`, gpt-5-mini, reasoning effort
 medium, `max_tokens` 24000) returns `PlannerSlide` through langchain `with_structured_output(method="json_schema")`.
 Each component carries its content as `content_data_json: str`, JSON written inside a string. On a reasoning model
 that string is sometimes unreadable. Which output schema should replace it, so content is a typed object?
@@ -8,7 +8,7 @@ that string is sometimes unreadable. Which output schema should replace it, so c
 **Answer (recommendation).** Candidate **B, "union"**: `components` is a list of one component model per kind
 (JSON-schema `anyOf` of 15 objects, each starting `component_id`, `kind` const), each with only the fields its kind
 uses and a typed `content` whose keys are today's content_data keys. Built behind `PLANNER_SCHEMA=typed`
-(`src/agents/planner_schema_typed.py`); the string path stays the default until the paid check below passes.
+(`src/agents/schemas/planner_schema_typed.py`); the string path stays the default until the paid check below passes.
 Offline it passes every documented strict-mode rule, round-trips 99.6% of saved non-layer components unchanged,
 and writes **13% fewer output tokens** than today's string form. Its cost is a larger schema: +3.6k input tokens a
 call (about +28% of the planner's 12.9k input; part of the cached prefix).
@@ -96,7 +96,7 @@ flags); typed content → `content_data_of` → the same dict.
 | **superset** (C) | today's flat component + one `content` object with every kind's keys, all nullable | every key of every kind, mostly null |
 | two-step (D) | plan kinds first, then one call per component for its content | not built: 2–4× the calls and latency, and the slide-level fidelity rules (each number once across components) span components |
 
-Per-kind content (`src/agents/planner_schema_typed.py`): title `{title, subtitle?}`; narrative / caption `{text}`;
+Per-kind content (`src/agents/schemas/planner_schema_typed.py`): title `{title, subtitle?}`; narrative / caption `{text}`;
 kpi_row `{kpi_labels, kpi_values, kpi_deltas?, kpi_directions? ("" up down neutral), kpi_tones? (good bad watch ""),
 kpi_icons?}`; chart `{chart_title?, chart_labels, chart_values?, chart_series? [{name, values}]}` (values: number or
 the brief's own text such as `"₹8.2"`, which the chart node already parses; the type is the component's
@@ -159,9 +159,9 @@ after 1139 pass, the same 4 known failures.
 
 ## 6. Chosen design and how it is wired
 
-- `src/agents/planner_schema_typed.py`: content models, `COMPONENT_BY_KIND` (built with `create_model` so
+- `src/agents/schemas/planner_schema_typed.py`: content models, `COMPONENT_BY_KIND` (built with `create_model` so
   `component_id`, `kind` come first), `PlannerSlideTyped`, `content_data_of` / `content_from_data`.
-- `src/agents/slide_component_planner.py`: `planner_schema()` reads `PLANNER_SCHEMA` per call (`string` default,
+- `src/agents/planning/slide_component_planner.py`: `planner_schema()` reads `PLANNER_SCHEMA` per call (`string` default,
   `typed`); `plan_single_slide` picks the model and renders both prompts with `content_field` ("content" or
   "content_data_json"); `_planner_slide_to_state` takes either reply (typed: `content_data_of`, no parse step), then
   the same `clean_data`, `_settle_chart_type`, capacity, written-line and plan checks. The repairer, visual repairer

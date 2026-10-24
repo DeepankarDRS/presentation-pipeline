@@ -91,7 +91,7 @@ def self_drawn(comp: dict) -> bool:
 def render_prompts(plan: dict, contract: dict, *, raw_request: str = "", core_hook: str = "") -> tuple[str, str]:
     """(system, user) for the node arm: the generator's system prompt with the node rules in place of
     the recipes and visual-intent section, and nodes_user.j2 with one line per component."""
-    from src.agents.generator import _jinja_env
+    from src.agents.generation.generator import _jinja_env
 
     system = _jinja_env.get_template("system.j2").render(
         forbidden_tags=contract.get("forbidden_tags", []),

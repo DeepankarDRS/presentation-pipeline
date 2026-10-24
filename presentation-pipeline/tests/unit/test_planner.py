@@ -10,12 +10,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.agents.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
-from src.agents.plan_reviewer_schema import PlanReviewerOutput, PlanReviewIssue
-from src.agents.planner_schema import PlannerComponent, PlannerSlide
-from src.agents.outline_planner import stated_slide_count
-from src.agents.settings_mapper import compute_provenance, settings_to_constraints, DeckSettings
-from src.agents.slide_component_planner import _planner_slide_to_state
+from src.agents.schemas.outline_planner_schema import OutlinePlannerOutput, OutlineSlide
+from src.agents.schemas.plan_reviewer_schema import PlanReviewerOutput, PlanReviewIssue
+from src.agents.schemas.planner_schema import PlannerComponent, PlannerSlide
+from src.agents.planning.outline_planner import stated_slide_count
+from src.agents.planning.settings_mapper import compute_provenance, settings_to_constraints, DeckSettings
+from src.agents.planning.slide_component_planner import _planner_slide_to_state
 from src.state import SlidePlan, initial_state
 
 
@@ -196,7 +196,7 @@ def test_planner_slide_to_state_copies_design_hint():
 
 # ── outline_planner_node tests (mocked LLM) ────────────────────────────────
 
-@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.planning.outline_planner.get_llm")
 def test_outline_planner_single_slide(mock_get_llm):
     output = _mock_outline_output(
         {"slide_title": "Company Overview", "key_messages": ["We are great"]},
@@ -213,7 +213,7 @@ def test_outline_planner_single_slide(mock_get_llm):
     assert outline["slides"][0]["key_messages"] == ["We are great"]
 
 
-@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.planning.outline_planner.get_llm")
 def test_outline_planner_multi_slide(mock_get_llm):
     output = _mock_outline_output(
         {"slide_title": "Cover", "key_messages": ["Welcome"]},
@@ -231,7 +231,7 @@ def test_outline_planner_multi_slide(mock_get_llm):
     assert outline["slides"][2]["key_messages"] == ["ARR grew 140% YoY to $12M"]
 
 
-@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.planning.outline_planner.get_llm")
 def test_outline_planner_with_deck_settings(mock_get_llm):
     output = _mock_outline_output(
         {"slide_title": "Cover", "key_messages": ["Board update Q3"]},
@@ -273,7 +273,7 @@ def test_stated_slide_count(request_text, expected):
     assert stated_slide_count(request_text) == expected
 
 
-@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.planning.outline_planner.get_llm")
 def test_outline_planner_slide_count_from_request(mock_get_llm):
     mock_get_llm.return_value = _make_structured_llm(_mock_outline_output({}))
     state = initial_state(run_id="op4", raw_request="Create a 5-slide QBR deck")  # settings default = 8
@@ -283,7 +283,7 @@ def test_outline_planner_slide_count_from_request(mock_get_llm):
     assert "EXACTLY 5 slides" in prompt
 
 
-@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.planning.outline_planner.get_llm")
 def test_outline_planner_test_case_count_wins(mock_get_llm):
     mock_get_llm.return_value = _make_structured_llm(_mock_outline_output({}))
     state = initial_state(run_id="op5", raw_request="Create a 5-slide QBR deck")
@@ -292,7 +292,7 @@ def test_outline_planner_test_case_count_wins(mock_get_llm):
     assert "TARGET DECK SIZE: 7 slides." in _captured_user_prompt(mock_get_llm)
 
 
-@patch("src.agents.outline_planner.get_llm")
+@patch("src.agents.planning.outline_planner.get_llm")
 def test_outline_planner_header_reaches_slide_plan(mock_get_llm):
     output = OutlinePlannerOutput(deck_title="D", core_hook="H", slides=[OutlineSlide(
         slide_index=0, label="PLATFORM DEEP-DIVE", slide_title="Search carries sales",
@@ -327,7 +327,7 @@ def test_outline_prompts_have_no_invention_lines():
 
 
 def test_generator_prompts_draw_the_planned_header_and_invent_nothing():
-    from src.agents.generator import _render_prompts
+    from src.agents.generation.generator import _render_prompts
     plan = {"slide_title": "Search carries sales", "label": "DEEP-DIVE", "subtitle": "₹1.32 Cr · 6.35x",
             "slide_type": "data", "components": [{"kind": "table", "component_id": "t", "count": 1}]}
     for content_data in ({}, {"x": "1"}):
@@ -420,7 +420,7 @@ def test_settings_to_constraints_extensive():
 
 
 # Local import needed for the outline node tests
-from src.agents.outline_planner import outline_planner_node
+from src.agents.planning.outline_planner import outline_planner_node
 
 
 def test_planner_temperatures_are_low():
@@ -433,8 +433,8 @@ def test_planner_temperatures_are_low():
 
 def test_slide_planner_prompt_examples_by_shape():
     """§9.1 planners 13, 15, 16 — and the matrix routing fix (f51c3f6) stays."""
-    from src.agents.hint_capabilities import planner_capabilities_section
-    from src.agents.slide_component_planner import _jinja_env
+    from src.agents.planning.hint_capabilities import planner_capabilities_section
+    from src.agents.planning.slide_component_planner import _jinja_env
     prompt = _jinja_env.get_template("system.j2").render(hint_capabilities=planner_capabilities_section())
     assert "Source: Company" not in prompt                       # 13: no dated source example
     assert "Match Type Performance" not in prompt                # 15: examples outside the ad domain
@@ -447,7 +447,7 @@ def test_slide_planner_prompt_examples_by_shape():
 def test_planner_prompt_lets_a_slide_group_its_numbers_into_several_kpi_rows():
     """User 2026-10-12: variety from the plan (q1008 CHEFFIN 1: a hero row of 3 + a callout pair of 2 won the
     blind marks over one row of 5); grouping by role, never by count."""
-    from src.agents import slide_component_planner as P
+    from src.agents.planning import slide_component_planner as P
     text = P._jinja_env.get_template("system.j2").render(hint_capabilities=P.planner_capabilities_section())
     assert "Grouping a slide's numbers" in text and "never by count" in text
     assert "more metrics → a second kpi_row" not in text

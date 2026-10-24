@@ -130,7 +130,7 @@ def clean(raw: str) -> str:
 
 
 def compile_slide(xml: str, theme_element: str, out: Path, fit_grow: bool) -> dict:
-    from src.agents.validator import normalize_and_compile
+    from src.agents.generation.validator import normalize_and_compile
     body = xml if fit_grow else "<!-- fit-grow: off -->\n" + xml
     ok, cr = normalize_and_compile(body, theme_element, out)
     cr = dict(cr)
@@ -139,7 +139,7 @@ def compile_slide(xml: str, theme_element: str, out: Path, fit_grow: bool) -> di
 
 
 def _cost(usage: dict) -> float:
-    from src.agents.evaluator import _compute_cost
+    from src.agents.review.evaluator import _compute_cost
     if usage.get("model") in ("mechanical", "scripted"):
         return 0.0
     return _compute_cost(usage.get("tokens_in", 0), usage.get("tokens_out", 0), usage.get("model", ""), usage.get("tokens_cached", 0))
@@ -147,7 +147,7 @@ def _cost(usage: dict) -> float:
 
 def run_slide(run: dict, slide: dict, llm, measure: Measurer, out: Path, font: str | None, fit_grow: bool,
               calls: list[dict], repairs: int = MAX_REPAIRS) -> dict:
-    from src.agents.context_builder import build_contract
+    from src.agents.generation.context_builder import build_contract
     from src.compiler.nodes.prompt_lines import render_prompts
     from src.compiler.nodes.validate import repair_note
 

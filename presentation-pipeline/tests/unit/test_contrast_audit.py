@@ -52,7 +52,7 @@ def test_low_contrast_is_report_only_for_the_critic(monkeypatch, tmp_path):
     """Recorded for the eval score, never passed to the critic (no recolouring repairs)."""
     from types import SimpleNamespace
 
-    from src.agents import critic
+    from src.agents.review import critic
 
     seen = {}
 

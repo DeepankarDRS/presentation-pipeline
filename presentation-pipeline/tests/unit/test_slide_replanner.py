@@ -2,7 +2,7 @@
 
 from unittest.mock import patch
 
-from src.agents.slide_replanner import resolve_slide_plan
+from src.agents.planning.slide_replanner import resolve_slide_plan
 
 _THEME_INFO = {
     "name": "corporate-slate", "mode": "light", "is_dark": False,
@@ -41,7 +41,7 @@ def test_resolve_slide_plan_empty_theme_info_returns_empty_contract():
 
 # ── Tier 0 — no new component kind, reuse existing plan ────────────────────
 
-@patch("src.agents.slide_replanner.plan_single_slide")
+@patch("src.agents.planning.slide_replanner.plan_single_slide")
 def test_tier0_no_new_kind_skips_replan(mock_plan_single_slide):
     plan = _slide_plan()
     updated_plan, contract = resolve_slide_plan(plan, "make the title bigger", _THEME_INFO, "run-1")
@@ -51,7 +51,7 @@ def test_tier0_no_new_kind_skips_replan(mock_plan_single_slide):
     assert "Slide" in contract["allowed_nodes"]
 
 
-@patch("src.agents.slide_replanner.plan_single_slide")
+@patch("src.agents.planning.slide_replanner.plan_single_slide")
 def test_tier0_removal_feedback_skips_replan(mock_plan_single_slide):
     """Feedback that only mentions kinds already on the slide never triggers a replan."""
     plan = _slide_plan(components=[{"kind": "title"}, {"kind": "bullet_list"}])
@@ -63,7 +63,7 @@ def test_tier0_removal_feedback_skips_replan(mock_plan_single_slide):
 
 # ── Tier 2 — new component kind triggers a scoped replan ───────────────────
 
-@patch("src.agents.slide_replanner.plan_single_slide")
+@patch("src.agents.planning.slide_replanner.plan_single_slide")
 def test_tier2_new_kind_triggers_replan(mock_plan_single_slide):
     plan = _slide_plan()
     replanned_slide = {
@@ -92,7 +92,7 @@ def test_tier2_new_kind_triggers_replan(mock_plan_single_slide):
     assert "HStack" in contract["allowed_nodes"]  # but its underlying nodes are included
 
 
-@patch("src.agents.slide_replanner.plan_single_slide")
+@patch("src.agents.planning.slide_replanner.plan_single_slide")
 def test_tier2_passes_prior_plan_and_feedback_to_state(mock_plan_single_slide):
     plan = _slide_plan()
     mock_plan_single_slide.return_value = dict(plan, slide_index=0)

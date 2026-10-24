@@ -18,7 +18,7 @@ def _flat(text: str) -> str:
 
 
 def _planner_prompt() -> str:
-    from src.agents.slide_component_planner import _jinja_env
+    from src.agents.planning.slide_component_planner import _jinja_env
     return _flat(_jinja_env.get_template("system.j2").render(content_field="content_data_json"))
 
 
@@ -58,7 +58,7 @@ def test_every_line_diagram_says_which_box_its_direction_needs():
 
 
 def test_critic_flags_a_diagram_without_its_space_and_never_lays_it_out():
-    from src.agents.visual_critic import _jinja_env
+    from src.agents.review.visual_critic import _jinja_env
     text = _flat(_jinja_env.get_template("system.j2").render(slide_type="content"))
     rule = re.search(r"\*\*Diagram without its space\*\*:(.*?)- \*\*Parallel items", text).group(1)
     assert "wrong direction or too little space" in rule

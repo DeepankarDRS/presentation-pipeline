@@ -28,7 +28,7 @@ and code fixes before any LLM round.
 | `src/node/geometry.js` | runs POM's own per-slide path (`autoFitSlide` → `toPositioned`, same fonts) and writes `geometry.json`: every box POM draws into, with tag, path, id, card frame |
 | `src/node/compile-pom.js` | writes `geometry.json` after the build (`POM_GEOMETRY=0` turns it off; never fatal). Also: `process.exitCode` instead of `process.exit()` at the end — the extra layout pass made Node crash at exit on Windows (`UV_HANDLE_CLOSING`) in about 1 of 3 runs |
 | `src/compiler/geometry_audit.py` | reads every drawn shape in the `.pptx` (a table = sum of its rows × sum of its columns; a text that clearly needs more lines = its estimated height), gives it to the component box it overlaps most, and checks the rules below |
-| `src/agents/validator.py` | adds the findings to `layout_issues` after a successful compile (cover / section / closing slides skip `GEOM_SLIDE_SPARSE`) |
+| `src/agents/generation/validator.py` | adds the findings to `layout_issues` after a successful compile (cover / section / closing slides skip `GEOM_SLIDE_SPARSE`) |
 | `layout_audit.REPORT_ONLY_CODES` | all `GEOM_*` codes: the critic never sees them, no repair is triggered; the eval counts them in `layout_codes` |
 | `scripts/eval/geometry_replay.py` | LLM-free replay of saved slides (`--reaudit` re-checks without compiling) |
 
@@ -153,7 +153,7 @@ stays at 7: KPI tiles stretched by a growing band, numbers already width-bound (
 in a ~280 px tile). Not shrinking them is the user's rule; the cause is upstream (which band gets `grow`:
 the normalizer's `GROW_BAND_ADDED` or the generator) — a decision for the user.
 
-**Visual critic** (`src/agents/critic.py`, `visual_critic.py`, `prompts/visual_critic/`):
+**Visual critic** (`src/agents/review/critic.py`, `visual_critic.py`, `prompts/visual_critic/`):
 - gets the **fitted XML** (what the screenshot shows), not the pre-fit XML;
 - sees geometry **warnings** (borderline 4-10 px) to confirm on the screenshot; errors and fill findings are not
   sent (code fixes them / they are code's) — `critic_layout_issues`;

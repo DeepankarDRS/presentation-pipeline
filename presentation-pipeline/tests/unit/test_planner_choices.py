@@ -6,11 +6,11 @@ import json
 
 import pytest
 
-from src.agents.plan_checks import (
+from src.agents.planning.plan_checks import (
     CARDS_TO_LIST, CARD_LINES_DROPPED, DENSE_REST_WORDS, cards_to_list, find_problems, finalize_plan,
 )
-from src.agents.slide_component_planner import brief_text_for, parse_content_data
-from src.agents.written_lines import content_line_list, settle_direction_lines, visual_directions
+from src.agents.planning.slide_component_planner import brief_text_for, parse_content_data
+from src.agents.planning.written_lines import content_line_list, settle_direction_lines, visual_directions
 
 
 def comp(cid, kind, data, weight="peer"):

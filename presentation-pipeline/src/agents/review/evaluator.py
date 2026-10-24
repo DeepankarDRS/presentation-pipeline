@@ -29,7 +29,7 @@ from src.utils.llm_client import get_pricing
 
 logger = logging.getLogger(__name__)
 
-_PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
+_PIPELINE_ROOT = Path(__file__).resolve().parents[3]
 
 
 def _compute_cost(tokens_in: int, tokens_out: int, model: str, tokens_cached: int = 0) -> float:

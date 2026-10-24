@@ -70,8 +70,8 @@ def test_layout_attributes_go_on_the_chart_box():
 def test_all_native_kinds_compile_on_one_slide(tmp_path):
     if not shutil.which("node"):
         pytest.skip("node not installed")
-    from src.agents.style_resolver import resolve_theme
-    from src.agents.validator import normalize_and_compile
+    from src.agents.planning.style_resolver import resolve_theme
+    from src.agents.generation.validator import normalize_and_compile
     comps = _comps()
     body = "".join(f'<VStack grow="1">{native.fill(TAG[k], comps[k], {"grow": "1"}, {"chart_colors": ["2563EB"]})}</VStack>'
                    for k in ("table", "chart", "timeline", "process_arrow", "flow"))

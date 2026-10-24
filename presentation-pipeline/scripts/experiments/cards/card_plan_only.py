@@ -33,7 +33,7 @@ sys.path.insert(0, str(_ROOT))
 from dotenv import load_dotenv  # noqa: E402
 
 from scripts.experiments.kpi.kpi_plan_only import plan_case  # noqa: E402
-from src.agents.slide_component_planner import planner_schema  # noqa: E402
+from src.agents.planning.slide_component_planner import planner_schema  # noqa: E402
 from src.utils.case_loader import load_case  # noqa: E402
 
 load_dotenv(_ROOT / ".env")

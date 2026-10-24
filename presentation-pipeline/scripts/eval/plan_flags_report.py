@@ -21,7 +21,7 @@ from pathlib import Path
 _ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_ROOT))
 
-from src.agents.plan_checks import find_problems  # noqa: E402
+from src.agents.planning.plan_checks import find_problems  # noqa: E402
 
 
 def case_of(path: Path) -> str:
