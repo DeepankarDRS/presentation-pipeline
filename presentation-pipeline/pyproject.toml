@@ -18,6 +18,9 @@ dependencies = [
     "lxml>=5,<7",
     "pillow>=10,<13",
     "fonttools>=4.50,<5",
+    "pymupdf>=1.24,<3",
+    "tiktoken>=0.7,<1",
+    "comtypes>=1.4,<2; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
