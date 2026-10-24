@@ -14,7 +14,7 @@ The git repo root is the folder ABOVE this one; open `presentation-pipeline/` it
 
 **Build PC (since 2026-10-22):** the repo lives at `C:\dev\presentation-pipeline` (project folder `C:\dev\presentation-pipeline\presentation-pipeline`). The old copy under `OneDrive\Documents\New folder` is retired; never read, write or run from it (OneDrive sync + Defender scans of `output/` froze the 8 GB PC). Start Claude / Cursor sessions in `C:\dev`, and run at most 1–2 Claude sessions at once.
 
-**Windows:** the repo tracks `graphify-out/cache/` files with very long names — clone into a short path (e.g. `C:\dev`) and enable long paths first, or checkout fails with "Filename too long":
+**Windows:** `graphify-out/cache/` (very long file names) is no longer tracked since 2026-10-24; still clone into a short path (e.g. `C:\dev`) and enable long paths first, or older branches fail checkout with "Filename too long":
 
 ```bash
 git config --global core.longpaths true

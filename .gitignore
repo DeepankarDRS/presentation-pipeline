@@ -24,6 +24,9 @@ node_modules/
 presentation-pipeline/output/
 presentation-pipeline/.pytest_cache/
 
+# graphify's incremental cache: regenerated locally; its very long names break Windows checkout
+presentation-pipeline/graphify-out/cache/
+
 # Local test results and client material (run zips, production decks, data files): never pushed.
 # Results worth keeping go to presentation-pipeline/docs/eval/ as text (summaries, storylines).
 presentation-pipeline/llm_test/
