@@ -55,7 +55,7 @@ steps:
     response_format: json_schema
   # Generator + repairer on gpt-6.1-sol (2026-10-21): blind marks 0.75 vs gpt-4.1 0.36 / gpt-5-mini 0.39 on CHEFFIN + XTSY
   # (docs/eval/model-compare-2026-10-21/); planners stay on gpt-5-mini to test the generator alone
-  # (scripts/gen_from_plans.py). Back to gpt-4.1: model: gpt-4.1, temperature 0.2, max_tokens 12000, no reasoning_effort.
+  # (scripts/tools/gen_from_plans.py). Back to gpt-4.1: model: gpt-4.1, temperature 0.2, max_tokens 12000, no reasoning_effort.
   generator:
     provider: openai
     model: gpt-6.1-sol

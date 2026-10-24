@@ -346,7 +346,7 @@ def test_short_llm_headline_inside_the_block_does_not_block_the_copy():
 
 
 def test_runner_stops_without_a_key_and_reads_the_key_from_dotenv(tmp_path, monkeypatch):
-    import scripts.plan_only as po
+    import scripts.eval.plan_only as po
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.setattr(po, "ROOT", tmp_path)
     ran = []

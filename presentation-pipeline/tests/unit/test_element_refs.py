@@ -555,7 +555,7 @@ def test_a_ref_wrapped_in_a_styled_text_takes_the_wrappers_place():
 
 @pytest.mark.parametrize("name,wrong", [("cheffin4-2026-10-16", 1), ("cheffin4-2026-10-20", 7)])
 def test_eval_counts_kpi_values_drawn_under_another_label(name, wrong):
-    from scripts.eval_metrics import kpi_label_mismatches
+    from scripts.eval.eval_metrics import kpi_label_mismatches
     case = json.loads((FIXTURES / f"{name}.json").read_text(encoding="utf-8"))
     assert len(kpi_label_mismatches(case["xml"], case["plan"])) == wrong
     assert kpi_label_mismatches(E.fill_refs(case["xml"], case["plan"])["xml"], case["plan"]) == []

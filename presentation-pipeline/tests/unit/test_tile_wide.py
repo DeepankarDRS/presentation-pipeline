@@ -1,9 +1,9 @@
-"""scripts.tile_wide / tile_replay helpers (docs/eval/tile-nodes/wide/README.md)."""
+"""scripts.experiments.tiles.tile_wide / tile_replay helpers (docs/eval/tile-nodes/wide/README.md)."""
 
 from lxml import etree
 
-from scripts import tile_replay as TR
-from scripts import tile_wide as W
+from scripts.experiments.tiles import tile_replay as TR
+from scripts.experiments.tiles import tile_wide as W
 
 
 def test_rewrite_keeps_the_rows_size_attributes_and_drops_literal_colours():

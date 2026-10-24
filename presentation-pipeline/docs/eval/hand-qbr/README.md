@@ -6,7 +6,7 @@ Same brief (`tests/cases/deck-qbr-data.yaml`), same theme (corporate-slate), sam
 `deck-qbr-data-e2e624` (commit `3b03a4d`, critic on, PowerPoint screenshots).
 Derived numbers used by hand: 58% / 30% / 12% share, 16x customers, +$5.9M, +70% (content policy: derived).
 
-Re-render: `python -m scripts.render_check --in docs/eval/hand-qbr/xml --out output/hand-qbr`.
+Re-render: `python -m scripts.eval.render_check --in docs/eval/hand-qbr/xml --out output/hand-qbr`.
 
 ## Where each difference comes from
 

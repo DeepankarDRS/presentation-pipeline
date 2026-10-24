@@ -1,6 +1,6 @@
 # KPI tile nodes: paid check 2, 3 repeats (2026-10-12, test PC)
 
-`python -m scripts.kpi_paid --blocks tiles --arm-a kpi --repeat 3 --label tiles-paid-2 --no-render --bundle` on
+`python -m scripts.experiments.kpi.kpi_paid --blocks tiles --arm-a kpi --repeat 3 --label tiles-paid-2 --no-render --bundle` on
 `7dad9cd` (the visual-intent → tile attributes prompt, spec §10 last row; the test PC also had uncommitted local
 changes). Generator only (gpt-4.1), the same 3 saved KPI slide plans as check 1 (`../paid/`), 3 tries each. Arm A =
 the 2026-10-11 element-ref slides, recompiled. Re-scored and rendered on the build PC (`--rescore --arm-a kpi`).
@@ -61,7 +61,7 @@ output 2,920 (324 a slide). Check 1: $0.058 for 3 slides (≈ $0.019 a slide, on
 ## Fixes (2026-10-12, free; `fixes/`)
 
 Re-scored on the same 9 saved runs, arm B expanded again from each run's `first.xml` on the new code
-(`python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label <copy> --rescore --refill`, `6ee2255`); renders in
+(`python -m scripts.experiments.kpi.kpi_paid --blocks tiles --arm-a kpi --label <copy> --rescore --refill`, `6ee2255`); renders in
 `fixes/sheet-01..03.png` (same blind order as `sheet-01..03.png`, `key.json`), scores in `fixes/summary.md`.
 
 **Why 58 px (d).** Not a cap: the width. tiles.py laid the bare `<KpiGrid>` of four as one row of 285 px tiles; at

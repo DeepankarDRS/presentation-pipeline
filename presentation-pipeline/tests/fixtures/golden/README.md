@@ -17,7 +17,7 @@ prompt changes.
 
 Run:
 
-    python -m scripts.render_check --in tests/fixtures/golden --out output/render_check_golden
+    python -m scripts.eval.render_check --in tests/fixtures/golden --out output/render_check_golden
 
 Then open the PDFs under `output/render_check_golden/<name>/presentation.pdf`.
 All five must stay `compile=ok` and `audit_high=0`.

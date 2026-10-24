@@ -6,7 +6,7 @@ card steps blocks (tags `<KpiRow ref>` and `<CardGrid ref>`). It is the step 1 s
 `docs/derived-blocks-planning-2026-10-06.md` §3, D10, which replaced the slot form on 2026-10-06).
 Nothing here is built. In 1a `variant` is only validated and counted. "Slot" below means the node's box.
 
-The spec is grounded in the Phase 0b renderer (`scripts/phase0b/render.py`: `kpi_row`, `card_grid`,
+The spec is grounded in the Phase 0b renderer (`scripts/experiments/phase0b/render.py`: `kpi_row`, `card_grid`,
 `card_role`), the Genspark variant galleries (`docs/eval/genspark-variants/summary.md`) and the
 decisions D1 (one palette, derived role tokens) and D8 (12 px label floor that grows).
 
@@ -108,7 +108,7 @@ The ten palette colours (`surface`, `surfaceAlt`, `accent`, `accentAlt`, `positi
 `warning`, `textMain`, `textMuted`, `border`) are used as they are. The role colours the blocks need
 are **derived by code from the same palette**: a palette colour, or a mix of two palette colours,
 moved in small steps until the text drawn on it reaches 4.5:1. The LLM never names a colour inside a
-node. Reference implementation: `tokens()` in `scripts/variant_gallery.py` (becomes step 1 code).
+node. Reference implementation: `tokens()` in `scripts/tools/variant_gallery.py` (becomes step 1 code).
 
 | Role | Rule | Used by |
 |---|---|---|
@@ -344,7 +344,7 @@ Only measuring after layout guards them (`NODE_OVERFULL`).
 - **1a counts:** the variant chosen per node, the rate of fallback by check, and the share of
   defaults (an LLM that always omits `variant` gets no variety; see the D2 variety metric).
 
-Gallery deck of every KPI / card variant: `python -m scripts.variant_gallery [--palette <name>]`
+Gallery deck of every KPI / card variant: `python -m scripts.tools.variant_gallery [--palette <name>]`
 → `output/variant-gallery/` (fixed sizes; the blocks will measure).
 
 ## 8. Decisions for the user

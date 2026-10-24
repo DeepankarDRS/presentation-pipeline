@@ -2,7 +2,7 @@
 # paired so each slide still reads well (no two full-width diagrams on one slide, every
 # component inside its capacity.yaml limits). The 14-slide one-kind-per-slide version is
 # gate-deck-all-nodes.yaml. Full pipeline (same graph as the UI):
-#   python -m scripts.eval_run gate-deck-all-nodes-compact --label all-nodes-compact --repeat 1
+#   python -m scripts.eval.eval_run gate-deck-all-nodes-compact --label all-nodes-compact --repeat 1
 name: gate-deck-all-nodes-compact
 objective: 9-slide growth-strategy deck that uses every component kind (title, caption, narrative, hero stat, kpi_row, chart, table, process_arrow, timeline, pyramid, matrix, tree, layer, flow, bullet_list, card_grid grid and steps) with 1-3 components per slide.
 request: |

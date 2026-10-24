@@ -1,6 +1,6 @@
 # KPI tile nodes: gallery (2026-10-12, free)
 
-`python -m scripts.tile_gallery` (spec §8 step 3, `docs/tile-nodes-spec-2026-10-12.md`). Hand-written tile tags,
+`python -m scripts.experiments.tiles.tile_gallery` (spec §8 step 3, `docs/tile-nodes-spec-2026-10-12.md`). Hand-written tile tags,
 then the real path: `tiles.fill` (expand + `element_refs.fill_refs`) → `normalize_xml` → `compile-pom.js`
 (fit-grow, POM) → LibreOffice. One slide per variant × arrange (7 × 4) on the QBR plan (4 items, tones good / good /
 bad / good, emphasis ARR, an icon per item; `inverted` = the plan's emphasis item in a `plain` group), plus the

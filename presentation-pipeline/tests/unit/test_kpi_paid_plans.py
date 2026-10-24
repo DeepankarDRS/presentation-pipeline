@@ -1,6 +1,6 @@
 """kpi_paid --plans: arm B on a planner run's plan, matched to each saved slide by its KPI labels (free)."""
 
-from scripts.kpi_paid import fresh_plan
+from scripts.experiments.kpi.kpi_paid import fresh_plan
 
 
 def kpi(cid, labels, idx):

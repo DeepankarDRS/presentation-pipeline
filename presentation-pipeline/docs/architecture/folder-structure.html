@@ -195,7 +195,7 @@ tr:last-child td { border-bottom: 0; }
 
 <div class="phase"><h3>Phase 4 · Decisions for you <span class="tag t-ask">decide</span></h3>
 <ul>
-<li><b>Test-1 path</b> (<code>src/planning/graph.py</code>, <code>schemas.py</code>, prompts <code>storyline/</code>, <code>slide_designer/</code>, <code>scripts/plan_only.py</code>): AGENTS.md says it isn't going to production. Port <code>brief_index</code> / <code>checks</code> / <code>adapter</code> into <code>agents/planning/</code> and delete the rest?</li>
+<li><b>Test-1 path</b> (<code>src/planning/graph.py</code>, <code>schemas.py</code>, prompts <code>storyline/</code>, <code>slide_designer/</code>, <code>scripts/eval/plan_only.py</code>): AGENTS.md says it isn't going to production. Port <code>brief_index</code> / <code>checks</code> / <code>adapter</code> into <code>agents/planning/</code> and delete the rest?</li>
 <li><b><code>graphify-out/cache/</code></b> (~580 tracked files): untrack and gitignore; AGENTS.md already warns its long names break Windows checkout.</li>
 <li><b>Nested root</b> (<code>presentation-pipeline/presentation-pipeline/</code>): flattening makes the git root the project root, but changes every absolute path in AGENTS.md, memory notes, launch configs and the test-PC clone. Worth it only if you're touching those anyway.</li>
 </ul></div>

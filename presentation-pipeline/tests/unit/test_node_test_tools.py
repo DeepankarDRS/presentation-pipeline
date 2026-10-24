@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from scripts import variety
-from scripts.from_plans import find_runs, load_run
-from scripts.node_test_score import invented, node_regions
-from scripts.node_test_select import example_titles, select
+from scripts.eval import variety
+from scripts.tools.from_plans import find_runs, load_run
+from scripts.experiments.node_test.node_test_score import invented, node_regions
+from scripts.experiments.node_test.node_test_select import example_titles, select
 
 _FIX = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "nodes"
 
@@ -57,8 +57,8 @@ def test_scripted_dry_run_end_to_end(tmp_path):
     """Every NODE_* code the fixtures aim at is reported on its slide; repairs fix the errors; all compile."""
     if not shutil.which("node"):
         pytest.skip("node not installed")
-    from scripts import node_test
-    from scripts.phase0b.fit import Measurer
+    from scripts.experiments.node_test import node_test
+    from scripts.experiments.phase0b.fit import Measurer
     llm = node_test.ScriptedLLM(_FIX / "scripted")
     expect = {("deck-qbr-data", 2): "NODE_REF_UNKNOWN", ("deck-qbr-data", 3): "NODE_CHILDREN_DROPPED",
               ("deck-qbr-data", 4): "NODE_BYPASSED", ("gate-deck-all-nodes-dense", 1): "NODE_MISSING",
@@ -83,8 +83,8 @@ def test_scripted_dry_run_end_to_end(tmp_path):
 def test_expand_failure_leaves_an_empty_box(monkeypatch):
     if not shutil.which("node"):
         pytest.skip("node not installed")
-    from scripts.phase0b import expand
-    from scripts.phase0b.fit import Measurer
+    from scripts.experiments.phase0b import expand
+    from scripts.experiments.phase0b.fit import Measurer
     run = load_run(_FIX / "runs" / "decks" / "deck-qbr-data__r1")
     plan = run["slides"][1]["plan"]
     monkeypatch.setattr(expand, "draw", lambda *a, **k: (_ for _ in ()).throw(ValueError("boom")))
@@ -103,8 +103,8 @@ def test_first_try_only_by_default(tmp_path):
     """D12: 1a records an error on the first try and does not repair it."""
     if not shutil.which("node"):
         pytest.skip("node not installed")
-    from scripts import node_test
-    from scripts.phase0b.fit import Measurer
+    from scripts.experiments.node_test import node_test
+    from scripts.experiments.phase0b.fit import Measurer
     assert node_test.MAX_REPAIRS == 0
     run = load_run(_FIX / "runs" / "decks" / "deck-qbr-data__r1")
     slide = next(s for s in run["slides"] if s["number"] == 2)
@@ -120,7 +120,7 @@ def test_first_try_only_by_default(tmp_path):
                                                ("Ul", "tiles", True), ("Ul", "icon", False),
                                                ("ProcessArrow", "step_cards", True), ("ProcessArrow", "alternating", False)])
 def test_block_variants_drawn_where_phase0b_has_one(tag, variant, block):
-    from scripts.phase0b.expand import as_block
+    from scripts.experiments.phase0b.expand import as_block
     comp = {"kind": "x", "content_data": {}}
     assert as_block({"tag": tag, "attrs": {"ref": "c", "variant": variant}}, comp) is block
 
@@ -128,8 +128,8 @@ def test_block_variants_drawn_where_phase0b_has_one(tag, variant, block):
 def test_timeline_cards_variant_expands_to_a_block():
     if not shutil.which("node"):
         pytest.skip("node not installed")
-    from scripts.phase0b.expand import expand_nodes
-    from scripts.phase0b.fit import Measurer
+    from scripts.experiments.phase0b.expand import expand_nodes
+    from scripts.experiments.phase0b.fit import Measurer
     run = load_run(_FIX / "runs" / "decks" / "gate-deck-all-nodes-dense__r1")
     plan = run["slides"][4]["plan"]   # brand_timeline, conversion_flow, conversion_rules
     sk = ('<Slide><VStack w="1280" h="720" alignItems="stretch"><Text fontSize="30">H</Text>'

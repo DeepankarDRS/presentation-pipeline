@@ -91,7 +91,7 @@ columns and put it on all four cards; its words are in the brief (75%), so the w
   grid of 3+ is removed when the brief does not write it word for word (a status line the brief gives each card stays).
 
 **Before / after.** Eval's 14 slides replayed (slide XML from `slides.json`, theme + Inter, fit-grow on; word breaks,
-overflows and card fill by `scripts/eval_metrics.py`, as in the eval summary):
+overflows and card fill by `scripts/eval/eval_metrics.py`, as in the eval summary):
 
 | | before | after |
 |---|---|---|
@@ -268,7 +268,7 @@ the paid run (directions chosen, diagrams below 75%).
 One run of both decks on the test PC, same cases as the eval, to see steps 1–5 on fresh plans:
 
 ```bash
-uv run python -m scripts.eval_run gate-deck-agency-takeover gate-deck-xtsy-qcomm --repeat 1 --label deck-fixes --bundle
+uv run python -m scripts.eval.eval_run gate-deck-agency-takeover gate-deck-xtsy-qcomm --repeat 1 --label deck-fixes --bundle
 ```
 
 Cost ≈ $0.6 (the eval of the same two cases cost $0.585). What to look for: agency 6 without the "Note: End with

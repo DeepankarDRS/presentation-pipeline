@@ -13,7 +13,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# Number rule shared with the eval (scripts/eval_metrics._numbers): ≥ 2 digits, thousands
+# Number rule shared with the eval (scripts/eval/eval_metrics._numbers): ≥ 2 digits, thousands
 # separators dropped, trailing decimal zeros ignored ("4.40" = "4.4").
 _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
 _SECTION = re.compile(r"^\s*slide\s+(\d+)\s*:\s*(.*)$", re.I)  # "Slide 5:" or "SLIDE 2: Executive Summary"

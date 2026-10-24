@@ -100,7 +100,7 @@ Update `tests/unit/test_layout_audit.py` accordingly.
 Verify:
 - Hand-write 3 slides in the new grammar (dashboard, table+text, flow) under
   `tests/fixtures/layout_sizing/`; compile; render; check no dead space.
-- Golden set still compiles: `python -m scripts.render_check --in tests/fixtures/golden --out output/render_check_golden` (golden files use the old style; they must keep working, since POM semantics don't change).
+- Golden set still compiles: `python -m scripts.eval.render_check --in tests/fixtures/golden --out output/render_check_golden` (golden files use the old style; they must keep working, since POM semantics don't change).
 - Generate 5 regression cases (`python -m src.runner …`) and compare renders
   before/after.
 

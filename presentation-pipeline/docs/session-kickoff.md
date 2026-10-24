@@ -4,7 +4,7 @@ Updated 2026-10-05 for the build route the user chose: `docs/derived-nodes-desig
 (the generator LLM writes each slide's layout with slots, code blocks draw the components
 inside them from the plan, a measured checking loop, planner fixes first). The earlier
 roadmap phases 0–4 (`docs/roadmap-derived-components.md`) are history; their eval tooling
-(`scripts/eval_*.py`) is still used.
+(`scripts/eval/eval_*.py`) is still used.
 
 - **Build device (this PC, no OpenAI key):** ALL code, docs and commits happen here. Every
   step is proven LLM-free first (unit tests, compiler, LibreOffice renders, replays of saved
@@ -77,7 +77,7 @@ Before coding:
 2. Summarise the step, its acceptance checks and any open point with your recommendation; show me a plan
    and the file list. Do not edit until I approve.
 
-While working: verify LLM-free (unit tests, node src/node/compile-pom.js, python -m scripts.render_check,
+While working: verify LLM-free (unit tests, node src/node/compile-pom.js, python -m scripts.eval.render_check,
 replays of saved plans / XML, LibreOffice renders); code must parse on Python 3.11; follow the cost rule in
 §5. End the step with: tests vs baseline, the step's status written into §14.6 with the date, commit, push,
 and the exact test-device commands plus the list of files to email back.
@@ -97,12 +97,12 @@ Then the run for the step (the build session gives the exact command; these are 
 
 | Step | Command | Email back |
 |---|---|---|
-| **0 (step-end run, ≈ $1.8)** | `python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label step0 --compose --bundle` | the bundle zip it prints (`decks/<case>__r1/` holds `llm.pptx`, `composed.pptx`, `slides.json` and, from step 0 item 0.1, `run-manifest.json`: the zip is all that is needed; back it up, 1a and step 3 reuse these plans). Plus one line: did `composed.pptx` open in PowerPoint with Inter drawn (embedding check). Decisions of 2026-10-05: six cases, no `gj-h1-regen` |
+| **0 (step-end run, ≈ $1.8)** | `python -m scripts.eval.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label step0 --compose --bundle` | the bundle zip it prints (`decks/<case>__r1/` holds `llm.pptx`, `composed.pptx`, `slides.json` and, from step 0 item 0.1, `run-manifest.json`: the zip is all that is needed; back it up, 1a and step 3 reuse these plans). Plus one line: did `composed.pptx` open in PowerPoint with Inter drawn (embedding check). Decisions of 2026-10-05: six cases, no `gj-h1-regen` |
 | **1a slot test (≈ $0.5)** | from-plans runner, generator only, on step 0's saved plans (command written in step 1a) | its output folder (skeleton XML per slide, run manifests) |
 | **3 paid check (≈ $1.2–1.5)** | from-plans runner, `blocks: slots`, all six cases on step 0's plans (command written in step 2) | bundle + run folders |
 
-On the build device: `python -m scripts.eval_import <zip>` → `docs/eval/<label>/` (LibreOffice
-renders), then compare with the earlier label (`python -m scripts.eval_compare docs/eval/<a> docs/eval/<b>`).
+On the build device: `python -m scripts.eval.eval_import <zip>` → `docs/eval/<label>/` (LibreOffice
+renders), then compare with the earlier label (`python -m scripts.eval.eval_compare docs/eval/<a> docs/eval/<b>`).
 Only if the build session asks: a LangSmith run export (JSON) for specific cases, or a specific `.pptx`.
 
 **Data policy:** eval cases in `tests/cases/` are synthetic. Before emailing, make sure nothing in
@@ -114,8 +114,8 @@ from the prompts that were run.
 | Step | Build device | Test device runs | Email back → build device |
 |---|---|---|---|
 | **0 Planner fixes + prerequisites** | empty-plan re-ask; instruction / notes text and card body = title rejected; `SLIDE_SPARSE`; duplicate items (C17); usage logging (step names, slide index, reasoning + cached tokens; `run-manifest.json` in the bundle); subset font embedding **at deck level in Python** (after the merge, `src/compiler/font_embed.py`; not `pptx-post.js`, which runs per slide); shrink guard (`fit-grow.js`). Order and acceptance: `docs/derived-blocks-planning-2026-10-06.md` §2 | the step-end run (§2) | bundle + run folders → `docs/eval/step0/`; its plans become the input of 1a and step 3; its `llm.pptx` decks are step 3's `off` arm |
-| **1a Slot test (gate)** | from-plans runner; slot prompt; expansion with `scripts/phase0b/expand.py`; scoring (kill criteria §14.5, tokens vs step 0) | generator-only run (§2) | skeletons → scored here. **Fail → stop slots; composer + planner `arrangement` field (§14.1 option 2)** |
-| **1 Blocks into the pipeline** | `src/compiler/blocks/` from `scripts/phase0b/`; hold-out failures fixed; slot expansion in the validator behind `blocks: off \| slots`; `SlideHeader`; attribute check vs pom-jsx `types.ts` + `attributes.yaml` | nothing | — |
+| **1a Slot test (gate)** | from-plans runner; slot prompt; expansion with `scripts/experiments/phase0b/expand.py`; scoring (kill criteria §14.5, tokens vs step 0) | generator-only run (§2) | skeletons → scored here. **Fail → stop slots; composer + planner `arrangement` field (§14.1 option 2)** |
+| **1 Blocks into the pipeline** | `src/compiler/blocks/` from `scripts/experiments/phase0b/`; hold-out failures fixed; slot expansion in the validator behind `blocks: off \| slots`; `SlideHeader`; attribute check vs pom-jsx `types.ts` + `attributes.yaml` | nothing | — |
 | **2 Generator + checking loop** | skeleton prompt (only under `blocks: slots`); checking loop ≤ 2 rounds (principle approved 2026-10-05, thresholds from 1a's data); repair / edit on the skeleton; **edit service re-expands blocks after every edit**; outline `look` picker (palette); scripted-LLM dry run of step 3 | nothing | — |
 | **3 Paid check** | scoring, side-by-side sheets, token report | slots arm on step 0's plans (§2) | bundle + run folders → user's review |
 | **4 Breadth** | remaining blocks (matrix, pyramid, tree, layer, branching flow); plan reviewer loop; §12 content policy | step-end run | as above |
@@ -144,7 +144,7 @@ three paid runs before the go / no-go: step 0 ≈ $1.8, 1a ≈ $0.5, step 3 ≈ 
 
 1. **Free first.** Anything that acts after the LLM (blocks, expansion, fit-grow, normalizer,
    compiler, fonts, eval metrics) is verified by replaying saved plans or XML —
-   `python -m scripts.eval_run --fixtures <dir>`, `scripts/phase0b/replay.py`, `compose_deck.py`
+   `python -m scripts.eval.eval_run --fixtures <dir>`, `scripts/experiments/phase0b/replay.py`, `compose_deck.py`
    — plus unit tests and LibreOffice renders. No paid run for these.
 2. **Planner changes** are tested first on saved plans (`output/runs/<run_id>/slides.json` holds
    each slide's `slide_plan`) and with a scripted LLM before any paid run.

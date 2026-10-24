@@ -1,6 +1,6 @@
 # KPI node pilot: free replay
 
-Arm A = the saved XML on today's compiler; arm B = the same XML with each KPI text mapped to a ref and filled by `element_refs.fill_refs`. Produced by `python -m scripts.kpi_replay`.
+Arm A = the saved XML on today's compiler; arm B = the same XML with each KPI text mapped to a ref and filled by `element_refs.fill_refs`. Produced by `python -m scripts.experiments.kpi.kpi_replay`.
 
 ## Today (7 slides, 9 kpi_row components)
 

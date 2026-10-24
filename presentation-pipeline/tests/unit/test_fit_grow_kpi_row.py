@@ -121,7 +121,7 @@ def test_a_large_hero_grows_after_the_other_kpi_numbers(tmp_path, monkeypatch):
     hero took the freed height (72 -> 99 px) and the platform row stayed at 28 px; it now goes last."""
     import json
 
-    from scripts.kpi_replay import compile_slide
+    from scripts.experiments.kpi.kpi_replay import compile_slide
     from src.agents.style_resolver import resolve_theme
     from src.compiler.nodes import tiles
     monkeypatch.setenv("POM_BLOCKS", "tiles")

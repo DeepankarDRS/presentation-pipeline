@@ -301,7 +301,7 @@ with a default; **P3** palette fixes now; **P5** only role tokens reach the LLM 
 
 LLM-free checks (this PC): all 18 palettes pass contrast, hue and distinct-role tests
 (`tests/unit/test_palette_tokens.py`); unit tests 787 pass, the 4 known failures; the 43 saved step-0 slides
-recompile 43/43 with the new `<Theme>`; `python -m scripts.palette_preview` (now drawing the shipped tokens)
+recompile 43/43 with the new `<Theme>`; `python -m scripts.tools.palette_preview` (now drawing the shipped tokens)
 checked by eye on `navy-orange`, `gj-h1`, `claude-cream`, `graphite-dark`: tints follow the palette, the focus
 series stands out from grey, the dark highlighted row is readable (before: white row, invisible text).
 Generator contract +≈ 490 tokens per slide (+5%; budgets in `test_context_builder.py` raised).

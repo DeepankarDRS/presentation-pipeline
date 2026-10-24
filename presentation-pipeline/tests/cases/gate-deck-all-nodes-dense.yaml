@@ -2,7 +2,7 @@
 # than gate-deck-all-nodes-compact.yaml (9 slides) — tests how the planner and fit-grow handle
 # busy slides. Each component is still inside its capacity.yaml limits; positions are stated so
 # no two full-width diagrams sit side by side. Full pipeline (same graph as the UI):
-#   python -m scripts.eval_run gate-deck-all-nodes-dense --label all-nodes-dense --repeat 1
+#   python -m scripts.eval.eval_run gate-deck-all-nodes-dense --label all-nodes-dense --repeat 1
 name: gate-deck-all-nodes-dense
 objective: 6-slide growth-strategy deck that uses every component kind with 2-4 components per slide (title, caption, narrative, hero stat, kpi_row, chart, table, pyramid, matrix, process_arrow, tree, layer, timeline, flow, bullet_list, card_grid grid and steps).
 request: |

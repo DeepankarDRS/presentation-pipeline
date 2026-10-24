@@ -4,9 +4,9 @@ The three paid checks judged `POM_BLOCKS=tiles` on the same 3 KPI slides (QBR, C
 asked for wider evidence before any further fix. This replay takes **every saved KPI slide** on the build PC and
 compares the two routes on each; a scan of every saved compiled slide counts the `w="max"` squeeze.
 
-    python -m scripts.tile_wide                               # 68 slides, both routes, renders -> output/tile-wide/
-    python -m scripts.tile_wide --squeeze                     # the w="max" squeeze over every saved compiled slide
-    python -m scripts.tile_wide --no-render --look padding=16 gap=6 --out output/tile-wide-look16   # look experiment
+    python -m scripts.experiments.tiles.tile_wide                               # 68 slides, both routes, renders -> output/tile-wide/
+    python -m scripts.experiments.tiles.tile_wide --squeeze                     # the w="max" squeeze over every saved compiled slide
+    python -m scripts.experiments.tiles.tile_wide --no-render --look padding=16 gap=6 --out output/tile-wide-look16   # look experiment
 
 ## What was compared
 
@@ -152,11 +152,11 @@ Full decks, both routes, the six cases step 0 ran (every one has KPI slides; QBR
 there, but now among 37 slides of 6 decks, about 6–8 of them KPI slides). From `presentation-pipeline/` on the test
 PC, after pulling the branch (it has to be pushed first):
 
-    $env:POM_BLOCKS="tiles"; python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-tiles --bundle *>&1 | Tee-Object -FilePath wide-tiles.log
-    $env:POM_BLOCKS="kpi"; python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-kpi --bundle *>&1 | Tee-Object -FilePath wide-kpi.log
+    $env:POM_BLOCKS="tiles"; python -m scripts.eval.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-tiles --bundle *>&1 | Tee-Object -FilePath wide-tiles.log
+    $env:POM_BLOCKS="kpi"; python -m scripts.eval.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-kpi --bundle *>&1 | Tee-Object -FilePath wide-kpi.log
 
 **Cost: about $3.5–4.0 for both runs, $4 at most.** Per run (one route, six decks) from the saved manifests
-(`scripts.usage_report`, list price without the cached-input discount, so the bill is a little lower):
+(`scripts.eval.usage_report`, list price without the cached-input discount, so the bill is a little lower):
 
 | case | step 0 (10-06) | q1008 (10-08) | decks run 1 (10-11, refs) | decks run 2 (10-12, refs) |
 |---|---|---|---|---|

@@ -92,7 +92,7 @@ const TARGET_FILL = 0.88;   // grow until this full (slack for renderer wrap dri
 const MIN_SLACK = 30;       // px — ignore smaller gaps
 const MAX_SCALE = 3.0;
 const FIXED_FONT = 24;      // >= this outside a card is a title / KPI number: not grown as text (KPI numbers: growStats)
-// Card text fills its card the way the composer does (scripts/phase0b/render.py
+// Card text fills its card the way the composer does (scripts/experiments/phase0b/render.py
 // fill_card_text; user, 2026-10-04 and 2026-10-06: grow the type into the empty space,
 // don't shrink the card): a card title up to 48px, body up to 28px and at most
 // title / 1.3, labels (caps / letter-spaced) by sqrt(s); icons grow by sqrt(s) up to 56px.
@@ -2650,6 +2650,6 @@ export async function fitGrow(inputXml) {
   return { xml: report.some((r) => !r.includes("skipped")) ? prefix + parts.join("") : inputXml, report, warnings };
 }
 
-// Layout helpers for measuring tools (scripts/phase0b/measure.mjs); fit-grow itself
+// Layout helpers for measuring tools (scripts/experiments/phase0b/measure.mjs); fit-grow itself
 // does not use these exports.
 export { layout, natural, squeezes, contentHeight, tagNodes, walk, rowsSum, SLIDE };

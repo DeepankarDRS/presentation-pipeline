@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.eval_metrics import empty_cells, table_spill
+from scripts.eval.eval_metrics import empty_cells, table_spill
 
 _ROOT = Path(__file__).resolve().parents[2]
 _FIT = _ROOT / "tests" / "fixtures" / "fit_grow"

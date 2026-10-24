@@ -104,7 +104,7 @@ paid check does). Saved plans have no `kpi_tones` (V10 not built), so the replay
   D11), `output/colour-roles/` (1), `output/critic-on/` and `critic-on2/` (3 each; de-duplicated if one
   deck). Reported separately, since their XML is not today's generator.
 
-**Steps** (`scripts/kpi_replay.py`, new):
+**Steps** (`scripts/experiments/kpi/kpi_replay.py`, new):
 1. **Map:** in each slide's XML find the Text whose text (Span markup stripped, whitespace and minus signs
    normalised, unit spans re-joined) equals a plan label / value / delta of a `kpi_row` component.
    Already seen: the LLM writes `₹4.2<Span>Cr</Span>`, so a plain substring check finds only 16 of 30
@@ -116,7 +116,7 @@ paid check does). Saved plans have no `kpi_tones` (V10 not built), so the replay
    slide that differ from the plan (A's retyping errors, by the same normalised match).
 4. **Mapping rate:** share of plan items whose value / label / note were found, with every miss listed
    (dropped, retyped differently, merged into one Text, drawn as a table). This is the feasibility check.
-5. **Blind sheet** (`scripts/node_test_sheet.py` reused): only slides whose renders differ, A / B sides
+5. **Blind sheet** (`scripts/experiments/node_test/node_test_sheet.py` reused): only slides whose renders differ, A / B sides
    shuffled, for you.
 
 **Replay pass line** (all on today's-route slides): 0 broken words in B; 1 number size per component in B
@@ -191,7 +191,7 @@ Unit-test baseline before the change: 839 pass + the 4 known failures.
   dense slide (spill fixer shrank the whole slide) and too full to count as sparse elsewhere (nothing grew).
   A hero starts at 72 (ramp single stat; in a content-height card nothing grows it). A one-item `kpi_row` is a hero.
 - `src/compiler/value_parts.py` (V15): one verbatim split (`"₹4.2 Cr"` → `"₹4.2"` + `" Cr"`); the composer
-  (`scripts/phase0b/render.py`) and the variant gallery use it now.
+  (`scripts/experiments/phase0b/render.py`) and the variant gallery use it now.
 - V7: `panelDark` / `onPanelDark` derived in `palette_tokens.py` (light palettes: `textMain` / white; dark: the
   accent hue at lightness 0.2), authored entries win; ≥ 4.5:1 on all 18 palettes (test). The one-dark-panel-per-deck
   softener also takes `$panelDark`. house-style prose still says "inverted panel `$textMain`" (left so `off` stays
@@ -201,7 +201,7 @@ Unit-test baseline before the change: 839 pass + the 4 known failures.
 - Tests: `tests/unit/test_element_refs.py` (58: grammar, every code, verbatim fill, peer ids + one size through the
   real compiler, hero, tones, dark fill, token-only colours, panel tokens on every palette, parser, prompt, validator).
 
-**Replay** (`python -m scripts.kpi_replay`; results `docs/eval/kpi-node/replay/summary.md`, run output in
+**Replay** (`python -m scripts.experiments.kpi.kpi_replay`; results `docs/eval/kpi-node/replay/summary.md`, run output in
 `output/kpi-replay/`). Today's route = 7 slides / 9 `kpi_row` components (q1008 + run-1008, de-duplicated).
 
 | pass line (today's route) | result |
@@ -262,7 +262,7 @@ values: "you can, but how"; icons: a prompt-line hint. Then: show what B's KPI c
   fix, and saved-plan replays and the generator-only paid check are not affected.
 - **Icon hint** in the KPI prompt line: an icon goes in the label row (left of the label, or right with
   `spaceBetween`), not alone and centred on top.
-- **Gallery** (`python -m scripts.kpi_gallery`, `docs/eval/kpi-node/gallery/`): six looks the LLM may compose
+- **Gallery** (`python -m scripts.experiments.kpi.kpi_gallery`, `docs/eval/kpi-node/gallery/`): six looks the LLM may compose
   (tiles, strip, side bars, focus panel, rows beside a chart, hero tier) × two plans (QBR 4 KPIs, ROAS 5 KPIs
   with tones) × corporate-slate / gj-h1 / graphite-dark, real fill + fit-grow + POM. Skeletons are
   hand-written; the paid check shows which ones the LLM writes.
@@ -294,7 +294,7 @@ word units now split in B ("15 min/wk" → small "min/wk"). The blind sheet is r
 ## 9. Paid check: runner ready (2026-10-11), run on the test PC
 
 User: go ahead. This PC has no API key (two-device workflow), so the run is the test PC's.
-`python -m scripts.kpi_paid --repeat 3 --label kpi-paid --bundle` — generator only from the saved plans in
+`python -m scripts.experiments.kpi.kpi_paid --repeat 3 --label kpi-paid --bundle` — generator only from the saved plans in
 `docs/eval/kpi-node/paid-inputs.json` (q1008: deck-qbr-data slide 1, gate-deck-cheffin-full slides 1 and 4;
 4 `kpi_row` components, corporate-slate), `POM_BLOCKS=kpi`, the real graph (generator → validator with the
 ref fill → repairs; critic off). Arm A = q1008's XML recompiled on the same commit. 9 generator calls,
@@ -350,7 +350,7 @@ Variety comes per slide, not per run.
 PowerShell window (`$env:` lasts only for that window; a `POM_BLOCKS=kpi` line in `.env` works too but stays on
 for every later run until removed):
 
-    $env:POM_BLOCKS="kpi"; python -m scripts.eval_run deck-qbr-data gate-deck-cheffin-full gate-deck-all-nodes-dense gate-deck-xtsy-qcomm --repeat 1 --label kpi-decks --bundle
+    $env:POM_BLOCKS="kpi"; python -m scripts.eval.eval_run deck-qbr-data gate-deck-cheffin-full gate-deck-all-nodes-dense gate-deck-xtsy-qcomm --repeat 1 --label kpi-decks --bundle
 
 **Then, here (free):** render the bundle; per KPI slide, name the layout the LLM chose and its item count; a
 contact sheet per deck beside its q1008 version (today's route, 2026-10-08); blind pairs of the KPI slides if
@@ -402,7 +402,7 @@ on the new code: `docs/eval/kpi-node/decks/kpi-slides-fixes.png` (right column).
 | 1. A KPI text on a dark tile (`$panelDark` / `$textMain` / `$accent`) whose colour does not read there gets the fill's on-colour (`READS_ON`, `NODE_ATTR_IGNORED`) | `element_refs.fill_refs` | QBR `LOW_CONTRAST` 2 → 0 (ARR + its delta white on the dark tile) |
 | 2. A row of content-sized tiles (`w="max"`) spans its width: each tile `grow="1"` (content width + an even share), an empty spacer stack goes; widths the LLM set stay. fit-grow counts `grow` on a tile in a row as width, not height (the row still grows its numbers) | `element_refs._fill_rows`, fit-grow `growStats` | CHEFFIN 4's row of 3 reaches the right edge; numbers 58 px unchanged |
 | 3. A ref tile still sparse after growth (fit-grow's `LOW_FILL`) with an icon beside its label: icon above the label, the label stretched to the tile | fit-grow `stackTileIcons` | CHEFFIN 1 `GEOM_CARD_EMPTY` 5 → 0; labels wrap between words in the narrowest tiles, 0 broken words |
-| 4. The LLM's XML before the fill is kept: `generated.xml` per try (validator), `first-generated.xml` in eval bundles (`eval_run`), `first.xml` + `first_diagnostics` in `kpi_paid` | validator, `scripts/eval_run.py`, `scripts/kpi_paid.py` | `kpi_paid --dry` writes `first.xml` |
+| 4. The LLM's XML before the fill is kept: `generated.xml` per try (validator), `first-generated.xml` in eval bundles (`eval_run`), `first.xml` + `first_diagnostics` in `kpi_paid` | validator, `scripts/eval/eval_run.py`, `scripts/experiments/kpi/kpi_paid.py` | `kpi_paid --dry` writes `first.xml` |
 
 Number sizes on the 4 slides unchanged (55 / 47 / 43 / 58 px); a first try at equal tile widths (`w="1"`)
 squeezed the widest number (47 → 28 px on all-nodes) and was dropped. Not covered: icons, other
@@ -465,7 +465,7 @@ refs, number sizes per component and the weight cap already handle several kpi_r
 (`drop_duplicate_items`) needs ≥ 3 shared labels, so a split never trips it. Test:
 `test_planner_prompt_lets_a_slide_group_its_numbers_into_several_kpi_rows`. Not yet run with the LLM (paid).
 
-**Planner-only check (test PC, 2026-10-12, `python -m scripts.kpi_plan_only --repeat 3`, $0.619, 9 runs;
+**Planner-only check (test PC, 2026-10-12, `python -m scripts.experiments.kpi.kpi_plan_only --repeat 3`, $0.619, 9 runs;
 `docs/eval/kpi-node/plans/summary.md`).** 12 KPI slides, 5 split into several kpi_rows; 0 numbers in two
 groups; 1 key-message number not carried.
 

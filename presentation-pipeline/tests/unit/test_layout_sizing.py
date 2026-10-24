@@ -13,7 +13,7 @@ import json
 
 import yaml
 
-from scripts.eval_metrics import card_metrics
+from scripts.eval.eval_metrics import card_metrics
 from src.agents.style_resolver import _build_theme
 from src.compiler.layout_audit import audit_layout
 

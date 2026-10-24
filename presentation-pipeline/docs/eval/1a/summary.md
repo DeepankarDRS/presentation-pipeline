@@ -7,7 +7,7 @@
 - 1 compliance 93% (76 components; margin about ±7 points) -> pass, re-run zone
 - 2 invented words in nodes 0 -> pass
 - 3 broken words 0 vs off 6; overlap slides 2 vs 4 -> pass
-- 4 blind side-by-side: scripts/node_test_sheet.py (your marks)
+- 4 blind side-by-side: scripts/experiments/node_test/node_test_sheet.py (your marks)
 - 5 within-deck variety 1.0 vs off 1.0 -> pass
 
 ## Detail

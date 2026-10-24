@@ -1,8 +1,8 @@
-"""scripts/phase0b/fontcheck.broken: a word drawn over several lines counts (same-plan pair 1.4 scored 0)."""
+"""scripts/experiments/phase0b/fontcheck.broken: a word drawn over several lines counts (same-plan pair 1.4 scored 0)."""
 import pytest
 
 pytest.importorskip("pymupdf")
-from scripts.phase0b.fontcheck import broken  # noqa: E402
+from scripts.experiments.phase0b.fontcheck import broken  # noqa: E402
 
 
 def w(x, y0, y1, text, block, line):

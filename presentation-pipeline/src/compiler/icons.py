@@ -1,7 +1,7 @@
 """Icon names — keep every <Icon name> inside POM's real icon set.
 
 Source of truth: knowledge/core/icon-names.txt, exported from the installed
-compiler by scripts/export_icon_names.py. An unknown name fails parseXml and
+compiler by scripts/tools/export_icon_names.py. An unknown name fails parseXml and
 would cost a full LLM retry, so the normalizer fixes it deterministically:
 
   1. exact match                      -> keep

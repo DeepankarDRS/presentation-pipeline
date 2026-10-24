@@ -23,7 +23,7 @@ brief ("Seven growth levers, one scalable engine." from the slide 7 message).
 ## Render (test PC)
 
 ```bash
-python -m scripts.render_check --in docs/eval/genspark-ref --out output/render_check/genspark-ref
+python -m scripts.eval.render_check --in docs/eval/genspark-ref --out output/render_check/genspark-ref
 ```
 
 Then open `output/render_check/genspark-ref/<name>/presentation.pptx` in PowerPoint

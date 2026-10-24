@@ -14,7 +14,7 @@
    the element-ref line names them ("Icons from the plan: 0=wallet, ..."). Evidence: same-plan pair 3.1 (agency 2),
    the one decoration loss, where the element-ref side drew icons on its KPI tiles and the tile side had none.
 
-**What runs** (`python -m scripts.tile_combined`): part 1, the planners only (`kpi_plan_only.plan_case`) on the six
+**What runs** (`python -m scripts.experiments.tiles.tile_combined`): part 1, the planners only (`kpi_plan_only.plan_case`) on the six
 decks, once each; part 2, every planned slide with a `kpi_row` or a `card_grid` drawn on that same plan by both routes,
 twice: arm **A** `POM_BLOCKS=kpi` (element refs; cards drawn by hand, as today's default), arm **B** `POM_BLOCKS=tiles`
 (KPI and card tags). Real graph from the slide plan (generator, validator, repairers; critic off). Free on the build
@@ -22,10 +22,10 @@ PC afterwards: `--rescore` (Inter renders, scores, blind sheet).
 
 **Command (test PC, branch `feat/tile-nodes`, after `git pull`):**
 
-    python -m scripts.tile_combined --label combined --bundle --no-render
+    python -m scripts.experiments.tiles.tile_combined --label combined --bundle --no-render
 
 It prints `EMAIL THIS FILE: output/tile-combined/combined.zip` (plans.json, runs.json, run.log, every run's first /
-final XML). On the build PC: `python -m scripts.tile_combined --label combined --rescore` → `summary.md`, `sheets/`.
+final XML). On the build PC: `python -m scripts.experiments.tiles.tile_combined --label combined --rescore` → `summary.md`, `sheets/`.
 
 **Cases:** deck-qbr-data, deck-product-launch-data, gate-deck-agency-takeover, gate-deck-all-nodes-dense,
 gate-deck-cheffin-full, gate-deck-xtsy-qcomm.
@@ -49,7 +49,7 @@ typed by hand and cards drawn by hand (B), NODE_* errors, repairs. Then the blin
 on both arms; the planner writes `kpi_icons` on most KPI rows; blind marks tiles ≥ 0.5.
 
 **Dry run (free, build PC, fake planner = the saved same-plan / card paid plans, fake generator = bare tags for B,
-their expansion for A):** `python -m scripts.tile_combined deck-qbr-data gate-deck-agency-takeover --label
+their expansion for A):** `python -m scripts.experiments.tiles.tile_combined deck-qbr-data gate-deck-agency-takeover --label
 combined-dry-t3 --dry --repeat 1`: 2 decks, 6 KPI / card slides, 12 / 12 runs compiled first try, scores, renders and
 the blind sheet built. (The saved plans have no `kpi_icons` yet, so the icon column reads 0 / 0 in the dry run.)
 Use a fresh `--label` per run: two runs on one label overwrite each other's folders.

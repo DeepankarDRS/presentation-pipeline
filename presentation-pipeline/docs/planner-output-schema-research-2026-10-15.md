@@ -16,7 +16,7 @@ call (about +28% of the planner's 12.9k input; part of the cached prefix).
 ## 1. Evidence: what fails, and why only on gpt-5-mini
 
 `output/card-plans/choice-plans/run.log` (test PC, 2026-10-15, 18 plan-only runs, 119 answered planner calls),
-scored with `python -m scripts.planner_schema_compare --logs ...`:
+scored with `python -m scripts.tools.planner_schema_compare --logs ...`:
 
 | | choice-plans (10-15) | tile-combined (10-15) |
 |---|---|---|
@@ -109,7 +109,7 @@ key_phrase?, icon?}], focus_card?, columns?, rows?}`; layer `{description?, laye
 nodes? [{label, detail?}], connections? [{source, target, label?}]}`. Icons stay strings: the icon list
 (1953 names) is over the 1000-enum limit.
 
-## 4. Free tests (`python -m scripts.planner_schema_compare`, `docs/eval/planner-schema/summary.md`)
+## 4. Free tests (`python -m scripts.tools.planner_schema_compare`, `docs/eval/planner-schema/summary.md`)
 
 Corpus: 1476 distinct saved plan components (output/**/slides.json, runs.json, plans.json, deduplicated).
 
@@ -170,8 +170,8 @@ after 1139 pass, the same 4 known failures.
   objects, so under `typed` the examples and the schema finally agree. The per-kind schema text in the prompt is
   unchanged (the grammar drops what the typed content does not have, e.g. `chart_type` inside a chart's content).
 - `src/utils/strict_schema.py`: offline strict-mode check of the sent schema.
-- `scripts/planner_schema_compare.py`: the comparison above, and `--logs` to score run.logs.
-- `scripts/card_plan_only.py --schema typed|string`: sets `PLANNER_SCHEMA`, recorded per run and in summary.md.
+- `scripts/tools/planner_schema_compare.py`: the comparison above, and `--logs` to score run.logs.
+- `scripts/experiments/cards/card_plan_only.py --schema typed|string`: sets `PLANNER_SCHEMA`, recorded per run and in summary.md.
 
 ## 7. Risks
 
@@ -191,16 +191,16 @@ after 1139 pass, the same 4 known failures.
 One planning-only run of the same 6 decks × 3 as `choice-plans`, on the test PC at this branch's commit:
 
 ```
-python -m scripts.card_plan_only --repeat 3 --label typed-schema --schema typed --bundle --workers 5
+python -m scripts.experiments.cards.card_plan_only --repeat 3 --label typed-schema --schema typed --bundle --workers 5
 ```
 
 Cost: choice-plans was $1.48; the typed schema adds ≤ $0.11 of input and should save some output, so **≈ $1.5,
 ceiling $2**. Then, free on this PC:
 
 ```
-python -m scripts.planner_schema_compare --logs output/card-plans/choice-plans/run.log output/card-plans/typed-schema/run.log
-python -m scripts.card_plan_only --label typed-schema --rescore
-python -m scripts.structure_loss --replay
+python -m scripts.tools.planner_schema_compare --logs output/card-plans/choice-plans/run.log output/card-plans/typed-schema/run.log
+python -m scripts.experiments.cards.card_plan_only --label typed-schema --rescore
+python -m scripts.eval.structure_loss --replay
 ```
 
 Compare against choice-plans: unreadable fields (24 → expected 0), "has no content" re-asks (7), all re-asks
@@ -226,7 +226,7 @@ Unit tests (`pytest tests/unit -q`): before 1110 pass, after 1139 pass (+29, all
 ## Paid check result (test PC, 2026-10-15, $1.16, `output/card-plans/typed-schema/`)
 
 `card_plan_only --repeat 3 --schema typed --workers 5` at `adebe9d`, against `output/card-plans/choice-plans`
-(the same 18 runs on the string schema, $1.48). `python -m scripts.planner_schema_compare --logs …`:
+(the same 18 runs on the string schema, $1.48). `python -m scripts.tools.planner_schema_compare --logs …`:
 
 | | string (choice-plans) | typed |
 |---|---|---|

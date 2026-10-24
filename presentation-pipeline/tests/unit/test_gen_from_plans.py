@@ -1,11 +1,11 @@
-"""scripts.gen_from_plans: the brief's fingerprint matches the evaluator's request_sha256; arguments are checked."""
+"""scripts.tools.gen_from_plans: the brief's fingerprint matches the evaluator's request_sha256; arguments are checked."""
 
 import hashlib
 import json
 
 import pytest
 
-from scripts.gen_from_plans import main, request_fingerprint
+from scripts.tools.gen_from_plans import main, request_fingerprint
 
 
 def test_fingerprint_is_the_evaluators_request_sha256():

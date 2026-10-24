@@ -1,6 +1,6 @@
 # KPI tile nodes: paid check (2026-10-12, test PC)
 
-`python -m scripts.kpi_paid --blocks tiles --arm-a kpi --label tiles-paid --no-render --bundle` on `bb52ca5`
+`python -m scripts.experiments.kpi.kpi_paid --blocks tiles --arm-a kpi --label tiles-paid --no-render --bundle` on `bb52ca5`
 (spec §8 step 5, `docs/tile-nodes-spec-2026-10-12.md`). Generator only (gpt-4.1), on the 3 saved KPI slide plans
 (`docs/eval/kpi-node/paid-inputs.json`), **one try each** (the command left out `--repeat 3`: these numbers show the
 route works, not how stable it is). Arm A = the same slides from the 2026-10-11 element-ref paid check, recompiled on

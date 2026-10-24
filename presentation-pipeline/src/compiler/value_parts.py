@@ -1,7 +1,7 @@
 """One KPI value parser (look spec V15, 2026-10-11): "$48.2M" -> ("$48.2", "M").
 
 Used by the KPI ref fill step (src/compiler/nodes/element_refs.py), the composer
-(scripts/phase0b/render.py) and the variant gallery; fit-grow scales the unit <Span>
+(scripts/experiments/phase0b/render.py) and the variant gallery; fit-grow scales the unit <Span>
 the fill step writes with its number. The split is verbatim: head + unit == value
 (a space before the unit stays in the unit), so a drawn value always reads as the plan's.
 

@@ -222,7 +222,7 @@ Prompt text changed (planner diagram entries, generator notes, recipes), so one 
 diagrams, to see that the planner chooses directions from the space and that diagrams compile first try:
 
 ```bash
-uv run python -m scripts.eval_run gate-deck-xtsy-qcomm gate-deck-all-nodes-dense --repeat 1 --label node-facts --bundle
+uv run python -m scripts.eval.eval_run gate-deck-xtsy-qcomm gate-deck-all-nodes-dense --repeat 1 --label node-facts --bundle
 ```
 
 Cost ≈ $0.6, ceiling $0.8 (XTSY ≈ $0.3: the 2026-10-15 eval of two decks cost $0.585; the dense

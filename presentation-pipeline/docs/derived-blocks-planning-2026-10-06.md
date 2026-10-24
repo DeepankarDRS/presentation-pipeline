@@ -59,7 +59,7 @@ kept below for the record.
 
 Equal layouts across decks are expected when the *content* is the same shape (a KPI row over a table is
 the natural layout twice). So the metric must hold content fixed. Definitions (script
-`scripts/variety.py`, shared by 1a and step 3, run on the skeleton XML of the slots arm and the XML
+`scripts/eval/variety.py`, shared by 1a and step 3, run on the skeleton XML of the slots arm and the XML
 of the off arm):
 - **Layout signature (fine):** container tree of the slide body after dropping the header and
   decoration: for each Stack its orientation and children; leaves are `text`, a slot's component kind,
@@ -88,10 +88,10 @@ Everything is verified LLM-free first; one paid run at the end.
 
 | # | Item | Files | Why this order |
 |---|---|---|---|
-| 0.1 | **Usage logging** | `src/utils/llm_client.py` (`extract_usage` adds `tokens_cached` from `token_usage.prompt_tokens_details.cached_tokens`; `_ZERO_USAGE`); `src/state.py` (`AttemptRecord`: `step`, `slide_index`, `tokens_reasoning`, `tokens_cached`); one helper `usage_record(usage, step, slide_index=None)` in `llm_client.py`; the 12 writers of `generation_history` call it: `elicitor.py` (2), `outline_planner.py`, `slide_component_planner.py` (serial + fan-out), `plan_reviewer.py`, `generator.py`, `repairer.py` (3), `critic.py`, `visual_repairer.py` (2); `evaluator._build_step_summary` and the manifest `tokens` block (add `total_reasoning`, `total_cached`); new `scripts/usage_report.py` (per case × step × slide table from manifests); `eval_run._collect_run` copies `run-manifest.json` into `decks/<case>__rN/` | everything after is measured with it; pure plumbing |
+| 0.1 | **Usage logging** | `src/utils/llm_client.py` (`extract_usage` adds `tokens_cached` from `token_usage.prompt_tokens_details.cached_tokens`; `_ZERO_USAGE`); `src/state.py` (`AttemptRecord`: `step`, `slide_index`, `tokens_reasoning`, `tokens_cached`); one helper `usage_record(usage, step, slide_index=None)` in `llm_client.py`; the 12 writers of `generation_history` call it: `elicitor.py` (2), `outline_planner.py`, `slide_component_planner.py` (serial + fan-out), `plan_reviewer.py`, `generator.py`, `repairer.py` (3), `critic.py`, `visual_repairer.py` (2); `evaluator._build_step_summary` and the manifest `tokens` block (add `total_reasoning`, `total_cached`); new `scripts/eval/usage_report.py` (per case × step × slide table from manifests); `eval_run._collect_run` copies `run-manifest.json` into `decks/<case>__rN/` | everything after is measured with it; pure plumbing |
 | 0.2 | **Planner checks + re-ask** | new `src/agents/plan_checks.py`; `slide_component_planner.py` (one wrapper `plan_with_reask` used by `slide_plan_serial_node` and `slide_component_planner_node`, replacing both `except` branches); `written_lines.py` (card body = title); `src/state.py` (`SlidePlan.plan_flags`); `src/prompts/slide_component_planner/user.j2` (the existing `repair_context` block carries the named problems) | largest visible gap in the hold-out |
 | 0.3 | **Shrink guard** | `src/node/fit-grow.js` (+ `tests/unit/test_fit_grow_*.py`) | independent of 0.2; free replay |
-| 0.4 | **Font embedding** | new `src/compiler/font_embed.py` (from `scripts/embed_fonts.py` + `fontTools.subset`); called by `deck_assembler` after `merge_pptx_files`; `scripts/phase0b/compose_deck.py` switched to it; `pyproject.toml` + `requirements.txt` + `uv.lock` add `fonttools` | last: dormant for LLM decks (below) |
+| 0.4 | **Font embedding** | new `src/compiler/font_embed.py` (from `scripts/tools/embed_fonts.py` + `fontTools.subset`); called by `deck_assembler` after `merge_pptx_files`; `scripts/experiments/phase0b/compose_deck.py` switched to it; `pyproject.toml` + `requirements.txt` + `uv.lock` add `fonttools` | last: dormant for LLM decks (below) |
 | 0.5 | Docs, push, hand-over commands | AGENTS.md, this file, `docs/session-kickoff.md` | |
 
 ### 0.2 in detail (what each check is)
@@ -163,7 +163,7 @@ golden deck for per-slide scoring. Its plans cannot be regenerated identically l
 made now; whether it also runs in step 3 (≈ +$0.4, slots arm only) is decided later from 1a.
 
 ```bash
-python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label step0 --compose --bundle
+python -m scripts.eval.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label step0 --compose --bundle
 ```
 
 **The test PC sends back one file: the bundle zip.** After 0.1 it carries, per case,
@@ -171,7 +171,7 @@ python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agen
 for the six `output/runs/` folders because `run-manifest.json` was missing; once 0.1 copies it, that
 is unnecessary). `slides.json` holds every slide's plan **and** XML, which is what 1a and step 3 need.
 Plus a one-line reply: did `composed.pptx` open in PowerPoint with Inter drawn. Back up the bundle:
-1a and step 3 depend on it. Import: `python -m scripts.eval_import <zip>` → `docs/eval/step0/`.
+1a and step 3 depend on it. Import: `python -m scripts.eval.eval_import <zip>` → `docs/eval/step0/`.
 
 ## 3. Node contract (rewritten 2026-10-06 from the slot form; decision D10)
 
@@ -254,7 +254,7 @@ tag; each variant says whether it is drawn `native` or as a `block`). Look: `doc
 
 `ref`, `variant` and the derived tags are not POM. The **node pass** runs in the validator, before
 `normalize_xml` (which never sees the plan), on every slide under `blocks: nodes` (the setting was
-`off | slots`), and always strips them. Two layout passes as in `scripts/phase0b/expand.py`: lay out
+`off | slots`), and always strips them. Two layout passes as in `scripts/experiments/phase0b/expand.py`: lay out
 with empty boxes, draw each node for its box, lay out again. If code cannot draw a node (an exception),
 it leaves an empty VStack with the node's size attributes and logs `NODE_EXPAND_FAILED`: the slide still
 compiles and the gap is visible.
@@ -330,13 +330,13 @@ used; §3's `c2` / `c3` are placeholders. The ids are already unique per slide i
 
 ### 4.1 Slide selection (exact rule; replaces "fill to ≈ 24")
 
-`scripts/node_test_select.py` (replaces the planned `slot_test_select.py`, never built) reads the four
+`scripts/experiments/node_test/node_test_select.py` (replaces the planned `slot_test_select.py`, never built) reads the four
 bundles and writes `docs/eval/step0/1a-slides.json` (case, slide number, title, component ids + kinds, and
 the reason any slide is left out). **Rule:**
 1. **Pool:** all six step 0 decks (37 slides). CHEFFIN joins the pool (the earlier rule left it out
    wholesale because its slides were the examples; now only the example slides themselves are excluded).
 2. **Exclude the prompt's own examples.** The node prompt's examples are Phase 0c's skeletons rewritten to
-   ref tags (`scripts/phase0b/phase0c/m1`–`m4`). They were drawn from CHEFFIN slide 2 (exec summary),
+   ref tags (`scripts/experiments/phase0b/phase0c/m1`–`m4`). They were drawn from CHEFFIN slide 2 (exec summary),
    CHEFFIN slide 3 (CPC), XTSY slide 6 (automation) and gj-h1 slide 2 (not in step 0). So CHEFFIN 2, CHEFFIN 3
    and XTSY 6 are out. The rule is "by title of the source slide", so it also holds if the examples change.
 3. **Exclude slides with nothing to place:** every component is `title` or `layer` (QBR 1, launch 1).
@@ -402,17 +402,17 @@ New (all LLM-free to test; Python 3.11-safe; `test_py311_syntax` covers them):
 | `src/compiler/nodes/native.py` | one filler per native kind (Table, Chart, Ul, Timeline, ProcessArrow, Flow, Pyramid, Tree, Matrix, Text): `content_data` → POM children, verbatim text |
 | `src/compiler/nodes/prompt_lines.py` | one prompt line per component (§3.5: tag, shape hint in lengths, weight, variants whose `requires` hold, from `block-variants.yaml`) |
 | `src/prompts/generator/nodes_system.j2` | the §3.5 rules + the derived tags in the node list + the rewritten examples |
-| `scripts/from_plans.py` | a run's `slides.json` + manifest → `state["slide_plans"]` and theme (`route_after_start` already skips planning) |
-| `scripts/node_test_select.py` | §4.1 → `docs/eval/step0/1a-slides.json` |
-| `scripts/node_test.py` | generator-only runner for arm B: per slide the node prompt, first XML, node pass, compile; writes `output/1a/<label>/<case>/slide-N/{skeleton.xml, expanded.xml, compile-result.json}` + one manifest; `--llm scripted:<dir>` replays fixed responses instead of calling the API; `--off` recompiles arm A |
-| `scripts/node_test_score.py` | measures 1, 2, 3, 7, 8, 9 → `docs/eval/1a/summary.md` + `results.json` |
-| `scripts/node_test_sheet.py` | measure 4 sheets + key |
-| `scripts/variety.py` | measures 5, 6 (§1b), shared with step 3 |
+| `scripts/tools/from_plans.py` | a run's `slides.json` + manifest → `state["slide_plans"]` and theme (`route_after_start` already skips planning) |
+| `scripts/experiments/node_test/node_test_select.py` | §4.1 → `docs/eval/step0/1a-slides.json` |
+| `scripts/experiments/node_test/node_test.py` | generator-only runner for arm B: per slide the node prompt, first XML, node pass, compile; writes `output/1a/<label>/<case>/slide-N/{skeleton.xml, expanded.xml, compile-result.json}` + one manifest; `--llm scripted:<dir>` replays fixed responses instead of calling the API; `--off` recompiles arm A |
+| `scripts/experiments/node_test/node_test_score.py` | measures 1, 2, 3, 7, 8, 9 → `docs/eval/1a/summary.md` + `results.json` |
+| `scripts/experiments/node_test/node_test_sheet.py` | measure 4 sheets + key |
+| `scripts/eval/variety.py` | measures 5, 6 (§1b), shared with step 3 |
 | `tests/fixtures/nodes/` | m1–m4 rewritten to ref tags; one broken skeleton per `NODE_*` code (§4.6) |
 | `tests/unit/test_nodes_validate.py`, `test_nodes_native.py`, `test_nodes_prompt_lines.py`, `test_node_test_select.py`, `test_variety.py`, `test_node_test_dryrun.py` | per file above |
 
-Changed: `scripts/phase0b/expand.py` (reads ref tags instead of `slot-` ids; native kinds go to `native.py`),
-`scripts/phase0b/render.py` (role-based recolouring from the deck palette), this doc, AGENTS.md.
+Changed: `scripts/experiments/phase0b/expand.py` (reads ref tags instead of `slot-` ids; native kinds go to `native.py`),
+`scripts/experiments/phase0b/render.py` (role-based recolouring from the deck palette), this doc, AGENTS.md.
 Not touched: the graph, `src/node/fit-grow.js`, `palettes.yaml`. The node code sits in `src/compiler/nodes/`
 **unwired** (no `blocks:` setting yet): step 1 wires it if 1a passes; if 1a fails it is removed.
 
@@ -424,8 +424,8 @@ below step 0's measured generator cost). Run order (one case first): `deck-qbr-d
 check its folder and scores, then the other five in one command. Test PC commands (final form when built):
 
 ```bash
-python -m scripts.node_test --run output/step0 --slides docs/eval/step0/1a-slides.json --cases deck-qbr-data --label 1a
-python -m scripts.node_test --run output/step0 --slides docs/eval/step0/1a-slides.json --label 1a --bundle
+python -m scripts.experiments.node_test.node_test --run output/step0 --slides docs/eval/step0/1a-slides.json --cases deck-qbr-data --label 1a
+python -m scripts.experiments.node_test.node_test --run output/step0 --slides docs/eval/step0/1a-slides.json --label 1a --bundle
 ```
 
 The test PC needs the four step 0 bundles extracted at the same paths (copy the zips across). It sends back
@@ -452,8 +452,8 @@ Only after all six: ask for the paid run with the case list and cost.
 
 **Built** (file list §4.4): `src/compiler/nodes/` (`spec.py`, `validate.py`, `native.py`, `prompt_lines.py`;
 unwired), `src/prompts/generator/nodes_rules.j2` + `nodes_user.j2` and a `nodes` flag in `system.j2` (off: the
-rendered prompt is byte-identical on all 37 step 0 plans), `scripts/from_plans.py`, `node_test_select.py`,
-`node_test.py`, `node_test_score.py`, `node_test_sheet.py`, `variety.py`; `scripts/phase0b/expand.py`
+rendered prompt is byte-identical on all 37 step 0 plans), `scripts/tools/from_plans.py`, `node_test_select.py`,
+`node_test.py`, `node_test_score.py`, `node_test_sheet.py`, `variety.py`; `scripts/experiments/phase0b/expand.py`
 (`expand_nodes`), `render.py` (`deck_pack`, `retoken`), `fontcheck.py` (CLI moved under `main()`, same output);
 fixtures `tests/fixtures/nodes/` (two fictional step 0 decks, one scripted broken skeleton per code); 46 new tests.
 
@@ -571,11 +571,11 @@ exact usage dict and now expects `tokens_cached`). Commits: 0.1 `178244b`, 0.2 `
 `tokens_cached`, `reask`; the 12 `generation_history` writers use it. Two calls that were not recorded at all
 now are: the planner re-plan inside the compile repairer's REGENERATE and inside the visual repairer's
 REGENERATE. Manifest `steps` entries and `tokens.total_reasoning` / `total_cached`;
-`python -m scripts.usage_report <folders>` (`--per-slide`); the eval bundle copies `run-manifest.json` into
+`python -m scripts.eval.usage_report <folders>` (`--per-slide`); the eval bundle copies `run-manifest.json` into
 `decks/<case>__rN/`. Old manifests read as step "unknown".
 
 **0.2 Plan checks and one re-ask** (`src/agents/plan_checks.py`, `plan_with_reask` in
-`slide_component_planner.py`, `scripts/plan_flags_report.py`). As §2, with these differences found while
+`slide_component_planner.py`, `scripts/eval/plan_flags_report.py`). As §2, with these differences found while
 calibrating on the 17 hold-out plans:
 - **C17 keeps the component with more text, not the hero** (launch 3: chevrons with 5 words vs cards with 53
   words of descriptions; keeping the hero would have thrown the descriptions away). The kept one takes the
@@ -611,18 +611,18 @@ on the LibreOffice render; `output/fontexp3/`, replay script in the session scra
   Some warnings are conservative (the 85% table margin): 12 on the 28 slides for 5 real breaks.
 
 **0.4 Font embedding** (`src/compiler/font_embed.py`; deck_assembler and the evaluator call it; compose_deck uses
-it; `scripts/embed_fonts.py` keeps its CLI). See the correction in §2. Three faces (Inter regular + bold,
+it; `scripts/tools/embed_fonts.py` keeps its CLI). See the correction in §2. Three faces (Inter regular + bold,
 JetBrains Mono regular) add **148 KB** to a deck zipped (323 KB of raw EOT, 94–116 KB per subset face; the full
 fonts are 411 / 420 / 274 KB). LibreOffice opens the result. `saveSubsetFonts="1"` is set next to
 `embedTrueTypeFonts="1"` (as PowerPoint's own subset embedding); R4 passed without it, so the PowerPoint check
 below also covers it. Not embedded: the per-slide files; fonts the deck does not name (the LLM path names none).
 
-**Label tier (D8).** `python -m scripts.label_sizes` builds `output/label-test/label-sizes.pptx` (light and dark
+**Label tier (D8).** `python -m scripts.tools.label_sizes` builds `output/label-test/label-sizes.pptx` (light and dark
 slide, the same mono label at 10 / 11 / 12 / 14 px as a kicker, a KPI tile label and a table caption); sent to
 the user for the projected view. The decision is the user's, recorded here when given.
 
 **First paid run (test PC, 2026-10-06): `deck-qbr-data` ($0.19) broke on a NUL character.** Not caused by step 0's code.
-`scripts/find_nul.py` on the run folder showed the garbage already in the **outline planner's `subtitle`** (the
+`scripts/tools/find_nul.py` on the run folder showed the garbage already in the **outline planner's `subtitle`** (the
 evidence line, gpt-5-mini): "Acme Analytics \x0b\x0b Executive Update", "$28.1M \x00b\x00b +22% \x00b\x00b 142",
 on slides 1-4, each run sitting between spaces where a middle dot belongs. The generator copied it into the slide
 XML; POM wrote it into the pptx, PowerPoint refused the deck, `font_embed` skipped it (as designed) and `eval_run`

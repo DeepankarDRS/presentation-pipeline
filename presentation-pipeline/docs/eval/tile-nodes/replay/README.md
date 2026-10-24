@@ -1,6 +1,6 @@
 # KPI tile nodes: free replay (2026-10-12)
 
-`python -m scripts.tile_replay` (spec §8 step 4, `docs/tile-nodes-spec-2026-10-12.md`). No API calls.
+`python -m scripts.experiments.tiles.tile_replay` (spec §8 step 4, `docs/tile-nodes-spec-2026-10-12.md`). No API calls.
 
 ## Method
 
@@ -18,7 +18,7 @@
   `letterSpacing`) where it differs from the look (shared by every tile → on the group).
   Not carried: tile shadows.
 - **Both versions** through the same path: fill (`element_refs.fill_refs` / `tiles.fill`) → `normalize_xml` →
-  `compile-pom.js` (fit-grow) → LibreOffice, scored with `scripts/kpi_replay.score`.
+  `compile-pom.js` (fit-grow) → LibreOffice, scored with `scripts/experiments/kpi/kpi_replay.score`.
 - **KPI output tokens**: the hand-written XML the tags replace vs the tags, o200k, whitespace between tags removed on both.
 
 ## Results

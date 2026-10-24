@@ -3,7 +3,7 @@
 Same prompts (CHEFFIN and XTSY), no prompt change. Runs from the test PC (UI runs, zip
 `gpt 5mini vs 6.1sol.zip`) and the gpt-4.1-generator runs of 2026-10-20 from Downloads. Rendered here with
 LibreOffice (Inter installed, all decks drew Inter), scored with the project's own metrics
-(`scripts.eval_metrics`, `src.compiler.geometry_audit`). No API calls.
+(`scripts.eval.eval_metrics`, `src.compiler.geometry_audit`). No API calls.
 
 | run | brief (request hash) | commit | models | theme | cost | retries |
 |---|---|---|---|---|---|---|
@@ -89,7 +89,7 @@ slide 2's "Winners / Weak terms" lists drawn in very narrow columns (words broke
 1. **Your blind marks** on these sheets (free): the tally above is one reviewer's read.
 2. **Separate planner from generator** (paid, ≈ $0.45 for the two decks): gpt-6.1-sol as the generator only, on
    the saved gpt-5-mini plans of `225dc465d0f4` / `6066f16beedd` (same plans as the 4.1 runs, generator-only, like
-   `scripts/tile_same_plan.py`). If 6.1-sol on 5-mini plans looks as good, keep the planners cheap and pay only
+   `scripts/experiments/tiles/tile_same_plan.py`). If 6.1-sol on 5-mini plans looks as good, keep the planners cheap and pay only
    for the generator (≈ $0.20 of the $0.34–0.39 per deck).
 3. Same theme and commit for every arm next time (set the theme in the run, run all arms on one commit), and two
    repeats, so colour and code changes do not mix into the model comparison.

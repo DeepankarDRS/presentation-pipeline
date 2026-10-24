@@ -12,7 +12,7 @@ the 2026-09-29 planner prompt, the component planner routes numeric structure co
 recent runs come from the planner's own rules and from brief instructions copied as content. A
 structured outline would not change them.
 
-Reproduce: `python -m scripts.structure_loss` (add `--examples 5`, `--json out.json`). No LLM, no
+Reproduce: `python -m scripts.eval.structure_loss` (add `--examples 5`, `--json out.json`). No LLM, no
 compiler. It reads the gitignored `output/`, so it runs only on the build PC.
 
 ## Method
@@ -260,7 +260,7 @@ also says that the more structured outline path made slides thinner. Caveats:
 
 ## Changes built from this evidence (2026-10-15, free)
 
-Five changes, each checked on the saved plans. Replay: `python -m scripts.structure_loss --replay` applies the
+Five changes, each checked on the saved plans. Replay: `python -m scripts.eval.structure_loss --replay` applies the
 new code checks to every saved plan and outline, then prints the same tables. The corpus now also holds the
 2026-10-15 combined run's fresh plans (`output/tile-combined/*/plans.json`): 507 distinct plans, 132 bullet
 lists before the replay. Prompt changes (1, 2) cannot be replayed free; the paid check below measures them.
@@ -342,10 +342,10 @@ reproducible free; the paid check's `run.log` will show it.
 
 ### Proposed paid check (not run)
 
-`python -m scripts.card_plan_only --repeat 3 --label choice-plans --bundle --workers 5` on the test PC (5 decks at once, same cost): the six cases ×
+`python -m scripts.experiments.cards.card_plan_only --repeat 3 --label choice-plans --bundle --workers 5` on the test PC (5 decks at once, same cost): the six cases ×
 3 (planning only, outline saved, now with `run.log`). Cost ≈ $1.5 (the 2026-10-13 run of the same 18 was $1.52;
 agency should cost less without the speaker-note re-asks); ceiling $2. Then free on this PC:
-`python -m scripts.structure_loss` and `python -m scripts.card_plan_only --label choice-plans --rescore`.
+`python -m scripts.eval.structure_loss` and `python -m scripts.experiments.cards.card_plan_only --label choice-plans --rescore`.
 What to read: agency slide 2 (Winners / Weak terms as cards or one list per group; K4 firing on the city cards),
 XTSY slide 3 (opportunity areas under the matrix cards, no written lines), XTSY slide 2 (no "Show:" list),
 no speaker notes anywhere, re-asks per run vs 32 / 210 plans, fallbacks 0, length-limit lines in `run.log`, and

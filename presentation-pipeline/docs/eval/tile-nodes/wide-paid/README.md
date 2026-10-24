@@ -2,8 +2,8 @@
 
 Both routes on commit `a74db88` (P1 tile padding 16 / 6 and P2 hint tones built). The six step-0 decks, one repeat each:
 
-    $env:POM_BLOCKS="tiles"; python -m scripts.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-tiles --bundle
-    $env:POM_BLOCKS="kpi";   python -m scripts.eval_run <same six cases> --repeat 1 --label wide-kpi --bundle
+    $env:POM_BLOCKS="tiles"; python -m scripts.eval.eval_run deck-qbr-data deck-product-launch-data gate-deck-agency-takeover gate-deck-xtsy-qcomm gate-deck-cheffin-full gate-deck-all-nodes-dense --repeat 1 --label wide-tiles --bundle
+    $env:POM_BLOCKS="kpi";   python -m scripts.eval.eval_run <same six cases> --repeat 1 --label wide-kpi --bundle
 
 Each route plans its own decks, so plans, headlines and KPI groupings differ between the arms. The blind pairs
 compare the same case and slide, not the same plan. Bundles: `output/wide-paid/{tiles,kpi}/` (gitignored).
@@ -120,7 +120,7 @@ side callout came out 293 px per tile vs 338). Open, not changed.
 its numbers end ≥ 15% larger (unchanged rule). An explicit grid (`cols` < count) or column stays as written.
 - Pinned slides of the paid runs, as written: QBR (paid 1) 69 → 95 px; CHEFFIN 1 (wide) stays 51 (two rows give
   57, +12%, under the 15% rule); launch 3 54 (no gain); CHEFFIN 1 (paid 1, rows of 3 and 2) unchanged.
-- The 68-slide wide replay (`python -m scripts.tile_wide --no-render`): smallest tile number larger on 9 slides,
+- The 68-slide wide replay (`python -m scripts.experiments.tiles.tile_wide --no-render`): smallest tile number larger on 9 slides,
   smaller on 0, the same on 58; tile `GEOM_CARD_EMPTY` 70 → 26 (element refs unchanged, 59). All 9 are CHEFFIN
   slide 1 or 4 from different saved runs (rewritten rows of 5–7: 28 → 61 px, 38–40 → 57–77 px).
   `pinned-row-before.png` / `pinned-row-after.png`: CHEFFIN 4, seven tiles in one row → 4 + 3.

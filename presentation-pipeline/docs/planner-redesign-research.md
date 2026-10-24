@@ -169,7 +169,7 @@ Four saved runs: `llm_test/gj-h1-regen-{69af33,7293ef,5a9e2d,bf396b}.zip`. The p
 
 | Measure | Result | How measured |
 |---|---|---|
-| The brief's headline kept on content slides | 0/13 in every run: replaced by section labels ("Platform Deep-Dive · Swiggy") | `scripts/eval_lineage.py` |
+| The brief's headline kept on content slides | 0/13 in every run: replaced by section labels ("Platform Deep-Dive · Swiggy") | `scripts/eval/eval_lineage.py` |
 | Brief numbers dropped during planning | 7–13% (27–48 of 365) | `eval_lineage.py` |
 | Brief numbers dropped by the generator | 0–3% in the three recent runs | `eval_lineage.py` |
 | Slides flagged by simple code checks (dropped or invented numbers, over capacity, mixed chart units) | 9, 8, 10, 9 of 14 | replay script, 2026-09-27 |
@@ -651,7 +651,7 @@ These change in the same step as the readers of these structures:
 
 | Metric | Tool | Today (gj-h1 / CHEFFIN) |
 |---|---|---|
-| Headlines kept (spec briefs) | `scripts/eval_lineage.py` | 0/13 / — |
+| Headlines kept (spec briefs) | `scripts/eval/eval_lineage.py` | 0/13 / — |
 | Brief numbers dropped, per stage | `eval_lineage.py` | 7–13% planning, 0–3% generator |
 | Invented numbers, per stage | `eval_lineage.py` | 0–2 per deck / fake table + dates |
 | Hints per slide | `eval_lineage.py` | 5–7 max |
@@ -742,7 +742,7 @@ Ranked by expected effect on the finished deck, from the evidence in §3 and the
 |---|---|---|---|---|---|
 | R1 | Chart options: a second value axis, values on bars, horizontal and stacked bars. The normalizer lifts the extra `<Chart>` options (POM rejects unknown attributes) and `pptx-post.js` patches the chart XML (POM's writer hard-codes `barDir="col"` and `grouping="clustered"`, with no data labels) | `tables-check` CHEFFIN slide 4: CVR (%) and AOV (₹) on one axis, so the CVR bars vanish; Genspark's sorted horizontal bars with values (CHEFFIN-full slides 3 and 6) | `src/node/pptx-post.js`, `src/compiler/normalizer.py`, `components/chart.yaml`, the planner's chart format | medium | XML-patch unit tests; compile + LibreOffice render |
 | R2 | Check every palette against `meta.contrast_targets` when themes load; flag accents that fail as text and use a darker text accent there | `saascolor` accent 2.44:1 and `navy-orange` 2.28:1 on their surfaces (target 3.0): faint orange labels and headline phrases on `1b306e1de67f` | `style_resolver.py`, `palettes.yaml` | small | unit test over all palettes |
-| R3 | Broken-word and diagram label-fit checks on every compiled slide (promote `word_breaks`); on failure widen the band, switch the variant or re-plan the component | XTSY: 13 broken words on slides 4, 6 and 7; `1b306e1de67f` slide 4 | `scripts/eval_metrics.py:155` → `validator.py` / the layout checks (generator #6) | small–medium | re-check the saved decks |
+| R3 | Broken-word and diagram label-fit checks on every compiled slide (promote `word_breaks`); on failure widen the band, switch the variant or re-plan the component | XTSY: 13 broken words on slides 4, 6 and 7; `1b306e1de67f` slide 4 | `scripts/eval/eval_metrics.py:155` → `validator.py` / the layout checks (generator #6) | small–medium | re-check the saved decks |
 | R4 | Record the git commit (plus an uncommitted-changes flag), the theme name and a hash of the request in every `run-manifest.json` | `1b306e1de67f` could not be traced to a commit (only eval bundles record `git_commit`), and its theme existed only on the test PC | `evaluator.py:144` | trivial | unit test |
 
 **Batches:**

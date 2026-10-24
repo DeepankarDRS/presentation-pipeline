@@ -144,7 +144,7 @@ def usage_record(usage: dict[str, Any], step: str, slide_index: int | None = Non
 
     `step` is the pipeline step (elicitor, outline_planner, slide_component_planner,
     plan_reviewer, generator, repairer, critic, visual_repairer); `slide_index` is 0-based,
-    None for a deck-level call. The run manifest and scripts/usage_report.py read these.
+    None for a deck-level call. The run manifest and scripts/eval/usage_report.py read these.
     """
     return {"attempt": 0, "tier": 0, **usage, "step": step, "slide_index": slide_index, **extra}
 

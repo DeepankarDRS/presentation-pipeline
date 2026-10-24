@@ -17,10 +17,10 @@ alwaysApply: false
 - Phase 2: `context_builder` — DELETE `_PATTERN_TO_LAYOUT` + the 12 `layouts/*.yaml` + single-`verified_example` injection. Replace with: always inject house-style.yaml grammar + a rotating gallery of 2-3 full diverse examples labelled "copy the vocabulary + the height math, never the structure".
 - Phase 3: rewrite `generator/system.j2` around the grammar + gallery. Drop the "layout_hint = PRIMARY spatial instruction, follow exactly" pixel-arithmetic framing.
 - Phase 4: `slide_component_planner` — `layout_hint` stays freeform but prompt asks for structure/priority language, not pixel widths/height-budgets. DELETE `enforce_layout_variety` (the enum-swap) and the sorter call in graph.py. Variety = a one-line prompt rule + optional warn-only post-check.
-- Phase 5: `scripts/render_check.py` (built 2026-09-10) is the before/after harness + my dev-time iteration loop.
+- Phase 5: `scripts/eval/render_check.py` (built 2026-09-10) is the before/after harness + my dev-time iteration loop.
 
 Status (2026-09-10):
-- Phase 5 harness: `scripts/render_check.py` — done, working.
+- Phase 5 harness: `scripts/eval/render_check.py` — done, working.
 - Phase 1: DONE.
   * `src/knowledge/core/house-style.yaml` — the grammar (frame / sizing vocabulary /
     composition bands / height-budget arithmetic / rigid-node rules / recipes /

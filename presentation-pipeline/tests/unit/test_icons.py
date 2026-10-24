@@ -87,7 +87,7 @@ def test_every_icon_taught_in_prompts_and_knowledge_exists():
 
 @pytest.mark.skipif(not _POM_ICON_DATA.exists() or not shutil.which("node"), reason="POM/node not installed")
 def test_icon_list_matches_installed_pom():
-    """Fails after a POM upgrade until `python -m scripts.export_icon_names` is re-run."""
+    """Fails after a POM upgrade until `python -m scripts.tools.export_icon_names` is re-run."""
     js = "const {ICON_DATA}=await import(process.argv[1]);console.log(JSON.stringify(Object.keys(ICON_DATA)));"
     out = subprocess.run(["node", "--input-type=module", "-e", js, _POM_ICON_DATA.as_uri()],
                          capture_output=True, text=True, check=True).stdout

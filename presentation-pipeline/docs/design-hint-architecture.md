@@ -39,8 +39,8 @@ Guidance scales with the slide, not with the catalogue: the generator sees techn
 - **New POM node / nesting rule**: add `children:` in `nodes.yaml` + a case in `tests/unit/test_content_model.py`. No code change.
 - **New visual treatment**: add it under `treatments:` in `hint-capabilities.yaml` and list it on the kinds that support it. Tests check every kind is covered, no dead treatments, and that technique snippets are validly nested.
 - **New component kind**: add to `planner_schema.ComponentKindLiteral` **and** `hint-capabilities.yaml` `kinds:` (test enforces).
-- **POM upgrade**: `python -m scripts.export_icon_names` (a test fails until the list matches the installed POM).
+- **POM upgrade**: `python -m scripts.tools.export_icon_names` (a test fails until the list matches the installed POM).
 
 ## Tests
 
-`tests/unit/test_content_model.py`, `test_icons.py`, `test_hint_capabilities.py`, plus `test_repairer.py::test_invalid_child_guidance_and_signature` and `scripts/verify_li_nesting.py` (compiles the Li case with the real compiler).
+`tests/unit/test_content_model.py`, `test_icons.py`, `test_hint_capabilities.py`, plus `test_repairer.py::test_invalid_child_guidance_and_signature` and `scripts/tools/verify_li_nesting.py` (compiles the Li case with the real compiler).

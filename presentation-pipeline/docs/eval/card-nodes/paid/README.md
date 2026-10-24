@@ -1,7 +1,7 @@
 # Card tile nodes: paid check on fresh plans (2026-10-13/14, test PC)
 
-Spec: `docs/tile-nodes-spec-2026-10-12.md` §11. Part 1 `python -m scripts.card_plan_only --repeat 3 --label card-plans`
-($1.517, 18 planner runs, `plans-summary.md`); part 2 `python -m scripts.card_paid --plans card-plans --repeat 3 --label card-paid`
+Spec: `docs/tile-nodes-spec-2026-10-12.md` §11. Part 1 `python -m scripts.experiments.cards.card_plan_only --repeat 3 --label card-plans`
+($1.517, 18 planner runs, `plans-summary.md`); part 2 `python -m scripts.experiments.cards.card_paid --plans card-plans --repeat 3 --label card-paid`
 ($0.282, `summary.md`). Arm A = the saved hand-drawn slide on its own plan; arm B = `POM_BLOCKS=tiles` on the fresh plan's
 matching card slide.
 

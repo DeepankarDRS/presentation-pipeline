@@ -30,7 +30,7 @@ and code fixes before any LLM round.
 | `src/compiler/geometry_audit.py` | reads every drawn shape in the `.pptx` (a table = sum of its rows × sum of its columns; a text that clearly needs more lines = its estimated height), gives it to the component box it overlaps most, and checks the rules below |
 | `src/agents/validator.py` | adds the findings to `layout_issues` after a successful compile (cover / section / closing slides skip `GEOM_SLIDE_SPARSE`) |
 | `layout_audit.REPORT_ONLY_CODES` | all `GEOM_*` codes: the critic never sees them, no repair is triggered; the eval counts them in `layout_codes` |
-| `scripts/geometry_replay.py` | LLM-free replay of saved slides (`--reaudit` re-checks without compiling) |
+| `scripts/eval/geometry_replay.py` | LLM-free replay of saved slides (`--reaudit` re-checks without compiling) |
 
 | Code | Rule |
 |---|---|

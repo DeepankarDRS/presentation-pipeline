@@ -8,9 +8,9 @@ from pathlib import Path
 
 import pytest
 
-from scripts import eval_compare, eval_import, eval_run
-from scripts.eval_metrics import card_metrics, invented_numbers, pattern_match, text_overflows, word_breaks
-from scripts.make_gj_h1_case import CASE, build_case
+from scripts.eval import eval_compare, eval_import, eval_run
+from scripts.eval.eval_metrics import card_metrics, invented_numbers, pattern_match, text_overflows, word_breaks
+from scripts.tools.make_gj_h1_case import CASE, build_case
 
 _ROOT = Path(__file__).resolve().parents[2]
 _GOLDEN = _ROOT / "tests" / "fixtures" / "golden" / "gj-h1-deck"
@@ -284,5 +284,5 @@ def test_every_gate_case_loads_with_a_request():
 
 
 def test_gj_h1_case_matches_golden_deck():
-    assert CASE.read_text(encoding="utf-8") == build_case(), "run: python -m scripts.make_gj_h1_case"
+    assert CASE.read_text(encoding="utf-8") == build_case(), "run: python -m scripts.tools.make_gj_h1_case"
     assert "gj-h1-regen" in eval_run.GATE_CASES

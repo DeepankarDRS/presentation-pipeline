@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts import eval_run
+from scripts.eval import eval_run
 
 
 def _run(tmp: Path) -> Path:
@@ -41,7 +41,7 @@ def test_compose_adds_the_composed_deck(tmp_path: Path, monkeypatch: pytest.Monk
         return {"pptx": str(run / "composed" / "composed.pptx"), "slides": 1, "code": [1], "llm": [],
                 "left_out": [], "smaller_type": {}, "overfull": []}
 
-    monkeypatch.setattr("scripts.phase0b.compose_deck.compose", fake)
+    monkeypatch.setattr("scripts.experiments.phase0b.compose_deck.compose", fake)
     case = _case()
     eval_run._collect_run(case, str(run / "deck" / "presentation.pptx"), tmp_path / "eval", compose=True)
     assert (tmp_path / "eval" / "decks" / "case__r1" / "composed.pptx").read_bytes() == b"code"
@@ -55,7 +55,7 @@ def test_compose_failure_is_recorded_not_raised(tmp_path: Path, monkeypatch: pyt
     def boom(r: Path) -> dict:
         raise RuntimeError("no slide compiled")
 
-    monkeypatch.setattr("scripts.phase0b.compose_deck.compose", boom)
+    monkeypatch.setattr("scripts.experiments.phase0b.compose_deck.compose", boom)
     case = _case()
     eval_run._collect_run(case, str(run / "deck" / "presentation.pptx"), tmp_path / "eval", compose=True)
     assert "no slide compiled" in case["composed"]["error"]

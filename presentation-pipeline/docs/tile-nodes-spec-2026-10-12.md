@@ -242,9 +242,9 @@ Every figure except "today" is an estimate until the paid check.
 1. Cache order in `system.j2` / `user.j2` (free; check the system prompt is identical across one
    deck's slides; the cached share shows in the next paid run's `tokens_cached`).
 2. `tiles.py` + validator + prompt line for KPI, behind `POM_BLOCKS=tiles`; unit tests.
-3. Gallery of every KPI variant × arrange on two palettes (free; `scripts/kpi_gallery.py`).
+3. Gallery of every KPI variant × arrange on two palettes (free; `scripts/experiments/kpi/kpi_gallery.py`).
 4. Free replay: rewrite the saved `first-generated.xml` KPI tiles as tile tags and compare the renders.
-5. One paid check, `python -m scripts.kpi_paid` (~$0.30, ask first): refs first try, output tokens,
+5. One paid check, `python -m scripts.experiments.kpi.kpi_paid` (~$0.30, ask first): refs first try, output tokens,
    hand-written fallback count, then blind marks against today's route. **Gate:** marks ≥ 0.5 and KPI
    output tokens down ≥ 50%.
 6. Card: the same steps.
@@ -319,14 +319,14 @@ Layouts: `grid`, `steps` (cards joined by `arrow-right` icons, the step number l
 `arrange="title-band"` (not needed by any saved slide); `numerals` uses a Text, not a transparent Shape (T4).
 Square cards (`borderRadius` dropped, as KPI tiles).
 
-**Gallery** (`python -m scripts.card_gallery`, `output/card-gallery/`): every variant on a 5-card grid, 9 layouts,
+**Gallery** (`python -m scripts.experiments.cards.card_gallery`, `output/card-gallery/`): every variant on a 5-card grid, 9 layouts,
 6 wrapper boxes, corporate-slate + graphite-dark; all compile. Found and fixed there: numerals as a KPI number,
 toned tinting neutral cards, an invisible key phrase on dark cards, the rail number squeezed (POM sizes a `w="max"`
 Text to its own measure), a numbered step's "01" outgrowing its title.
 
 **Render font (found 2026-10-13):** `kpi_replay.compile_slide` (used by the KPI / tile / card replays and galleries) skips `compiler_client.deck_font`, so fit-grow measured Noto Sans JP and LibreOffice, which ignores the fonts embedded in the .pptx, drew bold text in Arial Black: the first card replay showed text overlaps the real deck does not have. The card replay and gallery now set the deck font and render through a private LibreOffice profile holding the deck fonts (`output/lo-inter`). The KPI replays still use the old path; their broken-word counts were measured in the wrong font.
 
-**Replay** (`python -m scripts.card_replay`, `output/card-replay/`): 80 saved card slides (output/**/slides.json: eval, q1008, kpi-decks, kpi-decks-2, wide-paid, critic-on, colour roles, step 0),
+**Replay** (`python -m scripts.experiments.cards.card_replay`, `output/card-replay/`): 80 saved card slides (output/**/slides.json: eval, q1008, kpi-decks, kpi-decks-2, wide-paid, critic-on, colour roles, step 0),
 75 replayed (5 skipped: a card title not on the slide, empty plans). A = the LLM's hand-drawn cards, B = the same slide with only
 those cards replaced by one bare `<CardGrid ref>` at their place (with the LLM's `w` / `grow`; the generator writes bare tags,
 learning 1; `--styled` writes the variant / icons read from the LLM's drawing instead). `focus_card` / tones / `key_phrase`

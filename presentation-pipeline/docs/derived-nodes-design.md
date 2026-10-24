@@ -1,7 +1,7 @@
 # Design: derived nodes that take their content from the plan
 
 Status: **§14.6 chosen by the user (2026-10-05); pipeline code not started.** Blocks exist
-as research code in `scripts/phase0b/` (R1–R4, 14.7). Started 2026-10-04 as a proposal.
+as research code in `scripts/experiments/phase0b/` (R1–R4, 14.7). Started 2026-10-04 as a proposal.
 
 > **Current plan — read this first** (2026-10-05)
 > - **Design:** §14.6 — the generator LLM writes each slide's layout with slots; code blocks
@@ -166,7 +166,7 @@ New:
 
 Changed: `validator.py`, `context_builder.py`, `prompts/generator/*`, `recipes.yaml`,
 `capacity.py`, `slide_component_planner.py`, `repairer.py`, `slide_edit_service.py`,
-`deck_nodes.py`, `scripts/eval_*.py` (new metrics, §9).
+`deck_nodes.py`, `scripts/eval/eval_*.py` (new metrics, §9).
 
 ## 9. Build order and acceptance
 
@@ -219,7 +219,7 @@ New eval metrics: `card_text_not_in_plan` (target 0), `duplicate_items_per_slide
 - Correction: the XTSY roadmap's missing first bullet is in the **plan**
   (`"tag": "Category assessment"`), a planner error, not the generator's.
 
-**Experiment** (no API): a standalone renderer, `scripts/phase0b/`, that turns saved
+**Experiment** (no API): a standalone renderer, `scripts/experiments/phase0b/`, that turns saved
 plans into POM XML with code only:
 - a **style pack** (palette roles, entity colours, type scale with a 9–11px label tier,
   frame) — `editorial` from Genspark CHEFFIN, `tech` from Genspark XTSY;
@@ -247,15 +247,15 @@ ranges) — that is the content-density decision, measured separately.
 
 ### 10c. Phase 0b results (2026-10-04, build PC, no API)
 
-Built: `scripts/phase0b/` — `style_packs.yaml` (editorial, tech), `render.py` (frame,
+Built: `scripts/experiments/phase0b/` — `style_packs.yaml` (editorial, tech), `render.py` (frame,
 cover, KpiRow, CardGrid, tile row, note columns, bullet panel, DataTable, BarList,
 ProcessSteps, MessageStrip, insight; a fixed-rule composer), `check.py` (criterion 2),
 `plans/xtsy.json`, `plans/cheffin.json`. Run:
 
 ```bash
-python -m scripts.phase0b.render scripts/phase0b/plans/cheffin.json --out output/phase0b/cheffin
-python -m scripts.render_check --in output/phase0b/cheffin --out output/render_check/phase0b-cheffin
-python -m scripts.phase0b.check scripts/phase0b/plans/cheffin.json output/phase0b/cheffin
+python -m scripts.experiments.phase0b.render scripts/experiments/phase0b/plans/cheffin.json --out output/phase0b/cheffin
+python -m scripts.eval.render_check --in output/phase0b/cheffin --out output/render_check/phase0b-cheffin
+python -m scripts.experiments.phase0b.check scripts/experiments/phase0b/plans/cheffin.json output/phase0b/cheffin
 ```
 
 | Criterion | Ours (same XTSY plan, gpt-4.1 UI deck) | Code renderer |
@@ -300,7 +300,7 @@ two-tone headlines (the bold phrase comes from the plan's own title `design_hint
 "color the phrase …"), italic last word on card titles, a white / dark / lime fill
 rhythm, hairline-bordered white cards on cream, ghost numerals on phase cards, a dark
 slide when the hero is 4+ ordered steps, ruled italic closing statements, arrow icons
-for "↑" items. `python -m scripts.phase0b.render <plans> --out <dir> --pack studio`.
+for "↑" items. `python -m scripts.experiments.phase0b.render <plans> --out <dir> --pack studio`.
 
 - XTSY 8/8 and CHEFFIN 6/6 compile; plan words missing 0, words not in plan 0 (both).
 - New contrast findings are audit limits (dark slides measured against white, the
@@ -435,7 +435,7 @@ Inter Bold 488, JetBrains Mono 562 (mono labels are about 20% wider than POM ass
 Run: pack `studio_inter` (copy of studio in Inter + JetBrains Mono, both installed
 per-user so LibreOffice draws them), both Phase 0b decks with the `fit-grow: off` marker
 removed. (a) is `POM_FONTS=0` (the estimate) and (b) is the real fonts. Both were
-scored on the LibreOffice PDF with `scripts/phase0b/fontcheck.py`, plus `eval_run
+scored on the LibreOffice PDF with `scripts/experiments/phase0b/fontcheck.py`, plus `eval_run
 --fixtures` and `phase0b.check`.
 
 | 14 slides (XTSY 8 + CHEFFIN 6) | (a) estimate | (b) real fonts |
@@ -491,7 +491,7 @@ Consequences for the build:
   no items beyond the brief's list.
 - Derived values need a small, tested set of operations in code (ratio, difference,
   share, rank / best / worst, count, range split) and a provenance tag per value.
-- Checks: `scripts/phase0b/check.py`-style text check becomes three-way — copied words,
+- Checks: `scripts/experiments/phase0b/check.py`-style text check becomes three-way — copied words,
   derived values (recomputed), inferred lines (on the review list); anything else is
   an error.
 
@@ -534,7 +534,7 @@ broken words and invented cards).
 2. **LLM decks** (28 slides from saved runs: CHEFFIN `1b306e1de67f`, gj-h1
    `gj-h1-regen-5a9e2d`, tables-check CHEFFIN audit; final `input.xml` per slide;
    `fontFamily="Inter"` added to every Text / Ul / Ol / Shape / Timeline / ProcessArrow /
-   Pyramid / Td; fit-grow on; LibreOffice render; `scripts/phase0b/fontcheck.py`):
+   Pyramid / Td; fit-grow on; LibreOffice render; `scripts/experiments/phase0b/fontcheck.py`):
 
    | | o: as generated (Noto default) | a: Inter, no font files | c: Inter + font files |
    |---|---|---|---|
@@ -549,7 +549,7 @@ broken words and invented cards).
    Side effect seen: wider Inter text in a narrow card makes its row taller, the
    ProcessArrow beside it loses height, and fit-grow's arrow widening (gated on height)
    no longer runs, so the chevrons stay narrow (CHEFFIN 4, audit 6).
-3. **Embedding** (`scripts/embed_fonts.py`, uncompressed EOT parts as PowerPoint stores
+3. **Embedding** (`scripts/tools/embed_fonts.py`, uncompressed EOT parts as PowerPoint stores
    them, ~840 KB for 4 Inter faces before subsetting): with Inter **uninstalled**,
    LibreOffice drew the plain pptx in DejaVu Sans / Arial Black / Liberation Serif and
    "₹114.9L" broke over two lines; the embedded pptx drew Inter, identical to the
@@ -562,7 +562,7 @@ growth without height growth; subset embedded fonts; embed in `pptx-post.js` if 
 #### R4 result (2026-10-05): passed — PowerPoint matches LibreOffice
 
 Four decks (34 slides), built by merging the compiled slides (`src/compiler/pptx_merge.py`)
-and embedding fonts (`scripts/embed_fonts.py --font …`): Phase 0b XTSY and CHEFFIN in
+and embedding fonts (`scripts/tools/embed_fonts.py --font …`): Phase 0b XTSY and CHEFFIN in
 studio_inter (Inter + JetBrains Mono embedded), CHEFFIN in editorial (Segoe UI + Consolas,
 system fonts), and the gj-h1 LLM deck in Inter (fit-grow on; charts and diagrams keep the
 default font). The user opened them on the company test PC: Microsoft 365 for enterprise,
@@ -581,9 +581,9 @@ Input: every saved run with full production-planner plans on the build PC. Those
 decks, 88 slides, 319 components: CHEFFIN `1b306e1de67f` (29 Sep), gj-h1 `5a9e2d` /
 `69af33` / `7293ef` / `bf396b` (23–24 Sep), and three XTSY UI exports (23 Sep,
 `llm_test/slides*.txt`). The layout-batch / layout-fixes runs are not on this PC; the
-Test 1 plans (new path) were left out. Tool: `scripts/phase0b/replay.py` (pack
+Test 1 plans (new path) were left out. Tool: `scripts/experiments/phase0b/replay.py` (pack
 studio_inter, fonts loaded), then render_check, LibreOffice and
-`scripts/phase0b/fontcheck.py` + `check.py`. "LLM" = the same slides as the pipeline drew
+`scripts/experiments/phase0b/fontcheck.py` + `check.py`. "LLM" = the same slides as the pipeline drew
 them (the `xml` saved in each slides.json, run's theme, fit-grow on).
 
 **Coverage** (plans from before `card_grid` existed):
@@ -631,7 +631,7 @@ title component or in a second narrative; KPI numbers sized and boxed by glyph h
 
 #### R3 result (2026-10-05): two-pass sizing removes the overlap; mixed slides work
 
-Built (all in `scripts/phase0b/`, nothing wired into the pipeline):
+Built (all in `scripts/experiments/phase0b/`, nothing wired into the pipeline):
 - `measure.mjs`: a long-running Node helper on POM's own layout (fit-grow's `layout` /
   `natural` / `squeezes`, now exported): per slide the natural height, squashed boxes
   (content taller than its box, i.e. Yoga shrank it), and the boxes of `slot-…` ids.
@@ -663,7 +663,7 @@ Built (all in `scripts/phase0b/`, nothing wired into the pipeline):
 | Broken words · KPI wraps · blank headings | 2 · 0 · 0 | 1 · 0 · 0 |
 | Compile · plan words missing | 88 / 88 · 3 | 88 / 88 · 5 (the 3 of R2 + 2 numbers on the over-full slide) |
 
-**Mixed slides** (`scripts/phase0b/phase0c/`: CHEFFIN exec summary with the KPI row in a 62 %
+**Mixed slides** (`scripts/experiments/phase0b/phase0c/`: CHEFFIN exec summary with the KPI row in a 62 %
 slot beside free text; CHEFFIN CPC with table and chart in two half slots; XTSY automation
 with cards in a 58 % slot and a bullet slot inside a free-text column; gj-h1 snapshot with
 5 slots, dense): **4 / 4 compile, 0 broken words, 0 overlapping text, 0 block words
@@ -760,7 +760,7 @@ user's explicit agreement. Differences from 10 Sep:
 2. A small structured field in the plan, e.g. `arrangement: stacked | side_by_side |
    hero_left | grid`, that the composer obeys. This is a one-enum planner prompt change,
    so it needs a paid check. Compliance risk is much smaller than for XML tags.
-3. Route B: skeleton + tags, using the R3 slot code (`scripts/phase0b/expand.py`) as
+3. Route B: skeleton + tags, using the R3 slot code (`scripts/experiments/phase0b/expand.py`) as
    built.
 
 **Recommendation (first proposal, superseded by 14.6):** A, behind a setting (`render_mode: llm | code_first`), per-slide
@@ -787,7 +787,7 @@ known failures as of 2026-10-05).
 | Step | What | Accepted when |
 |---|---|---|
 | 0 | Prerequisites: subset font embedding in `pptx-post.js`; pipeline style switched to Inter + JetBrains Mono for code slides; shrink guard for words wider than their box (§13 R1) | embedded deck opens in PowerPoint without the fonts (as R4); pptx size growth small (target: ≤ 300 KB per deck, to be confirmed) |
-| 1 | `src/compiler/compose/`: Phase 0b blocks + composer + two-pass sizing (`measure.mjs`, `fit.py`) moved from `scripts/phase0b/` into pipeline code with tests; setting `render_mode`; per-slide fallback; `SLIDE_OVERFULL` / `SLIDE_SPARSE` reported; silent empty-plan fallback removed; variety metric in eval | replay of the 8 R2 decks: same or better than §13 R3 (overlap ≤ 3, broken words ≤ 1, text check 0 extra words); fallback slides identical to today |
+| 1 | `src/compiler/compose/`: Phase 0b blocks + composer + two-pass sizing (`measure.mjs`, `fit.py`) moved from `scripts/experiments/phase0b/` into pipeline code with tests; setting `render_mode`; per-slide fallback; `SLIDE_OVERFULL` / `SLIDE_SPARSE` reported; silent empty-plan fallback removed; variety metric in eval | replay of the 8 R2 decks: same or better than §13 R3 (overlap ≤ 3, broken words ≤ 1, text check 0 extra words); fallback slides identical to today |
 | 2 | Timeline block, then native `Chart` for line / doughnut / area (built in R3), flow, matrix | coverage ≥ 85% of slides fully code-drawn on the R2 decks |
 | 3 | **Paid check (≈ $2):** `gate-deck-xtsy-qcomm` + `gate-deck-cheffin-full` × 2, `render_mode: code_first` vs `llm` | word breaks ↓, invented text 0, first-pass compile ≥ 96%, generator calls ↓; user's side-by-side review including sameness |
 | 4 | Frame on fallback slides (14.2 #6); plan reviewer loop | per `docs/plan-reviewer-loop.md` |
@@ -1017,7 +1017,7 @@ Replaces 14.1's "route A first". Reasons:
 | Step | What | Accepted when | API |
 |---|---|---|---|
 | 0 | Planner fixes (item 1); subset font embedding after assembly (`src/compiler/font_embed.py`, 2026-10-06: not `pptx-post.js`); shrink guard (`fit-grow.js`). **Step-end run** (2026-10-05): full pipeline, × 1, on every step 3 case (`deck-qbr-data`, `deck-product-launch-data`, `gate-deck-agency-takeover`, `gate-deck-xtsy-qcomm`, `gate-deck-cheffin-full`, `gate-deck-all-nodes-dense`) with `--compose`, **run folders kept** (bundles lack `slides.json`). Its plans are reused by 1a and step 3; its `llm.pptx` decks are step 3's `off` arm. **Usage logging** (2026-10-05): every entry in `run-manifest.json` `steps` names its step (elicitor, outline_planner, slide_component_planner, plan_reviewer, generator, repairer, …, and later the checking loop) and slide index, and carries `tokens_reasoning` (already read in `src/utils/llm_client.py` but dropped before the manifest) and `tokens_cached` (from `prompt_tokens_details.cached_tokens`; not read today). Today steps are told apart only by model and order | no `{}` components, no instruction / notes text and no duplicate items on a slide in any plan; every manifest step named, with reasoning and cached tokens | ≈ $1.8 |
-| 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on step 0's saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/phase0b/expand.py`. Builds the **from-plans runner** (≈ 30 lines: loads a run's `slides.json` into `state["slide_plans"]`; the graph already skips planning then, `route_after_start`, as `/generate-from-plan` does; Python 3.11-safe). Records the real cost per slide with the slot prompt; token method below | the kill criteria in 14.5; tokens per slide reported against step 0's generator calls on the same plans | ≈ $0.5 |
+| 1a | **Slot test first** (added 2026-10-05): generator-only run with a slot prompt on step 0's saved plans (hold-out + XTSY, ≈ 20 slides), expanded with `scripts/experiments/phase0b/expand.py`. Builds the **from-plans runner** (≈ 30 lines: loads a run's `slides.json` into `state["slide_plans"]`; the graph already skips planning then, `route_after_start`, as `/generate-from-plan` does; Python 3.11-safe). Records the real cost per slide with the slot prompt; token method below | the kill criteria in 14.5; tokens per slide reported against step 0's generator calls on the same plans | ≈ $0.5 |
 | 1 | Only if 1a passes: blocks moved into `src/compiler/blocks/` with tests; hold-out failures fixed; slot expansion in the validator behind a setting (`blocks: off \| slots`); `SlideHeader` block; every attribute a block writes checked against pom-jsx `types.ts` + `attributes.yaml` | all R2 + hold-out plans expand with 0 broken words, 0 extra words, overlap ≤ R3; unit tests | no |
 | 2 | Generator prompt: skeleton + slots for kinds with a block; checking loop (item 4) | replay on saved skeletons; unit tests | no |
 | 3 | **Paid check (≈ $1.2–1.5, revised 2026-10-05):** the from-plans runner on step 0's saved plans of all six cases (≈ 40 slides), `blocks: slots` only, × 1. The `off` arm is step 0's `llm.pptx` on the same plans (no extra cost), so the two arms differ only by the slot route. Before paying: a dry run with a scripted LLM replaying 1a's skeletons through the real pipeline, so the paid run is not repeated for a pipeline bug. Exact cost re-estimated from 1a's per-slide figure before asking | slot compliance (wrong / missing / duplicate refs, hand-built blocks), broken words ↓, invented text 0, user's side-by-side incl. variety | yes |
@@ -1082,7 +1082,7 @@ field (14.1 option 2).
 
 ### 14.7 Caption, linear-flow and timeline blocks (2026-10-05)
 
-The two easy fallback kinds from 14.3b, built in `scripts/phase0b/` (composer + slot
+The two easy fallback kinds from 14.3b, built in `scripts/experiments/phase0b/` (composer + slot
 expander):
 - **Linear flow:** a `flow` whose plan holds only `flow_steps` (2–8 steps, every saved
   flow so far) is drawn by the process-steps block (`render.linear_flow`). A flow with
@@ -1177,7 +1177,7 @@ Question (user): will decks from different prompts all look the same, and can th
 Genspark level? Replay of the three hold-out plans (`output/holdout/inputs/*/slides.json`,
 17 slides) through the composer in editorial, tech, studio_inter and each brief's own theme
 colours (QBR corporate-slate, launch midnight-indigo; the agency brief names no colours, so
-the default corporate-slate). Tool: `scripts/phase0b/pack_replay.py` (two-pass sizing, then
+the default corporate-slate). Tool: `scripts/experiments/phase0b/pack_replay.py` (two-pass sizing, then
 render_check + LibreOffice); sheets were made in the session, today's LLM deck as the first
 column.
 

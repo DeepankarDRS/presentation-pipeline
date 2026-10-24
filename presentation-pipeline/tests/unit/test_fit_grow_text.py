@@ -8,7 +8,7 @@ s10 gj-h1 slide 12: growing the summary panel's text widened it and squeezed the
 
 import re
 
-from scripts.eval_metrics import table_spill
+from scripts.eval.eval_metrics import table_spill
 from tests.unit.test_fit_grow_tables import _FIT, _compile
 
 

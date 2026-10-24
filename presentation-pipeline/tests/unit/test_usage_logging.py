@@ -91,7 +91,7 @@ def _manifest(tmp_path, name, steps):
 
 
 def test_usage_report_totals_per_step_and_old_manifests(tmp_path):
-    from scripts.usage_report import collect, find_manifests, render
+    from scripts.eval.usage_report import collect, find_manifests, render
 
     new = _manifest(tmp_path, "deck-a__r1", [
         {"step": "generator", "slide_index": 0, "tokens_in": 100, "tokens_out": 10, "tokens_cached": 40,

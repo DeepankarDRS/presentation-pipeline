@@ -1,10 +1,10 @@
-"""scripts.card_plan_only --workers: decks planned at once, runs.json in case order (plan_case mocked, no API)."""
+"""scripts.experiments.cards.card_plan_only --workers: decks planned at once, runs.json in case order (plan_case mocked, no API)."""
 
 import json
 import threading
 import time
 
-from scripts import card_plan_only as cpo
+from scripts.experiments.cards import card_plan_only as cpo
 
 
 def test_workers_run_decks_at_once_and_keep_case_order(tmp_path, monkeypatch):

@@ -1,5 +1,5 @@
 # GATE deck (user prompt, 2026-09-23). Edited only: "18-SLIDE" -> "6-SLIDE" (paste stopped after
-# slide 1), chat timestamp removed, agency name anonymised. Run: python -m scripts.eval_run gate-deck-cheffin-audit --label x
+# slide 1), chat timestamp removed, agency name anonymised. Run: python -m scripts.eval.eval_run gate-deck-cheffin-audit --label x
 name: gate-deck-cheffin-audit
 objective: 6-slide ads audit deck from a long brief with platform summary data and no per-slide spec after slide 1.
 request: |
@@ -11,7 +11,7 @@ expect:
   watch: >
     supplied numbers used verbatim (₹29.4L, 0.34x, ₹31.1 vs allowable ₹10.7);
     CPC-vs-allowable comparison as a chart or table; headlines state conclusions.
-# Test 1 (scripts/plan_only.py) — user decision 2026-09-27: CHEFFIN is the storytelling test.
+# Test 1 (scripts/eval/plan_only.py) — user decision 2026-09-27: CHEFFIN is the storytelling test.
 plan_checks:
   - name: CPC vs allowable CPC in one component
     same_component: ["31.1", "10.7", "46.2", "14.8"]

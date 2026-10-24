@@ -6,13 +6,13 @@ Here both routes draw the **same** slide plans, so only the KPI drawing differs.
 
 **What runs.** `inputs.json` holds every slide with a `kpi_row` in the two wide-paid runs: 12 plans (6 planned by
 the tiles run, 6 by the element-ref run), each with its theme name and case request. Each plan goes through the
-real graph from the plan twice (`scripts/kpi_paid.run_one`): arm **A** `POM_BLOCKS=kpi` (element refs, the
+real graph from the plan twice (`scripts/experiments/kpi/kpi_paid.run_one`): arm **A** `POM_BLOCKS=kpi` (element refs, the
 default) and arm **B** `POM_BLOCKS=tiles` (tile tags). Generator + validator + repairer as in a normal run, critic
 off as in the eval runs; the slide is drawn alone (no deck context, no supplied data: the same for both arms).
 
 **Command (test PC, branch `feat/tile-nodes`, after `git pull`):**
 
-    python -m scripts.tile_same_plan --label same-plan --bundle
+    python -m scripts.experiments.tiles.tile_same_plan --label same-plan --bundle
 
 No `POM_BLOCKS` to set: the script switches it per arm. It prints `EMAIL THIS FILE: output/tile-same-plan/same-plan.zip`.
 The zip holds `summary.md`, `results.json`, `runs.json`, `run.log` (every log line, uncut), each run's first / final
@@ -29,7 +29,7 @@ runs end to end, scores and the sheet built. One tiles run failed in the dry pat
 hand-written labels and added tile tags (`NODE_REF_DUPLICATE`), which the LLM does not do. The dry sizes repeat
 the free replays (tiles larger 3, smaller 2, same 7); the paid run replaces them with what the LLM writes.
 
-Rebuild the inputs (build PC): `python -m scripts.tile_same_plan --make-inputs <wide-tiles run dir> <wide-kpi run dir>`.
+Rebuild the inputs (build PC): `python -m scripts.experiments.tiles.tile_same_plan --make-inputs <wide-tiles run dir> <wide-kpi run dir>`.
 
 ## Result (paid run 2026-10-14, test PC, `7eaac43`; rescored + sheet built on the build PC)
 
@@ -81,7 +81,7 @@ Each fix proven on the saved slides before and after (deck font Inter, as the pi
 saved slide (573 `input.xml` in `output/` and the `llm_test` zips) that a change can touch (105), compiled both ways,
 rendered and scored where the fitted XML differs (41).
 
-1. **The broken-word scorer missed letter-stacked words** (`scripts/phase0b/fontcheck.broken`). It joined only two
+1. **The broken-word scorer missed letter-stacked words** (`scripts/experiments/phase0b/fontcheck.broken`). It joined only two
    pieces; a word drawn over three or more lines, or whose last letters merge with the large number below into one
    PDF word ("ROA" | "S0."), was not counted. Now a run of pieces on successive lines joins longest first, and the last
    piece may start the next word. Pair 1.4 (tiles): 0 → 4 broken (FLIP|CAR|T, ZAR|OM|A, ROA|S…×2), as the sheet showed.

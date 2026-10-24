@@ -3,8 +3,8 @@
 On `d64108d` (fixes a / c / d and planner `kpi_tones`, `paid-2/README.md` "Fixes"). Planners first, then the
 generator on their plans:
 
-    python -m scripts.kpi_plan_only deck-qbr-data gate-deck-cheffin-full --repeat 1 --label p3        # $0.131
-    python -m scripts.kpi_paid --blocks tiles --arm-a kpi --plans p3 --repeat 3 --label tiles-paid-3 --no-render --bundle   # $0.143
+    python -m scripts.experiments.kpi.kpi_plan_only deck-qbr-data gate-deck-cheffin-full --repeat 1 --label p3        # $0.131
+    python -m scripts.experiments.kpi.kpi_paid --blocks tiles --arm-a kpi --plans p3 --repeat 3 --label tiles-paid-3 --no-render --bundle   # $0.143
 
 Arm B = tiles on the fresh plans (one plan per case, 3 generator tries); arm A = the 2026-10-11 element-ref slides,
 recompiled. Re-scored and rendered on the build PC. **Not fully blind:** B's plans have their own headlines and
