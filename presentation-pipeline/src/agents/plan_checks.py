@@ -556,6 +556,80 @@ def tones_from_hint(comp: dict[str, Any]) -> list[str]:
     return tones
 
 
+# Look cues a design hint uses, per tile-node variant (tile-variant-choice spec 2026-10-26 §4, option A). A plain
+# "border" is not a cue ("a clear border": the default hairline); a bar needs accent / coloured / left with it.
+_LOOK_CUES = {
+    "bar": re.compile(r"\b(?:accent|colou?red|left|side)[\s-]+(?:borders?|bars?|edges?|stripes?|lines?|rules?)\b", re.I),
+    "dot": re.compile(r"\b(?:status\s+)?dots?\b", re.I),
+    "dark": re.compile(r"\bdark\b|\binvert", re.I),
+    "tint": re.compile(r"\b(?:tint(?:s|ed)?|fill(?:ed)?|shade[ds]?|shading)\b", re.I),
+    "numbered": re.compile(r"\bnumbered\b|\bnumerals?\b|\b0?1\s*[,·/]\s*0?2\b", re.I),
+}
+_LOOK_NOT = re.compile(r"\b(?:no|without|avoid|not)\b[\w\s/-]{0,14}$", re.I)   # "no status dots", "without an accent bar"
+# cue -> variant, in priority order (spec §4: bar > dot > filled; accent_top > numerals). No card tint: the default
+# `lifted` card is already tinted by its tone (census 2026-10-26: the one card tint cue was a heatmap inside a card)
+_KPI_LOOKS = (("bar", "bar"), ("dot", "dot"), ("tint", "filled"))
+_CARD_LOOKS = (("bar", "accent_top"), ("numbered", "numerals"))
+
+
+def look_from_hint(comp: dict[str, Any]) -> dict[str, Any]:
+    """The tile-node look a kpi_row's or card_grid's design_hint asks for, for a bare <KpiGrid> / <CardGrid>
+    (tile-variant-choice spec 2026-10-26, option A; read by tiles.expand / cards.expand, the LLM's variant wins).
+
+    Returns {"group": variant or None, "items": {index: variant}, "emphasis": variant or None, "cues": [...]}.
+    Per clause (as tones_from_hint) each cue applies to the items the clause names; a clause that names none gives
+    it to the whole group. KPI: accent border / bar -> bar, status dot -> dot, tint / shade (only with tones) ->
+    filled; an item keeps its own look only when it ranks above the group's ("status dot beside each label" and
+    "NRR shaded positive": dots everywhere, the dot takes the tone). Dark / inverted -> `emphasis` inverted, for the
+    plan's emphasis item (code checks it is one). Cards: only a group look (a lifted card next to a flat one reads
+    as two card types), from a clause naming every card or none ("accent border on the 'Month 3 Scale' card" asks
+    for one card: the focus card covers it): accent bar -> accent_top, numbered on a grid -> numerals (steps
+    already number their cards)."""
+    kind = comp.get("kind")
+    data = comp.get("content_data") or {}
+    out: dict[str, Any] = {"group": None, "items": {}, "emphasis": None, "cues": []}
+    hint = " ".join(str(comp.get("design_hint") or "").split())
+    if kind not in ("kpi_row", "card_grid") or not hint:
+        return out
+    if kind == "kpi_row":
+        labels = [str(x or "").strip() for x in data.get("kpi_labels") or []][:len(data.get("kpi_values") or [])]
+        toned = any(data.get("kpi_tones") or []) or any(tones_from_hint(comp))
+        looks = _KPI_LOOKS
+    else:
+        cards = [c for c in data.get("cards") or [] if isinstance(c, dict)]
+        labels = [str(c.get("title") or "").strip() for c in cards]
+        toned = any(c.get("tone") for c in cards)
+        looks = _CARD_LOOKS
+    names = _hint_names(labels)
+    group: set[str] = set()
+    items: dict[int, set[str]] = {}
+    for clause in re.split(r";|\.\s", hint):
+        cues = {cue for cue, rx in _LOOK_CUES.items()
+                if any(not _LOOK_NOT.search(clause[:m.start()]) for m in rx.finditer(clause))}
+        if not cues:
+            continue
+        out["cues"] += sorted(cues - set(out["cues"]))
+        if "dark" in cues and kind == "kpi_row":
+            out["emphasis"] = "inverted"
+        spans = [(m.start(), m.end(), i) for i, ns in enumerate(names) for nm in ns
+                 for m in re.finditer(r"(?<!\w)" + re.escape(nm) + r"(?!\w)", clause, re.I)]
+        named = {s[2] for s in spans if not any(o[2] != s[2] and o[0] <= s[0] and s[1] <= o[1]
+                                                 and o[1] - o[0] > s[1] - s[0] for o in spans)}
+        if kind == "card_grid" and named and len(named) < len(labels):
+            continue
+        for i in (named if kind == "kpi_row" and named else [None]):
+            (group if i is None else items.setdefault(i, set())).update(cues)
+
+    def pick(cues: set[str]) -> int:
+        """Rank of the look the cues ask for (index in `looks`), len(looks) for none."""
+        return next((r for r, (cue, _) in enumerate(looks) if cue in cues and (cue != "tint" or toned)
+                     and not (cue == "numbered" and (data.get("card_layout") or "grid") != "grid")), len(looks))
+    top = pick(group)
+    out["group"] = looks[top][1] if top < len(looks) else None
+    out["items"] = {i: looks[r][1] for i, cs in sorted(items.items()) if (r := pick(cs)) < top}
+    return out
+
+
 def settle_kpi_tones(comp: dict[str, Any]) -> list[str]:
     """A kpi_row's kpi_tones as code reads them (tile-nodes spec §6): one per value, good / bad / watch / "",
     synonyms mapped, anything else blank. A row with no tone at all takes the tones its design hint names
