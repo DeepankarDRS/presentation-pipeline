@@ -222,6 +222,7 @@ def hint_looks(comp: dict, gmeta: dict, overrides: dict[int, tuple], flag, block
         if meta[0].get("variant") or unmet(v, i):
             continue
         meta[0]["variant"] = v
+        meta[0]["hint"] = True   # build_tile: a hint's item look keeps the plan tone (the variant's with_tone)
         overrides[i] = meta
         flag("NODE_LOOK_FROM_HINT", f"{cid}.{i}", f'item {i} of <{group_tag} ref="{cid}"> drawn variant="{v}" from '
              f'the design hint ({cue}).')
@@ -291,7 +292,12 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
         layers += [_look(vs[name]["look"], role), _look(patch, role)]
     layers.append(gparts)
     if imeta.get("variant"):
-        layers.append(_look(vs[_variant(comp, i, imeta["variant"], ref, flag)]["look"], role))
+        name = _variant(comp, i, imeta["variant"], ref, flag)
+        layers.append(_look(vs[name]["look"], role))
+        if imeta.get("hint") and not (imeta.get("color") or gmeta.get("color")) and tone_of(comp, i):
+            how = (vs[name].get("with_tone") or {}).get(tone_of(comp, i))   # the LLM's own item variant: as asked
+            if isinstance(how, dict):
+                layers.append(_look(how, role))
     layers += [ibox, iparts]
     box: dict[str, str] = {}
     parts: dict[str, dict[str, str]] = {p: {} for p in kpi()["parts"]}

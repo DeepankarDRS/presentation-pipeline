@@ -138,6 +138,47 @@ def test_items_placed_alone_take_the_hints_look():
     assert res["xml"].count('shapeType="ellipse"') == 1 and [r for r, _ in hint_codes(res)] == ["kpis.3"]
 
 
+def tile_of(xml, i):
+    """The opening tag of the tile holding item i's value (the nearest boxed stack before it)."""
+    head = xml[:re.search(rf'id="kpi[vh]\d-kpis-{i}"', xml).start()]
+    return next(o.group(0) for o in reversed(list(re.finditer(r"<(?:VStack|HStack)\b[^>]*>", head)))
+                if re.search(r"backgroundColor=|border", o.group(0)))
+
+
+def value_of(xml, i):
+    return re.search(rf'<Text[^>]*id="kpi[vh]\d-kpis-{i}"[^>]*>', xml).group(0)
+
+
+@pytest.mark.parametrize("hint,i,soft,text", [
+    ("add a status dot on the Blended ROAS tile", 2, "$negativeSoft", "$negativeText"),   # bad
+    ("add a status dot on the Orders tile", 3, "$warningSoft", "$warningText"),           # watch
+])
+def test_a_hint_dot_on_a_toned_item_keeps_the_tone(hint, i, soft, text):
+    # CHEFFIN 4 (tile_one, 2026-10-26): the hint's dot on CPC, the problem metric, drew a white tile beside red ones
+    res = run(kpi_row(hint), body='<KpiGrid ref="kpis"/>')
+    assert res["ok"], res["issues"]
+    assert res["xml"].count('shapeType="ellipse"') == 1
+    assert f'backgroundColor="{soft}"' in tile_of(res["xml"], i) and f'color="{text}"' in value_of(res["xml"], i)
+
+
+def test_a_hint_dot_on_an_untoned_item_is_the_plain_dot():
+    res = run(kpi_row("add a status dot on the Spend tile"), body='<KpiGrid ref="kpis"/>')
+    assert 'backgroundColor="$surface"' in tile_of(res["xml"], 0) and 'color="$textMain"' in value_of(res["xml"], 0)
+
+
+def test_a_group_dot_keeps_each_items_tone():
+    res = run(kpi_row("show a small status dot beside each label"), body='<KpiGrid ref="kpis"/>')
+    assert res["xml"].count('shapeType="ellipse"') == 4
+    assert 'backgroundColor="$negativeSoft"' in tile_of(res["xml"], 2)
+    assert 'backgroundColor="$warningSoft"' in tile_of(res["xml"], 3)
+    assert 'backgroundColor="$surface"' in tile_of(res["xml"], 0)
+
+
+def test_the_llms_own_item_dot_is_drawn_as_asked():
+    res = run(kpi_row(""), body='<KpiGrid ref="kpis"><Kpi ref="kpis.2" variant="dot"/></KpiGrid>')
+    assert 'backgroundColor="$surface"' in tile_of(res["xml"], 2)
+
+
 def test_dark_draws_the_emphasis_item_inverted():
     res = run(kpi_row("dark / inverted panel on the Blended ROAS tile"), body='<KpiGrid ref="kpis"/>')
     assert res["xml"].count('backgroundColor="$panelDark"') == 1 and hint_codes(res) == [("kpis.2", "report")]

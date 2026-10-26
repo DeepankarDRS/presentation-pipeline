@@ -379,6 +379,10 @@ tile_nodes:
                label.color: $textMuted, value.color: $textMain, note.color: "${role}Text"}
       dot:
         prompt: "small dot and a coloured spaced label"
+        # a bad / watch item keeps its tone's fill and number colour, the dot added (CHEFFIN 4, tile_one 2026-10-26:
+        # the hint's dot on CPC, the problem metric, drew a white tile beside red ones; user: keep the tone)
+        with_tone: {bad: {backgroundColor: "${role}Soft", border.color: "${role}", value.color: "${role}Text"},
+                    watch: {backgroundColor: "${role}Soft", border.color: "${role}", value.color: "${role}Text"}}
         look: {backgroundColor: $surface, border.color: $border, border.width: 1,
                marker.shapeType: ellipse, marker.w: 8, marker.h: 8, marker.fill.color: "${role}",
                label.color: "${role}Text", label.letterSpacing: 1, value.color: $textMain}
