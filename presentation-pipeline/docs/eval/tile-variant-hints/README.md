@@ -87,8 +87,9 @@ removed, so A drew a light label on a light tile ("combined roas is missing head
 A 7 = 0.536.
 
 **The user's caveat: most pairs differ only by one type of highlight, a coloured strip, so they were marked "same" on
-purpose. "Same" is not a vote for strips, and a coloured strip is not a quality win in itself.** Read the marks by
-look, not by the total:
+purpose. A coloured strip is not a quality win in itself; but "same" still counts for the variant code chose (it is
+as good as the plain default and shows what the hint asked), so a variant with "same" marks is kept.** Read the marks
+by look, not by the total:
 
 | Look B drew | B / same / A | Score | Reasons |
 |---|---|---|---|
@@ -103,10 +104,10 @@ What this says:
 - The dark emphasis tile from a "dark / inverted" hint is the one clear win.
 - Card `accent_top` loses to the default `lifted` card: the lift (separation) matters more than the top bar. (Q4 kept
   `accent_top` flat.)
-- `dot` does not win; it loses where it changes the label colours.
-- `bar` shows what the hint asked for, but the marks give no evidence it improves the slide.
+- `dot`: no better than plain on 6, worse on 2, where it changes the label colours.
+- `bar`: as good as plain or better on all 19 (4 better), so it stays.
 
-Open (the user's call): keep, change or drop the `accent_top`, `dot` and `bar` mappings. The `inverted` one stays.
+Open (the user's call): what to do with `accent_top` (cards) and `dot`. `inverted`, `bar` and `filled` stay.
 
 ## Not done
 
