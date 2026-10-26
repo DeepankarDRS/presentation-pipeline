@@ -187,14 +187,17 @@ def _variant(comp: dict, i: int, asked: str | None, ref: str, flag, group: bool 
 
 
 def hint_looks(comp: dict, gmeta: dict, overrides: dict[int, tuple], flag, block: dict, group_tag: str,
-               emphasis: int | None) -> None:
+               emphasis: int | None, alone: bool = False, skip: set[int] | frozenset = frozenset()) -> None:
     """A bare group (no variant from the LLM) takes the look its plan's design_hint asks for
     (plan_checks.look_from_hint, docs/tile-variant-choice-spec-2026-10-26.md option A: in combined check arm B the
     LLM named a variant on 0 of 13 KpiGrids and 1 of 32 CardGrids, while saved hints ask for bars, dots, dark tiles).
     The group's look, then an item's own on items with no variant of their own, then the emphasis item's (inverted
     when its `requires` hold: a single tile stays plain, user 2026-10-26). A look whose `requires` fail is not
     applied (the LLM did not ask for it: no NODE_VARIANT_UNMET). In place on gmeta / overrides; info
-    NODE_LOOK_FROM_HINT per pick. `block`: the tile_nodes entry (kpi, card); `emphasis`: the plan's emphasis item."""
+    NODE_LOOK_FROM_HINT per pick. `block`: the tile_nodes entry (kpi, card); `emphasis`: the plan's emphasis item.
+    `alone`: `overrides` are the component's items placed outside any group: the group's look goes on each of them
+    with no variant of its own, and only they are touched (replay 2026-10-26: two gj-h1 slides of lone <Kpi> tags).
+    `skip`: items the group does not draw (placed outside it)."""
     if gmeta.get("variant"):
         return
     from src.agents.plan_checks import look_from_hint   # src.agents imports the validator, which imports this
@@ -204,14 +207,17 @@ def hint_looks(comp: dict, gmeta: dict, overrides: dict[int, tuple], flag, block
     def unmet(v: str, i: int | None) -> bool:
         return v not in vs or bool(spec.failed_requires(vs[v], comp, {"is_emphasis_item": i is not None and i == emphasis,
                                                                       "is_group": i is None}))
-    if look["group"] and not unmet(look["group"], None):
+    if look["group"] and not alone and not unmet(look["group"], None):
         gmeta["variant"] = look["group"]
         flag("NODE_LOOK_FROM_HINT", cid, f'<{group_tag} ref="{cid}"> drawn variant="{look["group"]}" from the design '
              f'hint ({cue}).')
-    items = dict(look["items"])
+    items = {i: look["group"] for i in overrides} if alone and look["group"] else {}
+    items.update(look["items"])
     if look["emphasis"] and emphasis is not None:
         items[emphasis] = look["emphasis"]
     for i, v in sorted(items.items()):
+        if (alone and i not in overrides) or i in skip:
+            continue
         meta = overrides.get(i) or ({}, _Layer(block["parts"]), _Layer(block["parts"]))
         if meta[0].get("variant") or unmet(v, i):
             continue
@@ -554,7 +560,8 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
                 flag("NODE_REF_DUPLICATE", child.get("ref"), f'<Kpi ref="{child.get("ref")}"> appears twice in the group.')
                 continue
             overrides[key[1]] = _read(child, ITEM_META, flag)
-        hint_looks(comp, gmeta, overrides, flag, kpi(), GROUP, emphasis_index(comp))
+        hint_looks(comp, gmeta, overrides, flag, kpi(), GROUP, emphasis_index(comp),
+                   skip={i for c, i in outside if c == cid})
         n = len(element_refs._list(comp, "kpi_values"))
         mine = [i for i in range(n) if (cid, i) not in outside]
         panel = panel_fill(g)
@@ -566,9 +573,13 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         new = build_group(tiles, gmeta, gbox, cid, flag)
         new.tail = g.tail
         g.getparent().replace(g, new)
+    alone: dict[str, dict[int, tuple]] = {}
     for (cid, i), el in outside.items():
-        meta, box, parts = _read(el, ITEM_META, flag)
-        tile = build_tile(comps[cid], i, None, (meta, box, parts), flag, panel_fill(el))
+        alone.setdefault(cid, {})[i] = _read(el, ITEM_META, flag)
+    for cid, items in alone.items():   # bare items placed alone take the hint's look too
+        hint_looks(comps[cid], {}, items, flag, kpi(), ITEM, emphasis_index(comps[cid]), alone=True)
+    for (cid, i), el in outside.items():
+        tile = build_tile(comps[cid], i, None, alone[cid][i], flag, panel_fill(el))
         tile.tail = el.tail
         el.getparent().replace(el, tile)
         drawn[cid].add(i)

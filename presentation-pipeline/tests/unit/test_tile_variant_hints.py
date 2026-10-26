@@ -126,6 +126,18 @@ def test_the_llms_variant_wins():
     assert hint_codes(res) == [] and 'shapeType="ellipse"' not in res["xml"] and 'borderLeft.width="6"' in res["xml"]
 
 
+def test_items_placed_alone_take_the_hints_look():
+    body = '<HStack><Kpi ref="kpis.0"/><Kpi ref="kpis.1" variant="dot"/><Kpi ref="kpis.2"/><Kpi ref="kpis.3"/></HStack>'
+    res = run(kpi_row("accent border on the card"), body=body)
+    assert res["ok"], res["issues"]
+    # the group's bar on every bare item, the LLM's dot kept
+    assert res["xml"].count('borderLeft.width="6"') == 3 and res["xml"].count('shapeType="ellipse"') == 1
+    assert sorted(r for r, _ in hint_codes(res)) == ["kpis.0", "kpis.2", "kpis.3"]
+    res = run(kpi_row("status dot on the Orders tile"), body='<HStack><Kpi ref="kpis.3"/></HStack>'
+              '<KpiGrid ref="kpis"/>')
+    assert res["xml"].count('shapeType="ellipse"') == 1 and [r for r, _ in hint_codes(res)] == ["kpis.3"]
+
+
 def test_dark_draws_the_emphasis_item_inverted():
     res = run(kpi_row("dark / inverted panel on the Blended ROAS tile"), body='<KpiGrid ref="kpis"/>')
     assert res["xml"].count('backgroundColor="$panelDark"') == 1 and hint_codes(res) == [("kpis.2", "report")]
