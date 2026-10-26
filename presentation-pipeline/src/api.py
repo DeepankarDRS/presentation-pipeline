@@ -16,6 +16,7 @@ import queue as stdlib_queue
 import time
 import uuid
 from collections.abc import AsyncGenerator, Generator
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -33,6 +34,7 @@ from src.agents.planner_schema import (
 )
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.agents.style_resolver import theme_names
+from src.compiler.nodes import element_refs
 from src.graph import compile_graph
 from src.state import (
     ComponentPlan,
@@ -44,7 +46,18 @@ from src.utils.logging_config import setup_logging
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Presentation Pipeline API", version="0.1.0")
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+    # the KPI / card route in force, from .env (the test PC 2026-10-26 had to check it by hand): kpi | tiles | off.
+    # setup_logging here too: the reload worker imports this module without running __main__
+    setup_logging()
+    logger.info(f"POM_BLOCKS={element_refs.mode()} (KPI / card route: kpi = element refs, tiles = tile nodes, off = old)")
+    yield
+
+
+app = FastAPI(title="Presentation Pipeline API", version="0.1.0", lifespan=_lifespan)
 
 app.add_middleware(
     CORSMiddleware,

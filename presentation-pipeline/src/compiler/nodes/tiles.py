@@ -40,7 +40,7 @@ ERROR, WARNING, REPORT = element_refs.ERROR, element_refs.WARNING, element_refs.
 SEVERITY = {
     "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR, "NODE_ATTR_UNKNOWN": ERROR,
     "NODE_VARIANT_UNKNOWN": WARNING, "NODE_VARIANT_UNMET": WARNING, "LITERAL_COLOR": WARNING,
-    "NODE_ATTR_DROPPED": REPORT,
+    "NODE_ATTR_DROPPED": REPORT, "NODE_LOOK_FROM_HINT": REPORT,
 }
 
 _FILE = Path(__file__).resolve().parents[2] / "knowledge" / "core" / "block-variants.yaml"
@@ -184,6 +184,41 @@ def _variant(comp: dict, i: int, asked: str | None, ref: str, flag, group: bool 
     if code:
         flag(code, ref, f"ref=\"{ref}\": {note}.")
     return name or next(iter(vs))
+
+
+def hint_looks(comp: dict, gmeta: dict, overrides: dict[int, tuple], flag, block: dict, group_tag: str,
+               emphasis: int | None) -> None:
+    """A bare group (no variant from the LLM) takes the look its plan's design_hint asks for
+    (plan_checks.look_from_hint, docs/tile-variant-choice-spec-2026-10-26.md option A: in combined check arm B the
+    LLM named a variant on 0 of 13 KpiGrids and 1 of 32 CardGrids, while saved hints ask for bars, dots, dark tiles).
+    The group's look, then an item's own on items with no variant of their own, then the emphasis item's (inverted
+    when its `requires` hold: a single tile stays plain, user 2026-10-26). A look whose `requires` fail is not
+    applied (the LLM did not ask for it: no NODE_VARIANT_UNMET). In place on gmeta / overrides; info
+    NODE_LOOK_FROM_HINT per pick. `block`: the tile_nodes entry (kpi, card); `emphasis`: the plan's emphasis item."""
+    if gmeta.get("variant"):
+        return
+    from src.agents.plan_checks import look_from_hint   # src.agents imports the validator, which imports this
+    look = look_from_hint(comp)
+    cid, cue, vs = comp["component_id"], ", ".join(look["cues"]), block["variants"]
+
+    def unmet(v: str, i: int | None) -> bool:
+        return v not in vs or bool(spec.failed_requires(vs[v], comp, {"is_emphasis_item": i is not None and i == emphasis,
+                                                                      "is_group": i is None}))
+    if look["group"] and not unmet(look["group"], None):
+        gmeta["variant"] = look["group"]
+        flag("NODE_LOOK_FROM_HINT", cid, f'<{group_tag} ref="{cid}"> drawn variant="{look["group"]}" from the design '
+             f'hint ({cue}).')
+    items = dict(look["items"])
+    if look["emphasis"] and emphasis is not None:
+        items[emphasis] = look["emphasis"]
+    for i, v in sorted(items.items()):
+        meta = overrides.get(i) or ({}, _Layer(block["parts"]), _Layer(block["parts"]))
+        if meta[0].get("variant") or unmet(v, i):
+            continue
+        meta[0]["variant"] = v
+        overrides[i] = meta
+        flag("NODE_LOOK_FROM_HINT", f"{cid}.{i}", f'item {i} of <{group_tag} ref="{cid}"> drawn variant="{v}" from '
+             f'the design hint ({cue}).')
 
 
 def _text(ref: str, attrs: dict[str, str], hero: bool = False) -> etree._Element:
@@ -519,6 +554,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
                 flag("NODE_REF_DUPLICATE", child.get("ref"), f'<Kpi ref="{child.get("ref")}"> appears twice in the group.')
                 continue
             overrides[key[1]] = _read(child, ITEM_META, flag)
+        hint_looks(comp, gmeta, overrides, flag, kpi(), GROUP, emphasis_index(comp))
         n = len(element_refs._list(comp, "kpi_values"))
         mine = [i for i in range(n) if (cid, i) not in outside]
         panel = panel_fill(g)

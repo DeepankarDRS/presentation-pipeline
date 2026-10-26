@@ -519,6 +519,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
                 flag("NODE_REF_DUPLICATE", child.get("ref"), f'<Card ref="{child.get("ref")}"> is placed twice; place each card once.')
                 continue
             overrides[key[1]] = tiles._read(child, ITEM_META, flag, block, ITEM)
+        tiles.hint_looks(comp, gmeta, overrides, flag, block, GROUP, emphasis_index(comp))   # cards: a group look only
         nums = numbers(comp)
         layout = group_layout(comp, gmeta, cid, flag)
         mine = [i for i in range(len(cards_of(comp))) if (cid, i) not in outside]
