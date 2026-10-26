@@ -3,6 +3,8 @@
     python -m scripts.tile_combined --label combined --bundle                 # paid, test PC: plans + draws (+ scores)
     python -m scripts.tile_combined --label combined --rescore                # free, build PC: scores, renders, blind sheet
     python -m scripts.tile_combined --label combined-dry --dry                # free: fake LLMs, checks the path end to end
+    python -m scripts.tile_combined --label tiles-2 --from combined --arms B --repeat 1 --bundle --no-render
+        # paid, test PC: arm B again on the saved check's plans (no planning paid), its arm A kept for the comparison
 
 What it checks (docs/eval/tile-nodes/combined/README.md): the prompt / planner changes after the same-plan check
 (docs/eval/tile-nodes/same-plan/README.md) and the card paid check (docs/eval/card-nodes/paid/README.md):
@@ -120,12 +122,14 @@ def icons_drawn(xml: str, plan: dict) -> tuple[int, int]:
     return sum(1 for x in planned if x in names), len(planned)
 
 
-def draw(out: Path, items: list[dict], repeat: int, dry: bool = False) -> list[dict]:
+def draw(out: Path, items: list[dict], repeat: int, dry: bool = False, arms: tuple = ARMS,
+         runs: list[dict] | None = None) -> list[dict]:
+    """`arms`: the arms drawn now; `runs`: rows kept from a saved check (--from), written first."""
     from scripts.card_paid import card_tokens
-    runs = []
+    runs = list(runs or [])
     for r in range(1, repeat + 1):
         for it in items:
-            for arm, blocks in ARMS:
+            for arm, blocks in arms:
                 os.environ["POM_BLOCKS"] = blocks
                 case = f"{it['name']}-r{r}"
                 rid = f"combined-{blocks}-{it['case']}-s{it['slide']}-r{r}-{int(time.time())}"
@@ -204,7 +208,10 @@ def write_summary(out: Path, runs: list[dict]) -> None:
     kpis = [c for it in plans["items"] for c in it["plan"].get("components") or [] if c.get("kind") == "kpi_row"]
     grids = [c for it in plans["items"] for c in it["plan"].get("components") or [] if c.get("kind") == "card_grid"]
     lines = ["# Tile nodes, combined check (A = POM_BLOCKS=kpi, B = POM_BLOCKS=tiles, same fresh plans)", "",
-             f"- **Plans**: {len(plans['runs'])} planner runs, ${sum(r.get('cost_usd') or 0 for r in plans['runs']):.3f}; "
+             f"- **Plans**: " + (f"reused from {plans['plans_from']} (not paid again; its cost: " if plans.get("plans_from")
+                                 else "") +
+             f"{len(plans['runs'])} planner runs, ${sum(r.get('cost_usd') or 0 for r in plans['runs']):.3f}"
+             + (")" if plans.get("plans_from") else "") + "; "
              f"{len(plans['items'])} slides with a kpi_row or card_grid; kpi_rows {len(kpis)}, with kpi_icons "
              f"{sum(1 for c in kpis if (c.get('content_data') or {}).get('kpi_icons'))}; card_grids {len(grids)}, with icons "
              f"{sum(1 for c in grids if all((x or {}).get('icon') for x in (c.get('content_data') or {}).get('cards') or [{}]))}."]
@@ -248,6 +255,23 @@ def bundle(out: Path) -> Path:
     return z
 
 
+def reuse(src: Path, out: Path, cases: list[str], arms: list[str], repeat: int) -> tuple[list[dict], list[dict]]:
+    """--from: a saved check's plans (no planning paid) and its runs of the arms not drawn now (folders copied)."""
+    plans = json.loads((src / "plans.json").read_text(encoding="utf-8"))
+    plans["items"] = [it for it in plans["items"] if it["case"] in cases]
+    plans["plans_from"] = src.name
+    (out / "plans.json").write_text(json.dumps(plans, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
+    names = {it["name"] for it in plans["items"]}
+    saved = json.loads((src / "runs.json").read_text(encoding="utf-8")) if (src / "runs.json").exists() else []
+    kept = [r for r in saved if r["arm"] not in arms and r["repeat"] <= repeat and r["item"] in names]
+    for r in kept:
+        if (src / r["arm"] / r["case"]).exists():
+            shutil.copytree(src / r["arm"] / r["case"], out / r["arm"] / r["case"], dirs_exist_ok=True)
+    print(f"plans from {src.name}: {len(plans['items'])} slides; kept {len(kept)} saved runs "
+          f"({', '.join(sorted({r['arm'] for r in kept})) or 'none'}); drawing {', '.join(arms)}", flush=True)
+    return plans["items"], kept
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("cases", nargs="*", default=CASES)
@@ -257,8 +281,16 @@ def main() -> int:
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--bundle", action="store_true")
     ap.add_argument("--dry", action="store_true", help="free: fake planner (saved plans) and generator")
+    ap.add_argument("--from", dest="src", help="reuse a saved check's plans (output/tile-combined/<label>/plans.json): "
+                    "no planning paid; the arms not drawn now keep that check's runs, for the comparison")
+    ap.add_argument("--arms", nargs="+", choices=[x for x, _ in ARMS], default=[x for x, _ in ARMS],
+                    help="arms drawn now (default both)")
     a = ap.parse_args()
     out = OUT / a.label
+    src = OUT / a.src if a.src else None
+    if src and not a.rescore and (a.src == a.label or not (src / "plans.json").exists()):
+        print(f"--from {a.src}: needs a saved check other than --label (output/tile-combined/{a.src}/plans.json)")
+        return 2
     if not a.rescore:
         if not a.dry:
             if not os.environ.get("OPENAI_API_KEY"):
@@ -272,8 +304,13 @@ def main() -> int:
         from src.utils.logging_config import add_file_log, setup_logging
         setup_logging()
         add_file_log(out / "run.log")
-        items = make_plans(out, a.cases, dry=a.dry)
-        draw(out, items, a.repeat, dry=a.dry)
+        arms = tuple((x, blocks) for x, blocks in ARMS if x in a.arms)
+        if src:   # the same plans as a saved check: a rerun of one arm compares with that check's other arm
+            items, kept = reuse(src, out, a.cases, a.arms, a.repeat)
+            draw(out, items, a.repeat, dry=a.dry, arms=arms, runs=kept)
+        else:
+            items = make_plans(out, a.cases, dry=a.dry)
+            draw(out, items, a.repeat, dry=a.dry, arms=arms)
     rescore(out, render=not a.no_render)
     if a.bundle:
         print(f"EMAIL THIS FILE: {bundle(out)}")
