@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import sys
 import time
 import zipfile
@@ -69,6 +70,7 @@ def main() -> int:
         print("OPENAI_API_KEY is not set (.env): the paid run is for the test PC")
         return 2
     out = OUT / it["name"]
+    shutil.rmtree(out, ignore_errors=True)   # a rerun's zip holds only its own files (no older repair-N.xml, one log)
     out.mkdir(parents=True, exist_ok=True)
     from src.utils.logging_config import add_file_log, setup_logging
     setup_logging()
