@@ -76,11 +76,37 @@ Where B is worse:
 
 LOW_CONTRAST falls 29 -> 18 because the dark tiles and bars replace pale tinted text.
 
-## Blind marks (your turn)
+## Blind marks (user, 2026-10-26)
 
 44 pairs, those where B drew a look (the others are the same slide twice): `output/tile-hint-replay/sheets/`
-(sheet-01 ... sheet-11.png on the build PC). Mark each pair in `marks.csv` (choice 1 / 2 / same, reason);
-`key.json` says which side is B. The gate is 0.5 or more.
+(sheet-01 ... sheet-11.png on the build PC); `marks.csv` and `key.json` here.
+
+**B 12 / same 25 / A 7 = 0.557** (gate 0.5). Pairs 3.2 and 7.1 (B wins, both `inverted`) are flawed in arm A: the LLM
+drew that tile dark, the rewrite kept its light label colour (`label.color="$surfaceAlt"`) and only the variant was
+removed, so A drew a light label on a light tile ("combined roas is missing heading"). Without them: B 10 / same 25 /
+A 7 = 0.536.
+
+**The user's caveat: most pairs differ only by one type of highlight, a coloured strip, so they were marked "same" on
+purpose. "Same" is not a vote for strips, and a coloured strip is not a quality win in itself.** Read the marks by
+look, not by the total:
+
+| Look B drew | B / same / A | Score | Reasons |
+|---|---|---|---|
+| `inverted` (dark emphasis tile) | 5 / 0 / 0 (3 clean: CHEFFIN paid r1-r3) | 1.0 | "dark is cool", "color code matches better" |
+| `bar` | 4 / 15 / 0 | 0.61 | "better highlight"; mostly same (the caveat) |
+| `dot` | 0 / 6 / 2 | 0.38 | A: "color code matches better", "consistent colors" (the dot recolours the label in the tile's tone) |
+| `bar` + `dot` | 1 / 1 / 1 | 0.5 | |
+| `filled` | 0 / 1 / 0 | 0.5 | |
+| `accent_top` (cards) | 2 / 2 / 4 | 0.38 | A: "separation of cards good", "matches the variant of the card" (lifted cards' shadow) |
+
+What this says:
+- The dark emphasis tile from a "dark / inverted" hint is the one clear win.
+- Card `accent_top` loses to the default `lifted` card: the lift (separation) matters more than the top bar. (Q4 kept
+  `accent_top` flat.)
+- `dot` does not win; it loses where it changes the label colours.
+- `bar` shows what the hint asked for, but the marks give no evidence it improves the slide.
+
+Open (the user's call): keep, change or drop the `accent_top`, `dot` and `bar` mappings. The `inverted` one stays.
 
 ## Not done
 
