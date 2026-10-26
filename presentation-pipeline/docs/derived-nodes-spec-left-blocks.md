@@ -6,7 +6,8 @@ callout, header, table, chart, bullet_list, timeline, process_arrow, flow. Pyram
 native POM only.
 Builds on: `docs/tile-nodes-spec-2026-10-12.md` (KPI tiles and cards; this doc keeps its structure, rules and
 codes), `docs/tile-variant-choice-spec-2026-10-26.md` (the plan's hint picks the look), and the 2026-10-26
-decisions on group `backgroundColor` / `border.color="$accent"` (being built on `feat/tile-nodes`).
+decisions on `border.color="$accent"` (kept) and group `backgroundColor` (reversed: it stays on the group's
+own box), both on `feat/tile-nodes`.
 Evidence: `docs/look-and-feel-review-2026-10-21.md` (chart pass = next step #4, diagrams = #6),
 `docs/roadmap-derived-components.md` (the derived-node rule), `docs/eval/genspark-variants/summary.md`, and
 on `claude/design-trunk`: `docs/chart-pass-2026-10-22.md`, `docs/eval/node-break-map/`.
@@ -85,8 +86,11 @@ A native tag with `ref` is code's. Without `ref` it is the LLM's own native node
   attributes on the group (`connectorColor`, `cellBorder.color`) and the item's own (`color`, `textColor`).
 - Colours are `$tokens` only (`LITERAL_COLOR`). `color` takes the five role tokens. `{role}Soft` /
   `{role}Text` as in tiles; `$neutral` → `$surfaceAlt` / `$textMain`.
-- **Group fill (2026-10-26):** a group's `backgroundColor` / `backgroundGradient` fills each drawn item, except
-  the dark emphasis item and an item with a fill of its own. `border.color="$accent"` is allowed.
+- **Group fill (user, 2026-10-26, reversed the same day):** a group's `backgroundColor` / `backgroundGradient`
+  fills the group's own box only. It does not reach the items, on KpiGrid / CardGrid or on any new group
+  tag here. The user wants the background to stay the LLM's freedom, as with base POM. An item's fill
+  comes from its variant or its own attributes. `border.color="$accent"` is allowed (the normalizer no
+  longer rewrites it).
 - Dropped with info `NODE_ATTR_DROPPED`: `tile_nodes.dropped` (font sizes, font family, `borderRadius` on
   square looks, positions, `id`, typed text or children inside an item tag).
 - Resolution order (later wins): house look → group variant → group attributes → item variant → item
@@ -99,7 +103,7 @@ A native tag with `ref` is code's. Without `ref` it is the LLM's own native node
 | every visible word, verbatim from the plan, in plan order | where the block sits, its box, `w` / `grow` |
 | type sizes: one size per part across the group (fit-grow grows the group together) | `variant`, `arrange`, `direction` where the space allows it |
 | word fit (break-map limits, `label_room`, `WORD_TOO_WIDE`) | `color` on an item, `icon` names, part styling |
-| step numbers, arrows, connectors, rails | the group fill and an `$accent` border |
+| step numbers, arrows, connectors, rails | the group box's fill (the box only) and an `$accent` border |
 | readable ink on dark fills; at most one dark item per block | |
 | the emphasis item (plan: `focus_card`-style field, hint, destination, the headline's named bar); never the LLM's pick (2026-10-07) | |
 
@@ -398,7 +402,7 @@ cheaper than one run per block, and it is asked for in one message.
 |---|---|---|
 | Q1 | Approve the naming rules N1–N4 and the KPI / card renames (`KpiGrid` → `KpiRow`, `note.` → `delta.`, new `bullets.` / `key_phrase.` parts), with aliases for one release? | yes |
 | Q2 | Which blocks, in which order? | chart → timeline + process + flow → table → bullet list; callout after the first replays; header not now |
-| Q3 | Base branch for the build: `claude/design-trunk` (chart pass, break map, `label_room`, deck font in diagrams) merged with `feat/tile-nodes` (tile code, the 2026-10-26 group fill)? | yes: both are needed; you merge, or tell me to |
+| Q3 | Base branch for the build: `claude/design-trunk` (chart pass, break map, `label_room`, deck font in diagrams) merged with `feat/tile-nodes` (tile code, the 2026-10-26 accent border)? | yes: both are needed; you merge, or tell me to |
 | Q4 | Chart `labelled` by native data labels in `pptx-post.js` (chart pass option B), not a code-drawn bar block. Values on every bar, or the focus bar only (`focus_label`)? | native labels; offer both variants, default `plain` until the marks |
 | Q5 | One switch per kind (`POM_NODES` list; `POM_BLOCKS=tiles` = alias)? | yes (also lets cards ship without KPI tiles) |
 | Q6 | The default look read from the plan's hint (variant-choice spec option A) on every new block? | yes, with `NODE_LOOK_FROM_HINT` logged |
