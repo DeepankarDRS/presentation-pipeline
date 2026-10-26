@@ -1,0 +1,266 @@
+[
+ {
+  "pair": "1.1",
+  "case": "card-eval-gate-deck-agency-takeover-s5-63cc",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "1.2",
+  "case": "card-eval-gate-deck-agency-takeover-s5-f60b",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "1.3",
+  "case": "card-eval-gate-deck-xtsy-qcomm-s0-61c7",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "1.4",
+  "case": "card-eval-gate-deck-xtsy-qcomm-s2-e0b8",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "2.1",
+  "case": "card-kpi-decks-gate-deck-xtsy-qcomm-s4-240e",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "2.2",
+  "case": "card-runs-combined-kpi-gate-deck-xtsy-qcomm-s0-r1--s0-9f6c",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "2.3",
+  "case": "card-step0-gate-deck-cheffin-full-s3-497f",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "2.4",
+  "case": "card-wide-paid-gate-deck-agency-takeover-s5-47d8",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.1",
+  "case": "kpi-critic-on2-deck-qbr-data-e2e624-s1",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.2",
+  "case": "kpi-decks1-deck-qbr-data-s1",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.3",
+  "case": "kpi-decks1-gate-deck-cheffin-full-s4",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.4",
+  "case": "kpi-eval-deck-qbr-data-s1-6f46",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "4.1",
+  "case": "kpi-eval-deck-qbr-data-s1-f000",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "4.2",
+  "case": "kpi-eval-gate-deck-cheffin-full-s4",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "4.3",
+  "case": "kpi-old_zips-gj-h1-regen-5a9e2d-s1",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "4.4",
+  "case": "kpi-old_zips-gj-h1-regen-5a9e2d-s10",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "5.1",
+  "case": "kpi-old_zips-gj-h1-regen-5a9e2d-s13",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "5.2",
+  "case": "kpi-old_zips-gj-h1-regen-5a9e2d-s3",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "5.3",
+  "case": "kpi-old_zips-gj-h1-regen-5a9e2d-s4",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "5.4",
+  "case": "kpi-old_zips-gj-h1-regen-5a9e2d-s5",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "6.1",
+  "case": "kpi-paid-gate-deck-cheffin-full-s1-r1",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "6.2",
+  "case": "kpi-paid-gate-deck-cheffin-full-s1-r2",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "6.3",
+  "case": "kpi-paid-gate-deck-cheffin-full-s1-r3",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "6.4",
+  "case": "kpi-q1008-gate-deck-agency-takeover-s0",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "7.1",
+  "case": "kpi-q1008-gate-deck-cheffin-full-s1",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "7.2",
+  "case": "kpi-r2-gj-h1-regen-69af33-s1",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "7.3",
+  "case": "kpi-r2-gj-h1-regen-69af33-s13",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "7.4",
+  "case": "kpi-r2-gj-h1-regen-69af33-s4",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "8.1",
+  "case": "kpi-r2-gj-h1-regen-69af33-s5",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "8.2",
+  "case": "kpi-r2-gj-h1-regen-69af33-s6",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "8.3",
+  "case": "kpi-r2-gj-h1-regen-7293ef-s13",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "8.4",
+  "case": "kpi-r2-gj-h1-regen-7293ef-s3",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "9.1",
+  "case": "kpi-r2-gj-h1-regen-7293ef-s4",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "9.2",
+  "case": "kpi-r2-gj-h1-regen-7293ef-s5",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "9.3",
+  "case": "kpi-r2-gj-h1-regen-7293ef-s6",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "9.4",
+  "case": "kpi-r2-gj-h1-regen-bf396b-s1",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.1",
+  "case": "kpi-r2-gj-h1-regen-bf396b-s13",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.2",
+  "case": "kpi-r2-gj-h1-regen-bf396b-s3",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.3",
+  "case": "kpi-r2-gj-h1-regen-bf396b-s5",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.4",
+  "case": "kpi-r2-gj-h1-regen-bf396b-s6",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.1",
+  "case": "kpi-runs-combined-kpi-deck-product-launch-data-s0-r1-1791990672-s0",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.2",
+  "case": "kpi-runs-same-kpi-deck-product-launch-data-s3-r1-1791909813-s0",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.3",
+  "case": "kpi-step0-gate-deck-cheffin-full-s4",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.4",
+  "case": "kpi-wide-paid-deck-product-launch-data-s3-1f1a",
+  "slide": 1,
+  "nodes_side": 2
+ }
+]
