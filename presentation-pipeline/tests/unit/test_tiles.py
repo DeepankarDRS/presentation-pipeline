@@ -227,6 +227,38 @@ def test_no_tile_tags_and_no_refs_means_every_item_missing():
     assert codes(res).count("NODE_ITEM_MISSING") == 4
 
 
+HAND_ROW = "".join(f'<VStack w="max" padding="22"><Icon name="wallet" size="28"/><Text fontSize="22">{lb}</Text></VStack>'
+                   for lb in ("Spend", "Revenue", "Blended ROAS", "Orders"))
+
+
+def test_hand_drawn_row_is_sent_back_to_the_group_tag_not_to_text_refs():
+    # CHEFFIN 4 (tile_one, 2026-10-26): hand tiles with typed labels and no values; the label notes named
+    # <Text ref> and the repairer patched refs into the hand tiles, leaving the tile route
+    res = run(f'<HStack gap="22">{HAND_ROW}</HStack>')
+    assert not res["ok"]
+    assert codes(res).count("NODE_ITEM_MISSING") == 4   # one per item: eval counts lost values per item
+    assert "NODE_LABEL_MISSING" not in codes(res) and "NODE_FIELD_MISSING" not in codes(res)
+    msgs = [i["message"] for i in res["issues"] if i["code"] == "NODE_ITEM_MISSING"]
+    assert '<KpiGrid ref="kpis"/>' in msgs[0] and "by hand" in msgs[0]
+    assert all('<KpiGrid ref="kpis"/>' in m for m in msgs[1:])
+    note = E.repair_note(res["issues"])
+    assert "<Text ref" not in note and note.count("by hand") == 1
+
+
+def test_items_missing_beside_tagged_ones_name_their_tags_and_keep_no_label_note():
+    res = run('<Kpi ref="kpis.0"/><Kpi ref="kpis.1"/>')
+    missing = [i for i in res["issues"] if i["code"] == "NODE_ITEM_MISSING"]
+    assert [i["ref"].split(".")[1] for i in missing] == ["2", "3"]
+    assert all(f'<Kpi ref="kpis.{i["ref"].split(".")[1]}"/>' in i["message"] and "by hand" in i["message"] for i in missing)
+    assert "NODE_LABEL_MISSING" not in codes(res) and "NODE_FIELD_MISSING" not in codes(res)
+
+
+def test_element_ref_route_keeps_its_label_notes(monkeypatch):
+    monkeypatch.setenv("POM_BLOCKS", "kpi")
+    res = E.fill_refs(slide(f'<HStack gap="22">{HAND_ROW}</HStack>'), PLAN)
+    assert codes(res).count("NODE_LABEL_MISSING") == 4 and "<Text ref" in E.repair_note(res["issues"])
+
+
 def test_hand_written_ref_tile_stays_valid_and_is_counted_t2():
     hand = ('<VStack padding="18" backgroundColor="$panelDark"><Text ref="kpis.3.label"/><Text ref="kpis.3.value"/>'
             '<Text ref="kpis.3.note"/></VStack>')

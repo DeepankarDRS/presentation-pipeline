@@ -602,11 +602,29 @@ def fill(xml: str, plan: dict | None) -> dict[str, Any]:
     exp["ok"] = exp["ok"] and crd["ok"]
     res = element_refs.fill_refs(exp["xml"], plan)
     res["card_items"] = crd["card_items"]
+    missing: dict[str, set[str]] = {}
     for i in res["issues"]:
-        if i["code"] == "NODE_ITEM_MISSING":   # name the tile tags, not the hand-written ref
+        if i["code"] == "NODE_ITEM_MISSING":
             cid, k = i["ref"].split(".")[:2]
+            missing.setdefault(cid, set()).add(k)
+    # an item missing as a whole is drawn by its tag with its label and note: no <Text ref> note for those. CHEFFIN 4
+    # (tile_one, 2026-10-26): the LLM drew the 7 tiles by hand with typed labels, the label notes named <Text ref> and
+    # the repairer patched refs into the hand tiles, so the slide left the tile route (no variant, no hint look)
+    res["issues"] = [i for i in res["issues"] if not (i["code"] in ("NODE_LABEL_MISSING", "NODE_FIELD_MISSING")
+                                                      and i["ref"].split(".")[1] in missing.get(i["ref"].split(".")[0], ()))]
+    for i in res["issues"]:
+        if i["code"] != "NODE_ITEM_MISSING":
+            continue
+        cid, k = i["ref"].split(".")[:2]   # name the tile tags, not the hand-written ref
+        if len(missing[cid]) < res["components"][cid]["items"]:
             i["message"] = (f'{cid} item {k} is not on the slide: draw it in <KpiGrid ref="{cid}"/> or place it with '
-                            f'<Kpi ref="{cid}.{k}"/>.')
+                            f'<Kpi ref="{cid}.{k}"/>; delete any tile drawn for it by hand.')
+        elif k == min(missing[cid], key=int):   # no item drawn: one instruction for the row, the other items point to it
+            i["message"] = (f'{cid}: none of its {len(missing[cid])} tiles is drawn from a tag. Put one '
+                            f'<KpiGrid ref="{cid}"/> where its tiles go and delete every tile drawn for it by hand, with '
+                            "their typed labels: code draws each tile with its label, value and note.")
+        else:
+            i["message"] = f'{cid} item {k} is not on the slide: the <KpiGrid ref="{cid}"/> asked for above draws it.'
     res["issues"] = exp["issues"] + res["issues"]
     for cid, stats in res["components"].items():
         tiles = exp["tile_items"].get(cid, 0)
