@@ -78,18 +78,23 @@ def main() -> int:
     first = res.get("first_xml") or ""
     (out / "first.xml").write_text(first, encoding="utf-8")
     (out / "final.xml").write_text(res.get("final_xml") or "", encoding="utf-8")
-    drawn = []
-    if first:
-        from src.compiler.nodes import tiles
-        drawn = [i["message"] for i in tiles.fill(first, it["plan"])["issues"] if i["code"] == "NODE_LOOK_FROM_HINT"]
+    from src.compiler.nodes import tiles
+    # the generator's XML, then each repair's: a repair may be the step that writes the tile tags
+    stages = [("generator", first)] + [(f"repair-{n}", x) for n, x in enumerate(res.get("repaired_xml") or [], 1)]
+    for name, x in stages[1:]:
+        (out / f"{name}.xml").write_text(x, encoding="utf-8")
+    steps = [{"step": name, "tags": re.findall(r"<(?:KpiGrid|Kpi|CardGrid|Card)\b[^>]*>", x),
+              "drawn": [i["message"] for i in tiles.fill(x, it["plan"])["issues"] if i["code"] == "NODE_LOOK_FROM_HINT"]}
+             for name, x in stages if x]
     row = {"item": it["name"], "hints": {c.get("component_id"): c.get("design_hint") for c in it["plan"].get("components") or []
                                          if c.get("kind") in ("kpi_row", "card_grid")},
-           "asked": looks(it["plan"]), "tags": re.findall(r"<(?:KpiGrid|Kpi|CardGrid|Card)\b[^>]*>", first), "drawn": drawn,
-           **{k: v for k, v in res.items() if k not in ("first_xml", "final_xml")}}
+           "asked": looks(it["plan"]), "steps": steps,
+           **{k: v for k, v in res.items() if k not in ("first_xml", "final_xml", "repaired_xml")}}
     (out / "result.json").write_text(json.dumps(row, indent=1, ensure_ascii=False, default=str), encoding="utf-8")
     print(f"  first ok={res['first_ok']} final ok={res['final_ok']} cost ${res.get('cost_usd') or 0:.3f}", flush=True)
-    print("  tags: " + (" ".join(row["tags"]) or "none"), flush=True)
-    print("  drawn from the hint: " + ("; ".join(drawn) or "nothing"), flush=True)
+    for s in steps:
+        print(f"  {s['step']}: tags {' '.join(s['tags']) or 'none'}; drawn from the hint: {'; '.join(s['drawn']) or 'nothing'}",
+              flush=True)
     z = OUT / f"{it['name']}.zip"
     with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as f:
         for p in out.rglob("*"):

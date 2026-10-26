@@ -62,7 +62,7 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
     state = initial_state(run_id=run_id, raw_request=item["request"], theme_name=item["theme"],
                           deck_min_threshold=1, critic_mode="off")
     state["slide_plans"] = [dict(item["plan"], slide_index=0)]
-    attempts, generated, final = [], [], {}
+    attempts, generated, repaired, final = [], [], [], {}
     cfg = {"run_name": f"kpi-paid-{run_id}", "tags": ["kpi-pilot"], "recursion_limit": 80}
     for mode, chunk in compile_graph().stream(state, config=cfg, stream_mode=["updates", "values"]):
         if mode == "values":
@@ -73,6 +73,8 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
                 attempts.append(update)
             elif node == "generator" and isinstance(update, dict) and update.get("current_xml"):
                 generated.append(update["current_xml"])
+            elif node == "repairer" and isinstance(update, dict) and update.get("current_xml"):
+                repaired.append(update["current_xml"])
     first = attempts[0] if attempts else {}
     issues = [i for i in (first.get("normalize_result") or {}).get("issues") or [] if i.get("code") in REF_CODES]
     gen = [g for g in final.get("generation_history") or [] if getattr(g, "step", None) == "generator"
@@ -98,6 +100,7 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
         "first_diagnostics": [f"{d.get('type', '?')}: {str(d.get('message', ''))[:200]}"
                               for d in (first.get("compile_result") or {}).get("diagnostics") or []][:5],
         "first_xml": generated[0] if generated else "",
+        "repaired_xml": repaired,   # each repairer's XML before code fills it (tile tags still unexpanded)
         "validator_passes": len(attempts),
         "generator_calls": len(gen),
         "final_xml": (last.get("normalize_result") or {}).get("cleaned_xml") or final.get("current_xml", ""),
