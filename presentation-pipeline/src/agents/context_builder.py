@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 
+import copy
 import functools
 import logging
 from pathlib import Path
@@ -260,6 +261,14 @@ def _select_attributes(allowed_nodes: list[str], nodes_yaml: dict) -> dict[str, 
     return result
 
 
+def _with_tags(nodes: list[str], hierarchy: str, attrs: dict[str, list[str]],
+               contract: tuple[list[str], list[str], dict[str, list[str]]]) -> tuple[list[str], str]:
+    """Tile tags (tiles.tags_contract) added to ALLOWED NODES, NODE HIERARCHY and ALLOWED ATTRIBUTES (in place)."""
+    tags, lines, tag_attrs = contract
+    attrs.update(tag_attrs)
+    return nodes + [t for t in tags if t not in nodes], "\n".join(x for x in [hierarchy, *lines] if x)
+
+
 # ── Notes selection ──────────────────────────────────────────────────────────
 
 def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
@@ -423,12 +432,42 @@ def _fmt_house_style_value(value: Any) -> str:
     return str(value).strip()
 
 
-@functools.lru_cache(maxsize=1)
-def _render_house_style() -> str:
-    """Render core/house-style.yaml into a compact prompt block (cached)."""
+# POM_BLOCKS=tiles: code draws KPI tiles, so the house-style lines that teach a hand-built tile name the tag instead.
+# CHEFFIN 4 (tile_one, 2026-10-26): the generator drew the 7 tiles by hand on 3 / 3 first tries (each sent to repair);
+# its prompt allowed no tag outside ALLOWED NODES and these lines taught the tile. Section -> item (list: its opening
+# words; dict: its key) -> the line under tiles. The same on every slide of a deck: the cached prefix stays one.
+_TILE_HOUSE_STYLE: dict[str, dict[str, str]] = {
+    "type_ramp": {
+        "stat_value": "44-56 bold for a number outside a KPI row (a <KpiGrid> sizes its own numbers)",
+        "single_stat": "a kpi_row with one value is a <KpiGrid ref> too (code enlarges its number)",
+    },
+    "render_gotchas": {
+        "A KPI tile:": "A KPI row is one <KpiGrid ref> (KPI TILES): code draws its tiles, their text and sizes - never "
+                       "build a KPI tile from stacks, Text and Icon.",
+    },
+    "checklist": {
+        "KPI row:": "KPI row: one <KpiGrid ref> in its band (grow when it is the slide's main content); no tile built "
+                    "by hand.",
+    },
+}
+
+
+@functools.lru_cache(maxsize=2)
+def _render_house_style(tiles_on: bool = False) -> str:
+    """Render core/house-style.yaml into a compact prompt block (cached). `tiles_on`: the KPI tile lines swapped
+    for the <KpiGrid> tag (_TILE_HOUSE_STYLE)."""
     hs = _load_yaml("core/house-style.yaml")
     if not hs:
         return ""
+    if tiles_on:
+        hs = copy.deepcopy(hs)   # _load_yaml's dict is shared
+        for key, swaps in _TILE_HOUSE_STYLE.items():
+            value = hs.get(key)
+            if isinstance(value, dict):
+                value.update({k: v for k, v in swaps.items() if k in value})
+            elif isinstance(value, list):
+                hs[key] = [next((v for w, v in swaps.items() if " ".join(str(item).split()).startswith(w)), item)
+                           for item in value]
     parts: list[str] = []
     for key, heading in _HOUSE_STYLE_SECTIONS:
         if key not in hs:
@@ -594,7 +633,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     # the notes no component kind adds are the same on every slide of a deck: the generator puts them in
     # the cached prefix of its system prompt, the rest after "## THIS SLIDE" (tile-nodes spec §5)
     deck_notes = _select_notes([], validation, text_yaml, {}, theme, has_grammar=has_grammar)
-    house_style = _render_house_style() + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n" + layout_rules()
+    house_style = (_render_house_style(tiles.on()) + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n"
+                   + layout_rules(tiles.on()))
     recipe_kinds = [_recipe_kind(c) for c in slide_plan.get("components", [])]
     technique_kinds, scopes = kinds, hint_scopes(kinds)
     if tiles.on():   # code draws KPI tiles: no kpi_row / hero_stat / compact strip / dark callout recipes
@@ -606,12 +646,20 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
             technique_kinds = [k for k in kinds if k != "kpi_row"]
             if "kpi_row" in scopes:
                 scopes["kpi_row"] = tiles.scope(kind_treatments("kpi_row"))
+            # the strict rules allow no tag outside ALLOWED NODES: list the tile tags there (CHEFFIN 4, 2026-10-26:
+            # hand-drawn tiles on 3 / 3 first tries while the tags were missing from the list)
+            allowed_nodes, node_hierarchy = _with_tags(allowed_nodes, node_hierarchy, allowed_attributes,
+                                                       tiles.tags_contract(tiles.kpi(), tiles.GROUP, tiles.ITEM,
+                                                                           tiles.GROUP_META, tiles.ITEM_META))
         # card tile nodes (cards.py): no card_grid / card_steps recipes or hand-built card techniques for the
         # card_grids code draws; a matrix card_grid (deferred) keeps its recipe and techniques
         grids = [c for c in slide_plan.get("components", []) if c.get("kind") == "card_grid"]
         drawn = cards.card_components(slide_plan)
         if drawn:
             recipe_kinds = [k for k in recipe_kinds if k not in ("card_grid", "card_steps")]
+            allowed_nodes, node_hierarchy = _with_tags(allowed_nodes, node_hierarchy, allowed_attributes,
+                                                       tiles.tags_contract(cards.card(), cards.GROUP, cards.ITEM,
+                                                                           cards.GROUP_META, cards.ITEM_META))
             if len(drawn) == len(grids):
                 technique_kinds = [k for k in technique_kinds if k != "card_grid"]
                 if "card_grid" in scopes:

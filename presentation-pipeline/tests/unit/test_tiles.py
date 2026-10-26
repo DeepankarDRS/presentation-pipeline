@@ -453,6 +453,51 @@ def test_generator_prompt_under_tiles(monkeypatch):
     assert "- sparkline (" in system.split("## VISUAL-INTENT TRANSLATION")[1]
 
 
+def test_the_tile_tags_are_allowed_nodes_under_tiles(monkeypatch):
+    # CHEFFIN 4 (tile_one, 2026-10-26): hand-drawn tiles on 3 / 3 first tries; the strict rules allow no tag outside
+    # ALLOWED NODES and the tags were not in it
+    from src.agents.generator import _render_prompts
+    contract = _gen_state()["contract"]
+    assert {"KpiGrid", "Kpi"} <= set(contract["allowed_nodes"]) and "CardGrid" not in contract["allowed_nodes"]
+    assert "<KpiGrid> -> Kpi" in contract["node_hierarchy"] and "<Kpi> -- LEAF" in contract["node_hierarchy"]
+    kpi_attrs = contract["allowed_attributes"]["Kpi"]
+    assert {"ref", "variant", "size", "label.*", "shadow.*", "grow"} <= set(kpi_attrs)
+    assert "size" not in contract["allowed_attributes"]["KpiGrid"] and "cols" in contract["allowed_attributes"]["KpiGrid"]
+    system, _ = _render_prompts(_gen_state())
+    allowed = system.split("## ALLOWED NODES\n")[1].split("\n")[0]
+    assert "KpiGrid, Kpi" in allowed
+    monkeypatch.setenv("POM_BLOCKS", "kpi")
+    assert "KpiGrid" not in _gen_state()["contract"]["allowed_nodes"]
+
+
+def test_card_tags_are_allowed_only_when_cards_are_drawn():
+    from src.agents.context_builder import build_contract
+    from src.agents.style_resolver import resolve_theme
+    grid = {"component_id": "bets", "kind": "card_grid", "count": 2,
+            "content_data": {"card_layout": "grid", "cards": [{"title": "A", "body": "a"}, {"title": "B", "body": "b"}]}}
+    contract = build_contract({"slide_index": 0, "components": [grid]}, resolve_theme("corporate-slate"))
+    assert {"CardGrid", "Card"} <= set(contract["allowed_nodes"]) and "KpiGrid" not in contract["allowed_nodes"]
+    assert "<CardGrid> -> Card" in contract["node_hierarchy"] and "number.*" in contract["allowed_attributes"]["Card"]
+    matrix = dict(grid, content_data=dict(grid["content_data"], card_layout="matrix"))   # deferred: drawn by hand
+    assert "CardGrid" not in build_contract({"slide_index": 0, "components": [matrix]},
+                                            resolve_theme("corporate-slate"))["allowed_nodes"]
+
+
+def test_house_style_names_the_kpi_grid_under_tiles(monkeypatch):
+    hs = _gen_state()["contract"]["house_style"]
+    assert "A KPI tile: NO h" not in hs and "Tiles: w=\"max\"" not in hs and "each at least 260px wide" not in hs
+    assert "A KPI row is one <KpiGrid ref>" in hs and "KPI row: one <KpiGrid ref>" in hs
+    assert "stat_value: 44-56 bold for a number outside a KPI row" in hs and "one <KpiGrid ref> per kpi_row" in hs
+    from src.agents.context_builder import build_contract
+    from src.agents.style_resolver import resolve_theme
+    other = build_contract({"slide_index": 0, "components": [{"component_id": "t", "kind": "title"}]},
+                           resolve_theme("corporate-slate"))
+    assert other["house_style"] == hs   # the same on every slide of the deck: one cached prefix
+    monkeypatch.setenv("POM_BLOCKS", "kpi")
+    hs = _gen_state()["contract"]["house_style"]
+    assert "A KPI tile: NO h" in hs and "KpiGrid" not in hs and "each at least 260px wide" in hs
+
+
 def test_kpi_row_without_an_id_keeps_the_techniques():
     from src.agents.context_builder import build_contract
     from src.agents.style_resolver import resolve_theme

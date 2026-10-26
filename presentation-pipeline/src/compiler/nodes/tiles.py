@@ -642,6 +642,18 @@ def fill(xml: str, plan: dict | None) -> dict[str, Any]:
 
 # ── prompt ────────────────────────────────────────────────────────────────────
 
+def tags_contract(block: dict, group: str, item: str, group_meta: set[str],
+                  item_meta: set[str]) -> tuple[list[str], list[str], dict[str, list[str]]]:
+    """A tile block's tags for the generator's ALLOWED NODES, NODE HIERARCHY and ALLOWED ATTRIBUTES (kpi or card):
+    (tags, hierarchy lines, {tag: attributes}). Parts as `label.*`; dotted box attributes by prefix (`shadow.*`)."""
+    order = ["ref", "layout", "cols", "variant", "arrange", "size", "color", "icon"]
+    parts = [f"{p}.*" for p in block["parts"]]
+    box = list(dict.fromkeys(a.split(".")[0] + ".*" if "." in a else a for a in data()["box_attributes"]))
+    return ([group, item], [f"  <{group}> -> {item}", f"  <{item}> -- LEAF (no children)"],
+            {group: [a for a in order if a in group_meta] + parts + box,
+             item: [a for a in order if a in item_meta] + parts + box})
+
+
 def node_lines() -> str:
     """The fixed lines (same on every slide: the cached part of the system prompt)."""
     k = kpi()

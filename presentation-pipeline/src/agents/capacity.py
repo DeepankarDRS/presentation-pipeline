@@ -198,17 +198,24 @@ def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
 
 
 # ── The generator's layout rules (capacity.yaml `layout`, 2026-10-07) ──────
-def layout_rules() -> str:
-    """Prompt text for the generator: how to lay components out, numbers from capacity.yaml."""
+def layout_rules(tiles_on: bool = False) -> str:
+    """Prompt text for the generator: how to lay components out, numbers from capacity.yaml. `tiles_on`
+    (POM_BLOCKS=tiles): code lays out and sizes KPI tiles, so the KPI lines name the <KpiGrid> tag instead."""
     k, lay = capacity()["kpi_row"], capacity()["layout"]
     lo, hi = lay["hero_number_px"]
     g0, g1 = lay["grid_gap_px"]
     r0, r1 = lay["table_row_px"]
+    kpi = ([f"- KPI tiles: one <KpiGrid ref> per kpi_row; code lays out its rows (at most {k['per_row'][1]} "
+            "per row) and sizes the numbers.",
+            f"- One number the headline rests on: size=\"hero\" on its <Kpi> (the plan's emphasis item only); "
+            f"{lay['paired_cards']} compared metrics: {lay['paired_cards']} equal cards side by side."]
+           if tiles_on else
+           [f"- KPI tiles: at most {k['per_row'][1]} per row, each at least {lay['kpi_tile_min_w']}px wide; "
+            f"more metrics -> rows of equal tiles (w as %: 2 per row 49%, 3 per row 32%).",
+            f"- One number the headline rests on: a hero tile, number {lo}-{hi}px; "
+            f"{lay['paired_cards']} compared metrics: {lay['paired_cards']} equal cards side by side."])
     return "\n".join([
-        f"- KPI tiles: at most {k['per_row'][1]} per row, each at least {lay['kpi_tile_min_w']}px wide; "
-        f"more metrics -> rows of equal tiles (w as %: 2 per row 49%, 3 per row 32%).",
-        f"- One number the headline rests on: a hero tile, number {lo}-{hi}px; "
-        f"{lay['paired_cards']} compared metrics: {lay['paired_cards']} equal cards side by side.",
+        *kpi,
         f"- Card grids: equal widths per row, gaps {g0}-{g1}px; never a lone narrow card beside a wide one.",
         f"- Tables: at most {lay['table_cols_half']} columns in a half-width card (more -> give the table "
         f"the full width); body rows {r0}-{r1}px.",
