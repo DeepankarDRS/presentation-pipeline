@@ -5,6 +5,9 @@
     python -m scripts.card_plan_only --label card-plans --rescore                # free: summary.md again
     python -m scripts.card_plan_only --repeat 3 --label typed-schema --schema typed --bundle --workers 5
         # planner content as typed objects (PLANNER_SCHEMA=typed, docs/planner-output-schema-research-2026-10-15.md)
+    python -m scripts.card_plan_only --repeat 3 --label outline-items --schema typed --outline-items --bundle --workers 5
+        # outline items, gates 1-2 (OUTLINE_ITEMS=on, docs/outline-items-design-2026-10-27.md); then
+        # python -m scripts.outline_items_report outline-items --base typed-schema
 
 Runs the real graph up to the style resolver (scripts.kpi_plan_only.plan_case) for the six decks of the card paid
 check, so no slide is generated. Per card_grid it records what the planner gave the cards: layout, tones, focus_card,
@@ -33,6 +36,7 @@ sys.path.insert(0, str(_ROOT))
 from dotenv import load_dotenv  # noqa: E402
 
 from scripts.kpi_plan_only import plan_case  # noqa: E402
+from src.agents.outline_items import outline_items_on  # noqa: E402
 from src.agents.slide_component_planner import planner_schema  # noqa: E402
 from src.utils.case_loader import load_case  # noqa: E402
 
@@ -97,9 +101,13 @@ def main() -> int:
     ap.add_argument("--rescore", action="store_true", help="free: rebuild summary.md from runs.json")
     ap.add_argument("--schema", choices=["string", "typed"], default=None,
                     help="planner output schema (sets PLANNER_SCHEMA; default: the environment's, else typed)")
+    ap.add_argument("--outline-items", action="store_true",
+                    help="outline items of a kind + text (sets OUTLINE_ITEMS=on, docs/outline-items-design-2026-10-27.md)")
     a = ap.parse_args()
     if a.schema:
         os.environ["PLANNER_SCHEMA"] = a.schema
+    if a.outline_items:
+        os.environ["OUTLINE_ITEMS"] = "on"
     out = OUT / a.label
     out.mkdir(parents=True, exist_ok=True)
     if a.rescore:
@@ -124,7 +132,8 @@ def main() -> int:
             except Exception as e:   # one failure must not cost the other runs
                 print(f"  {name} r{rep} failed: {e}", flush=True)
                 res = {"outline": {}, "slide_plans": [], "cost_usd": 0.0, "error": str(e)[:300]}
-            run = {"case": name, "repeat": rep, "run_id": rid, "planner_schema": planner_schema(), **res}
+            run = {"case": name, "repeat": rep, "run_id": rid, "planner_schema": planner_schema(),
+                   "outline_items": outline_items_on(), **res}
             run["cards"] = card_slides(run)
             with lock:   # runs.json after every run, in case order, so a stopped run keeps what it has
                 runs.append(run)

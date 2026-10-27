@@ -1,6 +1,8 @@
 # Outline items: a three-level design (2026-10-27)
 
-Status: **design only, nothing built.** Decided with the user on 2026-10-27. Before any code, read §2 (what was rejected and why) and §7 (the test gates).
+Status: **gate 0 built (2026-10-27), behind `OUTLINE_ITEMS=on` (default off); gates 1–3 not run.** Decided with the
+user on 2026-10-27. Read §2 (what was rejected and why) and §7 (the test gates); §11 records what was built and where
+it differs from this design.
 
 ## 1. Problem
 
@@ -126,8 +128,9 @@ and `api.models.ts`. Behind a flag (name to decide at build time); off = today's
   Keep / Remove, like written card lines today. Without a `source` field this word check is what marks outline
   commentary; on the newest saved run it flagged all 9 written QBR / launch narratives.
 - Numbers in items that are not in the brief (today's plan checks; 0 found in 1,662 saved messages).
-- A `records` item whose rows do not all have measures, a `visual` item with numbers, a speaker-note prefix → one
-  re-ask through the existing re-ask path.
+- Item forms: `VISUAL_WITH_NUMBERS` (a visual item with figures), `RECORDS_WITHOUT_MEASURES` (a records row with
+  no number) — report-only (logged) in gate 0; a re-ask is added only if gate 1 shows them. A speaker-note item is
+  dropped by `settle_direction_lines`, as today.
 
 ## 4. Level 2: slide component planner (which component)
 
@@ -135,9 +138,10 @@ and `api.models.ts`. Behind a flag (name to decide at build time); off = today's
   direction as today.
 - **Output:** today's typed schema (`src/agents/planner_schema_typed.py`), unchanged. The planner keeps writing
   `content_data`; the measurement shows it copies values faithfully.
-- **Routing table** in `src/prompts/slide_component_planner/system.j2` is keyed by item kind instead of message
-  shape, and lists the fit list's options for each kind. The existing decision priorities (entities × measures →
-  table, unordered items never chevrons, grouping numbers into several kpi_rows by role, …) stay.
+- **Routing:** a "Content kinds → component options" section, rendered from the fit list, sits above the existing
+  shape routing table in `src/prompts/slide_component_planner/system.j2`; the table and the decision priorities
+  (entities × measures → table, unordered items never chevrons, grouping numbers into several kpi_rows by role, …)
+  stay as they are and guide the choice among a kind's options.
 - **Merge and split stay allowed:** two metric items in one kpi_row, a series as a chart plus a hero tile for its
   latest value, several items in one table.
 - **Points are placed, not padded:** every item is placed; a point may land in the subtitle, a caption or a
@@ -245,3 +249,35 @@ The draft list (in the 2026-10-27 discussion) was widened to §4.1 from this tab
 `src/knowledge/core/kind-fit.yaml`, `src/agents/plan_checks.py` (`POINT_NOT_IN_BRIEF`, `KIND_OUTSIDE_FIT`),
 `src/state.py` if it declares the outline slide, the outline replanner, unit tests; later the frontend plan editor.
 Paths as on this branch; the folder-layout refactor branch moves `src/agents/*` into sub-folders.
+
+## 11. Built (gate 0, 2026-10-27)
+
+- `OUTLINE_ITEMS=on|off` (default off), read per call (`src/agents/outline_items.outline_items_on`). Off: the outline
+  and planner system prompts are byte-identical to before (checked by rendering both).
+- Schema: `OutlineItem`, `OutlineItemsSlide`, `OutlinePlannerItemsOutput` in `src/agents/outline_planner_schema.py`;
+  `OutlineSlide` keeps its exact fields (header fields moved to a shared base class).
+- `src/agents/outline_items.py`: `messages_from_items` (computed `key_messages`), `settle_items` (today's
+  `settle_direction_lines` per item; a line that turns out to be a direction becomes a visual item),
+  `items_for_planner` (items only while they still match `key_messages`; an edit in the plan editor or the outline
+  replanner falls back to today's route), the fit list loader and prompt lines, `kind_fit_notes`, `review_points`,
+  `item_issues`.
+- Outline slides carry `items` and `review_points`; plans carry `kind_fit_notes` (`src/state.py`).
+- `src/knowledge/core/kind-fit.yaml`: §4.1's list with a note per kind.
+- The outline prompt's items section uses placeholder shapes, not example figures (`test_planner.py` bans figures
+  such as "$42.8M" in outline prompts).
+- Tests: `tests/unit/test_outline_items.py` (25).
+- Not built: the review screen (§6), a re-ask for item forms.
+
+### How to run gates 1-2 (test PC, OPENAI_API_KEY)
+
+```bash
+python -m scripts.card_plan_only --repeat 3 --label outline-items --schema typed --outline-items --bundle --workers 5
+python -m scripts.outline_items_report outline-items --base typed-schema
+```
+
+The first command is the paid plan-only run of the six decks × 3 (the saved `typed-schema` run of the same cases cost
+$1.157; expect about $1.2). The second is free and writes `output/card-plans/outline-items/outline-items.md`: the
+gate 1 and gate 2 rows of §7 next to the `typed-schema` run, plus the review points, `KIND_OUTSIDE_FIT` picks and
+item-form issues listed for reading by hand. The `typed-schema` folder must be on the test PC (it is in the
+2026-10-15 bundle); without it, drop `--base`. Baseline from that run (free, 2026-10-27): 2.10 components per slide,
+narrative 67 of 233 components (29%), 6.89 distinct kinds per deck, 4 outline figures not in the plan.

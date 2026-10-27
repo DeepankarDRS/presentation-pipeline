@@ -53,13 +53,13 @@ Each item has a **kind** (what the content is) and a **text** (the content). The
 
 | kind | text | Example |
 |---|---|---|
-| metric | one number with its label and change | "ARR: $42.8M (+18% QoQ)" |
-| series | one measure over labels (periods or entities) | "Revenue by quarter: Q1 $28.4M, Q2 $31.2M, Q3 $36.1M, Q4 $42.8M" |
-| records | ONE table: entities × measures, rows split by " \| ", each row naming its measures | "Enterprise: ARR $28.1M, QoQ +22%, 142 customers \| Mid-Market: ARR $14.4M, QoQ +14%, 487 customers" |
-| steps | an ordered sequence; dated events too | "Discovery → Design → Build" · "Oct 2026: Private beta; Apr 2027: SOC2 + HIPAA" |
-| point | a qualitative statement, or named items | "Self-serve onboarding cuts CAC payback to 10 months" · "Pillars: Visibility; Conversion; Retention" |
-| visual | the request's own direction for drawing the slide | "trend chart with KPIs on top" |
-| note | a caveat, data note or formula the request states | "ZAROMA sheets cover campaigns only" |
+| metric | one number with its label and change | "<metric>: <value> (<change>)" |
+| series | one measure over labels (periods or entities) | "<measure> by <period>: <label> <value>, <label> <value>, ..." |
+| records | ONE table: entities × measures, rows split by " \| ", each row naming its measures | "<entity>: <measure> <value>, <measure> <value> \| <entity>: <measure> <value>, ..." |
+| steps | an ordered sequence; dated events too | "<step> → <step> → <step>" · "<date>: <event>; <date>: <event>" |
+| point | a qualitative statement, or named items | "<a plain sentence>" · "<label>: <item>; <item>; <item>" |
+| visual | the request's own direction for drawing the slide | "4-stage growth roadmap" |
+| note | a caveat, data note or formula the request states | "<the caveat as the request words it>" |
 
 Rules:
 - items are what the audience reads, except a visual item. Speaker notes and talking points are never items, even when the request asks for them. A direction verb in front of content is dropped and the content kept ("Show benefits: A; B" → a point "Benefits: A; B").

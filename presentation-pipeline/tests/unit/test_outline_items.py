@@ -241,3 +241,21 @@ def test_planner_keeps_kind_fit_notes_on_the_plan(monkeypatch):
     with patch("src.agents.slide_component_planner.get_llm", return_value=llm):
         plan, _ = plan_single_slide(slide, outline_plan={"slides": [slide]})
     assert any("KIND_OUTSIDE_FIT" in n for n in plan.get("kind_fit_notes", []))
+
+
+# ── gates 1-2 report (scripts/outline_items_report.py) ───────────────────────
+
+def test_report_measures_items_and_plans():
+    from scripts.outline_items_report import measure, report
+    items = [*REVENUE, {"kind": "point", "text": "Momentum reflects strong adoption"}]
+    slide = {"slide_index": 0, "slide_title": "Revenue", "items": items, "key_messages": messages_from_items(items),
+             "review_points": ["Momentum reflects strong adoption"]}
+    plan = {"slide_index": 0, "kind_fit_notes": ["KIND_OUTSIDE_FIT: x"], "components": [
+        {"kind": "chart", "content_data": {"chart_values": [28.4, 31.2, 36.1, 42.8]}},
+        {"kind": "narrative", "content_data": {"text": "Momentum reflects strong adoption"}}]}
+    run = {"case": "c", "cost_usd": 0.1, "outline": {"slides": [slide]}, "slide_plans": [plan]}
+    m = measure([run, {**run}], {"c": {"request": BRIEF}})
+    assert m["items"] == 10 and m["kind:metric"] == 4 and m["review_points"] == 2 and m["kind_outside_fit"] == 2
+    assert m["narrative"] == 2 and m["slides_same_kinds"] == 1
+    assert m["outline_figures_not_in_plan"] == 2 * 2     # per run: 18 (ARR's change) and 114 (NRR) are on no component
+    assert "| narrative share |" in report("x", m, None, None)
