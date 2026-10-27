@@ -371,8 +371,10 @@ def compile_one(d: Path, xml: str, plan: dict, theme: str, variant: str):
     shutil.rmtree(d, ignore_errors=True)
     d.mkdir(parents=True, exist_ok=True)
     (d / "tiles.xml").write_text(xml, encoding="utf-8")
-    res = tiles.fill(xml, plan)
-    issues = [i["code"] for i in res["issues"] if i["severity"] == "error"]
+    from src.compiler.nodes import charts
+    drawn = charts.expand(xml, plan)   # <Chart ref> composition tags (POM_NODES=chart); a no-op without them
+    res = tiles.fill(drawn["xml"], plan)
+    issues = [i["code"] for i in drawn["issues"] + res["issues"] if i["severity"] == "error"]
     norm = normalize_xml(deck_font(res["xml"]))
     xml = ensure_single_theme(norm["cleaned_xml"], theme)
     (d / "in.xml").write_text(xml, encoding="utf-8")

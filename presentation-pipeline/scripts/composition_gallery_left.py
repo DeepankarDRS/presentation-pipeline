@@ -197,31 +197,11 @@ def table_banded() -> str:
 
 # ── chart: item = point (ChartPoint) ───────────────────────────────────────────────────────────────────────────
 
-def chart_focus() -> int | None:
-    return hint_index(CHART, cd(CHART)["chart_labels"])
-
-
-def chart_native() -> str:
-    """native: POM Chart; one hue, the hint's bar $accent and the rest $neutral (the chart pass focus rule)."""
-    n, f = len(cd(CHART)["chart_labels"]), chart_focus()
-    cols = ["$accent" if i == f else "$neutral" for i in range(n)]
-    return re.sub(r'chartColors="[^"]*"', 'chartColors="' + X(json.dumps(cols)) + '"', native.chart(CHART, {"w": "max"}, {}))
-
-
-def chart_rows() -> str:
-    """rows: one point per row: label · a bar of code-measured length · the plan's value verbatim (unit kept)."""
-    labels, vals, f = cd(CHART)["chart_labels"], cd(CHART)["chart_values"], chart_focus()
-    top = max(native.number(v) for v in vals)
-    out = []
-    for i, (lb, v) in enumerate(zip(labels, vals)):
-        pct = max(2, round(100 * native.number(v) / top))
-        c = "$accent" if i == f else "$neutral"
-        out.append(f'<HStack id="card-roas-{i}" grow="1" gap="20" alignItems="center">'
-                   f'<VStack w="24%">{t(lb, 20, "$textMain", bold="true" if i == f else "false")}</VStack>'
-                   f'<HStack w="1" grow="1" alignItems="center"><Shape shapeType="rect" w="{pct}%" h="36" fill.color="{c}" /></HStack>'
-                   f'<VStack w="16%">{t(str(v), 24, "$accentText" if i == f else "$textMain", bold="true", textAlign="right")}</VStack></HStack>')
-    title = t(cd(CHART)["chart_title"], 14, "$textMuted", bold="true")
-    return f'<VStack gap="10" grow="1">{title}<VStack gap="12" grow="1">{"".join(out)}</VStack></VStack>'
+def chart_tag(variant: str = "") -> str:
+    """The bare tag the generator writes (POM_NODES=chart); charts.expand draws it (was hand-written XML here, the
+    sheet of 2026-10-27 is the reference it must match)."""
+    v = f' variant="{variant}"' if variant else ""
+    return f'<Chart ref="roas"{v} />'
 
 
 # ── bullet list: item = point (Bullet); code splits "Head: detail" into label. + description. ─────────────────────
@@ -459,8 +439,8 @@ def blocks() -> dict[str, tuple[list, list]]:
                   [("native (default)", [TABLE], table_native()), ("rows numbered", [TABLE], table_rows()),
                    ("columns", [TABLE], table_columns()), ("banded", [TABLE], table_banded())]),
         "chart": ([(f"today · {v}", [LB.CHART], LB.chart(v)) for v in ("plain", "labelled", "focus_label")],
-                  [("native (default)", [CHART], chart_native()), ("native labelled", [CHART], chart_native()),
-                   ("rows", [CHART], chart_rows())]),
+                  [("native (default)", [CHART], chart_tag()), ("native labelled", [CHART], chart_tag("native labelled")),
+                   ("rows", [CHART], chart_tag("rows"))]),
         "bullets": ([(f"today · {v}", [LB.BULLETS], LB.bullets(v)) for v in ("plain", "icon", "tiles")],
                     [("native (default)", [BULLETS], bullets_native()), ("rows", [BULLETS], bullets_rows(False)),
                      ("rows numbered", [BULLETS], bullets_rows(True)), ("grid", [BULLETS], bullets_grid()),
@@ -526,8 +506,9 @@ def build(block: str, out: Path) -> None:
         slug = re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")
         d = out / block / f"{slug}-{pal}"
         xml = inner_ids(body if body.startswith("<Slide") else TG.slide(label.upper(), head, body))
-        variant = "labelled" if "labelled" in label else label.split(" · ")[-1].split()[0]
-        pdf, issues = LB.compile_one(d, xml, {"components": cs}, themes[pal], variant)
+        # today's chart names get the old post-edit; a <Chart ref> tag draws its labels itself (charts.py, pptx-post.js)
+        variant = "labelled" if "labelled" in label and label.startswith("today") else label.split(" · ")[-1].split()[0]
+        pdf, issues = LB.compile_one(d, xml, {"components": cs, "slide_title": head}, themes[pal], variant)
         res = json.loads((d / "compile-result.json").read_text(encoding="utf-8")) if (d / "compile-result.json").exists() else {}
         log.append({"block": block, "shot": label, "palette": pal, "rendered": bool(pdf), "fill_errors": issues,
                     "fitGrow": res.get("fitGrow", []), "warnings": [w.get("code") for w in res.get("warnings") or []]})

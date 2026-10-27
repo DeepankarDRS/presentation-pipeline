@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -42,6 +43,17 @@ CONTENT_ATTRS = {"Chart": {"chartType", "title", "showTitle"}}
 @functools.lru_cache(maxsize=1)
 def blocks() -> dict[str, Any]:
     return yaml.safe_load(_FILE.read_text(encoding="utf-8"))["blocks"]
+
+
+@functools.lru_cache(maxsize=1)
+def nodes() -> dict[str, Any]:
+    """The composition nodes (block-variants.yaml `nodes`, composition spec §4), by plan kind."""
+    return yaml.safe_load(_FILE.read_text(encoding="utf-8"))["nodes"]
+
+
+def nodes_on(kind: str) -> bool:
+    """`POM_NODES`: a comma list of the plan kinds code draws (left-blocks spec §2.5), e.g. "chart"."""
+    return kind in {k.strip() for k in os.environ.get("POM_NODES", "").lower().split(",")}
 
 
 def _plan_kinds(b: dict) -> list[str]:
@@ -147,6 +159,10 @@ def check(name: str, comp: dict) -> bool:
         return cd.get("card_layout") != "matrix"
     if name == "all_titles_numbered_ok":
         return not any(_NUMBERED.match(t) for t in items(comp))
+    if name == "count_le_8":
+        return n <= 8
+    if name == "one_series":
+        return len(cd.get("chart_series") or [None]) == 1
     if name == "chart_is_bar":
         return str(cd.get("chart_type") or comp.get("chart_type") or "bar").lower() == "bar"
     if name == "has_tones":

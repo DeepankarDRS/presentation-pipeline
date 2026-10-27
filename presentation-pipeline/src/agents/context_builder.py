@@ -24,7 +24,7 @@ from src.agents.blueprint_selector import select_blueprint
 from src.agents.hint_capabilities import hint_scopes, kind_treatments, visual_intent_techniques
 from src.agents.capacity import layout_rules
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
-from src.compiler.nodes import cards, tiles
+from src.compiler.nodes import cards, charts, tiles
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
 logger = logging.getLogger(__name__)
@@ -627,8 +627,12 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
     theme = theme_info
 
     has_grammar = True
+    # chart nodes (charts.py, POM_NODES=chart): code draws every chart that has an id, so the slide gets no notes,
+    # recipe or techniques for a hand-drawn chart
+    charts_drawn = charts.on() and "chart" in kinds and len(charts.chart_components(slide_plan)) == kinds.count("chart")
     notes = _select_notes(
-        kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar
+        [k for k in kinds if not (charts_drawn and k == "chart")], validation, text_yaml, component_yamls, theme,
+        has_grammar=has_grammar
     )
     # the notes no component kind adds are the same on every slide of a deck: the generator puts them in
     # the cached prefix of its system prompt, the rest after "## THIS SLIDE" (tile-nodes spec §5)
@@ -664,6 +668,11 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
                 technique_kinds = [k for k in technique_kinds if k != "card_grid"]
                 if "card_grid" in scopes:
                     scopes["card_grid"] = cards.scope(kind_treatments("card_grid"))
+    if charts_drawn:
+        recipe_kinds = [k for k in recipe_kinds if k != "chart"]
+        technique_kinds = [k for k in technique_kinds if k != "chart"]
+        scopes.pop("chart", None)
+        allowed_attributes["Chart"] = list(dict.fromkeys((allowed_attributes.get("Chart") or []) + charts.tag_attributes()))
     component_recipes = _render_component_recipes(recipe_kinds)
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar and EXAMPLES_ON else ""

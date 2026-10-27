@@ -177,10 +177,10 @@ blocks:
     tag: Chart                # chartType comes from the plan, not the variant
     family: native
     plan_kind: chart
-    variants:
-      native:     {prompt: "the chart as drawn"}
-      labelled:   {prompt: "values on the bars, one bar highlighted", draw: block, requires: [chart_is_bar], fallback: native}   # POM's Chart has no data labels
-      horizontal: {prompt: "horizontal bars for long category names", draw: block, requires: [chart_is_bar], fallback: native}   # nor horizontal bars
+    variants:                 # the compositions of `nodes.chart` (POM_NODES=chart, charts.py); names as there
+      native:            {prompt: "the chart, one hue, the focus bar in the accent"}
+      native labelled:   {prompt: "each bar's value written on it, no value axis", requires: [one_series, count_le_8, chart_is_bar], fallback: native}
+      rows:              {prompt: "one row per point: label, a bar, the value as written", requires: [one_series, count_le_8], fallback: native}
 
   bullet_list:
     tag: Ul
@@ -527,3 +527,46 @@ tile_nodes:
   # Checks added for tile nodes (the others are in the header of this file):
   #   is_emphasis_item   the item is the one an `emphasis_from` source names (spec.singled_out,
   #                      or the last step for `destination`); the LLM never picks it
+
+
+# ── composition nodes (docs/composition-convention-spec.md, approved 2026-10-27) ───────────────────────────────
+# One entry per plan kind code draws under POM_NODES=<kind> (src/compiler/nodes/<kind>s.py). `variant` on the group
+# tag names a composition: one shared word (§2.3), plus `numbered` / `labelled`. Per composition:
+#   requires / fallback   as in `blocks` (checks in the header; one_series, count_le_8 below)
+#   look                  the default look, $tokens only; the group's own box + `<part>.<attribute>`
+#   emphasis              laid over `look` on the plan's emphasis item. With no emphasis item, every item takes the
+#                         emphasis colours of the node's `one_hue` part (its mark), and no other emphasis attribute
+# Later wins: look -> emphasis -> the LLM's attributes on the group tag. `aliases`: today's names -> a composition
+# (+ attributes), NODE_ATTR_ALIAS (info), for one release. `styles`: recipes, prompt examples only.
+#   one_series   one series (chart_values, or chart_series of length 1)
+#   count_le_8   at most eight items
+nodes:
+  chart:
+    tag: Chart
+    plan_kind: chart
+    parts: {title: Text, label: Text, value: Text, bar: Shape}
+    one_hue: bar
+    meta: [ref, variant, direction]
+    native_attributes: [showLegend]     # the Chart's own (chartColors, chartType: code's)
+    compositions:
+      native:
+        look:     {backgroundColor: $chartSurface, padding: 16, borderRadius: 8, title.color: $chartInk,
+                   bar.fill.color: $neutral}
+        emphasis: {bar.fill.color: $accent}
+      native labelled:                  # the values as native data labels (pptx-post.js), in the plan's unit
+        requires: [one_series, count_le_8, chart_is_bar]
+        fallback: native
+        look:     {backgroundColor: $chartSurface, padding: 16, borderRadius: 8, title.color: $chartInk,
+                   bar.fill.color: $neutral, label.color: $chartInk}
+        emphasis: {bar.fill.color: $accent}
+      rows:                             # label · a bar of code-measured length · the plan's value verbatim
+        requires: [one_series, count_le_8]
+        fallback: native
+        look:     {title.color: $textMuted, label.color: $textMain, value.color: $textMain, bar.fill.color: $neutral}
+        emphasis: {bar.fill.color: $accent, value.color: $accentText, label.bold: "true"}
+    aliases:                            # the left-blocks draft's names
+      plain: native
+      labelled: native labelled
+      focus_label: native labelled
+      horizontal: {variant: native, direction: horizontal}
+    styles: {}
