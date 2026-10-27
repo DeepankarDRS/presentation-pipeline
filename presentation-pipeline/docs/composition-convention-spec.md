@@ -248,17 +248,41 @@ Card boxes carry the cards' `card-<cid>-<i>` ids, so fit-grow grows every card o
   composition test's uneven `numbered_rows` came from missing peer ids, not from the composition.
 
 **Render findings to carry into the build** (none blocks the convention):
-1. `strip`: fit-grow's `stackTileIcons` moved the icon above the label on 3 of 4 tiles (the ones whose label
-   wrapped). The node must fix the icon position per composition, so that peers match.
-2. `strip` and `banded` in a tall band leave empty space under the numbers. Four across caps the number size by
-   width. The composition's `requires` should prefer `rows` / `bento` when the band is tall and the items are
-   ≤ 4 (a fit decision for code, like `regridTiles`, not an LLM rule).
-3. **Cards with a body and bullets do not grow, today's code included.** In `fitted.xml`, today's `lifted` /
-   `filled` / `accent_top` 2 × 2 keeps titles at 20 px and bodies / bullets at 16 px in half-empty cards. The
-   proposed `banded` (17 / 20) and the small `bento` cards (15–17) behave the same way. Only `columns` (bullets in
-   their own boxes) grew, to 28 / 39 px, and `rows numbered` grew a little. So this is a fit-grow limit on
-   cards that mix a Text (with a key-phrase span) and a `Ul`, not a property of any composition. It needs its
-   own free look before any card gate (user rule: grow the type to fill, never shrink the card).
+Each was traced in fit-grow's own layout (`layout` / `natural` / `fill`, measured on the slides' `in.xml`):
+
+1. **`strip` icons sit unevenly: a per-tile decision.** `stackTileIcons` (`src/node/fit-grow.js`) moves a
+   tile's icon above its label when *that tile* is below `LOW_FILL` (0.70) after growth. It decides tile by
+   tile, while the values next to it are grown as one group (`refGroups`). ARR (short label, one line) stayed
+   just above 0.70, and the three tiles whose labels wrapped fell below it. **Fix (small, fit-grow):** decide once
+   per ref group. If any tile of the group qualifies, move the icon on every tile of the group, so that peers
+   match. This holds for every composition, not just `strip`. Under the convention, a composition node could
+   also fix the icon position itself (`banded` / `rows` / `bento` already put it in the band, badge or lead).
+2. **Tall bands stay empty: the width binds the numbers, and nothing can use the height.** In `strip` the
+   values grew 28 → 65 px and stopped at the tile width (4 across, ~270 px each). The box's fill went only
+   20% → 30% (`banded`: 15% → 26%). A one-row composition cannot use the height by definition, and neither can
+   a `regridTiles` split, because `strip` never regrids. **Proposal (a fit rule in code, not an LLM rule):**
+   one-row compositions (`strip`, `banded` with ≤ 5 items) take content height and do not `grow`, so that the
+   slide's other bands take the spare height. When the block is the slide's only growing band and its fill after
+   growth stays under 50%, code draws the fallback instead (`grid`, which can regrid to 2 × 2) and logs
+   `NODE_VARIANT_UNMET`. The same check is useful for any composition whose `requires` depends on space.
+3. **"Card text does not grow" was a misreading: those cards are full by height.** fit-grow does run
+   (`compile-result.json` `fitGrow: []`, nothing changed). By its measure today's `lifted` 2 × 2 cards are
+   **87–92% full**. Card 3 has an inner height of 208 px: tag 18 + title 26 + body 22 + three bullets 97 +
+   gaps 24 = 188 px. The proposed `banded` cards measure 88%, and `rows numbered` 96–97%. The cards look small
+   on the sheet because each line uses ~40% of a 494 px wide card: the stacked parts fill the **height**, and
+   the **width** stays spare. fit-grow grows type only into spare height (`LOW_FILL` on height), so it is right
+   not to grow them. A bigger size would overflow the card.
+   - **What does grow the type is a composition that spends the width.** `columns` (each bullet in its own
+     box) grew to 28 / 39 px. The `bento` big block grew 30 → 44 px. The small `bento` cards sit at 0.71, just
+     above the 0.70 threshold, so they stayed.
+   - **Consequence for the convention:** for cards with a body *and* bullets, `grid` is the composition that
+     keeps type smallest. A default chosen from the content (body + ≥ 3 bullets per card, ≤ 4 cards →
+     `columns`, else `grid`) would follow the user's rule "grow the type, never shrink the card" better than
+     a fixed `grid` default. This is a code choice from the plan's shape, checked on the saved card slides
+     (free replay) before it becomes a default.
+   - **My proof bug, now fixed:** in `rows numbered` the "01" Text had no width, so its column took 248 px of
+     the row. The number now sits in a 72 px column (`scripts/composition_convention.py`), and the card sheet
+     is re-rendered.
 4. On graphite-dark the `banded` band's `$onAccent` ink sits on light tone fills. It reads, but the contrast
    check should run on `band.` like any dark fill (`ON_FILL` table: add `$positive` / `$negative` / `$warning`
    → `$onAccent`, after a contrast check per palette).

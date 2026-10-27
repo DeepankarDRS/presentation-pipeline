@@ -163,7 +163,7 @@ def card_rows() -> str:
         r = card_role(i)
         rule = a(borderTop__color="$border", borderTop__width="1") if i else ""
         rows.append(f'<HStack id="card-levers-{i}" grow="1" gap="24" alignItems="center" padding.top="10" padding.bottom="10"{rule}>'
-                    f'{t(f"{i + 1:02d}", 40, f"${r}Text", bold="true")}'
+                    f'<VStack w="72">{t(f"{i + 1:02d}", 40, f"${r}Text", bold="true")}</VStack>'
                     f'<VStack w="22%" gap="4">{t(c["tag"], 13, f"${r}Text", bold="true", letterSpacing="1")}'
                     f'{t(c["title"], 26, bold="true")}</VStack>'
                     f'<VStack w="1" grow="1">{body(c, 20, key=f"${r}Text")}</VStack>'
