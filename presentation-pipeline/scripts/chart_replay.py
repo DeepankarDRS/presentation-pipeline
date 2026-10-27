@@ -138,9 +138,11 @@ def drawn_data(final_xml: str, comp: dict) -> dict:
             "values_changed": sum(1 for a, b in zip(plan_vals, got_vals) if abs(a - b) > 1e-6) + abs(len(plan_vals) - len(got_vals))}
 
 
-def run(src: Path, out: Path, do_render: bool, limit: int | None, variant: str) -> list[dict]:
+def run(src: Path, out: Path, do_render: bool, limit: int | None, variant: str, only: list[str] | None = None) -> list[dict]:
     results = []
     for r in collect(src, limit):
+        if only and not any(o in r["case"] for o in only):
+            continue
         comp = next(iter(C.chart_components(r["plan"]).values()))
         root = _parse(r["xml"])
         done = rewrite(root, comp, variant)
@@ -201,11 +203,12 @@ def main() -> int:
     ap.add_argument("--variant", default="", help="composition for arm B (default: a bare tag)")
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--only", nargs="*", help="cases whose name contains one of these")
     a = ap.parse_args()
     out = a.out or (OUT.with_name(f"chart-replay-{a.variant.replace(' ', '-')}") if a.variant else OUT)
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
-    results = run(a.src, out, not a.no_render, a.limit, a.variant)
+    results = run(a.src, out, not a.no_render, a.limit, a.variant, a.only)
     (out / "results.json").write_text(json.dumps(results, indent=1, ensure_ascii=False), encoding="utf-8")
     if not a.no_render:
         print(f"sheets: {card_sheets(out, results)} pairs")

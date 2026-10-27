@@ -215,8 +215,12 @@ def draw_native(comp: dict, name: str, box: dict, rest: dict, hi: dict, focus: i
         colors = [hi["bar"].get("fill.color", "$accent") if i == focus else rest["bar"].get("fill.color", "$neutral")
                   for i in range(n_pts)] if focus is not None else [rest["bar"].get("fill.color", "$accent")] * n_pts
     own = {k: box.pop(k) for k in list(box) if k in node()["native_attributes"]}
+    # a card the LLM sized (h / minH) holds the chart: the chart's own minimum on top of the card's padding and title
+    # made the card taller than asked, and fit-grow starved a dense slide's text to 0 px (replay 2026-10-28, 3 slides)
     chart = native.chart(dict(comp, content_data={k: v for k, v in _cd(comp).items() if k != "chart_title"}),
                          {"w": "max", "chartColors": json.dumps(colors), **own}, theme)
+    if {"h", "minH"} & set(box):
+        chart = chart.replace(' minH="160"', "", 1)
     post: dict[str, Any] = {}
     if name == "native labelled":
         post.update(labels=True, fmt=number_format(series[0].get("values") or []),
