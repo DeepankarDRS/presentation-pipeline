@@ -153,9 +153,11 @@ def _remap_hex(xml: str, old_tokens: dict[str, str], result: SwapResult) -> str:
 
     def token_for(attr: str, hex_: str, fill: str | None) -> str | None:
         on_fill = _ON_FILL.get(fill or "")
-        if _role(attr) == "text" and on_fill in old_tokens:
+        # an old <Theme> without derived tokens: ink on a dark panel was white
+        ref = old_tokens.get(on_fill or "") or ("FFFFFF" if on_fill == "onPanelDark" else None)
+        if _role(attr) == "text" and ref:
             L, a, b = _lab(hex_)
-            if math.hypot(a, b) < _NEUTRAL_CHROMA and abs(L - _lab(old_tokens[on_fill])[0]) < 30:
+            if math.hypot(a, b) < _NEUTRAL_CHROMA and abs(L - _lab(ref)[0]) < 30:
                 return on_fill
         names = by_value.get(hex_)
         if names:
@@ -174,6 +176,19 @@ def _remap_hex(xml: str, old_tokens: dict[str, str], result: SwapResult) -> str:
             return f'{m.group("attr")}="${token}"'
         return _COLOR_ATTR_RE.sub(repl, attrs)
 
+    # On a light source theme a $textMain fill is an inverted panel (an old <Theme> has no
+    # $panelDark, so dark hex fills land on $textMain too). Say $panelDark: it equals textMain
+    # on light targets and stays dark on dark ones, where $textMain is the light ink.
+    old_main = old_tokens.get("textMain")
+    panel_from_main = old_main is not None and _lab(old_main)[0] < _DARK_TINT_L
+
+    def as_panel(attrs: str) -> str:
+        if not panel_from_main:
+            return attrs
+        return _FILL_TOKEN_RE.sub(
+            lambda f: f.group(0).replace("$textMain", "$panelDark") if f.group("tok") == "textMain"
+            else f.group(0), attrs)
+
     out: list[str] = []
     stack: list[str | None] = []        # the fill token each open element sits on
     pos = 0
@@ -187,7 +202,7 @@ def _remap_hex(xml: str, old_tokens: dict[str, str], result: SwapResult) -> str:
             continue
         parent_fill = stack[-1] if stack else None
         # The element's own fill first (it is the context), then its ink against it.
-        attrs = _FILL_HEX_RE.sub(lambda f: remap_attrs(f.group(0), parent_fill), m.group("attrs"))
+        attrs = as_panel(_FILL_HEX_RE.sub(lambda f: remap_attrs(f.group(0), parent_fill), m.group("attrs")))
         fm = _FILL_TOKEN_RE.search(attrs)
         fill = fm.group("tok") if fm else parent_fill
         attrs = remap_attrs(attrs, fill)

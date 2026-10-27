@@ -48,6 +48,17 @@ def test_dark_tinted_panel_and_its_ink_flip_together():
     assert '<Text color="$accent">b</Text>' in out
 
 
+def test_text_main_panel_from_an_old_theme_becomes_panel_dark():
+    # gj-h1 golden: <Theme> without derived tokens, dark panels as $textMain and dark hex.
+    old = '<Theme surface="F0F5F3" surfaceAlt="FFFFFF" accent="0D6B4E" textMain="141F1C" textMuted="5F706B" />'
+    xml = ('<Slide><VStack backgroundColor="$textMain"><Text color="FFFFFF">a</Text></VStack>'
+           '<VStack backgroundColor="1E3A5F"><Text color="$textMuted">b</Text></VStack></Slide>')
+    out = swap_theme(xml, old, OLD, True).xml
+    assert out.count('backgroundColor="$panelDark"') == 2
+    assert "$textMain" not in out.split("<Text")[0]
+    assert '<Text color="$onPanelDark">a</Text>' in out
+
+
 def test_ink_on_an_accent_fill_becomes_on_accent():
     xml = f'<Slide><VStack backgroundColor="{OLD_T["accent"]}"><Text color="FFFFFF">a</Text></VStack></Slide>'
     out = swap_theme(xml, OLD, OLD, False).xml

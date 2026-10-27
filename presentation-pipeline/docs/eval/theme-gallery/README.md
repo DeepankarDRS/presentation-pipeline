@@ -12,8 +12,10 @@ path the review screen's theme switch uses, then compiled (POM) and rendered (Li
   perceptis / mbb-green / mbb-red (+ -dark) assumed from the template dropdown swatches.
 
 Seen on the sheets:
-- The tiny sub-headline drawn over the KPI row and the near-black platform panels are in the original gj-h1
-  render too (the slide, not the themes).
+- The tiny sub-headline drawn over the KPI row is in the original gj-h1 render too (the slide, not the themes).
+- Fixed 2026-10-27 (re-rendered): the slide's dark panels (`$textMain` / dark hex fills) went WHITE with pale text on
+  every dark theme; theme_swap now maps them to `$panelDark` and white ink on them to `$onPanelDark`.
+- Contrast review: `python -m scripts.palette_contrast` (token pairs of every palette + LOW_CONTRAST on this slide).
 - Chart colours too pale for the white chart card (2:1) or near-duplicates are swapped for the default green /
   amber by `palette_tokens.guard_chart_colors` (6FD2EF, C5EDF8, 9FE8CF, 6FE3B8); on mbb-green and perceptis-dark
   the third series (Zepto) falls to grey 808080.
