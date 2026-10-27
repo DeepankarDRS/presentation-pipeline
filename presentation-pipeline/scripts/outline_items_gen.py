@@ -1,7 +1,7 @@
 """Outline items, gate 3 (docs/outline-items-design-2026-10-27.md §7): the generator on the items plans and on the
 saved plans of the same slides, scored and drawn as blind A / B sheets.
 
-    python -m scripts.outline_items_gen --make-inputs --items <runs.json> --base <runs.json>    # free, build PC
+    python -m scripts.outline_items_gen --make-inputs --items <runs.json> --base <runs.json> --drop <pair>,...   # free
     python -m scripts.outline_items_gen --label gate3 --no-render --bundle --max-usd 1.5         # paid, test PC (~$1)
     python -m scripts.outline_items_gen --label gate3 --rescore                                  # free, build PC
     python -m scripts.outline_items_gen --label gate3-dry --dry                                  # free: fake generator
@@ -10,7 +10,8 @@ saved plans of the same slides, scored and drawn as blind A / B sheets.
 runs.json) with repeat 1 of a run without (--base, typed-schema): each items slide with the base slide of the same deck
 whose words overlap its own most (the two outlines may order slides differently: launch 5 and 6 swap), at least a
 third of them; kept only when the two plans draw different component kinds (the same kinds would compare the generator
-with itself). The pairs go to
+with itself). --drop leaves out pairs a person judged unfair (different content, near-identical plans, a defect
+both plans share; docs/eval/outline-items/gate3-pairs-review.md). The pairs go to
 docs/eval/outline-items/gate3-inputs.json, committed, so the test PC needs no output/.
 
 The paid run draws every pair twice with the real graph from a slide plan (scripts.kpi_paid.run_one: style resolver ->
@@ -58,7 +59,7 @@ def overlap(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(a | b) if a | b else 0.0
 
 
-def make_inputs(items_path: Path, base_path: Path, repeat: int = 1) -> list[dict]:
+def make_inputs(items_path: Path, base_path: Path, repeat: int = 1, drop: set[str] | None = None) -> list[dict]:
     from src.utils.case_loader import load_case
     new = json.loads(items_path.read_text(encoding="utf-8"))
     base = json.loads(base_path.read_text(encoding="utf-8"))
@@ -78,6 +79,8 @@ def make_inputs(items_path: Path, base_path: Path, repeat: int = 1) -> list[dict
             if kinds(p) == kinds(q):
                 continue
             n = p.get("slide_index", 0) + 1
+            if f"{r['case']}-s{n}" in (drop or set()):
+                continue
             pairs.append({"pair": f"{r['case']}-s{n}", "case": r["case"], "slide": n,
                           "base_slide": q.get("slide_index", 0) + 1, "overlap": round(overlap(w, words(q)), 2),
                           "theme": load_case(r["case"]).get("theme", ""), "items": p, "base": q})
@@ -217,6 +220,8 @@ def main() -> int:
     ap.add_argument("--make-inputs", action="store_true", help="free: build gate3-inputs.json from two plan-only runs")
     ap.add_argument("--items", type=Path, help="with --make-inputs: runs.json of the OUTLINE_ITEMS=on run")
     ap.add_argument("--base", type=Path, help="with --make-inputs: runs.json of the run without items")
+    ap.add_argument("--drop", default="", help="with --make-inputs: pairs to leave out, comma-separated "
+                                                "(e.g. gate-deck-cheffin-full-s4)")
     ap.add_argument("--label", default="gate3")
     ap.add_argument("--max-usd", type=float, default=1.5, help="paid run: stop before a pair once this is spent")
     ap.add_argument("--rescore", action="store_true", help="free: render, score and build the blind sheets again")
@@ -228,7 +233,12 @@ def main() -> int:
         if not (a.items and a.base):
             print("--make-inputs needs --items and --base (runs.json paths)")
             return 2
-        pairs = make_inputs(a.items, a.base)
+        drop = {d.strip() for d in a.drop.split(",") if d.strip()}
+        pairs = make_inputs(a.items, a.base, drop=drop)
+        missing = drop - {p["pair"] for p in make_inputs(a.items, a.base)}
+        if missing:
+            print(f"--drop names no pair: {', '.join(sorted(missing))}")
+            return 2
         INPUTS.parent.mkdir(parents=True, exist_ok=True)
         INPUTS.write_text(json.dumps(pairs, indent=1, ensure_ascii=False), encoding="utf-8")
         print(f"{len(pairs)} pairs -> {INPUTS}")

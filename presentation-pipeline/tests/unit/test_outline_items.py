@@ -316,3 +316,15 @@ def test_gate3_pairs_slides_by_content_and_skips_same_kinds(tmp_path):
     (tmp_path / "b.json").write_text(json.dumps(base), encoding="utf-8")
     pairs = make_inputs(tmp_path / "i.json", tmp_path / "b.json")
     assert [(p["slide"], p["base_slide"]) for p in pairs] == [(6, 5)]
+
+
+def test_gate3_drop_leaves_named_pairs_out(tmp_path):
+    import json
+    from scripts.outline_items_gen import make_inputs
+    p = {"slide_index": 0, "slide_title": "Why Nexus", "components": [
+        {"kind": "card_grid", "content_data": {"text": "Benefits gateway sprawl configuration outages"}}]}
+    q = {**p, "components": [*p["components"], {"kind": "narrative", "content_data": {"text": "Momentum"}}]}
+    (tmp_path / "i.json").write_text(json.dumps([{"case": "deck-qbr-data", "repeat": 1, "slide_plans": [p]}]), encoding="utf-8")
+    (tmp_path / "b.json").write_text(json.dumps([{"case": "deck-qbr-data", "repeat": 1, "slide_plans": [q]}]), encoding="utf-8")
+    assert [x["pair"] for x in make_inputs(tmp_path / "i.json", tmp_path / "b.json")] == ["deck-qbr-data-s1"]
+    assert make_inputs(tmp_path / "i.json", tmp_path / "b.json", drop={"deck-qbr-data-s1"}) == []

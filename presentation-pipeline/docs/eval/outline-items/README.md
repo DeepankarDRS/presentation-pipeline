@@ -74,9 +74,18 @@ list stays as it is.
 `scripts/outline_items_gen.py`. Inputs (`gate3-inputs.json`, built free from the two `runs.json`): repeat 1 of
 `outline-items-2` paired with repeat 1 of `typed-schema`, each items slide with the base slide of the same deck whose
 words overlap most (at least a third; the outlines may order slides differently), kept only when the two plans draw
-different component kinds: **20 pairs** from all six decks (CHEFFIN 6, launch 3, agency 4, QBR 3, XTSY 3, all-nodes 1).
-In 8 the base plan has a narrative more (the outline's commentary); the others draw the content with other components
-(a chart vs a table, one KPI row vs two, cards vs a flow, a bullet list beside the cards).
+different component kinds: 20 pairs. The user reviewed them side by side (`gate3-pairs-review.md`, 2026-10-28) and
+dropped 4 that are not a fair test: `gate-deck-cheffin-full-s4` (the key formulas are only in base),
+`gate-deck-xtsy-qcomm-s5` (overlap 0.33, base adds descriptions and an empty visual), `gate-deck-agency-takeover-s4`
+(near-identical plans), `gate-deck-xtsy-qcomm-s3` (both plans share the same card defect). **16 pairs** remain: QBR 3,
+launch 3 (the cover included), agency 3, all-nodes 1, CHEFFIN 5 (the cover included), XTSY 1. Pair rule from the
+review: both plans carry the same figures and points; no near-identical pairs or shared defects. Items defects kept
+on purpose (the gate should see them): agency s1 chart values are text, all-nodes s2 a sentence as a KPI label, QBR s5
+"core_hook" in the subtitle, XTSY s6 steps as cards rather than a flow.
+
+```bash
+python -m scripts.outline_items_gen --make-inputs --items output/card-plans/outline-items-2/runs.json --base output/card-plans/typed-schema/runs.json --drop gate-deck-cheffin-full-s4,gate-deck-xtsy-qcomm-s5,gate-deck-agency-takeover-s4,gate-deck-xtsy-qcomm-s3
+```
 
 Both arms run the real graph from the slide plan (generator, validator, repairers; critic off; `models.yaml` as
 committed: generator gpt-6.1-sol), then compile with the deck font, render in Inter and go on blind A / B sheets.
