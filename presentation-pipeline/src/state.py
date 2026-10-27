@@ -63,6 +63,8 @@ class OutlineSlide(TypedDict, total=False):
     section: str
     narrative_role: str
     key_messages: list[str]   # a "Visual:" / "Show:" message is the brief's direction for drawing the slide
+    items: list[dict]         # OUTLINE_ITEMS=on: [{kind, text}]; key_messages is computed from them
+    review_points: list[str]  # OUTLINE_ITEMS=on: point items not found in the brief (POINT_NOT_IN_BRIEF), for review
 
 
 class OutlinePlan(TypedDict, total=False):
@@ -120,6 +122,7 @@ class SlidePlan(TypedDict, total=False):
     data_provenance: dict[str, ProvenanceLiteral]  # content_data key → source
     capacity_fixes: list[str]        # components converted past capacity.yaml (plan check)
     written_lines: list[str]         # card lines the planner wrote (not in the brief), for review
+    kind_fit_notes: list[str]        # OUTLINE_ITEMS=on: picks outside knowledge/core/kind-fit.yaml (report-only)
     plan_flags: list[PlanFlag]       # plan_checks findings
     plan_source: PlanSourceLiteral   # "fallback" when the planner failed twice (outline lines as a bullet list)
 

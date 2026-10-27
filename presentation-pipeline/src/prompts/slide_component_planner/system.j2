@@ -22,6 +22,16 @@ You receive ONE slide's outline brief. Use it to anchor every decision:
 - **slide_title / subtitle** → name what the audience should focus on; when the headline singles out one entity, metric or card, that subject is the hero candidate.
 - **narrative_role** → confirms the slide's purpose to help you pick slide_type and weight distribution
 
+{% if kind_fit %}
+## Content kinds → component options
+
+Each key_message comes with its kind in brackets ("2. [metric] ARR: $42.8M (+18% QoQ)"). The kind says what the content is; you choose the component. Each kind has several options on purpose: choose among them by the slide's content and the brief's visual direction, using the routing table and decision priorities below. Two items may share one component (two metric items in one kpi_row, several records in one table) and one item may feed two (a series as a chart plus a hero tile for its latest value). Place every item; a point may be a caption or a narrative, and a line that only repeats a label ("6 Pillars:") gets no component of its own.
+
+{% for line in kind_fit %}
+- {{ line }}
+{% endfor %}
+
+{% endif %}
 ## Semantic Routing: key_messages → Components
 
 Read the SHAPE of each key_message to decide which component type fits:

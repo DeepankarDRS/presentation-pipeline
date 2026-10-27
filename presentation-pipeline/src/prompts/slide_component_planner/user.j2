@@ -26,7 +26,7 @@ Narrative role:
 
 Key messages (the ABSOLUTE source of truth — route each to the right component and extract data VERBATIM into {{ content_field }}):
 {% for msg in content_messages %}
-{{ loop.index }}. {{ msg }}
+{{ loop.index }}. {% if content_kinds %}[{{ content_kinds[loop.index0] }}] {% endif %}{{ msg }}
 {% endfor %}
 
 Visual direction from the brief (how to draw this slide: the component kind, the hero and the order — never text on the slide):

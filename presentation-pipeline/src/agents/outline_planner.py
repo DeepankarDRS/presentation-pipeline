@@ -18,6 +18,7 @@ Writes: outline_plan
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from pathlib import Path
@@ -26,7 +27,8 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.outline_planner_schema import OutlinePlannerOutput
+from src.agents.outline_items import item_issues, outline_items_on, review_points, settle_items
+from src.agents.outline_planner_schema import OutlinePlannerItemsOutput, OutlinePlannerOutput
 from src.agents.settings_mapper import DeckSettings, settings_to_constraints
 from src.agents.written_lines import brief_content, brief_instructions, settle_direction_lines
 from src.state import PresentationState
@@ -109,11 +111,12 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
         target_slides=target_slides,
         slide_count_source=slide_count_source,
     )
-    system_msg = _jinja_env.get_template("system.j2").render()
+    items_on = outline_items_on()
+    system_msg = _jinja_env.get_template("system.j2").render(items=items_on)
 
     llm = get_llm("outline_planner")
     structured_llm = llm.with_structured_output(
-        OutlinePlannerOutput, method="json_schema", include_raw=True,
+        OutlinePlannerItemsOutput if items_on else OutlinePlannerOutput, method="json_schema", include_raw=True,
     )
 
     raw_result = structured_llm.invoke([
@@ -134,9 +137,21 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
     instructions = brief_instructions(state.get("raw_request", ""))
     outline["brief_instructions"] = instructions   # the planner's plan checks read them too
     content = brief_content(state.get("raw_request", ""), instructions)
+    # what an item may be copied from: the brief, the supplied content, the clarification answers
+    brief_text = " ".join([content, json.dumps(state.get("supplied_content") or {}, ensure_ascii=False),
+                           json.dumps(state.get("elicitation_answers") or {}, ensure_ascii=False)])
     for slide in outline["slides"]:
-        for note in settle_direction_lines(slide, instructions, content):  # presenter notes are not slide content
-            logger.info(f"outline_planner: slide {slide.get('slide_index', 0) + 1} {note}")
+        n = slide.get("slide_index", 0) + 1
+        if items_on:  # key_messages computed from the items (docs/outline-items-design-2026-10-27.md §3.5)
+            notes = settle_items(slide, instructions, content)
+            for code, text in item_issues(slide["items"]):
+                notes.append(f"{code} (report-only): {text[:80]}")
+            slide["review_points"] = review_points(slide["items"], brief_text)
+            notes += [f"POINT_NOT_IN_BRIEF (report-only): {t[:80]}" for t in slide["review_points"]]
+        else:
+            notes = settle_direction_lines(slide, instructions, content)  # presenter notes are not slide content
+        for note in notes:
+            logger.info(f"outline_planner: slide {n} {note}")
 
     logger.info(
         f"outline_planner: {len(result.slides)} slide(s), "

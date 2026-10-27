@@ -34,6 +34,7 @@ from src.agents.planner_schema import PlannerSlide
 from src.agents.planner_schema_typed import PlannerSlideTyped, content_data_of
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
 from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
+from src.agents.outline_items import items_for_planner, kind_fit_lines, kind_fit_notes, outline_items_on
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
                                       flag_written_lines, instruction_lines, visual_directions)
 from src.compiler.node_facts import facts_text
@@ -241,10 +242,16 @@ def plan_single_slide(
     typed = planner_schema() == "typed"
     content_field = "content" if typed else "content_data_json"
     directions = visual_directions(slide)
+    content_messages = content_line_list(slide, directions)
+    items = items_for_planner(slide)
+    kind_of = {}
+    for item in items or []:
+        kind_of.setdefault(str(item.get("text") or "").strip(), item.get("kind"))
     user_msg = _jinja_env.get_template("user.j2").render(
         content_field=content_field,
         slide=slide,
-        content_messages=content_line_list(slide, directions),
+        content_messages=content_messages,
+        content_kinds=[kind_of.get(m.strip(), "point") for m in content_messages] if items else None,
         visual_directions=directions,
         core_hook=outline_plan.get("core_hook", ""),
         deck_context=all_slide_titles,
@@ -256,6 +263,7 @@ def plan_single_slide(
     )
     system_msg = _jinja_env.get_template("system.j2").render(
         hint_capabilities=planner_capabilities_section(), content_field=content_field,
+        kind_fit=kind_fit_lines() if outline_items_on() else None,
     )
 
     llm = get_llm("slide_component_planner")
@@ -291,6 +299,10 @@ def plan_single_slide(
         logger.info(f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} {note}")
     if notes:
         plan["capacity_fixes"] = [*plan.get("capacity_fixes", []), *notes]
+    if items:  # report-only: picks outside knowledge/core/kind-fit.yaml (docs/outline-items-design-2026-10-27.md §4.1)
+        plan["kind_fit_notes"] = kind_fit_notes(plan, items)
+        for note in plan["kind_fit_notes"]:
+            logger.info(f"slide_component_planner: slide {slide.get('slide_index', 0) + 1} {note}")
     return plan, usage
 
 

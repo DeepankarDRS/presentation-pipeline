@@ -1,17 +1,19 @@
 """Pydantic models for the outline planner's structured output.
 
-The outline planner produces a rich per-slide skeleton (header, key_messages,
-narrative_role) but NOT slide_type, component-level details,
+The outline planner produces a rich per-slide skeleton (header, key_messages — or, with
+OUTLINE_ITEMS=on, items of a kind + text — narrative_role) but NOT slide_type, component-level details,
 or content_data JSON. Those are the slide_component_planner's job.
 """
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
-class OutlineSlide(BaseModel):
-    """Rich outline entry for one slide — enough context for slide_component_planner."""
+class _OutlineHeader(BaseModel):
+    """The slide header and story fields, shared by both outline routes."""
 
     slide_index: int = Field(description="Zero-based position in the deck.")
     label: str = Field(
@@ -47,6 +49,10 @@ class OutlineSlide(BaseModel):
                     "tension introduced in the core hook.'"
     )
 
+
+class OutlineSlide(_OutlineHeader):
+    """Rich outline entry for one slide — enough context for slide_component_planner."""
+
     key_messages: list[str] = Field(
         min_length=1,
         description="The points this slide makes and the content it carries, in order. "
@@ -75,6 +81,33 @@ class OutlineSlide(BaseModel):
     )
 
 
+ItemKind = Literal["metric", "series", "records", "steps", "point", "visual", "note"]
+
+
+class OutlineItem(BaseModel):
+    """One piece of a slide's content and what kind of content it is (OUTLINE_ITEMS=on,
+    docs/outline-items-design-2026-10-27.md). The slide component planner chooses the component."""
+
+    kind: ItemKind = Field(
+        description="metric = one number with its label and change; series = one measure over labels "
+                    "(periods or entities); records = one table, rows split by ' | '; steps = an ordered "
+                    "sequence, dated events too; point = a qualitative statement or named items; visual = the "
+                    "brief's own drawing direction; note = a caveat, data note or formula the brief states."
+    )
+    text: str = Field(description="The content, copied exactly from the request: same numbers, units, formats, "
+                                  "names and placeholders.")
+
+
+class OutlineItemsSlide(_OutlineHeader):
+    """One slide of the outline whose content is items (OUTLINE_ITEMS=on)."""
+
+    items: list[OutlineItem] = Field(
+        min_length=1,
+        description="The content this slide carries, in order: every figure, series and table row it needs, "
+                    "copied exactly from the request. Hero/intro slides: 1-2 items.",
+    )
+
+
 class OutlinePlannerOutput(BaseModel):
     """Complete deck outline from the outline planner."""
 
@@ -89,4 +122,19 @@ class OutlinePlannerOutput(BaseModel):
     slides: list[OutlineSlide] = Field(
         min_length=1,
         description="One rich outline entry per slide, in presentation order.",
+    )
+
+
+class OutlinePlannerItemsOutput(BaseModel):
+    """Complete deck outline, slides with items (OUTLINE_ITEMS=on)."""
+
+    deck_title: str = Field(description="The deck's overall title shown on the cover slide.")
+    core_hook: str = Field(
+        description="One narrative tension sentence tying the entire deck together. "
+                    "Must have tension or contrast. "
+                    "E.g. 'Revenue is growing, but customer acquisition costs are growing faster.'"
+    )
+    slides: list[OutlineItemsSlide] = Field(
+        min_length=1,
+        description="One outline entry per slide, in presentation order.",
     )

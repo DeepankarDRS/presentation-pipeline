@@ -1,0 +1,29 @@
+# pom-knowledge/core/kind-fit.yaml
+# Which components may draw each kind of outline item (OUTLINE_ITEMS=on,
+# docs/outline-items-design-2026-10-27.md §4.1). The slide component planner
+# prompt renders these options (src/agents/outline_items.py); a pick outside
+# them is reported (KIND_OUTSIDE_FIT), never blocked. Several options per kind
+# on purpose: a one-to-one map cuts variety (the September layout_pattern
+# regression). Widened from today's picks on 395 saved slides (design note §8.2).
+
+metric:
+  options: [kpi_row, table, narrative, bullet_list]
+  note: tiles in one row or several rows by role, one of them the hero; a cell when it belongs with records
+series:
+  options: [chart, kpi_row, table]
+  note: a chart by default, sorted when it is a ranking; two points as a before / after KPI pair; the latest value as a hero tile beside the chart; a table when exact values matter
+records:
+  options: [table, chart, kpi_row, card_grid]
+  note: one measure across entities as a sorted bar chart; one entity with several measures as KPI tiles
+steps:
+  options: [process_arrow, flow, card_grid, timeline, pyramid]
+  note: dated events as a timeline; steps that carry detail as steps cards
+point:
+  options: [narrative, bullet_list, card_grid, caption, tree, matrix, pyramid, layer]
+  note: named items as cards or a diagram; a statement as a narrative, a bullet, or the subtitle
+note:
+  options: [caption]
+  note: or a footnote inside the component it qualifies
+visual:
+  options: []
+  note: steers the layout, never drawn
