@@ -275,16 +275,14 @@ Pyramid and tree stay `native`.
 
 ## Other things found (outside this task, not fixed)
 
-- `scripts/composition_convention.py` lines 101 and 130 fail `tests/unit/test_py311_syntax.py`: a backslash
-  inside an f-string expression, which will not parse on the test PC's Python 3.11. A two-line fix.
+- **Fixed (2026-10-27):** `scripts/composition_convention.py` failed `tests/unit/test_py311_syntax.py` (a backslash inside an f-string expression); now a `right()` helper.
 - POM gives an unsized `VStack` in an `HStack` an equal share of the row. The arrow columns between step boxes
   took 161 px each, and the boxes shrank to their text. `left_blocks_gallery.numbered` (today's `numbered` row)
   has this flaw. Pin connector columns (`w="32"`).
 - On that layout, fit-grow threw `Cannot read properties of undefined (reading 'f')` and skipped the slide (it is
   never fatal; it compiled the original). It did not recur after the arrows were pinned. It is worth a regression
   case: `output/composition-left/` reproduces it if the arrow width is removed.
-- `native.process_arrow` / `flow` / `pyramid` / `tree` write `textColor="FFFFFF"`, a literal hex, against the
-  tokens-only rule. White text on `$accent` is low-contrast where the palette's accent is light (graphite-dark's light blue). `$onAccent` is the token for it.
+- **Fixed (2026-10-27):** `native.process_arrow` / `flow` / `pyramid` / `tree` wrote `textColor="FFFFFF"`. They now write `$onAccent`, and fall back to white only for a saved theme made before that token (the node-test replays use one).
 
 ## Reproduce
 

@@ -126,9 +126,16 @@ def timeline(comp: dict, attrs: dict, theme: dict) -> str:
     return _open("Timeline", attrs, d) + f">{its}</Timeline>"
 
 
+def _on_accent(theme: dict) -> str:
+    """Ink on an $accent fill: the palette's $onAccent token; white for a saved theme made before that token."""
+    el = str(theme.get("element") or "")
+    return "FFFFFF" if el and "onAccent=" not in el else "$onAccent"
+
+
 def process_arrow(comp: dict, attrs: dict, theme: dict) -> str:
     cd = comp.get("content_data") or {}
-    steps = "".join(f'<ProcessArrowStep label="{x(s)}" color="$accent" textColor="FFFFFF" />'
+    ink = _on_accent(theme)
+    steps = "".join(f'<ProcessArrowStep label="{x(s)}" color="$accent" textColor="{ink}" />'
                     for s in cd.get("process_steps") or [])
     return _open("ProcessArrow", attrs, {"direction": _direction(comp, cd), "fontSize": "16", "bold": "true"}) + f">{steps}</ProcessArrow>"
 
@@ -136,10 +143,10 @@ def process_arrow(comp: dict, attrs: dict, theme: dict) -> str:
 def flow(comp: dict, attrs: dict, theme: dict) -> str:
     cd = comp.get("content_data") or {}
     steps = [str(s) for s in cd.get("flow_steps") or []]
-    last = len(steps) - 1
+    last, ink = len(steps) - 1, _on_accent(theme)
     nodes = "".join(
         f'<FlowNode id="n{i + 1}" shape="{"flowChartTerminator" if i in (0, last) else "flowChartProcess"}" '
-        f'text="{x(s)}" color="$accent" textColor="FFFFFF" />' for i, s in enumerate(steps))
+        f'text="{x(s)}" color="$accent" textColor="{ink}" />' for i, s in enumerate(steps))
     links = "".join(f'<FlowConnection from="n{i}" to="n{i + 1}" />' for i in range(1, len(steps)))
     return _open("Flow", attrs, {"direction": _direction(comp, cd)}) + f">{nodes}{links}</Flow>"
 
@@ -147,7 +154,7 @@ def flow(comp: dict, attrs: dict, theme: dict) -> str:
 def pyramid(comp: dict, attrs: dict, theme: dict) -> str:
     cd = comp.get("content_data") or {}
     d = str(cd.get("direction") or "up")
-    lv = "".join(f'<PyramidLevel label="{x(v)}" color="$accent" textColor="FFFFFF" />' for v in cd.get("pyramid_levels") or [])
+    lv = "".join(f'<PyramidLevel label="{x(v)}" color="$accent" textColor="{_on_accent(theme)}" />' for v in cd.get("pyramid_levels") or [])
     return _open("Pyramid", attrs, {"direction": d if d in ("up", "down") else "up", "fontSize": "15", "bold": "true"}) + f">{lv}</Pyramid>"
 
 
@@ -164,7 +171,7 @@ def tree(comp: dict, attrs: dict, theme: dict) -> str:
     if len(roots) > 1:   # POM's Tree takes one root: several roots hang under an empty one (none dropped)
         roots = [{"label": "", "children": roots}]
     layout = str(cd.get("layout") or comp.get("orientation") or "vertical")
-    d = {"layout": layout if layout in ("vertical", "horizontal") else "vertical", "nodeShape": "roundRect", "textColor": "FFFFFF"}
+    d = {"layout": layout if layout in ("vertical", "horizontal") else "vertical", "nodeShape": "roundRect", "textColor": _on_accent(theme)}
     return _open("Tree", attrs, d) + ">" + "".join(item(r, 0) for r in roots) + "</Tree>"
 
 

@@ -76,6 +76,11 @@ def kpi_parts(i: int, value_color: bool = True, hero: bool = False, ink: str = "
     return icon, label, value, note
 
 
+def right(part: str) -> str:
+    """A self-closing part Text, right-aligned."""
+    return part.replace(" />", ' textAlign="right" />')
+
+
 def kpi_strip() -> str:
     """strip: one shared box, the items side by side split by hairlines, one row (today's `divided`)."""
     items = []
@@ -98,7 +103,7 @@ def kpi_rows() -> str:
                  f'alignItems="center">{icon}</VStack>')
         rows.append(f'<HStack id="kpis-item-{i}" grow="1" gap="18" alignItems="center" padding.top="10" padding.bottom="10"{rule}>'
                     f'{badge}<VStack grow="1" gap="4">{label}{note}</VStack>'
-                    f'{value.replace(" />", " textAlign=\"right\" />")}</HStack>')
+                    f'{right(value)}</HStack>')
     return f'<VStack gap="0" grow="1" padding.left="8" padding.right="8">{"".join(rows)}</VStack>'
 
 
@@ -127,7 +132,7 @@ def kpi_bento() -> str:
         icon, label, value, note = kpi_parts(i)
         rest.append(f'<HStack id="kpis-item-{i}" grow="1" gap="16" padding="18" alignItems="center" backgroundColor="$surfaceAlt" '
                     f'border.color="$border" border.width="1">{icon}<VStack grow="1" gap="4">{label}{note}</VStack>'
-                    f'{value.replace(" />", " textAlign=\"right\" />")}</HStack>')
+                    f'{right(value)}</HStack>')
     return f'<HStack gap="18" grow="1" alignItems="stretch">{hero}<VStack grow="1" gap="14">{"".join(rest)}</VStack></HStack>'
 
 
