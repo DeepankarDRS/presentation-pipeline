@@ -1,7 +1,10 @@
 # One composition convention for every derived node (spec draft, 2026-10-27)
 
-Status: **draft for the user's approval. Nothing in `src/` is changed.** Only a free proof render was built
-(`scripts/composition_convention.py`, sheets in `docs/eval/composition-convention/`).
+Status: **approved by the user, 2026-10-27**: D1–D5, plus the §8 replacement and edits C1–C14 from
+`docs/eval/composition-left/README.md` (folded in below). Build per §10; the 8 remaining blocks go one block per
+step, behind `POM_NODES` (chart first). Free proof renders: `scripts/composition_convention.py` (KPI / cards) and
+`scripts/composition_gallery_left.py` (the other blocks), sheets in `docs/eval/composition-convention/` and
+`docs/eval/composition-left/`.
 Builds on:
 - `docs/derived-nodes-spec-left-blocks.md` §2.1 (naming rules N1–N4: group tag = plan `kind`, item tag = list key,
   part = key without its prefix).
@@ -98,12 +101,16 @@ MODIFIER = numbered | labelled
 
 | Modifier | Adds | Rule |
 |---|---|---|
-| `numbered` | `number.`: 01 02 03 leading each item (above it in `grid`, at the left in `rows`, over it in `steps`) | not when the items carry dates (today's dated-steps rule) |
+| `numbered` | `number.`: 01 02 03 leading each item (above it in `grid`, at the left in `rows`, over it in `steps`) | not when the items carry dates (today's dated-steps rule) **or their own ordinal** ("Phase 1: …", "01. …"; C10) |
 | `labelled` | the item's value written on its mark (chart bars, rail dots) | only where an item has one value (left-blocks spec, chart `labelled`) |
 
-**Block-specific words.** None are needed for KPI tiles or cards. A later block that needs a structure no
-word covers adds one word to this table, with its meaning. It never reuses a word with a new meaning
-(`quote` for a callout is the one candidate, §8).
+**Block-specific words.** None are needed for KPI tiles, cards or the 8 other blocks (C5: a callout's
+quotation is a content rule of `native`, not a word). A later block that needs a structure no word covers
+adds one word to this table, with its meaning. It never reuses a word with a new meaning.
+
+**Head / detail split (C10).** Where a composition shows a string item as a head and a detail, code splits it
+at the first " — " and only then at ": ", so "Phase 1: Foundation — detail" gives the head "Phase 1:
+Foundation". Every word is kept (`NODE_TEXT_SPLIT`, info).
 
 ### 2.4 How style is written (D3)
 
@@ -120,6 +127,13 @@ word covers adds one word to this table, with its meaning. It never reuses a wor
   sets its tone. They are accepted wherever a `$token` is accepted, and code swaps them per item before
   `normalize_xml`. So `LITERAL_COLOR` and the palette rules are unchanged. This is what the test could not
   write (`${role}`). With it, `dot` drops from 34 attributes to 3, and card `toned` from 32 to 3.
+- **`item.` on `native` (C1).** `item.` reaches every item of a code-drawn composition. On a `native` node no
+  item tag takes a box attribute (R2), so `item.` is limited to the colours each item tag takes: table
+  `item.backgroundColor`, which code writes onto every `Td`, and diagram items' `item.color` / `item.textColor`.
+  Any other `item.` attribute on `native` → `NODE_ATTR_DROPPED`. So do attributes that POM accepts and
+  silently ignores (`Tr`, `ChartSeries`, `ChartDataPoint`, `TreeItem` apart from its colours): they are
+  dropped and logged, never passed on (F12). The exception is a row's colour, which code writes onto that
+  row's cells.
 - **Dropped** (`NODE_ATTR_DROPPED`), unchanged: font sizes, font family, positions, `id`, typed text. Corner
   radius stays code's for KPI tiles (square) and cards (8 px).
 - **Code still owns:** every word (verbatim, in plan order), type sizes (one per part per group, fit-grow),
@@ -330,22 +344,39 @@ Saved slides and replays keep working through the aliases. Remove them after one
 | card true bento (blocks spanning 2 cells, Perceptis) | a span per card | **no, new field; not proposed** (composition test Q2 row 7) |
 | table `banded` with icons per column | an icon per column | **no, new field** (`column_icons`), or the LLM's `icon` per `<TableColumn>` as for bullets today |
 
-## 8. The other blocks on the same convention (table only, no drawings)
+## 8. The other blocks on the same convention (approved 2026-10-27)
 
-Words that carry over today's left-blocks variants. Style variants of that draft become recipes.
+Drawn and rendered in `docs/eval/composition-left/` (R1; the hand-written XML each node expands to is in
+`scripts/composition_gallery_left.py`). Today's style names become recipes or the default / emphasis look.
 
-| Block (tag) | Compositions (`variant`) | Default | Was in the left-blocks draft | Becomes a style recipe |
-|---|---|---|---|---|
-| table (`<Table>`) | `native`, `rows numbered`, `banded` (icon header) | `native` | `plain` `minimal` `zebra` `highlight_row` `dark_header` | all five (`highlight_row` → the emphasis look of `native`) |
-| chart (`<Chart>`) | `native`, `native labelled` | `native` | `plain`, `labelled`, `focus_label`, `horizontal` | `focus_label` → the emphasis look of `native labelled`; `horizontal` → `direction` |
-| bullet_list (`<BulletList>`) | `native` (Ul), `rows` (icon rows; `cols="2"` = two columns), `grid` (tiles) | `native` | `plain` `icon` `lead` `tiles` `columns` | `lead` → `native` draws the split "Head: detail" (§2.1 Q7) |
-| timeline (`<Timeline>`) | `native` (POM rail), `rail` (code: a line + one card per item), `columns` (a segmented bar as the band) | `native` | `rail` `vertical` `cards` `columns` | `vertical` → `direction` |
-| process_arrow (`<ProcessArrow>`) | `native` (chevrons), `steps`, `steps numbered`, `rail` (circles on a line, labels alternating) | `native` | `chevrons` `numbered` `alternating` `step_cards` | — |
-| flow (`<Flow>`) | `native`, `steps numbered` | `native` | `boxes` `numbered` | — |
-| callout (`<Narrative>`) | `native` (the text in its box), `quote` (adds the quote mark: the one block-specific word) | `native` | `tinted` `rule` `dark` `quote` `plain` | `tinted` (default look), `rule`, `dark`, `plain` |
-| header (`<Title>`) | `native` | `native` | `standard` `inverted` `ruled` | all three |
+| Block (tag) | Compositions (`variant`, default first) | requires → fallback | Becomes a style recipe |
+|---|---|---|---|
+| table (`<Table>`) | `native` · `rows` / `rows numbered` · `columns` · `banded` | `columns`: ≤ 5 rows, ≤ 6 columns; `banded`: ≤ 6 rows → `native` | `plain` (default look), `zebra` (`stripe.`), `dark_header` (`header.` / `label.`); `highlight_row` = emphasis look; `minimal` dropped (C2) |
+| chart (`<Chart>`) | `native` · `native labelled` · `rows` | `labelled` / `rows`: one series, ≤ 8 points (bar for `labelled`) → `native` | `focus_label` = emphasis look of `native labelled`; `horizontal` → `direction` |
+| bullet_list (`<BulletList>`) | `native` · `rows` / `rows numbered` · `grid` · `banded` | `banded`: ≥ 75% of points split → `grid` | `lead` = `native` default; `icon` = `rows` + LLM `icon`; `tiles` = `grid`; `columns` = `rows cols="2"` |
+| timeline (`<Timeline>`) | `rail` · `rows` · `banded` · `native` | `native`: every label fits the break-map room and has no detail → else `rail` (default chosen from content) | `vertical` → `direction` |
+| process_arrow (`<ProcessArrow>`) | `native` · `steps` / `steps numbered` · `rail` | `native`: every step fits (≤ ~24 characters, C8) → else `steps` (default chosen from content); `numbered`: no dates, no own ordinals | — |
+| flow (`<Flow>`) | `native` · `steps` / `steps numbered` | linear list only | — |
+| callout (`<Narrative>`) | `native` (a quotation draws its `mark.` and attribution by content rule, C5) | — | `tinted` (default look), `rule`, `dark`, `plain` |
+| header (`<Title>`) | `native` | — | `standard` (default), `inverted`; `ruled` needs a `rule.` look part (C13), not built |
+| matrix (`<Matrix>`) | `native` · `grid` | `grid`: `quadrants` present → `native` | — |
 
-Pyramid, tree and matrix stay native POM only, with no tag of their own (unchanged).
+Pyramid and tree stay `native` (C9).
+
+**Notes carried from the check:**
+- **Table look parts (C2, F11).** Table `native` gets the look parts `header.` (the header row), `label.` (the
+  first column) and `stripe.` (alternate rows), which code writes onto the `Td`s. `cellBorder` is uniform and
+  `Td` takes no border, so `minimal` cannot be written.
+- **Chart `native labelled` (C6)** needs two code fixes: the label ink from `$chartInk`, and a number format
+  derived from the plan's unit when the values share one ("0.29x" → `0.00"x"`). Chart text takes no attribute,
+  so style power on charts lives in `rows`, where every part is a Text / Shape.
+- **Timeline (C4):** `columns` is not used (timeline items have no sub-items). `banded` uses the date as the
+  band, coloured done / now / ahead from the "now" item (hint only).
+- **Inner boxes (C11).** A composition node gives its inner boxes one peer group, `card-<cid>x-<n>`, as well as
+  the item ids `card-<cid>-<i>`, so that fit-grow grows peers to one size when an item's children stretch.
+- **Value refs (C12).** A code-drawn `rows` writes its value / label as element refs (role ids), so that
+  fit-grow grows them as values, not as body text held to its caps.
+- **Knowledge (C14).** List per item tag what it takes (from `r2-attributes.json`) in the knowledge files.
 
 ## 9. Risks and open questions
 
@@ -364,6 +395,11 @@ Pyramid, tree and matrix stay native POM only, with no tag of their own (unchang
    `_read`, and aliases (§7). Unit tests: every alias, every `requires` / fallback, `$tone` per tone.
 2. Expanders: KPI `strip` reuses `build_group` (divided), `rows` reuses `inline`, `bento` reuses the item
    placed apart + `size=hero`. New: the `band.` part (banded / columns) and card `rows` / `columns` / `bento`.
+   Inner boxes carry the peer ids `card-<cid>x-<n>` (C11), and code-drawn `rows` write value refs (C12).
+
+The 8 other blocks (§8) follow the same steps, one block per step behind `POM_NODES=<kind>` (left-blocks spec
+§2.5, §13): chart, then timeline + process_arrow + flow, then table, then bullet_list. Callout comes later, and
+header is not built now. Each block stops at its gate for the user's marks.
 3. Composition gallery = this proof with bare tags. It must match these sheets.
 4. Free replay on the saved KPI / card slides: the bare tag with the hint's composition, scorecard + blind sheet
    (your marks ≥ 0.5).
@@ -380,7 +416,7 @@ Everything this spec has not settled, in one list. **find** = needs evidence (a 
 |---|---|---|---|---|
 | KPI tiles | `plain` `filled` `toned` `bar` `dot` `inverted` `bare`; `hero` → `size="hero"` | `divided` → `strip`; `row` / `grid` / `column` → `grid` (+ `cols`) / `rows`; `label-first` / `icon-top` → `grid`; `value-first` → `bento`; `side` / `inline` → `rows` | **hero note pill** (the delta as a pill under a hero value, Genspark KPI-E). Decide: a part of `bento`'s emphasis look (style), or a part `delta.` drawn as a pill (a recipe: `delta.backgroundColor` needs a box around the Text, which a Text part cannot carry, so this is **find**: can POM draw a pill from Text attributes alone, or does it need a `pill.` look part?) | — |
 | Cards | `lifted` (default) `column` `outline` `filled` `toned` `accent_top` `inverted` | `grid` `steps` `rail`; `numerals` → `grid numbered`; `stack` → `grid`; `side` → `rows` | **featured left column** = `bento` (§5.2; rendered, not built). **matrix** (deferred): a card_grid with `columns` / `rows` axes. **find**: is a card matrix `grid` with axis labels (a new word `matrix`), or slide layout? | `columns` and `title-band` as old card layouts. Note: the **word** `columns` and the composition `banded` (= title band) come back here as compositions with new meanings (§2.3). Confirm this is wanted, since the user once dropped them |
-| The other 8 blocks | — | — | only names in `block-variants.yaml`; the LLM still hand-draws them (§8) | — |
+| The other 8 blocks | — | §8 (approved 2026-10-27): every name has a home except table `minimal` (dropped) | each block's node, in the §10 order | table `minimal` |
 
 ### 11.2 Define (decisions still open)
 
@@ -394,18 +430,22 @@ Everything this spec has not settled, in one list. **find** = needs evidence (a 
 | F6 | Per-template looks (`look_by_palette:`) for gj-h1 and others | place fixed (§4), content not written |
 | F7 | `focus_kpi` planner field (§9 Q4) | only if the replay shows `bento` falling back |
 | F8 | Whether the LLM may still put `variant` on an item placed apart (today `<Kpi ref variant="inverted">`) | the spec drops it. Saved slides use it (tile example 3) |
-| F9 | The `quote` word for callouts, the one block-specific word | a callout quote may be a style (a glyph as a `marker.`) rather than a composition |
+| F9 | ~~The `quote` word for callouts~~ | **resolved (C5):** no `quote` word; `native` draws a quotation's `mark.` and attribution from the content |
 | F10 | `ON_FILL` for `band.` on `$positive` / `$negative` / `$warning` fills (§6 finding 4) | needs a contrast check on every palette |
+| F11 | The look parts the native table needs (`header.` `label.` `stripe.`), written onto `Td`s by code | needed for `zebra` / `dark_header` (C2); built with the table step |
+| F12 | Attributes POM accepts and silently ignores (`Tr`, `ChartSeries`, `ChartDataPoint`, `TreeItem`) | drop with `NODE_ATTR_DROPPED`, except a row's colour, which code moves onto its cells (§2.4) |
+| F13 | Defaults chosen from the content for timeline / process (with F4) | one rule per block with a measured limit (break-map label room); checked by free replay before it becomes the default |
 
 ### 11.3 Find (evidence still missing)
 
 | # | What | How (free unless marked) |
 |---|---|---|
-| R1 | **Compositions for the 8 remaining blocks** (§8 is a table only): which of the shared words each block's plan JSON can fill, drawn and rendered from today's `slide_component_planner` output, beside today's style names | a composition gallery like `scripts/composition_convention.py`, one sample plan per kind from saved runs (`output/**/slides.json`). **Started as its own session, 2026-10-27** |
-| R2 | **Which style attributes POM accepts on each native node**, because style can only be "complete power" where the syntax allows it. Known limits: `<Td>` holds no `Icon` / HStack; borders are rejected on `Td` / `Li` / `FlowNode` / `TimelineItem` / `ProcessArrowStep` / `PyramidLevel` / `MatrixItem` (`ITEM_BORDER_REMOVED`, POM 10.3.0); `Chart` text is black on dark palettes (`chartSurface`); no data labels in POM charts | compile a probe slide per native node with every box / part attribute (`attributes.yaml`, `llm.md`); record accept / reject / ignored. It decides where a composition must be drawn by code (boxes) instead of the native node |
-| R3 | Which plan kinds have no item list to compose (`title`, `narrative`, `caption`, `layer`, `pyramid`, `tree`, `matrix`), and whether a composition word applies to them at all | from `planner_schema_typed.py` + R1 |
-| R4 | The plan fields each composition of the 8 blocks needs, marked "new planner field" where missing (as §7 does for KPI / cards): known gaps are per-column / per-row icons (table), a table title, a span per card, a narrative icon, timeline `description` (in the schema, filled 0 of 28 times) | R1 + the left-blocks census |
+| R1 | **Done (2026-10-27, `docs/eval/composition-left/`).** Compositions for the 8 remaining blocks: which of the shared words each block's plan JSON can fill, drawn and rendered from today's `slide_component_planner` output, beside today's style names | a composition gallery like `scripts/composition_convention.py`, one sample plan per kind from saved runs (`output/**/slides.json`). **Started as its own session, 2026-10-27** |
+| R2 | **Done (`docs/eval/composition-left/r2-attributes.md`).** Which style attributes POM accepts on each native node, because style can only be "complete power" where the syntax allows it. Known limits: `<Td>` holds no `Icon` / HStack; borders are rejected on `Td` / `Li` / `FlowNode` / `TimelineItem` / `ProcessArrowStep` / `PyramidLevel` / `MatrixItem` (`ITEM_BORDER_REMOVED`, POM 10.3.0); `Chart` text is black on dark palettes (`chartSurface`); no data labels in POM charts | compile a probe slide per native node with every box / part attribute (`attributes.yaml`, `llm.md`); record accept / reject / ignored. It decides where a composition must be drawn by code (boxes) instead of the native node |
+| R3 | **Done:** the kinds with no item list are `title`, `narrative`, `caption` and `tree`, and `layer` is free-form (`pyramid` and `matrix` have lists; C9). Was: which plan kinds have no item list to compose, and whether a composition word applies to them at all | from `planner_schema_typed.py` + R1 |
+| R4 | **Done (README R4).** The plan fields each composition of the 8 blocks needs, marked "new planner field" where missing (as §7 does for KPI / cards): known gaps are per-column / per-row icons (table), a table title, a span per card, a narrative icon, timeline `description` (in the schema, filled 0 of 28 times) | R1 + the left-blocks census |
 | R5 | The per-group icon fix (§6 finding 1) on the KPI gallery | **build** after approval (fit-grow, a few lines) |
 | R6 | A blind sheet of saved KPI slides: LLM vs `grid` vs the composition the hint asks for (§9 Q5) | free; your marks |
 | R7 | The prompt cost of the vocabulary and the per-component line, measured rather than estimated (§9 Q6) | count tokens on 10 saved slides |
 | R8 | A unit test that every tag / variant / style name a prompt or knowledge file uses exists in `block-variants.yaml` (promised in its header, missing; left-blocks §3) | **build** with step 1 |
+| R9 | Code fixes found by R1–R4 (C6, C10, C11, C12): chart label ink from `$chartInk` and a number format from the plan's unit; the split " — " before ": " and the `numbered` ordinal rule; inner-box peer ids; value refs for code-drawn `rows` | **build**, each with its block (chart: the label ink and unit format) |
