@@ -30,3 +30,14 @@ B issues: {'NODE_ITEM_MISSING': 1}
   drew that donut as an 80 × 32 px mark beside a table; the bare tag draws a full chart card in that box. Not fixed
   (one example): a size floor for the chart card, or the LLM keeps tiny inline marks, is a question for the marks.
 - Every B chart is `native` (bare tags). `--variant rows` / `--variant "native labelled"` replay the other compositions.
+
+## Blind marks (user, 2026-10-28): gate passed
+
+53 of 54 pairs marked (`marks.csv`, `key.json` here): **B 3 · A 7 · same 43**. User rule: "same" counts as
+satisfied, so **(B + same) / marked = 0.868 ≥ 0.5, passed** (0.462 when "same" counts as half).
+
+Why A won (the user's reasons): space occupied (1.1); spacing, and a smaller font for the Q3 FY26 label (2.1);
+different colours (2.3); the icon in the chart's title row ("logo", 2.4); no reason (4.1); A had content (11.2);
+the chart was the slide's highlight (14.1). Why B won: consistent, no icon (3.2); bigger (4.3); no overlap (9.1).
+Open from these, not built (each one example so far): an icon in the chart card's title row (`icon` on the tag), and
+per-bar colours the LLM chose over the one-hue focus rule.

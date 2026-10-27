@@ -1,0 +1,326 @@
+[
+ {
+  "pair": "1.1",
+  "case": "colour-roles-deck-qbr-data-s2-a8df",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "1.2",
+  "case": "critic-on-deck-qbr-data-5fb8a2-s2-6300",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "1.3",
+  "case": "critic-on2-deck-qbr-data-e2e624-s2-9156",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "1.4",
+  "case": "critic-on2-deck-qbr-data-e2e624-s4-b8e7",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "2.1",
+  "case": "eval-deck-qbr-data-s2-e2ef",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "2.2",
+  "case": "eval-deck-qbr-data-s2-ea93",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "2.3",
+  "case": "eval-gate-deck-agency-takeover-s0-4bed",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "2.4",
+  "case": "eval-gate-deck-agency-takeover-s0-8264",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.1",
+  "case": "eval-gate-deck-agency-takeover-s0-bf0a",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.2",
+  "case": "eval-gate-deck-agency-takeover-s1-770a",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.3",
+  "case": "eval-gate-deck-all-nodes-dense-s1-4e8a",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "3.4",
+  "case": "eval-gate-deck-cheffin-full-s2-ac9d",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "4.1",
+  "case": "kpi-decks-2-deck-qbr-data-s2-7b1f",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "4.2",
+  "case": "kpi-decks-2-gate-deck-all-nodes-dense-s1-0dc1",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "4.3",
+  "case": "kpi-decks-2-gate-deck-cheffin-full-s2-db70",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "4.4",
+  "case": "kpi-decks-deck-qbr-data-s2-662e",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "5.1",
+  "case": "kpi-decks-gate-deck-all-nodes-dense-s1-942d",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "5.2",
+  "case": "kpi-decks-gate-deck-cheffin-full-s2-81b8",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "5.3",
+  "case": "old_zips-gj-h1-regen-5a9e2d-s1-a55c",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "5.4",
+  "case": "old_zips-gj-h1-regen-5a9e2d-s2-e396",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "6.1",
+  "case": "old_zips-gj-h1-regen-5a9e2d-s4-a2a4",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "6.2",
+  "case": "old_zips-gj-h1-regen-5a9e2d-s6-9f95",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "6.3",
+  "case": "q1008-deck-qbr-data-s2-1751",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "6.4",
+  "case": "q1008-gate-deck-agency-takeover-s1-beda",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "7.1",
+  "case": "q1008-gate-deck-all-nodes-dense-s1-aad8",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "7.2",
+  "case": "q1008-gate-deck-cheffin-full-s2-306d",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "7.3",
+  "case": "r2-1b306e1de67f-s2-0c5f",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "7.4",
+  "case": "r2-gj-h1-regen-69af33-s1-3f6a",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "8.1",
+  "case": "r2-gj-h1-regen-69af33-s10-2234",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "8.2",
+  "case": "r2-gj-h1-regen-69af33-s2-83f4",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "8.3",
+  "case": "r2-gj-h1-regen-69af33-s5-83a9",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "8.4",
+  "case": "r2-gj-h1-regen-69af33-s6-c168",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "9.1",
+  "case": "r2-gj-h1-regen-7293ef-s10-4ad7",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "9.2",
+  "case": "r2-gj-h1-regen-7293ef-s2-fb88",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "9.3",
+  "case": "r2-gj-h1-regen-7293ef-s5-3341",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "9.4",
+  "case": "r2-gj-h1-regen-bf396b-s1-c85d",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.1",
+  "case": "r2-gj-h1-regen-bf396b-s10-a53c",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.2",
+  "case": "r2-gj-h1-regen-bf396b-s2-2130",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.3",
+  "case": "r2-gj-h1-regen-bf396b-s4-3797",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "10.4",
+  "case": "r2-gj-h1-regen-bf396b-s5-37e4",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.1",
+  "case": "r2-gj-h1-regen-bf396b-s6-429b",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.2",
+  "case": "r2-xtsy-23sep-1-s1-e1c9",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.3",
+  "case": "r2-xtsy-23sep-2-s1-0846",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "11.4",
+  "case": "run-1008-deck-qbr-data-30cd7b-s2-1814",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "12.1",
+  "case": "runs-same-kpi-gate-deck-all-nodes-dense-s1-r1-s0-1a93",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "12.2",
+  "case": "step0-gate-deck-cheffin-full-s2-e6b2",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "12.3",
+  "case": "wide-paid-deck-qbr-data-s2-4f3b",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "12.4",
+  "case": "wide-paid-deck-qbr-data-s2-c0cb",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "13.1",
+  "case": "wide-paid-gate-deck-agency-takeover-s0-0759",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "13.2",
+  "case": "wide-paid-gate-deck-agency-takeover-s0-da3e",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "13.3",
+  "case": "wide-paid-gate-deck-all-nodes-dense-s1-0ecb",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "13.4",
+  "case": "wide-paid-gate-deck-all-nodes-dense-s1-686a",
+  "slide": 1,
+  "nodes_side": 1
+ },
+ {
+  "pair": "14.1",
+  "case": "wide-paid-gate-deck-cheffin-full-s2-304c",
+  "slide": 1,
+  "nodes_side": 2
+ },
+ {
+  "pair": "14.2",
+  "case": "wide-paid-gate-deck-cheffin-full-s2-e70a",
+  "slide": 1,
+  "nodes_side": 2
+ }
+]
