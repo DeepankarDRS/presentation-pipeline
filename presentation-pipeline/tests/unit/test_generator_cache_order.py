@@ -44,7 +44,7 @@ def test_per_slide_parts_come_after_the_mark():
         assert per_slide not in head
         assert per_slide in tail
     # chart / table notes are per slide; the deck's own notes (theme, content rules) are in the prefix
-    assert "Chart chartColors must be LITERAL" in tail and "Chart chartColors must be LITERAL" not in head
+    assert "Chart chartColors uses theme tokens" in tail and "Chart chartColors uses theme tokens" not in head
     assert "Theme palette:" in head and "Theme palette:" not in tail
 
 

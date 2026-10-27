@@ -103,6 +103,7 @@ Each component renders as a SPECIFIC visual shape. Choosing the wrong one for yo
 - **vertical** when the diagram shares the width with another component (a list, cards or a chart beside it) or has more steps than fit across. It then needs height: it stands in a column as the hero or a peer, and the other component goes beside it.
 - Never a horizontal diagram squeezed beside another component.
 - *How many fit* (items per direction, from the drawn sizes): flow {{ span('flow') }}; process_arrow {{ span('process_arrow') }}; timeline {{ span('timeline') }}. More steps than fit across → vertical, as the hero or a peer in a column. Never drop a step or merge steps to hit a number.
+- *Where it sits* (items that hold there, measured; across / down — tree: horizontal / vertical layout): process_arrow: {{ placements('process_arrow') }}. timeline: {{ placements('timeline') }}. flow: {{ placements('flow') }}. tree: {{ placements('tree') }}. Choose the direction (and where the diagram goes) so its count is within the number for that place.
 - Only when the steps exceed the vertical number too: group steps that belong together into one node, their labels joined with " · " word for word ("Pricing · Stock"), or use **card_grid** (steps layout). This is the only case where one node holds several steps.
 pyramid's direction follows the meaning. The drawing facts in each entry are verified on the renderer.
 

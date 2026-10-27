@@ -1,0 +1,20 @@
+<Slide><VStack w="1280" h="720" padding="56" gap="24" alignItems="stretch" backgroundColor="FFFFFF">
+<Text fontSize="36" bold="true" fontFamily="Inter" color="16202E">A headline that states the point</Text>
+<Flow id="col" direction="vertical" h="max">
+<FlowNode id="n0" shape="flowChartProcess" text="Market research"/>
+<FlowNode id="n1" shape="flowChartProcess" text="Price testing"/>
+<FlowNode id="n2" shape="flowChartProcess" text="Pilot launch"/>
+<FlowNode id="n3" shape="flowChartProcess" text="Team hiring"/>
+<FlowNode id="n4" shape="flowChartProcess" text="Vendor review"/>
+<FlowNode id="n5" shape="flowChartProcess" text="Cost audit"/>
+<FlowNode id="n6" shape="flowChartProcess" text="Data cleanup"/>
+<FlowNode id="n7" shape="flowChartProcess" text="Brand refresh"/>
+<FlowConnection from="n0" to="n1"/>
+<FlowConnection from="n1" to="n2"/>
+<FlowConnection from="n2" to="n3"/>
+<FlowConnection from="n3" to="n4"/>
+<FlowConnection from="n4" to="n5"/>
+<FlowConnection from="n5" to="n6"/>
+<FlowConnection from="n6" to="n7"/>
+</Flow>
+</VStack></Slide>

@@ -97,7 +97,7 @@ def chart(comp: dict, attrs: dict, theme: dict) -> str:
     kind = kind if kind in _CHART_TYPES else "bar"
     labels = [str(v) for v in cd.get("chart_labels") or []]
     series = cd.get("chart_series") or [{"name": cd.get("chart_title") or "Series 1", "values": cd.get("chart_values") or []}]
-    colors = theme.get("chart_colors") or ["2563EB"]
+    colors = theme.get("chart_tokens") or theme.get("chart_colors") or ["2563EB"]
     a = {k: v for k, v in attrs.items() if k not in ("ref", "variant")}
     layout = {k: a.pop(k) for k in list(a) if k in LAYOUT}
     d = {"chartType": kind, "showLegend": "true" if len(series) > 1 or kind in ("pie", "doughnut") else "false",

@@ -20,6 +20,16 @@ import opentypeModule from "opentype.js";
 const opentype = opentypeModule.default ?? opentypeModule;
 const FONT_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "fonts");
 
+// The deck font (compile_xml writes it on every node that takes a fontFamily; POM_DECK_FONT=none
+// keeps POM's own). POM writes "Noto Sans JP" for text it gives no family — Flow, Tree and Matrix take
+// none — a font viewers don't have and font_embed doesn't embed. pptx-post.js redraws those runs in
+// the deck font and fit-grow measures them in it.
+export const POM_FAMILY = "Noto Sans JP";
+const deck = process.env.POM_DECK_FONT ?? "Inter";
+export const DECK_FONT = deck && deck.toLowerCase() !== "none" ? deck : null;
+/** The family text without a fontFamily is drawn in, after the post-process. */
+export const DEFAULT_FAMILY = DECK_FONT ?? POM_FAMILY;
+
 let cached;
 
 // Rename the GSUB entry in the table directory (in memory) so opentype.js skips it.

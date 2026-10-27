@@ -2,7 +2,8 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GenerationService } from '../../services/generation.service';
 import { ApiService } from '../../services/api.service';
-import { SlideInfoReview, SlideEditResponse } from '../../models/api.models';
+import { SlideInfoReview, SlideEditResponse, ThemePalette } from '../../models/api.models';
+import { THEME_PALETTES } from '../../constants/theme.constants';
 
 interface EditHistoryEntry {
   feedback: string;
@@ -25,7 +26,7 @@ interface EditHistoryEntry {
         </div>
         <div class="flex gap-2">
           <button (click)="gen.backToResult()" class="btn-secondary !py-2">Back</button>
-          <button (click)="finalize()" [disabled]="isEditing() || isFinalizing()" class="btn-success !py-2">
+          <button (click)="finalize()" [disabled]="isBusy()" class="btn-success !py-2">
             @if (isFinalizing()) {
               <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
             } @else {
@@ -36,6 +37,29 @@ interface EditHistoryEntry {
             {{ isFinalizing() ? 'Finalizing...' : 'Finalize Deck' }}
           </button>
         </div>
+      </div>
+
+      <!-- Theme switcher: re-skins every slide, no LLM call -->
+      <div class="flex items-center gap-3 px-6 py-2.5 border-b border-slate-200 bg-white">
+        <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 shrink-0">Theme</span>
+        <div class="flex flex-wrap gap-1.5">
+          @for (p of palettes; track p.id) {
+            <button
+              (click)="switchTheme(p.id)"
+              [disabled]="isBusy()"
+              [title]="p.label + ' — ' + p.tone"
+              [attr.aria-label]="'Switch to ' + p.label + ' theme'"
+              [attr.aria-pressed]="currentTheme() === p.id"
+              class="w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-60"
+              [class.border-slate-900]="currentTheme() === p.id"
+              [class.ring-2]="currentTheme() === p.id"
+              [class.ring-brand-100]="currentTheme() === p.id"
+              [class.border-slate-200]="currentTheme() !== p.id"
+              [style.background]="swatchBackground(p)"
+            ></button>
+          }
+        </div>
+        <span class="text-xs text-slate-500 truncate">{{ currentThemeLabel() }}</span>
       </div>
 
       <div class="flex" style="min-height: 540px">
@@ -86,11 +110,11 @@ interface EditHistoryEntry {
         <div class="flex-1 flex flex-col min-w-0">
           <!-- Screenshot display -->
           <div class="flex-1 p-6 flex items-center justify-center bg-[radial-gradient(circle_at_center,_#f1f5f9,_#e2e8f0)] relative">
-            @if (isEditing()) {
+            @if (isEditing() || isSwitchingTheme()) {
               <div class="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
                 <div class="flex flex-col items-center gap-3">
                   <div class="spinner h-9 w-9"></div>
-                  <span class="text-sm font-medium text-slate-700">Applying edit...</span>
+                  <span class="text-sm font-medium text-slate-700">{{ isSwitchingTheme() ? 'Applying theme to all slides...' : 'Applying edit...' }}</span>
                 </div>
               </div>
             }
@@ -159,8 +183,8 @@ interface EditHistoryEntry {
                 }
               </ul>
               <div class="mt-2 flex gap-2">
-                <button class="btn-secondary text-xs" (click)="keepWrittenLines()" [disabled]="isEditing()">Keep</button>
-                <button class="btn-secondary text-xs" (click)="removeWrittenLines()" [disabled]="isEditing()">Remove these lines</button>
+                <button class="btn-secondary text-xs" (click)="keepWrittenLines()" [disabled]="isBusy()">Keep</button>
+                <button class="btn-secondary text-xs" (click)="removeWrittenLines()" [disabled]="isBusy()">Remove these lines</button>
               </div>
             </div>
           }
@@ -170,6 +194,11 @@ interface EditHistoryEntry {
             @if (editError()) {
               <div class="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
                 {{ editError() }}
+              </div>
+            }
+            @if (themeNotice()) {
+              <div class="mb-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                {{ themeNotice() }}
               </div>
             }
             @if (lastEditResult() && lastEditResult()!.ok) {
@@ -193,11 +222,11 @@ interface EditHistoryEntry {
                 (keydown.enter)="applyEdit()"
                 placeholder="Describe what to change... (e.g., 'make the title larger', 'move chart to the left')"
                 class="input"
-                [disabled]="isEditing()"
+                [disabled]="isBusy()"
               />
               <button
                 (click)="applyEdit()"
-                [disabled]="isEditing() || !feedbackText.trim()"
+                [disabled]="isBusy() || !feedbackText.trim()"
                 class="btn-primary shrink-0"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,6 +255,17 @@ export class SlideReviewComponent {
   readonly screenshotVersions = signal<Map<number, number>>(new Map());
   /** Slides whose written lines the user already kept or removed. */
   readonly writtenReviewed = signal<Set<number>>(new Set());
+  readonly isSwitchingTheme = signal<boolean>(false);
+  readonly themeOverride = signal<string | null>(null);
+  readonly themeNotice = signal<string | null>(null);
+
+  readonly palettes = THEME_PALETTES;
+  readonly isBusy = computed(() => this.isEditing() || this.isFinalizing() || this.isSwitchingTheme());
+  readonly currentTheme = computed(() => this.themeOverride() ?? this.gen.editSession()?.theme ?? '');
+  readonly currentThemeLabel = computed(() => {
+    const p = this.palettes.find(x => x.id === this.currentTheme());
+    return p ? `${p.label} · ${p.mode}` : 'Custom theme';
+  });
 
   feedbackText = '';
 
@@ -280,6 +320,43 @@ export class SlideReviewComponent {
     if (!runId) return '';
     const ver = this.screenshotVersions().get(slideIndex) ?? 0;
     return this.api.getScreenshotUrl(runId, slideIndex, ver);
+  }
+
+  swatchBackground(p: ThemePalette): string {
+    return `linear-gradient(135deg, #${p.surface} 50%, #${p.accent} 50%)`;
+  }
+
+  async switchTheme(theme: string): Promise<void> {
+    const runId = this.gen.runId();
+    if (!runId || theme === this.currentTheme() || this.isBusy()) return;
+
+    this.isSwitchingTheme.set(true);
+    this.editError.set(null);
+    this.lastEditResult.set(null);
+    this.themeNotice.set(null);
+
+    try {
+      const result = await this.api.switchTheme(runId, theme);
+      if (!result.ok) {
+        this.editError.set(result.error ?? 'Theme switch failed');
+        return;
+      }
+      this.themeOverride.set(result.theme);
+      const screenshotMap = new Map(this.screenshotVersions());
+      for (const s of result.slides) {
+        screenshotMap.set(s.slide_index, (screenshotMap.get(s.slide_index) ?? 0) + 1);
+      }
+      this.screenshotVersions.set(screenshotMap);
+      if (!result.screenshots_updated) {
+        this.themeNotice.set(
+          'The theme was applied, but some previews could not be refreshed — your download will use the new theme.',
+        );
+      }
+    } catch (err) {
+      this.editError.set(err instanceof Error ? err.message : 'Theme switch request failed');
+    } finally {
+      this.isSwitchingTheme.set(false);
+    }
   }
 
   selectSlide(index: number): void {

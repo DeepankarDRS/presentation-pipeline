@@ -52,21 +52,65 @@ def test_lone_card_in_growing_band_grows():
     assert fill_lone_child(out)[1] is None
 
 
+def _bars(colors: str, labels: list[str], headline: str = "Revenue grew") -> str:
+    points = "".join(f'<ChartDataPoint label="{x}" value="1" />' for x in labels)
+    return (f'<Text fontSize="36">{headline}</Text><Chart chartType="bar" chartColors=\'{colors}\'>'
+            f'<ChartSeries name="R">{points}</ChartSeries></Chart>')
+
+
+_FY = [f"FY2{i}" for i in range(1, 6)]
+
+
 def test_time_series_focus_moves_to_latest_period():
-    from src.compiler.normalizer import _focus_latest_period
-    chart = ('<Text>Revenue grew</Text><Chart chartType="bar" chartColors=\'["A","B","B","B","A"]\'><ChartSeries name="R">'
-             + "".join(f'<ChartDataPoint label="FY2{i}" value="{i}" />' for i in range(1, 6))
-             + "</ChartSeries></Chart>")
-    out, n = _focus_latest_period(chart)
-    assert n == 1 and '\'["B","B","B","B","A"]\'' in out
+    from src.compiler.normalizer import _chart_focus
+    out, n = _chart_focus(_bars('["$accent","$neutral","$neutral","$neutral","$accent"]', _FY))
+    assert n["latest"] == 1 and '\'["$neutral","$neutral","$neutral","$neutral","$accent"]\'' in out
 
 
 def test_named_period_keeps_its_focus():
-    from src.compiler.normalizer import _focus_latest_period
-    chart = ('<Text>FY22 was the dip</Text><Chart chartType="bar" chartColors=\'["B","A","B","B","B"]\'><ChartSeries name="R">'
-             + "".join(f'<ChartDataPoint label="FY2{i}" value="{i}" />' for i in range(1, 6))
-             + "</ChartSeries></Chart>")
-    assert _focus_latest_period(chart)[1] == 0
+    from src.compiler.normalizer import _chart_focus
+    chart = _bars('["C6C9CF","2563EB","C6C9CF","C6C9CF","C6C9CF"]', _FY, "FY22 was the dip")
+    assert sum(_chart_focus(chart)[1].values()) == 0
+
+
+def test_focus_moves_to_the_bar_the_headline_names():
+    from src.compiler.normalizer import _chart_focus
+    out, n = _chart_focus(_bars('["$accent","$neutral","$neutral"]', ["North", "South", "West"],
+                                "West leads the regions"))
+    assert n["named"] == 1 and '\'["$neutral","$neutral","$accent"]\'' in out
+
+
+def test_focus_moves_to_the_series_the_headline_names():
+    from src.compiler.normalizer import _chart_focus
+    chart = ('<Text fontSize="36">Actual beat plan every month</Text><Chart chartType="line" '
+             'chartColors="[&quot;$accent&quot;,&quot;$neutral&quot;]">'
+             '<ChartSeries name="Plan"><ChartDataPoint label="Jan" value="1" /></ChartSeries>'
+             '<ChartSeries name="Actual"><ChartDataPoint label="Jan" value="2" /></ChartSeries></Chart>')
+    out, n = _chart_focus(chart)
+    assert n["named"] == 1 and '\'["$neutral","$accent"]\'' in out
+
+
+def test_period_series_focus_moves_to_the_latest():
+    from src.compiler.normalizer import _chart_focus
+    chart = ('<Text fontSize="36">Margins widened</Text><Chart chartType="bar" chartColors=\'["DC2626","C6C9CF"]\'>'
+             '<ChartSeries name="FY24"><ChartDataPoint label="A" value="1" /></ChartSeries>'
+             '<ChartSeries name="FY25"><ChartDataPoint label="A" value="2" /></ChartSeries></Chart>')
+    out, n = _chart_focus(chart)
+    assert n["latest"] == 1 and '\'["C6C9CF","DC2626"]\'' in out
+
+
+def test_good_bad_colouring_is_never_moved():
+    from src.compiler.normalizer import _chart_focus
+    chart = _bars('["15803D","DC2626","15803D","15803D"]', ["A", "B", "C", "D"], "C drove the quarter")
+    assert sum(_chart_focus(chart)[1].values()) == 0
+
+
+def test_bars_painted_chart1_chart2_get_one_hue():
+    from src.compiler.normalizer import _chart_focus
+    out, n = _chart_focus(_bars('["$chart1","$chart2","$chart3"]', ["North", "South", "West"]))
+    assert n["one_hue"] == 1 and '\'["$chart1"]\'' in out
+    out, _ = _chart_focus(_bars('["$chart1","$chart2","$chart3","$chart4"]', ["Q1", "Q2", "Q3", "Q4"]))
+    assert '\'["$neutral","$neutral","$neutral","$accent"]\'' in out
 
 
 def test_numeric_columns_share_width():

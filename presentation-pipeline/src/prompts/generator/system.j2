@@ -23,7 +23,7 @@ Do not invent tags or attributes - use ONLY what is listed in ALLOWED NODES belo
 
 Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName -
   they resolve against the <Theme> the pipeline injects automatically.
-  VALID: color="$textMain"  backgroundColor="$accentSoft"  (palette tokens only; hex only in chartColors)
+  VALID: color="$textMain"  backgroundColor="$accentSoft"  (palette tokens only, chartColors too: $chart1..)
   INVALID: color="#FF0000"  color="red"
   Do NOT output a <Theme> element yourself - the pipeline adds exactly one.
 

@@ -28,14 +28,14 @@ XML_PLAIN = ('<Theme surface="FFFFFF" textMain="111827" />\n<Slide><VStack w="12
              '<Text fontSize="24">No font family named here</Text></VStack></Slide>')
 
 
-def _compile(tmp_path: Path, xml: str, name: str) -> Path:
+def _compile(tmp_path: Path, xml: str, name: str, **env: str) -> Path:
     if not shutil.which("node"):
         pytest.skip("node not installed")
     src = tmp_path / f"{name}.xml"
     src.write_text(xml, encoding="utf-8")
     out = tmp_path / name
     subprocess.run(["node", str(_COMPILER), str(src), str(out)], check=True, capture_output=True, timeout=120,
-                   env={**os.environ, "POM_FIT_GROW": "0"})
+                   env={**os.environ, "POM_FIT_GROW": "0", **env})
     return out / "presentation.pptx"
 
 
@@ -81,7 +81,9 @@ def test_the_eot_part_wraps_the_subset_font(tmp_path):
 
 
 def test_a_deck_that_names_no_known_font_is_left_byte_identical(tmp_path):
-    pptx = _compile(tmp_path, XML_PLAIN, "plain")
+    # text without a fontFamily is drawn in the deck font since C3 (pptx-post); with that off it keeps POM's
+    # "Noto Sans JP", which src/node/fonts does not have
+    pptx = _compile(tmp_path, XML_PLAIN, "plain", POM_DECK_FONT="none")
     before = hashlib.sha256(pptx.read_bytes()).hexdigest()
     report = embed_deck_fonts(pptx)
     assert report["embedded"] == [] and hashlib.sha256(pptx.read_bytes()).hexdigest() == before

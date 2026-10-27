@@ -20,6 +20,17 @@ export const THEME_PALETTES: ThemePalette[] = [
   { id: 'midnight-indigo',  label: 'Midnight Indigo',  tone: 'Deep indigo dark',                       mode: 'dark',  accent: '818CF8', accentAlt: 'A5B4FC', surface: '12122A', surfaceAlt: '232346', textMain: 'EEF0FB', textMuted: 'AAAECF', border: '3A3A63', chartColors: ['818CF8', '34D399', 'FBBF24', 'F472B6', '38BDF8'] },
   { id: 'forest-dark',      label: 'Forest Dark',      tone: 'Dark green',                             mode: 'dark',  accent: '4ADE80', accentAlt: '2DD4BF', surface: '0C1A14', surfaceAlt: '172C22', textMain: 'ECF5EF', textMuted: '9BB4A6', border: '2C4438', chartColors: ['4ADE80', '2DD4BF', 'FBBF24', '60A5FA', 'F472B6'] },
   { id: 'carbon-dark',      label: 'Carbon Dark',      tone: 'Charcoal neutral, warm orange',          mode: 'dark',  accent: 'FB923C', accentAlt: 'FBBF24', surface: '171717', surfaceAlt: '262626', textMain: 'F5F5F4', textMuted: 'A8A29E', border: '3F3F3F', chartColors: ['FB923C', 'FBBF24', 'A3E635', '38BDF8', 'F472B6'] },
+  // Seed palettes (2026-10-22): values as the resolver derives them from palettes.yaml `seed:`
+  { id: 'boardroom-orange', label: 'Boardroom Orange', tone: "Clean boardroom white, orange + purple brand accents", mode: 'light', accent: 'F4541E', accentAlt: '5B2A86', surface: 'FFFFFF', surfaceAlt: 'F8FAFC', textMain: '0F172A', textMuted: '6B7280', border: 'D1D4DB', chartColors: ['F4541E', '5B2A86', 'B23A2D', '15803D', '6B7280'] },
+  { id: 'paper-clay', label: 'Paper Clay', tone: "Warm editorial paper, clay + deep teal", mode: 'light', accent: 'C0472A', accentAlt: '2D5063', surface: 'F1E9D6', surfaceAlt: 'FAF4E5', textMain: '1A1814', textMuted: '5A544A', border: 'C8B891', chartColors: ['C0472A', '2D5063', '4A7752', 'B07A1E', '6F8FA0'] },
+  { id: 'bone-copper', label: 'Bone Copper', tone: "Editorial bone canvas, slate ink, copper hero", mode: 'light', accent: 'C46A3F', accentAlt: '233246', surface: 'EEE7D5', surfaceAlt: 'F4EEDE', textMain: '18222F', textMuted: '4A5A6E', border: 'CAC3B2', chartColors: ['C46A3F', '233246', '5F7A60', 'B6873B', '8C9CAD'] },
+  { id: 'ocean-light', label: 'Ocean Light', tone: "Ocean blue serenity \u2014 white canvas, deep twilight ink", mode: 'light', accent: '0077B6', accentAlt: '009AB9', surface: 'F4FBFD', surfaceAlt: 'FFFFFF', textMain: '03045E', textMuted: '5F629A', border: '92E0F0', chartColors: ['0077B6', '00B4D8', '023E8A', '15803D', 'B45309'] },
+  { id: 'terracotta-light', label: 'Terracotta Light', tone: "Charcoal blue ink, verdigris + burnt peach on warm white", mode: 'light', accent: '2A9D8F', accentAlt: 'E66848', surface: 'FAF7F2', surfaceAlt: 'FFFFFF', textMain: '264653', textMuted: '647479', border: 'D2D3CF', chartColors: ['2A9D8F', 'E76F51', '264653', 'F4A261', 'E1AF35'] },
+  { id: 'ink-copper', label: 'Ink Copper', tone: "Deep slate statement slides, copper hero", mode: 'dark', accent: 'C46A3F', accentAlt: 'B6873B', surface: '18222F', surfaceAlt: '233246', textMain: 'F5EFE0', textMuted: '8C9CAD', border: '424A52', chartColors: ['C46A3F', '233246', '5F7A60', 'B6873B', '8C9CAD'] },
+  { id: 'lime-ink', label: 'Lime Ink', tone: "Premium investor near-black, electric lime + rust", mode: 'dark', accent: 'C9F24D', accentAlt: 'C7572C', surface: '0E1116', surfaceAlt: '1A1F2A', textMain: 'F2EEE3', textMuted: '908A7D', border: '373B40', chartColors: ['91BC0E', 'C7572C', '6E7E6D', '1A1F2A', 'E3A504'] },
+  { id: 'ocean-dark', label: 'Ocean Dark', tone: "Ocean blue serenity \u2014 deep twilight canvas, aqua accents", mode: 'dark', accent: '48CAE4', accentAlt: '90E0EF', surface: '03045E', surfaceAlt: '0B1470', textMain: 'CAF0F8', textMuted: '90E0EF', border: '2C3581', chartColors: ['0077B6', '00B4D8', '023E8A', '24C75F', 'DEA104'] },
+  { id: 'tropic-dark', label: 'Tropic Dark', tone: "Dark teal canvas, emerald / pink / golden pop", mode: 'dark', accent: '06D6A0', accentAlt: 'FFD166', surface: '073B4C', surfaceAlt: '1A4A5A', textMain: 'F7FAFB', textMuted: 'A2B6BC', border: '37616F', chartColors: ['118AB2', 'EF476F', '06CC99', 'EBA400', '073B4C'] },
+  { id: 'terracotta-dark', label: 'Terracotta Dark', tone: "Charcoal blue canvas, tuscan sun + sandy brown", mode: 'dark', accent: 'E9C46A', accentAlt: 'F4A261', surface: '264653', surfaceAlt: '37545F', textMain: 'F8F5EF', textMuted: 'BBC3C5', border: '526C75', chartColors: ['2A9D8F', 'E76F51', '264653', 'F49F5C', 'E0AB2C'] },
 ];
 
 // Theme picker filter groups for light palettes; dark palettes are grouped by mode.
@@ -29,6 +40,8 @@ export const THEME_MOODS: Record<string, ThemeMood> = {
   'emerald-clean': 'bold', 'rose-report': 'bold', 'violet-modern': 'bold',
   'saascolor': 'brand', 'navy-orange': 'brand', 'gj-h1': 'brand',
   'claude-cream': 'warm',
+  'paper-clay': 'warm', 'bone-copper': 'warm', 'terracotta-light': 'warm',
+  'ocean-light': 'cool', 'boardroom-orange': 'brand',
 };
 
 export const STEP_LABELS: Record<string, string> = {

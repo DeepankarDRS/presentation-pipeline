@@ -30,7 +30,7 @@ treatments:
     technique: '<Span color="$accent">phrase</Span> ($accentText when the Text is under 24px) inside its Text on the same line, no newline or extra space around it (never <Mark> or highlight=: they paint a box behind the text)'
   series_color:
     intent: highlight one chart series
-    technique: 'chartColors: the focus series gets the palette''s accent hex, every other series its neutral hex (literal hex, no $tokens; both are given in the notes)'
+    technique: 'chartColors: the focus series gets $accent, every other series $neutral'
   inverted_panel:
     intent: dark / inverted panel
     technique: 'card VStack backgroundColor="$textMain", its Text color="$surface"'

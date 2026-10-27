@@ -35,16 +35,40 @@ def test_profitability_in_a_four_step_row_gets_a_wider_chevron_not_a_smaller_fon
     assert any("itemWidth 150 ->" in x and "fits its label box" in x for x in _phase_lines(r)), r["fitGrow"]
     assert not _warnings(r)
     label = next(s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.text == "Profitability")
-    assert label.font == 16 and label.w - label.pad >= 100   # "Profitability" at 16 px bold Inter is ~100 px
+    assert label.font == 16 and label.w - label.pad >= 91.6   # "Profitability" at 16 px bold Inter is 91.1 px; a word needs 0.5 px spare
 
 
-def test_a_row_that_cannot_widen_lowers_its_font_to_14_and_never_below(tmp_path):
+def test_a_row_that_cannot_widen_lowers_its_font_only_as_far_as_the_word_needs(tmp_path):
+    # 161 px chevrons leave a middle label 161 - 56 - 19.2 = 85.8 px: "Profitability" (bold Inter) is 85.4 px at
+    # 15 px (0.4 px spare, under WORD_MARGIN) and 79.7 px at 14, so the row stops at 14 and the word fits
+    # (measured without POM's 10 px box padding, node break map §4 C1)
     r = _compile(_FIX / "d2-arrow-narrow.xml", tmp_path)
     a = _attrs(r["xml"], "ProcessArrow", "narrow")
     assert a["w"] == "560" and a["fontSize"] == "14"
     assert int(a["itemWidth"]) == 161   # (560 + 3 x 28) / 4: the widest the row can be without shrinking
+    assert any("fits its label box" in x for x in _phase_lines(r)), r["fitGrow"]
+    assert not _warnings(r)
+
+
+def test_a_row_whose_word_never_fits_stops_at_14_and_warns(tmp_path):
+    # "Reconciliation" is 97 px at 14 px bold Inter: wider than the 85.8 px label at any allowed size
+    xml = (_FIX / "d2-arrow-narrow.xml").read_text(encoding="utf-8").replace("Profitability", "Reconciliation")
+    (tmp_path / "d2b.xml").write_text(xml, encoding="utf-8")
+    r = _compile(tmp_path / "d2b.xml", tmp_path / "out")
+    a = _attrs(r["xml"], "ProcessArrow", "narrow")
+    assert a["fontSize"] == "14" and int(a["itemWidth"]) == 161
     assert any("as far as its box allows" in x for x in _phase_lines(r)), r["fitGrow"]
-    assert any("Profitability" in w and "process step" in w for w in _warnings(r))
+    assert any("Reconciliation" in w and "process step" in w for w in _warnings(r))
+
+
+def test_a_chevron_row_grows_only_as_tall_as_its_words_allow(tmp_path):
+    # A taller chevron has a narrower label box (itemWidth - 0.7 x itemHeight): growing 9 steps to 120 px tall
+    # left "customer" 62 px in 59 (node break map §4 C2). The row grows to the tallest height every word fits at.
+    r = _compile(_FIX / "d7-arrow-nine-steps.xml", tmp_path)
+    a = _attrs(r["xml"], "ProcessArrow", "row")
+    assert 88 < int(a["itemHeight"]) < 120, r["fitGrow"]
+    assert not any("still wider" in x for x in _phase_lines(r)), r["fitGrow"]
+    assert not _warnings(r)
 
 
 def test_a_seven_step_vertical_column_stays_vertical_and_widens(tmp_path):
@@ -92,3 +116,27 @@ def test_compiling_the_fitted_xml_again_changes_nothing(tmp_path, name):
     tags = re.findall(r"<(?:ProcessArrow|Flow) [^>]*>", first["xml"]), re.findall(r"<(?:ProcessArrow|Flow) [^>]*>", second["xml"])
     pick = lambda t: {k: v for k, v in re.findall(r'\s([\w.]+)="([^"]*)"', t) if k in keys}  # noqa: E731
     assert [pick(t) for t in tags[0]] == [pick(t) for t in tags[1]]
+
+
+def test_a_spill_fix_does_not_take_a_diagram_below_14_px(tmp_path):
+    """Node break map (process_arrow, band-under-kpi, vertical, Inter, 8 steps): the column's 8 chevrons squeeze
+    the title to 41 px for its 47 px line. Giving the title its room took 6 px from the diagram and POM drew the
+    labels at 13.84 px (raw POM: 14.01). The spill fix may not take a diagram's labels below 14 px, so it falls
+    through to the dense steps: smaller gaps give the title its line and the labels stay above 14."""
+    r = _compile(_FIX / "d8-arrow-under-kpi.xml", tmp_path)
+    assert any(x.startswith("slide 1: spill fixed (dense: gap") for x in r["fitGrow"]), r["fitGrow"]
+    assert not r.get("warnings")
+    labels = [s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.text in ("Plan", "Build", "Train")]
+    assert len(labels) == 3 and all(s.font >= 14 for s in labels), [(s.text, s.font) for s in labels]
+
+
+def test_eight_vertical_flow_nodes_fit_the_band_at_14_px(tmp_path):
+    """User decision 2026-10-21: code sizes vertical flows so capacity's 8 hold. At POM's own 60 px nodes and
+    nodeGap 80 (fit-grow cut the gap to 20) eight nodes needed 620 px of a ~500 px band and were drawn below
+    14 px (break map: the band held 7); the nodes now take the height the band gives them, one line each."""
+    r = _compile(_FIX / "d9-flow-vertical-eight.xml", tmp_path)
+    a = _attrs(r["xml"], "Flow", "col")
+    assert a["direction"] == "vertical" and int(a["nodeHeight"]) < 60 and int(a["nodeGap"]) <= 24
+    nodes = [s for s in drawn_shapes(tmp_path / "presentation.pptx") if s.geom == "flowChartProcess"]
+    assert len(nodes) == 8 and all(s.font >= 13.9 for s in nodes), [(s.text, s.font) for s in nodes]
+    assert not _warnings(r)

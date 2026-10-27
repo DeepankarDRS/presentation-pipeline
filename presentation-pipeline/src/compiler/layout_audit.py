@@ -462,7 +462,7 @@ def _check_contrast(root: ET.Element, issues: list[dict[str, str]]) -> None:
 
 # LITERAL_COLOR (report only, 2026-10-07): a colour typed as hex instead of a palette
 # token ignores the deck's palette (copied example tints, a fixed blue). Allowed:
-# chartColors (tokens do not resolve there), a black shadow, the <Theme> itself.
+# chartColors (older decks wrote it as hex), a black shadow, the <Theme> itself.
 # Gradients are not judged: their stops are written as hex.
 _HEX = re.compile(r"#?(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})")
 _COLOR_ATTR = re.compile(r"(?i)colou?r|fill")

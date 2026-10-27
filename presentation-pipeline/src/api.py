@@ -999,6 +999,7 @@ class EditSessionResponse(BaseModel):
     run_id: str
     slide_count: int
     slides: list[SlideInfoResponse]
+    theme: str = ""
 
 
 class SlideEditResponse(BaseModel):
@@ -1011,6 +1012,20 @@ class SlideEditResponse(BaseModel):
     compile_ok: bool = False
     repair_attempts: int = 0
     issues: list[dict[str, Any]] = Field(default_factory=list)
+    error: str | None = None
+
+
+class ThemeSwitchRequest(BaseModel):
+    theme: str = Field(..., min_length=1, max_length=64)
+
+
+class ThemeSwitchResponse(BaseModel):
+    ok: bool
+    theme: str
+    mode: str = "light"
+    slides: list[SlideInfoResponse] = Field(default_factory=list)
+    screenshots_updated: bool = False
+    approximated_colors: list[str] = Field(default_factory=list)
     error: str | None = None
 
 
@@ -1107,6 +1122,7 @@ async def create_edit_session(run_id: str) -> EditSessionResponse:
         run_id=run_id,
         slide_count=len(session.slides),
         slides=slide_infos,
+        theme=session.theme_info.get("name", ""),
     )
 
 
@@ -1242,6 +1258,123 @@ async def get_slide_xml(run_id: str, slide_index: int) -> dict[str, Any]:
         "version": slide.version,
         "xml": slide.current_xml,
     }
+
+
+@app.post("/runs/{run_id}/theme")
+async def switch_theme(run_id: str, request: ThemeSwitchRequest) -> ThemeSwitchResponse:
+    """Re-skin every slide in the edit session with another palette (no LLM).
+
+    Rewrites each slide's XML (hex -> tokens, chartColors, dark chart wrap),
+    compiles the deck once under the new <Theme>, and re-renders all
+    screenshots. Nothing in the session changes unless the compile succeeds.
+    """
+    session = _edit_sessions.get(run_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Edit session not found. Create one first.")
+    if request.theme not in theme_names():
+        raise HTTPException(status_code=400, detail=f"Unknown theme '{request.theme}'")
+
+    held: list[asyncio.Lock] = []
+    for s in session.slides:
+        if s.lock.locked():
+            for lock in held:
+                lock.release()
+            raise HTTPException(status_code=409, detail="An edit is in progress — try again when it finishes")
+        await s.lock.acquire()
+        held.append(s.lock)
+
+    from src.agents.deck_nodes import assemble_deck_xml
+    from src.agents.style_resolver import resolve_theme
+    from src.compiler.compiler_client import CompilerError, compile_xml
+    from src.compiler.screenshot import render_screenshots
+    from src.compiler.theme_swap import swap_theme
+
+    def _do_switch() -> ThemeSwitchResponse:
+        theme = resolve_theme(request.theme)
+        ordered = sorted(session.slides, key=lambda x: x.slide_index)
+        swaps = [
+            swap_theme(s.current_xml, session.theme_element, theme["element"], theme["is_dark"])
+            for s in ordered
+        ]
+        approximated = sorted({a for r in swaps for a in r.approximated})
+        if approximated:
+            logger.info(f"switch_theme: {run_id} approximated colors {approximated}")
+
+        combined_xml, count = assemble_deck_xml([r.xml for r in swaps], theme["element"])
+        if count != len(ordered):
+            return ThemeSwitchResponse(
+                ok=False, theme=request.theme,
+                error=f"Only {count} of {len(ordered)} slides could be assembled",
+            )
+
+        run_dir = _PIPELINE_ROOT / "output" / "runs" / run_id
+        out_dir = run_dir / "themes" / f"{request.theme}-{uuid.uuid4().hex[:6]}"
+        try:
+            cr = compile_xml(combined_xml, out_dir)
+        except CompilerError as e:
+            return ThemeSwitchResponse(ok=False, theme=request.theme, error=f"Compile failed: {e}")
+        if not cr.get("ok", False):
+            diags = cr.get("diagnostics", [])
+            msg = diags[0]["message"] if diags else "Unknown compile error"
+            return ThemeSwitchResponse(ok=False, theme=request.theme, error=f"Compile failed: {msg}")
+
+        pngs: dict[int, str] = {}
+        if cr.get("pptx_path"):
+            batch = render_screenshots(cr["pptx_path"], str(out_dir / "screenshots"))
+            if batch.ok:
+                pngs = {r.slide_index: r.png_path for r in batch.slides if r.ok and r.png_path}
+            else:
+                logger.warning(f"switch_theme: {run_id} screenshots failed: {batch.error}")
+        screenshots_updated = len(pngs) == len(ordered)
+
+        # Compile succeeded — commit the new theme to the session.
+        for pos, (s, r) in enumerate(zip(ordered, swaps)):
+            s.current_xml = r.xml
+            if pos in pngs:
+                s.screenshot_path = pngs[pos]
+                s.screenshot_version += 1
+        session.theme_element = theme["element"]
+        session.theme_info = theme
+        session.final_pptx_path = None
+        _persist_slides_json(session)
+
+        manifest_path = run_dir / "run-manifest.json"
+        if manifest_path.exists():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                manifest["theme_element"] = theme["element"]
+                manifest["resolved_theme"] = theme
+                manifest_path.write_text(
+                    json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8",
+                )
+            except (OSError, json.JSONDecodeError):
+                pass
+
+        return ThemeSwitchResponse(
+            ok=True,
+            theme=request.theme,
+            mode=theme["mode"],
+            slides=[
+                SlideInfoResponse(
+                    slide_index=s.slide_index,
+                    version=s.version,
+                    screenshot_url=_screenshot_url(run_id, s.slide_index, s.screenshot_version)
+                        if s.screenshot_path else None,
+                    has_edits=len(s.edit_history) > 0,
+                    edit_count=len(s.edit_history),
+                    written_lines=list((s.slide_plan or {}).get("written_lines") or []),
+                )
+                for s in ordered
+            ],
+            screenshots_updated=screenshots_updated,
+            approximated_colors=approximated,
+        )
+
+    try:
+        return await asyncio.to_thread(_do_switch)
+    finally:
+        for lock in held:
+            lock.release()
 
 
 @app.post("/runs/{run_id}/finalize")

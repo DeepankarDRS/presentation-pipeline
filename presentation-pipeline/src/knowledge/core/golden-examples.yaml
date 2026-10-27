@@ -229,10 +229,9 @@ cover: |
           <VStack w="max" padding="15" gap="4" backgroundColor="$surfaceAlt" borderRadius="12" border.color="$border" border.width="1" justifyContent="center"><Text fontSize="14" color="$textMuted">Free cash flow</Text><Text fontSize="26" color="$textMain" bold="true">$5.31B</Text><Text fontSize="14" color="$positive" bold="true">+18.8% YoY</Text></VStack>
         </HStack>
         <VStack grow="1" padding="16" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
-          <HStack justifyContent="spaceBetween" alignItems="center"><Text fontSize="14" color="$textMain" bold="true">Quarterly revenue and operating profit</Text><Text fontSize="14" color="$textMuted">$B</Text></HStack>
-          <Chart h="max" minH="180" chartType="bar" showLegend="true" chartColors='["1F6B4F","B9E769"]'>
+          <HStack justifyContent="spaceBetween" alignItems="center"><Text fontSize="14" color="$textMain" bold="true">Quarterly revenue ($B): Q3 $16.7B</Text><Text fontSize="14" color="$textMuted">Operating profit Q3 $3.36B</Text></HStack>
+          <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["$neutral","$neutral","$accent"]'>
             <ChartSeries name="Revenue"><ChartDataPoint label="Q1" value="12.4" /><ChartDataPoint label="Q2" value="13.7" /><ChartDataPoint label="Q3" value="16.7" /></ChartSeries>
-            <ChartSeries name="Operating profit"><ChartDataPoint label="Q1" value="2.1" /><ChartDataPoint label="Q2" value="2.5" /><ChartDataPoint label="Q3" value="3.36" /></ChartSeries>
           </Chart>
         </VStack>
       </VStack>
