@@ -291,3 +291,28 @@ def test_report_leaves_failed_runs_out():
     m = measure([{"case": "c", "repeat": 1, "cost_usd": 0.02, "outline": {}, "slide_plans": [],
                   "error": "planning produced no outline: the elicitor asked questions"}], {"c": {"request": BRIEF}})
     assert m["runs_failed"] == 1 and m["brief_figures"] == 0 and m["cost"] == 0.02
+
+
+# ── gate 3 inputs (scripts/outline_items_gen.py) ─────────────────────────────
+
+def test_gate3_pairs_slides_by_content_and_skips_same_kinds(tmp_path):
+    import json
+    from scripts.outline_items_gen import make_inputs
+
+    def plan(i, title, kinds_texts):
+        return {"slide_index": i, "slide_title": title, "components": [
+            {"kind": k, "content_data": {"text": t}} for k, t in kinds_texts]}
+    rollout = "Rollout timeline private beta general availability enterprise tier"
+    benefits = "Benefits gateway sprawl configuration outages visibility"
+    items = [{"case": "deck-qbr-data", "repeat": 1, "slide_plans": [
+        plan(4, "Rollout", [("timeline", rollout)]),                        # same kinds as base s6: skipped
+        plan(5, "Why Nexus", [("card_grid", benefits)]),                    # base s5 has the same words: paired
+    ]}]
+    base = [{"case": "deck-qbr-data", "repeat": 1, "slide_plans": [
+        plan(4, "Why Nexus", [("card_grid", benefits), ("narrative", "Momentum reflects adoption")]),
+        plan(5, "Rollout", [("timeline", rollout)]),
+    ]}]
+    (tmp_path / "i.json").write_text(json.dumps(items), encoding="utf-8")
+    (tmp_path / "b.json").write_text(json.dumps(base), encoding="utf-8")
+    pairs = make_inputs(tmp_path / "i.json", tmp_path / "b.json")
+    assert [(p["slide"], p["base_slide"]) for p in pairs] == [(6, 5)]

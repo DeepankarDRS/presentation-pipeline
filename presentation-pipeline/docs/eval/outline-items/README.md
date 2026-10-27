@@ -65,7 +65,26 @@ list stays as it is.
 
 ## Open
 
-- Gate 3 (generator on these plans + blind marks) needs a way to draw slides from a plan-only run's `runs.json`;
-  `scripts.gen_from_plans` reads `output/runs/<run_id>` folders.
+- Gate 3 (generator on these plans + blind marks): prepared, see below.
 - Kind stability of tables (records vs a list of points / metrics).
 - The review screen (design §6), where `POINT_NOT_IN_BRIEF` items get Keep / Remove.
+
+## Gate 3, generator: prepared, not run
+
+`scripts/outline_items_gen.py`. Inputs (`gate3-inputs.json`, built free from the two `runs.json`): repeat 1 of
+`outline-items-2` paired with repeat 1 of `typed-schema`, each items slide with the base slide of the same deck whose
+words overlap most (at least a third; the outlines may order slides differently), kept only when the two plans draw
+different component kinds: **20 pairs** from all six decks (CHEFFIN 6, launch 3, agency 4, QBR 3, XTSY 3, all-nodes 1).
+In 8 the base plan has a narrative more (the outline's commentary); the others draw the content with other components
+(a chart vs a table, one KPI row vs two, cards vs a flow, a bullet list beside the cards).
+
+Both arms run the real graph from the slide plan (generator, validator, repairers; critic off; `models.yaml` as
+committed: generator gpt-6.1-sol), then compile with the deck font, render in Inter and go on blind A / B sheets.
+
+```bash
+python -m scripts.outline_items_gen --label gate3 --no-render --bundle --max-usd 1.5      # test PC, paid
+python -m scripts.outline_items_gen --label gate3 --rescore                               # build PC, after the bundle
+python -m scripts.node_test_sheet --score output/outline-items-gen/gate3/sheets          # after the marks
+```
+
+Pass: blind marks ≥ 0.5 for the items slides (wins + ½ ties), no more first-try compile failures or repairs than base.
