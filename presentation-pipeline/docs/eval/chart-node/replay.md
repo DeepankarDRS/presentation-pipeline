@@ -41,3 +41,26 @@ different colours (2.3); the icon in the chart's title row ("logo", 2.4); no rea
 the chart was the slide's highlight (14.1). Why B won: consistent, no icon (3.2); bigger (4.3); no overlap (9.1).
 Open from these, not built (each one example so far): an icon in the chart card's title row (`icon` on the tag), and
 per-bar colours the LLM chose over the one-hue focus rule.
+
+## Why A won 7 pairs (checked on the sheets, 2026-10-28)
+
+1. **Sizing, a node bug (1.1, 2.1, 14.1; fixed).** A `minH` the LLM put on its chart came onto the node's card,
+   and the node only grew a card with no `h` / `grow` / `minH`, so the card stayed at its minimum (a short strip of
+   chart, a gap below, or KPI boxes beside it taking the height). Now `minH` is a floor, not a size: the card grows
+   unless the tag sets `h` or `grow`. The replay also adds the LLM card's title row and padding when it moves the
+   chart's `h` / `minH` onto the card. Re-run of 1.1, 2.1, 4.1, 14.1 (`output/chart-replay-size/`): all compile,
+   0 broken words, and the charts fill their bands as the LLM's did.
+2. **The LLM's card look (2.1, 2.4, and the "logo" reason).** On the QBR / agency decks the LLM's chart card is
+   lifted (border, shadow, a left accent edge) with an icon beside the title; the node draws a flat `$chartSurface`
+   card with a plain title. Not changed: a style question for the user (lifted default look like cards, and/or an
+   `icon` on the tag).
+3. **Colours by meaning (2.3, 14.1, 14.2).** The LLM coloured bars / series by what they mean (actual CPC red =
+   bad, allowable grey or green; good / bad bars red / green). The node draws one hue + focus, or `$chart1..N` for
+   several series. Not changed: the plan has no per-series / per-point tone; options are a `color` on
+   `<ChartSeries ref>` / `<ChartPoint ref>` item tags (left-blocks §4) or a planner tone field.
+
+## Horizontal bars
+
+`direction="horizontal"` (the left-blocks `horizontal`) turns native bars, plain and labelled (pptx-post `barDir`,
+categories top-down). Rows added to [chart.png](../composition-left/chart.png): both read on both palettes, the
+labels keep the unit. The replay drew none, because its tags were bare and the LLM set no direction.

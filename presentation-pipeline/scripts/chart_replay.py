@@ -109,8 +109,11 @@ def rewrite(root: etree._Element, comp: dict, variant: str) -> dict:
     chart = next(root.iter("Chart"))
     el = chart_card(chart, comp)
     keep = {k: v for k, v in el.attrib.items() if k in LAYOUT_KEYS}
-    if el is not chart:   # a card's height is the chart's when the card sized itself to it
-        keep.update({k: v for k, v in chart.attrib.items() if k in ("h", "minH") and k not in keep and v != "max"})
+    if el is not chart:   # a card's height is the chart's plus the card's title row and padding (the LLM sized the chart)
+        chrome = sum(float(el.get(k) or el.get("padding") or 0) for k in ("padding.top", "padding.bottom")) \
+            + 30 * (len([k for k in el if isinstance(k.tag, str)]) > 1)
+        keep.update({k: str(round(float(v) + chrome)) for k, v in chart.attrib.items()
+                     if k in ("h", "minH") and k not in keep and re.fullmatch(r"\d+(?:\.\d+)?", v)})
     old = _serial(el)
     attrs = {"ref": comp["component_id"], **({"variant": variant} if variant else {}), **keep}
     tag = "<Chart" + "".join(f' {k}="{native.x(v)}"' for k, v in attrs.items()) + " />"

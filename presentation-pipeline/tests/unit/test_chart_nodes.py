@@ -153,6 +153,8 @@ def test_a_chart_without_size_grows():
     assert 'grow="1"' in re.search(r'<VStack w="1280" h="720"><VStack([^>]*)>', run('<Chart ref="roas" />')["xml"]).group(1)
     assert 'grow="1"' not in re.search(r'<VStack w="1280" h="720"><VStack([^>]*)>',
                                        run('<Chart ref="roas" h="300" />')["xml"]).group(1)
+    outer = re.search(r'<VStack w="1280" h="720"><VStack([^>]*)>', run('<Chart ref="roas" minH="180" />')["xml"]).group(1)
+    assert 'grow="1"' in outer and 'minH="180"' in outer   # minH is a floor, not a size
 
 
 @pytest.mark.parametrize("attr,code", [

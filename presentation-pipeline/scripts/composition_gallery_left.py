@@ -197,11 +197,11 @@ def table_banded() -> str:
 
 # ── chart: item = point (ChartPoint) ───────────────────────────────────────────────────────────────────────────
 
-def chart_tag(variant: str = "") -> str:
+def chart_tag(variant: str = "", extra: str = "") -> str:
     """The bare tag the generator writes (POM_NODES=chart); charts.expand draws it (was hand-written XML here, the
     sheet of 2026-10-27 is the reference it must match)."""
     v = f' variant="{variant}"' if variant else ""
-    return f'<Chart ref="roas"{v} />'
+    return f'<Chart ref="roas"{v}{extra} />'
 
 
 # ── bullet list: item = point (Bullet); code splits "Head: detail" into label. + description. ─────────────────────
@@ -440,7 +440,9 @@ def blocks() -> dict[str, tuple[list, list]]:
                    ("columns", [TABLE], table_columns()), ("banded", [TABLE], table_banded())]),
         "chart": ([(f"today · {v}", [LB.CHART], LB.chart(v)) for v in ("plain", "labelled", "focus_label")],
                   [("native (default)", [CHART], chart_tag()), ("native labelled", [CHART], chart_tag("native labelled")),
-                   ("rows", [CHART], chart_tag("rows"))]),
+                   ("rows", [CHART], chart_tag("rows")),
+                   ("native · horizontal", [CHART], chart_tag("", ' direction="horizontal"')),
+                   ("native labelled · horizontal", [CHART], chart_tag("native labelled", ' direction="horizontal"'))]),
         "bullets": ([(f"today · {v}", [LB.BULLETS], LB.bullets(v)) for v in ("plain", "icon", "tiles")],
                     [("native (default)", [BULLETS], bullets_native()), ("rows", [BULLETS], bullets_rows(False)),
                      ("rows numbered", [BULLETS], bullets_rows(True)), ("grid", [BULLETS], bullets_grid()),
@@ -507,7 +509,8 @@ def build(block: str, out: Path) -> None:
         d = out / block / f"{slug}-{pal}"
         xml = inner_ids(body if body.startswith("<Slide") else TG.slide(label.upper(), head, body))
         # today's chart names get the old post-edit; a <Chart ref> tag draws its labels itself (charts.py, pptx-post.js)
-        variant = "labelled" if "labelled" in label and label.startswith("today") else label.split(" · ")[-1].split()[0]
+        today = label.startswith("today")
+        variant = ("labelled" if "labelled" in label else label.split(" · ")[-1].split()[0]) if today or block != "chart" else ""
         pdf, issues = LB.compile_one(d, xml, {"components": cs, "slide_title": head}, themes[pal], variant)
         res = json.loads((d / "compile-result.json").read_text(encoding="utf-8")) if (d / "compile-result.json").exists() else {}
         log.append({"block": block, "shot": label, "palette": pal, "rendered": bool(pdf), "fill_errors": issues,

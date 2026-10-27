@@ -547,7 +547,8 @@ nodes:
     parts: {title: Text, label: Text, value: Text, bar: Shape}
     one_hue: bar
     meta: [ref, variant, direction]
-    native_attributes: [showLegend]     # the Chart's own (chartColors, chartType: code's)
+    native_attributes: [showLegend]     # the Chart's own
+    code_owned: [chartColors, chartType, title, showTitle]
     compositions:
       native:
         look:     {backgroundColor: $chartSurface, padding: 16, borderRadius: 8, title.color: $chartInk,
