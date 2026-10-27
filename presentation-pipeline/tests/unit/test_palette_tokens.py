@@ -4,19 +4,16 @@ of docs/palette-quality-research-2026-10-06.md §5.1 (P3)."""
 from __future__ import annotations
 
 import colorsys
-from pathlib import Path
 
 import pytest
-import yaml
 
-from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
+from src.agents.style_resolver import DEFAULT_THEME, palette_entry, resolve_theme, theme_names
 from src.compiler.palette_tokens import (
     DERIVED_KEYS, STATUS_ROLES, TEXT_MIN, contrast, derive_tokens,
 )
 
-_PALETTES = yaml.safe_load(
-    (Path(__file__).resolve().parents[2] / "src" / "knowledge" / "theme" / "palettes.yaml")
-    .read_text(encoding="utf-8"))["palettes"]
+# Seed entries come back expanded, so every palette is checked as the authored tokens it resolves to.
+_PALETTES = {name: palette_entry(name) for name in theme_names()}
 NAMES = sorted(_PALETTES)
 
 
@@ -82,10 +79,9 @@ def test_default_theme_is_the_yaml_entry():
     assert resolve_theme("no-such-palette")["element"] == DEFAULT_THEME["element"]
 
 
-def test_chart_focus_pair_is_literal_hex():
-    focus = resolve_theme("navy-orange")["chart_focus"]
-    assert focus["focus"] == _PALETTES["navy-orange"]["accent"]
-    assert not focus["rest"].startswith("$")
+def test_chart_focus_pair_is_tokens():
+    # POM 10.3.0 resolves $tokens inside chartColors (verified 2026-10-22)
+    assert resolve_theme("navy-orange")["chart_focus"] == {"focus": "$accent", "rest": "$neutral"}
 
 
 @pytest.mark.parametrize("name", NAMES)

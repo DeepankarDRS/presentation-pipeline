@@ -47,7 +47,7 @@ chart_card: |
   # fills what the title leaves: h="max" minH="180", no w, no pixel h.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Revenue by quarter ($M)</Text>
-    <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["2563EB","0EA5E9","10B981","F59E0B"]'>
+    <Chart h="max" minH="180" chartType="bar" showLegend="false" chartColors='["$chart1","$chart2","$chart3","$chart4"]'>
       <ChartSeries name="Revenue">
         <ChartDataPoint label="Q1" value="36.1" />
         <ChartDataPoint label="Q2" value="39.1" />
