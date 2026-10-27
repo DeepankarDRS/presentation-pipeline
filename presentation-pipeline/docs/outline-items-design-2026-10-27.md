@@ -1,6 +1,7 @@
 # Outline items: a three-level design (2026-10-27)
 
-Status: **gate 0 built (2026-10-27), behind `OUTLINE_ITEMS=on` (default off); gates 1–3 not run.** Decided with the
+Status: **gates 0–2 passed (2026-10-28, results in `docs/eval/outline-items/README.md`), behind `OUTLINE_ITEMS=on`
+(default off); gate 3 not run.** Decided with the
 user on 2026-10-27. Read §2 (what was rejected and why) and §7 (the test gates); §11 records what was built and where
 it differs from this design.
 
