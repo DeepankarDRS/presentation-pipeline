@@ -22,8 +22,9 @@ from src.agents.written_lines import _DIRECTION, from_brief, settle_direction_li
 
 ITEM_KINDS: tuple[str, ...] = get_args(ItemKind)
 _FIT_FILE = Path(__file__).resolve().parent.parent / "knowledge" / "core" / "kind-fit.yaml"
-# a figure, not a count in a name ("4-stage roadmap", "Phase 2"): 2+ digits or a decimal
-_FIGURE = re.compile(r"\d[\d,]*\.\d|\d{2,}")
+# a figure, not a count in a name ("4-stage roadmap", "90-Day Action Plan", "Phase 2"): 2+ digits or a decimal, not
+# joined to a word by a hyphen
+_FIGURE = re.compile(r"(?:\d[\d,]*\.\d+|\d{2,})(?![\d-])")
 
 
 def outline_items_on() -> bool:
@@ -105,8 +106,9 @@ def _norm(text: str) -> str:
 
 def kind_fit_notes(plan: dict[str, Any], items: list[dict[str, Any]]) -> list[str]:
     """KIND_OUTSIDE_FIT (report-only): a component drawing an item whose kind does not list that component. An item
-    feeds a component when half the component's texts (3+ characters) are in the item's text, or one long phrase
-    (12+ characters) is: one shared number ("42.8" in a chart and in a KPI) is not enough."""
+    feeds a component when half the component's texts (3+ characters) are in the item's text, or when one of them
+    is almost the whole item (a card body that is the item's sentence). One shared number ("42.8" in a chart and in
+    a KPI) or a shared name ("Allowable CPC for 1.0x ROAS" in a formula note and as a chart series) is not enough."""
     fit = kind_fit()
     notes = []
     for comp in plan.get("components") or []:
@@ -120,7 +122,7 @@ def kind_fit_notes(plan: dict[str, Any], items: list[dict[str, Any]]) -> list[st
                 continue
             text = _norm(item.get("text", ""))
             found = [leaf for leaf in leaves if leaf in text]
-            if leaves and (len(found) >= len(leaves) / 2 or any(len(leaf) >= 12 for leaf in found)):
+            if leaves and (len(found) >= len(leaves) / 2 or any(len(leaf) >= max(12, 0.9 * len(text)) for leaf in found)):
                 notes.append(f"KIND_OUTSIDE_FIT: {item.get('kind')} item drawn as {kind} "
                              f"({comp.get('component_id', '')}): {item.get('text', '')[:80]}")
     return notes

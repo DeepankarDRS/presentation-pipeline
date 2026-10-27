@@ -63,6 +63,11 @@ def plan_case(case: dict[str, Any], run_id: str) -> dict[str, Any]:
             continue
         if "style_resolver" in chunk:   # planning is done: stop before any slide is generated
             break
+    if not (final.get("outline_plan") or {}).get("slides"):
+        # the elicitor can decide to ask questions; the graph then stops with no outline, which used to come back as
+        # an empty run with no error (outline-items run, XTSY, 2026-10-27)
+        why = "the elicitor asked questions and the graph stopped" if final.get("elicitation_needed") else "no outline"
+        raise RuntimeError(f"planning produced no outline: {why}")
     history = final.get("generation_history") or []
     cost = sum(_compute_cost(r.get("tokens_in", 0), r.get("tokens_out", 0), r.get("model", "unknown"), r.get("tokens_cached", 0))
                for r in history)

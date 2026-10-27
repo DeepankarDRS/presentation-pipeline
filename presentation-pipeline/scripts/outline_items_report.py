@@ -77,6 +77,10 @@ def measure(runs: list[dict[str, Any]], cases: dict[str, dict[str, Any]]) -> dic
         slides = (r.get("outline") or {}).get("slides") or []
         m["runs"] += 1
         m["cost"] += r.get("cost_usd") or 0.0
+        if r.get("error") or not slides:
+            m["runs_failed"] += 1
+            lists["runs_failed"].append(f"{r['case']} r{r.get('repeat')}: {r.get('error') or 'no outline'}")
+            continue
         out_figs = set().union(*(figures(outline_text(s)) for s in slides)) if slides else set()
         m["brief_figures"] += len(bf)
         m["brief_figures_not_in_outline"] += len(bf - out_figs)
@@ -133,6 +137,7 @@ def report(label: str, m: dict[str, Any], base_label: str | None, b: dict[str, A
     head = ["| | " + " | ".join(cols) + " |", "|---" * (len(cols) + 1) + "|"]
     lines = [f"# Outline items, gates 1-2: {label}" + (f" vs {base_label}" if b else ""), "", *head,
              row("runs / cost", lambda x: f"{x['runs']} / ${x['cost']:.3f}"),
+             row("runs with no outline or an error", lambda x: str(x["runs_failed"])),
              row("slides (outline / plans)", lambda x: f"{x['slides']} / {x['plans']}"),
              "", "**Gate 1, outline**", "", *head,
              row("brief figures not in the outline", lambda x: f"{x['brief_figures_not_in_outline']} of {x['brief_figures']}"),
@@ -153,7 +158,8 @@ def report(label: str, m: dict[str, Any], base_label: str | None, b: dict[str, A
              row("outline figures not in the plan", lambda x: str(x["outline_figures_not_in_plan"])),
              row("KIND_OUTSIDE_FIT", lambda x: str(x["kind_outside_fit"]) if x["items"] else "-"),
              ""]
-    for name, title in (("review_points", "POINT_NOT_IN_BRIEF (read: outline commentary or brief?)"),
+    for name, title in (("runs_failed", "Runs with no outline or an error (left out of every count above)"),
+                        ("review_points", "POINT_NOT_IN_BRIEF (read: outline commentary or brief?)"),
                         ("kind_outside_fit", "KIND_OUTSIDE_FIT (read: mistake or a legitimate pick?)"),
                         ("item_issues", "Item-form issues")):
         lines += [f"## {title}", ""] + [f"- {t}" for t in m["lists"].get(name) or ["(none)"]] + [""]

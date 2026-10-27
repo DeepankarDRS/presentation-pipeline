@@ -270,3 +270,24 @@ def test_outline_prompts_in_items_mode_never_ask_for_key_messages():
     for text in (env.get_template("system.j2").render(items=True), env.get_template("user.j2").render(items=True, **args)):
         assert "key_message" not in text and "items" in text
     assert "key_messages" in env.get_template("user.j2").render(items=False, **args)
+
+
+def test_visual_check_ignores_counts_joined_to_a_word():
+    for text in ("90-Day Action Plan", "4-stage growth roadmap", "Top: pillars; bottom: 90-day plan"):
+        assert item_issues([{"kind": "visual", "text": text}]) == []
+    assert item_issues([{"kind": "visual", "text": "bar chart: 42.8 vs 31.2"}])[0][0] == "VISUAL_WITH_NUMBERS"
+
+
+def test_kind_fit_notes_ignore_a_shared_name():
+    # CHEFFIN s3 (outline-items run 2026-10-27): the formula note names the chart's series, it is not drawn as the chart
+    items = [{"kind": "note", "text": "Allowable CPC for 1.0x ROAS = AOV × CVR"}]
+    plan = _plan(("chart", {"chart_labels": ["FLIPCART", "ZAROMA"], "chart_series": [
+        {"name": "Actual CPC", "values": [31.1, 46.2]}, {"name": "Allowable CPC for 1.0x ROAS", "values": [10.7, 14.8]}]}))
+    assert kind_fit_notes(plan, items) == []
+
+
+def test_report_leaves_failed_runs_out():
+    from scripts.outline_items_report import measure
+    m = measure([{"case": "c", "repeat": 1, "cost_usd": 0.02, "outline": {}, "slide_plans": [],
+                  "error": "planning produced no outline: the elicitor asked questions"}], {"c": {"request": BRIEF}})
+    assert m["runs_failed"] == 1 and m["brief_figures"] == 0 and m["cost"] == 0.02
