@@ -1,0 +1,112 @@
+{
+ "q1": {
+  "kpi.filled": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<KpiGrid ref=\"kpis\" arrange=\"label-first\" grow=\"1\"><Kpi ref=\"kpis.0\" icon=\"trending-up\" backgroundColor=\"$positiveSoft\" border.width=\"0\"/><Kpi ref=\"kpis.1\" icon=\"users\" backgroundColor=\"$positiveSoft\" border.width=\"0\"/><Kpi ref=\"kpis.2\" icon=\"percent\" label.color=\"$textMuted\" border.width=\"0\"/><Kpi ref=\"kpis.3\" icon=\"clock\" backgroundColor=\"$positiveSoft\" border.width=\"0\"/></KpiGrid>"
+  },
+  "kpi.toned": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<KpiGrid ref=\"kpis\" arrange=\"label-first\" grow=\"1\"><Kpi ref=\"kpis.0\" icon=\"trending-up\" backgroundColor=\"$positiveSoft\" border.color=\"$positive\" label.color=\"$textMuted\"/><Kpi ref=\"kpis.1\" icon=\"users\" backgroundColor=\"$positiveSoft\" border.color=\"$positive\" label.color=\"$textMuted\"/><Kpi ref=\"kpis.2\" icon=\"percent\"/><Kpi ref=\"kpis.3\" icon=\"clock\" backgroundColor=\"$positiveSoft\" border.color=\"$positive\" label.color=\"$textMuted\"/></KpiGrid>"
+  },
+  "kpi.bar": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<KpiGrid ref=\"kpis\" arrange=\"label-first\" grow=\"1\"><Kpi ref=\"kpis.0\" icon=\"trending-up\" borderLeft.color=\"$positive\" borderLeft.width=\"6\" value.color=\"$textMain\" border.width=\"0\"/><Kpi ref=\"kpis.1\" icon=\"users\" borderLeft.color=\"$positive\" borderLeft.width=\"6\" value.color=\"$textMain\" border.width=\"0\"/><Kpi ref=\"kpis.2\" icon=\"percent\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$negative\" borderLeft.width=\"6\" label.color=\"$textMuted\" value.color=\"$textMain\" border.width=\"0\"/><Kpi ref=\"kpis.3\" icon=\"clock\" borderLeft.color=\"$positive\" borderLeft.width=\"6\" value.color=\"$textMain\" border.width=\"0\"/></KpiGrid>"
+  },
+  "kpi.dot": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<KpiGrid ref=\"kpis\" arrange=\"label-first\" grow=\"1\"><Kpi ref=\"kpis.0\" icon=\"trending-up\" backgroundColor=\"$surface\" marker.shapeType=\"ellipse\" marker.w=\"8\" marker.h=\"8\" marker.fill.color=\"$positive\" label.color=\"$positiveText\" label.letterSpacing=\"1\" value.color=\"$textMain\" note.color=\"$positiveText\"/><Kpi ref=\"kpis.1\" icon=\"users\" backgroundColor=\"$surface\" marker.shapeType=\"ellipse\" marker.w=\"8\" marker.h=\"8\" marker.fill.color=\"$positive\" label.color=\"$positiveText\" label.letterSpacing=\"1\" value.color=\"$textMain\" note.color=\"$positiveText\"/><Kpi ref=\"kpis.2\" icon=\"percent\" marker.shapeType=\"ellipse\" marker.w=\"8\" marker.h=\"8\" marker.fill.color=\"$negative\" label.color=\"$negativeText\" label.letterSpacing=\"1\" note.color=\"$negativeText\"/><Kpi ref=\"kpis.3\" icon=\"clock\" backgroundColor=\"$surface\" marker.shapeType=\"ellipse\" marker.w=\"8\" marker.h=\"8\" marker.fill.color=\"$positive\" label.color=\"$positiveText\" label.letterSpacing=\"1\" value.color=\"$textMain\" note.color=\"$positiveText\"/></KpiGrid>"
+  },
+  "kpi.bare": {
+   "pixel_diff": 0.0572,
+   "not_undoable": [],
+   "attrs_xml": "<KpiGrid ref=\"kpis\" arrange=\"label-first\" grow=\"1\"><Kpi ref=\"kpis.0\" icon=\"trending-up\" padding=\"0\" value.color=\"$textMain\" backgroundColor=\"$surface\" border.width=\"0\"/><Kpi ref=\"kpis.1\" icon=\"users\" padding=\"0\" value.color=\"$textMain\" backgroundColor=\"$surface\" border.width=\"0\"/><Kpi ref=\"kpis.2\" icon=\"percent\" padding=\"0\" label.color=\"$textMuted\" value.color=\"$textMain\" backgroundColor=\"$surface\" border.width=\"0\"/><Kpi ref=\"kpis.3\" icon=\"clock\" padding=\"0\" value.color=\"$textMain\" backgroundColor=\"$surface\" border.width=\"0\"/></KpiGrid>"
+  },
+  "kpi.inverted": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<KpiGrid ref=\"kpis\" arrange=\"label-first\" grow=\"1\"><Kpi ref=\"kpis.0\" icon=\"trending-up\" size=\"hero\" backgroundColor=\"$panelDark\" label.color=\"$onPanelDark\" value.color=\"$onPanelDark\" note.color=\"$onPanelDark\" icon.color=\"$onPanelDark\" border.width=\"0\"/><Kpi ref=\"kpis.1\" icon=\"users\"/><Kpi ref=\"kpis.2\" icon=\"percent\"/><Kpi ref=\"kpis.3\" icon=\"clock\"/></KpiGrid>"
+  },
+  "kpi.divided": {
+   "pixel_diff": 0.063,
+   "not_undoable": [],
+   "attrs_xml": "<KpiGrid ref=\"kpis\" arrange=\"label-first\" grow=\"1\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" padding=\"22\" gap=\"22\"><Kpi ref=\"kpis.0\" icon=\"trending-up\" padding=\"0\" backgroundColor=\"$surfaceAlt\" border.width=\"0\"/><Kpi ref=\"kpis.1\" icon=\"users\" padding=\"0\" backgroundColor=\"$surfaceAlt\" border.width=\"0\" borderLeft.color=\"$border\" borderLeft.width=\"1\" padding.left=\"22\"/><Kpi ref=\"kpis.2\" icon=\"percent\" padding=\"0\" label.color=\"$textMuted\" backgroundColor=\"$surfaceAlt\" border.width=\"0\" borderLeft.color=\"$border\" borderLeft.width=\"1\" padding.left=\"22\"/><Kpi ref=\"kpis.3\" icon=\"clock\" padding=\"0\" backgroundColor=\"$surfaceAlt\" border.width=\"0\" borderLeft.color=\"$border\" borderLeft.width=\"1\" padding.left=\"22\"/></KpiGrid>"
+  },
+  "card.column": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<CardGrid ref=\"moments\"><Card ref=\"moments.0\" icon=\"sun\" borderLeft.color=\"$border\" borderLeft.width=\"3\" padding=\"4\" padding.left=\"18\" backgroundColor=\"$surface\" border.width=\"0\" shadow.opacity=\"0\"/><Card ref=\"moments.1\" icon=\"brain\" borderLeft.color=\"$border\" borderLeft.width=\"3\" padding=\"4\" padding.left=\"18\" backgroundColor=\"$surface\" border.width=\"0\" shadow.opacity=\"0\"/><Card ref=\"moments.2\" icon=\"repeat\" borderLeft.color=\"$negative\" borderLeft.width=\"3\" padding=\"4\" padding.left=\"18\" backgroundColor=\"$surface\" border.width=\"0\" shadow.opacity=\"0\"/><Card ref=\"moments.3\" icon=\"check-circle\" borderLeft.color=\"$border\" borderLeft.width=\"3\" padding=\"4\" padding.left=\"18\" backgroundColor=\"$surface\" border.width=\"0\" shadow.opacity=\"0\"/><Card ref=\"moments.4\" icon=\"moon\"/></CardGrid>"
+  },
+  "card.filled": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<CardGrid ref=\"moments\"><Card ref=\"moments.0\" icon=\"sun\" backgroundColor=\"$surfaceAlt\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.1\" icon=\"brain\" backgroundColor=\"$surfaceAlt\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.2\" icon=\"repeat\" borderLeft.color=\"$negative\" borderLeft.width=\"6\" title.color=\"$negativeText\" body.color=\"$textMain\" tag.color=\"$negativeText\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.3\" icon=\"check-circle\" backgroundColor=\"$surfaceAlt\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.4\" icon=\"moon\"/></CardGrid>"
+  },
+  "card.outline": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<CardGrid ref=\"moments\"><Card ref=\"moments.0\" icon=\"sun\" backgroundColor=\"$surface\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.1\" icon=\"brain\" backgroundColor=\"$surface\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.2\" icon=\"repeat\" borderLeft.color=\"$negative\" borderLeft.width=\"6\" title.color=\"$negativeText\" body.color=\"$textMain\" tag.color=\"$negativeText\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.3\" icon=\"check-circle\" backgroundColor=\"$surface\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.4\" icon=\"moon\"/></CardGrid>"
+  },
+  "card.toned": {
+   "pixel_diff": 0.0011,
+   "not_undoable": [],
+   "attrs_xml": "<CardGrid ref=\"moments\"><Card ref=\"moments.0\" icon=\"sun\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$neutral\" borderLeft.width=\"6\" body.color=\"$textMain\" tag.color=\"$textMain\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.1\" icon=\"brain\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$neutral\" borderLeft.width=\"6\" body.color=\"$textMain\" tag.color=\"$textMain\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.2\" icon=\"repeat\" borderLeft.color=\"$negative\" borderLeft.width=\"6\" title.color=\"$negativeText\" body.color=\"$textMain\" tag.color=\"$negativeText\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.3\" icon=\"check-circle\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$neutral\" borderLeft.width=\"6\" body.color=\"$textMain\" tag.color=\"$textMain\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.4\" icon=\"moon\"/></CardGrid>"
+  },
+  "card.accent_top": {
+   "pixel_diff": 0.0,
+   "not_undoable": [],
+   "attrs_xml": "<CardGrid ref=\"moments\"><Card ref=\"moments.0\" icon=\"sun\" backgroundColor=\"$surfaceAlt\" borderTop.color=\"$accent\" borderTop.width=\"4\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.1\" icon=\"brain\" backgroundColor=\"$surfaceAlt\" borderTop.color=\"$accent\" borderTop.width=\"4\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.2\" icon=\"repeat\" backgroundColor=\"$surfaceAlt\" borderTop.color=\"$negative\" borderTop.width=\"4\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.3\" icon=\"check-circle\" backgroundColor=\"$surfaceAlt\" borderTop.color=\"$accent\" borderTop.width=\"4\" border.width=\"0\" padding=\"20\" shadow.opacity=\"0\"/><Card ref=\"moments.4\" icon=\"moon\"/></CardGrid>"
+  }
+ },
+ "q2": {
+  "table": {
+   "today_style_vs_style": [
+    0.0038,
+    0.0698
+   ],
+   "composition_restyled": [
+    0.0166,
+    0.1677,
+    0.0944,
+    0.0949
+   ],
+   "today_plain_vs_composition": [
+    0.0759,
+    0.2265,
+    0.1306,
+    0.1276
+   ]
+  },
+  "cards": {
+   "today_style_vs_style": [
+    0.0588,
+    0.2003
+   ],
+   "composition_restyled": [
+    0.0889,
+    0.1434,
+    0.0542
+   ],
+   "today_plain_vs_composition": [
+    0.1543,
+    0.1921,
+    0.32
+   ]
+  },
+  "slide": {
+   "today_style_vs_style": [
+    0.1608,
+    0.3783
+   ],
+   "composition_restyled": [
+    0.1278
+   ],
+   "today_plain_vs_composition": [
+    0.1531
+   ]
+  }
+ }
+}
