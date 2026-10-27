@@ -14,6 +14,11 @@ on `claude/design-trunk`: `docs/chart-pass-2026-10-22.md`, `docs/eval/node-break
 
 ## 0. Summary
 
+**Gallery check (2026-10-27, free):** every variant in this spec, 34 in all, was drawn from sample components in
+today's typed planner schema and rendered. All 34 compile and render with no new planner field. Two variants
+fall short: the native timeline `rail` / `vertical` with descriptions (text overlaps, small fixed type) and the
+chart value labels (they lose the plan's unit). See `docs/eval/left-blocks-gallery/README.md`.
+
 - **Recommendation: build 4 of the 8 blocks, in this order: chart, timeline + process_arrow (+ flow), table,
   bullet_list.** Callout is a "maybe" (it repeats on almost every slide, but fails little). Header: not now (no
   failure in the data). Reason: the roadmap's rule, "add a derived node only for a composition that repeats
@@ -211,7 +216,7 @@ the start of the filler: it writes the series from `chart_values` / `chart_serie
 
 | `variant` | Look | Rules | Grounded in |
 |---|---|---|---|
-| `rail` (default) | native POM Timeline, horizontal: line, dots, date over title; code fills `TimelineItem` (`date`, `title` ← `label`, `description`) and the item colours | every label fits the break-map room (`label_room`), else `cards` (`NODE_NATIVE_FALLBACK`) | Genspark TIMELINE-A; the LLM's own choice on 11 of 14 |
+| `rail` (default) | native POM Timeline, horizontal: line, dots, date over title; code fills `TimelineItem` (`date`, `title` ← `label`) and the item colours | every label fits the break-map room (`label_room`) **and no item has a description** (gallery 2026-10-27: POM draws descriptions over the titles in small fixed text), else `cards` (`NODE_NATIVE_FALLBACK`) | Genspark TIMELINE-A; the LLM's own choice on 11 of 14 |
 | `vertical` | native POM Timeline, vertical | room for the count (break map: 9 in a band, 6 under a KPI row, 5 in a card) | Genspark TIMELINE-C |
 | `cards` | a line with a dot per item and one card per item: date as the card's tag, label as title, description as body (cards `steps` layout without arrows, a rail line instead) | any label length | Genspark TIMELINE-B (keeps long labels whole) |
 | `columns` | columns under a segmented progress bar, the bar's segments coloured up to the plan's "now" item | needs a "now" item (hint or `focus`), else segments all `$neutral` | Genspark TIMELINE-D (both runs: "12 WEEKS" bar) |
