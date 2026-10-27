@@ -21,11 +21,20 @@ USER CLARIFICATION ANSWERS:
 {% endif %}
 {% if supplied_content %}
 
-SUPPLIED CONTENT (use these values VERBATIM in key_messages — do NOT rephrase or drop precision):
+SUPPLIED CONTENT (use these values VERBATIM in {{ "items" if items else "key_messages" }} — do NOT rephrase or drop precision):
 ```json
 {{ supplied_content | tojson(indent=2) }}
 ```
 Content distribution guidance:
+{% if items %}
+- kpi_* keys → metric items, one per metric ("<metric>: <value> (<change>)")
+- chart_* keys → a series item ("<measure> by <period>: <label> <value>, ...")
+- table_* keys → ONE records item ("<entity>: <measure> <value>, ... | <entity>: ...")
+- bullets → point items
+- timeline_items → ONE steps item (dated events)
+- flow_steps → ONE steps item
+- title/subtitle → the first slide's items
+{% else %}
 - kpi_* keys → key_messages as standalone metrics ("<metric>: <value> (<change>)")
 - chart_* keys → key_messages as data series ("<measure> by <period>: <label> <value>, ...")
 - table_* keys → key_messages as record sets ("<entity>: <measure> <value>, ... | <entity>: ...")
@@ -33,6 +42,7 @@ Content distribution guidance:
 - timeline_items → key_messages as sequential events
 - flow_steps → key_messages as process steps
 - title/subtitle → first slide's key_messages
+{% endif %}
 {% endif %}
 
 TARGET DECK SIZE: {{ target_slides }} slides{% if slide_count_source == 'request' %} (the count the request states){% endif %}.
@@ -45,4 +55,8 @@ Produce EXACTLY {{ target_slides }} slides in your outline.
 Do NOT add Q&A, Appendix, Thank You, or Next Steps slides unless the request explicitly asks for them.
 {% endif %}
 
+{% if items %}
+Produce the deck outline. Every slide's items must be specific, carry the request's figures exactly as written, and each has the kind of content it is (the downstream planner chooses the component from it). Never make up a figure.
+{% else %}
 Produce the deck outline. Every slide's key_messages must be specific, carry the request's figures exactly as written, and carry semantic intent (the downstream planner reads the shape of each message to choose components). Never make up a figure.
+{%- endif %}

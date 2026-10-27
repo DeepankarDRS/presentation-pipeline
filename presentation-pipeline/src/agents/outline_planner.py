@@ -102,7 +102,9 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
     if test_case.get("slide_count"):
         target_slides, slide_count_source = test_case["slide_count"], "test_case"
 
+    items_on = outline_items_on()
     user_msg = _jinja_env.get_template("user.j2").render(
+        items=items_on,
         raw_request=state.get("raw_request", ""),
         deck_settings=deck_settings,
         constraints=constraints,
@@ -111,7 +113,6 @@ def outline_planner_node(state: PresentationState) -> dict[str, Any]:
         target_slides=target_slides,
         slide_count_source=slide_count_source,
     )
-    items_on = outline_items_on()
     system_msg = _jinja_env.get_template("system.j2").render(items=items_on)
 
     llm = get_llm("outline_planner")

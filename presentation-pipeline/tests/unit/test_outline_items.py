@@ -259,3 +259,14 @@ def test_report_measures_items_and_plans():
     assert m["narrative"] == 2 and m["slides_same_kinds"] == 1
     assert m["outline_figures_not_in_plan"] == 2 * 2     # per run: 18 (ARR's change) and 114 (NRR) are on no component
     assert "| narrative share |" in report("x", m, None, None)
+
+
+def test_outline_prompts_in_items_mode_never_ask_for_key_messages():
+    from jinja2 import Environment, FileSystemLoader
+    from src.agents.outline_planner import _PROMPTS_DIR
+    env = Environment(loader=FileSystemLoader(str(_PROMPTS_DIR)), trim_blocks=True, lstrip_blocks=True)
+    args = dict(raw_request="R", deck_settings={}, constraints={}, elicitation_answers={},
+                supplied_content={"kpi_labels": ["ARR"]}, target_slides=5, slide_count_source="settings")
+    for text in (env.get_template("system.j2").render(items=True), env.get_template("user.j2").render(items=True, **args)):
+        assert "key_message" not in text and "items" in text
+    assert "key_messages" in env.get_template("user.j2").render(items=False, **args)
