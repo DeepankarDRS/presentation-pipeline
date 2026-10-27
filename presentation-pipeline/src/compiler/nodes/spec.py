@@ -89,6 +89,7 @@ def family(tag: str) -> str:
 
 # ── `requires` checks (block-variants.yaml header) ───────────────────────────
 
+LABEL_SHORT = 24   # characters: native chevrons / 120 px timeline titles wrap past it (C8)
 _NUMBERED = re.compile(r"^\s*(?:\d+[.)]|phase\s+\d+|step\s+\d+|0\d)\b", re.I)
 _EMPHASIS_WORDS = ("inverted", "featured", "highlight", "dark", "emphasis", "singled", "hero")
 
@@ -161,6 +162,17 @@ def check(name: str, comp: dict) -> bool:
         return not any(_NUMBERED.match(t) for t in items(comp))
     if name == "count_le_8":
         return n <= 8
+    if name == "count_le_6":
+        return n <= 6
+    if name == "count_le_7":
+        return n <= 7
+    if name in ("labels_short", "no_own_numbers"):
+        from src.compiler.nodes import compose   # compose imports this module
+        if name == "labels_short":
+            described = any(str(i.get("description") or "").strip() for i in cd.get("timeline_items") or [])
+            return not described and all(len(t) <= LABEL_SHORT and not compose.split(t)[1] for t in items(comp))
+        dated = bool(cd.get("timeline_items")) or any(compose.dated(t) for t in items(comp))
+        return not dated and not any(compose.own_ordinal(t) for t in items(comp))
     if name == "one_series":
         return len(cd.get("chart_series") or [None]) == 1
     if name == "chart_is_bar":

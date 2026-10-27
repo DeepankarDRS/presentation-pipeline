@@ -25,7 +25,7 @@ from src.compiler.compiler_client import CompilerError, compile_xml, validate_xm
 from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
-from src.compiler.nodes import charts, element_refs, tiles
+from src.compiler.nodes import composed, element_refs, tiles
 from src.compiler.normalizer import _BARE_AMP_RE, ensure_single_theme, has_dark_panel, normalize_xml, pre_validate, soften_dark_panels
 from src.state import PresentationState
 
@@ -64,7 +64,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     # it first expands <KpiGrid> / <Kpi> into such tiles (docs/tile-nodes-spec-2026-10-12.md). Composition nodes
     # (POM_NODES=chart, docs/composition-convention-spec.md) are drawn before that.
     ref_issues: list[dict[str, Any]] = []
-    if element_refs.refs_on() or charts.on():
+    if element_refs.refs_on() or composed.kinds_on():
         idx = state.get("current_slide_index", 0)
         plan = slide_plans[idx] if idx < len(slide_plans) else {}
         if "ref=" in xml:   # the LLM's own XML, before code fills it (eval bundles: the first try)
@@ -72,8 +72,8 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             (output_dir / "generated.xml").write_text(xml, encoding="utf-8")
         xml = _BARE_AMP_RE.sub("&amp;", xml)   # a bare '&' ("KEYWORD & CITIES") fails the parse: tags stayed unexpanded
         ok = True
-        if charts.on():
-            drawn = charts.expand(xml, plan)
+        if composed.kinds_on():
+            drawn = composed.expand(xml, plan)
             xml, ref_issues, ok = drawn["xml"], list(drawn["issues"]), drawn["ok"]
         if element_refs.refs_on():
             fill = tiles.fill if tiles.on() else element_refs.fill_refs

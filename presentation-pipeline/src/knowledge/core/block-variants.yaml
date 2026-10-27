@@ -196,32 +196,32 @@ blocks:
     tag: Timeline
     family: native
     plan_kind: timeline
-    variants:
-      rail:     {prompt: "line with dots, short labels"}             # native, direction horizontal
-      vertical: {prompt: "vertical line, text to the right"}         # native, direction vertical
-      cards:    {prompt: "line with one card per point", draw: block}
-      columns:  {prompt: "columns under a progress bar", draw: block}
+    variants:                 # the compositions of `nodes.timeline` (POM_NODES=timeline, sequences.py)
+      native:   {prompt: "POM's timeline: dots on a line, short labels only", requires: [labels_short], fallback: rail}
+      rail:     {prompt: "a line with a dot per point, one box per point under it"}
+      rows:     {prompt: "one point per ruled row: date, head, detail"}
+      banded:   {prompt: "equal boxes, the date in a solid band: done / now / ahead"}
 
   process_arrow:
     tag: ProcessArrow
     family: native
     plan_kind: process_arrow
-    emphasis_from: [design_hint, destination]
-    variants:
-      chevrons:    {prompt: "chevron arrows"}
-      numbered:    {prompt: "numbered circles over boxes", draw: block}
-      alternating: {prompt: "circles on a line, labels above and below", draw: block}
-      step_cards:  {prompt: "step cards, destination dark", draw: block, emphasis: true}
+    emphasis_from: [destination]
+    variants:                 # the compositions of `nodes.process_arrow`
+      native:          {prompt: "chevron arrows, short steps only", requires: [labels_short], fallback: steps}
+      steps:           {prompt: "boxes joined by arrows, the destination dark", requires: [count_le_6], fallback: native}
+      steps numbered:  {prompt: "steps with a numbered circle over each box", requires: [count_le_6, no_own_numbers], fallback: steps}
+      rail:            {prompt: "numbered dots on a line, labels alternating above and below", requires: [count_le_7], fallback: steps}
 
   flow:
     tag: Flow                 # the plan holds a linear list: one FlowConnection per consecutive pair
     family: native
     plan_kind: flow
-    emphasis_from: [design_hint, destination]
-    variants:
-      boxes:       {prompt: "boxes joined by arrows"}
-      numbered:    {prompt: "numbered circles over boxes", draw: block}
-      step_cards:  {prompt: "step cards, destination dark", draw: block, emphasis: true}
+    emphasis_from: [destination]
+    variants:                 # the compositions of `nodes.flow`
+      native:          {prompt: "POM's flow: terminator, process boxes, arrows"}
+      steps:           {prompt: "boxes joined by arrows, the destination dark", requires: [count_le_6], fallback: native}
+      steps numbered:  {prompt: "steps with a numbered circle over each box", requires: [count_le_6, no_own_numbers], fallback: steps}
 
   pyramid:
     tag: Pyramid
@@ -571,3 +571,123 @@ nodes:
       focus_label: native labelled
       horizontal: {variant: native, direction: horizontal}
     styles: {}
+
+  # -- sequences: timeline, process_arrow, flow (sequences.py; one expander, spec §8) --------------------------------
+  # The item is a point / step. A string item ("Phase 1: Foundation — detail", a timeline label) shows as `label.`
+  # (the head) and `description.` (the detail) where a composition shows both: compose.split, NODE_TEXT_SPLIT.
+  # Emphasis: timeline = the point the design hint names (its date or head: "now"), else none; process / flow =
+  # the destination (the last step, user rule 2026-09-29). `before`: laid over `look` on the points before the
+  # emphasis point (timeline banded: done / now / ahead). Native compositions take their colours from the parts:
+  # marker.fill.color -> the item colour, label.color -> its text, connector.fill.color / .color -> the line.
+  #   labels_short     every item at most 24 characters, no detail to split off (C8: chevrons and the 120 px
+  #                    timeline titles wrap past it; label_room already moves too-long words to card steps)
+  #   count_le_6 / count_le_7   at most 6 / 7 items in one row
+  #   no_own_numbers   no item carries a date or its own ordinal ("Phase 1", "01."): numbers would repeat it
+  timeline:
+    tag: Timeline
+    plan_kind: timeline
+    parts: {date: Text, label: Text, description: Text, marker: Shape, connector: Shape, band: Box, item: Box}
+    one_hue: marker
+    meta: [ref, variant, direction]
+    native_attributes: []
+    code_owned: [dateColor, titleColor, descriptionColor, connectorColor, useColorForDate]
+    compositions:
+      native:
+        requires: [labels_short]
+        fallback: rail
+        look:     {date.color: $accentText, label.color: $textMain, description.color: $textMuted,
+                   connector.fill.color: $border, marker.fill.color: $neutral}
+        emphasis: {marker.fill.color: $accent}
+      rail:
+        look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.borderRadius: 8, item.padding: 20, date.color: $accentText, label.color: $textMain,
+                   description.color: $textMuted, marker.fill.color: $neutral, connector.fill.color: $border}
+        emphasis: {item.backgroundColor: $panelDark, date.color: $onPanelDark, label.color: $onPanelDark,
+                   description.color: $onPanelDark, marker.fill.color: $accent}
+      rows:
+        look:     {date.color: $accentText, label.color: $textMain, description.color: $textMuted,
+                   item.borderTop.color: $border, item.borderTop.width: 1}
+        emphasis: {item.backgroundColor: $accentSoft}
+      banded:
+        look:     {item.border.color: $border, item.border.width: 1, item.backgroundColor: $surfaceAlt,
+                   band.backgroundColor: $neutral, date.color: $textMain, label.color: $textMain,
+                   description.color: $textMuted}
+        before:   {band.backgroundColor: $accent, date.color: $onAccent}
+        emphasis: {band.backgroundColor: $panelDark, date.color: $onPanelDark}
+    aliases:
+      vertical: {variant: native, direction: vertical}
+      cards: rail
+      columns: banded
+
+  process_arrow:
+    tag: ProcessArrow
+    plan_kind: process_arrow
+    parts: {label: Text, description: Text, number: Shape, marker: Shape, connector: Icon, item: Box}
+    one_hue: marker
+    meta: [ref, variant, direction]
+    native_attributes: []
+    code_owned: [itemWidth, itemHeight, gap, fontSize, bold]
+    compositions:
+      native:
+        requires: [labels_short]
+        fallback: steps
+        look:     {item.backgroundColor: $accentSoft, label.color: $textMain}
+        emphasis: {item.backgroundColor: $accent, label.color: $onAccent}
+      steps:
+        requires: [count_le_6]
+        fallback: native
+        look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.borderRadius: 8, item.padding: 18, label.color: $textMain, description.color: $textMuted,
+                   connector.color: $neutral}
+        emphasis: {item.backgroundColor: $panelDark, label.color: $onPanelDark, description.color: $onPanelDark}
+      steps numbered:
+        requires: [count_le_6, no_own_numbers]
+        fallback: steps
+        look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.borderRadius: 8, item.padding: 18, label.color: $textMain, description.color: $textMuted,
+                   connector.color: $neutral, number.fill.color: $accent, number.color: $onAccent}
+        emphasis: {item.backgroundColor: $panelDark, label.color: $onPanelDark, description.color: $onPanelDark,
+                   number.fill.color: $panelDark, number.color: $onPanelDark}
+      rail:
+        requires: [count_le_7]
+        fallback: steps
+        look:     {label.color: $textMain, description.color: $textMuted, marker.fill.color: $accent,
+                   number.color: $onAccent, connector.color: $border}
+        emphasis: {label.color: $accentText, marker.fill.color: $panelDark, number.color: $onPanelDark}
+    aliases:
+      chevrons: native
+      numbered: steps numbered
+      alternating: rail
+      step_cards: steps
+
+  flow:
+    tag: Flow
+    plan_kind: flow
+    parts: {label: Text, description: Text, number: Shape, marker: Shape, connector: Icon, item: Box}
+    one_hue: marker
+    meta: [ref, variant, direction]
+    native_attributes: []
+    code_owned: [nodeWidth, nodeHeight, nodeGap, connectorStyle.color, connectorStyle.width]
+    compositions:
+      native:
+        look:     {item.backgroundColor: $accentSoft, label.color: $textMain, connector.color: $neutral}
+        emphasis: {item.backgroundColor: $accent, label.color: $onAccent}
+      steps:
+        requires: [count_le_6]
+        fallback: native
+        look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.borderRadius: 8, item.padding: 18, label.color: $textMain, description.color: $textMuted,
+                   connector.color: $neutral}
+        emphasis: {item.backgroundColor: $panelDark, label.color: $onPanelDark, description.color: $onPanelDark}
+      steps numbered:
+        requires: [count_le_6, no_own_numbers]
+        fallback: steps
+        look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.borderRadius: 8, item.padding: 18, label.color: $textMain, description.color: $textMuted,
+                   connector.color: $neutral, number.fill.color: $accent, number.color: $onAccent}
+        emphasis: {item.backgroundColor: $panelDark, label.color: $onPanelDark, description.color: $onPanelDark,
+                   number.fill.color: $panelDark, number.color: $onPanelDark}
+    aliases:
+      boxes: native
+      numbered: steps numbered
+      step_cards: steps

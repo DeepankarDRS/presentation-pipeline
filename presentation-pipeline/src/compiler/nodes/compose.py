@@ -148,6 +148,24 @@ def own_ordinal(s: str) -> bool:
     return bool(_OWN_ORDINAL.match(str(s or "")))
 
 
+_DATED = re.compile(r"^\s*(?:Q[1-4]|H[12]|FY\s?\d|CY\s?\d|W\d|(?:19|20)\d\d|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b",
+                    re.I)
+
+
+def dated(s: str) -> bool:
+    """The item opens with a date or period ("Q1: …", "Jul–Aug — …"): dated steps are not numbered."""
+    return bool(_DATED.match(str(s or "")))
+
+
+def before_layer(nd: dict, name: str, rest: dict) -> dict:
+    """The parts of an item before the emphasis item: `rest` with the composition's `before` look over it."""
+    out = {p: dict(a) for p, a in rest.items()}
+    for k, v in (nd["compositions"][name].get("before") or {}).items():
+        head, _, sub = k.partition(".")
+        out[head][sub] = str(v)
+    return out
+
+
 _STACK = re.compile(r"<(/?)(VStack|HStack)\b([^<>]*?)(/?)>")
 
 

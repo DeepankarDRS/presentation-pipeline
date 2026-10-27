@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -23,6 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow"   # the composition nodes the bare tags need
 
 from scripts import composition_test as CT  # noqa: E402
 from scripts import left_blocks_gallery as LB  # noqa: E402
@@ -257,132 +259,18 @@ def bullets_banded() -> str:
                                                    for k in (0, 2)) + "</VStack>")
 
 
-# ── timeline: item = TimelineItem (date, label, description); "now" from the hint is the emphasis ─────────────────
+# ── timeline / process_arrow / flow: bare tags drawn by sequences.py (POM_NODES); the hand-written XML of
+# 2026-10-27 that they replace drew the reference sheets ───────────────────────────────────────────────────────
 
-def tl_items() -> list[tuple[str, str, str]]:
-    """(date, head, detail): the label split as code would (NODE_TEXT_SPLIT), description when the plan has one."""
-    out = []
-    for i in cd(TIMELINE)["timeline_items"]:
-        h, d = split(i["label"]) if not i.get("description") else (i["label"], i["description"])
-        out.append((i["date"], h, d))
-    return out
+TIMELINE_SHORT = comp("roadmap_short", "timeline", {"direction": "horizontal", "timeline_items": [
+    {"date": "Jul–Aug", "label": "Growth activation"}, {"date": "Sep–Oct", "label": "Festive push"},
+    {"date": "Nov", "label": "Retention"}, {"date": "Dec", "label": "Year-end plan"}]},
+    "highlight Nov, where we are now", items=4, orientation="horizontal")
 
 
-def tl_now() -> int | None:
-    return hint_index(TIMELINE, [i["date"] for i in cd(TIMELINE)["timeline_items"]])
-
-
-def timeline_native() -> str:
-    """native: POM Timeline; head as title, detail as description; the now item $accent, the others $neutral."""
-    now = tl_now()
-    its = "".join(f'<TimelineItem date="{X(dt)}" title="{X(h)}" description="{X(d)}" color="{"$accent" if k == now else "$neutral"}" />'
-                  for k, (dt, h, d) in enumerate(tl_items()))
-    return (f'<Timeline direction="horizontal" dateColor="$accentText" titleColor="$textMain" descriptionColor="$textMuted" '
-            f'connectorColor="$border" w="max" h="max">{its}</Timeline>')
-
-
-def timeline_rail() -> str:
-    """rail: a connector. line with a dot per item, one box per item below it; the now item's box dark."""
-    now, cols = tl_now(), []
-    for k, (dt, h, d) in enumerate(tl_items()):
-        dark = k == now
-        ink, sub, dc = ("$onPanelDark", "$onPanelDark", "$onPanelDark") if dark else ("$textMain", "$textMuted", "$accentText")
-        cols.append(f'<VStack w="1" grow="1" gap="14" alignItems="stretch">'
-                    f'<HStack alignItems="center" gap="0"><Shape shapeType="ellipse" w="18" h="18" fill.color="{"$accent" if dark else "$neutral"}" />'
-                    f'<Shape shapeType="rect" w="max" grow="1" h="2" fill.color="$border" /></HStack>'
-                    f'<VStack id="card-roadmap-{k}" grow="1" gap="6" padding="20" border.color="$border" border.width="1" borderRadius="8"'
-                    f' backgroundColor="{"$panelDark" if dark else "$surfaceAlt"}">'
-                    f'{t(dt.upper(), 14, dc, bold="true", letterSpacing="1")}{t(h, 22, ink, bold="true")}{t(d, 17, sub)}</VStack></VStack>')
-    return f'<HStack grow="1" gap="16" alignItems="stretch">{"".join(cols)}</HStack>'
-
-
-def timeline_banded() -> str:
-    """banded: equal boxes side by side, the date in a solid band. head: done $accent, now $panelDark, ahead $neutral."""
-    now, cols = tl_now(), []
-    for k, (dt, h, d) in enumerate(tl_items()):
-        fill, ink = (("$panelDark", "$onPanelDark") if k == now else ("$accent", "$onAccent") if now is not None and k < now
-                     else ("$neutral", "$textMain"))
-        cols.append(f'<VStack id="card-roadmap-{k}" w="1" grow="1" gap="0" border.color="$border" border.width="1">'
-                    f'<HStack padding="12" backgroundColor="{fill}">{t(dt.upper(), 16, ink, bold="true", letterSpacing="1")}</HStack>'
-                    f'<VStack grow="1" gap="8" padding="18" backgroundColor="$surfaceAlt">{t(h, 21, bold="true")}{t(d, 17, "$textMuted")}</VStack></VStack>')
-    return f'<HStack grow="1" gap="12" alignItems="stretch">{"".join(cols)}</HStack>'
-
-
-def timeline_rows() -> str:
-    """rows: one item per full-width row, ruled: date · head · detail; the now row $accentSoft."""
-    now, out = tl_now(), []
-    for k, (dt, h, d) in enumerate(tl_items()):
-        bg = a(backgroundColor="$accentSoft") if k == now else ""
-        out.append(f'<HStack id="card-roadmap-{k}" grow="1" gap="24" alignItems="center" padding="12"{rule(k)}{bg}>'
-                   f'<VStack w="150">{t(dt.upper(), 18, "$accentText", bold="true", letterSpacing="1")}</VStack>'
-                   f'<VStack w="34%">{t(h, 22, bold="true")}</VStack><VStack w="1" grow="1">{t(d, 18, "$textMuted")}</VStack></HStack>')
-    return f'<VStack gap="0" grow="1">{"".join(out)}</VStack>'
-
-
-# ── process_arrow / flow: item = step (a string, split into label. + description.); the destination is the emphasis ─
-
-def steps_of(c: dict) -> list[str]:
-    return cd(c).get("process_steps") or cd(c).get("flow_steps") or []
-
-
-def process_native(c: dict) -> str:
-    """native: POM ProcessArrow; steps $accentSoft, the destination $accent (no literal hex)."""
-    st = steps_of(c)
-    its = "".join(f'<ProcessArrowStep label="{X(s)}" color="{"$accent" if k == len(st) - 1 else "$accentSoft"}" '
-                  f'textColor="{"$onAccent" if k == len(st) - 1 else "$textMain"}" />' for k, s in enumerate(st))
-    return f'<ProcessArrow direction="horizontal" w="max" fontSize="18" bold="true">{its}</ProcessArrow>'
-
-
-def flow_native(c: dict) -> str:
-    """native: POM Flow; nodes $accentSoft, the destination $accent."""
-    st, last = steps_of(c), len(steps_of(c)) - 1
-    nodes = "".join(f'<FlowNode id="n{k}" shape="{"flowChartTerminator" if k in (0, last) else "flowChartProcess"}" text="{X(s)}" '
-                    f'color="{"$accent" if k == last else "$accentSoft"}" textColor="{"$onAccent" if k == last else "$textMain"}" />'
-                    for k, s in enumerate(st))
-    links = "".join(f'<FlowConnection from="n{k}" to="n{k + 1}" />' for k in range(last))
-    return f'<Flow direction="horizontal" w="max" h="max" connectorStyle.color="$neutral">{nodes}{links}</Flow>'
-
-
-def steps(c: dict, numbered: bool) -> str:
-    """steps (numbered): boxes in one row joined by connector. arrows; the destination box dark; numbered = a circle over each."""
-    st, out = steps_of(c), []
-    cid = c["component_id"]
-    for k, s in enumerate(st):
-        h, d = split(s)
-        dark = k == len(st) - 1
-        ink, sub = ("$onPanelDark", "$onPanelDark") if dark else ("$textMain", "$textMuted")
-        if k:
-            out.append('<VStack w="32" justifyContent="center"><Icon name="arrow-right" size="26" color="$neutral" /></VStack>')
-        circle = (f'<HStack justifyContent="center"><Shape shapeType="ellipse" w="52" h="52" fill.color="{"$panelDark" if dark else "$accent"}" '
-                  f'text="{k + 1}" fontSize="22" bold="true" color="{"$onPanelDark" if dark else "$onAccent"}" /></HStack>') if numbered else ""
-        box = (f'<VStack id="card-{cid}-{k}" w="100%" grow="1" gap="8" padding="18" borderRadius="8" border.color="$border" border.width="1" '
-               f'backgroundColor="{"$panelDark" if dark else "$surfaceAlt"}" justifyContent="center">'
-               f'{t(h, 21, ink, bold="true", textAlign="center")}' + (t(d, 16, sub, textAlign="center") if d else "") + "</VStack>")
-        out.append(f'<VStack w="1" grow="1" gap="12" alignItems="stretch">{circle}{box}</VStack>')
-    return f'<HStack grow="1" gap="8" alignItems="stretch">{"".join(out)}</HStack>'
-
-
-def rail(c: dict) -> str:
-    """rail (horizontal): a connector. line with one dot per step, the text alternating above and below it."""
-    st, cid, cols = steps_of(c), c["component_id"], []
-    for k, s in enumerate(st):
-        h, d = split(s)
-        last = k == len(st) - 1
-        txt = (f'<VStack id="card-{cid}-{k}" h="130" gap="4" justifyContent="{"end" if k % 2 == 0 else "start"}">'
-               f'{t(h, 21, "$accentText" if last else "$textMain", bold="true", textAlign="center")}'
-               + (t(d, 16, "$textMuted", textAlign="center") if d else "") + "</VStack>")
-        line = lambda on: f'<Shape shapeType="rect" w="max" grow="1" h="3" fill.color="{"$border" if on else "$surface"}" />'  # noqa: E731
-        dot = (f'<Shape shapeType="ellipse" w="40" h="40" fill.color="{"$panelDark" if last else "$accent"}" text="{k + 1}" '
-               f'fontSize="18" bold="true" color="{"$onPanelDark" if last else "$onAccent"}" />')
-        empty = '<VStack h="130" />'
-        cols.append(f'<VStack w="1" grow="1" gap="12" alignItems="stretch">{empty if k % 2 else txt}'
-                    f'<HStack alignItems="center">{line(k > 0)}{dot}{line(not last)}</HStack>{txt if k % 2 else empty}</VStack>')
-    return f'<VStack grow="1" justifyContent="center"><HStack gap="0" alignItems="stretch">{"".join(cols)}</HStack></VStack>'
-
-
-def step_cards(c: dict) -> tuple[dict, str]:
-    """steps through the real card code (<CardGrid layout="steps">): label = title, detail = body, destination dark."""
-    return LB.step_cards(c)
+def tag(name: str, c: dict, variant: str = "") -> str:
+    v = f' variant="{variant}"' if variant else ""
+    return f'<{name} ref="{c["component_id"]}"{v} />'
 
 
 # ── callout (narrative): one item, no list ───────────────────────────────────────────────────────────────────────
@@ -433,7 +321,6 @@ def matrix_grid() -> str:
 # ── sheets: block -> (today row [(label, comps, body)], compositions [(label, comps, body)]) ─────────────────────
 
 def blocks() -> dict[str, tuple[list, list]]:
-    sc, sx = step_cards(STEPS_LONG), step_cards(FLOW)
     return {
         "table": ([(f"today · {v}", [LB.TABLE], LB.table(v)) for v in ("plain", "zebra", "dark_header")],
                   [("native (default)", [TABLE], table_native()), ("rows numbered", [TABLE], table_rows()),
@@ -448,17 +335,19 @@ def blocks() -> dict[str, tuple[list, list]]:
                      ("rows numbered", [BULLETS], bullets_rows(True)), ("grid", [BULLETS], bullets_grid()),
                      ("banded", [BULLETS], bullets_banded())]),
         "timeline": ([(f"today · {v}", [LB.TIMELINE], LB.timeline(v)) for v in ("rail", "cards", "columns")],
-                     [("native (default)", [TIMELINE], timeline_native()), ("rail", [TIMELINE], timeline_rail()),
-                      ("banded", [TIMELINE], timeline_banded()), ("rows", [TIMELINE], timeline_rows())]),
+                     [("native · short labels (default)", [TIMELINE_SHORT], tag("Timeline", TIMELINE_SHORT)),
+                      ("bare tag · labels with detail -> rail", [TIMELINE], tag("Timeline", TIMELINE)),
+                      ("banded", [TIMELINE], tag("Timeline", TIMELINE, "banded")),
+                      ("rows", [TIMELINE], tag("Timeline", TIMELINE, "rows"))]),
         "process": ([(f"today · {v}",) + LB.process(v) for v in ("chevrons", "numbered", "alternating")],
-                    [("native (default) · short steps", [STEPS_SHORT], process_native(STEPS_SHORT)),
-                     ("native · long steps", [STEPS_LONG], process_native(STEPS_LONG)),
-                     ("steps · long steps (card code)", [STEPS_LONG, sc[0]], sc[1]),
-                     ("steps numbered · long steps", [STEPS_LONG], steps(STEPS_LONG, True)),
-                     ("rail · short steps", [STEPS_SHORT], rail(STEPS_SHORT))]),
+                    [("bare tag · short steps -> native", [STEPS_SHORT], tag("ProcessArrow", STEPS_SHORT)),
+                     ("bare tag · long steps -> steps", [STEPS_LONG], tag("ProcessArrow", STEPS_LONG)),
+                     ("steps numbered · short steps", [STEPS_SHORT], tag("ProcessArrow", STEPS_SHORT, "steps numbered")),
+                     ("rail · short steps", [STEPS_SHORT], tag("ProcessArrow", STEPS_SHORT, "rail")),
+                     ("rail · long steps", [STEPS_LONG], tag("ProcessArrow", STEPS_LONG, "rail"))]),
         "flow": ([(f"today · {v}",) + LB.flow(v) for v in ("boxes", "numbered", "step_cards")],
-                 [("native (default)", [FLOW], flow_native(FLOW)), ("steps (card code)", [FLOW, sx[0]], sx[1]),
-                  ("steps numbered", [FLOW], steps(FLOW, True))]),
+                 [("native (default)", [FLOW], tag("Flow", FLOW)), ("steps", [FLOW], tag("Flow", FLOW, "steps")),
+                  ("steps numbered", [FLOW], tag("Flow", FLOW, "steps numbered"))]),
         "callout": ([(f"today · {v}", [LB.TAKEAWAY], LB.beside_chart(LB.callout(v))) for v in ("tinted", "rule", "dark")],
                     [("native (default) · takeaway", [TAKEAWAY], LB.beside_chart(callout_native(TAKEAWAY))),
                      ("native · a quotation (content rule)", [QUOTE], LB.beside_chart(callout_native(QUOTE)))]),
@@ -510,7 +399,7 @@ def build(block: str, out: Path) -> None:
         xml = inner_ids(body if body.startswith("<Slide") else TG.slide(label.upper(), head, body))
         # today's chart names get the old post-edit; a <Chart ref> tag draws its labels itself (charts.py, pptx-post.js)
         today = label.startswith("today")
-        variant = ("labelled" if "labelled" in label else label.split(" · ")[-1].split()[0]) if today or block != "chart" else ""
+        variant = ("labelled" if "labelled" in label else label.split(" · ")[-1].split()[0]) if today else ""
         pdf, issues = LB.compile_one(d, xml, {"components": cs, "slide_title": head}, themes[pal], variant)
         res = json.loads((d / "compile-result.json").read_text(encoding="utf-8")) if (d / "compile-result.json").exists() else {}
         log.append({"block": block, "shot": label, "palette": pal, "rendered": bool(pdf), "fill_errors": issues,
