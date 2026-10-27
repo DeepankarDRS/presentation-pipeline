@@ -162,3 +162,24 @@ def test_seed_palettes_meet_their_contrast_targets(name):
         assert min(contrast(t[k], t["surface"]), contrast(t[k], t["surfaceAlt"])) >= 3.0, k
     for c in theme["chart_colors"]:
         assert contrast(c, t["chartSurface"]) >= 2.0, c
+
+
+# Brand oranges kept on purpose (palettes.yaml comment on saascolor: 2.3-2.6:1 as text).
+ACCENT_BELOW_3 = {"saascolor", "navy-orange"}
+
+
+@pytest.mark.parametrize("name", theme_names())
+def test_every_palette_meets_its_accent_chart_and_meaning_targets(name):
+    # 2026-10-27, scripts/palette_contrast.py: hand-written palettes are stepped too, not only seeds.
+    from src.compiler.theme_swap import _lab
+
+    theme = resolve_theme(name)
+    t = theme_tokens(theme["element"])
+    keys = ("accentAlt", "positive", "negative", "warning") + (() if name in ACCENT_BELOW_3 else ("accent",))
+    for k in keys:
+        assert min(contrast(t[k], t["surface"]), contrast(t[k], t["surfaceAlt"])) >= 3.0, k
+    for c in theme["chart_colors"]:
+        assert contrast(c, t["chartSurface"]) >= 2.0, c
+    for role in ("positive", "negative"):     # a focus number must not read as good / bad
+        de = sum((x - y) ** 2 for x, y in zip(_lab(t["accent"]), _lab(t[role]))) ** 0.5
+        assert de >= 15, role

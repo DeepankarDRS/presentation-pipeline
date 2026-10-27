@@ -96,7 +96,7 @@ palettes:
     surface: "F7F9FC"
     surfaceAlt: "FFFFFF"
     accent: "2563EB"
-    accentAlt: "0EA5E9"
+    accentAlt: "0D97D6"
     positive: "15803D"
     negative: "DC2626"
     warning: "B45309"
@@ -113,14 +113,14 @@ palettes:
     surface: "EAF6FB"
     surfaceAlt: "FFFFFF"
     accent: "0077B6"
-    accentAlt: "00B4D8"
+    accentAlt: "009AB9"
     positive: "15803D"
     negative: "DC2626"
     warning: "B45309"
     textMain: "03045E"
     textMuted: "3E5C76"
     border: "CFE6F2"
-    chartColors: ["0077B6", "00B4D8", "03045E", "48CAE4", "F59E0B"]
+    chartColors: ["0077B6", "00B4D8", "03045E", "3FC7E3", "F59E0B"]
 
   teal-slate:
     tone: "Warm sand with deep teal and copper"
@@ -135,7 +135,7 @@ palettes:
     textMain: "12302F"
     textMuted: "5B6461"
     border: "E2DCCF"
-    chartColors: ["0E7C7B", "C8702A", "5FA8A0", "12302F", "E0B15A"]
+    chartColors: ["0E7C7B", "C8702A", "5FA8A0", "12302F", "DFAF56"]
 
   emerald-clean:
     tone: "Crisp mint with emerald and lime"
@@ -143,14 +143,14 @@ palettes:
     surface: "ECF8F2"
     surfaceAlt: "FFFFFF"
     accent: "059669"
-    accentAlt: "65A30D"
-    positive: "047857"
+    accentAlt: "629E0D"
+    positive: "4D7C0F"   # 2026-10-27: 047857 read as the accent 059669 (dE 13.7)
     negative: "DC2626"
     warning: "B45309"
     textMain: "053B2B"
     textMuted: "4B6B5E"
     border: "CDEBDD"
-    chartColors: ["059669", "65A30D", "0EA5E9", "065F46", "FBBF24"]
+    chartColors: ["059669", "65A30D", "0EA5E9", "065F46", "E8A804"]
 
   forest-editorial:
     tone: "Forest green and amber on cream paper"
@@ -158,14 +158,14 @@ palettes:
     surface: "F5F0E8"
     surfaceAlt: "FFFCF6"
     accent: "2D5016"
-    accentAlt: "D4891A"
+    accentAlt: "BD7A17"
     positive: "1F6F5C"   # 2026-10-07 P3: was the accent 2D5016
     negative: "A33A2A"
     warning: "A86310"
     textMain: "1E2612"
     textMuted: "5E5A48"
     border: "E3DACB"
-    chartColors: ["2D5016", "D4891A", "7A9A3A", "8C5A2B", "B8C77A"]
+    chartColors: ["2D5016", "D4891A", "7A9A3A", "8C5A2B", "ABBC61"]
 
   warm-editorial:
     tone: "Terracotta and teal on peach cream"
@@ -188,7 +188,7 @@ palettes:
     surface: "F8F6F0"
     surfaceAlt: "FFFFFF"
     accent: "A87B1E"
-    accentAlt: "C9A84C"
+    accentAlt: "AA8A33"
     positive: "3F7D3A"
     negative: "B23A2E"
     warning: "9A6412"
@@ -242,7 +242,7 @@ palettes:
     textMain: "041E42"
     textMuted: "4E5D6E"
     border: "E4E2D8"
-    chartColors: ["F5821F", "673AB7", "B39DDB", "2E7D32", "A03B24", "E6B8A2"]
+    chartColors: ["F5821F", "673AB7", "B39DDB", "2E7D32", "A03B24", "E1A98E"]
 
   navy-orange:
     tone: "Diagnostic — navy on white, warm off-white cards, orange + purple accents"
@@ -269,14 +269,14 @@ palettes:
     surface: "F0F5F3"
     surfaceAlt: "FFFFFF"
     accent: "0D6B4E"
-    accentAlt: "34D399"
+    accentAlt: "229D70"
     positive: "2E7D32"
     negative: "B83A22"
     warning: "A15C00"
     textMain: "141F1C"
     textMuted: "5F706B"
     border: "D5DDD9"
-    chartColors: ["0D6B4E", "3B82F6", "F59E0B", "94A3B8", "34D399"]
+    chartColors: ["0D6B4E", "3B82F6", "F59E0B", "94A3B8", "2CCC91"]
 
   # Claude-style editorial: warm cream paper, near-black slate ink, one clay accent. Values are
   # approximations of Anthropic's brand colours (not checked against an official source). The
@@ -288,7 +288,7 @@ palettes:
     surface: "F0EEE6"
     surfaceAlt: "FFFFFF"
     accent: "C4623F"
-    accentAlt: "D97757"
+    accentAlt: "D56A46"
     positive: "3F7D4E"
     negative: "B03A2E"
     warning: "A86310"
@@ -328,7 +328,7 @@ palettes:
     border: "36455F"
     chartSurface: "F4F7FB"
     chartInk: "1E293B"
-    chartColors: ["60A5FA", "34D399", "FBBF24", "A78BFA", "F472B6"]
+    chartColors: ["60A5FA", "2BC78E", "E3A504", "A78BFA", "F472B6"]
 
   midnight-indigo:
     tone: "Deep indigo dark"
@@ -345,7 +345,7 @@ palettes:
     border: "3A3A63"
     chartSurface: "F5F5FC"
     chartInk: "232346"
-    chartColors: ["818CF8", "34D399", "FBBF24", "F472B6", "38BDF8"]
+    chartColors: ["818CF8", "2BC78E", "E3A504", "F472B6", "33BBF8"]
 
   forest-dark:
     tone: "Dark green"
@@ -362,7 +362,7 @@ palettes:
     border: "2C4438"
     chartSurface: "F2F8F4"
     chartInk: "172C22"
-    chartColors: ["4ADE80", "2DD4BF", "FBBF24", "60A5FA", "F472B6"]
+    chartColors: ["24C75F", "28C4B1", "E3A504", "60A5FA", "F472B6"]
 
   carbon-dark:
     tone: "Charcoal neutral, warm orange accent"
@@ -379,7 +379,7 @@ palettes:
     border: "3F3F3F"
     chartSurface: "FAFAF9"
     chartInk: "262626"
-    chartColors: ["FB923C", "FBBF24", "A3E635", "38BDF8", "F472B6"]
+    chartColors: ["FB923C", "E8A804", "84C518", "38BDF8", "F472B6"]
 
   # ---- SEEDS (expanded + contrast-stepped by palette_tokens.expand_seed) ----
   # Light
@@ -611,6 +611,7 @@ palettes:
       muted: "#979797"
       accent: "#CC2225"
       accentAlt: "#8C1A1C"
+      negative: "#991B1B"   # 2026-10-27: the default DC2626 is the accent's red (dE 6.4)
       chart: ["#CC2225", "#8C1A1C", "#F28B8C", "#979797", "#4D4D4D"]
 
   mbb-red-dark:

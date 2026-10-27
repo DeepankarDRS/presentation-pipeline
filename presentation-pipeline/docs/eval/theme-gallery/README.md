@@ -19,4 +19,7 @@ Seen on the sheets:
 - Chart colours too pale for the white chart card (2:1) or near-duplicates are swapped for the default green /
   amber by `palette_tokens.guard_chart_colors` (6FD2EF, C5EDF8, 9FE8CF, 6FE3B8); on mbb-green and perceptis-dark
   the third series (Zepto) falls to grey 808080.
-- mbb-red: the accent CC2225 and the bad-number red DC2626 are nearly the same colour.
+- Fixed 2026-10-27: mbb-red's bad-number colour is now 991B1B (DC2626 was the accent's red, dE 6.4); emerald-clean's
+  good colour 4D7C0F (047857 read as the accent). The hand-written palettes' accentAlt (3:1) and chart colours (2:1 on
+  the chart card) are stepped in lightness, hue kept, like the seeds; test_every_palette_meets_its_accent_chart_and_
+  meaning_targets keeps them there. Left: saascolor / navy-orange's brand orange accent (2.1-2.6:1), on purpose.
