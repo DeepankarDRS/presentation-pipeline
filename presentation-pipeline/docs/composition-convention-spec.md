@@ -368,3 +368,44 @@ Pyramid, tree and matrix stay native POM only, with no tag of their own (unchang
 4. Free replay on the saved KPI / card slides: the bare tag with the hint's composition, scorecard + blind sheet
    (your marks ≥ 0.5).
 5. Paid check only with your OK: same-plan generator run on the saved plans (≈ $0.5, ceiling $1).
+
+## 11. Left to find or define (2026-10-27)
+
+Everything this spec has not settled, in one list. **find** = needs evidence (a render, a census or a replay).
+**define** = needs a decision or a written rule. **build** = understood, but waits for approval.
+
+### 11.1 Status of today's names (from the user's status board, 2026-10-27)
+
+| Block | Built (style → recipe) | Built (composition → word) | Left to build | Dropped |
+|---|---|---|---|---|
+| KPI tiles | `plain` `filled` `toned` `bar` `dot` `inverted` `bare`; `hero` → `size="hero"` | `divided` → `strip`; `row` / `grid` / `column` → `grid` (+ `cols`) / `rows`; `label-first` / `icon-top` → `grid`; `value-first` → `bento`; `side` / `inline` → `rows` | **hero note pill** (the delta as a pill under a hero value, Genspark KPI-E). Decide: a part of `bento`'s emphasis look (style), or a part `delta.` drawn as a pill (a recipe: `delta.backgroundColor` needs a box around the Text, which a Text part cannot carry, so this is **find**: can POM draw a pill from Text attributes alone, or does it need a `pill.` look part?) | — |
+| Cards | `lifted` (default) `column` `outline` `filled` `toned` `accent_top` `inverted` | `grid` `steps` `rail`; `numerals` → `grid numbered`; `stack` → `grid`; `side` → `rows` | **featured left column** = `bento` (§5.2; rendered, not built). **matrix** (deferred): a card_grid with `columns` / `rows` axes. **find**: is a card matrix `grid` with axis labels (a new word `matrix`), or slide layout? | `columns` and `title-band` as old card layouts. Note: the **word** `columns` and the composition `banded` (= title band) come back here as compositions with new meanings (§2.3). Confirm this is wanted, since the user once dropped them |
+| The other 8 blocks | — | — | only names in `block-variants.yaml`; the LLM still hand-draws them (§8) | — |
+
+### 11.2 Define (decisions still open)
+
+| # | What | Why it is open |
+|---|---|---|
+| F1 | D1–D5 approval (§9 Q1) | the whole convention waits on it |
+| F2 | Whether `$tone*` tokens and `item.` are accepted by the normalizer as written, or swapped by the expander before `normalize_xml` | the spec assumes the expander swaps them. `LITERAL_COLOR` / the token check must not reject `$tone` first |
+| F3 | The fit rule for one-row compositions (§6 finding 2): no `grow`, and the fallback when they are the only band, under 50% full | a threshold to agree on; checked on the KPI gallery |
+| F4 | The default composition chosen from the plan's shape (§6 finding 3: body + ≥ 3 bullets per card → `columns`) | needs the free replay on saved card slides before it becomes a rule (no one-example rules) |
+| F5 | `look_from_hint` cues → composition words (hero / spotlight → `bento`, ruled → `rows`, strip → `strip`) | the cue list today maps to style names only (`plan_checks.look_from_hint`) |
+| F6 | Per-template looks (`look_by_palette:`) for gj-h1 and others | place fixed (§4), content not written |
+| F7 | `focus_kpi` planner field (§9 Q4) | only if the replay shows `bento` falling back |
+| F8 | Whether the LLM may still put `variant` on an item placed apart (today `<Kpi ref variant="inverted">`) | the spec drops it. Saved slides use it (tile example 3) |
+| F9 | The `quote` word for callouts, the one block-specific word | a callout quote may be a style (a glyph as a `marker.`) rather than a composition |
+| F10 | `ON_FILL` for `band.` on `$positive` / `$negative` / `$warning` fills (§6 finding 4) | needs a contrast check on every palette |
+
+### 11.3 Find (evidence still missing)
+
+| # | What | How (free unless marked) |
+|---|---|---|
+| R1 | **Compositions for the 8 remaining blocks** (§8 is a table only): which of the shared words each block's plan JSON can fill, drawn and rendered from today's `slide_component_planner` output, beside today's style names | a composition gallery like `scripts/composition_convention.py`, one sample plan per kind from saved runs (`output/**/slides.json`). **Started as its own session, 2026-10-27** |
+| R2 | **Which style attributes POM accepts on each native node**, because style can only be "complete power" where the syntax allows it. Known limits: `<Td>` holds no `Icon` / HStack; borders are rejected on `Td` / `Li` / `FlowNode` / `TimelineItem` / `ProcessArrowStep` / `PyramidLevel` / `MatrixItem` (`ITEM_BORDER_REMOVED`, POM 10.3.0); `Chart` text is black on dark palettes (`chartSurface`); no data labels in POM charts | compile a probe slide per native node with every box / part attribute (`attributes.yaml`, `llm.md`); record accept / reject / ignored. It decides where a composition must be drawn by code (boxes) instead of the native node |
+| R3 | Which plan kinds have no item list to compose (`title`, `narrative`, `caption`, `layer`, `pyramid`, `tree`, `matrix`), and whether a composition word applies to them at all | from `planner_schema_typed.py` + R1 |
+| R4 | The plan fields each composition of the 8 blocks needs, marked "new planner field" where missing (as §7 does for KPI / cards): known gaps are per-column / per-row icons (table), a table title, a span per card, a narrative icon, timeline `description` (in the schema, filled 0 of 28 times) | R1 + the left-blocks census |
+| R5 | The per-group icon fix (§6 finding 1) on the KPI gallery | **build** after approval (fit-grow, a few lines) |
+| R6 | A blind sheet of saved KPI slides: LLM vs `grid` vs the composition the hint asks for (§9 Q5) | free; your marks |
+| R7 | The prompt cost of the vocabulary and the per-component line, measured rather than estimated (§9 Q6) | count tokens on 10 saved slides |
+| R8 | A unit test that every tag / variant / style name a prompt or knowledge file uses exists in `block-variants.yaml` (promised in its header, missing; left-blocks §3) | **build** with step 1 |
