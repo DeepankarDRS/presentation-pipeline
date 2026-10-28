@@ -269,3 +269,11 @@ def test_validator_expands(monkeypatch):
 def test_composed_registry():
     assert composed.kinds_on() == ["timeline", "process_arrow", "flow"]
     assert composed.all_drawn(plan(FLOW), "flow") and not composed.all_drawn(plan(FLOW), "timeline")
+
+
+def test_h_for_another_drawing_becomes_a_floor():
+    x = run('<ProcessArrow ref="phases" h="92" />', PHASES)["xml"]          # chevron height, drawn as steps
+    outer = re.search(r'<VStack w="1280" h="720"><HStack([^>]*)>', x).group(1)
+    assert 'minH="92"' in outer and 'grow="1"' in outer and ' h="92"' not in outer
+    x = run('<ProcessArrow ref="phases" variant="steps" h="300" />', PHASES)["xml"]   # asked for: kept
+    assert ' h="300"' in re.search(r'<VStack w="1280" h="720"><HStack([^>]*)>', x).group(1)
