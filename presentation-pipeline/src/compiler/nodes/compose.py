@@ -117,6 +117,19 @@ def layers(nd: dict, name: str, box: dict, parts: dict, focus: bool) -> tuple[di
     return rbox, rest, hi
 
 
+_TONE = re.compile(r"\$tone(Soft|Text)?\b")
+
+
+def tone(parts: dict[str, dict], role: str) -> dict[str, dict]:
+    """`$tone` / `$toneSoft` / `$toneText` (spec §2.4) -> the role's tokens (accent, positive, negative, warning;
+    neutral has no Soft / Text token: $surfaceAlt / $textMain)."""
+    def sub(m: re.Match) -> str:
+        if role == "neutral" and m.group(1):
+            return "$surfaceAlt" if m.group(1) == "Soft" else "$textMain"
+        return f"${role}{m.group(1) or ''}"
+    return {p: {k: _TONE.sub(sub, str(v)) for k, v in at.items()} for p, at in parts.items()}
+
+
 def a(attrs: dict[str, str]) -> str:
     return "".join(f' {k}="{native.x(v)}"' for k, v in attrs.items())
 

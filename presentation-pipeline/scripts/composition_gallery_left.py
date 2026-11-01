@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow"   # the composition nodes the bare tags need
+os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow,table"   # the composition nodes the bare tags need
 
 from scripts import composition_test as CT  # noqa: E402
 from scripts import left_blocks_gallery as LB  # noqa: E402
@@ -120,81 +120,8 @@ def hint_index(c: dict, names: list[str]) -> int | None:
     return next((i for i, n in enumerate(names) if n.lower().split()[0] in h), None)
 
 
-# ── table: item = row (TableRow), the header row names the parts ───────────────────────────────────────────────
-
-def table_focus_col() -> int | None:
-    """The column the hint names ("accent the Fix column"): code's emphasis, tone positive from the hint."""
-    h = TABLE["design_hint"].lower()
-    return next((i for i, c in enumerate(cd(TABLE)["table_columns"]) if f"{c.lower()} column" in h), None)
-
-
-def table_native() -> str:
-    """native: POM Table; header $surfaceAlt bold, first column bold, the emphasis column $toneSoft (tone from the hint)."""
-    cols, rows, f = cd(TABLE)["table_columns"], cd(TABLE)["table_rows"], table_focus_col()
-
-    def td(v: str, i: int, head: bool) -> str:
-        at = {"fontSize": "18", "color": "$textMain"}
-        if head:
-            at.update(bold="true", backgroundColor="$positive" if i == f else "$surfaceAlt")
-            if i == f:
-                at["color"] = "$onAccent"
-        elif i == 0:
-            at["bold"] = "true"
-        elif i == f:
-            at.update(backgroundColor="$positiveSoft", color="$positiveText", bold="true")
-        return f"<Td{a(**at)}>{X(v)}</Td>"
-
-    out = '<Table w="max" cellBorder.color="$border" cellBorder.width="1">' + "<Col />" * len(cols)
-    out += "<Tr>" + "".join(td(h, i, True) for i, h in enumerate(cols)) + "</Tr>"
-    out += "".join("<Tr>" + "".join(td(v, i, False) for i, v in enumerate(r)) + "</Tr>" for r in rows)
-    return out + "</Table>"
-
-
-def table_rows() -> str:
-    """rows numbered: one row per table row, ruled; number · first cell as the title · the other cells; header labels on top."""
-    cols, rows, f = cd(TABLE)["table_columns"], cd(TABLE)["table_rows"], table_focus_col()
-    lab = lambda i, h: t(h.upper(), 13, "$positiveText" if i == f else "$textMuted", bold="true", letterSpacing="1")  # noqa: E731
-    head = (f'<HStack gap="20"><VStack w="72" /><VStack w="24%">{lab(0, cols[0])}</VStack>'
-            + "".join(f'<VStack w="1" grow="1">{lab(i, h)}</VStack>' for i, h in enumerate(cols) if i) + "</HStack>")
-    body = []
-    for r, row in enumerate(rows):
-        cells = "".join(f'<VStack w="1" grow="1">{t(v, 18, "$positiveText" if i == f else "$textMain", bold="true" if i == f else "false")}</VStack>'
-                        for i, v in enumerate(row) if i)
-        body.append(f'<HStack id="card-gaps-{r}" grow="1" gap="20" alignItems="center" padding.top="10" padding.bottom="10"{rule(r)}>'
-                    f'{num(r)}<VStack w="24%">{t(row[0], 22, bold="true")}</VStack>{cells}</HStack>')
-    return f'<VStack gap="8" grow="1">{head}<VStack gap="0" grow="1">{"".join(body)}</VStack></VStack>'
-
-
-def table_columns() -> str:
-    """columns: one column per row: its first cell as the band. pill, then each other cell in its own box (header as label)."""
-    cols, rows, f = cd(TABLE)["table_columns"], cd(TABLE)["table_rows"], table_focus_col()
-    out = []
-    for r, row in enumerate(rows):
-        pill = (f'<HStack padding="14" justifyContent="center" backgroundColor="$accent" borderRadius="24">'
-                f'{t(row[0], 19, "$onAccent", bold="true", textAlign="center")}</HStack>')
-        boxes = "".join(
-            f'<VStack grow="1" gap="4" padding="14" justifyContent="center" borderRadius="8" border.width="1"'
-            f'{a(backgroundColor="$positiveSoft", border__color="$positive") if i == f else a(backgroundColor="$surfaceAlt", border__color="$border")}>'
-            f'{t(cols[i].upper(), 12, "$positiveText" if i == f else "$textMuted", bold="true", letterSpacing="1")}{t(v, 17)}</VStack>'
-            for i, v in enumerate(row) if i)
-        out.append(f'<VStack id="card-gaps-{r}" w="1" grow="1" gap="10" alignItems="stretch">{pill}{boxes}</VStack>')
-    return f'<HStack gap="16" grow="1" alignItems="stretch">{"".join(out)}</HStack>'
-
-
-def table_banded() -> str:
-    """banded: equal boxes (2 per row), a solid band. head (first cell) over "column: value" lines."""
-    cols, rows, f = cd(TABLE)["table_columns"], cd(TABLE)["table_rows"], table_focus_col()
-    boxes = []
-    for r, row in enumerate(rows):
-        lines = "".join(
-            f'<HStack gap="12" alignItems="start"><VStack w="34%">{t(cols[i], 15, "$positiveText" if i == f else "$textMuted", bold="true")}</VStack>'
-            f'<VStack w="1" grow="1">{t(v, 17, "$positiveText" if i == f else "$textMain", bold="true" if i == f else "false")}</VStack></HStack>'
-            for i, v in enumerate(row) if i)
-        boxes.append(f'<VStack id="card-gaps-{r}" w="1" grow="1" gap="0" border.color="$border" border.width="1">'
-                     f'<HStack padding="14" backgroundColor="$accent">{t(row[0], 20, "$onAccent", bold="true")}</HStack>'
-                     f'<VStack grow="1" gap="10" padding="18" backgroundColor="$surfaceAlt">{lines}</VStack></VStack>')
-    return ('<VStack gap="16" grow="1">' + "".join(f'<HStack gap="16" grow="1" alignItems="stretch">{"".join(boxes[k:k + 2])}</HStack>'
-                                                   for k in range(0, len(boxes), 2)) + "</VStack>")
+# ── table: bare tags drawn by tables.py (POM_NODES); the hand-written XML of 2026-10-27 that they replace drew the
+# reference sheet ─────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 # ── chart: item = point (ChartPoint) ───────────────────────────────────────────────────────────────────────────
@@ -323,8 +250,9 @@ def matrix_grid() -> str:
 def blocks() -> dict[str, tuple[list, list]]:
     return {
         "table": ([(f"today · {v}", [LB.TABLE], LB.table(v)) for v in ("plain", "zebra", "dark_header")],
-                  [("native (default)", [TABLE], table_native()), ("rows numbered", [TABLE], table_rows()),
-                   ("columns", [TABLE], table_columns()), ("banded", [TABLE], table_banded())]),
+                  [("native (default)", [TABLE], tag("Table", TABLE)), ("rows numbered", [TABLE], tag("Table", TABLE, "rows numbered")),
+                   ("columns", [TABLE], tag("Table", TABLE, "columns")), ("banded", [TABLE], tag("Table", TABLE, "banded")),
+                   ("native · zebra recipe", [TABLE], '<Table ref="gaps" stripe.backgroundColor="$surfaceAlt" />')]),
         "chart": ([(f"today · {v}", [LB.CHART], LB.chart(v)) for v in ("plain", "labelled", "focus_label")],
                   [("native (default)", [CHART], chart_tag()), ("native labelled", [CHART], chart_tag("native labelled")),
                    ("rows", [CHART], chart_tag("rows")),

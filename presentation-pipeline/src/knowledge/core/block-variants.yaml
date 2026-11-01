@@ -167,11 +167,12 @@ blocks:
     family: native
     plan_kind: table
     emphasis_from: [design_hint]
-    variants:
-      plain:         {prompt: "header rule, hairline rows"}
-      zebra:         {prompt: "alternate rows shaded"}
-      highlight_row: {prompt: "one row tinted", requires: [one_singled_out], emphasis: true, fallback: plain}
-      dark_header:   {prompt: "dark header band, accent first column"}
+    variants:                 # the compositions of `nodes.table` (POM_NODES=table, tables.py); names as there
+      native:          {prompt: "POM's table: header band, bold first column, the hinted row / column tinted"}
+      rows:            {prompt: "one ruled row per table row: the first cell as its title, the other cells to the right"}
+      rows numbered:   {prompt: "rows with 01 02 03 leading each", requires: [no_own_numbers], fallback: rows}
+      columns:         {prompt: "one column per row: its first cell as a pill, each other cell in its own box", requires: [count_le_5, columns_le_6], fallback: native}
+      banded:          {prompt: "equal boxes, the first cell in a solid band over 'column: value' lines", requires: [count_le_6], fallback: native}
 
   chart:
     tag: Chart                # chartType comes from the plan, not the variant
@@ -295,6 +296,7 @@ tile_nodes:
     Icon:  [name, color, variant, bgColor, glow.size, glow.opacity, glow.color, outline.size, outline.color]
     Shape: [shapeType, w, h, fill.color, fill.transparency, line.color, line.width, line.dashType,
             glow.size, glow.opacity, glow.color]
+    Cell:  [backgroundColor, color, bold, italic, underline, textAlign]   # a table <Td> (R2), or a Text a composition draws
 
   # ── KPI ───────────────────────────────────────────────────────────────────────
   kpi:
@@ -691,3 +693,62 @@ nodes:
       boxes: native
       numbered: steps numbered
       step_cards: steps
+
+  # -- table (tables.py, spec §8, C1 / C2): the item is a row; its first cell is the row's `label.` --------------------
+  # `header.` = the header row (native) or the column names (code-drawn), `label.` = the first column, `cell.` = the other
+  # cells, `stripe.` = alternate body rows (native: `zebra`). On `native` code writes every part onto the <Td>s (POM
+  # ignores attributes on <Tr>), and `item.` takes only backgroundColor (onto every body cell; the rest
+  # NODE_ATTR_DROPPED). Emphasis: the one row or column the design hint names ("shade the Exact row", "accent the Fix
+  # column"), in the hint's tone ($tone / $toneSoft / $toneText; no tone -> accent). A row takes every emphasis part,
+  # a column only header. / cell. / item. (its cells and their boxes).
+  #   count_le_5 / count_le_6   at most 5 / 6 body rows;  columns_le_6   at most 6 columns
+  table:
+    tag: Table
+    plan_kind: table
+    parts: {header: Cell, label: Cell, cell: Cell, stripe: Cell, number: Text, band: Box, item: Box}
+    meta: [ref, variant]
+    native_attributes: [cellBorder.color, cellBorder.width, cellBorder.dashType]   # the Table's own
+    code_owned: [defaultRowHeight]
+    compositions:
+      native:
+        look:     {cellBorder.color: $border, cellBorder.width: 1, header.backgroundColor: $surfaceAlt,
+                   header.color: $textMain, header.bold: "true", label.color: $textMain, label.bold: "true",
+                   cell.color: $textMain}
+        emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.backgroundColor: $toneSoft,
+                   label.color: $toneText, cell.backgroundColor: $toneSoft, cell.color: $toneText, cell.bold: "true"}
+      rows:
+        look:     {header.color: $textMuted, label.color: $textMain, cell.color: $textMain,
+                   item.borderTop.color: $border, item.borderTop.width: 1}
+        emphasis: {item.backgroundColor: $toneSoft, header.color: $toneText, label.color: $toneText,
+                   cell.color: $toneText, cell.bold: "true"}
+      rows numbered:
+        requires: [no_own_numbers]
+        fallback: rows
+        look:     {header.color: $textMuted, label.color: $textMain, cell.color: $textMain, number.color: $accentText,
+                   item.borderTop.color: $border, item.borderTop.width: 1}
+        emphasis: {item.backgroundColor: $toneSoft, header.color: $toneText, label.color: $toneText,
+                   cell.color: $toneText, cell.bold: "true", number.color: $toneText}
+      columns:                          # one column per row: the label as a band. pill, each other cell in its own box
+        requires: [count_le_5, columns_le_6]
+        fallback: native
+        look:     {band.backgroundColor: $accent, label.color: $onAccent, header.color: $textMuted, cell.color: $textMain,
+                   item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.borderRadius: 8}
+        emphasis: {band.backgroundColor: $panelDark, label.color: $onPanelDark, header.color: $toneText,
+                   item.backgroundColor: $toneSoft, item.border.color: $tone}
+      banded:                           # equal boxes, the label in a solid band. over "column: value" lines
+        requires: [count_le_6]
+        fallback: native
+        look:     {band.backgroundColor: $accent, label.color: $onAccent, header.color: $textMuted, cell.color: $textMain,
+                   item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1}
+        emphasis: {band.backgroundColor: $panelDark, label.color: $onPanelDark, header.color: $toneText,
+                   cell.color: $toneText, cell.bold: "true"}
+    aliases:                            # the left-blocks draft's names
+      plain: native
+      highlight_row: native             # the emphasis look of native
+      zebra: {variant: native, stripe.backgroundColor: $surfaceAlt}
+      dark_header: {variant: native, header.backgroundColor: $panelDark, header.color: $onPanelDark,
+                    label.color: $accentText}
+    styles:                             # recipes (prompt examples only)
+      zebra: {stripe.backgroundColor: $surfaceAlt}
+      dark_header: {header.backgroundColor: $panelDark, header.color: $onPanelDark, label.color: $accentText}

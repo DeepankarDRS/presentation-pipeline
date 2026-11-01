@@ -645,6 +645,7 @@ async function fitTables(xml, report) {
   try {
     for (const root of L.slides) walk(root, (n) => {
       if (n.type !== "table" || !n.id || n.rows.some((r) => r.height !== undefined)) return;
+      if (n.id.startsWith("tbl-") && n.h === undefined) return; // a node table: sized from its text (sizeTables)
       const rows = n.rows.length;
       const rowH0 = n.defaultRowHeight ?? 32;
       const boxH = L.box(n).h;
@@ -702,6 +703,8 @@ const ROW_PAD = 8;   // px around a cell's lines (POM writes Td margins of 0)
 const ROW_CAP = 96;  // px — spare-height growth of the main table's rows
 const ROW_GROW = 2;  // x a row's text height
 const TD_FONT_CAP = 18;
+// a table code drew from the plan (id tbl-<component>, tables.py) fills its band: text and rows grow further
+const NODE_TABLE_CAPS = { font: 22, row: 120, grow: 3 };
 
 const rowsSum = (n) => resolveRowHeights(n).reduce((a, b) => a + b, 0);
 // a row that holds its lines keeps its height (ROW_PAD is margin, not a line)
@@ -935,7 +938,10 @@ async function sizeTables(xml, report) {
         + (tight.widths ? `, columns -> [${tight.widths.join(", ")}]` : ""));
     }
   }
-  if (main && !settled.has(main.id)) xml = await growMainTable(xml, main.id, report, sizes.length === 1);
+  if (main && !settled.has(main.id)) {
+    xml = await growMainTable(xml, main.id, report, sizes.length === 1,
+      main.id.startsWith("tbl-") ? NODE_TABLE_CAPS : undefined);
+  }
   return xml;
 }
 

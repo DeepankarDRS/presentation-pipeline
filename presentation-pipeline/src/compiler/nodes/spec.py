@@ -166,6 +166,10 @@ def check(name: str, comp: dict) -> bool:
         return n <= 6
     if name == "count_le_7":
         return n <= 7
+    if name == "count_le_5":
+        return n <= 5
+    if name == "columns_le_6":
+        return len(cd.get("table_columns") or []) <= 6
     if name in ("labels_short", "no_own_numbers"):
         from src.compiler.nodes import compose   # compose imports this module
         if name == "labels_short":

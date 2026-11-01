@@ -5,7 +5,7 @@
     python -m scripts.node_replay --kind flow --no-render --limit 5
     (python -m scripts.chart_replay = --kind chart)
 
---kind: chart, timeline, process_arrow or flow. Takes every saved slide whose plan has one component of that kind with
+--kind: chart, timeline, process_arrow, flow or table. Takes every saved slide whose plan has one component of that kind with
 an id and whose XML has exactly one LLM-drawn node of its tag (<Chart>, <Timeline>, <ProcessArrow>, <Flow>), one per
 distinct XML (output/**/slides.json under --src, replays and galleries skipped). Arm A is the slide as the LLM wrote it.
 Arm B is the same XML with the LLM's node replaced by one <Tag ref> at its place: its card too (the nearest box around
@@ -35,7 +35,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow"
+os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow,table"
 
 from lxml import etree  # noqa: E402
 
@@ -43,7 +43,7 @@ from scripts.card_replay import BARE_AMP, SKIP, _parse, _serial, overlaps, rende
 from scripts.card_replay import sheets as card_sheets  # noqa: E402
 from scripts.kpi_replay import _theme, compile_slide, score  # noqa: E402
 from src.compiler.compiler_client import deck_font  # noqa: E402
-from src.compiler.nodes import composed, native, sequences  # noqa: E402
+from src.compiler.nodes import composed, native, sequences, tables  # noqa: E402
 LAYOUT_KEYS = ("w", "h", "grow", "minW", "maxW", "minH", "maxH", "alignSelf")
 _WORD = re.compile(r"[a-z0-9₹$%]+")
 
@@ -81,8 +81,10 @@ def collect(src: Path, kind: str, limit: int | None = None) -> list[dict]:
 
 
 def own_words(comp: dict) -> set[str]:
-    """The component's own words: chart title, series and labels; a sequence's dates and items."""
+    """The component's own words: chart title, series and labels; a sequence's dates and items; a table's cells."""
     cd = comp.get("content_data") or {}
+    if comp["kind"] == "table":
+        return {w for c in plan_items(comp) for w in words(c)}
     if comp["kind"] == "chart":
         return words(cd.get("chart_title")) | {w for s in cd.get("chart_series") or [] for w in words(s.get("name"))} \
             | {w for v in cd.get("chart_labels") or [] for w in words(v)}
@@ -134,6 +136,14 @@ def rewrite(root: etree._Element, comp: dict, variant: str) -> dict:
 _SHOWN = ("label", "title", "text", "date", "description")
 
 
+def plan_items(comp: dict) -> list[str]:
+    """What `drawn_data` checks is on the slide: a sequence's items (date head detail), a table's cells."""
+    if comp["kind"] == "table":
+        cols, rows = tables.grid(comp)
+        return [c for c in cols + [v for r in rows for v in r] if c.strip()]
+    return [f"{d} {h} {x}".strip() for d, h, x in sequences.items(comp)]
+
+
 def drawn_data(final_xml: str, comp: dict) -> dict:
     """The drawn component against the plan. Chart: labels missing, values changed (A: the LLM's <Chart>; B: the
     node's). Timeline / process / flow: the plan items whose words are not all on the slide (text and item attributes)."""
@@ -142,8 +152,7 @@ def drawn_data(final_xml: str, comp: dict) -> dict:
         root = _parse(re.sub(r"<Theme\b[^>]*/>", "", final_xml))
         seen = words(" ".join(root.itertext()) + " " + " ".join(v for e in root.iter() if isinstance(e.tag, str)
                                                                     for k, v in e.attrib.items() if k in _SHOWN))
-        return {"items_missing": [f"{d} {h} {x}".strip() for d, h, x in sequences.items(comp)
-                                  if not words(f"{d} {h} {x}") <= seen]}
+        return {"items_missing": [i for i in plan_items(comp) if not words(i) <= seen]}
     labels = [str(v) for v in cd.get("chart_labels") or []]
     series = cd.get("chart_series") or [{"values": cd.get("chart_values") or []}]
     plan_vals = sorted(round(native.number(v), 6) for s in series for v in s.get("values") or [])
@@ -224,7 +233,7 @@ def summary(out: Path, results: list[dict], variant: str, kind: str = "chart") -
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--kind", default="chart", choices=("chart", *sequences.KINDS))
+    ap.add_argument("--kind", default="chart", choices=("chart", *sequences.KINDS, "table"))
     ap.add_argument("--src", type=Path, default=ROOT / "output", help="the folder holding saved runs' slides.json")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--variant", default="", help="composition for arm B (default: a bare tag)")
