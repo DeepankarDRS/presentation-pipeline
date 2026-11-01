@@ -166,6 +166,18 @@ def check(name: str, comp: dict) -> bool:
         return n <= 6
     if name == "count_le_7":
         return n <= 7
+    if name == "count_le_5":
+        return n <= 5
+    if name in ("layout_grid", "layout_steps"):
+        return (cd.get("card_layout") or "grid") == name.split("_")[1]
+    if name == "bullets_every_card":
+        cards = [c for c in cd.get("cards") or [] if isinstance(c, dict)]
+        return bool(cards) and all(c.get("bullets") or isinstance(c.get("body"), list) for c in cards)
+    if name == "has_emphasis":
+        return singled_out(comp) is not None
+    if name == "no_own_numbers" and comp.get("kind") == "card_grid":
+        from src.compiler.nodes import cards   # cards imports this module
+        return cards.numbered_ok(comp)
     if name in ("labels_short", "no_own_numbers"):
         from src.compiler.nodes import compose   # compose imports this module
         if name == "labels_short":

@@ -295,6 +295,7 @@ tile_nodes:
     Icon:  [name, color, variant, bgColor, glow.size, glow.opacity, glow.color, outline.size, outline.color]
     Shape: [shapeType, w, h, fill.color, fill.transparency, line.color, line.width, line.dashType,
             glow.size, glow.opacity, glow.color]
+    Rule:  [color, width]   # a composition's `divider.`: code draws it as a border on the item after it
 
   # ── KPI ───────────────────────────────────────────────────────────────────────
   kpi:
@@ -691,3 +692,219 @@ nodes:
       boxes: native
       numbered: steps numbered
       step_cards: steps
+
+  # -- KPI tiles and cards (tile_groups.py; spec §5, §10 steps 1-2; POM_NODES=kpi_row,card_grid) ---------------------
+  # Group tag + item tag as the tile nodes (an item tag inside the group restyles one item, outside it places the item
+  # anywhere, drawn in the group's composition form). On top of the convention above:
+  #   item.<box attribute>       every item's own box (spec D3); `divider.` the hairline between items (Rule: color /
+  #                              width), `band.` an item's solid head, `bullets.` a card bullet's own box (columns)
+  #   $tone $toneSoft $toneText  the item's tone as a role token: good -> $positive*, bad -> $negative*, watch ->
+  #                              $warning*, none -> $accent*; an item's own color="$negative" sets its tone ($neutral:
+  #                              Soft -> $surfaceAlt, Text -> $textMain). Code swaps them per item (compose.tone_value)
+  #   tone                       laid over `look` per the item's tone (bad / watch / good)
+  #   emphasis                   laid over `look` + `tone` on the plan's emphasis item when `emphasis_requires` hold;
+  #                              `size: hero` = the item's value at the hero size; a null value removes the key
+  # Later wins: look -> tone -> emphasis -> the hint's / alias's recipe -> the LLM's group attributes -> item tag.
+  #   count_le_5          at most five items
+  #   bullets_every_card  every card has bullets (or a body given as a list)
+  #   layout_grid / layout_steps   the plan's card_layout
+  #   has_emphasis        the plan singles out one item (focus_card, else the design hint)
+  # `meta_aliases`: today's structure attributes -> a composition; `part_aliases`: today's part names;
+  # `tag_aliases`: today's tags (NODE_TAG_ALIAS). All info, one release (spec §7).
+  kpi_row:
+    tag: KpiRow
+    item_tag: Kpi
+    plan_kind: kpi_row
+    tag_aliases: {KpiGrid: KpiRow}
+    parts: {label: Text, value: Text, delta: Text, icon: Icon, marker: Shape, band: Box, divider: Rule, item: Box}
+    part_aliases: {note: delta}
+    meta: [ref, variant, cols, color, icon]
+    item_meta: [ref, variant, color, icon, size]
+    native_attributes: []
+    code_owned: []
+    meta_aliases:
+      layout:  {row: grid, grid: grid, column: rows}
+      arrange: {label-first: grid, icon-top: grid, value-first: bento, side: rows, inline: rows}
+    compositions:
+      grid:                             # today's plain tile with tones; the emphasis tile dark and hero
+        look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.padding: 16, item.gap: 6, item.justifyContent: center, icon.color: $toneText,
+                   label.color: $textMuted, value.color: $textMain, delta.color: $toneText}
+        tone:     {bad: {item.backgroundColor: $toneSoft, item.border.color: $tone, value.color: $toneText},
+                   watch: {item.backgroundColor: $toneSoft, item.border.color: $tone, value.color: $toneText},
+                   good: {value.color: $toneText}}
+        emphasis_requires: [count_ge_3]
+        emphasis: {item.backgroundColor: $panelDark, label.color: $onPanelDark, value.color: $onPanelDark,
+                   delta.color: $onPanelDark, icon.color: $onPanelDark, size: hero}
+      strip:                            # one shared box, one row, hairlines between (today's divided)
+        requires: [count_le_5]
+        fallback: grid
+        look:     {backgroundColor: $surfaceAlt, border.color: $border, border.width: 1, padding: 28, gap: 28,
+                   item.gap: 8, item.justifyContent: center, divider.color: $border, divider.width: 1,
+                   icon.color: $toneText, label.color: $toneText, value.color: $toneText, delta.color: $toneText}
+        # no emphasis look: a hero value in a one-row strip is width-bound and wrapped its unit over the delta, and
+        # in rows it shrank the other rows' labels (gallery 2026-11-01; the proof sheets drew none either)
+      rows:                             # icon badge · label over delta · value at the right; hairlines between rows
+        look:     {gap: 0, padding.left: 8, padding.right: 8, item.gap: 18, item.alignItems: center,
+                   item.padding.top: 10, item.padding.bottom: 10, divider.color: $border, divider.width: 1,
+                   icon.variant: square-filled, icon.bgColor: $toneSoft, icon.color: $toneText,
+                   label.color: $toneText, value.color: $toneText, delta.color: $toneText}
+      banded:                           # a solid band (icon + label) over value + delta
+        requires: [count_le_5]
+        fallback: grid
+        look:     {gap: 18, item.gap: 0, item.backgroundColor: $surfaceAlt, item.border.color: $border,
+                   item.border.width: 1, band.backgroundColor: $tone, band.padding: 14, band.gap: 10,
+                   icon.color: $onAccent, label.color: $onAccent, value.color: $toneText, delta.color: $toneText}
+        emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, label.color: $onPanelDark}
+      bento:                            # the emphasis item large, value first; the rest as rows beside it
+        requires: [count_ge_3, has_emphasis]
+        fallback: grid
+        look:     {gap: 18, item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.padding: 18, item.gap: 16, icon.color: $toneText, label.color: $toneText,
+                   value.color: $toneText, delta.color: $toneText}
+        emphasis: {item.backgroundColor: $panelDark, item.border.color: $panelDark, item.padding: 32, item.gap: 12,
+                   icon.color: $onPanelDark, label.color: $onPanelDark, value.color: $onPanelDark,
+                   delta.color: $onPanelDark, size: hero}
+    prompts:                            # one phrase per composition for the generator (tile_groups.node_lines)
+      grid: "separate tiles, icon and label over the value and delta (default)"
+      strip: "one shared box, items side by side split by hairlines, one row (at most 5)"
+      rows: "one item per ruled row: icon badge, label over delta, the value at the right"
+      banded: "equal boxes, each with a solid coloured band holding icon + label (at most 5)"
+      bento: "the emphasis item as one large dark block, the others as rows beside it"
+    aliases:                            # today's variant names (spec §7)
+      plain: grid
+      filled: {variant: grid, style: filled}
+      toned: {variant: grid, style: toned}
+      bar: {variant: grid, style: bar}
+      dot: {variant: grid, style: dot}
+      bare: {variant: grid, style: bare}
+      inverted: grid                    # the emphasis look draws it
+      divided: strip
+    styles:                             # recipes (spec §3): prompt examples and the hint mapping, never a tag value
+      filled: 'item.backgroundColor="$toneSoft" value.color="$toneText"'
+      toned: 'item.backgroundColor="$toneSoft" item.border.color="$tone" value.color="$toneText"'
+      bar: 'item.borderLeft.color="$tone" item.borderLeft.width="6"'
+      dot: 'marker.shapeType="ellipse" marker.w="8" marker.h="8" marker.fill.color="$tone" label.color="$toneText"'
+      bare: 'item.backgroundColor="$surface" item.border.color="$surface"'   # no zero strokes (test_upstream_reference)
+
+  card_grid:
+    tag: CardGrid
+    item_tag: Card
+    plan_kind: card_grid
+    tag_aliases: {}
+    parts: {tag: Text, title: Text, body: Text, icon: Icon, number: Text, band: Box, bullets: Box, divider: Rule,
+            item: Box}
+    part_aliases: {}
+    meta: [ref, variant, cols, color, icon]
+    item_meta: [ref, variant, color, icon]
+    native_attributes: []
+    code_owned: []
+    meta_aliases:
+      layout:  {grid: grid, steps: steps, rail: rail}
+      arrange: {stack: grid, side: rows}
+    compositions:
+      grid:                             # today's lifted card with tones; the focus card dark
+        requires: [layout_grid]
+        fallback: steps
+        look:     &card_lifted
+                  {item.padding: 24, item.gap: 8, item.justifyContent: start, item.backgroundColor: $surface,
+                   item.border.color: $border, item.border.width: 1, item.shadow.type: outer, item.shadow.blur: 4,
+                   item.shadow.offset: 2, item.shadow.color: $textMain, item.shadow.opacity: 0.1,
+                   icon.color: $toneText, tag.color: $toneText, number.color: $toneText, title.color: $textMain,
+                   body.color: $textMuted}
+        tone:     &card_tinted
+                  {bad: {item.backgroundColor: $toneSoft, item.border.color: $tone},
+                   watch: {item.backgroundColor: $toneSoft, item.border.color: $tone},
+                   good: {item.backgroundColor: $toneSoft, item.border.color: $tone}}
+        emphasis_requires: [count_ge_3]
+        emphasis: &card_dark
+                  {item.backgroundColor: $panelDark, item.border.color: null, item.border.width: null,
+                   item.shadow.type: null, item.shadow.blur: null, item.shadow.offset: null, item.shadow.color: null,
+                   item.shadow.opacity: null, item.padding: 20, title.color: $onPanelDark, body.color: $onPanelDark,
+                   tag.color: $onPanelDark, number.color: $onPanelDark, icon.color: $onPanelDark}
+      grid numbered:                    # + 01 02 03 above each title (today's numerals)
+        requires: [layout_grid, no_own_numbers]
+        fallback: grid
+        look:     {item.padding: 20, item.gap: 8, item.justifyContent: start, item.backgroundColor: $surfaceAlt,
+                   icon.color: $toneText, tag.color: $toneText, number.color: $textMuted, title.color: $textMain,
+                   body.color: $textMuted}
+        emphasis_requires: [count_ge_3]
+        emphasis: *card_dark
+      rows:                             # one card per full-width row: icon · tag over title · body · bullets
+        requires: [count_le_6]
+        fallback: grid
+        look:     &card_rows
+                  {gap: 0, item.gap: 24, item.alignItems: center, item.padding.top: 10, item.padding.bottom: 10,
+                   divider.color: $border, divider.width: 1, icon.color: $toneText, number.color: $toneText,
+                   tag.color: $toneText, title.color: $textMain, body.color: $textMuted}
+        emphasis: {title.color: $toneText}
+      rows numbered:                    # the same, code's 01 02 03 leading each row
+        requires: [count_le_6, no_own_numbers]
+        fallback: rows
+        look:     *card_rows
+        emphasis: {title.color: $toneText}
+      columns:                          # a pill head (icon + title), the body, each bullet in its own box
+        requires: [bullets_every_card, count_le_5]
+        fallback: grid
+        look:     {gap: 18, item.gap: 12, band.backgroundColor: $tone, band.padding: 14, band.gap: 10,
+                   band.borderRadius: 24, icon.color: $onAccent, title.color: $onAccent, tag.color: $toneText,
+                   body.color: $textMuted, bullets.backgroundColor: $surfaceAlt, bullets.border.color: $border,
+                   bullets.border.width: 1, bullets.borderRadius: 8, bullets.padding: 14}
+        emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, title.color: $onPanelDark}
+      banded:                           # a solid band (icon, title, tag at the right) over body + bullets
+        requires: [count_le_6]
+        fallback: grid
+        look:     {gap: 18, item.gap: 0, item.backgroundColor: $surfaceAlt, item.border.color: $border,
+                   item.border.width: 1, band.backgroundColor: $tone, band.padding: 14, band.gap: 10,
+                   icon.color: $onAccent, title.color: $onAccent, tag.color: $onAccent, body.color: $textMuted}
+        emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, title.color: $onPanelDark,
+                   tag.color: $onPanelDark}
+      bento:                            # the focus card large and dark, the others 2 + 1 beside it
+        requires: [count_ge_3, count_le_5, has_emphasis]
+        fallback: grid
+        look:     {gap: 18, item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
+                   item.borderRadius: 8, item.padding: 20, item.gap: 8, icon.color: $toneText, tag.color: $toneText,
+                   title.color: $textMain, body.color: $textMuted}
+        tone:     *card_tinted
+        emphasis: {item.backgroundColor: $panelDark, item.border.color: $panelDark, item.padding: 32, item.gap: 14,
+                   icon.color: $onPanelDark, tag.color: $onPanelDark, title.color: $onPanelDark,
+                   body.color: $onPanelDark}
+      steps:                            # today's steps: cards joined by arrows, numbered unless dated
+        requires: [layout_steps]
+        fallback: grid
+        look:     *card_lifted
+        tone:     *card_tinted
+        emphasis_requires: [count_ge_3]
+        emphasis: *card_dark
+      rail:                             # today's rail: one card per row down a line, the number at the left
+        requires: [layout_steps]
+        fallback: grid
+        look:     *card_lifted
+        tone:     *card_tinted
+        emphasis_requires: [count_ge_3]
+        emphasis: *card_dark
+    prompts:
+      grid: "separate cards: icon, tag, title, body, bullets (default for grid plans)"
+      grid numbered: "cards with a large 01 02 03 above each title"
+      rows: "one card per ruled full-width row: icon, tag over title, body, bullets"
+      rows numbered: "rows led by a large 01 02 03"
+      columns: "one column per card: a coloured pill head, the body, each bullet in its own box"
+      banded: "boxes with a solid coloured band (icon, title, tag) over body and bullets"
+      bento: "the focus card as one large dark block, the others beside it"
+      steps: "cards in a row joined by arrows, the destination dark (default for steps plans)"
+      rail: "one card per row down a numbered line"
+    aliases:                            # today's variant names (spec §7)
+      lifted: grid
+      column: {variant: grid, style: column}
+      filled: {variant: grid, style: filled}
+      outline: {variant: grid, style: outline}
+      toned: {variant: grid, style: toned}
+      accent_top: {variant: grid, style: accent_top}
+      numerals: grid numbered
+      inverted: grid
+    styles:
+      column: 'item.backgroundColor="$surface" item.shadow.opacity="0" item.borderLeft.color="$tone" item.borderLeft.width="3"'
+      filled: 'item.backgroundColor="$surfaceAlt" item.shadow.opacity="0"'
+      outline: 'item.shadow.opacity="0"'
+      toned: 'item.backgroundColor="$toneSoft" item.borderLeft.color="$tone" title.color="$toneText"'
+      accent_top: 'item.borderTop.color="$tone" item.borderTop.width="4"'

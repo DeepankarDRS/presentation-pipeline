@@ -17,7 +17,7 @@ SEVERITY = {
     "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR, "NODE_ATTR_UNKNOWN": ERROR,
     "NODE_VARIANT_UNKNOWN": WARNING, "NODE_VARIANT_UNMET": WARNING, "LITERAL_COLOR": WARNING,
     "NODE_ATTR_DROPPED": REPORT, "NODE_ATTR_ALIAS": REPORT, "NODE_TEXT_SPLIT": REPORT,
-    "NODE_DEFAULT_FROM_CONTENT": REPORT,
+    "NODE_DEFAULT_FROM_CONTENT": REPORT, "NODE_TAG_ALIAS": REPORT, "NODE_LOOK_FROM_HINT": REPORT,
 }
 Flag = Callable[[str, "str | None", str], None]
 
@@ -27,15 +27,20 @@ def part_attrs(node_type: str) -> list[str]:
     return list(tiles.data()["box_attributes"]) + ["borderRadius"] if node_type == "Box" else tiles.data()["part_nodes"][node_type]
 
 
-def read(attrs: dict[str, str], ref: str, flag: Flag, nd: dict) -> tuple[dict, dict, dict]:
-    """(meta, box, parts) of a group tag; the rest flagged as tiles._read does. Box attributes are the group's own box."""
-    d, tag, parts_of = tiles.data(), nd["tag"], nd["parts"]
+def read(attrs: dict[str, str], ref: str, flag: Flag, nd: dict, meta_names: list[str] | None = None,
+         tag: str | None = None) -> tuple[dict, dict, dict]:
+    """(meta, box, parts) of a group tag; the rest flagged as tiles._read does. Box attributes are the group's own box.
+    `meta_names` / `tag`: an item tag's (tile_groups). A part's old name (`part_aliases`: note. -> delta.) is read as
+    the new one, NODE_ATTR_ALIAS."""
+    d, tag, parts_of = tiles.data(), tag or nd["tag"], nd["parts"]
+    meta_names = meta_names or nd["meta"]
     dropped = set(d["dropped"]["parts"]) | set(d["dropped"]["box"]) - {"borderRadius"}   # a block's box may round
     box_ok = set(d["box_attributes"]) | {"borderRadius"} | set(nd.get("native_attributes") or [])
     owned = set(nd.get("code_owned") or [])
+    old_parts = nd.get("part_aliases") or {}
     meta, box, parts = {}, {}, {p: {} for p in parts_of}
     for k, v in attrs.items():
-        if k in nd["meta"]:
+        if k in meta_names:
             meta[k] = v
             continue
         if tiles._is_colour_attr(k) and not str(v).startswith("$"):
@@ -43,6 +48,9 @@ def read(attrs: dict[str, str], ref: str, flag: Flag, nd: dict) -> tuple[dict, d
                  f'{k}="{v}" on <{tag} ref="{ref}">: colours are $tokens; removed.')
             continue
         head, _, rest = k.partition(".")
+        if head in old_parts and rest:
+            flag("NODE_ATTR_ALIAS", ref, f'{k} on <{tag} ref="{ref}"> is now {old_parts[head]}.{rest}.')
+            head = old_parts[head]
         if head in parts_of and rest:
             allowed = part_attrs(parts_of[head])
             if rest in dropped:
@@ -58,8 +66,28 @@ def read(attrs: dict[str, str], ref: str, flag: Flag, nd: dict) -> tuple[dict, d
             flag("NODE_ATTR_DROPPED", ref, f'{k} on <{tag} ref="{ref}">: code owns it; removed.')
         else:
             flag("NODE_ATTR_UNKNOWN", ref, f'{k} on <{tag} ref="{ref}">: not a {tag} node attribute (meta: '
-                 f'{", ".join(nd["meta"])}; parts {" ".join(p + "." for p in parts_of)}; box attributes as a VStack).')
+                 f'{", ".join(meta_names)}; parts {" ".join(p + "." for p in parts_of)}; box attributes as a VStack).')
     return meta, box, parts
+
+
+_TONE_TOKEN = re.compile(r"\$tone(Soft|Text)?(?![A-Za-z0-9])")
+TONE_ROLE = {"good": "positive", "bad": "negative", "watch": "warning", "": "accent"}
+ROLE_TONE = {"$positive": "good", "$negative": "bad", "$warning": "watch", "$accent": "", "$neutral": ""}
+
+
+def tone_value(value: Any, role: str) -> str:
+    """$tone / $toneSoft / $toneText -> the item's role token (spec D3): "$toneSoft" with role negative ->
+    "$negativeSoft". $neutral has no Soft / Text token: $surfaceAlt / $textMain (tiles.role_value)."""
+    def sub(m: re.Match) -> str:
+        if role == "neutral":
+            return {"Soft": "$surfaceAlt", "Text": "$textMain"}.get(m.group(1) or "", "$neutral")
+        return f"${role}{m.group(1) or ''}"
+    return _TONE_TOKEN.sub(sub, str(value))
+
+
+def recipe(s: str) -> dict[str, str]:
+    """A style recipe ('item.borderLeft.color="$tone" item.borderLeft.width="6"') as attributes."""
+    return dict(re.findall(r'([\w.]+)="([^"]*)"', s or ""))
 
 
 def composition(nd: dict, comp: dict, asked: str | None, ref: str, flag: Flag) -> tuple[str, dict[str, str]]:
