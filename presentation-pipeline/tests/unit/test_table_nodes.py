@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from src.compiler.nodes import compose, composed, spec
+from src.compiler.nodes import composed, spec
 from src.compiler.nodes import tables as TB
 
 GAPS = {"component_id": "gaps", "kind": "table",
@@ -77,9 +77,9 @@ def test_tone_from_hint():
 
 
 def test_tone_tokens():
-    out = compose.tone({"p": {"a": "$tone", "b": "$toneSoft", "c": "$toneText", "d": "$textMain"}}, "positive")
+    out = TB._toned({"p": {"a": "$tone", "b": "$toneSoft", "c": "$toneText", "d": "$textMain"}}, "positive")
     assert out["p"] == {"a": "$positive", "b": "$positiveSoft", "c": "$positiveText", "d": "$textMain"}
-    assert compose.tone({"p": {"b": "$toneSoft", "c": "$toneText"}}, "neutral")["p"] == {"b": "$surfaceAlt", "c": "$textMain"}
+    assert TB._toned({"p": {"b": "$toneSoft", "c": "$toneText"}}, "neutral")["p"] == {"b": "$surfaceAlt", "c": "$textMain"}
 
 
 # ── compositions ──────────────────────────────────────────────────────────────

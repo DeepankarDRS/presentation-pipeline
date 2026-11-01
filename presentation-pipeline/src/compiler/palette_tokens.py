@@ -16,6 +16,8 @@ rule that guarantees contrast, so no recipe or prompt needs a literal hex:
                that reads apart from the neutral slide by hue, not lightness)
   onPanelDark  text on panelDark (>= 4.5:1). Both may be authored (authored wins;
                KPI pilot V7, docs/kpi-node-pilot-2026-10-11.md §5)
+  <role>Dark   the role's hue at panelDark's depth (PANEL_DARK_L): a dark fill that keeps the
+               item's colour (a KPI band's emphasis, user 2026-11-01); onPanelDark reads on it
 
 Lightness is changed in HLS (hue kept), never by mixing toward the ink colour:
 mixing turns saturated orange into brown.
@@ -30,7 +32,8 @@ from typing import Any
 
 STATUS_ROLES = ("accent", "positive", "negative", "warning")
 DERIVED_KEYS = tuple(f"{r}Soft" for r in STATUS_ROLES) + tuple(
-    f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral", "border", "panelDark", "onPanelDark")
+    f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral", "border", "panelDark", "onPanelDark") + tuple(
+    f"{r}Dark" for r in STATUS_ROLES)
 
 TEXT_MIN = 4.5
 BORDER_MIN = 1.4
@@ -128,7 +131,16 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
     out["panelDark"] = panel.upper()
     out["onPanelDark"] = (palette.get("onPanelDark") or max(
         (surface, text_main, "FFFFFF"), key=lambda c: contrast(c, panel))).upper()
+    for role in STATUS_ROLES:
+        dark_fill = _with_lightness(palette[role], PANEL_DARK_L)
+        while contrast(out["onPanelDark"], dark_fill) < TEXT_MIN and _lightness(dark_fill) > 0.04:
+            dark_fill = _with_lightness(dark_fill, _lightness(dark_fill) - 0.03)
+        out[f"{role}Dark"] = dark_fill.upper()
     return out
+
+
+def _lightness(color: str) -> float:
+    return colorsys.rgb_to_hls(*_rgb(color))[1]
 
 
 # --- seed palettes (2026-10-22) ------------------------------------------------

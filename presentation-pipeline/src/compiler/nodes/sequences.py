@@ -214,6 +214,10 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
     its, focus = items(comp), emphasis_index(comp)
     box, rest, hi = compose.layers(nd, name, box, parts, focus is not None)
     done = compose.before_layer(nd, name, rest)
+    asked = (nd.get("aliases") or {}).get(meta.get("variant"), meta.get("variant")) or next(iter(nd["compositions"]))
+    asked = asked["variant"] if isinstance(asked, dict) else " ".join(str(asked).split())
+    if name != asked and "h" in box:   # an h sized for the drawing the LLM expected (a chevron row of 92 px) is a floor
+        box.setdefault("minH", box.pop("h"))   # for the one drawn instead (replay 2026-10-28: step boxes spilled)
     if not ({"h", "grow"} & set(box)):
         box["grow"] = "1"
     split = [k for k, s in enumerate(_raw(comp)) if compose.split(s)[1]] if kind != "timeline" else \

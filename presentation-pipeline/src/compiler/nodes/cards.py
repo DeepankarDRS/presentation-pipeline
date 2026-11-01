@@ -237,6 +237,23 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
         box.update(layer.box)
         for p, a in layer.parts.items():
             parts[p].update(a)
+    arranges = card()["item_attributes"]["arrange"]["values"]
+    arrange = (tiles._choice("arrange", imeta.get("arrange"), arranges, ref, flag)
+               or tiles._choice("arrange", gmeta.get("arrange"), arranges, ref, flag) or default_arrange or arranges[0])
+    # numerals: the group's numerals stay on its dark emphasis card too
+    numerals = used == "numerals" or (not imeta.get("variant") and gmeta.get("variant") == "numerals"
+                                      and not spec.failed_requires(vs["numerals"], comp))
+    icon_name = imeta.get("icon") or gmeta.get("icon") or cards_of(comp)[i].get("icon")   # the LLM's, else the plan's
+    return assemble(comp, i, box, parts, role, arrange, icon_name, number, numerals, panel)
+
+
+def assemble(comp: dict, i: int, box: dict[str, str], parts: dict[str, dict[str, str]], role: str, arrange: str,
+             icon_name: str | None, number: str | None = None, numerals: bool = False,
+             panel: str | None = None) -> etree._Element:
+    """One card from its resolved box and part attributes (build_card; the card compositions in tile_groups.py):
+    icon, tag line (a step's number leads it), numerals, title, body with the key phrase, bullets."""
+    cid = comp["component_id"]
+    box, parts = dict(box), {p: dict(a) for p, a in parts.items()}
     if panel and box.get("backgroundColor") == panel:
         # on the LLM's own panel of the same colour the panel is the card: no fill or border of its own
         for k in [k for k in box if k == "backgroundColor" or k.startswith("border")]:
@@ -247,9 +264,6 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
         if fill in element_refs.READS_ON:
             parts[p]["color"] = _readable(fill, parts[p].get("color"))
 
-    arranges = card()["item_attributes"]["arrange"]["values"]
-    arrange = (tiles._choice("arrange", imeta.get("arrange"), arranges, ref, flag)
-               or tiles._choice("arrange", gmeta.get("arrange"), arranges, ref, flag) or default_arrange or arranges[0])
     c = cards_of(comp)[i]
     body, bullets = _lines(c)
     if layout_of(comp) == "steps" and body and not bullets and points(body):
@@ -264,9 +278,6 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
     phrase_ink = "" if dark else f"${tint}Text"
     phrase_mark = ""
     els: list[etree._Element] = []
-    # numerals: the group's numerals stay on its dark emphasis card too
-    numerals = used == "numerals" or (not imeta.get("variant") and gmeta.get("variant") == "numerals"
-                                      and not spec.failed_requires(vs["numerals"], comp))
     if numerals:
         els.append(_text(f"{i + 1:02d}", PX["numerals"], parts["number"], bold="true", id=f"cardn-{cid}-{i}"))
     tag = " · ".join(t for t in ((number if not numerals else None), str(c.get("tag") or "").upper()) if t)
@@ -288,7 +299,6 @@ def build_card(comp: dict, i: int, group: tuple[dict, tiles._Layer] | None,
             li = etree.SubElement(ul, "Li")
             _with_phrase(li, b, phrase if phrase in b and phrase not in body else "", phrase_ink, phrase_mark)
         els.append(ul)
-    icon_name = imeta.get("icon") or gmeta.get("icon") or c.get("icon")   # the LLM's, else the plan's
     icon = None
     if icon_name:
         icon = etree.Element("Icon", name=icon_name, size=str(ICON_PX))

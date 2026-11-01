@@ -103,12 +103,11 @@ def role(comp: dict, focus: tuple[str, int] | None) -> str:
     if focus is None:
         return "accent"
     from src.agents.plan_checks import tones_from_hint
-    from src.compiler.nodes.element_refs import TONE_ROLE
     cols, rows = grid(comp)
     names = [r[0] for r in rows] if focus[0] == "row" else cols
     tones = tones_from_hint({"design_hint": comp.get("design_hint"),
                              "content_data": {"kpi_labels": names, "kpi_values": names}})
-    return TONE_ROLE.get(tones[focus[1]], "accent") if focus[1] < len(tones) and tones[focus[1]] else "accent"
+    return compose.TONE_ROLE.get(tones[focus[1]], "accent") if focus[1] < len(tones) and tones[focus[1]] else "accent"
 
 
 # ── compositions ──────────────────────────────────────────────────────────────
@@ -216,6 +215,11 @@ def draw_banded(comp: dict, box: dict, pick: Pick) -> str:
                                                   for j in range(0, len(boxes), k)) + "</VStack>")
 
 
+def _toned(parts: dict[str, dict], role: str) -> dict[str, dict]:
+    """$tone / $toneSoft / $toneText in every part -> the role's tokens (compose.tone_value)."""
+    return {p: {k: compose.tone_value(v, role) for k, v in at.items()} for p, at in parts.items()}
+
+
 def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
     """One <Table ref> tag -> its XML, and what was drawn."""
     ref, nd = comp["component_id"], node()
@@ -232,8 +236,8 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
             del parts["item"][k]
     focus = emphasis(comp)
     box, rest, hi = compose.layers(nd, name, box, parts, focus is not None)
-    rest, hi = compose.tone(rest, "accent"), compose.tone(hi, role(comp, focus))
-    box = compose.tone({"box": box}, "accent")["box"]
+    rest, hi = _toned(rest, "accent"), _toned(hi, role(comp, focus))
+    box = {k: compose.tone_value(v, "accent") for k, v in box.items()}
     if name != "native" and not ({"h", "grow"} & set(box)):
         box["grow"] = "1"   # a native table sizes to its rows: fit-grow sets its columns, then grows it into spare height
     pick = Pick(rest, hi, focus)

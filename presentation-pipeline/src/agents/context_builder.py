@@ -669,7 +669,12 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
                 if "card_grid" in scopes:
                     scopes["card_grid"] = cards.scope(kind_treatments("card_grid"))
     for kind in code_drawn:
-        recipe_kinds = [k for k in recipe_kinds if k != kind]
+        # kpi_row / card_grid composition nodes: also their hero / steps recipes, and their group + item tags
+        recipe_kinds = [k for k in recipe_kinds if k != kind and not (kind == "kpi_row" and k == "hero_stat")
+                        and not (kind == "card_grid" and k == "card_steps")]
+        contract = composed.tags_contract(kind)
+        if contract:
+            allowed_nodes, node_hierarchy = _with_tags(allowed_nodes, node_hierarchy, allowed_attributes, contract)
         technique_kinds = [k for k in technique_kinds if k != kind]
         scopes.pop(kind, None)
         t = composed.tag(kind)

@@ -306,13 +306,6 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
         for p, a in layer.parts.items():
             parts[p].update(a)
     # part colours may name {role} only through the looks; an LLM value is a token already
-    if panel and box.get("backgroundColor") == panel:
-        # on the LLM's own panel of the same colour the panel is the tile: no fill, border or padding of its own
-        # (paid check 2, CHEFFIN 1: filled $negative tiles vanished into a $negativeSoft panel and its padding
-        # and theirs kept the row's numbers at 28 px)
-        for k in [k for k in box if k == "backgroundColor" or k.startswith("border")]:
-            del box[k]
-        box["padding"] = "0"
     arranges = kpi()["item_attributes"]["arrange"]["values"]
     arrange = (_choice("arrange", imeta.get("arrange"), arranges, ref, flag)
                or _choice("arrange", gmeta.get("arrange"), arranges, ref, flag) or arranges[0])
@@ -326,13 +319,29 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
                  f'{"item " + str(emphasis_index(comp)) if emphasis_index(comp) is not None else "no item"}); normal used.')
         elif size != "normal":
             flag("NODE_ATTR_DROPPED", ref, f'size="{size}" on ref="{ref}": normal or hero; normal used.')
+    icons = element_refs._list(comp, "kpi_icons")
+    icon_name = imeta.get("icon") or gmeta.get("icon") or (icons[i] if i < len(icons) else "")   # the LLM's, else the plan's
+    return assemble(comp, i, box, parts, icon_name, arrange, hero, panel)
 
+
+def assemble(comp: dict, i: int, box: dict[str, str], parts: dict[str, dict[str, str]], icon_name: str,
+             arrange: str, hero: bool = False, panel: str | None = None, note_part: str = "note") -> etree._Element:
+    """One tile from its resolved box and part attributes, in an `arrange` (label-first, value-first, icon-top, side,
+    inline). Used by build_tile and the KPI compositions (tile_groups.py; `note_part`: their name for the note)."""
+    ref = f"{comp['component_id']}.{i}"
+    box = dict(box)
+    if panel and box.get("backgroundColor") == panel:
+        # on the LLM's own panel of the same colour the panel is the tile: no fill, border or padding of its own
+        # (paid check 2, CHEFFIN 1: filled $negative tiles vanished into a $negativeSoft panel and its padding
+        # and theirs kept the row's numbers at 28 px)
+        for k in [k for k in box if k == "backgroundColor" or k.startswith("border")]:
+            del box[k]
+        box["padding"] = "0"
+    parts = {p: dict(a) for p, a in parts.items()}
     labels, notes = element_refs._list(comp, "kpi_labels"), element_refs._list(comp, "kpi_deltas")
     label = _text(f"{ref}.label", parts["label"]) if i < len(labels) and labels[i] else None
     value = _text(f"{ref}.value", parts["value"], hero)
-    note = _text(f"{ref}.note", parts["note"]) if i < len(notes) and notes[i] else None   # notes always drawn
-    icons = element_refs._list(comp, "kpi_icons")
-    icon_name = imeta.get("icon") or gmeta.get("icon") or (icons[i] if i < len(icons) else "")   # the LLM's, else the plan's
+    note = _text(f"{ref}.note", parts[note_part]) if i < len(notes) and notes[i] else None   # notes always drawn
     fill_ = box.get("backgroundColor", "")
     if fill_ in element_refs.READS_ON and parts["icon"].get("color") not in element_refs.READS_ON[fill_]:
         parts["icon"]["color"] = element_refs.ON_FILL[fill_]   # an icon reads on a dark tile, as its text does

@@ -183,13 +183,13 @@ def write_summary(out: Path, runs: list[dict]) -> None:
     print("\n".join(lines))
 
 
-def bundle(label: str) -> Path:
-    out = OUT / label
-    z = OUT / f"{label}.zip"
+def bundle(label: str, root: Path = OUT) -> Path:
+    out = root / label
+    z = root / f"{label}.zip"
     with zipfile.ZipFile(z, "w", zipfile.ZIP_DEFLATED) as f:
         for p in out.rglob("*"):
             if p.is_file():
-                f.write(p, p.relative_to(OUT))
+                f.write(p, p.relative_to(root))
         for r in json.loads((out / "runs.json").read_text(encoding="utf-8")):
             run_dir = ROOT / "output" / "runs" / r["run_id"]
             for p in run_dir.rglob("*") if run_dir.exists() else []:

@@ -45,6 +45,7 @@ from scripts.kpi_replay import _theme, compile_slide, score  # noqa: E402
 from src.compiler.compiler_client import deck_font  # noqa: E402
 from src.compiler.nodes import composed, native, sequences, tables  # noqa: E402
 LAYOUT_KEYS = ("w", "h", "grow", "minW", "maxW", "minH", "maxH", "alignSelf")
+SKIPPED: list[str] = []   # saved slides that could not be parsed
 _WORD = re.compile(r"[a-z0-9₹$%]+")
 
 
@@ -175,7 +176,12 @@ def run(src: Path, out: Path, do_render: bool, limit: int | None, variant: str, 
         if only and not any(o in r["case"] for o in only):
             continue
         comp = next(iter(composed.drawn(r["plan"], kind).values()))
-        root = _parse(r["xml"])
+        try:
+            root = _parse(r["xml"])
+        except etree.XMLSyntaxError as e:   # the saved slide is not well-formed XML (an unescaped "<" in an attribute)
+            SKIPPED.append(f"{r['case']}: {e}")
+            print(f"{r['case']}: skipped, not well-formed ({e})", flush=True)
+            continue
         done = rewrite(root, comp, variant)
         expanded = composed.expand(_serial(root), r["plan"])
         row = {"case": r["case"], "source": r["source"], "card": done["card"], "tag": done["tag"],
@@ -213,7 +219,8 @@ def summary(out: Path, results: list[dict], variant: str, kind: str = "chart") -
     lines = [
         f"# {tag} node: free replay (LLM layout kept), arm B = <{tag} ref{' variant=' + repr(variant) if variant else ''}>", "",
         f"Slides: {len(results)} (one {kind} component with an id, one LLM-drawn <{tag}>); the LLM's card around it replaced "
-        f"too on {sum(r['card'] for r in results)}. B compositions: {dict(used)}.", "",
+        f"too on {sum(r['card'] for r in results)}. B compositions: {dict(used)}."
+        + (f" Skipped (not well-formed XML): {len(SKIPPED)}." if SKIPPED else ""), "",
         f"| | A (LLM's {kind}) | B ({tag} tag) |", "|---|---|---|",
         f"| compiled | {sum(r['A']['compiled'] for r in results)} | {sum(r['B']['compiled'] for r in results)} |",
         *data,

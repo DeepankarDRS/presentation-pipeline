@@ -97,6 +97,9 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
         "hand_items": hand_items,
         "first_ok": bool((first.get("compile_result") or {}).get("ok")),
         "first_issues": [{k: i.get(k) for k in ("code", "severity", "message")} for i in issues],
+        "first_codes": [{k: i.get(k) for k in ("code", "severity", "message")}   # every NODE_* (aliases, hints too)
+                        for i in (first.get("normalize_result") or {}).get("issues") or []
+                        if str(i.get("code", "")).startswith("NODE_")],
         "first_diagnostics": [f"{d.get('type', '?')}: {str(d.get('message', ''))[:200]}"
                               for d in (first.get("compile_result") or {}).get("diagnostics") or []][:5],
         "first_xml": generated[0] if generated else "",

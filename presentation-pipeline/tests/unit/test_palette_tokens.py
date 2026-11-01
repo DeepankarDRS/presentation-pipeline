@@ -93,3 +93,20 @@ def test_card_edge_is_visible(name):
     assert contrast(border, p["surface"]) >= 1.4 and contrast(border, p["surfaceAlt"]) >= 1.4
     diff = abs(_hue(border) - _hue(p["border"]))
     assert min(diff, 360 - diff) <= 8 or len({p["border"][i:i + 2] for i in (0, 2, 4)}) == 1
+
+
+def test_role_dark_reads_under_on_panel_dark():
+    """<role>Dark keeps the role's hue at panel depth and onPanelDark reads on it, on every palette (user 2026-11-01)."""
+    import re
+    from pathlib import Path
+
+    import yaml
+
+    from src.agents.style_resolver import _build_theme
+    pals = yaml.safe_load((Path(__file__).resolve().parents[2] / "src/knowledge/theme/palettes.yaml")
+                          .read_text(encoding="utf-8"))["palettes"]
+    for name, p in pals.items():
+        t = _build_theme(name, p)
+        attrs = dict(re.findall(r'(\w+)="#?([0-9A-Fa-f]{6})"', t["element"]))
+        for role in STATUS_ROLES:
+            assert contrast(attrs["onPanelDark"], attrs[f"{role}Dark"]) >= TEXT_MIN, (name, role)
