@@ -709,6 +709,7 @@ nodes:
   #   bullets_every_card  every card has bullets (or a body given as a list)
   #   layout_grid / layout_steps   the plan's card_layout
   #   has_emphasis        the plan singles out one item (focus_card, else the design hint)
+#   hint_dark           the design hint asks for a dark / inverted item (plan_checks.look_from_hint)
   # `meta_aliases`: today's structure attributes -> a composition; `part_aliases`: today's part names;
   # `tag_aliases`: today's tags (NODE_TAG_ALIAS). All info, one release (spec §7).
   kpi_row:
@@ -726,16 +727,18 @@ nodes:
       layout:  {row: grid, grid: grid, column: rows}
       arrange: {label-first: grid, icon-top: grid, value-first: bento, side: rows, inline: rows}
     compositions:
-      grid:                             # today's plain tile with tones; the emphasis tile dark and hero
+      grid:                             # today's plain tile with tones; no emphasis unless the hint asks for it
         look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
                    item.padding: 16, item.gap: 6, item.justifyContent: center, icon.color: $toneText,
                    label.color: $textMuted, value.color: $textMain, delta.color: $toneText}
         tone:     {bad: {item.backgroundColor: $toneSoft, item.border.color: $tone, value.color: $toneText},
                    watch: {item.backgroundColor: $toneSoft, item.border.color: $tone, value.color: $toneText},
                    good: {value.color: $toneText}}
-        emphasis_requires: [count_ge_3]
+        # a highlight must mean something (user 2026-11-01): the dark tile only when the design hint asks for a dark /
+        # inverted item; no hero size in a grid (the hero is bento's: one item, the rest its subs)
+        emphasis_requires: [count_ge_3, hint_dark]
         emphasis: {item.backgroundColor: $panelDark, label.color: $onPanelDark, value.color: $onPanelDark,
-                   delta.color: $onPanelDark, icon.color: $onPanelDark, size: hero}
+                   delta.color: $onPanelDark, icon.color: $onPanelDark}
       strip:                            # one shared box, one row, hairlines between (today's divided)
         requires: [count_le_5]
         fallback: grid

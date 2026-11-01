@@ -363,3 +363,12 @@ def test_card_bento_not_on_steps():
     steps = {**STEPS, "content_data": {**STEPS["content_data"], "focus_card": 2}}
     r = run('<CardGrid ref="plan30" variant="bento"/>', steps)
     assert used(r, "plan30") == "steps" and "NODE_VARIANT_UNMET" in codes(r)
+
+
+def test_kpi_grid_emphasis_only_on_a_dark_hint():
+    """KPI grid draws no emphasis by default (user 2026-11-01); a hint asking for a dark item draws it dark, no hero."""
+    xml = run('<KpiRow ref="kpis" variant="grid"/>', KPIS)["xml"]   # "highlight ARR as the hero": no dark cue
+    assert "$panelDark" not in xml and 'size="hero"' not in xml
+    dark = dict(KPIS, design_hint="ARR on an inverted dark tile")
+    xml = run('<KpiRow ref="kpis" variant="grid"/>', dark)["xml"]
+    assert 'backgroundColor="$panelDark"' in xml and 'size="hero"' not in xml

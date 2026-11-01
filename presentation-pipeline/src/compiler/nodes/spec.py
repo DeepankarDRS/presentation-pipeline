@@ -175,6 +175,9 @@ def check(name: str, comp: dict) -> bool:
         return bool(cards) and all(c.get("bullets") or isinstance(c.get("body"), list) for c in cards)
     if name == "has_emphasis":
         return singled_out(comp) is not None
+    if name == "hint_dark":
+        from src.agents.plan_checks import look_from_hint   # src.agents imports the validator
+        return look_from_hint(comp)["emphasis"] == "inverted"
     if name == "no_own_numbers" and comp.get("kind") == "card_grid":
         from src.compiler.nodes import cards   # cards imports this module
         return cards.numbered_ok(comp)
