@@ -213,7 +213,8 @@ def test_grid_keeps_rows_columns_and_every_heading():
     assert used(r, "gaps") == "grid" and r["ok"]
     assert all(f">{h}</Text>" in x for h in GAPS["content_data"]["table_columns"])          # Gap included
     assert all(c in x for row in GAPS["content_data"]["table_rows"] for c in row)
-    assert all(f'id="card-gapsl-{i}"' in x for i in range(4)) and x.count('id="card-gapsc-') == 12   # two peer groups
+    assert all(f'id="card-gaps.tl-{i}"' in x for i in range(4)) and x.count('id="card-gaps.tc-') == 12
+    assert x.count('id="card-gaps.th-') == 4                                                 # three peer groups
     assert x.count('border.color="$positive"') == 4                                          # the Fix column's cards
     assert 'backgroundColor="$positive"' in x and "$tone" not in x                           # its header pill
 

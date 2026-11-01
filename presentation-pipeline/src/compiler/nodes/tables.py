@@ -226,16 +226,17 @@ def _boxed(p: dict) -> tuple[dict, dict]:
 def draw_grid(comp: dict, box: dict, pick: Pick, numbered: bool, inside: bool) -> str:
     """grid (numbered): the table's rows and columns kept, every cell its own card (`item.`). The header row is
     pills (`header.`) over the columns; `labels="inside"` drops it and writes each column name in its cards instead.
-    numbered: a solid tile (`band.` box, `number.` text) leads each row. First-column boxes (card-<cid>l-<r>) and
-    cell boxes (card-<cid>c-<k>) are two fit-grow peer groups: in one group the bold label read as each row's title
-    and held the cells to title / 1.3 (gallery 2026-11-01: 14 px cells)."""
+    numbered: a solid tile (`band.` box, `number.` text) leads each row. Headings (card-<cid>.th-<i>), first-column
+    boxes (card-<cid>.tl-<r>) and cells (card-<cid>.tc-<k>) are three fit-grow peer groups (in one group the bold label
+    read as each row's title and held the cells to title / 1.3), each evened to one size after the word guard
+    (fit-grow evenTableParts)."""
     cid, (cols, rows) = comp["component_id"], grid(comp)
     lead = '<VStack w="64" />' if numbered else ""
 
     def heading(i: int, p: dict, px: int = 16) -> str:
         hb, ht = _boxed(p["header"])
-        return (f'<HStack padding="10" borderRadius="6"{A(hb)}>{T(cols[i], px, ht, bold="true")}</HStack>' if hb
-                else T(cols[i].upper(), 13, ht, bold="true", letterSpacing="1"))
+        return (f'<HStack id="card-{cid}.th-{i}" padding="10" borderRadius="6"{A(hb)}>{T(cols[i], px, ht, bold="true")}</HStack>'
+                if hb else f'<VStack id="card-{cid}.th-{i}">{T(cols[i].upper(), 13, ht, bold="true", letterSpacing="1")}</VStack>')
 
     def caps(i: int, p: dict) -> str:   # a column name written inside a card (labels="inside")
         ht = {k: v for k, v in p["header"].items() if k != "backgroundColor"}
@@ -252,9 +253,9 @@ def draw_grid(comp: dict, box: dict, pick: Pick, numbered: bool, inside: bool) -
         if numbered:
             tile = (f'<VStack w="64" justifyContent="center" alignItems="center" borderRadius="8"{A(p["band"])}>'
                     f'{T(f"{r + 1:02d}", 22, p["number"], bold="true")}</VStack>')
-        label = (f'<VStack id="card-{cid}l-{r}" w="{LABEL_W}" gap="4" padding="14" justifyContent="center" borderRadius="8"{A(lb)}>'
+        label = (f'<VStack id="card-{cid}.tl-{r}" w="{LABEL_W}" gap="4" padding="14" justifyContent="center" borderRadius="8"{A(lb)}>'
                  f'{caps(0, p)}{T(row[0], 19, lt, bold="true")}</VStack>')
-        cells = "".join(f'<VStack id="card-{cid}c-{r * len(cols) + i}" w="1" grow="1" gap="4" padding="14" justifyContent="center"{A(pick.cell(r, i)["item"])}>'
+        cells = "".join(f'<VStack id="card-{cid}.tc-{r * len(cols) + i}" w="1" grow="1" gap="4" padding="14" justifyContent="center"{A(pick.cell(r, i)["item"])}>'
                         f'{caps(i, pick.cell(r, i))}{T(v, 17, pick.cell(r, i)["cell"])}</VStack>'
                         for i, v in enumerate(row) if i)
         body.append(f'<HStack grow="1" gap="10" alignItems="stretch">{tile}{label}{cells}</HStack>')
@@ -271,7 +272,7 @@ def draw_ledger(comp: dict, box: dict, pick: Pick, icons: list[str]) -> str:
         icon = (f'<Icon name="{native.x(icons[i])}" size="26"{A({"color": ht.get("color", "$onAccent")})} />'
                 if i < len(icons) and icons[i] else "")
         size = {"w": LABEL_W} if i == 0 else {"w": "1", "grow": "1"}
-        return (f'<VStack{A(size)} padding="12" gap="6" '
+        return (f'<VStack id="card-{cid}.th-{i}"{A(size)} padding="12" gap="6" '
                 f'justifyContent="end" alignItems="{"start" if i == 0 else "center"}"{A(hb)}>{icon}'
                 f'{T(cols[i], 15, ht, bold="true", textAlign="left" if i == 0 else "center")}</VStack>')
 
@@ -284,10 +285,10 @@ def draw_ledger(comp: dict, box: dict, pick: Pick, icons: list[str]) -> str:
             base = {**pick.rest["item"], **(pick.rest["stripe"] if r % 2 else {})}
             return {**base, **p["item"]} if p is not pick.rest else base
         lb, lt = _boxed(pick.row(r)["label"])
-        cells = "".join(f'<VStack id="card-{cid}c-{r * len(cols) + i}" w="1" grow="1" padding="14" justifyContent="center"{A(cell_box(i))}>'
+        cells = "".join(f'<VStack id="card-{cid}.tc-{r * len(cols) + i}" w="1" grow="1" padding="14" justifyContent="center"{A(cell_box(i))}>'
                         f'{T(v, 17, pick.cell(r, i)["cell"])}</VStack>' for i, v in enumerate(row) if i)
         body.append(f'<HStack grow="1" gap="0" alignItems="stretch">'
-                    f'<VStack id="card-{cid}l-{r}" w="{LABEL_W}" padding="14" justifyContent="center"{A({**cell_box(0), **lb})}>'
+                    f'<VStack id="card-{cid}.tl-{r}" w="{LABEL_W}" padding="14" justifyContent="center"{A({**cell_box(0), **lb})}>'
                     f'{T(row[0], 18, lt, bold="true")}</VStack>{cells}</HStack>')
     return f'<VStack gap="4"{A(box)}>{head}{"".join(body)}</VStack>'
 

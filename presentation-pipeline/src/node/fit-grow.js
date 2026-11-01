@@ -2197,6 +2197,45 @@ async function guardWords(xml, report, warnings) {
   return xml;
 }
 
+// --- phase 6b: each part of a code-drawn table keeps one size -------------------
+// tables.py ids a grid / ledger's heading boxes card-<cid>.th-<i>, first-column boxes card-<cid>.tl-<r> and cells
+// card-<cid>.tc-<k>. The guard shrinks one word at a time, so one cell ended smaller than its peers (grid replay
+// 2026-11-01: "$28.1M" 24 px beside "+22%" at 41, labels 46 / 46 / 24). Each part takes its smallest size, slot by
+// slot (a column name written inside a cell keeps its own), as evenStats does for KPI numbers.
+const TABLE_PART = /^card-(.+)\.t([hlc])-\d+$/;
+
+async function evenTableParts(xml, report) {
+  const L = await layout(xml);
+  const groups = new Map();
+  try {
+    for (const root of L.slides) walk(root, (n) => {
+      const m = STACKS.has(n.type) && n.id && TABLE_PART.exec(n.id);
+      if (!m) return;
+      let slot = 0;
+      walk(n, (d) => {
+        if (d.type !== "text" || !d.id) return;
+        const key = `${m[1]}:${m[2]}:${slot++}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push([d.id, d.fontSize ?? 24]);
+      });
+    });
+  } finally { L.free(); }
+  // headings are no larger than the first column's text (grid replay: 39 px pills over 24 px cells)
+  const labelSize = new Map();
+  for (const [key, ts] of groups) {
+    const [cid, part, slot] = key.split(":");
+    if (part === "l" && slot === "0") labelSize.set(cid, Math.min(...ts.map(([, f]) => f)));
+  }
+  let out = xml, n = 0;
+  for (const [key, ts] of groups) {
+    const [cid, part] = key.split(":");
+    const min = Math.min(...ts.map(([, f]) => f), part === "h" ? labelSize.get(cid) ?? Infinity : Infinity);
+    for (const [id, f] of ts) if (f !== min) { out = setAttrs(out, id, { fontSize: min }); n++; }
+  }
+  if (n) report.push(`table parts: ${n} texts to their group's size`);
+  return out;
+}
+
 // --- phase 6: the numbers of a KPI row keep one size ---------------------------
 // The guard shrinks one word at a time, so one tile's number could end smaller than its
 // peers' ("₹114.9L" 41px beside four at 60px). Peer numbers take the smallest size in the row
@@ -2367,6 +2406,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   const w0 = warnings.length;
   const rows = await statRows(xml);
   xml = await guardWords(xml, report, warnings);
+  xml = await evenTableParts(xml, report);
   // even, then guard again (its findings were taken at the old sizes); the guard can shrink
   // one number a step further, so repeat until nothing changes (sizes only go down)
   for (let round = 0; round < 4; round++) {
