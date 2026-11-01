@@ -111,7 +111,7 @@ def test_kpi_rows_badge_and_right_value():
 def test_kpi_banded_band_takes_tone():
     xml = run('<KpiRow ref="kpis" variant="banded"/>', KPIS)["xml"]
     assert 'backgroundColor="$negative"' in xml and 'backgroundColor="$warning"' in xml
-    assert 'backgroundColor="$panelDark"' in xml   # the emphasis (ARR) band
+    assert 'backgroundColor="$positiveDark"' in xml   # the emphasis (ARR, good) band: its tone, darker
 
 
 def test_kpi_bento_big_block_is_emphasis():
@@ -356,3 +356,10 @@ def test_prompt_lines():
     assert "columns" not in composed.prompt_line(NO_BULLETS)
     tags, _, attrs = composed.tags_contract("card_grid")
     assert tags == ["CardGrid", "Card"] and "item.*" in attrs["CardGrid"] and "variant" in attrs["Card"]
+
+
+def test_card_bento_not_on_steps():
+    """A steps plan keeps its order: bento would draw the destination first (marks 2026-11-01, 5.2 / 5.3)."""
+    steps = {**STEPS, "content_data": {**STEPS["content_data"], "focus_card": 2}}
+    r = run('<CardGrid ref="plan30" variant="bento"/>', steps)
+    assert used(r, "plan30") == "steps" and "NODE_VARIANT_UNMET" in codes(r)

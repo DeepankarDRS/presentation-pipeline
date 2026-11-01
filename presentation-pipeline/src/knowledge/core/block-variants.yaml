@@ -698,7 +698,7 @@ nodes:
   # anywhere, drawn in the group's composition form). On top of the convention above:
   #   item.<box attribute>       every item's own box (spec D3); `divider.` the hairline between items (Rule: color /
   #                              width), `band.` an item's solid head, `bullets.` a card bullet's own box (columns)
-  #   $tone $toneSoft $toneText  the item's tone as a role token: good -> $positive*, bad -> $negative*, watch ->
+  #   $tone $toneSoft $toneText $toneDark  the item's tone as a role token: good -> $positive*, bad -> $negative*, watch ->
   #                              $warning*, none -> $accent*; an item's own color="$negative" sets its tone ($neutral:
   #                              Soft -> $surfaceAlt, Text -> $textMain). Code swaps them per item (compose.tone_value)
   #   tone                       laid over `look` per the item's tone (bad / watch / good)
@@ -755,7 +755,8 @@ nodes:
         look:     {gap: 18, item.gap: 0, item.backgroundColor: $surfaceAlt, item.border.color: $border,
                    item.border.width: 1, band.backgroundColor: $tone, band.padding: 14, band.gap: 10,
                    icon.color: $onAccent, label.color: $onAccent, value.color: $toneText, delta.color: $toneText}
-        emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, label.color: $onPanelDark}
+        # the band in its own tone, darker (user 2026-11-01: from the palette, not one dark colour)
+        emphasis: {band.backgroundColor: $toneDark, icon.color: $onPanelDark, label.color: $onPanelDark}
       bento:                            # the emphasis item large, value first; the rest as rows beside it
         requires: [count_ge_3, has_emphasis]
         fallback: grid
@@ -860,7 +861,7 @@ nodes:
         emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, title.color: $onPanelDark,
                    tag.color: $onPanelDark}
       bento:                            # the focus card large and dark, the others 2 + 1 beside it
-        requires: [count_ge_3, count_le_5, has_emphasis]
+        requires: [layout_grid, count_ge_3, count_le_5, has_emphasis]   # a steps plan keeps its order (marks 5.2 / 5.3)
         fallback: grid
         look:     {gap: 18, item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
                    item.borderRadius: 8, item.padding: 20, item.gap: 8, icon.color: $toneText, tag.color: $toneText,

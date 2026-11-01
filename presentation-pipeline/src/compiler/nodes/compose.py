@@ -70,17 +70,17 @@ def read(attrs: dict[str, str], ref: str, flag: Flag, nd: dict, meta_names: list
     return meta, box, parts
 
 
-_TONE_TOKEN = re.compile(r"\$tone(Soft|Text)?(?![A-Za-z0-9])")
+_TONE_TOKEN = re.compile(r"\$tone(Soft|Text|Dark)?(?![A-Za-z0-9])")
 TONE_ROLE = {"good": "positive", "bad": "negative", "watch": "warning", "": "accent"}
 ROLE_TONE = {"$positive": "good", "$negative": "bad", "$warning": "watch", "$accent": "", "$neutral": ""}
 
 
 def tone_value(value: Any, role: str) -> str:
-    """$tone / $toneSoft / $toneText -> the item's role token (spec D3): "$toneSoft" with role negative ->
-    "$negativeSoft". $neutral has no Soft / Text token: $surfaceAlt / $textMain (tiles.role_value)."""
+    """$tone / $toneSoft / $toneText / $toneDark -> the item's role token (spec D3): "$toneSoft" with role negative
+    -> "$negativeSoft". $neutral has no Soft / Text / Dark token: $surfaceAlt / $textMain / $panelDark."""
     def sub(m: re.Match) -> str:
         if role == "neutral":
-            return {"Soft": "$surfaceAlt", "Text": "$textMain"}.get(m.group(1) or "", "$neutral")
+            return {"Soft": "$surfaceAlt", "Text": "$textMain", "Dark": "$panelDark"}.get(m.group(1) or "", "$neutral")
         return f"${role}{m.group(1) or ''}"
     return _TONE_TOKEN.sub(sub, str(value))
 
