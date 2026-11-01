@@ -572,6 +572,27 @@ _KPI_LOOKS = (("bar", "bar"), ("dot", "dot"), ("tint", "filled"))
 _CARD_LOOKS = (("bar", "accent_top"), ("numbered", "numerals"))
 
 
+# composition cues (composition spec F5): a hint naming a structure, not a look. A KPI / card hint asks for a hero
+# block, a ruled list or a strip; "no ..." in front cancels it as for the look cues
+_COMPOSITION_CUES = (
+    ("bento", re.compile(r"\b(?:hero|spotlight|featured|feature\s+card)\b", re.I)),
+    ("rows", re.compile(r"\bruled\b|\b(?:stacked|full[\s-]width)\s+rows?\b", re.I)),
+    ("strip", re.compile(r"\bstrip\b|\bribbon\b", re.I)),
+)
+
+
+def composition_from_hint(comp: dict[str, Any]) -> str | None:
+    """The composition word a kpi_row's or card_grid's design_hint names (hero / spotlight -> bento, ruled -> rows,
+    strip -> strip), else None. tile_groups uses it for a bare tag when the composition's `requires` hold."""
+    if comp.get("kind") not in ("kpi_row", "card_grid"):
+        return None
+    hint = " ".join(str(comp.get("design_hint") or "").split())
+    for word, rx in _COMPOSITION_CUES:
+        if any(not _LOOK_NOT.search(hint[:m.start()]) for m in rx.finditer(hint)):
+            return word
+    return None
+
+
 def look_from_hint(comp: dict[str, Any]) -> dict[str, Any]:
     """The tile-node look a kpi_row's or card_grid's design_hint asks for, for a bare <KpiGrid> / <CardGrid>
     (tile-variant-choice spec 2026-10-26, option A; read by tiles.expand / cards.expand, the LLM's variant wins).

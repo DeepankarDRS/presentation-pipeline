@@ -56,7 +56,9 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         icon_names=contract.get("icon_names", ""),
         core_hook=state.get("core_hook", ""),
         slide_type=plan.get("slide_type", ""),
-        tile_nodes="\n\n".join(([tiles.node_lines(), cards.node_lines()] if tiles.on() else [])
+        # a kind drawn as a composition node (POM_NODES=kpi_row / card_grid) drops its tile-node lines
+        tile_nodes="\n\n".join(([x for k, x in (("kpi_row", tiles.node_lines()), ("card_grid", cards.node_lines()))
+                                 if k not in composed.kinds_on()] if tiles.on() else [])
                                + ([composed.node_lines()] if composed.kinds_on() else [])),
     )
 
