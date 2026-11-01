@@ -173,6 +173,9 @@ blocks:
       rows numbered:   {prompt: "rows with 01 02 03 leading each", requires: [no_own_numbers], fallback: rows}
       columns:         {prompt: "one column per row: its first cell as a pill, each other cell in its own box", requires: [count_le_5, columns_le_6], fallback: native}
       banded:          {prompt: "equal boxes, the first cell in a solid band over 'column: value' lines", requires: [count_le_6], fallback: native}
+      grid:            {prompt: "the table's rows and columns kept, every cell its own card under header pills", requires: [count_le_6, columns_le_6], fallback: native}
+      grid numbered:   {prompt: "grid with a 01 02 03 tile leading each row", requires: [count_le_6, columns_le_6, no_own_numbers], fallback: grid}
+      ledger:          {prompt: "one solid header band (an icon over each column name) over joined, tinted rows", requires: [columns_le_6], fallback: native}
 
   chart:
     tag: Chart                # chartType comes from the plan, not the variant
@@ -923,11 +926,15 @@ nodes:
   # column"), in the hint's tone ($tone / $toneSoft / $toneText; no tone -> accent). A row takes every emphasis part,
   # a column only header. / cell. / item. (its cells and their boxes).
   #   count_le_5 / count_le_6   at most 5 / 6 body rows;  columns_le_6   at most 6 columns
+  # grid / grid numbered / ledger (user, 2026-11-01: a table whose cells are cards). In them `item.` is each cell's
+  # box, `band.` + `number.` the numbered row tile. `ledger` is a table-only word (spec §2.3): one solid header band
+  # over joined rows. Tag attributes: labels="inside" (grid: each column name inside its cards instead of a header
+  # row), icons="a,b,c" (ledger: one icon name per column, in column order).
   table:
     tag: Table
     plan_kind: table
     parts: {header: Cell, label: Cell, cell: Cell, stripe: Cell, number: Text, band: Box, item: Box}
-    meta: [ref, variant]
+    meta: [ref, variant, labels, icons]
     native_attributes: [cellBorder.color, cellBorder.width, cellBorder.dashType]   # the Table's own
     code_owned: [defaultRowHeight]
     compositions:
@@ -964,6 +971,30 @@ nodes:
                    item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1}
         emphasis: {band.backgroundColor: $panelDark, label.color: $onPanelDark, header.color: $toneText,
                    cell.color: $toneText, cell.bold: "true"}
+      grid:                             # header pills over the columns, every cell its own card
+        requires: [count_le_6, columns_le_6]
+        fallback: native
+        look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
+                   cell.color: $textMain, item.backgroundColor: $surface, item.border.color: $border,
+                   item.border.width: 1, item.borderRadius: 8}
+        emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.color: $toneText, cell.color: $toneText, cell.bold: "true",
+                   item.backgroundColor: $toneSoft, item.border.color: $tone}
+      grid numbered:
+        requires: [count_le_6, columns_le_6, no_own_numbers]
+        fallback: grid
+        look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
+                   label.backgroundColor: $surfaceAlt, cell.color: $textMain, item.backgroundColor: $surface,
+                   item.border.color: $border, item.border.width: 1, item.borderRadius: 8,
+                   band.backgroundColor: $accent, number.color: $onAccent}
+        emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.color: $toneText, cell.color: $toneText, cell.bold: "true",
+                   item.backgroundColor: $toneSoft, item.border.color: $tone, band.backgroundColor: $tone}
+      ledger:
+        requires: [columns_le_6]
+        fallback: native
+        look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
+                   cell.color: $textMain, item.backgroundColor: $surface, stripe.backgroundColor: $surfaceAlt}
+        emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.color: $toneText, cell.color: $toneText, cell.bold: "true",
+                   item.backgroundColor: $toneSoft}
     aliases:                            # the left-blocks draft's names
       plain: native
       highlight_row: native             # the emphasis look of native
@@ -973,3 +1004,6 @@ nodes:
     styles:                             # recipes (prompt examples only)
       zebra: 'stripe.backgroundColor="$surfaceAlt"'
       dark_header: 'header.backgroundColor="$panelDark" header.color="$onPanelDark" label.color="$accentText"'
+      label_cards: 'label.backgroundColor="$accent" label.color="$onAccent" header.backgroundColor="$surface" header.color="$textMuted" item.backgroundColor="$surfaceAlt" item.border.width="0"'
+      accent_edge: 'item.borderLeft.color="$accent" item.borderLeft.width="4" item.borderRadius="0"'
+      lifted: 'item.border.width="0" item.shadow.type="outer" item.shadow.blur="8" item.shadow.offset="2" item.shadow.opacity="0.12" backgroundColor="$surfaceAlt" padding="18" borderRadius="10"'

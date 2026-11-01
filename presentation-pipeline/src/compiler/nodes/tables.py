@@ -215,6 +215,83 @@ def draw_banded(comp: dict, box: dict, pick: Pick) -> str:
                                                   for j in range(0, len(boxes), k)) + "</VStack>")
 
 
+LABEL_W = "22%"   # the first column of a grid / ledger
+
+
+def _boxed(p: dict) -> tuple[dict, dict]:
+    """A Cell part drawn as a box around its Text: (box attributes, text attributes); backgroundColor goes on the box."""
+    return {k: v for k, v in p.items() if k == "backgroundColor"}, {k: v for k, v in p.items() if k != "backgroundColor"}
+
+
+def draw_grid(comp: dict, box: dict, pick: Pick, numbered: bool, inside: bool) -> str:
+    """grid (numbered): the table's rows and columns kept, every cell its own card (`item.`). The header row is
+    pills (`header.`) over the columns; `labels="inside"` drops it and writes each column name in its cards instead.
+    numbered: a solid tile (`band.` box, `number.` text) leads each row. First-column boxes (card-<cid>l-<r>) and
+    cell boxes (card-<cid>c-<k>) are two fit-grow peer groups: in one group the bold label read as each row's title
+    and held the cells to title / 1.3 (gallery 2026-11-01: 14 px cells)."""
+    cid, (cols, rows) = comp["component_id"], grid(comp)
+    lead = '<VStack w="64" />' if numbered else ""
+
+    def heading(i: int, p: dict, px: int = 16) -> str:
+        hb, ht = _boxed(p["header"])
+        return (f'<HStack padding="10" borderRadius="6"{A(hb)}>{T(cols[i], px, ht, bold="true")}</HStack>' if hb
+                else T(cols[i].upper(), 13, ht, bold="true", letterSpacing="1"))
+
+    def caps(i: int, p: dict) -> str:   # a column name written inside a card (labels="inside")
+        ht = {k: v for k, v in p["header"].items() if k != "backgroundColor"}
+        return T(cols[i].upper(), 12, ht, bold="true", letterSpacing="1") if inside and cols[i].strip() else ""
+
+    head = "" if inside or not any(c.strip() for c in cols) else (
+        f'<HStack gap="10" alignItems="end">{lead}<VStack w="{LABEL_W}">{heading(0, pick.col(0))}</VStack>'
+        + "".join(f'<VStack w="1" grow="1">{heading(i, pick.col(i))}</VStack>' for i in range(1, len(cols))) + "</HStack>")
+    body = []
+    for r, row in enumerate(rows):
+        p = pick.row(r)
+        lb, lt = _boxed(p["label"])
+        tile = ""
+        if numbered:
+            tile = (f'<VStack w="64" justifyContent="center" alignItems="center" borderRadius="8"{A(p["band"])}>'
+                    f'{T(f"{r + 1:02d}", 22, p["number"], bold="true")}</VStack>')
+        label = (f'<VStack id="card-{cid}l-{r}" w="{LABEL_W}" gap="4" padding="14" justifyContent="center" borderRadius="8"{A(lb)}>'
+                 f'{caps(0, p)}{T(row[0], 19, lt, bold="true")}</VStack>')
+        cells = "".join(f'<VStack id="card-{cid}c-{r * len(cols) + i}" w="1" grow="1" gap="4" padding="14" justifyContent="center"{A(pick.cell(r, i)["item"])}>'
+                        f'{caps(i, pick.cell(r, i))}{T(v, 17, pick.cell(r, i)["cell"])}</VStack>'
+                        for i, v in enumerate(row) if i)
+        body.append(f'<HStack grow="1" gap="10" alignItems="stretch">{tile}{label}{cells}</HStack>')
+    return f'<VStack gap="10"{A(box)}>{head}{"".join(body)}</VStack>'
+
+
+def draw_ledger(comp: dict, box: dict, pick: Pick, icons: list[str]) -> str:
+    """ledger: one solid header band (an icon over each column name, from the tag's `icons`) over joined rows;
+    alternate rows take `stripe.`, every cell `item.` under it."""
+    cid, (cols, rows) = comp["component_id"], grid(comp)
+
+    def heading(i: int) -> str:
+        hb, ht = _boxed(pick.col(i)["header"])
+        icon = (f'<Icon name="{native.x(icons[i])}" size="26"{A({"color": ht.get("color", "$onAccent")})} />'
+                if i < len(icons) and icons[i] else "")
+        size = {"w": LABEL_W} if i == 0 else {"w": "1", "grow": "1"}
+        return (f'<VStack{A(size)} padding="12" gap="6" '
+                f'justifyContent="end" alignItems="{"start" if i == 0 else "center"}"{A(hb)}>{icon}'
+                f'{T(cols[i], 15, ht, bold="true", textAlign="left" if i == 0 else "center")}</VStack>')
+
+    head = (f'<HStack gap="0" alignItems="stretch">{"".join(heading(i) for i in range(len(cols)))}</HStack>'
+            if any(c.strip() for c in cols) else "")
+    body = []
+    for r, row in enumerate(rows):
+        def cell_box(i: int) -> dict:
+            p = pick.cell(r, i)
+            base = {**pick.rest["item"], **(pick.rest["stripe"] if r % 2 else {})}
+            return {**base, **p["item"]} if p is not pick.rest else base
+        lb, lt = _boxed(pick.row(r)["label"])
+        cells = "".join(f'<VStack id="card-{cid}c-{r * len(cols) + i}" w="1" grow="1" padding="14" justifyContent="center"{A(cell_box(i))}>'
+                        f'{T(v, 17, pick.cell(r, i)["cell"])}</VStack>' for i, v in enumerate(row) if i)
+        body.append(f'<HStack grow="1" gap="0" alignItems="stretch">'
+                    f'<VStack id="card-{cid}l-{r}" w="{LABEL_W}" padding="14" justifyContent="center"{A({**cell_box(0), **lb})}>'
+                    f'{T(row[0], 18, lt, bold="true")}</VStack>{cells}</HStack>')
+    return f'<VStack gap="4"{A(box)}>{head}{"".join(body)}</VStack>'
+
+
 def _toned(parts: dict[str, dict], role: str) -> dict[str, dict]:
     """$tone / $toneSoft / $toneText in every part -> the role's tokens (compose.tone_value)."""
     return {p: {k: compose.tone_value(v, role) for k, v in at.items()} for p, at in parts.items()}
@@ -240,9 +317,18 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
     box = {k: compose.tone_value(v, "accent") for k, v in box.items()}
     if name != "native" and not ({"h", "grow"} & set(box)):
         box["grow"] = "1"   # a native table sizes to its rows: fit-grow sets its columns, then grows it into spare height
+    inside = meta.get("labels") == "inside" and name.startswith("grid")
+    if inside:   # column names inside the cards: a pill's ink would vanish on a card, so caps text unless the LLM set it
+        for p, tone in ((rest, "$textMuted"), (hi, compose.tone_value("$toneText", role(comp, focus)))):
+            p["header"] = {k: v for k, v in p["header"].items() if k != "backgroundColor"}
+            if "color" not in parts["header"]:
+                p["header"]["color"] = tone
     pick = Pick(rest, hi, focus)
+    icons = [s.strip() for s in str(meta.get("icons") or "").split(",")]
     xml = (draw_native(comp, box, pick) if name == "native" else
            draw_rows(comp, box, pick, name == "rows numbered") if name.startswith("rows") else
+           draw_grid(comp, box, pick, name == "grid numbered", inside) if name.startswith("grid") else
+           draw_ledger(comp, box, pick, icons) if name == "ledger" else
            draw_columns(comp, box, pick) if name == "columns" else draw_banded(comp, box, pick))
     return xml, {"composition": name, "focus": focus}
 

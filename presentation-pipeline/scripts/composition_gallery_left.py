@@ -195,6 +195,12 @@ TIMELINE_SHORT = comp("roadmap_short", "timeline", {"direction": "horizontal", "
     "highlight Nov, where we are now", items=4, orientation="horizontal")
 
 
+def table_recipe(variant: str, style: str) -> str:
+    """A <Table ref> with one of block-variants.yaml's table recipes written on it, as the LLM would."""
+    from src.compiler.nodes import tables
+    return f'<Table ref="gaps" variant="{variant}" {tables.node()["styles"][style]} />'
+
+
 def tag(name: str, c: dict, variant: str = "") -> str:
     v = f' variant="{variant}"' if variant else ""
     return f'<{name} ref="{c["component_id"]}"{v} />'
@@ -252,7 +258,14 @@ def blocks() -> dict[str, tuple[list, list]]:
         "table": ([(f"today · {v}", [LB.TABLE], LB.table(v)) for v in ("plain", "zebra", "dark_header")],
                   [("native (default)", [TABLE], tag("Table", TABLE)), ("rows numbered", [TABLE], tag("Table", TABLE, "rows numbered")),
                    ("columns", [TABLE], tag("Table", TABLE, "columns")), ("banded", [TABLE], tag("Table", TABLE, "banded")),
-                   ("native · zebra recipe", [TABLE], '<Table ref="gaps" stripe.backgroundColor="$surfaceAlt" />')]),
+                   ("native · zebra recipe", [TABLE], '<Table ref="gaps" stripe.backgroundColor="$surfaceAlt" />'),
+                   ("grid", [TABLE], tag("Table", TABLE, "grid")),
+                   ("grid · label_cards", [TABLE], table_recipe("grid", "label_cards")),
+                   ("grid · labels inside", [TABLE], '<Table ref="gaps" variant="grid" labels="inside" />'),
+                   ("grid · accent_edge", [TABLE], table_recipe("grid", "accent_edge")),
+                   ("grid · lifted", [TABLE], table_recipe("grid", "lifted")),
+                   ("grid numbered", [TABLE], tag("Table", TABLE, "grid numbered")),
+                   ("ledger · icons", [TABLE], '<Table ref="gaps" variant="ledger" icons="alert-triangle,store,shopping-cart,wrench" />')]),
         "chart": ([(f"today · {v}", [LB.CHART], LB.chart(v)) for v in ("plain", "labelled", "focus_label")],
                   [("native (default)", [CHART], chart_tag()), ("native labelled", [CHART], chart_tag("native labelled")),
                    ("rows", [CHART], chart_tag("rows")),

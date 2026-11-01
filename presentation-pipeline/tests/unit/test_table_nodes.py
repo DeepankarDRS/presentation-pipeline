@@ -203,3 +203,47 @@ def test_composed_registry():
 def test_off_without_pom_nodes(monkeypatch):
     monkeypatch.setenv("POM_NODES", "chart")
     assert "table" not in composed.kinds_on() and composed.drawn(plan(GAPS), "table") == {}
+
+
+# ── table as cards: grid / grid numbered / ledger (user, 2026-11-01) ─────────
+
+def test_grid_keeps_rows_columns_and_every_heading():
+    r = run('<Table ref="gaps" variant="grid"/>', GAPS)
+    x = r["xml"]
+    assert used(r, "gaps") == "grid" and r["ok"]
+    assert all(f">{h}</Text>" in x for h in GAPS["content_data"]["table_columns"])          # Gap included
+    assert all(c in x for row in GAPS["content_data"]["table_rows"] for c in row)
+    assert all(f'id="card-gapsl-{i}"' in x for i in range(4)) and x.count('id="card-gapsc-') == 12   # two peer groups
+    assert x.count('border.color="$positive"') == 4                                          # the Fix column's cards
+    assert 'backgroundColor="$positive"' in x and "$tone" not in x                           # its header pill
+
+
+def test_grid_labels_inside():
+    x = run('<Table ref="gaps" variant="grid" labels="inside"/>', GAPS)["xml"]
+    assert x.count(">GAP</Text>") == 4 and x.count(">MARKETPLACE A</Text>") == 4             # a name in every card
+    assert x.count(">FIX</Text>") == 4 and 'color="$positiveText"' in x
+    assert '<HStack padding="10" borderRadius="6"' not in x                                  # no header pills
+
+
+def test_grid_numbered_and_its_fallbacks():
+    r = run('<Table ref="gaps" variant="grid numbered"/>', GAPS)
+    assert used(r, "gaps") == "grid numbered" and all(f">0{i}</Text>" in r["xml"] for i in range(1, 5))
+    r = run('<Table ref="own" variant="grid numbered"/>', OWN)
+    assert used(r, "own") == "grid" and "NODE_VARIANT_UNMET" in codes(r)
+    r = run('<Table ref="tall" variant="grid"/>', TALL)
+    assert used(r, "tall") == "native" and "NODE_VARIANT_UNMET" in codes(r)
+
+
+def test_ledger_icons_and_stripes():
+    r = run('<Table ref="gaps" variant="ledger" icons="alert-triangle,store,shopping-cart,wrench"/>', GAPS)
+    x = r["xml"]
+    assert used(r, "gaps") == "ledger" and x.count("<Icon ") == 4 and 'name="wrench"' in x
+    rows = re.findall(r'<HStack grow="1" gap="0" alignItems="stretch">(.*?)</HStack>', x)
+    assert "$surfaceAlt" not in rows[0] and "$surfaceAlt" in rows[1]                          # alternate rows tinted
+    assert "<Icon " not in run('<Table ref="gaps" variant="ledger"/>', GAPS)["xml"]           # no icons asked: names only
+
+
+@pytest.mark.parametrize("style", ["label_cards", "accent_edge", "lifted"])
+def test_grid_recipes_are_valid_attributes(style):
+    r = run(f'<Table ref="gaps" variant="grid" {TB.node()["styles"][style]}/>', GAPS)
+    assert used(r, "gaps") == "grid" and not [c for c in codes(r) if c in ("NODE_ATTR_UNKNOWN", "LITERAL_COLOR")]

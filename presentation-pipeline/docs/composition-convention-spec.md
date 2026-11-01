@@ -107,6 +107,9 @@ MODIFIER = numbered | labelled
 **Block-specific words.** None are needed for KPI tiles, cards or the 8 other blocks (C5: a callout's
 quotation is a content rule of `native`, not a word). A later block that needs a structure no word covers
 adds one word to this table, with its meaning. It never reuses a word with a new meaning.
+- **`ledger`** (table, user 2026-11-01): one solid header band, an icon over each column name (the tag's
+  `icons`), over joined rows tinted by turns. The table also takes the shared `grid` / `grid numbered` (every
+  cell its own card under the header; `labels="inside"` writes each column name in its cards instead).
 
 **Head / detail split (C10).** Where a composition shows a string item as a head and a detail, code splits it
 at the first " — " and only then at ": ", so "Phase 1: Foundation — detail" gives the head "Phase 1:
