@@ -263,7 +263,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
 def node_lines() -> str:
     """The fixed lines (the cached part of the system prompt)."""
     vs = spec.blocks()["table"]["variants"]
-    styles = "; ".join(f"{n}: " + " ".join(f'{k}="{v}"' for k, v in st.items()) for n, st in (node().get("styles") or {}).items())
+    styles = "; ".join(f"{n}: {st}" for n, st in (node().get("styles") or {}).items())
     return "\n".join([
         "## TABLES (code draws them from the plan)",
         f'<{TAG} ref="<table id>" variant="..."/>: ' + "; ".join(f"{n} ({v['prompt']})" for n, v in vs.items()) + ".",

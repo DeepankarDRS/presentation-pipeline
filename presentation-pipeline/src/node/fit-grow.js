@@ -849,11 +849,12 @@ function squeezes(L) {
  * stack or text overruns its box more than it did (`before` = squeezes()), and
  * every `keep` ([id, h]) kept its height.
  */
-async function tableFits(xml, id, before, keep = []) {
+async function tableFits(xml, id, before, keep = [], maxW = Infinity) {
   const T = await layout(xml);
   try {
     const t = T.byId.get(id);
     if (rowsSum(t) > T.box(t).h + 1) return false;
+    if (T.box(t).w > maxW + 1) return false; // a wider table squeezed a neighbour (replay 2026-11-01: a side panel)
     if (T.slides.some((r) => contentHeight(r, T) > SLIDE.h * 1.005)) return false;
     for (const [k, o] of squeezes(T)) if (o > Math.max(before.get(k) ?? 0, 0) + 1) return false;
     return keep.every(([k, h]) => Math.abs(T.box(T.byId.get(k)).h - h) <= 1);
@@ -979,7 +980,7 @@ async function growMainTable(xml, id, report, onlyTable, caps = { font: TD_FONT_
   const kMax = sized || !onlyTable ? 1 : Math.max(1, caps.font / f0);
   const k = kMax > 1 ? await bisect(1, kMax, (x) => {
     const a = atFont(x);
-    return a.plan.valid && tableFits(a.xml, id, before, keep);
+    return a.plan.valid && tableFits(a.xml, id, before, keep, W);
   }) : 1;
   const grownFont = cells.some((c) => fontFor(k)(c) !== (c.fontSize ?? TD_FONT));
   const K = atFont(grownFont ? k : 1);
@@ -988,8 +989,8 @@ async function growMainTable(xml, id, report, onlyTable, caps = { font: TD_FONT_
   const cap = K.rows.map((r, i) => Math.max(r, Math.min(caps.row, Math.round(caps.grow * K.plan.need[i]))));
   const rowsAt = (t) => K.rows.map((r, i) => Math.round(r + t * (cap[i] - r)));
   const rowXml = (t) => writeTable(K.xml, id, { rows: rowsAt(t) });
-  const t = sum(cap) > sum(K.rows) && await tableFits(rowXml(0), id, before, keep)
-    ? await bisect(0, 1, (x) => tableFits(rowXml(x), id, before, keep)) : 0;
+  const t = sum(cap) > sum(K.rows) && await tableFits(rowXml(0), id, before, keep, W)
+    ? await bisect(0, 1, (x) => tableFits(rowXml(x), id, before, keep, W)) : 0;
   const rows = rowsAt(t);
   if (!grownFont && sum(rows) - sum(declared) < 8) return xml;
   report.push(`main table into spare height: `

@@ -971,5 +971,5 @@ nodes:
       dark_header: {variant: native, header.backgroundColor: $panelDark, header.color: $onPanelDark,
                     label.color: $accentText}
     styles:                             # recipes (prompt examples only)
-      zebra: {stripe.backgroundColor: $surfaceAlt}
-      dark_header: {header.backgroundColor: $panelDark, header.color: $onPanelDark, label.color: $accentText}
+      zebra: 'stripe.backgroundColor="$surfaceAlt"'
+      dark_header: 'header.backgroundColor="$panelDark" header.color="$onPanelDark" label.color="$accentText"'
