@@ -59,3 +59,15 @@ B issues: NODE_DEFAULT_FROM_CONTENT 35, NODE_LOOK_FROM_HINT 12, NODE_FIELD_MISSI
   21 differing slides). Report-only, as before; your marks decide.
 - **B errors 2:** both also in A (hand-drawn KPI refs on those saved slides), not from the nodes.
 - Broken words, WORD_TOO_WIDE, LOW_CONTRAST, missing / off-plan text: equal in both arms.
+
+## Blind marks (user, 2026-11-01)
+
+40 pairs: **B (composition node) 11 / A (today) 2 / same 26 / unmarked 1 (4.3)** -> B / (B + A) = **0.846**; with
+"same" as satisfied (user rule) (B + same) / 39 = **0.949**. **Gate (≥ 0.5) passed.**
+
+- B wins: the dark emphasis / destination card and hero highlight (1.4, 3.1, 3.4, 6.2, 10.4), bento (1.1, 3.3, 4.1),
+  visible card borders and separation (6.1), KPI grid (6.3).
+- A wins: 1.3 (`grid`, "better sizing and less empty spacing" for today's), 5.2 (`bento` on a 5-step pipeline, "like
+  the border"). The 5.3 note ("if scale is a 5-step pipeline why is it at the front") reads as about `bento` on a steps
+  plan: the destination card is drawn first, out of the sequence order. Open: should `bento` require a grid plan
+  (`layout_grid`)? Bento on the same pipeline won 3.3 and 4.1, so not changed without your call.
