@@ -140,23 +140,6 @@ def split(s: str) -> tuple[str, str]:
     return s, ""
 
 
-_OWN_ORDINAL = re.compile(r"^\s*(?:\d+[.)]|0\d\b|(?:phase|step|stage|wave)\s+\d+\b)", re.I)
-
-
-def own_ordinal(s: str) -> bool:
-    """The item already carries its own number ("Phase 1: …", "01. …"): `numbered` would repeat it (C10)."""
-    return bool(_OWN_ORDINAL.match(str(s or "")))
-
-
-_DATED = re.compile(r"^\s*(?:Q[1-4]|H[12]|FY\s?\d|CY\s?\d|W\d|(?:19|20)\d\d|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b",
-                    re.I)
-
-
-def dated(s: str) -> bool:
-    """The item opens with a date or period ("Q1: …", "Jul–Aug — …"): dated steps are not numbered."""
-    return bool(_DATED.match(str(s or "")))
-
-
 def before_layer(nd: dict, name: str, rest: dict) -> dict:
     """The parts of an item before the emphasis item: `rest` with the composition's `before` look over it."""
     out = {p: dict(a) for p, a in rest.items()}

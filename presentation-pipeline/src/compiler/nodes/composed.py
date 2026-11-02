@@ -1,5 +1,5 @@
 """The composition nodes switched on by POM_NODES (left-blocks spec §2.5), behind one interface for the validator,
-generator and context builder: chart (charts.py), timeline / process_arrow / flow (sequences.py)."""
+generator and context builder: chart (charts.py), timeline (sequences.py)."""
 
 from __future__ import annotations
 
@@ -8,8 +8,7 @@ from typing import Any
 from src.compiler.nodes import charts, sequences
 
 # plan-level content_data keys a drawn kind no longer needs in the prompt
-PLAN_KEYS = {"chart": ("chart_",), "timeline": ("timeline_items",), "process_arrow": ("process_steps",),
-             "flow": ("flow_steps",)}
+PLAN_KEYS = {"chart": ("chart_",), "timeline": ("timeline_items",)}
 
 
 def kinds_on() -> list[str]:

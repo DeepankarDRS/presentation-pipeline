@@ -354,9 +354,9 @@ Drawn and rendered in `docs/eval/composition-left/` (R1; the hand-written XML ea
 | table (`<Table>`) | `native` · `rows` / `rows numbered` · `columns` · `banded` | `columns`: ≤ 5 rows, ≤ 6 columns; `banded`: ≤ 6 rows → `native` | `plain` (default look), `zebra` (`stripe.`), `dark_header` (`header.` / `label.`); `highlight_row` = emphasis look; `minimal` dropped (C2) |
 | chart (`<Chart>`) | `native` · `native labelled` · `rows` | `labelled` / `rows`: one series, ≤ 8 points (bar for `labelled`) → `native` | `focus_label` = emphasis look of `native labelled`; `horizontal` → `direction` |
 | bullet_list (`<BulletList>`) | `native` · `rows` / `rows numbered` · `grid` · `banded` | `banded`: ≥ 75% of points split → `grid` | `lead` = `native` default; `icon` = `rows` + LLM `icon`; `tiles` = `grid`; `columns` = `rows cols="2"` |
-| timeline (`<Timeline>`) | `rail` · `rows` · `banded` · `native` | `native`: every label fits the break-map room and has no detail → else `rail` (default chosen from content) | `vertical` → `direction` |
-| process_arrow (`<ProcessArrow>`) | `native` · `steps` / `steps numbered` · `rail` | `native`: every step fits (≤ ~24 characters, C8) → else `steps` (default chosen from content); `numbered`: no dates, no own ordinals | — |
-| flow (`<Flow>`) | `native` · `steps` / `steps numbered` | linear list only | — |
+| timeline (`<Timeline>`) | `native` · `rail` · `columns` · `rows` · `banded` | `native`: every label ≤ 24 characters with no detail → else `rail` (dots on a line, date / head / detail alternating above and below); `rail`: ≤ 7 points → else `columns` (a box per point under the line). Default chosen from content (2026-11-02) | `vertical` → `direction`; `cards` → `columns`; `alternating` → `rail` |
+| process_arrow (`<ProcessArrow>`) | **no node (user, 2026-11-02)** | — | the LLM draws it as before (`chevrons` / `numbered` / `alternating` / `step_cards`) |
+| flow (`<Flow>`) | **no node (user, 2026-11-02)** | — | the LLM draws it as before (`boxes` / `numbered` / `step_cards`) |
 | callout (`<Narrative>`) | `native` (a quotation draws its `mark.` and attribution by content rule, C5) | — | `tinted` (default look), `rule`, `dark`, `plain` |
 | header (`<Title>`) | `native` | — | `standard` (default), `inverted`; `ruled` needs a `rule.` look part (C13), not built |
 | matrix (`<Matrix>`) | `native` · `grid` | `grid`: `quadrants` present → `native` | — |
@@ -370,8 +370,14 @@ Pyramid and tree stay `native` (C9).
 - **Chart `native labelled` (C6)** needs two code fixes: the label ink from `$chartInk`, and a number format
   derived from the plan's unit when the values share one ("0.29x" → `0.00"x"`). Chart text takes no attribute,
   so style power on charts lives in `rows`, where every part is a Text / Shape.
-- **Timeline (C4):** `columns` is not used (timeline items have no sub-items). `banded` uses the date as the
-  band, coloured done / now / ahead from the "now" item (hint only).
+- **Timeline (C4):** `banded` uses the date as the band, coloured done / now / ahead from the "now" item (hint
+  only). **2026-11-02 (user):** process_arrow's alternating `rail` moved to the timeline as `rail`, the default for
+  labels with detail (the timeline's problem was long text: POM's 120 px titles); the old timeline `rail` (a line
+  with a box per point) is now `columns`, used past 7 points.
+- **Process arrow and flow dropped (user, 2026-11-02).** POM's chevrons (150 × 80) and flow nodes (120 × 60) hold
+  about two words at a fixed size and only shrink (`process-arrow.yaml` / `flow.yaml` facts), and the code-drawn
+  `steps` were card grids under another name (`docs/eval/sequence-nodes/native-vs-derived-*.png`). Their nodes are
+  gone; the planner still plans them and the LLM writes POM's `<ProcessArrow>` / `<Flow>` as before.
 - **Inner boxes (C11).** A composition node gives its inner boxes one peer group, `card-<cid>x-<n>`, as well as
   the item ids `card-<cid>-<i>`, so that fit-grow grows peers to one size when an item's children stretch.
 - **Value refs (C12).** A code-drawn `rows` writes its value / label as element refs (role ids), so that
@@ -398,7 +404,7 @@ Pyramid and tree stay `native` (C9).
    Inner boxes carry the peer ids `card-<cid>x-<n>` (C11), and code-drawn `rows` write value refs (C12).
 
 The 8 other blocks (§8) follow the same steps, one block per step behind `POM_NODES=<kind>` (left-blocks spec
-§2.5, §13): chart, then timeline + process_arrow + flow, then table, then bullet_list. Callout comes later, and
+§2.5, §13): chart, then timeline (+ process_arrow + flow, dropped 2026-11-02), then table, then bullet_list. Callout comes later, and
 header is not built now. Each block stops at its gate for the user's marks.
 3. Composition gallery = this proof with bare tags. It must match these sheets.
 4. Free replay on the saved KPI / card slides: the bare tag with the hint's composition, scorecard + blind sheet
