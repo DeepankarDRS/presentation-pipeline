@@ -55,6 +55,13 @@ ROAS_T = comp("roas", "table", {"table_columns": ["Platform", "Spend", "ROAS", "
     "flag Flipkart as the worst performer; show which platforms beat the ROAS target", columns=5, rows=4)
 HIGHLIGHTS = ('<Highlight row="Flipkart" fill="bad"/><Highlight column="ROAS" below="Target" color="bad" else="good"/>'
               '<Highlight column="Spend" max="bad"/><Highlight phrase="Best return" color="good"/>')
+# changes, a status and a size column for show= arrows / pills / bars (user, 2026-11-02)
+SEG_T = comp("segs", "table", {"table_columns": ["Segment", "ARR", "QoQ", "Status"], "table_rows": [
+    ["Enterprise", "₹28.1 Cr", "+22%", "On track"], ["Mid-Market", "₹14.4 Cr", "-3%", "At risk"],
+    ["SMB", "₹5.7 Cr", "+8%", "On track"], ["Startups", "₹2.1 Cr", "-11%", "Watch"]]},
+    "flag Mid-Market as at risk; show the quarter's change", columns=4, rows=4)
+SHOWS = ('<Highlight column="QoQ" show="arrows"/><Highlight column="Status" show="pills"/>'
+         '<Highlight column="ARR" show="bars"/><Highlight phrase="At risk" color="bad"/>')
 # one-series bar with unit strings (saved: "Campaign-class ROAS", 19 one-series bars of 4-6 points)
 CHART = comp("roas", "chart", {"chart_title": "ROAS by campaign class",
                                "chart_labels": ["Generic search", "Category / PLA", "Brand", "Competitor"],
@@ -278,7 +285,10 @@ def blocks() -> dict[str, tuple[list, list]]:
                    ("ledger · icons", [TABLE], '<Table ref="gaps" variant="ledger" icons="alert-triangle,store,shopping-cart,wrench" />'),
                    ("native · highlights", [ROAS_T], f'<Table ref="roas">{HIGHLIGHTS}</Table>'),
                    ("grid · highlights", [ROAS_T], f'<Table ref="roas" variant="grid">{HIGHLIGHTS}</Table>'),
-                   ("ledger · highlights", [ROAS_T], f'<Table ref="roas" variant="ledger">{HIGHLIGHTS}</Table>')]),
+                   ("ledger · highlights", [ROAS_T], f'<Table ref="roas" variant="ledger">{HIGHLIGHTS}</Table>'),
+                   ("native · arrows", [SEG_T], f'<Table ref="segs">{SHOWS}</Table>'),
+                   ("ledger · arrows pills bars", [SEG_T], f'<Table ref="segs" variant="ledger">{SHOWS}</Table>'),
+                   ("grid · arrows pills bars", [SEG_T], f'<Table ref="segs" variant="grid">{SHOWS}</Table>')]),
         "chart": ([(f"today · {v}", [LB.CHART], LB.chart(v)) for v in ("plain", "labelled", "focus_label")],
                   [("native (default)", [CHART], chart_tag()), ("native labelled", [CHART], chart_tag("native labelled")),
                    ("rows", [CHART], chart_tag("rows")),

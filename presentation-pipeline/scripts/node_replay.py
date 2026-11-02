@@ -115,9 +115,65 @@ def chart_card(chart: etree._Element, comp: dict) -> etree._Element:
     return el if el is not chart and (el.get("backgroundColor") or el.get("border.color")) else chart
 
 
-def rewrite(root: etree._Element, comp: dict, variant: str) -> dict:
+_TONE_OF = (("negative", "bad"), ("positive", "good"), ("warning", "watch"), ("accent", "focus"))
+
+
+def _tone(v: str | None, focus: bool = True) -> str:
+    """A colour token's tone: $negative* bad, $positive* good, $warning* watch, $accent* focus; else ""."""
+    v = str(v or "")
+    return next((t for k, t in _TONE_OF if k in v and (focus or t != "focus")), "") if v.startswith("$") else ""
+
+
+def llm_marks(table: etree._Element, comp: dict) -> list[str]:
+    """The LLM's own colour coding of its <Table> as <Highlight> marks on the plan's names (user 2026-11-02: can the
+    tag reproduce it?): a body row whose every cell has one fill / text tone -> a row mark; a column likewise (no focus:
+    a whole column in the accent is the LLM's look, not an emphasis); other toned cells -> cell marks; toned <Span>s
+    -> phrase marks. All of them, in that order: the node keeps the first MAX_HIGHLIGHTS."""
+    cols, rows = tables.grid(comp)
+    norm = lambda s: " ".join(str(s).split()).casefold()  # noqa: E731
+    trs = [t for t in table if t.tag == "Tr"]
+    body = trs[1:] if trs and len(trs) == len(rows) + 1 else trs[-len(rows):] if rows else []
+    labels = [norm(r[0]) for r in rows]
+    grid_ = []   # (plan row, [(fill, ink, spans) per column])
+    for i, tr in enumerate(body):
+        tds = [td for td in tr if td.tag == "Td"]
+        r = labels.index(norm("".join(tds[0].itertext()))) if tds and norm("".join(tds[0].itertext())) in labels else i
+        if r >= len(rows) or len(tds) != len(cols):
+            continue
+        grid_.append((r, [(_tone(td.get("backgroundColor")), _tone(td.get("color")),
+                           [("".join(s.itertext()).strip(), _tone(s.get("color"))) for s in td.iter("Span") if _tone(s.get("color"))])
+                          for td in tds]))
+    marks, done = [], set()   # done: (r, c, "fill" / "color") covered
+    q = lambda s: native.x(s).replace('"', "&quot;")  # noqa: E731
+    for r, cells in grid_:
+        for k, attr in ((0, "fill"), (1, "color")):
+            ts = {c[k] for c in cells}
+            if len(ts) == 1 and next(iter(ts)):
+                marks.append(f'<Highlight row="{q(rows[r][0])}" {attr}="{next(iter(ts))}"/>')
+                done |= {(r, c, attr) for c in range(len(cols))}
+    for c in range(len(cols)):
+        for k, attr in ((0, "fill"), (1, "color")):
+            col =[cells[c][k] for r, cells in grid_ if (r, c, attr) not in done]
+            if len(grid_) > 1 and col and len(set(col)) == 1 and col[0] and col[0] != "focus" and len(col) == len(grid_):
+                marks.append(f'<Highlight column="{q(cols[c])}" {attr}="{col[0]}"/>')
+                done |= {(r, c, attr) for r, _ in grid_}
+    for r, cells in grid_:
+        for c, (fill, ink, spans) in enumerate(cells):
+            at = {a: t for a, t in (("fill", fill), ("color", ink)) if t and (r, c, a) not in done}
+            if at:
+                marks.append(f'<Highlight cell="{q(rows[r][0])} / {q(cols[c])}"' + "".join(f' {a}="{t}"' for a, t in at.items()) + "/>")
+    for r, cells in grid_:
+        for c, (_, ink, spans) in enumerate(cells):
+            for text, tone in spans:
+                if text and (r, c, "color") not in done and text.lower() in rows[r][c].lower():
+                    marks.append(f'<Highlight phrase="{q(text)}" color="{tone}"/>')
+    return marks
+
+
+def rewrite(root: etree._Element, comp: dict, variant: str, marks_from_llm: bool = False) -> dict:
     tag = composed.tag(comp["kind"])
     chart = next(root.iter(tag))
+    marks = llm_marks(chart, comp) if marks_from_llm and comp["kind"] == "table" else []
     # a table node draws no card or title: the LLM keeps its own around the tag (user marks 2026-11-02: on 38 slides
     # the replay had dropped the card and its title row)
     el = chart if comp["kind"] == "table" else chart_card(chart, comp)
@@ -129,11 +185,12 @@ def rewrite(root: etree._Element, comp: dict, variant: str) -> dict:
                      if k in ("h", "minH") and k not in keep and re.fullmatch(r"\d+(?:\.\d+)?", v)})
     old = _serial(el)
     attrs = {"ref": comp["component_id"], **({"variant": variant} if variant else {}), **keep}
-    tag = f"<{tag}" + "".join(f' {k}="{native.x(v)}"' for k, v in attrs.items()) + " />"
+    head = f"<{tag}" + "".join(f' {k}="{native.x(v)}"' for k, v in attrs.items())
+    tag = f"{head}>{''.join(marks)}</{tag}>" if marks else head + " />"
     new = etree.fromstring(tag)
     new.tail = el.tail
     el.getparent().replace(el, new)
-    return {"old": old, "tag": tag, "card": el is not chart}
+    return {"old": old, "tag": tag, "card": el is not chart, "marks": len(marks)}
 
 
 _SHOWN = ("label", "title", "text", "date", "description")
@@ -172,7 +229,7 @@ def drawn_data(final_xml: str, comp: dict) -> dict:
 
 
 def run(src: Path, out: Path, do_render: bool, limit: int | None, variant: str, only: list[str] | None = None,
-        kind: str = "chart") -> list[dict]:
+        kind: str = "chart", marks_from_llm: bool = False) -> list[dict]:
     results = []
     for r in collect(src, kind, limit):
         if only and not any(o in r["case"] for o in only):
@@ -184,9 +241,9 @@ def run(src: Path, out: Path, do_render: bool, limit: int | None, variant: str, 
             SKIPPED.append(f"{r['case']}: {e}")
             print(f"{r['case']}: skipped, not well-formed ({e})", flush=True)
             continue
-        done = rewrite(root, comp, variant)
+        done = rewrite(root, comp, variant, marks_from_llm)
         expanded = composed.expand(_serial(root), r["plan"])
-        row = {"case": r["case"], "source": r["source"], "card": done["card"], "tag": done["tag"],
+        row = {"case": r["case"], "source": r["source"], "card": done["card"], "tag": done["tag"], "marks": done["marks"],
                "b_issues": [i["code"] for i in expanded["issues"]], "drawn": expanded["components"],
                "tokens": {"A": tokens(done["old"]), "B": tokens(done["tag"])}}
         for arm, xml in (("A", BARE_AMP.sub("&amp;", r["xml"])), ("B", expanded["xml"])):
@@ -234,6 +291,10 @@ def summary(out: Path, results: list[dict], variant: str, kind: str = "chart") -
         f"| LOW_CONTRAST | {tot('A', lambda s: s['low_contrast'])} | {tot('B', lambda s: s['low_contrast'])} |",
         f"| {kind} output tokens | {ta} | {tb} ({(tb - ta) / ta:+.0%}) |" if ta else f"| {kind} output tokens | 0 | 0 |",
         "", f"B issues: {dict(Counter(c for r in results for c in r['b_issues']))}",
+        *([f"Highlights from the LLM's colours: {sum(1 for r in results if r.get('marks'))} slides with marks; "
+           f"marks per table {dict(sorted(Counter(r.get('marks', 0) for r in results).items()))} "
+           f"(more than {tables.MAX_HIGHLIGHTS}: {sum(1 for r in results if r.get('marks', 0) > tables.MAX_HIGHLIGHTS)})"]
+          if any(r.get("marks") for r in results) else []),
     ]
     text = "\n".join(lines) + "\n"
     (out / "summary.md").write_text(text, encoding="utf-8")
@@ -249,12 +310,16 @@ def main() -> int:
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--only", nargs="*", help="cases whose name contains one of these")
+    ap.add_argument("--marks-from-llm", action="store_true",
+                    help="table: arm B gets <Highlight> marks made from the LLM's own colour coding")
     a = ap.parse_args()
     base = ROOT / "output" / f"{a.kind.replace('_', '-')}-replay"
     out = a.out or (base.with_name(f"{base.name}-{a.variant.replace(' ', '-')}") if a.variant else base)
+    if a.marks_from_llm and not a.out:
+        out = out.with_name(out.name + "-marks")
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
-    results = run(a.src, out, not a.no_render, a.limit, a.variant, a.only, a.kind)
+    results = run(a.src, out, not a.no_render, a.limit, a.variant, a.only, a.kind, a.marks_from_llm)
     (out / "results.json").write_text(json.dumps(results, indent=1, ensure_ascii=False), encoding="utf-8")
     if not a.no_render:
         print(f"sheets: {card_sheets(out, results)} pairs")

@@ -381,3 +381,55 @@ def test_prompt_line_shows_cells_to_read():
 def test_node_lines_teach_highlight_not_mark():
     lines = TB.node_lines()
     assert "<Highlight" in lines and "<Mark" not in lines and "max=" in lines and "below=" in lines
+
+
+# ── show= arrows / pills / bars (user, 2026-11-02) ────────────────────────────────────────────────────────────
+
+DELTA = {"component_id": "delta", "kind": "table", "content_data": {
+    "table_columns": ["Segment", "ARR", "QoQ", "CPC change", "Status"], "table_rows": [
+        ["Enterprise", "$28.1M", "+22%", "+8%", "On track"],
+        ["Mid-Market", "$14.4M", "-3%", "-5%", "At risk"],
+        ["SMB", "$5.7M", "0%", "+1%", "On track"]]}}
+
+
+def dl(*marks, variant=""):
+    v = f' variant="{variant}"' if variant else ""
+    return run(f'<Table ref="delta"{v}>{"".join(marks)}</Table>', DELTA)
+
+
+def test_arrows_on_signed_numbers_up_good_down_bad():
+    x = dl('<Highlight column="QoQ" show="arrows"/>')["xml"]
+    assert '<Span color="$positiveText">▲ </Span>+22%' in x and '<Span color="$negativeText">▼ </Span>-3%' in x
+    assert "▲ </Span>0%" not in x and "▼ </Span>0%" not in x and "$28.1M" in x and "▲ </Span>$" not in x
+
+
+def test_arrows_invert_for_costs():
+    x = dl('<Highlight column="CPC change" show="arrows" invert="true"/>')["xml"]
+    assert '<Span color="$negativeText">▲ </Span>+8%' in x and '<Span color="$positiveText">▼ </Span>-5%' in x
+
+
+def test_arrows_on_unsigned_column_warn():
+    res = dl('<Highlight column="ARR" show="arrows"/>')
+    assert "NODE_HIGHLIGHT_RULE" in codes(res) and "▲" not in res["xml"]
+
+
+def test_pills_take_the_cell_tone_in_card_compositions():
+    x = dl('<Highlight column="Status" show="pills"/>', '<Highlight phrase="At risk" color="bad"/>',
+           '<Highlight cell="Mid-Market / Status" color="bad"/>', variant="ledger")["xml"]
+    assert x.count('borderRadius="14" backgroundColor="$accentSoft"') == 2      # the two "On track" pills
+    assert 'borderRadius="14" backgroundColor="$negativeSoft"' in x            # "At risk": its cell tone
+
+
+def test_bars_sized_to_the_largest():
+    x = dl('<Highlight column="ARR" show="bars"/>', variant="grid")["xml"]
+    assert 'w="100%"' in x and 'w="51%"' in x and 'w="20%"' in x
+
+
+def test_pills_and_bars_dropped_on_native():
+    res = dl('<Highlight column="Status" show="pills"/>')
+    assert "NODE_ATTR_DROPPED" in codes(res) and 'borderRadius="14"' not in res["xml"] and res["ok"]
+
+
+def test_show_needs_a_column_and_a_known_kind():
+    assert "NODE_HIGHLIGHT_UNKNOWN" in codes(dl('<Highlight column="QoQ" show="sparkline"/>'))
+    assert "NODE_HIGHLIGHT_UNKNOWN" in codes(dl('<Highlight row="SMB" show="arrows"/>'))

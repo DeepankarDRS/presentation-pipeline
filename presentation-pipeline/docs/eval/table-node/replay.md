@@ -142,3 +142,25 @@ Ties left out: 10 / 19 = 0.53.**
 
 WORD_TOO_WIDE rose on the LLM's tables (13 -> 23): the word guard now counts the margins, and the LLM's own column
 widths leave less room for them. Highlights (`<Highlight>`) are not in these sheets: the saved slides predate them.
+
+## Can the tag reproduce the LLM's colour coding? (2026-11-02, `native-marks/`)
+
+`python -m scripts.node_replay --kind table --marks-from-llm`: arm B's tag gets `<Highlight>` marks made from the
+LLM's own colours (whole toned rows / columns, then toned cells, then toned `<Span>`s; a new `focus` tone carries
+the LLM's accent emphasis). 43 of the 66 LLM tables colour cells by meaning (median 2 toned cells, up to 18).
+
+| | A (LLM) | B (tag + marks) |
+|---|---|---|
+| compiled | 66 | 66 |
+| broken words | 0 | 0 |
+| text overlaps | 35 | 37 |
+| WORD_TOO_WIDE | 23 | 15 |
+| LOW_CONTRAST | 13 | 9 |
+| table output tokens | 36 083 | 3 909 (−89%) |
+
+58 slides got marks; marks per table {0: 8, 1: 8, 2: 15, 3: 11, 4: 5, 5: 6, 6: 8, 8+: 5}. 19 tables need more
+than 4: the tag keeps the first 4 (rows, then columns, then cells), so their per-cell colours are partly lost
+(pair 4.1: the LLM's tinted platform columns). The commonest overflow is a toned row plus its first cell's text in
+the same tone (two marks for one idea).
+
+`show=` visuals (gallery, `shows-gallery.png`): arrows (native too), pills and data bars (card compositions).

@@ -116,11 +116,18 @@ def role(comp: dict, focus: tuple[str, int] | None) -> str:
 #   <Highlight row="Flipkart" fill="bad"/>  <Highlight column="ROAS" below="Target" color="bad" else="good"/>
 #   <Highlight column="ROAS" max="good" min="bad"/>  <Highlight cell="Nykaa / ROAS" color="good"/>
 #   <Highlight phrase="spend still rising" color="bad"/>
-# fill = the cell's background ($<role>Soft), color = its text ($<role>Text); tones good / bad / watch.
+# fill = the cell's background ($<role>Soft), color = its text ($<role>Text); tones good / bad / watch / focus.
+# show= a column's values drawn as (user, 2026-11-02): arrows (▲ / ▼ before signed numbers, up good unless
+# invert="true"), pills (each value in a rounded tag) or bars (a bar under each number, sized to the column's largest).
+# Pills and bars need a box per cell: the card compositions draw them, native drops them (NODE_ATTR_DROPPED).
 
 MAX_HIGHLIGHTS = 4
-HIGHLIGHT_ATTRS = {"row", "column", "cell", "phrase", "fill", "color", "above", "below", "else", "max", "min"}
-TONES = ("good", "bad", "watch")
+HIGHLIGHT_ATTRS = {"row", "column", "cell", "phrase", "fill", "color", "above", "below", "else", "max", "min",
+                   "show", "invert"}
+SHOWS = ("arrows", "pills", "bars")
+_SIGNED = re.compile(r"^\s*[-+−▲▼]")
+TONES = ("good", "bad", "watch", "focus")   # focus: emphasis without a meaning, in the accent
+TONE_ROLES = {**compose.TONE_ROLE, "focus": "accent"}
 _NUM = re.compile(r"[-+−]?\d[\d,]*(?:\.\d+)?")
 
 
@@ -139,6 +146,13 @@ class Paint:
         self.fill: dict[tuple[int, int], str] = {}
         self.ink: dict[tuple[int, int], str] = {}
         self.spans: dict[tuple[int, int], list[tuple[str, str]]] = {}
+        self.arrows: dict[tuple[int, int], tuple[str, str]] = {}   # (glyph, role)
+        self.pills: set[tuple[int, int]] = set()
+        self.bars: dict[tuple[int, int], int] = {}                  # % of the column's largest
+
+    def boxed(self) -> bool:
+        """Pills or bars asked: only a composition with a box per cell draws them."""
+        return bool(self.pills or self.bars)
 
     def box(self, r: int, c: int, at: dict) -> dict:
         """A cell's box attributes with its fill: the role's Soft fill, its border in the role when it has one."""
@@ -163,7 +177,21 @@ class Paint:
                 continue
             out += [native.x(v[pos:s]), f'<Span color="${role}Text">{native.x(v[s:s + n])}</Span>']
             pos = s + n
-        return "".join(out) + native.x(v[pos:])
+        arrow = self.arrows.get((r, c))
+        lead = f'<Span color="${arrow[1]}Text">{arrow[0]} </Span>' if arrow else ""
+        return lead + "".join(out) + native.x(v[pos:])
+
+    def wrap(self, r: int, c: int, text: str) -> str:
+        """A card cell's Text as a pill (a rounded tag in its tone, accent by default) and / or over a bar."""
+        role = self.ink.get((r, c), "accent")
+        if (r, c) in self.pills:
+            text = (f'<HStack alignSelf="start" alignItems="center" justifyContent="center" padding.top="4" padding.bottom="4" padding.left="12" padding.right="12" '
+                    f'borderRadius="14" backgroundColor="${role}Soft">{text}</HStack>')
+        if (r, c) in self.bars:
+            pct = self.bars[(r, c)]
+            fill = f'<VStack w="{pct}%" h="6" borderRadius="3" backgroundColor="${role}" />' if pct else ""
+            text += f'<HStack h="6" borderRadius="3" backgroundColor="$surfaceAlt">{fill}</HStack>'
+        return text
 
 
 def highlights(comp: dict, body: str, flag) -> Paint | None:
@@ -197,7 +225,7 @@ def highlights(comp: dict, body: str, flag) -> Paint | None:
         flag("NODE_HIGHLIGHT_UNKNOWN", ref, f'<Highlight> on <{TAG} ref="{ref}">: {msg}')
 
     def role(tone: str) -> str:
-        return compose.TONE_ROLE[tone]
+        return TONE_ROLES[tone]
 
     def put(cells: list[tuple[int, int]], at: dict, tone_key: str = "") -> None:
         for rc in cells:
@@ -215,6 +243,31 @@ def highlights(comp: dict, body: str, flag) -> Paint | None:
         tones = {k: at[k] for k in ("fill", "color", "else", "max", "min") if k in at}
         if any(t not in TONES for t in tones.values()):
             bad(f'tones are {" / ".join(TONES)} ({tones}).')
+            continue
+        if "show" in at:
+            if at["show"] not in SHOWS or "column" not in at or norm(at["column"]) not in heads:
+                bad(f'show="{at["show"]}" takes a column ({", ".join(cols)}) and one of {" / ".join(SHOWS)}.')
+                continue
+            c = heads.index(norm(at["column"]))
+            nums = {r: _number(row[c]) for r, row in enumerate(rows)}
+            if at["show"] == "pills":
+                paint.pills |= {(r, c) for r, row in enumerate(rows) if row[c].strip()}
+            elif at["show"] == "arrows":
+                up, down = ("bad", "good") if at.get("invert") == "true" else ("good", "bad")
+                for r, row in enumerate(rows):
+                    if nums[r] and nums[r][0] and _SIGNED.match(row[c]) and not row[c].lstrip().startswith(("▲", "▼")):
+                        paint.arrows[(r, c)] = ("▲", role(up)) if nums[r][0] > 0 else ("▼", role(down))
+                if not any(k[1] == c for k in paint.arrows):
+                    flag("NODE_HIGHLIGHT_RULE", ref, f'show="arrows" on column "{cols[c]}": no signed number (+ / -) in it; '
+                         'no arrows drawn.')
+            else:
+                vals = {r: n for r, n in nums.items() if n and n[0] >= 0}
+                if len({u for _, u in vals.values()}) > 1 or not vals or not max(v for v, _ in vals.values()):
+                    flag("NODE_HIGHLIGHT_RULE", ref, f'show="bars" on column "{cols[c]}": needs positive numbers in one '
+                         'unit; no bars drawn.')
+                    continue
+                top = max(v for v, _ in vals.values())
+                paint.bars |= {(r, c): round(100 * v / top) for r, (v, _) in vals.items()}
             continue
         if not ({"fill", "color"} & set(at)) and not ({"max", "min"} & set(at) and "column" in at):
             bad('give it fill and / or color (max / min colour the text by themselves).')
@@ -303,8 +356,10 @@ class Pick:
         self.rest, self.hi, self.focus, self.paint = rest, hi, focus, paint or Paint()
 
     def text(self, r: int, c: int, v: str, px: int, part: dict, **kw: str) -> str:
-        """A body cell's Text: its highlight colour over the part's, its phrases in <Span color>."""
-        return f'<Text fontSize="{px}"{A({**kw, **part, **self.paint.color(r, c)})}>{self.paint.runs(r, c, v)}</Text>'
+        """A body cell's Text: its highlight colour over the part's, its phrases in <Span color>, as a pill / over a
+        bar when asked."""
+        return self.paint.wrap(r, c, f'<Text fontSize="{px}"{A({**kw, **part, **self.paint.color(r, c)})}>'
+                                     f'{self.paint.runs(r, c, v)}</Text>')
 
     def row(self, r: int) -> dict:
         return self.hi if self.focus == ("row", r) else self.rest
@@ -501,6 +556,10 @@ def draw(comp: dict, attrs: dict[str, str], flag, body: str = "") -> tuple[str, 
             flag("NODE_ATTR_DROPPED", ref, f'item.{k} on <Table ref="{ref}">: a native table cell takes only '
                  'item.backgroundColor; removed (C1).')
             del parts["item"][k]
+    if paint and paint.boxed() and name == "native":
+        flag("NODE_ATTR_DROPPED", ref, f'show="pills" / "bars" on <{TAG} ref="{ref}">: a native table cell holds only '
+             'text; use a card composition (grid, ledger, rows) for them. Removed.')
+        paint.pills, paint.bars = set(), {}
     focus = None if paint else emphasis(comp)
     box, rest, hi = compose.layers(nd, name, box, parts, focus is not None)
     rest, hi = _toned(rest, "accent"), _toned(hi, role(comp, focus))
@@ -550,12 +609,15 @@ def node_lines() -> str:
         f"No <Tr>, <Td> or fontSize. Recipes: {styles}.",
         f"Colour by meaning with up to {MAX_HIGHLIGHTS} <Highlight/> inside the tag (else code colours the row or column "
         "the hint names). Name rows by their first cell and columns by their name, exactly as in the table; tones "
-        "good | bad | watch; fill = the cell's background, color = its text:",
+        "good | bad | watch | focus (emphasis, no meaning); fill = the cell's background, color = its text:",
         '  <Highlight row="Flipkart" fill="bad"/> · <Highlight column="ROAS" color="good"/> · '
         '<Highlight cell="Nykaa / ROAS" fill="good" color="good"/>',
         '  <Highlight column="ROAS" below="Target" color="bad" else="good"/> (a number or another column; code '
         'compares) · <Highlight column="ROAS" max="good" min="bad"/> (highest / lowest value, its text)',
         '  <Highlight phrase="spend still rising" color="bad"/> (those words of a cell, in colour)',
+        '  <Highlight column="QoQ" show="arrows"/> (▲ / ▼ before signed numbers; invert="true" when up is bad) · '
+        '<Highlight column="Status" show="pills"/> · <Highlight column="Spend" show="bars"/> (pills and bars: grid, '
+        'ledger, rows, columns, banded only)',
         "Colour only what the headline or the hint is about.",
     ])
 
