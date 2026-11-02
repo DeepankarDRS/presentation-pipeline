@@ -179,3 +179,22 @@ are all about filling or overflowing the box, not colour:
   when a table runs out of bounds.
 - 12.4 (A): B's table stays short with empty space below; A's rows grew to fill the box.
 - 15.4 (B, note): the type could have grown into the free space.
+
+**Table text fits its box (fit-grow phase 7b, after the marks).** The earlier phases compared a table's declared
+rows with its box; the renderer grows rows to their text, so rows drew under the next card (6.4: the Zepto row,
+11.2: the last row). Now a table whose lines do not fit grows its rows when the slide has room (12.4), else trims the
+pad around each row's lines (8 -> 2 px; a row counts as over only when its lines alone are taller), then shrinks every cell by one scale (>= 10 px) until the rows fit;
+still over at 10 px: `TABLE_OVERFLOW`. Replay again (`output/table-replay-fit`, both arms through the new phase):
+
+| | A (LLM) before -> after | B (tag) before -> after |
+|---|---|---|
+| text overlaps | 35 -> 29 | 37 -> 29 |
+| broken words | 0 -> 0 | 0 -> 0 |
+| WORD_TOO_WIDE | 23 -> 22 | 15 -> 15 |
+| GEOM_CARD_EMPTY | 5 -> 5 | 4 -> 4 |
+| tables grown / pad trimmed / text shrunk | 0 / 2 / 3 | 1 / 1 / 4 |
+
+Shrunk to (B): 13 px ×2, 11 px (6.4), 10 px (agency s1-9c20, a very full slide); 11.2 keeps 14 px (pad trimmed only);
+one `TABLE_OVERFLOW` per arm. A first try counted 4 px of pad and measured at 85% width: it also shrank tables that
+never spilled (node break map table band c10), so a row is over only when its lines alone are taller.
+`table-text-fit.png`: six slides before / after, every row now visible.

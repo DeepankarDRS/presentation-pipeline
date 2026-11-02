@@ -51,14 +51,16 @@ def test_squeezed_table_is_tightened_and_protected(tmp_path):
 
 def test_over_full_slide_is_reported_not_protected(tmp_path):
     """Phase-1 slide 10: header + table + chart band (minH 180) + note exceed 720 even with tight rows.
-    Protecting the table would make POM's autoFit shrink fonts, so rows are only tightened and reported."""
+    Protecting the table would make POM's autoFit shrink fonts, so rows are only tightened and reported; then the
+    cell text shrinks (>= 10 px) until its rows fit the box (user marks 2026-11-02: rows drawn under the next card)."""
     xml = _FIT / "s6-wrapped-table-phase1.xml"
     on = _compile(xml, tmp_path / "on")
     assert any("over-full slide" in r for r in on["fitGrow"])
     assert "minH" not in re.search(r"<Table\b[^>]*>", on["xml"]).group(0)
     spill_off = 105  # measured on the phase-1 replay: 280 px of rows in a 175 px frame
-    assert 0 < table_spill(tmp_path / "on" / "presentation.pptx") < spill_off
-    assert min(_td_fonts(on["xml"])) >= 14
+    assert table_spill(tmp_path / "on" / "presentation.pptx") < spill_off
+    assert any("to fit its box" in r for r in on["fitGrow"])
+    assert min(_td_fonts(on["xml"])) >= 10
     # rows never taller than the generator's (40 px): taller rows would only squeeze the rest of the slide
     assert all(int(h) <= 40 for h in re.findall(r'<Tr\b[^>]*\sheight="(\d+)"', on["xml"]))
 
@@ -79,8 +81,10 @@ def test_main_table_grows_into_its_card(tmp_path):
 @pytest.mark.parametrize("name", ["s1-performance-overview.xml", "s2-flipcart-kpis.xml", "s5-review-edge-cases.xml"])
 def test_old_style_table_h_keeps_fit_tables(tmp_path, name):
     on = _compile(_FIT / name, tmp_path / "on")
-    table = [r for r in on["fitGrow"] if "table" in r]
+    # rows may then grow to a wrapped cell's lines when the slide has room (phase 7b), never shrink
+    table = [r for r in on["fitGrow"] if "table" in r and "-> their text" not in r]
     assert table and all("box clamped to rows" in r for r in table)
+    assert not any("to fit its box" in r for r in on["fitGrow"])
 
 
 def test_peer_tables_keep_one_size(tmp_path):

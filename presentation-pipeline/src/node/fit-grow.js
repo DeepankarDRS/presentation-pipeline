@@ -753,7 +753,7 @@ function intWidths(ws, W) {
  * is false only when no choice avoids that. `widths` is null when the
  * generator's widths are kept.
  */
-function planTable(n, grid, W, fontOf, ctx, floor) {
+function planTable(n, grid, W, fontOf, ctx, floor, room = 0.85) {
   const cols = n.columns.length, inset = cellInset(W, cols);
   const min = Array(cols).fill(20), pref = Array(cols).fill(20), word = Array(cols).fill(0);
   for (const row of grid) for (const { c, col, span } of row) {
@@ -775,7 +775,7 @@ function planTable(n, grid, W, fontOf, ctx, floor) {
   };
   const need = (widths) => grid.map((row) => Math.ceil(ROW_PAD + Math.max(0, ...row.map(({ c, col, span }) => {
     const fs = fontOf(c);
-    const w = Math.max(1, sum(widths.slice(col, col + span)) - inset) * 0.85;
+    const w = Math.max(1, sum(widths.slice(col, col + span)) - inset) * room;
     return Math.max(1, Math.round(measureCell(c, cellText(c), w, fs, ctx).heightPx / (fs * 1.3))) * fs * 1.3;
   }))));
 
@@ -2405,6 +2405,7 @@ async function fitSlide(inputXml, report, warnings = []) {
     if (filled !== xml) xml = await growText(await growStats(filled, report), report);
   }
   if (process.env.POM_FIT_SPILL !== "0") xml = await fixSpills(xml, report, warnings);
+  if (process.env.POM_FIT_TABLE_TEXT !== "0") xml = await fitTableText(xml, report, warnings);
   if (process.env.POM_FIT_CENTRE !== "0") xml = await centreBody(xml, report);
   const stacked = await stackTileIcons(xml, report);
   if (stacked !== xml) xml = await growText(await growStats(stacked, report), report);
@@ -2635,6 +2636,83 @@ async function fixSpills(xml, report, warnings) {
   warnings.push({ code: "SLIDE_DENSE", message: `content needs more room than the slide has after gaps, padding and `
     + `fonts down to 14px${why}; left as generated: ${named(first)}` });
   report.push(`spill left (slide too dense): ${named(first)}`);
+  return xml;
+}
+
+// --- phase 7b: a table's text fits its box (user marks 2026-11-02) -----------------
+// The phases above check a table's declared rows against its box, but the renderer grows every row to its text:
+// rows of 128 px whose text needs 325 px drew over the card below and hid the last row (table marks pair 6.4,
+// "where is Zepto"), and a table left squeezed kept short rows beside free room (12.4). For each table whose text
+// needs more than its rows give (measured at the full column width, as the deck font draws: the 85% the sizing
+// phases keep in hand shrank a 10-column table that never spilled, node break map table band c10):
+//   1. grow — rows as tall as their text, kept only if nothing else on the slide shrinks (tableFits);
+//   2. shrink — else the space around each row's lines first (ROW_PAD -> TABLE_PAD_MIN), then the cell text (one
+//      scale for every cell, down to TABLE_TEXT_FLOOR) until the rows fit the box, and the rows share the box; at
+//      the floor the table still overruns: TABLE_OVERFLOW.
+
+const TABLE_TEXT_FLOOR = 10; // px, POM's own autoFit floor
+const TABLE_PAD_MIN = 2;     // px around a row's lines when the box is short
+
+async function fitTableText(xml, report, warnings) {
+  let L = await layout(xml);
+  const ids = [];
+  try {
+    for (const root of L.slides) walk(root, (n) => n.type === "table" && n.id && cellGrid(n) && ids.push(n.id));
+  } finally { L.free(); }
+  for (const id of ids) {
+    L = await layout(xml);
+    let n, grid, W, boxH, declared, before, plan;
+    try {
+      n = L.byId.get(id);
+      grid = cellGrid(n);
+      W = L.box(n).w;
+      boxH = L.box(n).h;
+      declared = resolveRowHeights(n);
+      before = squeezes(L);
+      plan = (fontOf) => planTable(n, grid, W, fontOf, L.ctx, declared.map(() => 0), 1);
+      const at = plan((c) => c.fontSize ?? TD_FONT);
+      // the renderer draws a row's lines with no cell margin (pptx-post sets left / right only): a row overruns
+      // only when its lines alone are taller (a 3-line 14 px cell fits a 56 px row)
+      const drawn = sum(declared.map((d, i) => Math.max(d, at.need[i] - ROW_PAD)));
+      if (drawn <= boxH + SPILL_TOL) continue;
+      const tall = declared.map((d, i) => Math.max(d, at.need[i]));
+      const grown = writeTable(xml, id, { widths: at.widths, rows: tall, minH: sum(tall) });
+      L.free();
+      L = null;
+      if (await tableFits(grown, id, before, [], W)) {
+        xml = grown;
+        report.push(`table rows -> their text (${sum(declared)} -> ${sum(tall)}px)`);
+        continue;
+      }
+      L = await layout(xml);
+      n = L.byId.get(id);
+      plan = (fontOf) => planTable(n, grid, W, fontOf, L.ctx, declared.map(() => 0), 1);
+      const f0 = Math.max(...grid.flat().map(({ c }) => c.fontSize ?? TD_FONT));
+      const fontFor = (k) => (c) => Math.max(Math.min(TABLE_TEXT_FLOOR, c.fontSize ?? TD_FONT),
+        Math.round((c.fontSize ?? TD_FONT) * k));
+      const trim = ROW_PAD - TABLE_PAD_MIN;
+      const tight = (k) => plan(fontFor(k)).need.map((r) => r - trim);
+      const fits = (k) => sum(tight(k)) <= boxH;
+      const kMin = TABLE_TEXT_FLOOR / f0;
+      let k = kMin;
+      if (fits(kMin)) {
+        let lo = kMin, hi = 1;
+        for (let i = 0; i < 7; i++) { const m = (lo + hi) / 2; if (fits(m)) { k = m; lo = m; } else hi = m; }
+        k = Math.max(k, lo);
+      }
+      const p = plan(fontFor(k)), need = p.need.map((r) => r - trim);
+      const extra = Math.max(0, boxH - sum(need));
+      const rows = need.map((r) => Math.floor(r + extra * r / sum(need)));
+      xml = writeTable(xml, id, { widths: p.widths, rows, fontOf: fontFor(k) });
+      const f1 = fontFor(k)({ fontSize: f0 });
+      report.push(`table ${f1 < f0 ? `text ${f0} -> ${f1}px` : "rows tightened"} to fit its box (${Math.round(boxH)}px; the text `
+        + `needed ${Math.round(drawn)}px)`);
+      if (sum(need) > boxH + SPILL_TOL) {
+        warnings.push({ code: "TABLE_OVERFLOW", message: `a table's text needs ${sum(need)}px at ${TABLE_TEXT_FLOOR}px `
+          + `but its box is ${Math.round(boxH)}px: its last rows draw past the box (fewer rows or a split is a plan decision)` });
+      }
+    } finally { L?.free(); }
+  }
   return xml;
 }
 
