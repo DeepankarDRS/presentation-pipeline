@@ -119,3 +119,26 @@ Ties left out: 10 / 19 = 0.53.**
 - Found from the marks: on 38 slides the replay replaced the LLM's card (the VStack / HStack around the table, with its
   title row) by the tag, and the table node draws no card and no title (the chart node draws both; the table plan has
   no title field). Not fixed yet.
+
+## Round 2 and 3 (2026-11-02)
+
+- **Round 2** (`native-2/`): the replay keeps the LLM's card and heading around the tag (round 1 had replaced them on
+  38 slides; the table node draws no card). Overlaps 46 -> 36.
+- **Round 3** (`native-3/`, user decisions): native default is **striped** (solid `$accent` header, `$surfaceAlt`
+  alternate rows, `cellBorder.width="0"`); recipes `borderless` (pale header, plain rows: compact number tables) and
+  `bordered`; dashed dropped. **Cell margins on**: one margin per table, 8% of its average column width, 4-12 px
+  (`src/node/cell-margin.js`), written by pptx-post into every cell and taken off each column's width by fit-grow.
+  A flat 12 px broke words in narrow tables (A 71 / B 41 broken words, 6 slides: e.g. 7 columns in 446 px).
+  Margins apply to the LLM's own tables too (arm A).
+
+| | A r2 | B r2 | A r3 | B r3 |
+|---|---|---|---|---|
+| compiled | 66 | 66 | 66 | 66 |
+| broken words (render) | 0 | 0 | 0 | 0 |
+| text overlaps (render) | 31 | 36 | 35 | 37 |
+| WORD_TOO_WIDE | 13 | 14 | 23 | 14 |
+| GEOM_CARD_EMPTY | 7 | 7 | 5 | 4 |
+| LOW_CONTRAST | 13 | 9 | 13 | 9 |
+
+WORD_TOO_WIDE rose on the LLM's tables (13 -> 23): the word guard now counts the margins, and the LLM's own column
+widths leave less room for them. Highlights (`<Highlight>`) are not in these sheets: the saved slides predate them.

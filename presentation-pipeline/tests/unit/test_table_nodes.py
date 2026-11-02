@@ -88,11 +88,12 @@ def test_bare_tag_is_native_with_parts_on_cells():
     r = run('<Table ref="gaps"/>', GAPS)
     assert used(r, "gaps") == "native" and r["ok"]
     x = r["xml"]
-    assert 'id="tbl-gaps"' in x and 'cellBorder.color="$border"' in x and "<Tr " not in x.replace("<Tr>", "")
+    assert 'id="tbl-gaps"' in x and 'cellBorder.width="0"' in x and "<Tr " not in x.replace("<Tr>", "")   # striped, no borders
     assert '<Td backgroundColor="$positive" color="$onAccent" bold="true">Fix</Td>' in x
     assert "fontSize" not in x and 'grow="1"' not in x          # fit-grow sizes a native table from its text
     assert x.count('backgroundColor="$positiveSoft"') == 4                     # the Fix column's body cells
-    assert x.count('backgroundColor="$surfaceAlt"') == 3                       # the other header cells
+    assert x.count('backgroundColor="$accent"') == 3                           # the other header cells
+    assert x.count('backgroundColor="$surfaceAlt"') == 6                       # rows 2 and 4 striped, bar the Fix cells
     assert "$tone" not in x
 
 
@@ -196,7 +197,7 @@ def test_composed_registry():
     assert composed.all_drawn(p, "table") and composed.expand('<Table ref="gaps"/>', p)["components"]["gaps"]
     line = composed.prompt_line(dict(GAPS, count=1))
     assert "4 rows x 4 columns" in line and "code colours column 'Fix'" in line and "columns | banded" in line
-    assert "TABLES" in composed.node_lines() and "zebra" in composed.node_lines()
+    assert "TABLES" in composed.node_lines() and "borderless" in composed.node_lines() and "dash" not in composed.node_lines()
     assert "stripe.*" in composed.tag_attributes("table")
 
 
@@ -284,7 +285,7 @@ def test_highlight_replaces_the_hint_emphasis():
     res = hl('<Highlight cell="Nykaa / ROAS" color="good"/>')
     assert res["components"]["roas"]["focus"] is None and res["components"]["roas"]["highlights"]
     a, inner = tds(res["xml"])[3][2]
-    assert 'color="$positiveText"' in a and "backgroundColor" not in a and inner == "3.4x"
+    assert 'color="$positiveText"' in a and "positiveSoft" not in a and inner == "3.4x"
 
 
 def test_bare_tag_keeps_the_hint_emphasis():

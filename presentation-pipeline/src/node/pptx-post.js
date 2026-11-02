@@ -16,6 +16,7 @@
 
 import JSZip from "jszip";
 import { DECK_FONT, POM_FAMILY } from "./fonts.js";
+import { cellMargin } from "./cell-margin.js";
 
 const SLIDE_RE = /^ppt\/slides\/slide\d+\.xml$/;
 const CHART_RE = /^ppt\/charts\/chart(\d+)\.xml$/;
@@ -27,20 +28,24 @@ export function deckTypeface(slideXml, family = DECK_FONT) {
   return family ? slideXml.replace(POM_TYPEFACE, `$1${family}"`) : slideXml;
 }
 
-/** Anchor every table cell of one slide's XML in the middle. */
-export function centreCells(slideXml, marginPx = Number(process.env.POM_CELL_MARGIN || 0)) {
-  // POM_CELL_MARGIN (px, prototype, off by default): left / right cell margins; POM writes 0
-  const emu = String(Math.round(marginPx * 9525));
-  return slideXml.replace(/<a:tc\b[\s\S]*?<\/a:tc>/g, (tc) => {
-    let out = tc
-      // the cell's own text body (PowerPoint reads tcPr, LibreOffice may read bodyPr)
-      .replace(/<a:bodyPr\b([^>]*?)\sanchor="t"/, '<a:bodyPr$1 anchor="ctr"')
-      .replace(/<a:tcPr\b(?![^>]*\sanchor=)/, '<a:tcPr anchor="ctr"');
-    if (marginPx > 0) {
-      out = out.replace(/(<a:tcPr\b[^>]*?\s)marL="0"/, `$1marL="${emu}"`).replace(/(<a:tcPr\b[^>]*?\s)marR="0"/, `$1marR="${emu}"`)
-        .replace(/(<a:bodyPr\b[^>]*?\s)lIns="0"/, `$1lIns="${emu}"`).replace(/(<a:bodyPr\b[^>]*?\s)rIns="0"/, `$1rIns="${emu}"`);
-    }
-    return out;
+/** Anchor every table cell of one slide's XML in the middle, and give it the table's cell margins (cell-margin.js;
+ * `marginOf(tableW, cols)` -> px, from the table's grid columns). */
+export function centreCells(slideXml, marginOf = cellMargin) {
+  return slideXml.replace(/<a:tbl>[\s\S]*?<\/a:tbl>/g, (tbl) => {
+    const grid = [...tbl.matchAll(/<a:gridCol\b[^>]*\sw="(\d+)"/g)].map((m) => Number(m[1]) / 9525);
+    const px = marginOf(grid.reduce((a, b) => a + b, 0), grid.length);
+    const emu = String(Math.round(px * 9525));
+    return tbl.replace(/<a:tc\b[\s\S]*?<\/a:tc>/g, (tc) => {
+      let out = tc
+        // the cell's own text body (PowerPoint reads tcPr, LibreOffice may read bodyPr)
+        .replace(/<a:bodyPr\b([^>]*?)\sanchor="t"/, '<a:bodyPr$1 anchor="ctr"')
+        .replace(/<a:tcPr\b(?![^>]*\sanchor=)/, '<a:tcPr anchor="ctr"');
+      if (px > 0) {
+        out = out.replace(/(<a:tcPr\b[^>]*?\s)marL="0"/, `$1marL="${emu}"`).replace(/(<a:tcPr\b[^>]*?\s)marR="0"/, `$1marR="${emu}"`)
+          .replace(/(<a:bodyPr\b[^>]*?\s)lIns="0"/, `$1lIns="${emu}"`).replace(/(<a:bodyPr\b[^>]*?\s)rIns="0"/, `$1rIns="${emu}"`);
+      }
+      return out;
+    });
   });
 }
 

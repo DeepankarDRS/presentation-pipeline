@@ -161,14 +161,19 @@ def test_centring_is_idempotent(tmp_path):
         pytest.skip("node not installed")
     script = (
         "import { centreCells } from './src/node/pptx-post.js';"
-        "const x = '<a:tc><a:txBody><a:bodyPr anchor=\"t\"/></a:txBody><a:tcPr marL=\"0\"></a:tcPr></a:tc>"
-        "<a:tc><a:txBody><a:bodyPr/></a:txBody><a:tcPr anchor=\"b\"></a:tcPr></a:tc>';"
-        "const once = centreCells(x); console.log(JSON.stringify([once, centreCells(once)]));"
+        "const x = '<a:tbl><a:tblGrid><a:gridCol w=\"952500\"/><a:gridCol w=\"952500\"/></a:tblGrid>"
+        "<a:tc><a:txBody><a:bodyPr anchor=\"t\"/></a:txBody><a:tcPr marL=\"0\"></a:tcPr></a:tc>"
+        "<a:tc><a:txBody><a:bodyPr/></a:txBody><a:tcPr anchor=\"b\"></a:tcPr></a:tc></a:tbl>';"
+        "const off = () => 0;"
+        "const once = centreCells(x, off); const m = centreCells(x);"
+        "console.log(JSON.stringify([once, centreCells(once, off), m, centreCells(m)]));"
     )
     out = subprocess.run(["node", "--input-type=module", "-e", script], cwd=_ROOT, check=True,
                          capture_output=True, text=True, timeout=60).stdout
-    once, twice = json.loads(out)
-    assert once == twice
+    once, twice, m, m2 = json.loads(out)
+    assert once == twice and m == m2
+    # two 100 px columns: 8 px margins (cell-margin.js: 8% of the average column, 4-12 px), set once
+    assert '<a:tcPr anchor="ctr" marL="76200">' in m
     assert '<a:tcPr anchor="ctr" marL="0">' in once and '<a:bodyPr anchor="ctr"/>' in once
     assert '<a:tcPr anchor="b">' in once  # an explicit anchor is kept
 

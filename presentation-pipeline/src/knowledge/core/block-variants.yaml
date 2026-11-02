@@ -168,7 +168,7 @@ blocks:
     plan_kind: table
     emphasis_from: [design_hint]
     variants:                 # the compositions of `nodes.table` (POM_NODES=table, tables.py); names as there
-      native:          {prompt: "POM's table: header band, bold first column, the hinted row / column tinted"}
+      native:          {prompt: "POM's table: solid header band, striped rows, no borders, bold first column, the hinted row / column tinted"}
       rows:            {prompt: "one ruled row per table row: the first cell as its title, the other cells to the right"}
       rows numbered:   {prompt: "rows with 01 02 03 leading each", requires: [no_own_numbers], fallback: rows}
       columns:         {prompt: "one column per row: its first cell as a pill, each other cell in its own box", requires: [count_le_5, columns_le_6], fallback: native}
@@ -939,9 +939,9 @@ nodes:
     code_owned: [defaultRowHeight]
     compositions:
       native:
-        look:     {cellBorder.color: $border, cellBorder.width: 1, header.backgroundColor: $surfaceAlt,
-                   header.color: $textMain, header.bold: "true", label.color: $textMain, label.bold: "true",
-                   cell.color: $textMain}
+        look:     {cellBorder.width: 0, header.backgroundColor: $accent, header.color: $onAccent, header.bold: "true",
+                   label.color: $textMain, label.bold: "true", cell.color: $textMain,
+                   stripe.backgroundColor: $surfaceAlt}   # striped, no borders (user 2026-11-02)
         emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.backgroundColor: $toneSoft,
                    label.color: $toneText, cell.backgroundColor: $toneSoft, cell.color: $toneText, cell.bold: "true"}
       rows:
@@ -1002,7 +1002,8 @@ nodes:
       dark_header: {variant: native, header.backgroundColor: $panelDark, header.color: $onPanelDark,
                     label.color: $accentText}
     styles:                             # recipes (prompt examples only)
-      zebra: 'stripe.backgroundColor="$surfaceAlt"'
+      borderless: 'header.backgroundColor="$accentSoft" header.color="$textMain" stripe.backgroundColor="$surface"'   # compact number tables
+      bordered: 'cellBorder.color="$border" cellBorder.width="1" header.backgroundColor="$accentSoft" header.color="$textMain" stripe.backgroundColor="$surface"'
       dark_header: 'header.backgroundColor="$panelDark" header.color="$onPanelDark" label.color="$accentText"'
       label_cards: 'label.backgroundColor="$accent" label.color="$onAccent" header.backgroundColor="$surface" header.color="$textMuted" item.backgroundColor="$surfaceAlt" item.border.color="$surfaceAlt"'
       accent_edge: 'item.borderLeft.color="$accent" item.borderLeft.width="4" item.borderRadius="0"'

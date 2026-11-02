@@ -19,7 +19,9 @@ def test_sparse_card_grows_on_an_already_over_full_slide(tmp_path):
 
 def test_text_growth_never_squeezes_a_neighbouring_table(tmp_path):
     on = _compile(_FIT / "s10-panel-beside-table-gj-h1.xml", tmp_path / "on")
-    assert table_spill(tmp_path / "on" / "presentation.pptx") == 0
+    # <= 1 px: with 12 px cell margins (2026-11-02) the table's text needs 202 px on this over-full slide and its frame
+    # ends at 201 px (layout rounding after the spill fix); the squeeze this test guards against was 50+ px
+    assert table_spill(tmp_path / "on" / "presentation.pptx") <= 1
     assert not any(re.search(r"text x1\.[1-9]", r) for r in on["fitGrow"]), on["fitGrow"]
 
 

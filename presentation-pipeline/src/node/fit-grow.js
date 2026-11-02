@@ -56,6 +56,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { DEFAULT_FAMILY, loadFonts } from "./fonts.js";
+import { cellMargin } from "./cell-margin.js";
 
 const POM_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)),
   "node_modules", "@hirokisakabe", "pom");
@@ -619,12 +620,12 @@ async function wrapChipRows(xml, report) {
  */
 function tableTextFits(n, tableW, k, rowH, ctx) {
   if (n.rows.some((r) => r.cells.some((c) => (c.rowspan ?? 1) > 1))) return false; // column positions uncertain
-  const colW = resolveColumnWidths(n, tableW);
+  const colW = resolveColumnWidths(n, tableW), inset = cellInset(tableW, n.columns.length);
   return n.rows.every((r) => {
     let col = 0;
     return r.cells.every((c) => {
       const span = c.colspan ?? 1;
-      const w = colW.slice(col, col + span).reduce((a, b) => a + b, 0) * 0.85;
+      const w = Math.max(1, colW.slice(col, col + span).reduce((a, b) => a + b, 0) - inset) * 0.85;
       col += span;
       const f = c.fontSize ?? TD_FONT; // POM draws a <Td> without fontSize at 18 px
       const lines = (fs) => {
@@ -700,6 +701,9 @@ async function fitTables(xml, report) {
 const TD_FONT = 18;  // POM's <Td> default fontSize
 const TD_BODY = 14;  // written into cells without fontSize
 const ROW_PAD = 8;   // px around a cell's lines (POM writes Td margins of 0)
+// left + right cell margins pptx-post writes into every cell of a table (cell-margin.js): a column's text has its
+// width less these
+const cellInset = (tableW, cols) => 2 * cellMargin(tableW, cols);
 const ROW_CAP = 96;  // px — spare-height growth of the main table's rows
 const ROW_GROW = 2;  // x a row's text height
 const TD_FONT_CAP = 18;
@@ -750,16 +754,16 @@ function intWidths(ws, W) {
  * generator's widths are kept.
  */
 function planTable(n, grid, W, fontOf, ctx, floor) {
-  const cols = n.columns.length;
+  const cols = n.columns.length, inset = cellInset(W, cols);
   const min = Array(cols).fill(20), pref = Array(cols).fill(20), word = Array(cols).fill(0);
   for (const row of grid) for (const { c, col, span } of row) {
     if (span !== 1) continue;
     const fs = fontOf(c), text = cellText(c);
     for (const w of text.split(/\s+/).filter(Boolean)) {
       word[col] = Math.max(word[col], measureCell(c, w, Infinity, fs, ctx).widthPx - MEASURE_PAD);
-      min[col] = Math.max(min[col], word[col] / 0.85);
+      min[col] = Math.max(min[col], word[col] / 0.85 + inset);
     }
-    pref[col] = Math.max(pref[col], min[col], (measureCell(c, text, Infinity, fs, ctx).widthPx - MEASURE_PAD) / 0.85);
+    pref[col] = Math.max(pref[col], min[col], (measureCell(c, text, Infinity, fs, ctx).widthPx - MEASURE_PAD) / 0.85 + inset);
   }
   // HTML auto layout: pref widths if they fit, else min + the rest by (pref - min)
   const auto = (idx, room) => {
@@ -771,7 +775,7 @@ function planTable(n, grid, W, fontOf, ctx, floor) {
   };
   const need = (widths) => grid.map((row) => Math.ceil(ROW_PAD + Math.max(0, ...row.map(({ c, col, span }) => {
     const fs = fontOf(c);
-    const w = sum(widths.slice(col, col + span)) * 0.85;
+    const w = Math.max(1, sum(widths.slice(col, col + span)) - inset) * 0.85;
     return Math.max(1, Math.round(measureCell(c, cellText(c), w, fs, ctx).heightPx / (fs * 1.3))) * fs * 1.3;
   }))));
 
@@ -2074,7 +2078,8 @@ async function scanWords(xml) {
           const need = widths.map(() => 0), word = widths.map(() => "");
           for (const { c, col } of cells) {
             const wide = widestPiece([cellText(c)], c.fontFamily ?? DEFAULT_FAMILY, fontOf(c), c.bold, undefined, ctx);
-            if (wide.w / GUARD_TABLE_SAFE > need[col]) { need[col] = wide.w / GUARD_TABLE_SAFE; word[col] = wide.word; }
+            const w = wide.w / GUARD_TABLE_SAFE + cellInset(W, widths.length);
+            if (w > need[col]) { need[col] = w; word[col] = wide.word; }
           }
           return { need, word };
         };
@@ -2177,7 +2182,7 @@ async function guardWords(xml, report, warnings) {
     if (t.table) {
       const i = t.need.findIndex((x, j) => x > t.widths[j] - WORD_MARGIN);
       const now = t.needAt((c) => c.fontSize ?? TD_FONT);
-      out.push({ code: "WORD_TOO_WIDE", message: `table cell: "${now.word[i]}" is ${Math.round(now.need[i] * GUARD_TABLE_SAFE)}px wide at`
+      out.push({ code: "WORD_TOO_WIDE", message: `table cell: "${now.word[i]}" is ${Math.round((now.need[i] - cellInset(t.W, t.widths.length)) * GUARD_TABLE_SAFE)}px wide at`
         + ` ${t.fs0}px and needs ${Math.round(now.need[i])}px of column with cell insets, its column has ${Math.round(t.widths[i])}px`
         + ` (the renderer may break it; no other column has room and the type is at its smallest)` });
     } else {
