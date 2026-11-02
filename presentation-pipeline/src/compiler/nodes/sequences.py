@@ -93,22 +93,27 @@ def timeline_native(comp, its, box, styles, focus, meta) -> str:
 
 
 def timeline_rail(comp, its, box, styles, focus, meta) -> str:
-    """Dots on a line; each point's date, head and detail above it (even points) or below it (odd ones), so
-    neighbours on one side stand a column apart. Three rows of equal columns keep every dot under its text."""
-    cid, last = comp["component_id"], len(its) - 1
-    top, dots, bottom = [], [], []
+    """Dots on a line; each point's date, head and detail above it (even points) or below it (odd ones). With n
+    points the width is n + 1 units, dot k at unit k + 1, and each text two units wide centred on its dot: the
+    texts on one side touch, and none passes the edge (grow counts half units)."""
+    cid, n = comp["component_id"], len(its)
+    top, dots, bottom = [], ['<VStack w="1" grow="1" />'], ['<VStack w="1" grow="2" />']
     gap = '<VStack w="max" grow="1" />'
     for k, (d, h, x) in enumerate(its):
         p = _style(k, focus, *styles)
-        txt = (f'<VStack id="card-{cid}-{k}" w="1" grow="1" gap="4" padding="6">'
+        txt = (f'<VStack id="card-{cid}-{k}" w="1" grow="4" gap="4" padding="6">'
                + (T(d.upper(), 14, p["date"], bold="true", letterSpacing="1", textAlign="center") if d else "")
                + T(h, 21, p["label"], bold="true", textAlign="center")
                + (T(x, 16, p["description"], textAlign="center") if x else "") + "</VStack>")
         line = f'<Shape{A({"shapeType": "rect", "w": "max", "grow": "1", "h": "3", **p["connector"]})} />'
         dot = f'<Shape{A({"shapeType": "ellipse", "w": "22", "h": "22", **p["marker"]})} />'
         (top if k % 2 == 0 else bottom).append(txt)
-        (bottom if k % 2 == 0 else top).append('<VStack w="1" grow="1" />')
-        dots.append(f'<HStack w="1" grow="1" alignItems="center" gap="0">{line if k else gap}{dot}{line if k < last else gap}</HStack>')
+        dots.append(f'<HStack w="1" grow="2" alignItems="center" gap="0">{line if k else gap}{dot}{line if k < n - 1 else gap}</HStack>')
+    dots.append('<VStack w="1" grow="1" />')
+    for row, start in ((top, 0), (bottom, 1)):
+        rest = n + 1 - start - 2 * sum(k % 2 == start for k in range(n))
+        if rest > 0:
+            row.append(f'<VStack w="1" grow="{2 * rest}" />')
     return (f'<VStack gap="14" justifyContent="center"{A(box)}>'
             f'<HStack gap="0" alignItems="end">{"".join(top)}</HStack>'
             f'<HStack gap="0" alignItems="center">{"".join(dots)}</HStack>'

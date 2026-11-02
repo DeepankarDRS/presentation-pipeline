@@ -102,7 +102,10 @@ def test_rail_alternates_above_and_below():
     assert "Growth activation" in top and "Post-festive retention" in top
     assert "Festive push" in bottom and "Year-end consolidation" in bottom
     assert dots.count('shapeType="ellipse"') == 4
-    assert top.count('<VStack w="1" grow="1" />') == 2 and bottom.count('<VStack w="1" grow="1" />') == 2
+    # 4 points = 5 units: each text 2 units centred on its dot, the rows padded to the same width
+    assert top.count('grow="4"') == 2 and bottom.count('grow="4"') == 2
+    assert top.endswith('<VStack w="1" grow="2" />') and bottom.startswith('<VStack w="1" grow="2" />')
+    assert dots.startswith('<VStack w="1" grow="1" />') and dots.endswith('<VStack w="1" grow="1" />')
 
 
 # ── emphasis ──────────────────────────────────────────────────────────────────

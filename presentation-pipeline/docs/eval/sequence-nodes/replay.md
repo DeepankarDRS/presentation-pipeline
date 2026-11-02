@@ -2,6 +2,34 @@
 
 Command: `python -m scripts.node_replay --kind <timeline|process_arrow|flow> --src <main checkout>/output` (bare tags, Inter render). Blind sheets and `marks.csv` in `output/<kind>-replay/sheets/`.
 
+## 2026-11-02: timeline with the alternating rail as default (process / flow nodes dropped)
+
+The bare tag now draws `native` (short labels), `rail` (dots on a line, date / head / detail alternating above and
+below; ≤ 7 points) or `columns` (the old box-per-point rail). First run: overlaps 25 (3 six-point slides spilled
+their card: one text per sixth of the width). Fix: each text spans two dot gaps (n + 1 units, dot k at k + 1), so
+neighbours on one side touch and none passes the edge. Re-run:
+
+Slides: 23 (one timeline component with an id, one LLM-drawn <Timeline>); the LLM's card around it replaced too on 1. B compositions: {'rail': 17, 'native': 6}. Skipped (not well-formed XML): 1.
+
+| | A (LLM's timeline) | B (Timeline tag) |
+|---|---|---|
+| compiled | 23 | 23 |
+| plan items not all on the slide | 28 | 0 |
+| GEOM_CARD_EMPTY | 7 | 1 |
+| GEOM_SLIDE_SPARSE | 0 | 0 |
+| broken words (render) | 11 | 11 |
+| text overlaps (render) | 22 | 9 |
+| WORD_TOO_WIDE | 5 | 5 |
+| LOW_CONTRAST | 1 | 1 |
+| timeline output tokens | 3377 | 342 (-90%) |
+
+B issues: {'NODE_DEFAULT_FROM_CONTENT': 17, 'NODE_TEXT_SPLIT': 8}
+
+Left: pair 3.4 (gj-h1 7293ef s12), where the LLM put its own month list in the same fixed-height card under the
+timeline; the taller rail meets the header (2 overlaps). One slide, left to the marks.
+
+### Earlier (2026-10-28, cards default)
+
 ## Timeline node: free replay (LLM layout kept), arm B = <Timeline ref>
 
 Slides: 23 (one timeline component with an id, one LLM-drawn <Timeline>); the LLM's card around it replaced too on 1. B compositions: {'rail': 17, 'native': 6}. Skipped (not well-formed XML): 1.
