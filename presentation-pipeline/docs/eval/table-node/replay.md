@@ -105,3 +105,17 @@ Each part now has one size per table (pair 1.1: all cells 24 px).
 `native/marks.csv` (66 pairs) is the gate: fill `choice` with 1, 2 or same per pair. "Same" counts as satisfied (user
 rule). The `rows/`, `columns/`, `banded/`, `grid/`, `grid-numbered/` and `ledger/` marks are optional; they say whether a
 word should stay on offer.
+
+## Native marks (user, 2026-11-02)
+
+66 pairs: table tag 10, LLM 9, same 47 (8.3 written "]same", read as same). **Ties as satisfied: 57 / 66 = 0.86.
+Ties left out: 10 / 19 = 0.53.**
+
+- LLM wins: colours by meaning (2.2, 3.1, 3.2: rows / a value coloured by what it means; 4.1: two highlight colours in
+  one sentence), sizing (5.4, 10.1, 11.1), the table squeezing the stack beside it (14.1), a table taking room from a
+  hero chart (17.2).
+- Tag wins: space allocation (2.4, 3.3, 4.3, 6.2, 9.2, 9.3, 16.1), no icon on a dense slide (2.3), no overflow (11.2),
+  table and chart side by side at one height (6.4).
+- Found from the marks: on 38 slides the replay replaced the LLM's card (the VStack / HStack around the table, with its
+  title row) by the tag, and the table node draws no card and no title (the chart node draws both; the table plan has
+  no title field). Not fixed yet.
