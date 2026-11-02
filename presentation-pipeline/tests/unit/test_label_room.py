@@ -65,3 +65,12 @@ def test_a_pyramid_whose_top_band_cannot_hold_its_word_becomes_card_steps():
     notes = enforce_label_room([comp])
     assert comp["kind"] == "card_grid" and [c["title"] for c in comp["content_data"]["cards"]] == levels
     assert "Profitability" in notes[0]
+
+
+def test_a_kind_code_draws_keeps_its_plan(monkeypatch):
+    """With POM_NODES=timeline code sizes the timeline's text (the rail): POM's label boxes do not move it."""
+    monkeypatch.setenv("POM_NODES", "timeline")
+    items = [{"date": f"Q{k}", "label": "Reconciliation programme"} for k in range(1, 5)]
+    comp = {"component_id": "tl", "kind": "timeline", "content_data": {"direction": "horizontal", "timeline_items": items}}
+    assert enforce_label_room([comp]) == [] and comp["kind"] == "timeline"
+    assert comp["content_data"]["direction"] == "horizontal"

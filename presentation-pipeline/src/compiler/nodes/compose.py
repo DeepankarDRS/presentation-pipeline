@@ -43,6 +43,10 @@ def read(attrs: dict[str, str], ref: str, flag: Flag, nd: dict) -> tuple[dict, d
                  f'{k}="{v}" on <{tag} ref="{ref}">: colours are $tokens; removed.')
             continue
         head, _, rest = k.partition(".")
+        if rest and head in (nd.get("part_aliases") or {}):   # an older part name (timeline label. = title.)
+            new = nd["part_aliases"][head]
+            flag("NODE_ATTR_ALIAS", ref, f'{k} on <{tag} ref="{ref}"> is now {new}.{rest}.')
+            head = new
         if head in parts_of and rest:
             allowed = part_attrs(parts_of[head])
             if rest in dropped:

@@ -85,7 +85,7 @@ When in doubt between cover and data, choose data.
 | bullet_list | Ul, Li, B, I, Span | items = bullet count | Qualitative lists, takeaways, action items |
 | chart | Chart, ChartSeries, ChartDataPoint | chart_type + series_count | Data visualization: bar, line, pie, area, doughnut, radar |
 | table | Table, Col, Tr, Td | columns × rows | Structured multi-column data grids |
-| timeline | Timeline, TimelineItem | items = milestones ({{ span('timeline') }}) | Chronological roadmaps, project phases. Keep date/title/description to ≤ {{ cap.timeline.max_label_words }} words each |
+{% if timeline_node %}| timeline | Timeline, TimelineItem | items = milestones ({{ span('timeline') }}) | Chronological roadmaps, project phases. Each item: a date, a label (the milestone's name, ≤ {{ cap.timeline.max_label_words }} words) and, when the brief gives detail, a description (≤ {{ cap.timeline.max_description_words }} words) |{% else %}| timeline | Timeline, TimelineItem | items = milestones ({{ span('timeline') }}) | Chronological roadmaps, project phases. Keep date/title/description to ≤ {{ cap.timeline.max_label_words }} words each |{% endif +%}
 | flow | Flow, FlowNode, FlowConnection | items = nodes ({{ span('flow') }}) | Short processes with a decision step; nodes drawn in one line (no side-by-side branches) |
 | layer | Layer, Line, Arrow, Svg | Free-form positioning | Architecture diagrams, annotated visuals where position carries meaning — never a process (flow / process_arrow) |
 | tree | Tree, TreeItem | items = total nodes | Org charts, hierarchical breakdowns |
@@ -121,7 +121,7 @@ pyramid's direction follows the meaning. The drawing facts in each entry are ver
 
 **flow** — Flowchart with shaped nodes (process, decision, terminator, etc.) connected by arrowed lines. {{ facts('flow') }} Parallel steps (three checks that run side by side) are therefore drawn one after another, one node each. Best for: a short process with a decision (the diamond node and labeled connections) where the shape of each step matters, or a workflow whose steps are too long for chevrons. Nodes: {{ span('flow') }}. Breaks when: node labels exceed 1-3 words, there are more nodes than its direction holds, it sits horizontal beside another component, or the process is purely linear with short labels (use process_arrow instead).
 
-**timeline** — Dated milestones on one axis, each with a date and a short label. {{ facts('timeline') }} Best for: chronological sequences where the TIME dimension matters — roadmaps, project phases, historical events. Breaks when: there are more items than its direction holds or labels exceed {{ cap.timeline.max_label_words }} words (text overflows the marker area), it sits horizontal beside another component, or when events aren't truly time-ordered (use process_arrow).
+{% if timeline_node %}**timeline** — Dated milestones on one axis, each with a date, a short label (the milestone's name) and an optional description (its detail: actions, targets, numbers). Put the detail in description, never in the label after a dash or colon. {{ facts('timeline') }} Best for: chronological sequences where the TIME dimension matters — roadmaps, project phases, historical events. Breaks when: there are more items than its direction holds or labels exceed {{ cap.timeline.max_label_words }} words (the detail belongs in description), it sits horizontal beside another component, or when events aren't truly time-ordered (use process_arrow).{% else %}**timeline** — Dated milestones on one axis, each with a date and a short label. {{ facts('timeline') }} Best for: chronological sequences where the TIME dimension matters — roadmaps, project phases, historical events. Breaks when: there are more items than its direction holds or labels exceed {{ cap.timeline.max_label_words }} words (text overflows the marker area), it sits horizontal beside another component, or when events aren't truly time-ordered (use process_arrow).{% endif +%}
 
 **pyramid** — Triangle shape divided into horizontal bands, a label inside each band. {{ facts('pyramid') }} Best for: {{ span('pyramid') }} level hierarchies where POSITION communicates importance — strategic layers, priority tiers, Maslow-style models. Labels: 1-2 words on the top levels (the narrowest bands), up to 6 on the wide bottom bands. Breaks when: levels contain sentences or tactical detail (the narrow upper bands clip/overflow the text — use card_grid, steps layout, instead).
 
@@ -271,7 +271,7 @@ For caption: { "text": "<a note or source named in the key_messages>" } — neve
 
 For timeline:
   { "direction": "horizontal | vertical",
-    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch"}] }
+{% if timeline_node %}    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch", "description": "<the brief's detail for this milestone, or omit>"}] }{% else %}    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch"}] }{% endif +%}
 
 For flow (direction: see **flow** above):
   { "direction": "horizontal | vertical",

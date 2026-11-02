@@ -219,3 +219,17 @@ def test_placement_limits_are_rendered_and_never_above_the_band():
         for direction, places in capacity()["placement"][kind].items():
             assert max(places.values()) <= max_of(kind, direction=direction), (kind, direction)
             assert places["band"] == max_of(kind, direction=direction)
+
+
+def test_timeline_description_only_with_the_timeline_node():
+    """The planner gets a description field for timelines only when code draws them (POM_NODES=timeline); the old
+    route's prompt keeps POM's short labels (user removed descriptions there for overflow, 2026-11-02)."""
+    from src.agents import slide_component_planner as P
+    from src.agents.hint_capabilities import planner_capabilities_section
+    t = P._jinja_env.get_template("system.j2")
+    kw = dict(hint_capabilities=planner_capabilities_section(), content_field="content_data_json")
+    on, off = t.render(timeline_node=True, **kw), t.render(timeline_node=False, **kw)
+    words = capacity()["timeline"]["max_description_words"]
+    assert f"a description (≤ {words} words)" in on and '"description": "<the brief' in on
+    assert "a description (≤" not in off and '"description": "<the brief' not in off
+    assert len(on.split("\n")) == len(off.split("\n"))

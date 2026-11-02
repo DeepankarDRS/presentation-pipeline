@@ -15,7 +15,7 @@ content, F13).
 
 Code owns every word (a label shows as head + detail, split at " — " then ": ", every word kept), the order, the dots
 and lines, and the emphasis: the point the design hint names ("now"). The LLM owns the box (layout and box attributes
-on the tag) and part styles (`date.` `label.` `description.` `marker.` `connector.` `band.` `item.`), $tokens only.
+on the tag) and part styles (`date.` `title.` (`label.` an alias) `description.` `marker.` `connector.` `band.` `item.`), $tokens only.
 """
 
 from __future__ import annotations
@@ -86,7 +86,7 @@ def timeline_native(comp, its, box, styles, focus, meta) -> str:
                  + f' color="{native.x(_style(k, focus, rest, hi, rest)["marker"].get("fill.color", "$accent"))}" />'
                  for k, (d, h, x) in enumerate(its))
     own = {"direction": _direction(comp, meta), "dateColor": rest["date"].get("color", "$accentText"),
-           "titleColor": rest["label"].get("color", "$textMain"),
+           "titleColor": rest["title"].get("color", "$textMain"),
            "descriptionColor": rest["description"].get("color", "$textMuted"),
            "connectorColor": rest["connector"].get("fill.color", "$border"), "w": "max"}
     return f"<Timeline{A({**own, **box})}>{tl}</Timeline>"
@@ -103,7 +103,7 @@ def timeline_rail(comp, its, box, styles, focus, meta) -> str:
         p = _style(k, focus, *styles)
         txt = (f'<VStack id="card-{cid}-{k}" w="1" grow="4" gap="4" padding="6">'
                + (T(d.upper(), 14, p["date"], bold="true", letterSpacing="1", textAlign="center") if d else "")
-               + T(h, 21, p["label"], bold="true", textAlign="center")
+               + T(h, 21, p["title"], bold="true", textAlign="center")
                + (T(x, 16, p["description"], textAlign="center") if x else "") + "</VStack>")
         line = f'<Shape{A({"shapeType": "rect", "w": "max", "grow": "1", "h": "3", **p["connector"]})} />'
         dot = f'<Shape{A({"shapeType": "ellipse", "w": "22", "h": "22", **p["marker"]})} />'
@@ -128,7 +128,7 @@ def timeline_columns(comp, its, box, styles, focus, meta) -> str:
                     f'<HStack alignItems="center" gap="0"><Shape{A({"shapeType": "ellipse", "w": "18", "h": "18", **p["marker"]})} />'
                     f'<Shape{A({"shapeType": "rect", "w": "max", "grow": "1", "h": "2", **p["connector"]})} /></HStack>'
                     f'<VStack id="card-{cid}-{k}" grow="1" gap="6"{A(p["item"])}>'
-                    f'{T(d.upper(), 14, p["date"], bold="true", letterSpacing="1")}{T(h, 22, p["label"], bold="true")}'
+                    f'{T(d.upper(), 14, p["date"], bold="true", letterSpacing="1")}{T(h, 22, p["title"], bold="true")}'
                     + (T(x, 17, p["description"]) if x else "") + "</VStack></VStack>")
     return f'<HStack gap="16" alignItems="stretch"{A(box)}>{"".join(cols)}</HStack>'
 
@@ -140,7 +140,7 @@ def timeline_banded(comp, its, box, styles, focus, meta) -> str:
         cols.append(f'<VStack id="card-{cid}-{k}" w="1" grow="1" gap="0"{A({k2: v for k2, v in p["item"].items() if k2 != "backgroundColor"})}>'
                     f'<HStack padding="12"{A(p["band"])}>{T(d.upper(), 16, p["date"], bold="true", letterSpacing="1")}</HStack>'
                     f'<VStack grow="1" gap="8" padding="18"{A({"backgroundColor": p["item"].get("backgroundColor", "$surfaceAlt")})}>'
-                    f'{T(h, 21, p["label"], bold="true")}' + (T(x, 17, p["description"]) if x else "") + "</VStack></VStack>")
+                    f'{T(h, 21, p["title"], bold="true")}' + (T(x, 17, p["description"]) if x else "") + "</VStack></VStack>")
     return f'<HStack gap="12" alignItems="stretch"{A(box)}>{"".join(cols)}</HStack>'
 
 
@@ -151,7 +151,7 @@ def timeline_rows(comp, its, box, styles, focus, meta) -> str:
         item = {kk: v for kk, v in p["item"].items() if k or not kk.startswith("borderTop")}   # no rule above the first
         out.append(f'<HStack id="card-{cid}-{k}" grow="1" gap="24" alignItems="center" padding="12"{A(item)}>'
                    f'<VStack w="150">{T(d.upper(), 18, p["date"], bold="true", letterSpacing="1")}</VStack>'
-                   f'<VStack w="34%">{T(h, 22, p["label"], bold="true")}</VStack>'
+                   f'<VStack w="34%">{T(h, 22, p["title"], bold="true")}</VStack>'
                    f'<VStack w="1" grow="1">{T(x, 18, p["description"]) if x else ""}</VStack></HStack>')
     return f'<VStack gap="0"{A(box)}>{"".join(out)}</VStack>'
 

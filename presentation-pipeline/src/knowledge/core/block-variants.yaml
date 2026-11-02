@@ -585,8 +585,9 @@ nodes:
   timeline:
     tag: Timeline
     plan_kind: timeline
-    parts: {date: Text, label: Text, description: Text, marker: Shape, connector: Shape, band: Box, item: Box}
+    parts: {date: Text, title: Text, description: Text, marker: Shape, connector: Shape, band: Box, item: Box}
     one_hue: marker
+    part_aliases: {label: title}   # POM's TimelineItem says title (titleColor); label. still read
     meta: [ref, variant, direction]
     native_attributes: []
     code_owned: [dateColor, titleColor, descriptionColor, connectorColor, useColorForDate]
@@ -594,28 +595,28 @@ nodes:
       native:
         requires: [labels_short]
         fallback: rail
-        look:     {date.color: $accentText, label.color: $textMain, description.color: $textMuted,
+        look:     {date.color: $accentText, title.color: $textMain, description.color: $textMuted,
                    connector.fill.color: $border, marker.fill.color: $neutral}
         emphasis: {marker.fill.color: $accent}
       rail:
         requires: [count_le_7]
         fallback: columns
-        look:     {date.color: $accentText, label.color: $textMain, description.color: $textMuted,
+        look:     {date.color: $accentText, title.color: $textMain, description.color: $textMuted,
                    marker.fill.color: $neutral, connector.fill.color: $border}
-        emphasis: {marker.fill.color: $accent, label.color: $accentText}
+        emphasis: {marker.fill.color: $accent, title.color: $accentText}
       columns:
         look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
-                   item.borderRadius: 8, item.padding: 20, date.color: $accentText, label.color: $textMain,
+                   item.borderRadius: 8, item.padding: 20, date.color: $accentText, title.color: $textMain,
                    description.color: $textMuted, marker.fill.color: $neutral, connector.fill.color: $border}
-        emphasis: {item.backgroundColor: $panelDark, date.color: $onPanelDark, label.color: $onPanelDark,
+        emphasis: {item.backgroundColor: $panelDark, date.color: $onPanelDark, title.color: $onPanelDark,
                    description.color: $onPanelDark, marker.fill.color: $accent}
       rows:
-        look:     {date.color: $accentText, label.color: $textMain, description.color: $textMuted,
+        look:     {date.color: $accentText, title.color: $textMain, description.color: $textMuted,
                    item.borderTop.color: $border, item.borderTop.width: 1}
         emphasis: {item.backgroundColor: $accentSoft}
       banded:
         look:     {item.border.color: $border, item.border.width: 1, item.backgroundColor: $surfaceAlt,
-                   band.backgroundColor: $neutral, date.color: $textMain, label.color: $textMain,
+                   band.backgroundColor: $neutral, date.color: $textMain, title.color: $textMain,
                    description.color: $textMuted}
         before:   {band.backgroundColor: $accent, date.color: $onAccent}
         emphasis: {band.backgroundColor: $panelDark, date.color: $onPanelDark}

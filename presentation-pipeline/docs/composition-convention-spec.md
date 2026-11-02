@@ -373,7 +373,13 @@ Pyramid and tree stay `native` (C9).
 - **Timeline (C4):** `banded` uses the date as the band, coloured done / now / ahead from the "now" item (hint
   only). **2026-11-02 (user):** process_arrow's alternating `rail` moved to the timeline as `rail`, the default for
   labels with detail (the timeline's problem was long text: POM's 120 px titles); the old timeline `rail` (a line
-  with a box per point) is now `columns`, used past 7 points.
+  with a box per point) is now `columns`, used past 7 points. A vertical timeline that is not native draws `rows`.
+  **Fields follow POM's `<TimelineItem date title description>` (user, 2026-11-02):** the parts are `date.`
+  `title.` `description.` (`label.` read as an alias of `title.`). With `POM_NODES=timeline` the planner gets the
+  `description` field back (label = the milestone's name, ≤ 3 words; description ≤ 20 words, capacity.yaml) and
+  the label-room check leaves timelines alone; with the node off its prompt is unchanged (short labels only, the
+  user's overflow fix for POM's own timeline). Splitting a label at " — " / ": " / an unspaced dash between
+  letters stays as the fallback for plans without a description.
 - **Process arrow and flow dropped (user, 2026-11-02).** POM's chevrons (150 × 80) and flow nodes (120 × 60) hold
   about two words at a fixed size and only shrink (`process-arrow.yaml` / `flow.yaml` facts), and the code-drawn
   `steps` were card grids under another name (`docs/eval/sequence-nodes/native-vs-derived-*.png`). Their nodes are

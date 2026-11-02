@@ -175,12 +175,20 @@ def test_unknown_variant():
 
 def test_attributes_layer_and_codes():
     res = run('<Timeline ref="roadmap" variant="columns" item.backgroundColor="$accentSoft" grow="2" '
-              'label.fontSize="40" connector.fill.color="#FF0000" wiggle="1" />', ROADMAP)
+              'title.fontSize="40" connector.fill.color="#FF0000" wiggle="1" />', ROADMAP)
     assert sorted(codes(res)) == ["LITERAL_COLOR", "NODE_ATTR_DROPPED", "NODE_ATTR_UNKNOWN", "NODE_TEXT_SPLIT"]
     assert not res["ok"]
     x = res["xml"]
     assert x.count('backgroundColor="$accentSoft"') == 3 and 'backgroundColor="$panelDark"' in x   # emphasis kept
     assert 'grow="2"' in x and 'fontSize="40"' not in x
+
+
+def test_title_part_follows_pom_and_label_is_an_alias():
+    """POM's TimelineItem has date / title / description: the parts are date. title. description.; label. still read."""
+    res = run('<Timeline ref="roadmap" variant="rows" title.color="$accentText" />', ROADMAP)
+    assert "NODE_ATTR_ALIAS" not in codes(res) and res["xml"].count('color="$accentText"') >= 4
+    res = run('<Timeline ref="roadmap" variant="rows" label.color="$positiveText" />', ROADMAP)
+    assert "NODE_ATTR_ALIAS" in codes(res) and res["ok"] and res["xml"].count('color="$positiveText"') == 4
 
 
 def test_code_owned_native_attributes_dropped():
