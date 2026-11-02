@@ -98,3 +98,11 @@ B issues: {}
   grows and the short rail boxes stand mostly empty. Not changed before the marks (one deck): options are keeping
   the LLM's `h` when the slide has no spare height, or growing the rail text further.
 - Plan items not all on the slide: the LLM's timelines dropped or re-cut words of 28 points (A); the tags 0.
+
+### Blind marks (user, 2026-11-02): passed
+
+Tag 14 / same 6 / LLM 3 = **0.739** (ties half); tag or same 20 / 23 (0.870). Rail: 14 wins, 3 losses; native: 6
+same. Reasons for the wins: mostly "better empty space allocation", "consistent, better for large content", "no
+overflow". The 3 losses: 2.3 and 5.2, where one point's whole sentence became a 21 px bold head (no " — " / ": "
+to split at; 5.2 has an unspaced "—"), and 2.4, four short labels just over native's 24 characters drawn large
+(5.3 / 5.4, the same deck's labels, went to the rail). Marks + key: `timeline-marks/`.
