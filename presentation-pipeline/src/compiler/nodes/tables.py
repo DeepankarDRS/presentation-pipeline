@@ -110,6 +110,185 @@ def role(comp: dict, focus: tuple[str, int] | None) -> str:
     return compose.TONE_ROLE.get(tones[focus[1]], "accent") if focus[1] < len(tones) and tones[focus[1]] else "accent"
 
 
+# ── highlights ────────────────────────────────────────────────────────────────
+# The LLM marks meaning inside the tag, by name; code finds the cells, compares the numbers and colours them
+# (user, 2026-11-02: a cell's background and its text are separate; words inside a cell take <Span color>, never <Mark>):
+#   <Highlight row="Flipkart" fill="bad"/>  <Highlight column="ROAS" below="Target" color="bad" else="good"/>
+#   <Highlight column="ROAS" max="good" min="bad"/>  <Highlight cell="Nykaa / ROAS" color="good"/>
+#   <Highlight phrase="spend still rising" color="bad"/>
+# fill = the cell's background ($<role>Soft), color = its text ($<role>Text); tones good / bad / watch.
+
+MAX_HIGHLIGHTS = 4
+HIGHLIGHT_ATTRS = {"row", "column", "cell", "phrase", "fill", "color", "above", "below", "else", "max", "min"}
+TONES = ("good", "bad", "watch")
+_NUM = re.compile(r"[-+−]?\d[\d,]*(?:\.\d+)?")
+
+
+def _number(s: str) -> tuple[float, str] | None:
+    """'₹31.2L' -> (31.2, '₹L'): the first number and what is left around it (the unit)."""
+    m = _NUM.search(str(s))
+    if not m:
+        return None
+    return float(m.group().replace(",", "").replace("−", "-")), (s[:m.start()] + s[m.end():]).strip()
+
+
+class Paint:
+    """What the highlights give each body cell (r, c): a fill role, a text role, phrases in a role."""
+
+    def __init__(self) -> None:
+        self.fill: dict[tuple[int, int], str] = {}
+        self.ink: dict[tuple[int, int], str] = {}
+        self.spans: dict[tuple[int, int], list[tuple[str, str]]] = {}
+
+    def box(self, r: int, c: int, at: dict) -> dict:
+        """A cell's box attributes with its fill: the role's Soft fill, its border in the role when it has one."""
+        if (r, c) not in self.fill:
+            return at
+        role = self.fill[(r, c)]
+        return {**at, "backgroundColor": f"${role}Soft", **({"border.color": f"${role}"} if "border.color" in at else {})}
+
+    def color(self, r: int, c: int) -> dict:
+        return {"color": f"${self.ink[(r, c)]}Text"} if (r, c) in self.ink else {}
+
+    def runs(self, r: int, c: int, v: str) -> str:
+        """The cell's text, escaped, each highlighted phrase (its first match) in a <Span color>."""
+        low, found = v.lower(), []
+        for phrase, role in self.spans.get((r, c), []):
+            s = low.find(phrase.lower())
+            if s >= 0:
+                found.append((s, len(phrase), role))
+        out, pos = [], 0
+        for s, n, role in sorted(found):
+            if s < pos:
+                continue
+            out += [native.x(v[pos:s]), f'<Span color="${role}Text">{native.x(v[s:s + n])}</Span>']
+            pos = s + n
+        return "".join(out) + native.x(v[pos:])
+
+
+def highlights(comp: dict, body: str, flag) -> Paint | None:
+    """The tag's <Highlight> children -> Paint; None when it has none (code then colours the hint's emphasis).
+    A name or phrase not in the table is NODE_HIGHLIGHT_UNKNOWN (an error: the LLM fixes it); past MAX_HIGHLIGHTS the
+    rest are dropped (NODE_HIGHLIGHT_LIMIT); a rule on cells without comparable numbers colours nothing there
+    (NODE_HIGHLIGHT_RULE)."""
+    from lxml import etree
+    ref, (cols, rows) = comp["component_id"], grid(comp)
+    try:
+        kids = [k for k in etree.fromstring(f"<x>{body}</x>") if isinstance(k.tag, str)]
+    except etree.XMLSyntaxError:
+        flag("NODE_HIGHLIGHT_UNKNOWN", ref, f'the children of <{TAG} ref="{ref}"> are not readable XML: write only '
+             '<Highlight .../> elements inside it.')
+        return None
+    hs = [k for k in kids if k.tag == "Highlight"]
+    if len(hs) < len(kids):
+        flag("NODE_ATTR_DROPPED", ref, f'only <Highlight> goes inside <{TAG} ref="{ref}">: code writes the cells; '
+             'other children removed.')
+    if not hs:
+        return None
+    if len(hs) > MAX_HIGHLIGHTS:
+        flag("NODE_HIGHLIGHT_LIMIT", ref, f'{len(hs)} <Highlight>s on <{TAG} ref="{ref}">: at most {MAX_HIGHLIGHTS}; '
+             'the first kept.')
+        hs = hs[:MAX_HIGHLIGHTS]
+    norm = lambda s: " ".join(str(s).split()).casefold()  # noqa: E731
+    labels, heads = [norm(r[0]) for r in rows], [norm(c) for c in cols]
+    paint = Paint()
+
+    def bad(msg: str) -> None:
+        flag("NODE_HIGHLIGHT_UNKNOWN", ref, f'<Highlight> on <{TAG} ref="{ref}">: {msg}')
+
+    def role(tone: str) -> str:
+        return compose.TONE_ROLE[tone]
+
+    def put(cells: list[tuple[int, int]], at: dict, tone_key: str = "") -> None:
+        for rc in cells:
+            for k, store in (("fill", paint.fill), ("color", paint.ink)):
+                t = at.get(tone_key) if tone_key else at.get(k)
+                if at.get(k) and t:
+                    store[rc] = role(t)
+
+    for h in hs:
+        at = {k: v.strip() for k, v in h.attrib.items()}
+        if set(at) - HIGHLIGHT_ATTRS:
+            bad(f'unknown attribute {", ".join(sorted(set(at) - HIGHLIGHT_ATTRS))} (use row / column / cell / phrase, '
+                'fill, color, above / below / else, max / min).')
+            continue
+        tones = {k: at[k] for k in ("fill", "color", "else", "max", "min") if k in at}
+        if any(t not in TONES for t in tones.values()):
+            bad(f'tones are {" / ".join(TONES)} ({tones}).')
+            continue
+        if not ({"fill", "color"} & set(at)) and not ({"max", "min"} & set(at) and "column" in at):
+            bad('give it fill and / or color (max / min colour the text by themselves).')
+            continue
+        if "phrase" in at:
+            hits = [(r, c) for r, row in enumerate(rows) for c, v in enumerate(row) if at["phrase"].lower() in v.lower()]
+            if not hits or "color" not in at:
+                bad(f'phrase "{at["phrase"]}" is not in any cell.' if not hits else 'a phrase takes color only.')
+                continue
+            for rc in hits:
+                paint.spans.setdefault(rc, []).append((at["phrase"], role(at["color"])))
+            continue
+        if "cell" in at:
+            parts = at["cell"].split(" / ")
+            hit = next(((labels.index(norm(" / ".join(parts[:k]))), heads.index(norm(" / ".join(parts[k:]))))
+                        for k in range(1, len(parts)) if norm(" / ".join(parts[:k])) in labels
+                        and norm(" / ".join(parts[k:])) in heads), None)
+            if hit is None:
+                bad(f'cell "{at["cell"]}" is not "<first cell of a row> / <column name>".')
+                continue
+            put([hit], at)
+            continue
+        if "row" in at:
+            if norm(at["row"]) not in labels:
+                bad(f'row "{at["row"]}" is not a row (rows are named by their first cell: {", ".join(r[0] for r in rows)}).')
+                continue
+            r = labels.index(norm(at["row"]))
+            put([(r, c) for c in range(len(cols))], at)
+            continue
+        if "column" not in at or norm(at["column"]) not in heads:
+            bad(f'column "{at.get("column", "")}" is not a column ({", ".join(cols)}).' if "column" in at
+                else 'name a row, column, cell or phrase.')
+            continue
+        c = heads.index(norm(at["column"]))
+        rule = next((k for k in ("above", "below") if k in at), None)
+        if rule is None and not ({"max", "min"} & set(at)):
+            put([(r, c) for r in range(len(rows))], at)
+            continue
+        nums = {r: _number(row[c]) for r, row in enumerate(rows)}
+        nums = {r: n for r, n in nums.items() if n}
+        if rule:
+            other = heads.index(norm(at[rule])) if norm(at[rule]) in heads else None
+            fixed = None if other is not None else _number(at[rule])
+            if other is None and fixed is None:
+                bad(f'{rule}="{at[rule]}" is neither a number nor a column.')
+                continue
+            hit, miss, skipped = [], [], 0
+            for r, (v, unit) in nums.items():
+                than = fixed if other is None else _number(rows[r][other])
+                if not than or (than[1] and than[1] != unit):   # a bare number ("3") compares with any unit
+                    skipped += 1
+                    continue
+                (hit if (v > than[0] if rule == "above" else v < than[0]) else miss).append((r, c))
+            if skipped or not nums:
+                flag("NODE_HIGHLIGHT_RULE", ref, f'{rule}="{at[rule]}" on column "{cols[c]}": '
+                     f'{skipped + len(rows) - len(nums)} cell(s) without a number in the same unit; left uncoloured.')
+            put(hit, at)
+            if "else" in at:
+                put(miss, at, "else")
+        units = {u for _, u in nums.values()}
+        if {"max", "min"} & set(at) and nums:
+            if len(units) > 1:
+                flag("NODE_HIGHLIGHT_RULE", ref, f'max / min on column "{cols[c]}": mixed units ({", ".join(sorted(units))}); '
+                     'left uncoloured.')
+                continue
+            for k, pick in (("max", max), ("min", min)):
+                if k in at:
+                    best = pick(v for v, _ in nums.values())
+                    for r, (v, _) in nums.items():
+                        if v == best:
+                            paint.ink[(r, c)] = role(at[k])
+    return paint
+
+
 # ── compositions ──────────────────────────────────────────────────────────────
 
 T = compose.text
@@ -120,8 +299,12 @@ class Pick:
     """Which parts a cell, a row or a column name takes: the emphasis parts on the emphasis row (all of them) or
     column (its header / cells / cell boxes), else the rest."""
 
-    def __init__(self, rest: dict, hi: dict, focus: tuple[str, int] | None):
-        self.rest, self.hi, self.focus = rest, hi, focus
+    def __init__(self, rest: dict, hi: dict, focus: tuple[str, int] | None, paint: Paint | None = None):
+        self.rest, self.hi, self.focus, self.paint = rest, hi, focus, paint or Paint()
+
+    def text(self, r: int, c: int, v: str, px: int, part: dict, **kw: str) -> str:
+        """A body cell's Text: its highlight colour over the part's, its phrases in <Span color>."""
+        return f'<Text fontSize="{px}"{A({**kw, **part, **self.paint.color(r, c)})}>{self.paint.runs(r, c, v)}</Text>'
 
     def row(self, r: int) -> dict:
         return self.hi if self.focus == ("row", r) else self.rest
@@ -138,8 +321,12 @@ def draw_native(comp: dict, box: dict, pick: Pick) -> str:
     # number touches the next column's text (replay 2026-10-28: text overlaps 31 -> 56 with numbers right-aligned)
     cols, rows = grid(comp)
 
-    def td(v: str, at: dict, i: int) -> str:
-        return f"<Td{A(at)}>{native.x(v)}</Td>"
+    paint = pick.paint
+
+    def td(v: str, at: dict, i: int, r: int | None = None) -> str:
+        if r is None:
+            return f"<Td{A(at)}>{native.x(v)}</Td>"
+        return f"<Td{A({**paint.box(r, i, at), **paint.color(r, i)})}>{paint.runs(r, i, v)}</Td>"
 
     out = [f'<Table id="tbl-{comp["component_id"]}"{A({"w": "max", **box})}>' + "<Col />" * len(cols)]
     if any(c.strip() for c in cols):
@@ -153,7 +340,7 @@ def draw_native(comp: dict, box: dict, pick: Pick) -> str:
                   **(rest["stripe"] if r % 2 else {})}
             if p is not rest:
                 at.update(p[part])
-            cells.append(td(v, at, i))
+            cells.append(td(v, at, i, r))
         out.append("<Tr>" + "".join(cells) + "</Tr>")
     return "".join(out) + "</Table>"
 
@@ -170,10 +357,10 @@ def draw_rows(comp: dict, box: dict, pick: Pick, numbered: bool) -> str:
         p = pick.row(r)
         item = {k: v for k, v in p["item"].items() if r or not k.startswith("borderTop")}   # no rule above the first
         num = f'<VStack w="72">{T(f"{r + 1:02d}", 30, p["number"], bold="true")}</VStack>' if numbered else ""
-        cells = "".join(f'<VStack w="1" grow="1">{T(v, 18, pick.cell(r, i)["cell"])}</VStack>'
+        cells = "".join(f'<VStack w="1" grow="1"{A(pick.paint.box(r, i, {}))}>{pick.text(r, i, v, 18, pick.cell(r, i)["cell"])}</VStack>'
                         for i, v in enumerate(row) if i)
         body.append(f'<HStack id="card-{cid}-{r}" grow="1" gap="20" alignItems="center" padding="10"{A(item)}>'
-                    f'{num}<VStack w="24%">{T(row[0], 22, p["label"], bold="true")}</VStack>{cells}</HStack>')
+                    f'{num}<VStack w="24%"{A(pick.paint.box(r, 0, {}))}>{pick.text(r, 0, row[0], 22, p["label"], bold="true")}</VStack>{cells}</HStack>')
     return f'<VStack gap="8"{A(box)}>{head}<VStack gap="0" grow="1">{"".join(body)}</VStack></VStack>'
 
 
@@ -182,11 +369,11 @@ def draw_columns(comp: dict, box: dict, pick: Pick) -> str:
     out = []
     for r, row in enumerate(rows):
         p = pick.row(r)
-        pill = (f'<HStack padding="14" justifyContent="center"{A({"borderRadius": "24", **p["band"]})}>'
-                f'{T(row[0], 19, p["label"], bold="true", textAlign="center")}</HStack>')
-        boxes = "".join(f'<VStack grow="1" gap="4" padding="14" justifyContent="center"{A(pick.cell(r, i)["item"])}>'
+        pill = (f'<HStack padding="14" justifyContent="center"{A(pick.paint.box(r, 0, {"borderRadius": "24", **p["band"]}))}>'
+                f'{pick.text(r, 0, row[0], 19, p["label"], bold="true", textAlign="center")}</HStack>')
+        boxes = "".join(f'<VStack grow="1" gap="4" padding="14" justifyContent="center"{A(pick.paint.box(r, i, pick.cell(r, i)["item"]))}>'
                         + (T(cols[i].upper(), 12, pick.cell(r, i)["header"], bold="true", letterSpacing="1") if cols[i].strip() else "")
-                        + f'{T(v, 17, pick.cell(r, i)["cell"])}</VStack>' for i, v in enumerate(row) if i)
+                        + f'{pick.text(r, i, v, 17, pick.cell(r, i)["cell"])}</VStack>' for i, v in enumerate(row) if i)
         out.append(f'<VStack id="card-{cid}-{r}" w="1" grow="1" gap="10" alignItems="stretch">{pill}{boxes}</VStack>')
     return f'<HStack gap="16" alignItems="stretch"{A(box)}>{"".join(out)}</HStack>'
 
@@ -202,12 +389,12 @@ def draw_banded(comp: dict, box: dict, pick: Pick) -> str:
     for r, row in enumerate(rows):
         p = pick.row(r)
         lines = "".join(
-            f'<HStack gap="12" alignItems="start"><VStack w="34%">{T(cols[i], 15, pick.cell(r, i)["header"], bold="true")}</VStack>'
-            f'<VStack w="1" grow="1">{T(v, 17, pick.cell(r, i)["cell"])}</VStack></HStack>'
+            f'<HStack gap="12" alignItems="start"{A(pick.paint.box(r, i, {}))}><VStack w="34%">{T(cols[i], 15, pick.cell(r, i)["header"], bold="true")}</VStack>'
+            f'<VStack w="1" grow="1">{pick.text(r, i, v, 17, pick.cell(r, i)["cell"])}</VStack></HStack>'
             for i, v in enumerate(row) if i)
         item = {k: v for k, v in p["item"].items() if k != "backgroundColor"}
         boxes.append(f'<VStack id="card-{cid}-{r}" w="1" grow="1" gap="0"{A(item)}>'
-                     f'<HStack padding="14"{A(p["band"])}>{T(row[0], 20, p["label"], bold="true")}</HStack>'
+                     f'<HStack padding="14"{A(pick.paint.box(r, 0, p["band"]))}>{pick.text(r, 0, row[0], 20, p["label"], bold="true")}</HStack>'
                      f'<VStack grow="1" gap="10" padding="18"{A({"backgroundColor": p["item"].get("backgroundColor", "$surfaceAlt")})}>'
                      f'{lines}</VStack></VStack>')
     k = per_line(len(boxes))
@@ -253,10 +440,10 @@ def draw_grid(comp: dict, box: dict, pick: Pick, numbered: bool, inside: bool) -
         if numbered:
             tile = (f'<VStack w="64" justifyContent="center" alignItems="center" borderRadius="8"{A(p["band"])}>'
                     f'{T(f"{r + 1:02d}", 22, p["number"], bold="true")}</VStack>')
-        label = (f'<VStack id="card-{cid}.tl-{r}" w="{LABEL_W}" gap="4" padding="14" justifyContent="center" borderRadius="8"{A(lb)}>'
-                 f'{caps(0, p)}{T(row[0], 19, lt, bold="true")}</VStack>')
-        cells = "".join(f'<VStack id="card-{cid}.tc-{r * len(cols) + i}" w="1" grow="1" gap="4" padding="14" justifyContent="center"{A(pick.cell(r, i)["item"])}>'
-                        f'{caps(i, pick.cell(r, i))}{T(v, 17, pick.cell(r, i)["cell"])}</VStack>'
+        label = (f'<VStack id="card-{cid}.tl-{r}" w="{LABEL_W}" gap="4" padding="14" justifyContent="center" borderRadius="8"{A(pick.paint.box(r, 0, lb))}>'
+                 f'{caps(0, p)}{pick.text(r, 0, row[0], 19, lt, bold="true")}</VStack>')
+        cells = "".join(f'<VStack id="card-{cid}.tc-{r * len(cols) + i}" w="1" grow="1" gap="4" padding="14" justifyContent="center"{A(pick.paint.box(r, i, pick.cell(r, i)["item"]))}>'
+                        f'{caps(i, pick.cell(r, i))}{pick.text(r, i, v, 17, pick.cell(r, i)["cell"])}</VStack>'
                         for i, v in enumerate(row) if i)
         body.append(f'<HStack grow="1" gap="10" alignItems="stretch">{tile}{label}{cells}</HStack>')
     return f'<VStack gap="10"{A(box)}>{head}{"".join(body)}</VStack>'
@@ -285,11 +472,11 @@ def draw_ledger(comp: dict, box: dict, pick: Pick, icons: list[str]) -> str:
             base = {**pick.rest["item"], **(pick.rest["stripe"] if r % 2 else {})}
             return {**base, **p["item"]} if p is not pick.rest else base
         lb, lt = _boxed(pick.row(r)["label"])
-        cells = "".join(f'<VStack id="card-{cid}.tc-{r * len(cols) + i}" w="1" grow="1" padding="14" justifyContent="center"{A(cell_box(i))}>'
-                        f'{T(v, 17, pick.cell(r, i)["cell"])}</VStack>' for i, v in enumerate(row) if i)
+        cells = "".join(f'<VStack id="card-{cid}.tc-{r * len(cols) + i}" w="1" grow="1" padding="14" justifyContent="center"{A(pick.paint.box(r, i, cell_box(i)))}>'
+                        f'{pick.text(r, i, v, 17, pick.cell(r, i)["cell"])}</VStack>' for i, v in enumerate(row) if i)
         body.append(f'<HStack grow="1" gap="0" alignItems="stretch">'
-                    f'<VStack id="card-{cid}.tl-{r}" w="{LABEL_W}" padding="14" justifyContent="center"{A({**cell_box(0), **lb})}>'
-                    f'{T(row[0], 18, lt, bold="true")}</VStack>{cells}</HStack>')
+                    f'<VStack id="card-{cid}.tl-{r}" w="{LABEL_W}" padding="14" justifyContent="center"{A(pick.paint.box(r, 0, {**cell_box(0), **lb}))}>'
+                    f'{pick.text(r, 0, row[0], 18, lt, bold="true")}</VStack>{cells}</HStack>')
     return f'<VStack gap="4"{A(box)}>{head}{"".join(body)}</VStack>'
 
 
@@ -298,9 +485,11 @@ def _toned(parts: dict[str, dict], role: str) -> dict[str, dict]:
     return {p: {k: compose.tone_value(v, role) for k, v in at.items()} for p, at in parts.items()}
 
 
-def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
-    """One <Table ref> tag -> its XML, and what was drawn."""
+def draw(comp: dict, attrs: dict[str, str], flag, body: str = "") -> tuple[str, dict]:
+    """One <Table ref> tag (and its <Highlight> children) -> its XML, and what was drawn. With highlights, the LLM
+    has chosen what to colour: no emphasis from the hint on top of them."""
     ref, nd = comp["component_id"], node()
+    paint = highlights(comp, body, flag) if body.strip() else None
     meta, box, parts = compose.read(attrs, ref, flag, nd)
     name, extra = compose.composition(nd, comp, meta.get("variant"), ref, flag)
     for k, v in extra.items():   # an alias's part attributes (zebra, dark_header), under the LLM's own
@@ -312,7 +501,7 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
             flag("NODE_ATTR_DROPPED", ref, f'item.{k} on <Table ref="{ref}">: a native table cell takes only '
                  'item.backgroundColor; removed (C1).')
             del parts["item"][k]
-    focus = emphasis(comp)
+    focus = None if paint else emphasis(comp)
     box, rest, hi = compose.layers(nd, name, box, parts, focus is not None)
     rest, hi = _toned(rest, "accent"), _toned(hi, role(comp, focus))
     box = {k: compose.tone_value(v, "accent") for k, v in box.items()}
@@ -324,14 +513,15 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
             p["header"] = {k: v for k, v in p["header"].items() if k != "backgroundColor"}
             if "color" not in parts["header"]:
                 p["header"]["color"] = tone
-    pick = Pick(rest, hi, focus)
+    pick = Pick(rest, hi, focus, paint)
     icons = [s.strip() for s in str(meta.get("icons") or "").split(",")]
     xml = (draw_native(comp, box, pick) if name == "native" else
            draw_rows(comp, box, pick, name == "rows numbered") if name.startswith("rows") else
            draw_grid(comp, box, pick, name == "grid numbered", inside) if name.startswith("grid") else
            draw_ledger(comp, box, pick, icons) if name == "ledger" else
            draw_columns(comp, box, pick) if name == "columns" else draw_banded(comp, box, pick))
-    return xml, {"composition": name, "focus": focus}
+    return xml, {"composition": name, "focus": focus,
+                 "highlights": bool(paint and (paint.fill or paint.ink or paint.spans))}
 
 
 def expand(xml: str, plan: dict | None) -> dict[str, Any]:
@@ -342,7 +532,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         flag("NODE_ITEM_MISSING", comp["component_id"], f'table "{comp["component_id"]}" has no rows in the plan.')
         return False
 
-    return compose.expand(xml, components(plan), TAG, draw, check)
+    return compose.expand(xml, components(plan), TAG, draw, check, children=True)
 
 
 # ── prompt ─────────────────────────────────────────────────────────────────────
@@ -354,11 +544,19 @@ def node_lines() -> str:
     return "\n".join([
         "## TABLES (code draws them from the plan)",
         f'<{TAG} ref="<table id>" variant="..."/>: ' + "; ".join(f"{n} ({v['prompt']})" for n, v in vs.items()) + ".",
-        "Self-closing: code writes every cell, the numbers and the emphasis (the row or column the plan's hint names). "
-        "Layout (w, h, grow) and box attributes style the table's own box; parts header. (column names) label. (first "
-        "column) cell. (other cells) stripe. (alternate rows) take backgroundColor color bold italic textAlign in "
-        "$tokens; item. / band. / number. on the drawn compositions. No <Tr>, <Td> or fontSize. "
-        f"Recipes: {styles}.",
+        "Code writes every cell and number; never type one. Layout (w, h, grow) and box attributes style the table's "
+        "own box; parts header. (column names) label. (first column) cell. (other cells) stripe. (alternate rows) take "
+        "backgroundColor color bold italic textAlign in $tokens; item. / band. / number. on the drawn compositions. "
+        f"No <Tr>, <Td> or fontSize. Recipes: {styles}.",
+        f"Colour by meaning with up to {MAX_HIGHLIGHTS} <Highlight/> inside the tag (else code colours the row or column "
+        "the hint names). Name rows by their first cell and columns by their name, exactly as in the table; tones "
+        "good | bad | watch; fill = the cell's background, color = its text:",
+        '  <Highlight row="Flipkart" fill="bad"/> · <Highlight column="ROAS" color="good"/> · '
+        '<Highlight cell="Nykaa / ROAS" fill="good" color="good"/>',
+        '  <Highlight column="ROAS" below="Target" color="bad" else="good"/> (a number or another column; code '
+        'compares) · <Highlight column="ROAS" max="good" min="bad"/> (highest / lowest value, its text)',
+        '  <Highlight phrase="spend still rising" color="bad"/> (those words of a cell, in colour)',
+        "Colour only what the headline or the hint is about.",
     ])
 
 
@@ -374,7 +572,11 @@ def prompt_line(comp: dict, headline: str = "") -> str:
     f = emphasis(comp)
     ok = [n for n, v in node()["compositions"].items() if not spec.failed_requires(v, comp)]
     longest = max((len(c) for r in rows for c in r), default=0)
-    em = (f"emphasis row {rows[f[1]][0]!r}" if f[0] == "row" else f"emphasis column {cols[f[1]]!r}") if f else "no emphasis"
-    parts = [f"TABLE {cid}: {len(rows)} rows x {len(cols)} columns", f"longest cell {longest} chars", em,
+    em = (f"row {rows[f[1]][0]!r}" if f[0] == "row" else f"column {cols[f[1]]!r}") if f else "nothing"
+    hint = " ".join(str(comp.get("design_hint") or "").split())
+    parts = [f"TABLE {cid}: {len(rows)} rows x {len(cols)} columns", f"longest cell {longest} chars",
              "variants " + " | ".join(ok)]
-    return "; ".join(parts) + f'. <{TAG} ref="{cid}"/>; never type a cell yourself: code writes them from the plan'
+    cells = "\n".join(["  columns: " + " | ".join(cols)] + ["  " + " | ".join(r) for r in rows])
+    return ("; ".join(parts) + (f"\n  hint: {hint}" if hint else "") + f"\n{cells}\n"
+            f'<{TAG} ref="{cid}"/> (or with <Highlight/> inside; without them code colours {em}); the cells are '
+            "for reading: never type one yourself, code writes them from the plan")

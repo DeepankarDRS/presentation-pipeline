@@ -46,6 +46,15 @@ TABLE = comp("gaps", "table", {"table_columns": ["Gap", "Marketplace A", "Market
     ["Budget not following winners", "Exact match under-scaled", "Category ads under-funded", "Budget tiers by ROAS and intent"],
     ["Visibility spend mixed in", "Display ads weak", "Banner slots weak", "Separate visibility budget"]]},
     "side-by-side comparison; accent the Fix column in a positive colour as the recommended fixes", columns=4, rows=4)
+# a numbers table for <Highlight> (user, 2026-11-02): a row fill, a rule against another column, max / min, a phrase
+ROAS_T = comp("roas", "table", {"table_columns": ["Platform", "Spend", "ROAS", "Target", "Note"], "table_rows": [
+    ["Amazon", "₹31.2L", "2.8x", "2.0x", "Above target; scale exact match"],
+    ["Flipkart", "₹42.0L", "0.34x", "2.0x", "Below target, spend still rising"],
+    ["Myntra", "₹12.6L", "1.9x", "2.0x", "Near target; watch CPC creep"],
+    ["Nykaa", "₹9.8L", "3.4x", "2.0x", "Best return at the lowest spend"]]},
+    "flag Flipkart as the worst performer; show which platforms beat the ROAS target", columns=5, rows=4)
+HIGHLIGHTS = ('<Highlight row="Flipkart" fill="bad"/><Highlight column="ROAS" below="Target" color="bad" else="good"/>'
+              '<Highlight column="Spend" max="bad"/><Highlight phrase="Best return" color="good"/>')
 # one-series bar with unit strings (saved: "Campaign-class ROAS", 19 one-series bars of 4-6 points)
 CHART = comp("roas", "chart", {"chart_title": "ROAS by campaign class",
                                "chart_labels": ["Generic search", "Category / PLA", "Brand", "Competitor"],
@@ -265,7 +274,10 @@ def blocks() -> dict[str, tuple[list, list]]:
                    ("grid · accent_edge", [TABLE], table_recipe("grid", "accent_edge")),
                    ("grid · lifted", [TABLE], table_recipe("grid", "lifted")),
                    ("grid numbered", [TABLE], tag("Table", TABLE, "grid numbered")),
-                   ("ledger · icons", [TABLE], '<Table ref="gaps" variant="ledger" icons="alert-triangle,store,shopping-cart,wrench" />')]),
+                   ("ledger · icons", [TABLE], '<Table ref="gaps" variant="ledger" icons="alert-triangle,store,shopping-cart,wrench" />'),
+                   ("native · highlights", [ROAS_T], f'<Table ref="roas">{HIGHLIGHTS}</Table>'),
+                   ("grid · highlights", [ROAS_T], f'<Table ref="roas" variant="grid">{HIGHLIGHTS}</Table>'),
+                   ("ledger · highlights", [ROAS_T], f'<Table ref="roas" variant="ledger">{HIGHLIGHTS}</Table>')]),
         "chart": ([(f"today · {v}", [LB.CHART], LB.chart(v)) for v in ("plain", "labelled", "focus_label")],
                   [("native (default)", [CHART], chart_tag()), ("native labelled", [CHART], chart_tag("native labelled")),
                    ("rows", [CHART], chart_tag("rows")),

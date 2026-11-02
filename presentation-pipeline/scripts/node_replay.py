@@ -118,7 +118,9 @@ def chart_card(chart: etree._Element, comp: dict) -> etree._Element:
 def rewrite(root: etree._Element, comp: dict, variant: str) -> dict:
     tag = composed.tag(comp["kind"])
     chart = next(root.iter(tag))
-    el = chart_card(chart, comp)
+    # a table node draws no card or title: the LLM keeps its own around the tag (user marks 2026-11-02: on 38 slides
+    # the replay had dropped the card and its title row)
+    el = chart if comp["kind"] == "table" else chart_card(chart, comp)
     keep = {k: v for k, v in el.attrib.items() if k in LAYOUT_KEYS}
     if el is not chart:   # a card's height is the chart's plus the card's title row and padding (the LLM sized the chart)
         chrome = sum(float(el.get(k) or el.get("padding") or 0) for k in ("padding.top", "padding.bottom")) \

@@ -16,6 +16,7 @@ ERROR, WARNING, REPORT = "error", "warning", "report"
 SEVERITY = {
     "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR, "NODE_ATTR_UNKNOWN": ERROR,
     "NODE_VARIANT_UNKNOWN": WARNING, "NODE_VARIANT_UNMET": WARNING, "LITERAL_COLOR": WARNING,
+    "NODE_HIGHLIGHT_UNKNOWN": ERROR, "NODE_HIGHLIGHT_LIMIT": WARNING, "NODE_HIGHLIGHT_RULE": WARNING,
     "NODE_ATTR_DROPPED": REPORT, "NODE_ATTR_ALIAS": REPORT, "NODE_TEXT_SPLIT": REPORT,
     "NODE_DEFAULT_FROM_CONTENT": REPORT, "NODE_TAG_ALIAS": REPORT, "NODE_LOOK_FROM_HINT": REPORT,
 }
@@ -221,9 +222,10 @@ def inner_ids(xml: str) -> str:
 
 
 def expand(xml: str, comps: dict[str, dict], tag: str, draw: Callable[..., tuple[str, dict]],
-           check: Callable[[dict, Flag], bool] | None = None) -> dict[str, Any]:
+           check: Callable[[dict, Flag], bool] | None = None, children: bool = False) -> dict[str, Any]:
     """Every <tag ref="<component id>"/> drawn by `draw(comp, attrs, flag)`. A tag without ref is the LLM's own;
-    a ref naming no component of the node's kind is NODE_REF_UNKNOWN. `check(comp, flag)` False: not drawn."""
+    a ref naming no component of the node's kind is NODE_REF_UNKNOWN. `check(comp, flag)` False: not drawn.
+    children: the node reads its children (a table's <Highlight>s): `draw(comp, attrs, flag, body)`."""
     issues: list[dict[str, Any]] = []
     done: dict[str, dict] = {}
 
@@ -246,6 +248,10 @@ def expand(xml: str, comps: dict[str, dict], tag: str, draw: Callable[..., tuple
             flag("NODE_REF_DUPLICATE", ref, f'<{tag} ref="{ref}"> twice: each component once.')
             continue
         if check and not check(comp, flag):
+            continue
+        if children:
+            drawn, done[ref] = draw(comp, t["attrs"], flag, t["body"])
+            out.append(inner_ids(drawn))
             continue
         if t["body"].strip():
             flag("NODE_ATTR_DROPPED", ref, f'children inside <{tag} ref="{ref}">: code writes it from the plan; removed.')

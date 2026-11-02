@@ -28,11 +28,20 @@ export function deckTypeface(slideXml, family = DECK_FONT) {
 }
 
 /** Anchor every table cell of one slide's XML in the middle. */
-export function centreCells(slideXml) {
-  return slideXml.replace(/<a:tc\b[\s\S]*?<\/a:tc>/g, (tc) => tc
-    // the cell's own text body (PowerPoint reads tcPr, LibreOffice may read bodyPr)
-    .replace(/<a:bodyPr\b([^>]*?)\sanchor="t"/, '<a:bodyPr$1 anchor="ctr"')
-    .replace(/<a:tcPr\b(?![^>]*\sanchor=)/, '<a:tcPr anchor="ctr"'));
+export function centreCells(slideXml, marginPx = Number(process.env.POM_CELL_MARGIN || 0)) {
+  // POM_CELL_MARGIN (px, prototype, off by default): left / right cell margins; POM writes 0
+  const emu = String(Math.round(marginPx * 9525));
+  return slideXml.replace(/<a:tc\b[\s\S]*?<\/a:tc>/g, (tc) => {
+    let out = tc
+      // the cell's own text body (PowerPoint reads tcPr, LibreOffice may read bodyPr)
+      .replace(/<a:bodyPr\b([^>]*?)\sanchor="t"/, '<a:bodyPr$1 anchor="ctr"')
+      .replace(/<a:tcPr\b(?![^>]*\sanchor=)/, '<a:tcPr anchor="ctr"');
+    if (marginPx > 0) {
+      out = out.replace(/(<a:tcPr\b[^>]*?\s)marL="0"/, `$1marL="${emu}"`).replace(/(<a:tcPr\b[^>]*?\s)marR="0"/, `$1marR="${emu}"`)
+        .replace(/(<a:bodyPr\b[^>]*?\s)lIns="0"/, `$1lIns="${emu}"`).replace(/(<a:bodyPr\b[^>]*?\s)rIns="0"/, `$1rIns="${emu}"`);
+    }
+    return out;
+  });
 }
 
 /** The chart-post spec of every <Chart> of a POM slide, in document order (null: none). Colour tokens are

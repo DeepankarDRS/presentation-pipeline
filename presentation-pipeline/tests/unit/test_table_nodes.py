@@ -195,7 +195,7 @@ def test_composed_registry():
     assert "table" in composed.kinds_on() and composed.tag("table") == "Table"
     assert composed.all_drawn(p, "table") and composed.expand('<Table ref="gaps"/>', p)["components"]["gaps"]
     line = composed.prompt_line(dict(GAPS, count=1))
-    assert "4 rows x 4 columns" in line and "emphasis column 'Fix'" in line and "columns | banded" in line
+    assert "4 rows x 4 columns" in line and "code colours column 'Fix'" in line and "columns | banded" in line
     assert "TABLES" in composed.node_lines() and "zebra" in composed.node_lines()
     assert "stripe.*" in composed.tag_attributes("table")
 
@@ -248,3 +248,135 @@ def test_ledger_icons_and_stripes():
 def test_grid_recipes_are_valid_attributes(style):
     r = run(f'<Table ref="gaps" variant="grid" {TB.node()["styles"][style]}/>', GAPS)
     assert used(r, "gaps") == "grid" and not [c for c in codes(r) if c in ("NODE_ATTR_UNKNOWN", "LITERAL_COLOR")]
+
+
+# ── highlights (user, 2026-11-02: fill = the cell's background, color = its text, phrases in <Span color>) ─────────
+
+ROAS = {"component_id": "roas", "kind": "table", "design_hint": "flag the Flipkart row as the worst performer",
+        "content_data": {"table_columns": ["Platform", "Spend", "ROAS", "Target", "Note"], "table_rows": [
+            ["Amazon", "₹31.2L", "2.8x", "2.0x", "Above target; scale exact match"],
+            ["Flipkart", "₹42.0L", "0.34x", "2.0x", "Below target, spend still rising"],
+            ["Myntra", "₹12.6L", "1.9x", "2.0x", "Near target; watch CPC creep"],
+            ["Nykaa", "₹9.8L", "3.4x", "2.0x", "Best return at the lowest spend"]]}}
+
+
+def hl(*marks, variant="native"):
+    v = f' variant="{variant}"' if variant else ""
+    return run(f'<Table ref="roas"{v}>{"".join(marks)}</Table>', ROAS)
+
+
+def tds(x):
+    """native body cells as (attributes, inner XML), row by row."""
+    rows = re.findall(r"<Tr>(.*?)</Tr>", x)[1:]
+    return [re.findall(r"<Td([^>]*)>(.*?)</Td>", r) for r in rows]
+
+
+def test_highlight_row_fill_only_tints_the_row():
+    res = hl('<Highlight row="Flipkart" fill="bad"/>')
+    assert not codes(res)
+    cells = tds(res["xml"])
+    assert all('backgroundColor="$negativeSoft"' in a for a, _ in cells[1])
+    assert not any("negative" in a for r in (0, 2, 3) for a, _ in cells[r])
+    assert not any('color="$negativeText"' in a for a, _ in cells[1])     # fill and text colour are separate
+
+
+def test_highlight_replaces_the_hint_emphasis():
+    res = hl('<Highlight cell="Nykaa / ROAS" color="good"/>')
+    assert res["components"]["roas"]["focus"] is None and res["components"]["roas"]["highlights"]
+    a, inner = tds(res["xml"])[3][2]
+    assert 'color="$positiveText"' in a and "backgroundColor" not in a and inner == "3.4x"
+
+
+def test_bare_tag_keeps_the_hint_emphasis():
+    assert run('<Table ref="roas" />', ROAS)["components"]["roas"]["focus"] == ("row", 1)
+
+
+def test_highlight_rule_against_another_column():
+    cells = tds(hl('<Highlight column="ROAS" below="Target" color="bad" else="good"/>')["xml"])
+    got = ["negative" if "negativeText" in r[2][0] else "positive" if "positiveText" in r[2][0] else "" for r in cells]
+    assert got == ["positive", "negative", "negative", "positive"]
+
+
+def test_highlight_rule_against_a_number():
+    cells = tds(hl('<Highlight column="ROAS" above="3" color="good"/>')["xml"])
+    assert ["positiveText" in r[2][0] for r in cells] == [False, False, False, True]
+
+
+def test_highlight_max_min():
+    cells = tds(hl('<Highlight column="Spend" max="bad" min="good"/>')["xml"])
+    assert 'negativeText' in cells[1][1][0] and 'positiveText' in cells[3][1][0]
+    assert not any("Text" in cells[r][1][0] for r in (0, 2))
+
+
+def test_highlight_phrase_is_a_span_color_never_a_mark():
+    x = hl('<Highlight phrase="spend still rising" color="bad"/>')["xml"]
+    _, inner = tds(x)[1][4]
+    assert inner == 'Below target, <Span color="$negativeText">spend still rising</Span>'
+    assert "<Mark" not in x
+
+
+def test_highlight_fill_and_phrase_in_one_cell():
+    x = hl('<Highlight row="Flipkart" fill="bad"/>', '<Highlight phrase="Below target" color="watch"/>')["xml"]
+    a, inner = tds(x)[1][4]
+    assert 'backgroundColor="$negativeSoft"' in a and '<Span color="$warningText">Below target</Span>' in inner
+
+
+@pytest.mark.parametrize("mark", [
+    '<Highlight row="Zomato" fill="bad"/>',                        # no such row
+    '<Highlight column="CPC" color="bad"/>',                       # no such column
+    '<Highlight cell="Nykaa - ROAS" color="good"/>',               # not "<row> / <column>"
+    '<Highlight phrase="not in the table" color="bad"/>',
+    '<Highlight row="Flipkart" fill="red"/>',                      # not a tone
+    '<Highlight row="Flipkart"/>',                                 # no fill / color
+    '<Highlight row="Flipkart" fill="bad" tone="bad"/>',           # unknown attribute
+    '<Highlight column="ROAS" below="Budget" color="bad"/>',       # neither a number nor a column
+])
+def test_highlight_errors_go_back_to_the_llm(mark):
+    res = hl(mark)
+    assert "NODE_HIGHLIGHT_UNKNOWN" in codes(res) and not res["ok"]
+
+
+def test_highlight_names_ignore_case_and_spaces():
+    assert not codes(hl('<Highlight row="  flipkart " fill="bad"/>', '<Highlight cell="nykaa / roas" color="good"/>'))
+
+
+def test_highlight_limit_keeps_the_first_four():
+    marks = [f'<Highlight row="{r}" fill="good"/>' for r in ("Amazon", "Flipkart", "Myntra", "Nykaa")]
+    res = hl(*marks, '<Highlight column="ROAS" color="bad"/>')
+    assert "NODE_HIGHLIGHT_LIMIT" in codes(res) and res["ok"]
+    assert not any("negativeText" in a for r in tds(res["xml"]) for a, _ in r)
+
+
+def test_highlight_rule_skips_mixed_units():
+    t = dict(ROAS, content_data=dict(ROAS["content_data"], table_rows=[
+        ["A", "₹6.2 Cr", "2x", "2x", ""], ["B", "₹42L", "1x", "2x", ""]]))
+    res = run('<Table ref="roas"><Highlight column="Spend" max="bad"/></Table>', t)
+    assert "NODE_HIGHLIGHT_RULE" in codes(res) and res["ok"]
+    assert "negativeText" not in res["xml"]
+
+
+def test_highlight_other_children_dropped():
+    res = hl('<Td>x</Td><Highlight row="Amazon" fill="good"/>')
+    assert "NODE_ATTR_DROPPED" in codes(res) and "<Td>x</Td>" not in res["xml"]
+
+
+@pytest.mark.parametrize("variant", ["rows", "columns", "banded", "grid", "grid numbered", "ledger"])
+def test_highlight_on_every_composition(variant):
+    res = hl('<Highlight row="Flipkart" fill="bad"/>', '<Highlight column="ROAS" max="good"/>',
+             '<Highlight phrase="spend still rising" color="bad"/>', variant=variant)
+    x = res["xml"]
+    assert res["ok"], codes(res)
+    assert "$negativeSoft" in x and 'color="$positiveText"' in x
+    assert '<Span color="$negativeText">spend still rising</Span>' in x
+
+
+def test_prompt_line_shows_cells_to_read():
+    line = TB.prompt_line(ROAS)
+    assert "columns: Platform | Spend | ROAS | Target | Note" in line
+    assert "Flipkart | ₹42.0L | 0.34x | 2.0x | Below target, spend still rising" in line
+    assert "hint: flag the Flipkart row" in line and "never type one yourself" in line
+
+
+def test_node_lines_teach_highlight_not_mark():
+    lines = TB.node_lines()
+    assert "<Highlight" in lines and "<Mark" not in lines and "max=" in lines and "below=" in lines
