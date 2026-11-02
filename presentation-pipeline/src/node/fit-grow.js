@@ -753,7 +753,7 @@ function intWidths(ws, W) {
  * is false only when no choice avoids that. `widths` is null when the
  * generator's widths are kept.
  */
-function planTable(n, grid, W, fontOf, ctx, floor, room = 0.85) {
+function planTable(n, grid, W, fontOf, ctx, floor, room = 0.85, guarded = false) {
   const cols = n.columns.length, inset = cellInset(W, cols);
   const min = Array(cols).fill(20), pref = Array(cols).fill(20), word = Array(cols).fill(0);
   for (const row of grid) for (const { c, col, span } of row) {
@@ -794,11 +794,13 @@ function planTable(n, grid, W, fontOf, ctx, floor, room = 0.85) {
   candidates.forEach((widths, i) => {
     const rows = need(widths);
     const cost = sum(rows.map((r, j) => rowFor(floor[j], r)));
-    const valid = widths.every((w, j) => w >= word[j] - 1); // integer widths round down
+    // guarded: a word fits as the word guard checks it (its width / 0.85 + the cell margins); growth checked only the
+    // bare word, so the main table grew 14 -> 22 px and the guard took it back to 15 (table marks pair 15.4)
+    const valid = widths.every((w, j) => (guarded ? !word[j] || w >= Math.ceil(min[j]) : w >= word[j] - 1));
     if (!best || (valid && !best.valid)
       || (valid === best.valid && cost < best.cost - (best.i === 0 ? line : 1))) best = { i, widths, rows, cost, valid };
   });
-  return { widths: best.i === 0 ? null : best.widths, need: best.rows, valid: best.valid };
+  return { widths: best.i === 0 ? null : best.widths, need: best.rows, valid: best.valid, word, min };
 }
 
 /** Rewrite a table's column widths, row heights, cell fonts and/or minH in the XML text. */
@@ -976,18 +978,35 @@ async function growMainTable(xml, id, report, onlyTable, caps = { font: TD_FONT_
   const f0 = Math.max(...cells.map((c) => c.fontSize ?? TD_FONT));
   const sized = cells.some((c) => (c.runs ?? []).some((r) => r.fontSize !== undefined));
   const fontFor = (k) => (c) => Math.min(Math.round((c.fontSize ?? TD_FONT) * k), Math.max(c.fontSize ?? TD_FONT, caps.font));
-  const atFont = (k) => {
-    const plan = planTable(n, grid, W, fontFor(k), L.ctx, declared);
+  const atFont = (k, guarded = false) => {
+    const plan = planTable(n, grid, W, fontFor(k), L.ctx, declared, 0.85, guarded);
     const rows = declared.map((d, i) => rowFor(d, plan.need[i]));
     return { plan, rows, xml: writeTable(xml, id, { widths: plan.widths, rows, fontOf: k > 1 ? fontFor(k) : null }) };
   };
   const kMax = sized || !onlyTable ? 1 : Math.max(1, caps.font / f0);
-  const k = kMax > 1 ? await bisect(1, kMax, (x) => {
+  const kOld = kMax > 1 ? await bisect(1, kMax, (x) => {
     const a = atFont(x);
     return a.plan.valid && tableFits(a.xml, id, before, keep, W);
   }) : 1;
+  // the word guard (phase 6) then shrinks a word wider than its column at these widths, or widens its column from a
+  // neighbour: guardAt = the size it lands on (the guard itself, on a trial copy). Columns re-planned for the guard's
+  // rule may hold a larger size (table marks pair 15.4: 22 px, the guard took it to 15; re-planned 19 px): take the
+  // largest such size when it beats guardAt, else keep the old growth and let the guard trim
+  const fK = fontFor(kOld)({ fontSize: f0 });
+  let guardAt = fK, kNew = 0;
+  if (kOld > 1) {
+    const g = await guardWords(atFont(kOld).xml, [], []), el = findElement(g, id);
+    guardAt = Math.max(f0, ...[...g.slice(el.openEnd, el.end).matchAll(/<Td\s[^>]*?fontSize="(\d+)"/g)].map((m) => +m[1]));
+  }
+  if (guardAt < fK || kMax > kOld) {
+    const okNew = async (x) => { const a = atFont(x, true); return a.plan.valid && tableFits(a.xml, id, before, keep, W); };
+    const kWide = kMax > 1 && await okNew(1) ? await bisect(1, kMax, okNew) : 1;
+    for (let s = fK; s > guardAt && !kNew; s--) if (await okNew(s / f0)) kNew = s / f0;
+    if (fontFor(kWide)({ fontSize: f0 }) > Math.max(guardAt, kNew ? fontFor(kNew)({ fontSize: f0 }) : 0)) kNew = kWide;
+  }
+  const k = kNew || kOld;
   const grownFont = cells.some((c) => fontFor(k)(c) !== (c.fontSize ?? TD_FONT));
-  const K = atFont(grownFont ? k : 1);
+  const K = atFont(grownFont ? k : 1, Boolean(kNew));
 
   // then rows, each up to min(ROW_CAP, ROW_GROW x its text) (never below where it is)
   const cap = K.rows.map((r, i) => Math.max(r, Math.min(caps.row, Math.round(caps.grow * K.plan.need[i]))));
