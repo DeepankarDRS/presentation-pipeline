@@ -164,3 +164,8 @@ than 4: the tag keeps the first 4 (rows, then columns, then cells), so their per
 the same tone (two marks for one idea).
 
 `show=` visuals (gallery, `shows-gallery.png`): arrows (native too), pills and data bars (card compositions).
+
+**No cap (user, 2026-11-02).** `highlight-limits.png` draws one 15-mark table (pair 4.1) at caps 4, 6, 10 and none:
+every cap leaves it half-coloured (limit 10 still drops the red Gap 5 row the slide is about); no cap matches the
+LLM. So every `<Highlight>` is drawn; more than 6 gives the warning `NODE_HIGHLIGHT_LIMIT` (5 of the 66 tables here),
+and the prompt says to colour a whole row or column first, then mark its exceptions (later marks win).

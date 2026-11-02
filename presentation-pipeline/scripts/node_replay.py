@@ -128,7 +128,7 @@ def llm_marks(table: etree._Element, comp: dict) -> list[str]:
     """The LLM's own colour coding of its <Table> as <Highlight> marks on the plan's names (user 2026-11-02: can the
     tag reproduce it?): a body row whose every cell has one fill / text tone -> a row mark; a column likewise (no focus:
     a whole column in the accent is the LLM's look, not an emphasis); other toned cells -> cell marks; toned <Span>s
-    -> phrase marks. All of them, in that order: the node keeps the first MAX_HIGHLIGHTS."""
+    -> phrase marks. All of them, in that order (the node draws them all)."""
     cols, rows = tables.grid(comp)
     norm = lambda s: " ".join(str(s).split()).casefold()  # noqa: E731
     trs = [t for t in table if t.tag == "Tr"]
@@ -293,7 +293,7 @@ def summary(out: Path, results: list[dict], variant: str, kind: str = "chart") -
         "", f"B issues: {dict(Counter(c for r in results for c in r['b_issues']))}",
         *([f"Highlights from the LLM's colours: {sum(1 for r in results if r.get('marks'))} slides with marks; "
            f"marks per table {dict(sorted(Counter(r.get('marks', 0) for r in results).items()))} "
-           f"(more than {tables.MAX_HIGHLIGHTS}: {sum(1 for r in results if r.get('marks', 0) > tables.MAX_HIGHLIGHTS)})"]
+           f"(more than {tables.MANY_HIGHLIGHTS}: {sum(1 for r in results if r.get('marks', 0) > tables.MANY_HIGHLIGHTS)})"]
           if any(r.get("marks") for r in results) else []),
     ]
     text = "\n".join(lines) + "\n"

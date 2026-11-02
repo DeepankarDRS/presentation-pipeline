@@ -121,7 +121,9 @@ def role(comp: dict, focus: tuple[str, int] | None) -> str:
 # invert="true"), pills (each value in a rounded tag) or bars (a bar under each number, sized to the column's largest).
 # Pills and bars need a box per cell: the card compositions draw them, native drops them (NODE_ATTR_DROPPED).
 
-MAX_HIGHLIGHTS = 4
+# No cap (user, 2026-11-02): every <Highlight> is drawn; past MANY_HIGHLIGHTS a warning says the table is heavily
+# coloured, nothing is dropped (a cut left tables half-coloured: docs/eval/table-node/highlight-limits.png).
+MANY_HIGHLIGHTS = 6
 HIGHLIGHT_ATTRS = {"row", "column", "cell", "phrase", "fill", "color", "above", "below", "else", "max", "min",
                    "show", "invert"}
 SHOWS = ("arrows", "pills", "bars")
@@ -196,8 +198,8 @@ class Paint:
 
 def highlights(comp: dict, body: str, flag) -> Paint | None:
     """The tag's <Highlight> children -> Paint; None when it has none (code then colours the hint's emphasis).
-    A name or phrase not in the table is NODE_HIGHLIGHT_UNKNOWN (an error: the LLM fixes it); past MAX_HIGHLIGHTS the
-    rest are dropped (NODE_HIGHLIGHT_LIMIT); a rule on cells without comparable numbers colours nothing there
+    A name or phrase not in the table is NODE_HIGHLIGHT_UNKNOWN (an error: the LLM fixes it); past MANY_HIGHLIGHTS all
+    are kept with a warning (NODE_HIGHLIGHT_LIMIT); a rule on cells without comparable numbers colours nothing there
     (NODE_HIGHLIGHT_RULE)."""
     from lxml import etree
     ref, (cols, rows) = comp["component_id"], grid(comp)
@@ -213,10 +215,10 @@ def highlights(comp: dict, body: str, flag) -> Paint | None:
              'other children removed.')
     if not hs:
         return None
-    if len(hs) > MAX_HIGHLIGHTS:
-        flag("NODE_HIGHLIGHT_LIMIT", ref, f'{len(hs)} <Highlight>s on <{TAG} ref="{ref}">: at most {MAX_HIGHLIGHTS}; '
-             'the first kept.')
-        hs = hs[:MAX_HIGHLIGHTS]
+    if len(hs) > MANY_HIGHLIGHTS:
+        flag("NODE_HIGHLIGHT_LIMIT", ref, f'{len(hs)} <Highlight>s on <{TAG} ref="{ref}">: all drawn, but more than '
+             f'{MANY_HIGHLIGHTS} makes a heavily coloured table; colour a whole row or column first, then mark only '
+             'the exceptions.')
     norm = lambda s: " ".join(str(s).split()).casefold()  # noqa: E731
     labels, heads = [norm(r[0]) for r in rows], [norm(c) for c in cols]
     paint = Paint()
@@ -607,7 +609,8 @@ def node_lines() -> str:
         "own box; parts header. (column names) label. (first column) cell. (other cells) stripe. (alternate rows) take "
         "backgroundColor color bold italic textAlign in $tokens; item. / band. / number. on the drawn compositions. "
         f"No <Tr>, <Td> or fontSize. Recipes: {styles}.",
-        f"Colour by meaning with up to {MAX_HIGHLIGHTS} <Highlight/> inside the tag (else code colours the row or column "
+        "Colour by meaning with <Highlight/> inside the tag, a whole row or column first, then its exceptions (later "
+        "marks win); without them code colours the row or column "
         "the hint names). Name rows by their first cell and columns by their name, exactly as in the table; tones "
         "good | bad | watch | focus (emphasis, no meaning); fill = the cell's background, color = its text:",
         '  <Highlight row="Flipkart" fill="bad"/> · <Highlight column="ROAS" color="good"/> · '

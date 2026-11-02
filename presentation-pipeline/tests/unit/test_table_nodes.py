@@ -341,11 +341,13 @@ def test_highlight_names_ignore_case_and_spaces():
     assert not codes(hl('<Highlight row="  flipkart " fill="bad"/>', '<Highlight cell="nykaa / roas" color="good"/>'))
 
 
-def test_highlight_limit_keeps_the_first_four():
-    marks = [f'<Highlight row="{r}" fill="good"/>' for r in ("Amazon", "Flipkart", "Myntra", "Nykaa")]
-    res = hl(*marks, '<Highlight column="ROAS" color="bad"/>')
+def test_many_highlights_warn_but_all_are_drawn():
+    rows = [f'<Highlight row="{r}" fill="good"/>' for r in ("Amazon", "Flipkart", "Myntra", "Nykaa")]
+    cols = [f'<Highlight cell="{r} / ROAS" color="bad"/>' for r in ("Amazon", "Flipkart", "Myntra")]
+    assert "NODE_HIGHLIGHT_LIMIT" not in codes(hl(*rows, *cols[:2]))
+    res = hl(*rows, *cols)
     assert "NODE_HIGHLIGHT_LIMIT" in codes(res) and res["ok"]
-    assert not any("negativeText" in a for r in tds(res["xml"]) for a, _ in r)
+    assert sum("negativeText" in a for r in tds(res["xml"]) for a, _ in r) == 3
 
 
 def test_highlight_rule_skips_mixed_units():

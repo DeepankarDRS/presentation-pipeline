@@ -143,15 +143,15 @@ Foundation". Every word is kept (`NODE_TEXT_SPLIT`, info).
   word fit, numbers / arrows / rails, readable ink on dark fills (`ON_FILL`), and **which item is the emphasis**
   (the plan's). The LLM may restyle the emphasis item but cannot move the emphasis. At most one dark item per
   block stays a check (`DARK_PANEL_SOFTENED`). It is not an attribute ban.
-- **Table highlights (user, 2026-11-02).** A table colours by meaning with up to 4 `<Highlight>` children inside
+- **Table highlights (user, 2026-11-02).** A table colours by meaning with `<Highlight>` children inside
   `<Table ref>`, written by the generator (it reads the cells in its slide line, never types them); the planner
   only says in its `design_hint` what matters. Targets by name: `row` (its first cell), `column`, `cell="<row> /
   <column>"`, `phrase` (words inside a cell). Tones good / bad / watch. `fill` = the cell's background
   (`$<role>Soft`), `color` = its text (`$<role>Text`): separate, so a tinted row can carry a differently coloured
   phrase. Phrases are `<Span color>`, never POM's `<Mark>`. Value rules colour the text, code compares the numbers:
   `above` / `below` a number or another column (`else` for the rest), `max` / `min` (highest / lowest). A name or
-  phrase not in the table: `NODE_HIGHLIGHT_UNKNOWN` (error, the LLM fixes it); more than 4: `NODE_HIGHLIGHT_LIMIT`
-  (first 4 kept); cells without numbers in one unit: `NODE_HIGHLIGHT_RULE` (left uncoloured). With highlights there
+  phrase not in the table: `NODE_HIGHLIGHT_UNKNOWN` (error, the LLM fixes it); more than 6: `NODE_HIGHLIGHT_LIMIT`
+  (a warning, all drawn: no cap, user 2026-11-02); cells without numbers in one unit: `NODE_HIGHLIGHT_RULE` (left uncoloured). With highlights there
   is no emphasis from the hint; a bare tag keeps it.
 
 ## 3. Today's style variants: where they go (D4)
