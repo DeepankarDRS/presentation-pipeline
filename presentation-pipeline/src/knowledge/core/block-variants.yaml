@@ -200,7 +200,7 @@ blocks:
       native:   {prompt: "POM's timeline: dots on a line, short labels only", requires: [labels_short], fallback: rail}
       rail:     {prompt: "dots on a line, date and label alternating above and below", requires: [count_le_7], fallback: columns}
       columns:  {prompt: "a line with a dot per point, one box per point under it"}
-      rows:     {prompt: "one point per ruled row: date, head, detail"}
+      rows:     {prompt: "one point per ruled row: date, head, detail; what a vertical timeline with details draws"}
       banded:   {prompt: "equal boxes, the date in a solid band: done / now / ahead"}
 
   process_arrow:

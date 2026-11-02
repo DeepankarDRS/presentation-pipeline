@@ -167,6 +167,10 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
     meta, box, parts = compose.read(attrs, ref, flag, nd)
     name, extra = compose.composition(nd, comp, meta.get("variant"), ref, flag)
     meta = {**extra, **meta}
+    if name in ("rail", "columns") and _direction(comp, meta) == "vertical":   # both lay points side by side
+        flag("NODE_VERTICAL_ROWS", ref, f'ref="{ref}": a vertical timeline drawn as rows (one point per row), '
+             f'not {name}.')
+        name = "rows"
     its, focus = items(comp), emphasis_index(comp)
     box, rest, hi = compose.layers(nd, name, box, parts, focus is not None)
     done = compose.before_layer(nd, name, rest)
@@ -232,4 +236,4 @@ def prompt_line(comp: dict, headline: str = "") -> str:
              f"longest head {max((len(h) for _, h, _ in its), default=0)} chars"
              + (", details after the head" if any(x for _, _, x in its) else ""),
              (f"emphasis {f}" if f is not None else "no emphasis point"), "variants " + " | ".join(ok)]
-    return "; ".join(parts) + f'. <{TAGS[kind]} ref="{cid}"/>; never type a date or label yourself: code writes them'
+    return "; ".join(parts) + f'. <{TAGS[kind]} ref="{cid}"/>; never type a date, label or detail yourself, beside it either: code writes them'

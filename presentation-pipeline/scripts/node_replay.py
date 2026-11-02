@@ -124,12 +124,22 @@ def rewrite(root: etree._Element, comp: dict, variant: str) -> dict:
         keep.update({k: str(round(float(v) + chrome)) for k, v in chart.attrib.items()
                      if k in ("h", "minH") and k not in keep and re.fullmatch(r"\d+(?:\.\d+)?", v)})
     old = _serial(el)
+    # a sequence the LLM drew with short titles often has its details typed beside it (a row of month notes); the tag
+    # draws those details itself, so the LLM's copy goes too (else arm B shows them twice)
+    dropped = []
+    if comp["kind"] != "chart" and el.getparent() is not None:
+        own = own_words(comp)
+        for k in [k for k in el.getparent() if isinstance(k.tag, str) and k is not el]:
+            ws = words("".join(k.itertext()))
+            if len(ws) >= 6 and len(ws & own) >= 0.6 * len(ws):
+                dropped.append(_serial(k))
+                k.getparent().remove(k)
     attrs = {"ref": comp["component_id"], **({"variant": variant} if variant else {}), **keep}
     tag = f"<{tag}" + "".join(f' {k}="{native.x(v)}"' for k, v in attrs.items()) + " />"
     new = etree.fromstring(tag)
     new.tail = el.tail
     el.getparent().replace(el, new)
-    return {"old": old, "tag": tag, "card": el is not chart}
+    return {"old": old, "tag": tag, "card": el is not chart, "dropped": len(dropped)}
 
 
 _SHOWN = ("label", "title", "text", "date", "description")
@@ -175,7 +185,7 @@ def run(src: Path, out: Path, do_render: bool, limit: int | None, variant: str, 
             continue
         done = rewrite(root, comp, variant)
         expanded = composed.expand(_serial(root), r["plan"])
-        row = {"case": r["case"], "source": r["source"], "card": done["card"], "tag": done["tag"],
+        row = {"case": r["case"], "source": r["source"], "card": done["card"], "dropped": done["dropped"], "tag": done["tag"],
                "b_issues": [i["code"] for i in expanded["issues"]], "drawn": expanded["components"],
                "tokens": {"A": tokens(done["old"]), "B": tokens(done["tag"])}}
         for arm, xml in (("A", BARE_AMP.sub("&amp;", r["xml"])), ("B", expanded["xml"])):
@@ -210,7 +220,8 @@ def summary(out: Path, results: list[dict], variant: str, kind: str = "chart") -
     lines = [
         f"# {tag} node: free replay (LLM layout kept), arm B = <{tag} ref{' variant=' + repr(variant) if variant else ''}>", "",
         f"Slides: {len(results)} (one {kind} component with an id, one LLM-drawn <{tag}>); the LLM's card around it replaced "
-        f"too on {sum(r['card'] for r in results)}. B compositions: {dict(used)}."
+        f"too on {sum(r['card'] for r in results)}; the LLM's own copy of its words beside it dropped on "
+        f"{sum(bool(r.get('dropped')) for r in results)}. B compositions: {dict(used)}."
         + (f" Skipped (not well-formed XML): {len(SKIPPED)}." if SKIPPED else ""), "",
         f"| | A (LLM's {kind}) | B ({tag} tag) |", "|---|---|---|",
         f"| compiled | {sum(r['A']['compiled'] for r in results)} | {sum(r['B']['compiled'] for r in results)} |",

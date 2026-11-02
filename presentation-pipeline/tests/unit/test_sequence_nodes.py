@@ -149,6 +149,21 @@ def test_vertical_alias_turns_native_timeline():
     assert 'direction="vertical"' in run('<Timeline ref="short" variant="vertical" />', SHORT_TL)["xml"]
 
 
+@pytest.mark.parametrize("tag", ['<Timeline ref="roadmap" direction="vertical" />',
+                                 '<Timeline ref="roadmap" variant="vertical" />',
+                                 '<Timeline ref="roadmap" variant="rail" direction="vertical" />',
+                                 '<Timeline ref="roadmap" variant="columns" direction="vertical" />'])
+def test_vertical_timeline_with_details_draws_rows(tag):
+    """rail and columns lay the points side by side; a vertical timeline that is not native is one point per row."""
+    res = run(tag, ROADMAP)
+    assert used(res, "roadmap") == "rows" and "NODE_VERTICAL_ROWS" in codes(res) and res["ok"]
+
+
+def test_vertical_from_the_plan_draws_rows():
+    vert = {**ROADMAP, "content_data": {**ROADMAP["content_data"], "direction": "vertical"}}
+    assert used(run('<Timeline ref="roadmap" />', vert), "roadmap") == "rows"
+
+
 def test_unknown_variant():
     res = run('<Timeline ref="short" variant="zigzag" />', SHORT_TL)
     assert used(res, "short") == "native" and "NODE_VARIANT_UNKNOWN" in codes(res)
