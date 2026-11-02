@@ -49,6 +49,8 @@ def nodes_on(monkeypatch):
     ("Phase 1: Foundation — detail here", "Phase 1: Foundation", "detail here"),
     ("Head: detail", "Head", "detail"), ("Plain step", "Plain step", ""), ("Ratio 3:1 — up", "Ratio 3:1", "up"),
     ("Growth activation — search scaling", "Growth activation", "search scaling"),
+    ("Audit & Benchmarking—conduct category assessment", "Audit & Benchmarking", "conduct category assessment"),
+    ("Day-parting (6–11 AM) for Milk", "Day-parting (6–11 AM) for Milk", ""), ("Q1—Q2 plan", "Q1—Q2 plan", ""),
 ])
 def test_split_dash_before_colon(s, head, detail):
     assert compose.split(s) == (head, detail)
