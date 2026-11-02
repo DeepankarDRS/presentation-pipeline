@@ -169,3 +169,13 @@ the same tone (two marks for one idea).
 every cap leaves it half-coloured (limit 10 still drops the red Gap 5 row the slide is about); no cap matches the
 LLM. So every `<Highlight>` is drawn; more than 6 gives the warning `NODE_HIGHLIGHT_LIMIT` (5 of the 66 tables here),
 and the prompt says to colour a whole row or column first, then mark its exceptions (later marks win).
+
+**Marks on the marks replay (user, 2026-11-02, `native-marks/marks.csv`): B 10 / A 2 / same 54 = 0.97 with ties
+satisfied, 0.83 with ties left out.** B won on space and width allocation (2.4, 6.2, 9.2, 9.3, 16.1, 17.2), being
+inside the bounds (2.3), no borders (4.3) and colours that complete the theme (2.2). The two losses and the notes
+are all about filling or overflowing the box, not colour:
+- 6.4 (A): the table is taller than its box and the dark summary card covers its last row (Zepto) in both arms;
+  11.2 (tie) the same, rows cut at the card's bottom. User: a general fix should shrink font / column / row sizes
+  when a table runs out of bounds.
+- 12.4 (A): B's table stays short with empty space below; A's rows grew to fill the box.
+- 15.4 (B, note): the type could have grown into the free space.
