@@ -1004,6 +1004,6 @@ nodes:
     styles:                             # recipes (prompt examples only)
       zebra: 'stripe.backgroundColor="$surfaceAlt"'
       dark_header: 'header.backgroundColor="$panelDark" header.color="$onPanelDark" label.color="$accentText"'
-      label_cards: 'label.backgroundColor="$accent" label.color="$onAccent" header.backgroundColor="$surface" header.color="$textMuted" item.backgroundColor="$surfaceAlt" item.border.width="0"'
+      label_cards: 'label.backgroundColor="$accent" label.color="$onAccent" header.backgroundColor="$surface" header.color="$textMuted" item.backgroundColor="$surfaceAlt" item.border.color="$surfaceAlt"'
       accent_edge: 'item.borderLeft.color="$accent" item.borderLeft.width="4" item.borderRadius="0"'
-      lifted: 'item.border.width="0" item.shadow.type="outer" item.shadow.blur="8" item.shadow.offset="2" item.shadow.opacity="0.12" backgroundColor="$surfaceAlt" padding="18" borderRadius="10"'
+      lifted: 'item.border.color="$surface" item.shadow.type="outer" item.shadow.blur="8" item.shadow.offset="2" item.shadow.opacity="0.12" backgroundColor="$surfaceAlt" padding="18" borderRadius="10"'

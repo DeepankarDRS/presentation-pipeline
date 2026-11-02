@@ -1,10 +1,12 @@
 # Table node: free replay (2026-11-01)
 
-`python -m scripts.node_replay --kind table [--variant rows|columns|banded] --src <main checkout>/output` (POM_NODES
+`python -m scripts.node_replay --kind table [--variant rows|columns|banded|grid|"grid numbered"|ledger] --src <main checkout>/output` (POM_NODES
 on, Inter render, no LLM). 66 saved slides: one table component with an id, one LLM-drawn `<Table>`. Arm A is the
 slide as the LLM wrote it. Arm B replaces the LLM's table (and its card on 38 slides) with one `<Table ref>` that keeps
 the LLM's layout attributes. Blind sheets are in `output/table-replay[-<variant>]/sheets/`; `key.json` and an empty
-`marks.csv` per run are in this folder (`native/`, `rows/`, `columns/`, `banded/`).
+`marks.csv` per run are in this folder (`native/`, `rows/`, `columns/`, `banded/`, `grid/`, `grid-numbered/`,
+`ledger/`). `native/`, `grid/`, `grid-numbered/` and `ledger/` also hold their sheets (`sheets/`), so they can be
+marked from the repo.
 
 **The gate is `native/`**, the bare tag, which is what a `<Table ref>` without `variant` draws. The other three runs
 force one word onto every slide, so you can see each word on real content. They are a stress test, not the LLM's
@@ -61,6 +63,33 @@ What B does differently, as seen on the sheets:
 - **`banded`** breaks on tables with many rows in a short band (13.2: six month boxes, labels stacked letter by
   letter). It reads well on 3–4 rows with room (13.4 left).
 
+## The card tables (2026-11-02, after `evenTableParts`)
+
+The user's card-table set (spec §2.3): `grid` = header pills over a card per cell, `grid numbered` = 01–04 tiles
+leading the rows, `ledger` = one header band over joined, striped rows. Forced onto every slide, like the words above.
+
+| | A (LLM) | B `grid` | B `grid numbered` | B `ledger` |
+|---|---|---|---|---|
+| compiled | 66 | 65 | 65 | 66 |
+| drawn as asked | – | 58 (8 → native) | 56 (2 → grid, 8 → native) | 59 (7 → native) |
+| plan cells not on the slide | 0 | 0 | 0 | 0 |
+| broken words (render) | 0 | 68 (10 slides) | 126 (12 slides) | 41 (10 slides) |
+| text overlaps (render) | 31 | 47 | 61 | 49 |
+| WORD_TOO_WIDE | 13 | 39 | 55 | 33 |
+| GEOM_CARD_EMPTY | 7 | 146 | 186 | 197 |
+| LOW_CONTRAST | 13 | 9 | 9 | 9 |
+| table output tokens | 38 876 | 833 (−98%) | 899 (−98%) | 833 (−98%) |
+
+Before `evenTableParts` (2026-11-01): broken words grid 82, grid numbered 131, ledger 54; overlaps 51 / 63 / 62.
+Each part now has one size per table (pair 1.1: all cells 24 px).
+
+- Broken words sit on 10–12 slides: the same squeeze as `rows` / `banded` (a card table beside a side panel or in a
+  short band). Fixing it is open item 1 below.
+- `GEOM_CARD_EMPTY` counts each cell card: a cell holding "$5.7M" in a card sized to its row's tallest cell is mostly
+  empty. It is the look of the composition, not lost content.
+- The `label_cards` and `lifted` styles hide the card border with the card's own fill colour, not a 0 width
+  (`test_knowledge_never_teaches_zero_strokes`).
+
 ## Open (not built; each needs your call)
 
 1. A size floor per word: `rows` / `banded` / `columns` fall back to `native` when the box is too small. Code
@@ -74,4 +103,5 @@ What B does differently, as seen on the sheets:
 ## Blind marks
 
 `native/marks.csv` (66 pairs) is the gate: fill `choice` with 1, 2 or same per pair. "Same" counts as satisfied (user
-rule). The `rows/`, `columns/` and `banded/` marks are optional; they say whether a word should stay on offer.
+rule). The `rows/`, `columns/`, `banded/`, `grid/`, `grid-numbered/` and `ledger/` marks are optional; they say whether a
+word should stay on offer.
