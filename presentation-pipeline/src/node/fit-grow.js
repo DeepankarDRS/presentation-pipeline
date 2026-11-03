@@ -2668,8 +2668,11 @@ async function fixSpills(xml, report, warnings) {
 //   2. shrink — else the space around each row's lines first (ROW_PAD -> TABLE_PAD_MIN), then the cell text (one
 //      scale for every cell, down to TABLE_TEXT_FLOOR) until the rows fit the box, and the rows share the box; at
 //      the floor the table still overruns: TABLE_OVERFLOW.
+// A table whose rows hold their text but end short of its own box (TABLE_FILL_MIN or more) gives the rest to its
+// rows: the box is the table's already (pair 15.4: the row caps left 74 px of its card empty).
 
 const TABLE_TEXT_FLOOR = 10; // px, POM's own autoFit floor
+const TABLE_FILL_MIN = 8;    // px of a table's box left empty under its rows before the rows take it
 const TABLE_PAD_MIN = 2;     // px around a row's lines when the box is short
 
 async function fitTableText(xml, report, warnings) {
@@ -2693,6 +2696,16 @@ async function fitTableText(xml, report, warnings) {
       // the renderer draws a row's lines with no cell margin (pptx-post sets left / right only): a row overruns
       // only when its lines alone are taller (a 3-line 14 px cell fits a 56 px row)
       const drawn = sum(declared.map((d, i) => Math.max(d, at.need[i] - ROW_PAD)));
+      // rows ending short of the table's own box leave it empty below them (pair 15.4: two rows of 196 px in a
+      // 270 px box, the row caps stopped them): the box is the table's already, so the rows share it
+      if (drawn <= sum(declared) + SPILL_TOL && boxH - sum(declared) >= TABLE_FILL_MIN && declared.length > 1) {
+        // the header row keeps its height (a stretched header read as a heavy empty band); the body rows share the rest
+        const [head, ...body] = declared;
+        const rows = [head, ...intWidths(body.map((d) => d * (boxH - head) / sum(body)), boxH - head)];
+        xml = writeTable(xml, id, { rows });
+        report.push(`table rows fill its box (${sum(declared)} -> ${sum(rows)}px)`);
+        continue;
+      }
       if (drawn <= boxH + SPILL_TOL) continue;
       const tall = declared.map((d, i) => Math.max(d, at.need[i]));
       const grown = writeTable(xml, id, { widths: at.widths, rows: tall, minH: sum(tall) });

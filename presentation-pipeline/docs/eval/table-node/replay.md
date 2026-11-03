@@ -204,3 +204,9 @@ the word guard then demands the word / 0.85 + the cell margins: 15.4 grew to 22 
 growth runs the guard on a trial copy to see where the old route lands, and takes columns re-planned for the guard's
 rule when they hold a larger size (`pair-15-4-width.png`: 15 -> 19 px). Replay (132 tables, against 03351e4):
 larger 3 (15 -> 19, 15 -> 22, 17 -> 18), smaller 0; overlaps 29 / 29, broken words 0 / 0.
+
+**Rows fill the table's own box (15.4's empty card, 2026-11-03).** The row caps (3 × the text, 120 px) left rows short
+of the table's box: 15.4 drew 196 px of rows in a 270 px box. A table whose rows hold their text and end 8 px or more
+short of its box now gives the rest to its body rows (the header keeps its height: stretched, it read as a heavy band).
+Replay: 10 tag tables filled (e.g. 128 -> 422, 196 -> 270, 328 -> 395 px), no font smaller, overlaps 29 / 29, broken
+words 0. `table-rows-fill.png`. e2a7's text stays small: the slide is over-full and POM scales the whole slide.
