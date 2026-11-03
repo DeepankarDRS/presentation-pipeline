@@ -462,3 +462,117 @@ Everything this spec has not settled, in one list. **find** = needs evidence (a 
 | R7 | The prompt cost of the vocabulary and the per-component line, measured rather than estimated (§9 Q6) | count tokens on 10 saved slides |
 | R8 | A unit test that every tag / variant / style name a prompt or knowledge file uses exists in `block-variants.yaml` (promised in its header, missing; left-blocks §3) | **build** with step 1 |
 | R9 | Code fixes found by R1–R4 (C6, C10, C11, C12): chart label ink from `$chartInk` and a number format from the plan's unit; the split " — " before ": " and the `numbered` ordinal rule; inner-box peer ids; value refs for code-drawn `rows` | **build**, each with its block (chart: the label ink and unit format) |
+
+## 12. Who owns what (2026-11-03)
+
+One rule for every block from here on. The free probe that tested it (§12.6) is `scripts/ownership_probe.py`, with its sheet
+and results in `docs/eval/ownership-probe/`.
+
+### 12.1 Three layers
+
+| Layer | What | Who writes it | Changed by us? |
+|---|---|---|---|
+| 1 native POM nodes | `Text`, `Shape`, `VStack` / `HStack`, `Layer`, `Line`, `Arrow`, `Table`, `Chart`, `Ul`, `Timeline`, `ProcessArrow`, `Flow`, `Pyramid`, `Tree`, `Matrix`… | the LLM (free XML), or code inside a composition node | **never.** Fixed syntax (POM 10.3.0); we only compose around it |
+| 2 composition nodes | `<Tag ref variant …/>`: `KpiRow`, `CardGrid`, `Chart`, `Table`, `Timeline` today (`src/compiler/nodes/`: `tile_groups`, `cards`, `charts`, `sequences`, `tables`) | the LLM places the tag; code expands it from the plan into layer-1 nodes | yes, one kind at a time behind `POM_NODES` |
+| 3 free LLM XML | slide layout, header (`title`), decor and arrow layers (`layer`), and any block with no node | the LLM | prompt and knowledge only |
+
+### 12.2 The rule
+
+- **Code owns everything inside a block's box:** every word and number (verbatim, in plan order), the parts and their
+  order, type sizes, word fit, the emphasis item, and the ids.
+- **The LLM owns everything outside it and every style choice on it:** layout, placement, size (`w h grow min* max*
+  alignSelf`), the `variant` pick, and every styling attribute (box, `item.`, `<part>.`, `$tone*`, gradients, borders,
+  per-item looks).
+- **Colour freedom stays.** Fill, text colour and visuals are separate explicit choices with no auto-coupling
+  (2026-11-02). Colours are `$tokens` only (`LITERAL_COLOR`), so a theme switch restyles the slide. A group's own box
+  attributes stay on its own box (no cascade, 2026-10-26).
+- **Content attributes the LLM writes are dropped, never followed** (`NODE_ATTR_DROPPED`): text, `fontSize`,
+  `fontFamily`, `id`, `chartType`, `title`, positions.
+
+### 12.3 One nesting level
+
+The LLM places refs inside its own layout, and code builds a ref out of native nodes. **A ref is never placed inside
+another ref**, and an LLM-placed ref never holds LLM children, except the documented ones (`<Card>` / `<Kpi>` item
+tags, `<Highlight>` in `<Table>`). A ref inside an LLM card is fine (probe d1).
+
+### 12.4 Admission and fallback
+
+- **A kind becomes a node only if its free replay and the user's blind marks beat the LLM.** process_arrow and flow
+  were dropped on 2026-11-02 (`claude/left-blocks-build-0fe007`, f49fab6): POM's fixed-size chevrons and flow boxes hold
+  about 2 words, and the code-drawn steps were card grids under another name. They stay layer-1 native nodes that the
+  LLM draws. This branch's `block-variants.yaml` still lists them under `nodes:`, and the merge must take f49fab6.
+- **Every kind keeps a native fallback** (`variant="native"`, or the `requires` → `fallback` chain).
+- **One source of truth:** `block-variants.yaml` (`nodes.<kind>`: tag, parts, compositions, styles, aliases). It is read
+  by `spec.py` and guarded by the R8 test (`tests/unit/test_block_variant_names.py`).
+
+### 12.5 Layers are the LLM's: the open risk
+
+`NO_REF_KINDS` = `title`, `layer` stay with the LLM. The risk is absolute-positioned arrows and overlays over blocks
+whose final size code or fit-grow decides. The LLM writes `<KpiRow ref/>` and never sees where the tiles end up.
+
+### 12.6 Free probe (results: `docs/eval/ownership-probe/README.md`)
+
+| Case | Result |
+|---|---|
+| a refs in LLM stacks with styling | holds |
+| b Table ref + LLM native ProcessArrow | holds (the native chevrons stay small: an LLM / native-node problem) |
+| c Line layer over ref blocks, fit-grow on | lands within ≤ 14 px, **given the pixels**. fit-grow moved boxes ≤ 6 px. The generator never has those pixels, and `regridTiles` / `fillLoneRows` (not triggered here) do move boxes |
+| c POM `<Arrow from to>` on code ids | works with the real ids (`kpiv0-kpis-0` → `cardt-levers-0`). With the guessed ids it fails silently (`ARROW_REF_NOT_FOUND` is only a compile warning). Box ids (VStack) cannot be connected |
+| d ref in LLM card / ref-in-ref | in a card: holds. Ref-in-ref: the inner KPI row is an error (`NODE_ITEM_MISSING`, which names the old tag `<KpiGrid>`). **The inner chart is lost with only a report.** `validate.check_skeleton` (`NODE_MISSING`) is not wired |
+| e content attributes | all dropped. Invented names (`x`, `y`, `kpi_values`, `table_rows`) are `NODE_ATTR_UNKNOWN` **errors**: a repair call for a slide code already drew correctly |
+
+## 13. Implementation plan from here (2026-11-03; code changes wait for the user's OK)
+
+### 13.1 Which kind is where
+
+| Status | Kinds |
+|---|---|
+| node (layer 2) | kpi_row (KpiRow), card_grid (CardGrid), chart, table, timeline (after `claude/left-blocks-build-0fe007` merges) |
+| native, drawn by the LLM (layer 1 / 3) | process_arrow, flow (dropped 2026-11-02), pyramid, tree, matrix (C9; matrix `grid` only rendered), title / header, layer |
+| undecided | **bullet_list** (compositions approved in §8, not built; 66 of 142 saved lists split "Head: detail", so `rows` / `grid` have a case), **callout** (narrative: one item, so the gain is only the quote rule C5; candidate to stay LLM-drawn), **header** (`title` is in `NO_REF_KINDS`; keep it LLM-drawn unless a blind sheet says otherwise) |
+
+### 13.2 Fixing the layer risk (proposal, in order)
+
+1. **Anchor layers to block ids, not pixels.** Each node writes one stable, documented anchor id per item:
+   `<cid>-<i>` on a connectable `Shape` (a `rect` with no fill, the item's size) or on the item's main Text. The prompt line
+   names them, and the LLM draws `<Layer><Arrow from="kpis-0" to="levers-2"/></Layer>`. POM's connector then follows the
+   boxes after fit-grow (probe c4).
+2. **Turn a missed anchor into a node error** (`NODE_ANCHOR_UNKNOWN`, before compile), not a compile warning that
+   leaves no arrow.
+3. **Pixel layers over a ref block**: a `<Layer position="absolute">` whose children overlap a ref's box →
+   `NODE_LAYER_OVER_REF` (warning, report the miss). fit-grow keeps `regridTiles` / `fillLoneRows` off for a block that a
+   layer points at.
+
+### 13.3 Validator gaps found
+
+- Wire `validate.check_skeleton`'s plan-level check (`NODE_MISSING`, `NODE_REF_DUPLICATE`, `NODE_CHILDREN_DROPPED` →
+  `NODE_REF_NESTED`) into `validator.py` before `composed.expand`, so that a ref-in-ref or a dropped component is one
+  error with one message (d2).
+- `NODE_ITEM_MISSING` names `<KpiGrid>`: under `POM_NODES=kpi_row` it should name `<KpiRow>`.
+- Decide: should invented attribute names (`NODE_ATTR_UNKNOWN`) be an error (repair) or a dropped report? Code already
+  draws the block right without them (e). A proposed split: unknown *part* attributes stay errors (the LLM meant a
+  style), and unknown bare names on the tag are dropped with a report.
+
+### 13.4 Per-node checklist (every new or changed kind)
+
+1. `block-variants.yaml` `nodes.<kind>`: tag, parts, compositions (`requires` → `fallback`, ending in `native`), look,
+   emphasis, styles, aliases. R8 passes.
+2. Expander in `src/compiler/nodes/` from `compose.py` helpers: reads only the plan, writes the anchor ids (§13.2), peer
+   ids (C11) and value refs (C12).
+3. Prompt line (`prompt_line`, `node_lines`): the compositions the content allows, the style parts, and the anchor ids.
+4. Validator codes: dropped / unknown / variant / nesting / missing, each with a unit test.
+5. Gallery: a row per composition, two palettes, plus an ownership-probe row (refs in LLM stacks, a layer anchored to
+   the node).
+6. Free replay on saved slides (LLM layout kept, bare tag): scorecard + blind sheet.
+7. The user's blind marks ≥ 0.5 (admission, §12.4); else the kind stays native.
+8. Paid same-plan check, only with the user's OK, a case list and a cost estimate.
+
+### 13.5 Before the paid same-plan runs (`scripts/composition_paid.py`, ≈ $0.87)
+
+- The timeline (`0fe007`) and table (`3cf2e1`) branches are merged into one tree with f49fab6's process_arrow / flow drop,
+  and unit tests pass apart from the 4 known failures.
+- §13.3 is wired (no silent component loss), and the `NODE_ATTR_UNKNOWN` severity is decided, so that a paid run does not
+  pay for repairs of slides that are already right.
+- The anchor-id decision (§13.2) is made, at least for the prompt line: either the ids go into the prompt, or the
+  prompt says "no layer over a ref block".
+- The ownership probe and every gallery re-render clean on the merged tree.

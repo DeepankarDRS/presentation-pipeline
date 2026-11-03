@@ -1,0 +1,414 @@
+{
+ "a": {
+  "label": "a KpiRow rows + Chart native labelled in LLM stacks",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "ZERO_SPACING"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: KPI values x1.87 (28 -> 52px), fill 48% -> 87%",
+   "slide 1: text x1.97 (e.g. 16 -> 23pt), fill 87% -> 87%",
+   "slide 1: KPI values with a unit kept on one line (1)"
+  ]
+ },
+ "b": {
+  "label": "b Table ref (ledger) + LLM native ProcessArrow",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "ZERO_SPACING"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: text x1.22 (e.g. 17 -> 17pt), fill 68% -> 88%",
+   "slide 1: text x1.11 (e.g. 17 -> 19pt), fill 80% -> 87%",
+   "slide 1: table parts: 4 texts to their group's size"
+  ]
+ },
+ "c1": {
+  "label": "c1 dense: Line layer at un-grown pixels, fit-grow off",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "FONT_FLOOR"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [
+   "AUTOFIT_OVERFLOW"
+  ],
+  "fitGrow": [],
+  "landing": [
+   {
+    "from": "$48.2M",
+    "to": "Search",
+    "start_miss_px": 2.6,
+    "end_miss_px": 0.0,
+    "start_off_px": 3.9,
+    "end_off_px": 13.9
+   },
+   {
+    "from": "72.1%",
+    "to": "Pricing",
+    "start_miss_px": 2.6,
+    "end_miss_px": 0.0,
+    "start_off_px": 2.8,
+    "end_off_px": 12.0
+   }
+  ],
+  "lines_drawn": 2
+ },
+ "c2": {
+  "label": "c2 dense: same Line layer, fit-grow on (pipeline)",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "FONT_FLOOR"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [
+   "AUTOFIT_OVERFLOW",
+   "SLIDE_DENSE"
+  ],
+  "fitGrow": [
+   "slide 1: spill left (slide too dense): text height 16 -> 18px; text height 33 -> 39px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px"
+  ],
+  "landing": [
+   {
+    "from": "$48.2M",
+    "to": "Search",
+    "start_miss_px": 2.6,
+    "end_miss_px": 0.0,
+    "start_off_px": 3.9,
+    "end_off_px": 13.9
+   },
+   {
+    "from": "72.1%",
+    "to": "Pricing",
+    "start_miss_px": 2.6,
+    "end_miss_px": 0.0,
+    "start_off_px": 2.8,
+    "end_off_px": 12.0
+   }
+  ],
+  "lines_drawn": 2
+ },
+ "c3": {
+  "label": "c3 dense: <Arrow from to>, ids as documented",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "FONT_FLOOR"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [
+   "ARROW_REF_NOT_FOUND",
+   "AUTOFIT_OVERFLOW",
+   "SLIDE_DENSE"
+  ],
+  "fitGrow": [
+   "slide 1: spill left (slide too dense): text height 16 -> 18px; text height 33 -> 39px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px"
+  ],
+  "landing": [],
+  "lines_drawn": 0
+ },
+ "c4": {
+  "label": "c4 dense: <Arrow from to>, ids code wrote",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "FONT_FLOOR"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [
+   "AUTOFIT_OVERFLOW",
+   "SLIDE_DENSE"
+  ],
+  "fitGrow": [
+   "slide 1: spill left (slide too dense): text height 16 -> 18px; text height 33 -> 39px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px; text height 29 -> 36px; text height 17 -> 21px"
+  ],
+  "landing": [
+   {
+    "from": "$48.2M",
+    "to": "Search",
+    "start_miss_px": 0.0,
+    "end_miss_px": 0.0,
+    "start_off_px": 132.0,
+    "end_off_px": 10.0
+   },
+   {
+    "from": "72.1%",
+    "to": "Pricing",
+    "start_miss_px": 0.0,
+    "end_miss_px": 0.0,
+    "start_off_px": 132.0,
+    "end_off_px": 499.0
+   }
+  ],
+  "lines_drawn": 2
+ },
+ "c5": {
+  "label": "c5 sparse: Line layer, fit-grow off",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "FONT_FLOOR"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [
+   "AUTOFIT_OVERFLOW"
+  ],
+  "fitGrow": [],
+  "landing": [
+   {
+    "from": "$48.2M",
+    "to": "Search",
+    "start_miss_px": 12.6,
+    "end_miss_px": 0.0,
+    "start_off_px": 13.2,
+    "end_off_px": 14.2
+   },
+   {
+    "from": "72.1%",
+    "to": "Placement",
+    "start_miss_px": 12.6,
+    "end_miss_px": 0.0,
+    "start_off_px": 12.6,
+    "end_off_px": 12.1
+   }
+  ],
+  "lines_drawn": 2
+ },
+ "c6": {
+  "label": "c6 sparse: same Line layer, fit-grow on (pipeline)",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "FONT_FLOOR"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [
+   "AUTOFIT_OVERFLOW"
+  ],
+  "fitGrow": [
+   "slide 1: text x2.98 (e.g. 16 -> 16pt), spacing x1.02, fill 52% -> 53%",
+   "slide 1: text x1.14 (e.g. 16 -> 16pt), spacing x1.05, fill 42% -> 43%",
+   "slide 1: text x1.45 (e.g. 16 -> 16pt), spacing x1.04, fill 53% -> 53%",
+   "slide 1: text x1.00 (e.g. 16 -> 16pt), spacing x1.04, fill 42% -> 42%",
+   "slide 1: KPI tiles with spare height: icon above the label (4)",
+   "slide 1: text x1.00 (e.g. 16 -> 16pt), spacing x1.02, fill 59% -> 59%",
+   "slide 1: text x1.00 (e.g. 16 -> 16pt), spacing x1.03, fill 54% -> 54%",
+   "slide 1: text x1.00 (e.g. 16 -> 16pt), spacing x1.04, fill 56% -> 56%",
+   "slide 1: text x1.00 (e.g. 16 -> 16pt), spacing x1.04, fill 46% -> 46%"
+  ],
+  "landing": [
+   {
+    "from": "$48.2M",
+    "to": "Search",
+    "start_miss_px": 0.0,
+    "end_miss_px": 0.0,
+    "start_off_px": 9.1,
+    "end_off_px": 8.7
+   },
+   {
+    "from": "72.1%",
+    "to": "Placement",
+    "start_miss_px": 0.0,
+    "end_miss_px": 0.0,
+    "start_off_px": 8.6,
+    "end_off_px": 4.5
+   }
+  ],
+  "lines_drawn": 2
+ },
+ "d1": {
+  "label": "d1 Chart + KpiRow refs inside LLM cards",
+  "node_ok": true,
+  "node_issues": [],
+  "normalize": [
+   "ZERO_SPACING"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: KPI values x1.87 (28 -> 52px), fill 48% -> 86%",
+   "slide 1: text x1.80 (e.g. 16 -> 23pt), fill 86% -> 86%",
+   "slide 1: KPI values with a unit kept on one line (1)"
+  ]
+ },
+ "d2": {
+  "label": "d2 ref-in-ref: KpiRow in CardGrid, Chart in Table",
+  "node_ok": false,
+  "node_issues": [
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "levers",
+    "message": "children inside <CardGrid ref=\"levers\"> other than <Card/> tags: code writes the group from the plan; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "gaps",
+    "message": "only <Highlight> goes inside <Table ref=\"gaps\">: code writes the cells; other children removed."
+   },
+   {
+    "code": "NODE_ITEM_MISSING",
+    "severity": "error",
+    "ref": "kpis.0.value",
+    "message": "kpis: none of its 4 tiles is drawn from a tag. Put one <KpiGrid ref=\"kpis\"/> where its tiles go and delete every tile drawn for it by hand, with their typed labels: code draws each tile with its label, value and note."
+   },
+   {
+    "code": "NODE_ITEM_MISSING",
+    "severity": "error",
+    "ref": "kpis.1.value",
+    "message": "kpis item 1 is not on the slide: the <KpiGrid ref=\"kpis\"/> asked for above draws it."
+   },
+   {
+    "code": "NODE_ITEM_MISSING",
+    "severity": "error",
+    "ref": "kpis.2.value",
+    "message": "kpis item 2 is not on the slide: the <KpiGrid ref=\"kpis\"/> asked for above draws it."
+   },
+   {
+    "code": "NODE_ITEM_MISSING",
+    "severity": "error",
+    "ref": "kpis.3.value",
+    "message": "kpis item 3 is not on the slide: the <KpiGrid ref=\"kpis\"/> asked for above draws it."
+   }
+  ],
+  "normalize": [
+   "FONT_FLOOR"
+  ],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: spill fixed (dense: gap x0.5, padding x0.5, fontSize x0.78): text height 14 -> 18px; text height 30 -> 39px; table height 154 -> 160px",
+   "slide 1: table rows fill its box (160 -> 200px)"
+  ]
+ },
+ "e": {
+  "label": "e content attributes the LLM must not set",
+  "node_ok": false,
+  "node_issues": [
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "roas",
+    "message": "chartType on <Chart ref=\"roas\">: code owns it; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "roas",
+    "message": "title on <Chart ref=\"roas\">: code owns it; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "roas",
+    "message": "showTitle on <Chart ref=\"roas\">: code owns it; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "roas",
+    "message": "chartColors on <Chart ref=\"roas\">: code owns it; removed."
+   },
+   {
+    "code": "NODE_ATTR_UNKNOWN",
+    "severity": "error",
+    "ref": "roas",
+    "message": "x on <Chart ref=\"roas\">: not a Chart node attribute (meta: ref, variant, direction; parts title. label. value. bar.; box attributes as a VStack)."
+   },
+   {
+    "code": "NODE_ATTR_UNKNOWN",
+    "severity": "error",
+    "ref": "roas",
+    "message": "y on <Chart ref=\"roas\">: not a Chart node attribute (meta: ref, variant, direction; parts title. label. value. bar.; box attributes as a VStack)."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "kpis",
+    "message": "fontSize on <KpiRow ref=\"kpis\">: code owns it; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "kpis",
+    "message": "value.fontSize on <KpiRow ref=\"kpis\">: code owns the fontSize; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "kpis",
+    "message": "value.text on <KpiRow ref=\"kpis\">: code owns the text; removed."
+   },
+   {
+    "code": "NODE_ATTR_UNKNOWN",
+    "severity": "error",
+    "ref": "kpis",
+    "message": "kpi_values on <KpiRow ref=\"kpis\">: not a KpiRow node attribute (meta: ref, variant, cols, color, icon; parts label. value. delta. icon. marker. band. divider. item.; box attributes as a VStack)."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "kpis",
+    "message": "label.fontFamily on <KpiRow ref=\"kpis\">: code owns the fontFamily; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "kpis",
+    "message": "id on <KpiRow ref=\"kpis\">: code owns it; removed."
+   },
+   {
+    "code": "LITERAL_COLOR",
+    "severity": "warning",
+    "ref": "kpis",
+    "message": "item.backgroundColor=\"#FF0000\" on <KpiRow ref=\"kpis\">: colours are $tokens; removed."
+   },
+   {
+    "code": "NODE_ATTR_UNKNOWN",
+    "severity": "error",
+    "ref": "gaps",
+    "message": "table_rows on <Table ref=\"gaps\">: not a Table node attribute (meta: ref, variant, labels, icons; parts header. label. cell. stripe. number. band. item.; box attributes as a VStack)."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "gaps",
+    "message": "defaultRowHeight on <Table ref=\"gaps\">: code owns it; removed."
+   },
+   {
+    "code": "NODE_ATTR_DROPPED",
+    "severity": "report",
+    "ref": "gaps",
+    "message": "label.fontSize on <Table ref=\"gaps\">: code owns the fontSize; removed."
+   }
+  ],
+  "normalize": [],
+  "compiled": true,
+  "compile_errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: table rows 32 -> 47px, cell text x1.00, box clamped to rows (235px)",
+   "slide 1: KPI tiles of kpis in two rows (numbers 28 -> 35px as grown)",
+   "slide 1: KPI values x1.27 (28 -> 35px), fill 90% -> 99%"
+  ]
+ }
+}
