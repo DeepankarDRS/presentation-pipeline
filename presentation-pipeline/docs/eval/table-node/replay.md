@@ -198,3 +198,9 @@ Shrunk to (B): 13 px ×2, 11 px (6.4), 10 px (agency s1-9c20, a very full slide)
 one `TABLE_OVERFLOW` per arm. A first try counted 4 px of pad and measured at 85% width: it also shrank tables that
 never spilled (node break map table band c10), so a row is over only when its lines alone are taller.
 `table-text-fit.png`: six slides before / after, every row now visible.
+
+**Column width when the main table grows (pair 15.4, 2026-11-03).** Growth checked a word against the bare column,
+the word guard then demands the word / 0.85 + the cell margins: 15.4 grew to 22 px and the guard cut it to 15. Now
+growth runs the guard on a trial copy to see where the old route lands, and takes columns re-planned for the guard's
+rule when they hold a larger size (`pair-15-4-width.png`: 15 -> 19 px). Replay (132 tables, against 03351e4):
+larger 3 (15 -> 19, 15 -> 22, 17 -> 18), smaller 0; overlaps 29 / 29, broken words 0 / 0.
