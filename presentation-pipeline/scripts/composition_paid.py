@@ -95,7 +95,7 @@ def plan_texts(comp: dict) -> list[str]:
 def missing_words(final_xml: str, plan: dict) -> list[str]:
     """Plan texts the slide does not show: under 80% of their words on it (a split or wrapped text still counts)."""
     # also with inline tags closed up: a number and its unit are one word split by a span ("$48.2<Span>M</Span>")
-    closed = re.sub(r"</?(?:Span|B|I|U|S|Mark)[^>]*>", "", final_xml)
+    closed = re.sub(r"</?(?:Span|B|I|U|S|Mark)(?=[\s>/])[^>]*>", "", final_xml)
     seen, out = validate.xml_words(final_xml) | validate.xml_words(closed), []
     for comp in plan.get("components") or []:
         for t in plan_texts(comp):
