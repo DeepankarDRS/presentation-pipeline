@@ -362,7 +362,8 @@ def card_item(comp: dict, i: int, name: str, box: dict, parts: dict, role: str, 
                       _card_text(title, 20, parts["title"], bold="true"))
         cells = [_stack("VStack", {"grow": "1", "justifyContent": "center", **parts["bullets"]},
                         _card_text(b, 17, {k: v for k, v in parts["body"].items() if k != "color"})) for b in cards._lines(c)[1]]
-        return _stack("VStack", {"id": f"card-{cid}-{i}", "alignItems": "stretch", **box}, pill,
+        return _stack("VStack", {"id": f"card-{cid}-{i}", "alignItems": "stretch", **box},
+                      _card_text(tag, 13, parts["tag"], bold="true", letterSpacing="1") if tag else None, pill,
                       _body(c, 16, parts["body"], tint), *cells)
     if name == "banded":
         _ink(parts["band"].get("backgroundColor", ""), parts, ("icon", "title", "tag"))

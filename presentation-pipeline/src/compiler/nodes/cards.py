@@ -141,6 +141,18 @@ def dense(comp: dict) -> bool:
     return bool(cs) and sum(text_len(c) for c in cs) / len(cs) > DENSE_CHARS
 
 
+# Card rows: the bullets sit in a 30% column at a fixed size, so they set a row's height; a body or title shrinks to fit
+# (measured 2026-11-04: body-only rows hold to 367 characters at 6 rows; 6 rows of 30-character bullets spill).
+ROW_BULLET_CHARS, ROW_LINE_PX, ROW_PAD_PX, ROWS_PX = 40, 25, 20, 500
+
+
+def rows_fit(comp: dict) -> bool:
+    """The rows' padding and bullet lines fit a full slide body; a smaller box can still break (the box is unknown here)."""
+    cs = cards_of(comp)
+    lines = sum(-(-len(b) // ROW_BULLET_CHARS) for c in cs for b in _lines(c)[1])
+    return not lines or len(cs) * ROW_PAD_PX + lines * ROW_LINE_PX <= ROWS_PX
+
+
 # ── one card ──────────────────────────────────────────────────────────────────
 
 def _variant(comp: dict, i: int, asked: str | None, ref: str, flag) -> str:

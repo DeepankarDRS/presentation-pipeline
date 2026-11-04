@@ -253,6 +253,31 @@ def test_card_columns_need_bullets():
     assert used(r, "nb") == "grid" and "NODE_VARIANT_UNMET" in codes(r)
 
 
+def _bulleted(n, chars, tag="DEMAND"):
+    return {"component_id": "many", "kind": "card_grid", "content_data": {"card_layout": "grid", "cards": [
+        {"title": f"T{i}", "tag": f"{tag}{'ABCDEFG'[i]}", "bullets": ["x" * chars] * 3} for i in range(n)]}}
+
+
+def test_card_columns_draw_the_tag():
+    xml = run('<CardGrid ref="levers" variant="columns"/>', LEVERS)["xml"]
+    for c in LEVERS["content_data"]["cards"]:
+        assert not c.get("tag") or c["tag"].upper() in xml
+
+
+@pytest.mark.parametrize("variant", ["rows", "rows numbered"])
+@pytest.mark.parametrize("n,chars,fits", [(3, 30, True), (4, 30, True), (3, 60, False), (4, 60, False), (6, 30, False)])
+def test_card_rows_fall_back_when_bullets_cannot_fit(variant, n, chars, fits):
+    r = run(f'<CardGrid ref="many" variant="{variant}"/>', _bulleted(n, chars))
+    assert used(r, "many") == (variant if fits else "grid") and r["ok"]
+    assert fits or "NODE_VARIANT_UNMET" in codes(r)
+
+
+def test_card_rows_without_bullets_always_fit():
+    cs = [{"title": f"T{i}", "body": "word " * 80} for i in range(6)]
+    plan_ = {"component_id": "many", "kind": "card_grid", "content_data": {"card_layout": "grid", "cards": cs}}
+    assert used(run('<CardGrid ref="many" variant="rows"/>', plan_), "many") == "rows"
+
+
 def test_card_rows_numbered():
     r = run('<CardGrid ref="nb" variant="rows numbered"/>', NO_BULLETS)
     assert used(r, "nb") == "rows numbered" and ">01<" in r["xml"] and ">03<" in r["xml"]

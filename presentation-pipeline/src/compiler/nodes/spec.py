@@ -183,6 +183,9 @@ def check(name: str, comp: dict) -> bool:
     if name == "no_own_numbers" and comp.get("kind") == "card_grid":
         from src.compiler.nodes import cards   # cards imports this module
         return cards.numbered_ok(comp)
+    if name == "rows_fit":
+        from src.compiler.nodes import cards   # cards imports this module
+        return cards.rows_fit(comp)
     if name in ("labels_short", "no_own_numbers"):
         from src.compiler.nodes import compose   # compose imports this module
         if name == "labels_short":

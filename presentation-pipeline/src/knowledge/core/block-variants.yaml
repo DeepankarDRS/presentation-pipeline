@@ -853,7 +853,7 @@ nodes:
         emphasis: *card_dark
       rows:                             # one card per full-width row: icon · tag over title · body · bullets
         ignores: [number, band, bullets, item.grow]
-        requires: [count_le_6]
+        requires: [count_le_6, rows_fit]   # rows_fit: padding + bullet lines fit the slide (cards.rows_fit)
         fallback: grid
         look:     &card_rows
                   {gap: 0, item.gap: 24, item.alignItems: center, item.padding.top: 10, item.padding.bottom: 10,
@@ -862,12 +862,12 @@ nodes:
         emphasis: {title.color: $toneText}
       rows numbered:                    # the same, code's 01 02 03 leading each row
         ignores: [icon, band, bullets, item.grow]
-        requires: [count_le_6, no_own_numbers]
+        requires: [count_le_6, no_own_numbers, rows_fit]
         fallback: rows
         look:     *card_rows
         emphasis: {title.color: $toneText}
-      columns:                          # a pill head (icon + title), the body, each bullet in its own box
-        ignores: [tag, number, divider, item.grow]
+      columns:                          # the tag, a pill head (icon + title), the body, each bullet in its own box
+        ignores: [number, divider, item.grow]
         requires: [bullets_every_card, count_le_5]
         fallback: grid
         look:     {gap: 18, item.gap: 12, band.backgroundColor: $tone, band.padding: 14, band.gap: 10,
@@ -908,7 +908,7 @@ nodes:
       grid numbered: "cards with a large 01 02 03 above each title"
       rows: "one card per ruled full-width row: icon, tag over title, body, bullets"
       rows numbered: "rows led by a large 01 02 03"
-      columns: "one column per card: a coloured pill head, the body, each bullet in its own box"
+      columns: "one column per card: the tag, a coloured pill head, the body, each bullet in its own box"
       banded: "boxes with a solid coloured band (icon, title, tag) over body and bullets"
       bento: "the focus card as one large dark block, the others beside it; at least 500 px wide"
       steps: "cards in a row joined by arrows, the destination dark (default for steps plans)"
