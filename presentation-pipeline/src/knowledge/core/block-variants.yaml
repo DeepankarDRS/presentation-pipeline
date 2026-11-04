@@ -185,11 +185,11 @@ blocks:
     tag: Ul
     family: native
     plan_kind: bullet_list
-    variants:
-      plain:   {prompt: "plain bullets"}
-      icon:    {prompt: "an icon per point", draw: block}
-      tiles:   {prompt: "each point in its own tile", draw: block}
-      columns: {prompt: "points in two columns", draw: block}
+    variants:                 # the compositions of `nodes.bullet_list` (POM_NODES=bullet_list, bullets.py); names as there
+      native:          {prompt: "a real editable list: bold lead-ins, accent markers, points spaced to fill its box; 4+ short points split into two columns by themselves"}
+      native numbered: {prompt: "the same list, auto-numbered", requires: [no_own_numbers], fallback: native}
+      rows:            {prompt: "one ruled row per point: a dot (or an icon), the head over the detail"}
+      rows numbered:   {prompt: "rows with 01 02 03 leading each", requires: [no_own_numbers], fallback: rows}
 
   timeline:
     tag: Timeline
@@ -296,6 +296,8 @@ tile_nodes:
             glow.size, glow.opacity, glow.color]
     Cell:  [backgroundColor, color, bold, italic, underline, textAlign]   # a table <Td> (R2), or a Text a composition draws
     Rule:  [color, width]   # a composition's `divider.`: code draws it as a border on the item after it
+    Run:   [color, bold, italic, underline]   # words a list draws on every composition: native runs or a row's Text
+    Marker: [color]         # a list's bullet, number, dot or icon, whichever the composition draws
 
   # ── KPI ───────────────────────────────────────────────────────────────────────
   kpi:
@@ -941,6 +943,36 @@ nodes:
   # box, `band.` + `number.` the numbered row tile. `ledger` is a table-only word (spec §2.3): one solid header band
   # over joined rows. Tag attributes: labels="inside" (grid: each column name inside its cards instead of a header
   # row), icons="a,b,c" (ledger: one icon name per column, in column order).
+  bullet_list:
+    tag: Ul
+    plan_kind: bullet_list
+    parts: {head: Run, detail: Run, marker: Marker, item: Box}
+    meta: [ref, variant, icons, spacing]
+    native_attributes: [color, textAlign, italic]   # all the words of the list, on every composition
+    compositions:
+      native:
+        look:     {head.bold: "true", head.color: $textMain, detail.color: $textMain, marker.color: $accent}
+        emphasis: {head.color: $toneText, marker.color: $tone}
+      native numbered:
+        requires: [no_own_numbers]
+        fallback: native
+        look:     {head.bold: "true", head.color: $textMain, detail.color: $textMain, marker.color: $accent}
+        emphasis: {head.color: $toneText, marker.color: $tone}
+      rows:
+        look:     {head.bold: "true", head.color: $textMain, detail.color: $textMuted, marker.color: $accent,
+                   item.borderTop.color: $border, item.borderTop.width: 1}
+        emphasis: {item.backgroundColor: $toneSoft, head.color: $toneText, detail.color: $toneText, marker.color: $tone}
+      rows numbered:
+        requires: [no_own_numbers]
+        fallback: rows
+        look:     {head.bold: "true", head.color: $textMain, detail.color: $textMuted, marker.color: $accentText,
+                   item.borderTop.color: $border, item.borderTop.width: 1}
+        emphasis: {item.backgroundColor: $toneSoft, head.color: $toneText, detail.color: $toneText, marker.color: $toneText}
+    aliases:                  # the draft's names
+      plain: native
+      icon: rows
+      columns: native         # fit-grow splits 4+ short points into two real lists
+
   table:
     tag: Table
     plan_kind: table

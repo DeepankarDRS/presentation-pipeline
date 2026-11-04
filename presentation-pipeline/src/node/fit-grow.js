@@ -99,6 +99,7 @@ const FIXED_FONT = 24;      // >= this outside a card is a title / KPI number: n
 // title / 1.3, labels (caps / letter-spaced) by sqrt(s); icons grow by sqrt(s) up to 56px.
 // In a KPI tile only the number is big: its label / delta lines stay <= 0.45x the number.
 const TITLE_CAP = 48;
+const LIST_HEAD_CAP = 30;    // a list row's head (bullets.py ids lsth-) stays below the slide's headline
 const NUMERAL_CAP = 72;      // a card's "01" (cards.py numerals) stays a step above its title
 const BODY_CAP = 28;
 const LABEL_CAP = 24;
@@ -279,7 +280,8 @@ async function splitLists(xml, report) {
       if (!parent || parent.type !== "vstack" || (parent.alignItems ?? "stretch") !== "stretch") return;
       // a list with its own id (Arrow/connector target) or its own box styling
       // cannot become two lists without breaking the reference or the box
-      if (!n.id.startsWith(ID_PREFIX) || hasBoxStyle(n)) return;
+      // a list the bullet node drew (id lst-) may split too: both columns keep the marker; a numbered one stays whole
+      if ((!n.id.startsWith(ID_PREFIX) && !(n.id.startsWith("lst-") && n.type === "ul")) || hasBoxStyle(n)) return;
       const w = L.box(n).w;
       const widest = Math.max(...n.items.map((i) => naturalWidth(i.text,
         { fontFamily: n.fontFamily ?? DEFAULT_FAMILY, fontSizePx: i.fontSize ?? n.fontSize ?? 24,
@@ -304,7 +306,9 @@ async function splitLists(xml, report) {
     // an ordered list's second column continues the numbering
     const start = Number((open.match(/\snumberStartAt\s*=\s*["']?(\d+)/) ?? [])[1] ?? 1);
     const second = el.name === "Ol" ? { numberStartAt: start + half } : {};
-    const row = `<HStack gap="28" alignItems="start">${col(lis.slice(0, half), "a")}`
+    // a node list's columns take its box: spaceLists shares that height between their points
+    const box = id.startsWith("lst-") ? 'grow="1" alignItems="stretch"' : 'alignItems="start"';
+    const row = `<HStack gap="28" ${box}>${col(lis.slice(0, half), "a")}`
       + `${col(lis.slice(half), "b", second)}</HStack>`;
     xml = xml.slice(0, el.start) + row + xml.slice(el.end);
     report.push(`split ${el.name} (${lis.length} items) into 2 columns`);
@@ -1545,7 +1549,8 @@ function textTargets(stack) {
     }
     const label = /[A-Z]/.test(text) && text === text.toUpperCase() || n.letterSpacing !== undefined;
     const title = n.type === "text" && !!n.bold && !label;
-    out.push({ id: n.id, f, text, sig, title, label: n.type === "text" && label, heading: title || (n.type === "text" && label) });
+    out.push({ id: n.id, f, text, sig, title, label: n.type === "text" && label, heading: title || (n.type === "text" && label),
+      listHead: /^lsth-/.test(n.id) });
   });
   // a stat value / hero number (a short number >= 1.5x the smallest text in the box) is
   // the box's anchor: frozen here (growStats sizes it)
@@ -1570,7 +1575,7 @@ function textTargets(stack) {
     : smallestFixed * 0.62);
   for (const t of out) {
     if (stat && t.title) Object.assign(t, { title: false, label: true });
-    const cap = t.numeral ? NUMERAL_CAP : t.title ? TITLE_CAP : t.label ? LABEL_CAP : BODY_CAP;
+    const cap = t.numeral ? NUMERAL_CAP : t.listHead ? LIST_HEAD_CAP : t.title ? TITLE_CAP : t.label ? LABEL_CAP : BODY_CAP;
     // grown text stays 2px below every bigger text in the box that does not grow (a label
     // under a "₹59.8 Cr" with an inline unit size never passes the number)
     const above = Math.min(...frozen.filter((f) => f > t.f)) - 2;
@@ -2526,7 +2531,105 @@ async function fitSlide(inputXml, report, warnings = []) {
     xml = await guardWords(sided, report, warnings);
   }
   xml = await oneLineValues(xml, report);
+  xml = await spaceLists(xml, report);
   return report.length ? untag(xml) : inputXml;
+}
+
+// --- last phase: what POM's lists cannot say --------------------------------------
+// A list the bullet node drew (bullets.py, id lst-) fills its box in two steps (user marks 2026-11-04: size first,
+// spacing only with what is left). The type grows past growText's 88% limit up to BODY_CAP; a card title it would pass
+// grows with it (held at the title, pair 1.4 stayed at 18 px with 27 px gaps). Then the spare height goes between the points. POM has no paragraph spacing, so that gap travels as a
+// <!-- list-post --> comment to pptx-post.js with the first words of the list (how it finds the text box). Without this
+// comment the slide keeps POM's plain list. Two columns of one split list are one group: one size, one gap, their rows
+// level (marks: gaps of 29 and 38 px on the two columns read as uneven).
+
+const LIST_GAP_MAX = 1.5;    // x the font size: past it, points read as unrelated lines
+const LIST_FULL = 0.92;      // slack for renderer wrap drift
+
+const isNodeList = (n) => (n.type === "ul" || n.type === "ol") && n.id?.startsWith("lst-") && n.items.length > 0;
+
+async function listGroups(xml) {
+  const L = await layout(xml);
+  const groups = new Map();
+  try {
+    for (const root of L.slides) {
+      const parents = new Map();
+      walk(root, (n, p) => parents.set(n, p));
+      walk(root, (n, p) => {
+        if (!isNodeList(n)) return;
+        const titles = [];
+        for (let a = p; a && parents.get(a); a = parents.get(a)) {
+          if (!hasBoxStyle(a)) continue;
+          walk(a, (d) => { if (d.type === "text" && d.bold && d.id) titles.push(d); });
+          break;
+        }
+        const top = Math.max(0, ...titles.map((d) => d.fontSize ?? 24));
+        const key = p?.type === "hstack" && p.children.every(isNodeList) ? p.id : n.id;
+        const g = groups.get(key) ?? { ids: [], fs: n.fontSize ?? 24, titles: new Map() };
+        g.ids.push(n.id);
+        for (const d of titles) if ((d.fontSize ?? 24) === top) g.titles.set(d.id, top);   // its card's title, not a bold line in it
+        groups.set(key, g);
+      });
+    }
+  } finally { L.free(); }
+  return [...groups.values()];
+}
+
+/** The group's lists at font size f, a card title below f raised to it. */
+function listsAt(xml, g, f) {
+  const lists = g.ids.reduce((acc, id) => setAttrs(acc, id, { fontSize: f }), xml);
+  return [...g.titles].reduce((acc, [id, px]) => (px < f ? setAttrs(acc, id, { fontSize: f }) : acc), lists);
+}
+
+/** Whether every list of the group holds its text at font size f, in the box it has, with no word past it. */
+async function listsHold(xml, g, f) {
+  const x = listsAt(xml, g, f);
+  const before = await layout(xml), T = await layout(x);
+  try {
+    // no new word past its box, and no slide fuller than it was (a slide already past 720 may still fill its own box)
+    const was = wordsOver(before, [...g.ids, ...g.titles.keys()]);
+    const over = [...wordsOver(T, [...g.ids, ...g.titles.keys()])].filter((id) => !was.has(id));
+    return !over.length && g.ids.every((id) => {
+      const n = T.byId.get(id), b = T.box(n);
+      return natural(n, T) <= b.h * LIST_FULL && b.h <= before.box(before.byId.get(id)).h + 1;
+    }) && T.slides.every((r, j) => natural(r, T) <= Math.max(natural(before.slides[j], before), SLIDE.h) + 1);
+  } finally { before.free(); T.free(); }
+}
+
+async function spaceLists(xml, report) {
+  const groups = await listGroups(xml);
+  for (const g of groups) {
+    let lo = g.fs, hi = Math.max(BODY_CAP, g.fs);
+    while (lo < hi) {
+      const f = Math.ceil((lo + hi) / 2);
+      if (await listsHold(xml, g, f)) lo = f; else hi = f - 1;
+    }
+    if (lo > g.fs) {
+      xml = listsAt(xml, g, lo);
+      report.push(`list text ${g.fs} -> ${lo}px`);
+    }
+    g.fs = lo;
+  }
+  const L = await layout(xml);
+  const edits = [];
+  try {
+    for (const g of groups) {
+      const nodes = g.ids.map((id) => L.byId.get(id));
+      const gaps = nodes.filter((n) => n.items.length > 1).map((n) => Math.max(0, L.box(n).h - natural(n, L)) * LIST_FULL / (n.items.length - 1));
+      const gap = gaps.length ? Math.min(...gaps, LIST_GAP_MAX * g.fs) : 0;
+      for (const n of nodes) {
+        const spec = JSON.stringify({ id: n.id, first: n.items[0].text.slice(0, 40), gap: Math.round(gap * 10) / 10 })
+          .replace(/-/g, "\\u002d");   // a comment may not hold "--"
+        edits.push([n.id, spec, Math.round(gap)]);
+      }
+    }
+  } finally { L.free(); }
+  for (const [id, spec] of edits) {
+    const el = findElement(xml, id);
+    if (el) xml = `${xml.slice(0, el.start)}<!-- list-post ${spec} -->${xml.slice(el.start)}`;
+  }
+  if (edits.length) report.push(`list spacing: ${edits.map((e) => `${e[2]}px`).join(", ")}`);
+  return xml;
 }
 
 // --- phase 6b: a lone row of cards fills the band it sits in ---------------------

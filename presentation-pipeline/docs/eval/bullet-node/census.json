@@ -1,0 +1,95 @@
+{
+ "slides": 47,
+ "lists": 70,
+ "tags": {
+  "Ul": 70
+ },
+ "lists_in_a_box": 65,
+ "lists_with_a_coloured_li": 7,
+ "items_per_list": {
+  "1": 22,
+  "2": 10,
+  "3": 16,
+  "4": 8,
+  "5": 10,
+  "7": 1,
+  "8": 2,
+  "9": 1
+ },
+ "items_with_head_split": 80,
+ "items_without": 124,
+ "hand_typed_markers": 2,
+ "list_attrs": {
+  "fontSize": 70,
+  "color": 70,
+  "lineHeight": 70,
+  "bold": 3,
+  "w": 2,
+  "textAlign": 1
+ },
+ "li_attrs": {
+  "bold": 17,
+  "color": 17,
+  "fontSize": 2
+ },
+ "inline": {
+  "Span": 86,
+  "Span.color": 71,
+  "B": 48,
+  "Span.bold": 47,
+  "Mark": 43,
+  "Mark.color": 43,
+  "Span.fontFamily": 8,
+  "Span.fontSize": 7,
+  "Icon": 3,
+  "Icon.name": 3,
+  "Icon.color": 3,
+  "Icon.w": 3,
+  "Icon.h": 3,
+  "Icon.margin.right": 3,
+  "B.color": 2
+ },
+ "parent_attrs": {
+  "gap": 70,
+  "padding": 65,
+  "backgroundColor": 65,
+  "borderRadius": 64,
+  "border.color": 54,
+  "border.width": 54,
+  "justifyContent": 51,
+  "w": 39,
+  "borderLeft.color": 31,
+  "borderLeft.width": 31,
+  "shadow.blur": 23,
+  "shadow.offset": 23,
+  "shadow.color": 22,
+  "shadow.type": 10,
+  "h": 9,
+  "grow": 8,
+  "alignItems": 8,
+  "minW": 1,
+  "maxW": 1,
+  "alignSelf": 1
+ },
+ "values": {
+  "fontSize": {
+   "14": 32,
+   "15": 19,
+   "16": 9,
+   "13": 9,
+   "18": 1
+  },
+  "lineHeight": {
+   "1.4": 58,
+   "1.45": 11,
+   "1.3": 1
+  },
+  "color": {
+   "$textMain": 62,
+   "$negativeText": 4,
+   "$positiveText": 2,
+   "$surfaceAlt": 1,
+   "$warningText": 1
+  }
+ }
+}
