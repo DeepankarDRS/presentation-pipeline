@@ -4,6 +4,7 @@ generator and context builder: chart (charts.py), timeline (sequences.py), kpi_r
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from src.compiler.nodes import bullets, charts, sequences, tables, tile_groups, validate
@@ -56,12 +57,38 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         r = fn(out["xml"], plan)
         out = {"xml": r["xml"], "issues": out["issues"] + r["issues"], "ok": out["ok"] and r["ok"],
                "components": {**out["components"], **r["components"]}}
+    for issue in unplaced(xml, plan, out["components"]):
+        out["issues"].append(issue)
+        out["ok"] = False
     out["xml"] = validate.one_value(out["xml"])
     return out
 
 
+def unplaced(xml: str, plan: dict | None, placed: dict[str, Any]) -> list[dict[str, Any]]:
+    """NODE_ITEM_MISSING for a component code draws with no tag on the slide: left out, or typed by hand without ref (a
+    whole table can vanish, or its numbers be retyped, with no other check noticing). A KPI placed by element refs
+    (<Text ref="kpis.2.value"/>) counts as placed; a component with no data has nothing to draw."""
+    out = []
+    for kind in kinds_on():
+        for cid, comp in drawn(plan, kind).items():
+            if cid in placed or validate.empty(comp) or re.search(rf'\bref="{re.escape(cid)}\.', xml):
+                continue
+            out.append({"code": "NODE_ITEM_MISSING", "severity": "error", "ref": cid,
+                        "message": f'{kind} "{cid}" is not on the slide: place <{tag(kind)} ref="{cid}"/> (code draws its '
+                                   "content; never type it by hand)."})
+    return out
+
+
+# The grammar above these lines teaches hand-drawn nodes; it stays for the kinds still drawn by hand on the slide
+OVERRIDE = ("## CODE-DRAWN NODES\n"
+            "A component whose line under COMPONENTS names a ref tag is drawn by code: place that tag once, and size it with "
+            "w / h / grow like any box. Rules elsewhere in this prompt about building it by hand do not apply to it: "
+            "<Tr> / <Td> / <Col>, <Li>, <ChartSeries>, <TimelineItem>, row heights, a Timeline's fixed h, label word limits. "
+            "Typing its content by hand, or leaving the tag out, is an error.")
+
+
 def node_lines() -> str:
-    return "\n\n".join(([charts.node_lines()] if charts.on() else []) + ([sequences.node_lines()] if sequences.kinds_on() else [])
+    return "\n\n".join(([OVERRIDE] if kinds_on() else []) + ([charts.node_lines()] if charts.on() else []) + ([sequences.node_lines()] if sequences.kinds_on() else [])
                        + ([tile_groups.node_lines()] if tile_groups.kinds_on() else [])
                        + [m.node_lines() for m in MORE.values() if m.on()])
 

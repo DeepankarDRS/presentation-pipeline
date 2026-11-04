@@ -455,7 +455,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
 
     if strategy == PATCH:
         norm = state.get("normalize_result") or {}
-        failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
+        failing_xml = norm.get("tags_xml") or norm.get("cleaned_xml", state.get("current_xml", ""))
         system_prompt, user_prompt = build_patch_prompts(
             failing_xml=failing_xml,
             problems=problems,
@@ -505,7 +505,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
         except Exception as exc:
             logger.warning(f"repairer: plan_single_slide failed, falling back to PATCH: {exc}")
             norm = state.get("normalize_result") or {}
-            failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
+            failing_xml = norm.get("tags_xml") or norm.get("cleaned_xml", state.get("current_xml", ""))
             system_prompt, user_prompt = build_patch_prompts(
                 failing_xml=failing_xml,
                 problems=problems,
@@ -567,7 +567,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
         except Exception as exc:
             logger.warning(f"repairer: REGENERATE failed (contract/render/generate), falling back to PATCH: {exc}")
             norm = state.get("normalize_result") or {}
-            failing_xml = norm.get("cleaned_xml", state.get("current_xml", ""))
+            failing_xml = norm.get("tags_xml") or norm.get("cleaned_xml", state.get("current_xml", ""))
             patch_sys, patch_user = build_patch_prompts(
                 failing_xml=failing_xml,
                 problems=problems,

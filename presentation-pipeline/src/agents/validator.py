@@ -64,6 +64,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     # it first expands <KpiGrid> / <Kpi> into such tiles (docs/tile-nodes-spec-2026-10-12.md). Composition nodes
     # (POM_NODES=chart, docs/composition-convention-spec.md) are drawn before that.
     ref_issues: list[dict[str, Any]] = []
+    tags_xml = ""   # the LLM's own XML when code draws from it: what the repairer edits
     if element_refs.refs_on() or composed.kinds_on():
         idx = state.get("current_slide_index", 0)
         plan = slide_plans[idx] if idx < len(slide_plans) else {}
@@ -71,6 +72,7 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             output_dir.mkdir(parents=True, exist_ok=True)
             (output_dir / "generated.xml").write_text(xml, encoding="utf-8")
         xml = _BARE_AMP_RE.sub("&amp;", xml)   # a bare '&' ("KEYWORD & CITIES") fails the parse: tags stayed unexpanded
+        tags_xml = xml if "ref=" in xml else ""
         ok = True
         if composed.kinds_on():
             drawn = composed.expand(xml, plan)
@@ -86,13 +88,14 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             fail = {"ok": False, "pptx_path": None, "diagnostics": diags, "warnings": [], "retryable": True}
             return {
                 "normalize_result": {"issues": [dict(i, auto_fixed=False) for i in ref_issues], "auto_fixed": 0,
-                                     "blocking": True, "cleaned_xml": xml},
+                                     "blocking": True, "cleaned_xml": xml, "tags_xml": tags_xml},
                 "validate_result": {"ok": False, "diagnostics": diags, "warnings": []},
                 "compile_result": fail,
                 "layout_issues": [],
             }
 
     norm = normalize_xml(xml)
+    norm["tags_xml"] = tags_xml
     norm["issues"] = [dict(i, auto_fixed=i["severity"] != "error") for i in ref_issues] + norm["issues"]
     if any(has_dark_panel(c.get("xml") or "") for c in state.get("completed_slides") or []):
         norm["cleaned_xml"], n_dark = soften_dark_panels(norm["cleaned_xml"])

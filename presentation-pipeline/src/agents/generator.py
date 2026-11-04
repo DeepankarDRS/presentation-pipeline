@@ -80,9 +80,10 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
                 content_data = {k: v for k, v in (content_data or {}).items()
                                 if k not in ("cards", "card_layout", "per_row", "focus_card")}
     for kind in composed.kinds_on():
-        # composition nodes (POM_NODES): code draws the component from the plan, so the prompt carries none of its text
+        # composition nodes (POM_NODES): code draws the component from the plan, so the prompt carries none of its text.
+        # Its line reads the plan's component: the tile lines above have already emptied the copy in `components`
         drawn = composed.drawn(plan, kind)
-        components = [dict(c, content_data={}, ref_line=composed.prompt_line(c, plan.get("slide_title", "")))
+        components = [dict(c, content_data={}, ref_line=composed.prompt_line(drawn[c["component_id"]], plan.get("slide_title", "")))
                       if c.get("component_id") in drawn and c.get("kind") == kind else c for c in components]
         if composed.all_drawn(plan, kind):
             content_data = {k: v for k, v in (content_data or {}).items() if not str(k).startswith(composed.PLAN_KEYS[kind])}

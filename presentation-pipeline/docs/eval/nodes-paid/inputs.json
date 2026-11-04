@@ -1,0 +1,3046 @@
+[
+ {
+  "name": "deck-product-launch-data-s1-bullet",
+  "case": "deck-product-launch-data",
+  "slide": 1,
+  "kind": "bullet_list",
+  "theme": "midnight-indigo",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "Gateway sprawl and misconfiguration are driving outages and wasted time",
+   "label": "PROBLEM",
+   "subtitle": "Impacting reliability and developer productivity",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle stating the problem and its impact",
+     "design_hint": "color the phrase \"misconfiguration\" in the headline to match the negative color used for the outages bullet",
+     "weight": "minor",
+     "content_data": {
+      "title": "Gateway sprawl and misconfiguration are driving outages and wasted time",
+      "subtitle": "Impacting reliability and developer productivity"
+     }
+    },
+    {
+     "component_id": "pain_points_hero",
+     "kind": "bullet_list",
+     "count": 3,
+     "content_summary": "Three pain-point bullets: gateway sprawl, misconfiguration outages, no unified view",
+     "items": 3,
+     "design_hint": "hero bullet list; color-code by meaning — apply negative color to the misconfiguration bullet (the 68% item) and use an alert-style icon in the component header",
+     "weight": "hero",
+     "content_data": {
+      "bullets": [
+       "Teams manage 4+ separate gateways averaging 2.3 hours/week each on config",
+       "68% of outages last quarter traced to gateway misconfiguration",
+       "No unified view of API traffic across services teams fly blind"
+      ]
+     }
+    },
+    {
+     "component_id": "problem_statement_narrative",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Wrap-up statement linking the three pain points to friction across teams and the need for a single control plane",
+     "design_hint": "lift the card with an accent border; color the phrase \"single control plane\" in an accent color to tie to the solution slide",
+     "weight": "supporting",
+     "content_data": {
+      "text": "These three pain points create friction across platform, SRE and developer teams and motivate the need for a single control plane."
+     }
+    }
+   ],
+   "layout_hint": "slide_title at the top as the header (minor); pain_points_hero is the primary element centered below the header; problem_statement_narrative is a supporting band beneath the bullets.",
+   "content_data": {
+    "title": "Gateway sprawl and misconfiguration are driving outages and wasted time",
+    "subtitle": "Impacting reliability and developer productivity",
+    "bullets": [
+     "Teams manage 4+ separate gateways averaging 2.3 hours/week each on config",
+     "68% of outages last quarter traced to gateway misconfiguration",
+     "No unified view of API traffic across services teams fly blind"
+    ],
+    "text": "These three pain points create friction across platform, SRE and developer teams and motivate the need for a single control plane."
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "bullets": "user",
+    "text": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 7.6 units of content (limit 9)"
+    }
+   ]
+  }
+ },
+ {
+  "name": "deck-product-launch-data-s4-timeline",
+  "case": "deck-product-launch-data",
+  "slide": 4,
+  "kind": "timeline",
+  "theme": "midnight-indigo",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "Roadmap from private beta to GA and certifications",
+   "label": "LAUNCH TIMELINE",
+   "subtitle": "Key public milestones through certification",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline and subtitle",
+     "design_hint": "color the phrase \"GA and certifications\" in the headline to match the timeline focus",
+     "weight": "minor",
+     "content_data": {
+      "title": "Roadmap from private beta to GA and certifications",
+      "subtitle": "Key public milestones through certification"
+     }
+    },
+    {
+     "component_id": "launch_timeline",
+     "kind": "timeline",
+     "count": 4,
+     "content_summary": "Key public milestones from private beta to certification",
+     "items": 4,
+     "orientation": "horizontal",
+     "design_hint": "emphasize the timeline progression with dates prominent on the axis; highlight the Feb 2027 GA launch + enterprise tier and the Apr 2027 SOC2 + HIPAA certification events with an accent color, muting the earlier events",
+     "weight": "hero",
+     "content_data": {
+      "direction": "horizontal",
+      "timeline_items": [
+       {
+        "date": "Oct 2026",
+        "label": "Private beta (12 customers)"
+       },
+       {
+        "date": "Dec 2026",
+        "label": "Public beta, self-serve signup"
+       },
+       {
+        "date": "Feb 2027",
+        "label": "GA launch + enterprise tier"
+       },
+       {
+        "date": "Apr 2027",
+        "label": "SOC2 + HIPAA certification"
+       }
+      ]
+     }
+    }
+   ],
+   "layout_hint": "launch_timeline is the primary element occupying the central band; slide_title is a minor header above it.",
+   "content_data": {
+    "title": "Roadmap from private beta to GA and certifications",
+    "subtitle": "Key public milestones through certification",
+    "direction": "horizontal",
+    "timeline_items": [
+     {
+      "date": "Oct 2026",
+      "label": "Private beta (12 customers)"
+     },
+     {
+      "date": "Dec 2026",
+      "label": "Public beta, self-serve signup"
+     },
+     {
+      "date": "Feb 2027",
+      "label": "GA launch + enterprise tier"
+     },
+     {
+      "date": "Apr 2027",
+      "label": "SOC2 + HIPAA certification"
+     }
+    ]
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "direction": "sample",
+    "timeline_items": "user"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 6.8 units of content (limit 9)"
+    }
+   ]
+  }
+ },
+ {
+  "name": "deck-product-launch-data-s5-bullet",
+  "case": "deck-product-launch-data",
+  "slide": 5,
+  "kind": "bullet_list",
+  "theme": "midnight-indigo",
+  "plan": {
+   "slide_index": 5,
+   "slide_title": "How customers engage and the value Nexus delivers",
+   "label": "COMMERCIAL",
+   "subtitle": "",
+   "slide_type": "closing",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and kicker",
+     "design_hint": "color the subtitle 'COMMERCIAL' as a muted tag to frame the slide",
+     "weight": "minor",
+     "content_data": {
+      "title": "How customers engage and the value Nexus delivers",
+      "subtitle": "COMMERCIAL"
+     }
+    },
+    {
+     "component_id": "value_bullets",
+     "kind": "bullet_list",
+     "count": 2,
+     "content_summary": "Qualitative benefits / value propositions (hero)",
+     "items": 2,
+     "design_hint": "color-code by meaning — use the positive/accent color for both benefits; place an icon beside each point and lift the card to make this the hero panel",
+     "weight": "hero",
+     "content_data": {
+      "bullets": [
+       "Unify multiple gateways into a single control plane to reduce operational overhead and simplify configuration",
+       "Provide unified visibility and per-route observability so SREs and developers can detect and prevent misconfigurations before they cause outages"
+      ]
+     }
+    },
+    {
+     "component_id": "engagement_narrative",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Engagement options for pilots and enterprise",
+     "design_hint": "accent border on the card and color the phrase 'pilot slots available' as an accent to draw attention to the CTA",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Engagement: pilot slots available for early enterprise customers; enterprise support and certification roadmap in place"
+     }
+    }
+   ],
+   "layout_hint": "slide_title as a slim header at the top; value_bullets is the primary (hero) band centered below the header; engagement_narrative sits as a supporting band beneath the hero panel.",
+   "content_data": {
+    "title": "How customers engage and the value Nexus delivers",
+    "subtitle": "COMMERCIAL",
+    "bullets": [
+     "Unify multiple gateways into a single control plane to reduce operational overhead and simplify configuration",
+     "Provide unified visibility and per-route observability so SREs and developers can detect and prevent misconfigurations before they cause outages"
+    ],
+    "text": "Engagement: pilot slots available for early enterprise customers; enterprise support and certification roadmap in place"
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "bullets": "user",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "deck-qbr-data-s1-kpi",
+  "case": "deck-qbr-data",
+  "slide": 1,
+  "kind": "kpi_row",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "ARR and NRR up; Gross Margin down slightly",
+   "label": "EXECUTIVE SUMMARY",
+   "subtitle": "Q3 FY26 vs Q2 FY26",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle for the slide",
+     "design_hint": "color the phrase 'ARR and NRR up' as positive and 'Gross Margin down slightly' as warning",
+     "weight": "minor",
+     "content_data": {
+      "title": "ARR and NRR up; Gross Margin down slightly",
+      "subtitle": "Q3 FY26 vs Q2 FY26"
+     }
+    },
+    {
+     "component_id": "kpi_scorecard",
+     "kind": "kpi_row",
+     "count": 4,
+     "content_summary": "Four metric tiles: ARR, NRR, Gross Margin, CAC Payback",
+     "items": 4,
+     "design_hint": "color-code by meaning: ARR and NRR tiles in positive color, Gross Margin tile in negative color, CAC Payback in positive color; slightly elevate the ARR and NRR tiles",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "ARR",
+       "NRR",
+       "Gross Margin",
+       "CAC Payback"
+      ],
+      "kpi_values": [
+       "$48.2M",
+       "114%",
+       "72.1%",
+       "14 months"
+      ],
+      "kpi_deltas": [
+       "+18% QoQ",
+       "+2 pts",
+       "-1.4 pts",
+       "-2 months"
+      ],
+      "kpi_directions": [
+       "up",
+       "up",
+       "down",
+       "down"
+      ],
+      "kpi_tones": [
+       "good",
+       "good",
+       "bad",
+       "good"
+      ]
+     }
+    },
+    {
+     "component_id": "exec_commentary",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "One-line commentary explaining momentum and areas to address",
+     "design_hint": "dark / inverted panel; emphasize the phrase 'Gross Margin decline and CAC payback remain areas to address in Q4'",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Momentum is driven by ARR growth and rising NRR; Gross Margin decline and CAC payback remain areas to address in Q4."
+     }
+    }
+   ],
+   "layout_hint": "slide_title sits at the top as a minor header; kpi_scorecard is the primary element centered below the header; exec_commentary is a slim supporting band directly beneath kpi_scorecard.",
+   "content_data": {
+    "title": "ARR and NRR up; Gross Margin down slightly",
+    "subtitle": "Q3 FY26 vs Q2 FY26",
+    "kpi_labels": [
+     "ARR",
+     "NRR",
+     "Gross Margin",
+     "CAC Payback"
+    ],
+    "kpi_values": [
+     "$48.2M",
+     "114%",
+     "72.1%",
+     "14 months"
+    ],
+    "kpi_deltas": [
+     "+18% QoQ",
+     "+2 pts",
+     "-1.4 pts",
+     "-2 months"
+    ],
+    "kpi_directions": [
+     "up",
+     "up",
+     "down",
+     "down"
+    ],
+    "kpi_tones": [
+     "good",
+     "good",
+     "bad",
+     "good"
+    ],
+    "text": "Momentum is driven by ARR growth and rising NRR; Gross Margin decline and CAC payback remain areas to address in Q4."
+   },
+   "data_provenance": {
+    "title": "user",
+    "subtitle": "user",
+    "kpi_labels": "user",
+    "kpi_values": "user",
+    "kpi_deltas": "user",
+    "kpi_directions": "user",
+    "kpi_tones": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "deck-qbr-data-s2-chart",
+  "case": "deck-qbr-data",
+  "slide": 2,
+  "kind": "chart",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 2,
+   "slide_title": "Revenue rose every quarter over the last six quarters",
+   "label": "REVENUE TREND · 01",
+   "subtitle": "Last 6 quarters",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle for the revenue trend slide",
+     "design_hint": "color the word 'Revenue' in the headline with the positive accent; keep subtitle subdued",
+     "weight": "minor",
+     "content_data": {}
+    },
+    {
+     "component_id": "revenue_chart",
+     "kind": "chart",
+     "count": 1,
+     "content_summary": "Six-quarter revenue bar chart showing progression",
+     "chart_type": "bar",
+     "series_count": 1,
+     "design_hint": "highlight the Q3 FY26 bar in the accent color and render prior bars in muted gray so the six-quarter progression is clear",
+     "weight": "hero",
+     "content_data": {
+      "chart_type": "bar",
+      "chart_title": "Revenue Trend ($M)",
+      "chart_labels": [
+       "Q2 FY25",
+       "Q3 FY25",
+       "Q4 FY25",
+       "Q1 FY26",
+       "Q2 FY26",
+       "Q3 FY26"
+      ],
+      "chart_values": [
+       28.4,
+       31.2,
+       36.1,
+       39.1,
+       42.3,
+       48.2
+      ]
+     }
+    },
+    {
+     "component_id": "kicker_caption",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Kicker and deck title",
+     "design_hint": "render 'REVENUE TREND · 01' as a small uppercase kicker above the deck title and keep both lines low-contrast",
+     "weight": "minor",
+     "content_data": {
+      "text": "REVENUE TREND · 01\nQ3 FY26 Business Review"
+     }
+    }
+   ],
+   "layout_hint": "revenue_chart is the primary element (hero) in the content band; slide_title appears above as a minor header; kicker_caption sits above or to the top-left as a small, low-contrast label",
+   "content_data": {
+    "chart_type": "bar",
+    "chart_title": "Revenue Trend ($M)",
+    "chart_labels": [
+     "Q2 FY25",
+     "Q3 FY25",
+     "Q4 FY25",
+     "Q1 FY26",
+     "Q2 FY26",
+     "Q3 FY26"
+    ],
+    "chart_values": [
+     28.4,
+     31.2,
+     36.1,
+     39.1,
+     42.3,
+     48.2
+    ],
+    "text": "REVENUE TREND · 01\nQ3 FY26 Business Review"
+   },
+   "data_provenance": {
+    "chart_type": "user",
+    "chart_title": "user",
+    "chart_labels": "user",
+    "chart_values": "user",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-agency-takeover-s0-card-chart",
+  "case": "gate-deck-agency-takeover",
+  "slide": 0,
+  "kind": "card_grid+chart",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 0,
+   "slide_title": "Campaign-purpose governance is the biggest [Platform A] unlock.",
+   "label": "PLATFORM A · 01",
+   "subtitle": "Campaign classes and ROAS show where budget is misallocated",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle",
+     "design_hint": "color the phrase '[Platform A] unlock' in the title to emphasize the core insight",
+     "weight": "minor",
+     "content_data": {
+      "title": "Campaign-purpose governance is the biggest [Platform A] unlock.",
+      "subtitle": "Campaign classes and ROAS show where budget is misallocated"
+     }
+    },
+    {
+     "component_id": "kicker_label",
+     "kind": "caption",
+     "count": 1,
+     "content_summary": "Section/kicker label",
+     "design_hint": "render as a small muted tag in the corner to mark the slide (subtle emphasis)",
+     "weight": "minor",
+     "content_data": {
+      "text": "PLATFORM A · 01"
+     }
+    },
+    {
+     "component_id": "roas_chart",
+     "kind": "chart",
+     "count": 1,
+     "content_summary": "ROAS comparison across campaign classes (values copied verbatim)",
+     "chart_type": "bar",
+     "series_count": 1,
+     "design_hint": "color-code bars by performance (0.99x / 0.80x in positive color; 0.29x / 0.15x in negative color) and visually call out that CPD/BOTD is handled separately in the CPD callout",
+     "weight": "hero",
+     "content_data": {
+      "chart_type": "bar",
+      "chart_title": "Campaign-class ROAS",
+      "chart_labels": [
+       "Generic search",
+       "Category / PLA campaigns",
+       "Brand campaigns",
+       "Competitor campaigns"
+      ],
+      "chart_values": [
+       "around 0.29x",
+       "around 0.80x",
+       "around 0.99x",
+       "around 0.15x"
+      ]
+     }
+    },
+    {
+     "component_id": "cpdbotd_card",
+     "kind": "card_grid",
+     "count": 1,
+     "content_summary": "CPD/BOTD spend and revenue (exact figures)",
+     "items": 1,
+     "design_hint": "inverted panel on the CPD/BOTD card; emphasize the key_phrase '₹10.0L' in negative color and show an alert icon",
+     "weight": "supporting",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "CPD/BOTD placements",
+        "body": "CPD/BOTD placements consumed around ₹10.0L and generated only around ₹9.7K revenue.",
+        "tone": "bad",
+        "icon": "alert-triangle",
+        "key_phrase": "₹10.0L"
+       }
+      ],
+      "per_row": 1
+     }
+    },
+    {
+     "component_id": "recommendation",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Recommendation to separate performance and awareness placements (verbatim)",
+     "design_hint": "accent border on the callout and color the phrase 'CPD/BOTD' to draw attention to the recommendation",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Recommendation: Separate performance media from visibility/awareness placements. CPD/BOTD should not be funded like performance campaigns unless the objective is clearly awareness or incrementality."
+     }
+    }
+   ],
+   "layout_hint": "roas_chart is the primary element (hero) occupying the main band; cpdbotd_card is a supporting callout visually attached to or beside the chart (callout emphasis); recommendation is a slim supporting band below the chart; slide_title runs across the top with kicker_label as a small tag.",
+   "content_data": {
+    "title": "Campaign-purpose governance is the biggest [Platform A] unlock.",
+    "subtitle": "Campaign classes and ROAS show where budget is misallocated",
+    "text": "Recommendation: Separate performance media from visibility/awareness placements. CPD/BOTD should not be funded like performance campaigns unless the objective is clearly awareness or incrementality.",
+    "chart_type": "bar",
+    "chart_title": "Campaign-class ROAS",
+    "chart_labels": [
+     "Generic search",
+     "Category / PLA campaigns",
+     "Brand campaigns",
+     "Competitor campaigns"
+    ],
+    "chart_values": [
+     "around 0.29x",
+     "around 0.80x",
+     "around 0.99x",
+     "around 0.15x"
+    ],
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "CPD/BOTD placements",
+      "body": "CPD/BOTD placements consumed around ₹10.0L and generated only around ₹9.7K revenue.",
+      "tone": "bad",
+      "icon": "alert-triangle",
+      "key_phrase": "₹10.0L"
+     }
+    ],
+    "focus_card": 1,
+    "per_row": 1
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "text": "sample",
+    "chart_type": "sample",
+    "chart_title": "sample",
+    "chart_labels": "sample",
+    "chart_values": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "focus_card": "sample",
+    "per_row": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-agency-takeover-s1-bullet-card-table",
+  "case": "gate-deck-agency-takeover",
+  "slide": 1,
+  "kind": "bullet_list+card_grid+table",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+   "label": "PLATFORM A · 02",
+   "subtitle": "Plus city-level allocation is misaligned with conversion economics",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline and subtitle",
+     "design_hint": "Color the phrase \"Exact match\" in the title to draw attention; keep the subtitle muted",
+     "weight": "minor",
+     "content_data": {
+      "title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+      "subtitle": "Plus city-level allocation is misaligned with conversion economics"
+     }
+    },
+    {
+     "component_id": "match_table",
+     "kind": "table",
+     "count": 1,
+     "content_summary": "Match-type performance with Spend, Rev, ROAS, CPC, CVR for Phrase / Exact / Broad",
+     "columns": 6,
+     "rows": 3,
+     "design_hint": "Highlight the Exact Match row and accent the ROAS cell \"0.41x\" as the best-performing row; keep the ROAS column visually distinct",
+     "weight": "hero",
+     "content_data": {
+      "table_columns": [
+       "Match type",
+       "Spend",
+       "Rev",
+       "ROAS",
+       "CPC",
+       "CVR"
+      ],
+      "table_rows": [
+       [
+        "Phrase Match",
+        "₹45.5L",
+        "₹14.6L",
+        "0.32x",
+        "₹62.0",
+        "8.6%"
+       ],
+       [
+        "Exact Match",
+        "₹21.3L",
+        "₹8.8L",
+        "0.41x",
+        "₹59.5",
+        "10.9%"
+       ],
+       [
+        "Broad Match",
+        "₹1.9L",
+        "₹0.4L",
+        "0.23x",
+        "₹64.7",
+        "6.2%"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "term_cards",
+     "kind": "card_grid",
+     "count": 1,
+     "content_summary": "Two cards: Winners list and Weak terms list",
+     "items": 2,
+     "design_hint": "Render the Winners card in a positive color and the Weak terms card in a negative color; show each term as a bullet within its card",
+     "weight": "peer",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Winners",
+        "bullets": [
+         "[Brand] phrase",
+         "[Brand] exact",
+         "paneer makhani",
+         "curry",
+         "shahi paneer gravy"
+        ],
+        "tone": "good",
+        "icon": "trending-up"
+       },
+       {
+        "title": "Weak terms",
+        "bullets": [
+         "butter chicken phrase",
+         "instant food phrase",
+         "ready to cook paneer phrase",
+         "mix phrase",
+         "instant gravy broad",
+         "ready masala",
+         "instant dal makhani",
+         "meat masala",
+         "kilrr chicken masala"
+        ],
+        "tone": "bad",
+        "icon": "alert-triangle"
+       }
+      ],
+      "per_row": 2
+     }
+    },
+    {
+     "component_id": "city_roas_callout",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "City-level ROAS observations and list of cities needing review",
+     "design_hint": "Accent border on this callout and emphasize the ROAS figures \"0.5x\" and \"0.45x\" so the city shortfall is clear",
+     "weight": "supporting",
+     "content_data": {
+      "text": "No major high-spend city crossed 0.5x ROAS. Bengaluru was the best large city at around 0.45x ROAS, but still below desired efficiency. Cities needing immediate review include Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi."
+     }
+    },
+    {
+     "component_id": "recommendations",
+     "kind": "bullet_list",
+     "count": 2,
+     "content_summary": "Two recommendation bullets: keyword governance actions and budget reallocation criteria",
+     "items": 2,
+     "design_hint": "Color-code the first bullet (scale exact / reduce leakage) as positive/action and the second (reallocate budget based on City-level ROAS...) as an operational criterion with an accent border",
+     "weight": "supporting",
+     "content_data": {
+      "bullets": [
+       "Recommendation: Scale exact winners, reduce phrase/broad leakage, and create strict budgets for competitor and generic discovery terms.",
+       "Recommendation: Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand."
+      ]
+     }
+    }
+   ],
+   "layout_hint": "match_table is the primary element (hero) centered on the slide; term_cards sits beside or below it as prominent supporting context; city_roas_callout is a supporting callout near the table; recommendations is a slim supporting list below or to the side.",
+   "content_data": {
+    "title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+    "subtitle": "Plus city-level allocation is misaligned with conversion economics",
+    "table_columns": [
+     "Match type",
+     "Spend",
+     "Rev",
+     "ROAS",
+     "CPC",
+     "CVR"
+    ],
+    "table_rows": [
+     [
+      "Phrase Match",
+      "₹45.5L",
+      "₹14.6L",
+      "0.32x",
+      "₹62.0",
+      "8.6%"
+     ],
+     [
+      "Exact Match",
+      "₹21.3L",
+      "₹8.8L",
+      "0.41x",
+      "₹59.5",
+      "10.9%"
+     ],
+     [
+      "Broad Match",
+      "₹1.9L",
+      "₹0.4L",
+      "0.23x",
+      "₹64.7",
+      "6.2%"
+     ]
+    ],
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Winners",
+      "bullets": [
+       "[Brand] phrase",
+       "[Brand] exact",
+       "paneer makhani",
+       "curry",
+       "shahi paneer gravy"
+      ],
+      "tone": "good",
+      "icon": "trending-up"
+     },
+     {
+      "title": "Weak terms",
+      "bullets": [
+       "butter chicken phrase",
+       "instant food phrase",
+       "ready to cook paneer phrase",
+       "mix phrase",
+       "instant gravy broad",
+       "ready masala",
+       "instant dal makhani",
+       "meat masala",
+       "kilrr chicken masala"
+      ],
+      "tone": "bad",
+      "icon": "alert-triangle"
+     }
+    ],
+    "per_row": 2,
+    "text": "No major high-spend city crossed 0.5x ROAS. Bengaluru was the best large city at around 0.45x ROAS, but still below desired efficiency. Cities needing immediate review include Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi.",
+    "bullets": [
+     "Recommendation: Scale exact winners, reduce phrase/broad leakage, and create strict budgets for competitor and generic discovery terms.",
+     "Recommendation: Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand."
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "table_columns": "sample",
+    "table_rows": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "text": "sample",
+    "bullets": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-agency-takeover-s2-table",
+  "case": "gate-deck-agency-takeover",
+  "slide": 2,
+  "kind": "table",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 2,
+   "slide_title": "[Platform B] and [Platform A] show the same operating gap: spend is not governed tightly enough by economics.",
+   "label": "CROSS-PLATFORM",
+   "subtitle": "Five shared operational gaps and corrective fixes",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Kicker + headline and subtitle",
+     "design_hint": "color the kicker word 'CROSS-PLATFORM' as an accent and bold the phrase 'spend is not governed tightly enough by economics' to anchor the slide",
+     "weight": "minor",
+     "content_data": {
+      "title": "CROSS-PLATFORM — [Platform B] and [Platform A] show the same operating gap: spend is not governed tightly enough by economics.",
+      "subtitle": "Five shared operational gaps and corrective fixes"
+     }
+    },
+    {
+     "component_id": "gap_comparison_table",
+     "kind": "table",
+     "count": 5,
+     "content_summary": "Five-row comparison of gaps with per-platform notes and fixes",
+     "columns": 4,
+     "rows": 5,
+     "design_hint": "treat the table as a side-by-side comparison: shade the Fix column in a positive color, mark the Platform B and Platform A issue cells in warning/negative tones, and emphasize Gap 1 row (the CPC values ₹31.1, ₹10.7, ₹46.2, ₹14.8) so it reads as the clearest economic failure",
+     "weight": "hero",
+     "content_data": {
+      "table_columns": [
+       "Gap",
+       "[Platform B]",
+       "[Platform A]",
+       "Fix"
+      ],
+      "table_rows": [
+       [
+        "Gap 1 - CPC above allowable level",
+        "[Platform B] CPC ₹31.1 vs allowable ₹10.7",
+        "[Platform A] CPC ₹46.2 vs allowable ₹14.8",
+        "Break-even CPC bidding model"
+       ],
+       [
+        "Gap 2 - Discovery leakage",
+        "[Platform B] Auto, phrase, category, broad weak.",
+        "[Platform A] Phrase, broad, generic weak.",
+        "Weekly harvesting and negative loop"
+       ],
+       [
+        "Gap 3 - Budget not following winners",
+        "[Platform B] SBT and exact under-scaled.",
+        "[Platform A] Brand and category/PLA under-allocated.",
+        "Budget tiering by ROAS, CVR, and intent"
+       ],
+       [
+        "Gap 4 - Visibility spend not separated",
+        "[Platform B] SD/AMC weak.",
+        "[Platform A] CPD/BOTD weak.",
+        "Separate awareness and performance budgets"
+       ],
+       [
+        "Gap 5 - Reporting and governance gaps",
+        "[Platform B] Broken pivot ratios.",
+        "[Platform A] Sheet reconciliation differences.",
+        "Raw-data dashboard and source-of-truth reporting"
+       ]
+      ]
+     }
+    }
+   ],
+   "layout_hint": "gap_comparison_table is the primary element in the main band; slide_title sits across the top as a narrow header.",
+   "content_data": {
+    "title": "CROSS-PLATFORM — [Platform B] and [Platform A] show the same operating gap: spend is not governed tightly enough by economics.",
+    "subtitle": "Five shared operational gaps and corrective fixes",
+    "table_columns": [
+     "Gap",
+     "[Platform B]",
+     "[Platform A]",
+     "Fix"
+    ],
+    "table_rows": [
+     [
+      "Gap 1 - CPC above allowable level",
+      "[Platform B] CPC ₹31.1 vs allowable ₹10.7",
+      "[Platform A] CPC ₹46.2 vs allowable ₹14.8",
+      "Break-even CPC bidding model"
+     ],
+     [
+      "Gap 2 - Discovery leakage",
+      "[Platform B] Auto, phrase, category, broad weak.",
+      "[Platform A] Phrase, broad, generic weak.",
+      "Weekly harvesting and negative loop"
+     ],
+     [
+      "Gap 3 - Budget not following winners",
+      "[Platform B] SBT and exact under-scaled.",
+      "[Platform A] Brand and category/PLA under-allocated.",
+      "Budget tiering by ROAS, CVR, and intent"
+     ],
+     [
+      "Gap 4 - Visibility spend not separated",
+      "[Platform B] SD/AMC weak.",
+      "[Platform A] CPD/BOTD weak.",
+      "Separate awareness and performance budgets"
+     ],
+     [
+      "Gap 5 - Reporting and governance gaps",
+      "[Platform B] Broken pivot ratios.",
+      "[Platform A] Sheet reconciliation differences.",
+      "Raw-data dashboard and source-of-truth reporting"
+     ]
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "table_columns": "sample",
+    "table_rows": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-all-nodes-dense-s1-chart-kpi",
+  "case": "gate-deck-all-nodes-dense",
+  "slide": 1,
+  "kind": "chart+kpi_row",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "Repeat customers now drive most of BREWLY's revenue.",
+   "label": "PERFORMANCE",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and kicker",
+     "design_hint": "color the phrase 'Repeat customers' in the title to tie visually to the repeat-customer KPI",
+     "weight": "minor",
+     "content_data": {
+      "title": "Repeat customers now drive most of BREWLY's revenue.",
+      "subtitle": "PERFORMANCE"
+     }
+    },
+    {
+     "component_id": "kpi_overview",
+     "kind": "kpi_row",
+     "count": 4,
+     "content_summary": "Core financial and efficiency KPIs: annual revenue, growth, ROAS, CAC",
+     "items": 4,
+     "design_hint": "color-code Revenue growth and Blended ROAS in the positive color; keep Customer acquisition cost in a neutral tone; make Annual revenue slightly more prominent among the tiles",
+     "weight": "peer",
+     "content_data": {
+      "kpi_labels": [
+       "Annual revenue",
+       "Revenue growth",
+       "Blended ROAS",
+       "Customer acquisition cost"
+      ],
+      "kpi_values": [
+       "₹14.2Cr",
+       "+38%",
+       "2.4x",
+       "₹410"
+      ],
+      "kpi_deltas": [
+       "",
+       "",
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       "up",
+       "",
+       ""
+      ],
+      "kpi_tones": [
+       "good",
+       "good",
+       "good",
+       ""
+      ]
+     }
+    },
+    {
+     "component_id": "repeat_kpi",
+     "kind": "kpi_row",
+     "count": 1,
+     "content_summary": "Repeat-customer revenue share and its change YoY",
+     "items": 1,
+     "design_hint": "dark / inverted panel on the repeat customers tile; emphasize the '62%' value large and bold and show the 'up from 41% a year ago.' delta in smaller text",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "Repeat customers (% of revenue)"
+      ],
+      "kpi_values": [
+       "62%"
+      ],
+      "kpi_deltas": [
+       "up from 41% a year ago."
+      ],
+      "kpi_directions": [
+       "up"
+      ],
+      "kpi_tones": [
+       "good"
+      ]
+     }
+    },
+    {
+     "component_id": "quarterly_revenue_chart",
+     "kind": "chart",
+     "count": 1,
+     "content_summary": "Quarterly revenue trend in ₹ Cr (6 quarters)",
+     "chart_type": "bar",
+     "series_count": 1,
+     "items": 6,
+     "design_hint": "accent the latest bar (Q2 FY27) in the positive/accent color and mute earlier bars for context",
+     "weight": "supporting",
+     "content_data": {
+      "chart_type": "bar",
+      "chart_title": "Quarterly revenue (₹ Cr)",
+      "chart_labels": [
+       "Q1 FY26",
+       "Q2 FY26",
+       "Q3 FY26",
+       "Q4 FY26",
+       "Q1 FY27",
+       "Q2 FY27"
+      ],
+      "chart_values": [
+       2.6,
+       2.9,
+       3.3,
+       3.6,
+       3.9,
+       4.4
+      ]
+     }
+    },
+    {
+     "component_id": "growth_source_note",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Qualitative cause of growth",
+     "design_hint": "color the phrase 'retention and pricing' in positive to link to the repeat-customer message; keep this as a small supporting note",
+     "weight": "minor",
+     "content_data": {
+      "text": "Growth came from retention and pricing, not from buying more traffic."
+     }
+    }
+   ],
+   "layout_hint": "kpi_overview and repeat_kpi sit across the top band with repeat_kpi visually dominant (repeat_kpi is the hero); quarterly_revenue_chart sits beneath them as supporting context; growth_source_note is a small line under the chart; slide_title remains a minor header at the top.",
+   "content_data": {
+    "title": "Repeat customers now drive most of BREWLY's revenue.",
+    "subtitle": "PERFORMANCE",
+    "kpi_labels": [
+     "Repeat customers (% of revenue)"
+    ],
+    "kpi_values": [
+     "62%"
+    ],
+    "kpi_deltas": [
+     "up from 41% a year ago."
+    ],
+    "kpi_directions": [
+     "up"
+    ],
+    "kpi_tones": [
+     "good"
+    ],
+    "chart_type": "bar",
+    "chart_title": "Quarterly revenue (₹ Cr)",
+    "chart_labels": [
+     "Q1 FY26",
+     "Q2 FY26",
+     "Q3 FY26",
+     "Q4 FY26",
+     "Q1 FY27",
+     "Q2 FY27"
+    ],
+    "chart_values": [
+     2.6,
+     2.9,
+     3.3,
+     3.6,
+     3.9,
+     4.4
+    ],
+    "text": "Growth came from retention and pricing, not from buying more traffic."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "kpi_labels": "sample",
+    "kpi_values": "sample",
+    "kpi_deltas": "sample",
+    "kpi_directions": "sample",
+    "kpi_tones": "sample",
+    "chart_type": "sample",
+    "chart_title": "sample",
+    "chart_labels": "sample",
+    "chart_values": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-all-nodes-dense-s2-table",
+  "case": "gate-deck-all-nodes-dense",
+  "slide": 2,
+  "kind": "table",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 2,
+   "slide_title": "The website earns the best margin; bundles and referrals are the quick wins.",
+   "label": "CHANNELS",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline + kicker",
+     "design_hint": "emphasize one value (color the word 'website' or the phrase 'best margin')",
+     "weight": "minor",
+     "content_data": {
+      "title": "The website earns the best margin; bundles and referrals are the quick wins.",
+      "subtitle": "CHANNELS · Problem & Priorities"
+     }
+    },
+    {
+     "component_id": "channel_table",
+     "kind": "table",
+     "count": 1,
+     "content_summary": "Channel economics: Revenue, ROAS, Gross Margin for Website, QUIKMART, DASHCART",
+     "columns": 4,
+     "rows": 3,
+     "design_hint": "highlight the Website row and color the Gross Margin cell '64%' as positive (emphasize owned-channel margin advantage)",
+     "weight": "hero",
+     "content_data": {
+      "table_columns": [
+       "Channel",
+       "Revenue",
+       "ROAS",
+       "Gross Margin"
+      ],
+      "table_rows": [
+       [
+        "Website",
+        "₹7.1Cr",
+        "3.1x",
+        "64%"
+       ],
+       [
+        "QUIKMART",
+        "₹4.3Cr",
+        "2.2x",
+        "55%"
+       ],
+       [
+        "DASHCART",
+        "₹2.8Cr",
+        "1.4x",
+        "47%"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "brand_pyramid",
+     "kind": "pyramid",
+     "count": 4,
+     "content_summary": "Pyramid of brand priorities from top to bottom",
+     "items": 4,
+     "design_hint": "lift the pyramid panel on the left and use a gradient progression from top (strong) to bottom (light)",
+     "weight": "supporting",
+     "content_data": {
+      "direction": "up",
+      "pyramid_levels": [
+       "Category leadership",
+       "Loyal subscribers",
+       "Consistent experience",
+       "Fresh roast quality"
+      ]
+     }
+    },
+    {
+     "component_id": "initiative_matrix",
+     "kind": "matrix",
+     "count": 4,
+     "content_summary": "2x2 initiative matrix mapping Effort (low→high) vs Impact (low→high)",
+     "columns": 2,
+     "rows": 2,
+     "items": 4,
+     "design_hint": "emphasize the low-effort, high-impact items (Bundle offers and Referral program) in a positive color; mute the high-effort items",
+     "weight": "supporting",
+     "content_data": {
+      "x_axis": "Effort",
+      "y_axis": "Impact",
+      "quadrants": {
+       "top_left": "Bundle offers; Referral program",
+       "top_right": "Own delivery fleet",
+       "bottom_left": "",
+       "bottom_right": "Loyalty app"
+      },
+      "matrix_items": [
+       {
+        "label": "Bundle offers",
+        "x": "low",
+        "y": "high"
+       },
+       {
+        "label": "Referral program",
+        "x": "low",
+        "y": "high"
+       },
+       {
+        "label": "Own delivery fleet",
+        "x": "high",
+        "y": "high"
+       },
+       {
+        "label": "Loyalty app",
+        "x": "high",
+        "y": "low"
+       }
+      ]
+     }
+    }
+   ],
+   "layout_hint": "channel_table is the primary (hero) element; place brand_pyramid to the left as supporting context and the initiative_matrix as a tactical supporting callout near the table (e.g., bottom-right) so the matrix connects to the table's recommendations.",
+   "content_data": {
+    "title": "The website earns the best margin; bundles and referrals are the quick wins.",
+    "subtitle": "CHANNELS · Problem & Priorities",
+    "table_columns": [
+     "Channel",
+     "Revenue",
+     "ROAS",
+     "Gross Margin"
+    ],
+    "table_rows": [
+     [
+      "Website",
+      "₹7.1Cr",
+      "3.1x",
+      "64%"
+     ],
+     [
+      "QUIKMART",
+      "₹4.3Cr",
+      "2.2x",
+      "55%"
+     ],
+     [
+      "DASHCART",
+      "₹2.8Cr",
+      "1.4x",
+      "47%"
+     ]
+    ],
+    "direction": "up",
+    "pyramid_levels": [
+     "Category leadership",
+     "Loyal subscribers",
+     "Consistent experience",
+     "Fresh roast quality"
+    ],
+    "x_axis": "Effort",
+    "y_axis": "Impact",
+    "quadrants": {
+     "top_left": "Bundle offers; Referral program",
+     "top_right": "Own delivery fleet",
+     "bottom_left": "",
+     "bottom_right": "Loyalty app"
+    },
+    "matrix_items": [
+     {
+      "label": "Bundle offers",
+      "x": "low",
+      "y": "high"
+     },
+     {
+      "label": "Referral program",
+      "x": "low",
+      "y": "high"
+     },
+     {
+      "label": "Own delivery fleet",
+      "x": "high",
+      "y": "high"
+     },
+     {
+      "label": "Loyalty app",
+      "x": "high",
+      "y": "low"
+     }
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "table_columns": "sample",
+    "table_rows": "sample",
+    "direction": "sample",
+    "pyramid_levels": "sample",
+    "x_axis": "sample",
+    "y_axis": "sample",
+    "quadrants": "sample",
+    "matrix_items": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-all-nodes-dense-s4-bullet-timeline",
+  "case": "gate-deck-all-nodes-dense",
+  "slide": 4,
+  "kind": "bullet_list+timeline",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "Five milestones built the brand; one decision flow now converts each visitor.",
+   "label": "JOURNEY",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline with kicker",
+     "design_hint": "color the phrase 'one decision flow' in accent to connect to the flow component",
+     "weight": "minor",
+     "content_data": {
+      "title": "Five milestones built the brand; one decision flow now converts each visitor.",
+      "subtitle": "JOURNEY"
+     }
+    },
+    {
+     "component_id": "brand_timeline",
+     "kind": "timeline",
+     "count": 5,
+     "content_summary": "Historical milestones from 2021 to 2025",
+     "items": 5,
+     "orientation": "horizontal",
+     "design_hint": "lift and make full-width hero; color-code milestones with a progressive gradient to show chronology and emphasize the timeline path",
+     "weight": "hero",
+     "content_data": {
+      "direction": "horizontal",
+      "timeline_items": [
+       {
+        "date": "2021",
+        "label": "Café opens"
+       },
+       {
+        "date": "2022",
+        "label": "Website launch"
+       },
+       {
+        "date": "2023",
+        "label": "Subscriptions live"
+       },
+       {
+        "date": "2024",
+        "label": "QUIKMART listing"
+       },
+       {
+        "date": "2025",
+        "label": "DASHCART listing"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "conversion_flow",
+     "kind": "flow",
+     "count": 5,
+     "content_summary": "Decision flow from visitor landing to checkout with a Bought-before? decision",
+     "items": 5,
+     "orientation": "horizontal",
+     "design_hint": "emphasize the decision node 'Bought before?' and color-code the Yes path (Subscription offer) as positive and the No path (Trial pack) as a neutral/warning color",
+     "weight": "peer",
+     "content_data": {
+      "direction": "horizontal",
+      "flow_steps": [
+       "Visitor lands",
+       "Bought before?",
+       "Yes: Subscription offer",
+       "No: Trial pack",
+       "Checkout"
+      ]
+     }
+    },
+    {
+     "component_id": "short_rules",
+     "kind": "bullet_list",
+     "count": 3,
+     "content_summary": "Supporting takeaways about offer exposure and checkout",
+     "items": 3,
+     "design_hint": "supporting takeaways at right; bold the 'Every offer ends at one checkout' rule and color-code the 'Returning buyers' rule as positive and the 'First-time visitors' rule as neutral",
+     "weight": "supporting",
+     "content_data": {
+      "bullets": [
+       "Returning buyers never see the trial pack",
+       "First-time visitors get one offer",
+       "Every offer ends at one checkout"
+      ]
+     }
+    }
+   ],
+   "layout_hint": "brand_timeline is the full-width hero band across the top; below it, conversion_flow sits left as the prominent visual and short_rules sit right as supporting takeaways; slide_title is a small header at the very top.",
+   "content_data": {
+    "title": "Five milestones built the brand; one decision flow now converts each visitor.",
+    "subtitle": "JOURNEY",
+    "direction": "horizontal",
+    "timeline_items": [
+     {
+      "date": "2021",
+      "label": "Café opens"
+     },
+     {
+      "date": "2022",
+      "label": "Website launch"
+     },
+     {
+      "date": "2023",
+      "label": "Subscriptions live"
+     },
+     {
+      "date": "2024",
+      "label": "QUIKMART listing"
+     },
+     {
+      "date": "2025",
+      "label": "DASHCART listing"
+     }
+    ],
+    "flow_steps": [
+     "Visitor lands",
+     "Bought before?",
+     "Yes: Subscription offer",
+     "No: Trial pack",
+     "Checkout"
+    ],
+    "bullets": [
+     "Returning buyers never see the trial pack",
+     "First-time visitors get one offer",
+     "Every offer ends at one checkout"
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "direction": "sample",
+    "timeline_items": "sample",
+    "flow_steps": "sample",
+    "bullets": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-cheffin-audit-s1-kpi",
+  "case": "gate-deck-cheffin-audit",
+  "slide": 1,
+  "kind": "kpi_row",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 1,
+   "slide_title": "CHEFFIN is spending at scale, but current traffic economics are structurally weak across both platforms.",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "weight": "minor",
+     "content_summary": "slide header",
+     "design_hint": "",
+     "content_data": {
+      "title": "CHEFFIN is spending at scale, but current traffic economics are structurally weak across both platforms.",
+      "subtitle": "Summary of FLIPCART & ZAROMA paid media performance (last 90 days).",
+      "kicker": ""
+     }
+    },
+    {
+     "component_id": "kpis",
+     "kind": "kpi_row",
+     "content_summary": "",
+     "content_data": {
+      "kpi_labels": [
+       "Spend",
+       "Revenue",
+       "ROAS",
+       "CPC",
+       "CVR",
+       "AOV"
+      ],
+      "kpi_values": [
+       "₹114.9L",
+       "₹37.4L",
+       "0.33x",
+       "₹41.1",
+       "6.1%",
+       "₹219"
+      ],
+      "kpi_deltas": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ]
+     },
+     "weight": "peer",
+     "design_hint": "emphasise Combined ROAS 0.33x · Combined Spend ₹114.9L",
+     "count": 6
+    },
+    {
+     "component_id": "diagnosis",
+     "kind": "narrative",
+     "content_summary": "",
+     "content_data": {
+      "text": "Across FLIPCART and ZAROMA, CHEFFIN is spending at scale but the traffic economics are structurally weak. The issue is not just campaign optimization."
+     },
+     "weight": "hero",
+     "design_hint": "",
+     "count": 1
+    },
+    {
+     "component_id": "data_quality",
+     "kind": "narrative",
+     "content_summary": "",
+     "content_data": {
+      "text": "Mention that some FLIPCART pivot-style sheets had unreliable or zeroed ratio fields, so metrics were recalculated from raw data. Also mention that ZAROMA campaign, city, and keyword sheets may not reconcile perfectly because they appear to have slightly different coverage."
+     },
+     "weight": "minor",
+     "design_hint": "",
+     "count": 1
+    }
+   ],
+   "layout_hint": "Top KPI strip with six headline metrics (spend, revenue, ROAS, CPC, CVR, AOV); main band features the executive diagnosis as the focal narrative; bottom minor narrative for data quality notes.",
+   "content_data": {
+    "kpi_labels": [
+     "Spend",
+     "Revenue",
+     "ROAS",
+     "CPC",
+     "CVR",
+     "AOV"
+    ],
+    "kpi_values": [
+     "₹114.9L",
+     "₹37.4L",
+     "0.33x",
+     "₹41.1",
+     "6.1%",
+     "₹219"
+    ],
+    "kpi_deltas": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "kpi_directions": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "text": "Mention that some FLIPCART pivot-style sheets had unreliable or zeroed ratio fields, so metrics were recalculated from raw data. Also mention that ZAROMA campaign, city, and keyword sheets may not reconcile perfectly because they appear to have slightly different coverage."
+   },
+   "data_provenance": {}
+  }
+ },
+ {
+  "name": "gate-deck-cheffin-audit-s2-table",
+  "case": "gate-deck-cheffin-audit",
+  "slide": 2,
+  "kind": "table",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 2,
+   "slide_title": "Both FLIPCART and ZAROMA are underperforming on ROAS and CPC relative to allowable thresholds.",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "weight": "minor",
+     "content_summary": "slide header",
+     "design_hint": "",
+     "content_data": {
+      "title": "Both FLIPCART and ZAROMA are underperforming on ROAS and CPC relative to allowable thresholds.",
+      "subtitle": "Platform-wise performance snapshot (last 90 days).",
+      "kicker": ""
+     }
+    },
+    {
+     "component_id": "platform_comparison_table",
+     "kind": "table",
+     "content_summary": "FLIPCART vs ZAROMA Key Metrics (last 90 days)",
+     "content_data": {
+      "table_columns": [
+       "Metric",
+       "FLIPCART",
+       "ZAROMA"
+      ],
+      "table_rows": [
+       [
+        "Spend",
+        "₹29.4L",
+        "₹85.5L"
+       ],
+       [
+        "Ad sales/revenue",
+        "₹10.1L",
+        "₹27.3L"
+       ],
+       [
+        "ROAS",
+        "0.34x",
+        "0.32x"
+       ],
+       [
+        "CPC",
+        "₹31.1",
+        "₹46.2"
+       ],
+       [
+        "CVR",
+        "5.5%",
+        "6.4%"
+       ],
+       [
+        "AOV",
+        "₹195",
+        "₹230"
+       ],
+       [
+        "Allowable CPC for 1.0x ROAS",
+        "₹10.7",
+        "₹14.8"
+       ]
+      ]
+     },
+     "weight": "hero",
+     "design_hint": "emphasise FLIPCART ROAS 0.34x · ZAROMA ROAS 0.32x",
+     "count": 1,
+     "columns": 3,
+     "rows": 7
+    }
+   ],
+   "layout_hint": "A single table compares FLIPCART and ZAROMA side-by-side across all key ad metrics, with ROAS values emphasized. All metrics are presented in two columns for immediate executive comparison.",
+   "content_data": {
+    "table_columns": [
+     "Metric",
+     "FLIPCART",
+     "ZAROMA"
+    ],
+    "table_rows": [
+     [
+      "Spend",
+      "₹29.4L",
+      "₹85.5L"
+     ],
+     [
+      "Ad sales/revenue",
+      "₹10.1L",
+      "₹27.3L"
+     ],
+     [
+      "ROAS",
+      "0.34x",
+      "0.32x"
+     ],
+     [
+      "CPC",
+      "₹31.1",
+      "₹46.2"
+     ],
+     [
+      "CVR",
+      "5.5%",
+      "6.4%"
+     ],
+     [
+      "AOV",
+      "₹195",
+      "₹230"
+     ],
+     [
+      "Allowable CPC for 1.0x ROAS",
+      "₹10.7",
+      "₹14.8"
+     ]
+    ]
+   },
+   "data_provenance": {}
+  }
+ },
+ {
+  "name": "gate-deck-cheffin-full-s2-chart-kpi",
+  "case": "gate-deck-cheffin-full",
+  "slide": 2,
+  "kind": "chart+kpi_row",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 2,
+   "slide_title": "CPC is nearly 3x higher than what current conversion economics can support.",
+   "label": "ECONOMICS",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and kicker",
+     "design_hint": "color the phrase \"3x\" in the headline to draw attention to the magnitude (use negative tone)",
+     "weight": "minor",
+     "content_data": {
+      "title": "CPC is nearly 3x higher than what current conversion economics can support.",
+      "subtitle": "ECONOMICS"
+     }
+    },
+    {
+     "component_id": "cpc_chart",
+     "kind": "chart",
+     "count": 1,
+     "content_summary": "Bar chart comparing Actual CPC vs Allowable CPC for FLIPCART and ZAROMA",
+     "chart_type": "bar",
+     "series_count": 2,
+     "design_hint": "highlight the 'Actual CPC' series in negative color (losses); render 'Allowable CPC for 1.0x ROAS' muted for contrast; lift the card",
+     "weight": "hero",
+     "content_data": {
+      "chart_type": "bar",
+      "chart_title": "Actual CPC vs Allowable CPC for 1.0x ROAS",
+      "chart_labels": [
+       "FLIPCART",
+       "ZAROMA"
+      ],
+      "chart_series": [
+       {
+        "name": "Actual CPC",
+        "values": [
+         31.1,
+         46.2
+        ]
+       },
+       {
+        "name": "Allowable CPC for 1.0x ROAS",
+        "values": [
+         10.7,
+         14.8
+        ]
+       }
+      ],
+      "chart_series_formatted": [
+       {
+        "name": "Actual CPC",
+        "values": [
+         "₹31.1",
+         "₹46.2"
+        ]
+       },
+       {
+        "name": "Allowable CPC for 1.0x ROAS",
+        "values": [
+         "₹10.7",
+         "₹14.8"
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "gap_kpis",
+     "kind": "kpi_row",
+     "count": 2,
+     "content_summary": "Gap ratios for each platform (how many times actual exceeds allowable)",
+     "items": 2,
+     "design_hint": "color the gap tiles in negative (losses) color to show the structural shortfall; platform names remain as labels",
+     "weight": "supporting",
+     "content_data": {
+      "kpi_labels": [
+       "FLIPCART",
+       "ZAROMA"
+      ],
+      "kpi_values": [
+       "~2.9x",
+       "~3.1x"
+      ],
+      "kpi_deltas": [
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       ""
+      ],
+      "kpi_tones": [
+       "bad",
+       "bad"
+      ]
+     }
+    },
+    {
+     "component_id": "main_insight",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Qualitative recommendation for fixes",
+     "design_hint": "color the phrase \"CPC reduction, CVR improvement, AOV improvement\" to emphasize the required levers; lift the card slightly",
+     "weight": "supporting",
+     "content_data": {
+      "text": "At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together."
+     }
+    }
+   ],
+   "layout_hint": "cpc_chart is the primary element (hero) centered in the content band; gap_kpis sits as a supporting row beneath the chart; main_insight is a slim supporting band below the gap_kpis; the slide_title remains a minor header at the top.",
+   "content_data": {
+    "title": "CPC is nearly 3x higher than what current conversion economics can support.",
+    "subtitle": "ECONOMICS",
+    "chart_type": "bar",
+    "chart_title": "Actual CPC vs Allowable CPC for 1.0x ROAS",
+    "chart_labels": [
+     "FLIPCART",
+     "ZAROMA"
+    ],
+    "chart_series": [
+     {
+      "name": "Actual CPC",
+      "values": [
+       31.1,
+       46.2
+      ]
+     },
+     {
+      "name": "Allowable CPC for 1.0x ROAS",
+      "values": [
+       10.7,
+       14.8
+      ]
+     }
+    ],
+    "chart_series_formatted": [
+     {
+      "name": "Actual CPC",
+      "values": [
+       "₹31.1",
+       "₹46.2"
+      ]
+     },
+     {
+      "name": "Allowable CPC for 1.0x ROAS",
+      "values": [
+       "₹10.7",
+       "₹14.8"
+      ]
+     }
+    ],
+    "kpi_labels": [
+     "FLIPCART",
+     "ZAROMA"
+    ],
+    "kpi_values": [
+     "~2.9x",
+     "~3.1x"
+    ],
+    "kpi_deltas": [
+     "",
+     ""
+    ],
+    "kpi_directions": [
+     "",
+     ""
+    ],
+    "kpi_tones": [
+     "bad",
+     "bad"
+    ],
+    "text": "At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "chart_type": "sample",
+    "chart_title": "sample",
+    "chart_labels": "sample",
+    "chart_series": "sample",
+    "chart_series_formatted": "sample",
+    "kpi_labels": "sample",
+    "kpi_values": "sample",
+    "kpi_deltas": "sample",
+    "kpi_directions": "sample",
+    "kpi_tones": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-cheffin-full-s3-bullet",
+  "case": "gate-deck-cheffin-full",
+  "slide": 3,
+  "kind": "bullet_list",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 3,
+   "slide_title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+   "label": "METHODOLOGY",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and kicker",
+     "design_hint": "color the key phrase 'raw performance data' to emphasize the reconstruction method",
+     "weight": "minor",
+     "content_data": {
+      "title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+      "subtitle": "METHODOLOGY"
+     }
+    },
+    {
+     "component_id": "data_sources",
+     "kind": "bullet_list",
+     "count": 1,
+     "content_summary": "List of reviewed data sources (verbatim)",
+     "items": 1,
+     "design_hint": "icon beside the list item; lift the card so the sources read as the primary data band (neutral color)",
+     "weight": "hero",
+     "content_data": {
+      "bullets": [
+       "Data sources reviewed: FLIPCART Targeting last 90 days report; FLIPCART Search Term report; ZAROMA campaign-level data; ZAROMA city-level data; ZAROMA keyword-level data"
+      ]
+     }
+    },
+    {
+     "component_id": "approach_narrative",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Methodological approach (verbatim)",
+     "design_hint": "accent border on the card; color the phrase 'Recalculated ratios and rebuilt metrics' to emphasize the corrective calculation",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Approach: Recalculated ratios and rebuilt metrics from raw performance fields where pivot-style sheets were unreliable; used campaign-level totals as primary platform totals for ZAROMA and used city/keyword sheets for diagnostics."
+     }
+    },
+    {
+     "component_id": "flipcart_data_note",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "FLIPCART data-quality note (verbatim)",
+     "design_hint": "color the phrase 'unreliable or zeroed' in a warning tone and lift the card as a small data-quality callout",
+     "weight": "minor",
+     "content_data": {
+      "text": "Note: Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated from raw data."
+     }
+    },
+    {
+     "component_id": "zaroma_reconcile_note",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "ZAROMA reconciliation note (verbatim)",
+     "design_hint": "accent border on the card; color the phrase 'primary platform total source' to signal which ZAROMA sheet to treat as authoritative",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Note: ZAROMA campaign, city, and keyword sheets may not reconcile perfectly because they appear to have slightly different coverage. Use ZAROMA campaign-level data as the primary platform total source, while city and keyword sheets should be used for diagnostic insights."
+     }
+    }
+   ],
+   "layout_hint": "data_sources is the primary element (hero) occupying the main band; approach_narrative and zaroma_reconcile_note sit as supporting panels beside or beneath it for methodology and platform reconciliation; flipcart_data_note is a minor data-quality callout band; slide_title is the header/kicker.",
+   "content_data": {
+    "title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+    "subtitle": "METHODOLOGY",
+    "bullets": [
+     "Data sources reviewed: FLIPCART Targeting last 90 days report; FLIPCART Search Term report; ZAROMA campaign-level data; ZAROMA city-level data; ZAROMA keyword-level data"
+    ],
+    "text": "Note: ZAROMA campaign, city, and keyword sheets may not reconcile perfectly because they appear to have slightly different coverage. Use ZAROMA campaign-level data as the primary platform total source, while city and keyword sheets should be used for diagnostic insights."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "bullets": "sample",
+    "text": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 8.8 units of content (limit 9)"
+    }
+   ]
+  }
+ },
+ {
+  "name": "gate-deck-cheffin-full-s4-kpi",
+  "case": "gate-deck-cheffin-full",
+  "slide": 4,
+  "kind": "kpi_row",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+   "label": "PLATFORM SNAPSHOT",
+   "subtitle": "",
+   "slide_type": "data",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Kicker and headline for the FLIPCART platform snapshot",
+     "design_hint": "title: keep subtitle (kicker) muted and the headline prominent",
+     "weight": "minor",
+     "content_data": {
+      "title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+      "subtitle": "PLATFORM SNAPSHOT"
+     }
+    },
+    {
+     "component_id": "flipkart_kpis",
+     "kind": "kpi_row",
+     "count": 6,
+     "content_summary": "Primary metrics for FLIPCART: Spend, Ad sales, ROAS, CPC, CVR, AOV",
+     "items": 6,
+     "design_hint": "color-code by meaning: render ROAS and CPC tiles in negative color, CVR and AOV as 'watch'; lift the KPI cards slightly for emphasis",
+     "weight": "hero",
+     "content_data": {
+      "kpi_labels": [
+       "Spend",
+       "Ad sales",
+       "ROAS",
+       "CPC",
+       "CVR",
+       "AOV"
+      ],
+      "kpi_values": [
+       "₹29.4L",
+       "₹10.1L",
+       "0.34x",
+       "₹31.1",
+       "5.5%",
+       "₹195"
+      ],
+      "kpi_deltas": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ],
+      "kpi_directions": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
+      ],
+      "kpi_tones": [
+       "",
+       "",
+       "bad",
+       "bad",
+       "watch",
+       "watch"
+      ]
+     }
+    },
+    {
+     "component_id": "allowable_cpc_callout",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Callout showing allowable CPC for break-even and the main insight about CPC vs allowable CPC",
+     "design_hint": "dark / inverted panel for the callout; emphasize the phrase 'Allowable CPC for 1.0x ROAS: ₹10.7' with the positive/accent color",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Allowable CPC for 1.0x ROAS: ₹10.7\n\nFLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+     }
+    }
+   ],
+   "layout_hint": "flipkart_kpis is the primary (hero) band; slide_title sits as a small header above it; allowable_cpc_callout is a supporting accent panel below or to the right of the KPIs to call attention to the Allowable CPC",
+   "content_data": {
+    "title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+    "subtitle": "PLATFORM SNAPSHOT",
+    "kpi_labels": [
+     "Spend",
+     "Ad sales",
+     "ROAS",
+     "CPC",
+     "CVR",
+     "AOV"
+    ],
+    "kpi_values": [
+     "₹29.4L",
+     "₹10.1L",
+     "0.34x",
+     "₹31.1",
+     "5.5%",
+     "₹195"
+    ],
+    "kpi_deltas": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "kpi_directions": [
+     "",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    "kpi_tones": [
+     "",
+     "",
+     "bad",
+     "bad",
+     "watch",
+     "watch"
+    ],
+    "text": "Allowable CPC for 1.0x ROAS: ₹10.7\n\nFLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "kpi_labels": "sample",
+    "kpi_values": "sample",
+    "kpi_deltas": "sample",
+    "kpi_directions": "sample",
+    "kpi_tones": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-cheffin-full-s5-table",
+  "case": "gate-deck-cheffin-full",
+  "slide": 5,
+  "kind": "table",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 5,
+   "slide_title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+   "label": "DIAGNOSIS",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and kicker",
+     "design_hint": "color the phrase \"SBT and exact match\" in positive accent to mirror the recommendation; keep the kicker subtle",
+     "weight": "minor",
+     "content_data": {
+      "title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+      "subtitle": "DIAGNOSIS"
+     }
+    },
+    {
+     "component_id": "ad_type_table",
+     "kind": "table",
+     "count": 4,
+     "content_summary": "Per-ad-type spend, sales, ROAS and interpretation",
+     "columns": 5,
+     "rows": 4,
+     "design_hint": "highlight the SBT row with a positive color (protect & scale); shade/dim SBV and SD rows as negative/weak",
+     "weight": "hero",
+     "content_data": {
+      "table_columns": [
+       "Ad Type",
+       "Spend Share",
+       "Sales Share",
+       "ROAS",
+       "Interpretation"
+      ],
+      "table_rows": [
+       [
+        "SP",
+        "75.6%",
+        "75.3%",
+        "0.34x",
+        "Main volume driver, but inefficient overall"
+       ],
+       [
+        "SBV",
+        "12.8%",
+        "8.5%",
+        "0.23x",
+        "Weak video efficiency"
+       ],
+       [
+        "SBT",
+        "9.3%",
+        "15.1%",
+        "0.56x",
+        "Best ad type; under-allocated"
+       ],
+       [
+        "SD",
+        "2.4%",
+        "1.1%",
+        "0.17x",
+        "Weak conversion quality"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "match_type_table",
+     "kind": "table",
+     "count": 6,
+     "content_summary": "ROAS by match/targeting type",
+     "columns": 2,
+     "rows": 6,
+     "design_hint": "highlight the Exact row with a positive color (protect & scale); dim Audience and Broad rows as negative",
+     "weight": "supporting",
+     "content_data": {
+      "table_columns": [
+       "Match/Targeting",
+       "ROAS"
+      ],
+      "table_rows": [
+       [
+        "Exact",
+        "0.44x"
+       ],
+       [
+        "Phrase",
+        "0.26x"
+       ],
+       [
+        "Auto",
+        "0.30x"
+       ],
+       [
+        "Category",
+        "0.25x"
+       ],
+       [
+        "Broad",
+        "0.22x"
+       ],
+       [
+        "Audience",
+        "0.15x"
+       ]
+      ]
+     }
+    },
+    {
+     "component_id": "main_insight",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Actionable recommendation explaining which layers to protect or tighten",
+     "design_hint": "emphasize the phrase \"Exact match and SBT\" in positive color and lift the card slightly to make the recommendation stand out",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Main insight: Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control."
+     }
+    }
+   ],
+   "layout_hint": "ad_type_table is the slide's primary element (hero); match_type_table sits beside or to the right as supporting context; main_insight is a supporting band below the tables; slide_title remains a small kicker/header at the top.",
+   "content_data": {
+    "title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+    "subtitle": "DIAGNOSIS",
+    "table_columns": [
+     "Match/Targeting",
+     "ROAS"
+    ],
+    "table_rows": [
+     [
+      "Exact",
+      "0.44x"
+     ],
+     [
+      "Phrase",
+      "0.26x"
+     ],
+     [
+      "Auto",
+      "0.30x"
+     ],
+     [
+      "Category",
+      "0.25x"
+     ],
+     [
+      "Broad",
+      "0.22x"
+     ],
+     [
+      "Audience",
+      "0.15x"
+     ]
+    ],
+    "text": "Main insight: Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "table_columns": "sample",
+    "table_rows": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-xtsy-qcomm-s0-bullet",
+  "case": "gate-deck-xtsy-qcomm",
+  "slide": 0,
+  "kind": "bullet_list",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 0,
+   "slide_title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+   "label": "",
+   "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline and subtitle",
+     "design_hint": "color the phrase 'XTSY on Quick Commerce' as an accent to tie to the deck theme",
+     "weight": "minor",
+     "content_data": {
+      "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+      "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution"
+     }
+    },
+    {
+     "component_id": "layer_ecosystem",
+     "kind": "layer",
+     "count": 1,
+     "content_summary": "Ecosystem diagram connecting Zepto, Blinkit and Instamart to XTSY growth engine",
+     "design_hint": "lift and elevate the XTSY growth engine node; highlight the connecting lines to Zepto, Blinkit and Instamart and add an accent border on the component",
+     "weight": "hero",
+     "content_data": {
+      "description": "Visual: Quick Commerce ecosystem showing Zepto, Blinkit and Instamart connected to XTSY growth engine.",
+      "center": "XTSY growth engine",
+      "nodes": [
+       {
+        "label": "Zepto"
+       },
+       {
+        "label": "Blinkit"
+       },
+       {
+        "label": "Instamart"
+       }
+      ],
+      "connections": [
+       {
+        "source": "Zepto",
+        "target": "XTSY growth engine"
+       },
+       {
+        "source": "Blinkit",
+        "target": "XTSY growth engine"
+       },
+       {
+        "source": "Instamart",
+        "target": "XTSY growth engine"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "context_narrative",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Why Quick Commerce matters for impulse and instant-need beverages",
+     "design_hint": "place on a supporting, slightly dark/inverted panel and color the phrase 'primary consumption channel' as the emphasized key phrase",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, creating a significant opportunity for XTSY to scale."
+     }
+    },
+    {
+     "component_id": "live_platforms_list",
+     "kind": "bullet_list",
+     "count": 1,
+     "content_summary": "Platforms where XTSY is live",
+     "items": 1,
+     "design_hint": "icon (shopping-cart) beside each bullet and lift the card slightly to show these platforms as active presence",
+     "weight": "supporting",
+     "content_data": {
+      "bullets": [
+       "Live on Quick Commerce platforms including Zepto, Swiggy Instamart and Blinkit."
+      ]
+     }
+    }
+   ],
+   "layout_hint": "layer_ecosystem is the primary (hero) element centered; slide_title sits as a slim header; below the diagram, context_narrative and live_platforms_list share a supporting band with the narrative on the left and the platform bullet on the right.",
+   "content_data": {
+    "title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+    "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution",
+    "description": "Visual: Quick Commerce ecosystem showing Zepto, Blinkit and Instamart connected to XTSY growth engine.",
+    "center": "XTSY growth engine",
+    "nodes": [
+     {
+      "label": "Zepto"
+     },
+     {
+      "label": "Blinkit"
+     },
+     {
+      "label": "Instamart"
+     }
+    ],
+    "connections": [
+     {
+      "source": "Zepto",
+      "target": "XTSY growth engine"
+     },
+     {
+      "source": "Blinkit",
+      "target": "XTSY growth engine"
+     },
+     {
+      "source": "Instamart",
+      "target": "XTSY growth engine"
+     }
+    ],
+    "text": "Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, creating a significant opportunity for XTSY to scale.",
+    "bullets": [
+     "Live on Quick Commerce platforms including Zepto, Swiggy Instamart and Blinkit."
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "description": "sample",
+    "center": "sample",
+    "nodes": "sample",
+    "connections": "sample",
+    "text": "sample",
+    "bullets": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-xtsy-qcomm-s3-card",
+  "case": "gate-deck-xtsy-qcomm",
+  "slide": 3,
+  "kind": "card_grid",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 3,
+   "slide_title": "Our 4-Phase Framework to Build Category Share",
+   "label": "GROWTH FRAMEWORK",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline with kicker",
+     "design_hint": "color the kicker 'GROWTH FRAMEWORK' in accent to link to the framework theme",
+     "weight": "minor",
+     "content_data": {
+      "title": "Our 4-Phase Framework to Build Category Share",
+      "subtitle": "GROWTH FRAMEWORK"
+     }
+    },
+    {
+     "component_id": "phases_steps",
+     "kind": "card_grid",
+     "count": 4,
+     "content_summary": "Four ordered phase cards with bullets (steps layout)",
+     "items": 4,
+     "design_hint": "steps layout with arrows between cards; emphasize the left-to-right progression from Visibility to Profitability; icon in each card header to reinforce role",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "steps",
+      "cards": [
+       {
+        "title": "Phase 1: Foundation & Hygiene",
+        "bullets": [
+         "Availability tracking",
+         "OOS reduction",
+         "Search audit",
+         "Visibility benchmark",
+         "Portfolio prioritization"
+        ],
+        "icon": "search"
+       },
+       {
+        "title": "Phase 2: Market Share Capture",
+        "bullets": [
+         "Search dominance",
+         "Sponsored placements",
+         "Keyword expansion",
+         "Competitor conquesting",
+         "Category page visibility"
+        ],
+        "icon": "target"
+       },
+       {
+        "title": "Phase 3: Consumer Expansion",
+        "bullets": [
+         "New-to-brand acquisition",
+         "New-to-category targeting",
+         "Cross-platform expansion",
+         "Geo expansion"
+        ],
+        "icon": "users"
+       },
+       {
+        "title": "Phase 4: Scale & Profitability",
+        "bullets": [
+         "Automation-led optimization",
+         "Incrementality focus",
+         "Repeat purchase acceleration",
+         "Portfolio scaling"
+        ],
+        "icon": "trending-up"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "progression_flow",
+     "kind": "process_arrow",
+     "count": 4,
+     "content_summary": "Linear progression: Visibility → Offtakes → Market Share → Profitability",
+     "items": 4,
+     "orientation": "horizontal",
+     "design_hint": "color-code each step to match the corresponding phase card; horizontal arrows left-to-right; accent border on the component card to link it visually to the hero roadmap",
+     "weight": "supporting",
+     "content_data": {
+      "direction": "horizontal",
+      "process_steps": [
+       "Visibility",
+       "Offtakes",
+       "Market Share",
+       "Profitability"
+      ]
+     }
+    }
+   ],
+   "layout_hint": "phases_steps is the primary element (center/hero) showing the 4-stage roadmap; progression_flow sits directly below as a supporting horizontal ribbon that labels the strategic progression; slide_title is a slim band at the top.",
+   "content_data": {
+    "title": "Our 4-Phase Framework to Build Category Share",
+    "subtitle": "GROWTH FRAMEWORK",
+    "card_layout": "steps",
+    "cards": [
+     {
+      "title": "Phase 1: Foundation & Hygiene",
+      "bullets": [
+       "Availability tracking",
+       "OOS reduction",
+       "Search audit",
+       "Visibility benchmark",
+       "Portfolio prioritization"
+      ],
+      "icon": "search"
+     },
+     {
+      "title": "Phase 2: Market Share Capture",
+      "bullets": [
+       "Search dominance",
+       "Sponsored placements",
+       "Keyword expansion",
+       "Competitor conquesting",
+       "Category page visibility"
+      ],
+      "icon": "target"
+     },
+     {
+      "title": "Phase 3: Consumer Expansion",
+      "bullets": [
+       "New-to-brand acquisition",
+       "New-to-category targeting",
+       "Cross-platform expansion",
+       "Geo expansion"
+      ],
+      "icon": "users"
+     },
+     {
+      "title": "Phase 4: Scale & Profitability",
+      "bullets": [
+       "Automation-led optimization",
+       "Incrementality focus",
+       "Repeat purchase acceleration",
+       "Portfolio scaling"
+      ],
+      "icon": "trending-up"
+     }
+    ],
+    "direction": "horizontal",
+    "process_steps": [
+     "Visibility",
+     "Offtakes",
+     "Market Share",
+     "Profitability"
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "direction": "sample",
+    "process_steps": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-xtsy-qcomm-s4-card",
+  "case": "gate-deck-xtsy-qcomm",
+  "slide": 4,
+  "kind": "card_grid",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 4,
+   "slide_title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+   "label": "PLATFORM CAPABILITIES",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline with kicker",
+     "design_hint": "color the phrase 'Commerce Intelligence Platform' in the title to make it pop",
+     "weight": "minor",
+     "content_data": {
+      "title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+      "subtitle": "PLATFORM CAPABILITIES"
+     }
+    },
+    {
+     "component_id": "capabilities_cards",
+     "kind": "card_grid",
+     "count": 2,
+     "content_summary": "Two capability cards: TRACKING (five bullets) and INSIGHTS (four bullets)",
+     "items": 2,
+     "design_hint": "render this card_grid as a control-tower dashboard: TRACKING card on the left (KPIs) and INSIGHTS card on the right (insight panels); apply an inverted panel look on both cards and show an icon in each card",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "TRACKING",
+        "bullets": [
+         "Share of Search",
+         "Share of Shelf",
+         "Availability Monitoring",
+         "Pricing Intelligence",
+         "Competitor Monitoring"
+        ],
+        "icon": "eye"
+       },
+       {
+        "title": "INSIGHTS",
+        "bullets": [
+         "SKU-level performance",
+         "City-level opportunity mapping",
+         "Platform-wise growth pockets",
+         "Category trends"
+        ],
+        "icon": "bar-chart-3"
+       }
+      ],
+      "per_row": 2
+     }
+    },
+    {
+     "component_id": "measured_scaled_callout",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Key message statement",
+     "design_hint": "accent border on the card and color the sentence as the key phrase to emphasize it",
+     "weight": "supporting",
+     "content_data": {
+      "text": "What gets measured gets scaled."
+     }
+    }
+   ],
+   "layout_hint": "capabilities_cards is the primary element (hero) and should read as a central control-tower panel with TRACKING left and INSIGHTS right; slide_title sits across the top as a minor header; measured_scaled_callout is a supporting callout below or beside the hero panel.",
+   "content_data": {
+    "title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+    "subtitle": "PLATFORM CAPABILITIES",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "TRACKING",
+      "bullets": [
+       "Share of Search",
+       "Share of Shelf",
+       "Availability Monitoring",
+       "Pricing Intelligence",
+       "Competitor Monitoring"
+      ],
+      "icon": "eye"
+     },
+     {
+      "title": "INSIGHTS",
+      "bullets": [
+       "SKU-level performance",
+       "City-level opportunity mapping",
+       "Platform-wise growth pockets",
+       "Category trends"
+      ],
+      "icon": "bar-chart-3"
+     }
+    ],
+    "per_row": 2,
+    "text": "What gets measured gets scaled."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "text": "sample"
+   },
+   "plan_flags": [
+    {
+     "code": "SLIDE_SPARSE",
+     "component_id": "",
+     "detail": "thin slide: about 6.0 units of content (limit 9)"
+    }
+   ]
+  }
+ },
+ {
+  "name": "gate-deck-xtsy-qcomm-s6-card",
+  "case": "gate-deck-xtsy-qcomm",
+  "slide": 6,
+  "kind": "card_grid",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 6,
+   "slide_title": "Expected Business Impact for XTSY",
+   "label": "BUSINESS IMPACT",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Headline with kicker",
+     "design_hint": "color the phrase 'Business Impact' in the title to draw attention",
+     "weight": "minor",
+     "content_data": {
+      "title": "Expected Business Impact for XTSY",
+      "subtitle": "BUSINESS IMPACT"
+     }
+    },
+    {
+     "component_id": "impact_cards",
+     "kind": "card_grid",
+     "count": 7,
+     "content_summary": "Seven impact-area cards with upward arrows",
+     "items": 7,
+     "design_hint": "Make the impact cards the hero: inverted/dark panel for the cards, icon in each tile, positive color treatment for the '↑' outcomes and slight lift on each card to emphasize outcomes",
+     "weight": "hero",
+     "content_data": {
+      "card_layout": "grid",
+      "cards": [
+       {
+        "title": "Category Visibility ↑",
+        "tone": "good",
+        "icon": "search"
+       },
+       {
+        "title": "Search Share ↑",
+        "tone": "good",
+        "icon": "target"
+       },
+       {
+        "title": "Sponsored Placement Share ↑",
+        "tone": "good",
+        "icon": "shopping-cart"
+       },
+       {
+        "title": "New Consumer Acquisition ↑",
+        "tone": "good",
+        "icon": "users"
+       },
+       {
+        "title": "Repeat Purchase Rate ↑",
+        "tone": "good",
+        "icon": "repeat"
+       },
+       {
+        "title": "Market Share ↑",
+        "tone": "good",
+        "icon": "percent"
+       },
+       {
+        "title": "Sales Velocity ↑",
+        "tone": "good",
+        "icon": "trending-up"
+       }
+      ],
+      "per_row": 4
+     }
+    },
+    {
+     "component_id": "impact_message",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Single-sentence summary of the combined effect",
+     "design_hint": "accent border on the card and lift slightly so the statement reads as the supporting conclusion",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Combining category intelligence, automation and performance execution creates a scalable growth engine."
+     }
+    }
+   ],
+   "layout_hint": "impact_cards is the primary (hero) band centered on the slide; slide_title sits above as a slim header, and impact_message is a supporting band below the hero cards.",
+   "content_data": {
+    "title": "Expected Business Impact for XTSY",
+    "subtitle": "BUSINESS IMPACT",
+    "card_layout": "grid",
+    "cards": [
+     {
+      "title": "Category Visibility ↑",
+      "tone": "good",
+      "icon": "search"
+     },
+     {
+      "title": "Search Share ↑",
+      "tone": "good",
+      "icon": "target"
+     },
+     {
+      "title": "Sponsored Placement Share ↑",
+      "tone": "good",
+      "icon": "shopping-cart"
+     },
+     {
+      "title": "New Consumer Acquisition ↑",
+      "tone": "good",
+      "icon": "users"
+     },
+     {
+      "title": "Repeat Purchase Rate ↑",
+      "tone": "good",
+      "icon": "repeat"
+     },
+     {
+      "title": "Market Share ↑",
+      "tone": "good",
+      "icon": "percent"
+     },
+     {
+      "title": "Sales Velocity ↑",
+      "tone": "good",
+      "icon": "trending-up"
+     }
+    ],
+    "per_row": 4,
+    "text": "Combining category intelligence, automation and performance execution creates a scalable growth engine."
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "card_layout": "sample",
+    "cards": "sample",
+    "per_row": "sample",
+    "text": "sample"
+   }
+  }
+ },
+ {
+  "name": "gate-deck-xtsy-qcomm-s7-timeline",
+  "case": "gate-deck-xtsy-qcomm",
+  "slide": 7,
+  "kind": "timeline",
+  "theme": "corporate-slate",
+  "plan": {
+   "slide_index": 7,
+   "slide_title": "Roadmap for the Next 90 Days",
+   "label": "ROADMAP",
+   "subtitle": "",
+   "slide_type": "content",
+   "components": [
+    {
+     "component_id": "slide_title",
+     "kind": "title",
+     "count": 1,
+     "content_summary": "Slide headline and kicker",
+     "design_hint": "color the word 'ROADMAP' in accent",
+     "weight": "minor",
+     "content_data": {
+      "title": "Roadmap for the Next 90 Days",
+      "subtitle": "ROADMAP"
+     }
+    },
+    {
+     "component_id": "timeline_90day",
+     "kind": "timeline",
+     "count": 3,
+     "content_summary": "Three monthly milestones (Month 1, Month 2, Month 3) with detailed actions",
+     "items": 3,
+     "orientation": "horizontal",
+     "design_hint": "emphasize the monthly milestones as the hero; lift/elevate the timeline card",
+     "weight": "hero",
+     "content_data": {
+      "direction": "horizontal",
+      "timeline_items": [
+       {
+        "date": "Month 1",
+        "label": "Audit & Benchmarking — Category assessment; Search visibility audit; Availability review; Platform diagnostics"
+       },
+       {
+        "date": "Month 2",
+        "label": "Growth Activation — Search scaling; Placement expansion; Competitor conquesting; Portfolio prioritization"
+       },
+       {
+        "date": "Month 3",
+        "label": "Optimization & Scale — Automation deployment; Budget optimization; Expansion planning; Growth measurement"
+       }
+      ]
+     }
+    },
+    {
+     "component_id": "closing_statement",
+     "kind": "narrative",
+     "count": 1,
+     "content_summary": "Closing recommendation sentence about the approach",
+     "design_hint": "color the phrase 'Winning Quick Commerce' as the key phrase and lift the card slightly",
+     "weight": "supporting",
+     "content_data": {
+      "text": "Winning Quick Commerce is no longer about spending more. It is about capturing visibility faster, converting demand better and scaling through intelligence and automation."
+     }
+    }
+   ],
+   "layout_hint": "timeline_90day is the primary element centered across the slide; slide_title sits at the top as a minor header; visual_caption appears just above the timeline as a small label; closing_statement is a supporting band beneath the timeline.",
+   "content_data": {
+    "title": "Roadmap for the Next 90 Days",
+    "subtitle": "ROADMAP",
+    "text": "Winning Quick Commerce is no longer about spending more. It is about capturing visibility faster, converting demand better and scaling through intelligence and automation.",
+    "direction": "horizontal",
+    "timeline_items": [
+     {
+      "date": "Month 1",
+      "label": "Audit & Benchmarking — Category assessment; Search visibility audit; Availability review; Platform diagnostics"
+     },
+     {
+      "date": "Month 2",
+      "label": "Growth Activation — Search scaling; Placement expansion; Competitor conquesting; Portfolio prioritization"
+     },
+     {
+      "date": "Month 3",
+      "label": "Optimization & Scale — Automation deployment; Budget optimization; Expansion planning; Growth measurement"
+     }
+    ]
+   },
+   "data_provenance": {
+    "title": "sample",
+    "subtitle": "sample",
+    "text": "sample",
+    "direction": "sample",
+    "timeline_items": "sample"
+   },
+   "capacity_fixes": [
+    "dropped caption 'visual_caption': it repeats the brief's design direction, not content: 90-Day Action Plan"
+   ]
+  }
+ }
+]

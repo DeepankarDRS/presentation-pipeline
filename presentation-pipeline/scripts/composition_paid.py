@@ -1,21 +1,19 @@
-"""KPI / card composition nodes, paid same-plan check (docs/composition-convention-spec.md §10 step 5): generator only.
+"""Composition nodes, paid same-plan check (docs/eval/nodes-paid/README.md): generator only, one saved plan through both routes.
 
-    python -m scripts.composition_paid --label composition-paid --bundle      # paid, test PC (OPENAI_API_KEY)
-    python -m scripts.composition_paid --label composition-paid --rescore     # free: score + blind sheet again
-    python -m scripts.composition_paid --label dry --dry --limit 2            # free: fake generator (path check)
     python -m scripts.composition_paid --estimate                             # free: cases + cost estimate only
+    python -m scripts.composition_paid --label dry --dry --limit 2            # free: fake generator (path check)
+    python -m scripts.composition_paid --label nodes-paid --bundle            # paid, test PC (OPENAI_API_KEY)
+    python -m scripts.composition_paid --label nodes-paid --rescore           # free: score + blind sheet again
 
 The same saved slide plans go through the real graph from the plan (scripts.kpi_paid.run_one: style resolver ->
 context builder -> generator -> validator -> repairers; critic off), twice:
-- A = today's tile nodes: POM_BLOCKS=tiles, POM_NODES empty (bare <KpiGrid> / <CardGrid> tags, tiles.py / cards.py);
-- B = composition nodes: POM_BLOCKS=tiles (KPI text is element refs), POM_NODES=kpi_row,card_grid
-  (<KpiRow ref variant> / <CardGrid ref variant>, src/compiler/nodes/tile_groups.py).
+- A = today's route: POM_BLOCKS=tiles, POM_NODES empty (tile tags for KPI and cards; charts, tables, timelines and
+  lists written by the LLM);
+- B = composition nodes: POM_BLOCKS=tiles, POM_NODES = all six (src/compiler/nodes/composed.py).
 The script sets both switches per arm before each run (they are read at call time; .env values are loaded first and
-never override them). Cases: the 12 KPI plans of docs/eval/tile-nodes/same-plan/inputs.json (one also holds a
-card_grid) and CARD_PICKS from docs/eval/card-nodes/paid-inputs.json (card plans on the same decks).
-Per run: the first try's NODE_* codes (NODE_ATTR_ALIAS / NODE_TAG_ALIAS / NODE_VARIANT_* / NODE_LOOK_FROM_HINT),
-the composition the generator wrote vs the default code would pick (B), repairs, cost, and the final slide scored like
-the replays (scripts.kpi_replay.score; cards also scripts.card_replay.missing_text). Writes
+never override them). Cases: docs/eval/nodes-paid/inputs.json.
+Per run: the first try's NODE_* codes, the composition the generator wrote vs the default code would pick (B), repairs,
+cost, plan words missing from the slide, and the final slide scored like the replays (scripts.kpi_replay.score). Writes
 output/composition-paid/<label>/: runs.json, results.json, summary.md, sheets/ (blind A / B: fill marks.csv; key.json
 says which side is the composition nodes) and, with --bundle, <label>.zip to email back.
 """
@@ -39,37 +37,71 @@ from scripts import tile_same_plan as TS  # noqa: E402
 from scripts.kpi_replay import compile_slide, score  # noqa: E402
 from src.agents.style_resolver import resolve_theme  # noqa: E402
 from src.compiler.compiler_client import deck_font  # noqa: E402
-from src.compiler.nodes import cards, element_refs, tile_groups, tiles  # noqa: E402
+from src.compiler.nodes import cards, composed, element_refs, tiles, validate  # noqa: E402
 
-KPI_INPUTS = TS.INPUTS
-CARD_INPUTS = ROOT / "docs" / "eval" / "card-nodes" / "paid-inputs.json"
-CARD_PICKS = (("deck-qbr-data", 4), ("deck-product-launch-data", 1), ("gate-deck-cheffin-full", 3))
+INPUTS = ROOT / "docs" / "eval" / "nodes-paid" / "inputs.json"
 OUT = ROOT / "output" / "composition-paid"
+NODES = ("chart", "timeline", "kpi_row", "card_grid", "table", "bullet_list")   # composed.kinds_on()'s order
 ARMS = {"A": {"POM_BLOCKS": "tiles", "POM_NODES": ""},
-        "B": {"POM_BLOCKS": "tiles", "POM_NODES": "kpi_row,card_grid"}}
-# per run on gpt-6.1-sol (docs/eval/tile-nodes/tiles-2/README.md): first try passes $0.029, a long repair $0.052
-EST_RUN, EST_RUN_MAX = 0.029, 0.052
-WATCH = ("NODE_ATTR_ALIAS", "NODE_TAG_ALIAS", "NODE_VARIANT_UNMET", "NODE_VARIANT_UNKNOWN", "NODE_LOOK_FROM_HINT")
-_GROUP = re.compile(r"<(KpiRow|KpiGrid|CardGrid)\b([^>]*)>")
+        "B": {"POM_BLOCKS": "tiles", "POM_NODES": ",".join(NODES)}}
+# per run on gpt-6.1-sol: 11-13k input tokens (mostly cached after the first), 300-3,000 output + reasoning; a repair
+# adds a call. The tile-node runs cost $0.029 a first try and $0.052 with a long repair; arm A now hand-writes charts,
+# tables and lists, so both are set higher
+EST_RUN, EST_RUN_MAX = 0.04, 0.08
+WATCH = ("NODE_ITEM_MISSING", "NODE_ATTR_UNKNOWN", "NODE_ATTR_NO_EFFECT", "NODE_ATTR_DROPPED", "NODE_ATTR_ALIAS", "NODE_TAG_ALIAS",
+         "NODE_VARIANT_UNMET", "NODE_VARIANT_UNKNOWN", "NODE_LOOK_FROM_HINT", "NODE_HIGHLIGHT_UNKNOWN", "NODE_HIGHLIGHT_RULE")
+_GROUP = re.compile(r"<(KpiRow|KpiGrid|CardGrid|Chart|Timeline|Table|Ul)\b([^>]*\sref=[^>]*)>")
 _ATTR = re.compile(r'\s(variant|layout|arrange)="[^"]*"')
 
 
 def set_arm(arm: str) -> None:
     """The arm's switches (an empty POM_NODES also keeps a .env value out: load_dotenv never overrides a set key)."""
     os.environ.update(ARMS[arm])
-    want = ["kpi_row", "card_grid"] if arm == "B" else []
-    assert tiles.on() and tile_groups.kinds_on() == want, (arm, os.environ.get("POM_NODES"), tile_groups.kinds_on())
+    want = list(NODES) if arm == "B" else []
+    assert tiles.on() and sorted(composed.kinds_on()) == sorted(want), (arm, os.environ.get("POM_NODES"), composed.kinds_on())
 
 
 def items() -> list[dict]:
     from src.utils.case_loader import load_case
-    out = [dict(it, kind="kpi") for it in json.loads(KPI_INPUTS.read_text(encoding="utf-8"))]
-    for it in json.loads(CARD_INPUTS.read_text(encoding="utf-8")):
-        if (it["case"], it["slide"]) in CARD_PICKS:
-            c = load_case(it["case"])
-            out.append({"name": f"card-plan-{it['case']}-s{it['slide']}", "case": it["case"], "slide": it["slide"],
-                        "kind": "card", "plan": it["plan"], "theme": it["theme"],
-                        "request": c.get("request", c.get("objective", ""))})
+    out = []
+    for it in json.loads(INPUTS.read_text(encoding="utf-8")):
+        c = load_case(it["case"])
+        out.append(dict(it, request=c.get("request", c.get("objective", ""))))
+    return out
+
+
+def plan_texts(comp: dict) -> list[str]:
+    """The words a component must show, whichever route drew it."""
+    cd, kind = comp.get("content_data") or {}, comp.get("kind")
+    if kind == "kpi_row":
+        return [str(x) for k in ("kpi_labels", "kpi_values", "kpi_deltas") for x in cd.get(k) or []]
+    if kind == "card_grid":
+        out = []
+        for c in cards.cards_of(comp):
+            body, bullets = cards._lines(c)
+            out += [str(c.get("title") or ""), str(c.get("tag") or ""), body, *bullets]
+        return out
+    if kind == "chart":
+        return [str(x) for x in cd.get("chart_labels") or []]
+    if kind == "table":
+        return [str(x) for x in cd.get("table_columns") or []] + [str(x) for r in cd.get("table_rows") or [] for x in r]
+    if kind == "timeline":
+        return [str(i.get(k) or "") for i in cd.get("timeline_items") or [] if isinstance(i, dict) for k in ("date", "label", "description")]
+    if kind == "bullet_list":
+        return [str(x) for x in cd.get("bullets") or []]
+    return []
+
+
+def missing_words(final_xml: str, plan: dict) -> list[str]:
+    """Plan texts the slide does not show: under 80% of their words on it (a split or wrapped text still counts)."""
+    # also with inline tags closed up: a number and its unit are one word split by a span ("$48.2<Span>M</Span>")
+    closed = re.sub(r"</?(?:Span|B|I|U|S|Mark)[^>]*>", "", final_xml)
+    seen, out = validate.xml_words(final_xml) | validate.xml_words(closed), []
+    for comp in plan.get("components") or []:
+        for t in plan_texts(comp):
+            ws = validate.words(t)
+            if ws and sum(w in seen for w in ws) / len(ws) < 0.8:
+                out.append(f'{comp.get("component_id")}: {t[:44]}')
     return out
 
 
@@ -79,13 +111,20 @@ def estimate(n_items: int, repeat: int) -> tuple[int, float, float]:
 
 
 def _dry_xml(it: dict, arm: str) -> str:
-    """--dry: a bare slide of the arm's tags (B writes variant="strip" on KPI groups: the written-variant path)."""
+    """--dry: a bare slide of the arm's tags; B writes a variant the plan may not allow (the written-variant path)."""
     plan = it["plan"]
-    kpi = '<KpiGrid ref="{}"/>' if arm == "A" else '<KpiRow ref="{}" variant="strip"/>'
-    tags = "".join(kpi.format(cid) for cid in element_refs.kpi_components(plan))
-    tags += "".join(f'<CardGrid ref="{cid}"/>' for cid in cards.card_components(plan))
+    if arm == "A":
+        tags = "".join(f'<KpiGrid ref="{cid}"/>' for cid in element_refs.kpi_components(plan))
+        tags += "".join(f'<CardGrid ref="{cid}"/>' for cid in cards.card_components(plan))
+    else:
+        tags = ""
+        for kind in composed.kinds_on():
+            for cid in composed.drawn(plan, kind):
+                v = ' variant="rows"' if kind in ("kpi_row", "table", "bullet_list", "timeline", "chart") else ""
+                tags += f'<{composed.tag(kind)} ref="{cid}"{v} grow="1"/>'
+    title = str(plan.get("slide_title", "")).replace("&", "&amp;").replace("<", "&lt;")
     return (f'<Slide><VStack w="1280" h="720" padding="48" gap="24" alignItems="stretch" backgroundColor="$surface">'
-            f'<Text fontSize="36" bold="true" color="$textMain">{plan.get("slide_title", "")}</Text>{tags}</VStack></Slide>')
+            f'<Text fontSize="30" bold="true" color="$textMain">{title}</Text>{tags}</VStack></Slide>')
 
 
 # ── the paid run ──────────────────────────────────────────────────────────────
@@ -132,8 +171,8 @@ def run(label: str, repeat: int, cases: list[dict], max_cost: float, dry: bool =
 # ── scoring (free) ────────────────────────────────────────────────────────────
 
 def compositions(first_xml: str, plan: dict) -> dict[str, dict]:
-    """Arm B's first try, per group: the variant the generator wrote, the default code picks for the bare tag (the
-    design hint's composition, else the first one) and the composition drawn."""
+    """Arm B's first try, per component: the variant the generator wrote, the default code picks for the bare tag (the
+    design hint's composition, else the first that fits) and the composition drawn."""
     set_arm("B")
     written = {}
     for m in _GROUP.finditer(first_xml):
@@ -143,8 +182,8 @@ def compositions(first_xml: str, plan: dict) -> dict[str, dict]:
             written[ref.group(1)] = {"tag": m.group(1), "written": v.group(1) if v else None}
     bare = _GROUP.sub(lambda m: f"<{m.group(1)}{_ATTR.sub('', m.group(2))}>", first_xml)
     try:
-        drawn = tile_groups.expand(first_xml, plan)["components"]
-        default = tile_groups.expand(bare, plan)["components"]
+        drawn = composed.expand(first_xml, plan)["components"]
+        default = composed.expand(bare, plan)["components"]
     except Exception as e:   # an unparsable first try: the written variants only
         return {cid: dict(w, error=str(e)[:120]) for cid, w in written.items()}
     return {cid: {**written.get(cid, {"tag": None, "written": None}),
@@ -153,7 +192,6 @@ def compositions(first_xml: str, plan: dict) -> dict[str, dict]:
 
 
 def rescore(label: str, render: bool = True) -> list[dict]:
-    from scripts.card_replay import missing_text
     out = OUT / label
     by_name = {it["name"]: it for it in items()}
     runs = json.loads((out / "runs.json").read_text(encoding="utf-8"))
@@ -170,7 +208,7 @@ def rescore(label: str, render: bool = True) -> list[dict]:
         dest = d / "slide-0"
         row["score"] = score(row["arm"], dest, compile_slide(deck_font(xml), resolve_theme(it["theme"])["element"], dest),
                              it["plan"], row["case"], render)
-        row["score"]["missing"] = missing_text(xml, it["plan"]) if cards.card_components(it["plan"]) else []
+        row["score"]["missing"] = missing_words(row["score"].get("final_xml") or xml, it["plan"])
     (out / "results.json").write_text(json.dumps(runs, indent=1, ensure_ascii=False), encoding="utf-8")
     if render:
         from scripts import node_test_sheet as S
@@ -181,8 +219,8 @@ def rescore(label: str, render: bool = True) -> list[dict]:
 
 def write_summary(out: Path, runs: list[dict]) -> None:
     by = {(r["case"], r["arm"]): r for r in runs}
-    lines = ["# KPI / card composition nodes, same-plan check (generator only; A = tile nodes, "
-             "B = POM_NODES=kpi_row,card_grid; both POM_BLOCKS=tiles)", ""]
+    lines = ["# Composition nodes, same-plan check (generator only; A = today's route, B = POM_NODES of all six; "
+             "both POM_BLOCKS=tiles)", ""]
     for arm in ARMS:
         rs = [r for r in runs if r["arm"] == arm]
         if not rs:
@@ -203,6 +241,7 @@ def write_summary(out: Path, runs: list[dict]) -> None:
     lines += ["", "## Pairs (final slide)", "",
               "| slide plan | smallest number A / B (px) | card empty A / B | broken A / B | off-plan / missing A / B "
               "| first try A / B | codes B | $ A / B |", "|---|---|---|---|---|---|---|---|"]
+
     for case in dict.fromkeys(r["case"] for r in runs):
         a, b = by.get((case, "A"), {}), by.get((case, "B"), {})
         sa, sb = a.get("score") or {}, b.get("score") or {}
@@ -222,22 +261,22 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--label", default="composition-paid")
     ap.add_argument("--repeat", type=int, default=1)
-    ap.add_argument("--only", choices=("kpi", "card"), help="only the KPI plans or only the card plans")
+    ap.add_argument("--only", help="only the plans holding this node (table, chart, timeline, bullet_list, kpi_row, card_grid)")
     ap.add_argument("--limit", type=int, help="the first N plans (a dry path check)")
-    ap.add_argument("--max-cost", type=float, default=1.0, help="stop before a pair could pass this total (USD)")
+    ap.add_argument("--max-cost", type=float, default=3.5, help="stop before a pair could pass this total (USD)")
     ap.add_argument("--estimate", action="store_true", help="free: print the cases and the cost estimate, then stop")
     ap.add_argument("--rescore", action="store_true", help="free: score saved runs again")
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--bundle", action="store_true")
     ap.add_argument("--dry", action="store_true", help="free: fake generator, checks the path end to end")
     a = ap.parse_args()
-    cases = [it for it in items() if not a.only or it["kind"] == a.only][:a.limit]
+    cases = [it for it in items() if not a.only or a.only in it["kind"].split("+")][:a.limit]
     if not a.rescore:
         n, est, worst = estimate(len(cases), a.repeat)
         print(f"{len(cases)} plans x {a.repeat} repeat x {len(ARMS)} arms = {n} runs; estimate ${est:.2f} "
               f"(all long repairs ${worst:.2f}); stop at --max-cost ${a.max_cost:.2f}")
         for it in cases:
-            print(f"  {it['kind']:4} {it['name']}")
+            print(f"  {it['kind']:30} {it['name']}")
         if a.estimate:
             return 0
     if a.dry:
