@@ -1,0 +1,278 @@
+{
+ "llm": {
+  "free XML (no refs)": {
+   "slides": 104,
+   "elements": {
+    "HStack": 545,
+    "VStack": 883,
+    "Text": 1549,
+    "Shape": 84,
+    "Icon": 377,
+    "Chart": 35,
+    "Table": 48,
+    "Ul": 18,
+    "ProcessArrow": 3,
+    "Timeline": 9,
+    "Pyramid": 1,
+    "Matrix": 1,
+    "Tree": 1,
+    "Layer": 1,
+    "Flow": 2
+   },
+   "stacks": 1428,
+   "attrs": {
+    "gap": 1308,
+    "alignItems": 711,
+    "justifyContent": 489,
+    "padding": 647,
+    "margin": 30,
+    "grow": 165,
+    "minH": 33,
+    "alignSelf": 68,
+    "minW": 1
+   },
+   "values": {
+    "alignItems": {
+     "center": 344,
+     "stretch": 279,
+     "start": 85,
+     "end": 3
+    },
+    "justifyContent": {
+     "center": 406,
+     "spaceBetween": 78,
+     "start": 3,
+     "end": 2
+    },
+    "alignSelf": {
+     "end": 1,
+     "start": 55,
+     "center": 12
+    }
+   },
+   "w": {
+    "px": 146,
+    "percent": 136,
+    "none": 837,
+    "max": 309
+   },
+   "h": {
+    "px": 147,
+    "max": 4,
+    "none": 1277
+   },
+   "text_w": {},
+   "aliases": {}
+  },
+  "KPI element refs": {
+   "slides": 30,
+   "elements": {
+    "VStack": 271,
+    "Text": 522,
+    "HStack": 118,
+    "Icon": 185,
+    "Table": 4,
+    "Ul": 1,
+    "Chart": 3,
+    "Shape": 2
+   },
+   "stacks": 389,
+   "attrs": {
+    "gap": 389,
+    "alignItems": 159,
+    "padding": 223,
+    "grow": 38,
+    "alignSelf": 100,
+    "justifyContent": 156,
+    "margin": 4,
+    "minH": 3
+   },
+   "values": {
+    "alignItems": {
+     "stretch": 89,
+     "center": 67,
+     "start": 3
+    },
+    "alignSelf": {
+     "center": 18,
+     "start": 82
+    },
+    "justifyContent": {
+     "center": 156
+    }
+   },
+   "w": {
+    "px": 31,
+    "none": 193,
+    "max": 85,
+    "percent": 80
+   },
+   "h": {
+    "px": 30,
+    "none": 359
+   },
+   "text_w": {},
+   "aliases": {}
+  },
+  "tile / card tags": {
+   "slides": 33,
+   "elements": {
+    "VStack": 140,
+    "Text": 137,
+    "CardGrid": 25,
+    "KpiGrid": 12,
+    "Table": 4,
+    "HStack": 32,
+    "Icon": 22,
+    "Ul": 2,
+    "Chart": 2,
+    "ProcessArrow": 2
+   },
+   "stacks": 172,
+   "attrs": {
+    "gap": 159,
+    "alignItems": 101,
+    "padding": 74,
+    "grow": 42,
+    "justifyContent": 13,
+    "margin": 7,
+    "minW": 5,
+    "minH": 7
+   },
+   "values": {
+    "alignItems": {
+     "stretch": 76,
+     "start": 2,
+     "center": 23
+    },
+    "justifyContent": {
+     "start": 2,
+     "center": 11
+    }
+   },
+   "w": {
+    "px": 33,
+    "none": 133,
+    "max": 6
+   },
+   "h": {
+    "px": 33,
+    "none": 139
+   },
+   "text_w": {},
+   "aliases": {
+    "CardGrid layout=steps": 7,
+    "KpiGrid layout=row": 6,
+    "KpiGrid cols=4": 3,
+    "CardGrid layout=grid": 6,
+    "CardGrid cols=3": 7,
+    "KpiGrid cols=1": 1,
+    "KpiGrid cols=3": 2,
+    "CardGrid variant=inverted": 2,
+    "CardGrid cols=4": 2
+   }
+  }
+ },
+ "expanders_source": {
+  "tiles": {
+   "w_px": 1,
+   "w_pct": 1,
+   "w1_grow": 1,
+   "stretch": 2,
+   "grow": 5
+  },
+  "cards": {
+   "w_px": 3,
+   "w_pct": 1,
+   "w1_grow": 3,
+   "stretch": 4,
+   "grow": 14
+  },
+  "tile_groups": {
+   "w_px": 3,
+   "w_pct": 5,
+   "w1_grow": 3,
+   "stretch": 6,
+   "grow": 16
+  },
+  "charts": {
+   "w_px": 2,
+   "w_pct": 2,
+   "w1_grow": 1,
+   "stretch": 1,
+   "grow": 6
+  },
+  "tables": {
+   "w_px": 7,
+   "w_pct": 3,
+   "w1_grow": 9,
+   "stretch": 6,
+   "grow": 19
+  },
+  "sequences (timeline branch)": {
+   "w_px": 4,
+   "w_pct": 1,
+   "w1_grow": 9,
+   "stretch": 3,
+   "grow": 18
+  }
+ },
+ "fit_grow": {
+  "lines": 2874,
+  "functions": 93,
+  "fitSlide_phases": 23
+ },
+ "code": {
+  "slides": 30,
+  "elements": {
+   "HStack": 158,
+   "VStack": 355,
+   "Icon": 59,
+   "Text": 404,
+   "Ul": 32,
+   "Chart": 2,
+   "Shape": 22,
+   "Timeline": 1,
+   "Table": 1
+  },
+  "stacks": 513,
+  "attrs": {
+   "grow": 365,
+   "gap": 321,
+   "alignItems": 162,
+   "justifyContent": 119,
+   "padding": 191,
+   "alignSelf": 3,
+   "minW": 4,
+   "minH": 2
+  },
+  "values": {
+   "alignItems": {
+    "stretch": 51,
+    "center": 78,
+    "start": 30,
+    "end": 3
+   },
+   "justifyContent": {
+    "center": 99,
+    "start": 16,
+    "end": 4
+   },
+   "alignSelf": {
+    "center": 3
+   }
+  },
+  "w": {
+   "none": 248,
+   "1 (flex share)": 166,
+   "percent": 67,
+   "px": 30,
+   "max": 2
+  },
+  "h": {
+   "none": 513
+  },
+  "text_w": {},
+  "aliases": {}
+ }
+}

@@ -1,0 +1,1143 @@
+{
+ "probes": {
+  "equal_no_w": {
+   "q": "HStack children with no w: equal columns? (POM: basis 0, grow 1)",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 120,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 393,
+     "h": 120,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 394,
+     "h": 120,
+     "x": 403,
+     "y": 0
+    },
+    "c": {
+     "w": 393,
+     "h": 120,
+     "x": 807,
+     "y": 0
+    }
+   }
+  },
+  "equal_w1": {
+   "q": "the expanders' w=\"1\" grow=\"1\": any different?",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 120,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 393,
+     "h": 120,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 394,
+     "h": 120,
+     "x": 403,
+     "y": 0
+    },
+    "c": {
+     "w": 393,
+     "h": 120,
+     "x": 807,
+     "y": 0
+    }
+   }
+  },
+  "w_max_row": {
+   "q": "w=\"max\" in an HStack: sized to content plus a share of the spare",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 120,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 516,
+     "h": 120,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 674,
+     "h": 120,
+     "x": 526,
+     "y": 0
+    }
+   }
+  },
+  "w_max_col": {
+   "q": "w=\"max\" in a VStack: grows the HEIGHT (flexGrow on the main axis)",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 400,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 1200,
+     "h": 367,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 1200,
+     "h": 23,
+     "x": 0,
+     "y": 377
+    }
+   }
+  },
+  "h_max_row": {
+   "q": "h=\"max\" in an HStack: grows the WIDTH",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 200,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 990,
+     "h": 200,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 200,
+     "h": 200,
+     "x": 1000,
+     "y": 0
+    }
+   }
+  },
+  "content_w": {
+   "q": "content-sized, no growth: w=\"max\" grow=\"0\"",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 100,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 30,
+     "h": 100,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 123,
+     "h": 100,
+     "x": 40,
+     "y": 0
+    },
+    "c": {
+     "w": 1027,
+     "h": 100,
+     "x": 173,
+     "y": 0
+    }
+   }
+  },
+  "grow0_no_w": {
+   "q": "grow=\"0\" with no w: the column collapses? (basis 0)",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 100,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 0,
+     "h": 100,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 1190,
+     "h": 100,
+     "x": 10,
+     "y": 0
+    }
+   }
+  },
+  "rows_grow": {
+   "q": "VStack rows with grow=\"1\", uneven content: equal heights?",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 500,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 1200,
+     "h": 111,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 1200,
+     "h": 258,
+     "x": 0,
+     "y": 121
+    },
+    "c": {
+     "w": 1200,
+     "h": 111,
+     "x": 0,
+     "y": 389
+    }
+   }
+  },
+  "rows_h1": {
+   "q": "the same with h=\"1\" grow=\"1\": equal heights?",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 500,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 1200,
+     "h": 160,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 1200,
+     "h": 160,
+     "x": 0,
+     "y": 170
+    },
+    "c": {
+     "w": 1200,
+     "h": 160,
+     "x": 0,
+     "y": 340
+    }
+   }
+  },
+  "rows_h1_over": {
+   "q": "h=\"1\" grow=\"1\" when one row needs more than its share: does it overflow?",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 300,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 1200,
+     "h": 93,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 1200,
+     "h": 94,
+     "x": 0,
+     "y": 103
+    },
+    "c": {
+     "w": 1200,
+     "h": 93,
+     "x": 0,
+     "y": 207
+    }
+   }
+  },
+  "wrap_grid": {
+   "q": "flexWrap=\"wrap\" + minW: a grid from flexbox alone?",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 400,
+     "x": 40,
+     "y": 40
+    },
+    "c0": {
+     "w": 393,
+     "h": 23,
+     "x": 0,
+     "y": 0
+    },
+    "c1": {
+     "w": 394,
+     "h": 23,
+     "x": 403,
+     "y": 0
+    },
+    "c2": {
+     "w": 393,
+     "h": 23,
+     "x": 807,
+     "y": 0
+    },
+    "c3": {
+     "w": 595,
+     "h": 24,
+     "x": 0,
+     "y": 33
+    },
+    "c4": {
+     "w": 595,
+     "h": 24,
+     "x": 605,
+     "y": 33
+    }
+   }
+  },
+  "wrap_w33": {
+   "q": "flexWrap with w=\"32%\" children: lines and last row",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 400,
+     "x": 40,
+     "y": 40
+    },
+    "c0": {
+     "w": 384,
+     "h": 23,
+     "x": 0,
+     "y": 0
+    },
+    "c1": {
+     "w": 384,
+     "h": 23,
+     "x": 394,
+     "y": 0
+    },
+    "c2": {
+     "w": 384,
+     "h": 23,
+     "x": 788,
+     "y": 0
+    },
+    "c3": {
+     "w": 384,
+     "h": 24,
+     "x": 0,
+     "y": 33
+    },
+    "c4": {
+     "w": 384,
+     "h": 24,
+     "x": 394,
+     "y": 33
+    }
+   }
+  },
+  "wrap_stretch": {
+   "q": "do wrapped lines take the box's height? (POM sets no alignContent)",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 500,
+     "x": 40,
+     "y": 40
+    },
+    "c0": {
+     "w": 595,
+     "h": 23,
+     "x": 0,
+     "y": 0
+    },
+    "c1": {
+     "w": 595,
+     "h": 23,
+     "x": 605,
+     "y": 0
+    },
+    "c2": {
+     "w": 595,
+     "h": 24,
+     "x": 0,
+     "y": 33
+    },
+    "c3": {
+     "w": 595,
+     "h": 24,
+     "x": 605,
+     "y": 33
+    }
+   }
+  },
+  "stretch_default": {
+   "q": "alignItems default: stretch? (peers in a row, no alignItems)",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 164,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 300,
+     "h": 164,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 300,
+     "h": 164,
+     "x": 310,
+     "y": 0
+    }
+   }
+  },
+  "squeeze": {
+   "q": "narrow column: a word wider than its box (Yoga has no min-content)",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 120,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 60,
+     "h": 120,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 1130,
+     "h": 120,
+     "x": 70,
+     "y": 0
+    }
+   }
+  },
+  "shrink": {
+   "q": "children too wide for the row: all shrink evenly, min width ignored?",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 600,
+     "h": 100,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 140,
+     "h": 100,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 140,
+     "h": 100,
+     "x": 150,
+     "y": 0
+    },
+    "c": {
+     "w": 300,
+     "h": 100,
+     "x": 300,
+     "y": 0
+    }
+   }
+  },
+  "over_height": {
+   "q": "content taller than the slide: Yoga shrinks children below their text",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "c0": {
+     "w": 1200,
+     "h": 115,
+     "x": 40,
+     "y": 40
+    },
+    "c1": {
+     "w": 1200,
+     "h": 115,
+     "x": 40,
+     "y": 171
+    },
+    "c2": {
+     "w": 1200,
+     "h": 116,
+     "x": 40,
+     "y": 302
+    },
+    "c3": {
+     "w": 1200,
+     "h": 115,
+     "x": 40,
+     "y": 434
+    },
+    "c4": {
+     "w": 1200,
+     "h": 115,
+     "x": 40,
+     "y": 565
+    }
+   }
+  },
+  "absolute_child": {
+   "q": "position=\"absolute\" inside a box: a badge anchored to its parent, no slide pixels",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "p": {
+     "w": 400,
+     "h": 200,
+     "x": 40,
+     "y": 40
+    },
+    "badge": {
+     "w": 40,
+     "h": 40,
+     "x": 352,
+     "y": 8
+    }
+   }
+  },
+  "negative_margin": {
+   "q": "negative margin: can a block overlap its neighbour?",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 100,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 300,
+     "h": 100,
+     "x": 0,
+     "y": 0
+    },
+    "b": {
+     "w": 300,
+     "h": 100,
+     "x": 260,
+     "y": 0
+    }
+   }
+  },
+  "justify_between": {
+   "q": "justifyContent=\"spaceBetween\": value at the far right without widths",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 60,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 56,
+     "h": 24,
+     "x": 0,
+     "y": 18
+    },
+    "b": {
+     "w": 89,
+     "h": 32,
+     "x": 1111,
+     "y": 14
+    }
+   }
+  },
+  "text_grow0": {
+   "q": "grow=\"0\" on a Text: POM rejects it (stacks take it)",
+   "boxes": {
+    "error": "XML validation failed (1 error):\n  - <Text>: Invalid value for attribute \"grow\". Too small: expected number to be >0"
+   }
+  },
+  "rows_cols_align": {
+   "q": "columns across sibling rows: content-sized leads do not line up",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r0": {
+     "w": 1200,
+     "h": 50,
+     "x": 40,
+     "y": 40
+    },
+    "a0": {
+     "w": 67,
+     "h": 50,
+     "x": 0,
+     "y": 0
+    },
+    "b0": {
+     "w": 1123,
+     "h": 50,
+     "x": 77,
+     "y": 0
+    },
+    "r1": {
+     "w": 1200,
+     "h": 50,
+     "x": 40,
+     "y": 106
+    },
+    "a1": {
+     "w": 174,
+     "h": 50,
+     "x": 0,
+     "y": 0
+    },
+    "b1": {
+     "w": 1016,
+     "h": 50,
+     "x": 184,
+     "y": 0
+    },
+    "r2": {
+     "w": 1200,
+     "h": 50,
+     "x": 40,
+     "y": 172
+    },
+    "a2": {
+     "w": 61,
+     "h": 50,
+     "x": 0,
+     "y": 0
+    },
+    "b2": {
+     "w": 1129,
+     "h": 50,
+     "x": 71,
+     "y": 0
+    }
+   }
+  },
+  "pct_vs_px": {
+   "q": "w=\"%\" resolves against the parent content box",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1000,
+     "h": 100,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 450,
+     "h": 0,
+     "x": 50,
+     "y": 50
+    },
+    "b": {
+     "w": 440,
+     "h": 0,
+     "x": 510,
+     "y": 50
+    }
+   }
+  },
+  "text_box_fills": {
+   "q": "a box grows, its type does not: flexbox sizes boxes, never fonts",
+   "boxes": {
+    "root": {
+     "w": 1280,
+     "h": 720,
+     "x": 0,
+     "y": 0
+    },
+    "r": {
+     "w": 1200,
+     "h": 500,
+     "x": 40,
+     "y": 40
+    },
+    "a": {
+     "w": 1200,
+     "h": 500,
+     "x": 0,
+     "y": 0
+    }
+   }
+  }
+ },
+ "real": {
+  "equal_rows_cards": {
+   "before": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: split Ul (5 items) into 2 columns",
+     "slide 1: text x1.67 (e.g. 17 -> 25pt), fill 67% -> 87%"
+    ],
+    "warnings": [],
+    "tokens": 952,
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "sizes": [
+     14.0,
+     25.0,
+     33.0,
+     34.0
+    ]
+   },
+   "after": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: split Ul (5 items) into 2 columns",
+     "slide 1: text x1.36 (e.g. 17 -> 20pt), spacing x1.01, fill 4% -> 4%",
+     "slide 1: text x1.00 (e.g. 20 -> 20pt), spacing x1.00, fill 4% -> 4%",
+     "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 49% -> 65%"
+    ],
+    "warnings": [],
+    "tokens": 950,
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "sizes": [
+     14.0,
+     20.0,
+     27.0,
+     28.0,
+     34.0,
+     48.0
+    ]
+   },
+   "diff": 0.2243,
+   "note": "card_grid banded, rows of a grid: grow=\"1\" -> h=\"1\" grow=\"1\" (equal row heights)"
+  },
+  "equal_rows_table": {
+   "before": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: text x1.70 (e.g. 17 -> 24pt), fill 52% -> 86%",
+     "slide 1: text x2.98 (e.g. 22 -> 24pt), spacing x1.40, fill 47% -> 47%"
+    ],
+    "warnings": [],
+    "tokens": 1006,
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "sizes": [
+     14.0,
+     24.0,
+     27.0,
+     32.0,
+     34.0
+    ]
+   },
+   "after": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: text x1.28 (e.g. 17 -> 18pt), spacing x1.10, fill 14% -> 16%",
+     "slide 1: text x1.00 (e.g. 18 -> 18pt), spacing x1.09, fill 16% -> 16%",
+     "slide 1: text x1.00 (e.g. 19 -> 19pt), spacing x1.40, fill 40% -> 40%",
+     "slide 1: text x2.98 (e.g. 19 -> 24pt), spacing x1.40, fill 43% -> 57%",
+     "slide 1: spill fixed (space given): hstack height 150 -> 153px; vstack height 150 -> 153px"
+    ],
+    "warnings": [],
+    "tokens": 1003,
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "sizes": [
+     14.0,
+     21.0,
+     24.0,
+     34.0
+    ]
+   },
+   "diff": 0.0431,
+   "note": "table grid: row HStacks grow=\"1\" -> h=\"1\" grow=\"1\""
+  },
+  "chart_rows_widths": {
+   "before": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI values x2.76 (24 -> 66px), fill 48% -> 80%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 20px)"
+    ],
+    "warnings": [],
+    "tokens": 817,
+    "fonts": {
+     "min": 20.0,
+     "max": 66.0
+    },
+    "geom": [],
+    "sizes": [
+     20.0,
+     34.0,
+     66.0
+    ]
+   },
+   "after": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI values x3.13 (24 -> 75px), fill 48% -> 87%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 23px)"
+    ],
+    "warnings": [],
+    "tokens": 833,
+    "fonts": {
+     "min": 23.0,
+     "max": 75.0
+    },
+    "geom": [],
+    "sizes": [
+     23.0,
+     34.0,
+     75.0
+    ]
+   },
+   "diff": 0.0673,
+   "note": "chart rows: lead w=\"24%\" and value w=\"16%\" -> value column content-sized (w=\"max\" grow=\"0\"): the bars keep the width the 16% wasted, but values no longer line up"
+  },
+  "drop_w1": {
+   "before": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI tiles of kpis in two rows (numbers 74 -> 95px as grown)",
+     "slide 1: KPI values x3.41 (28 -> 95px), fill 40% -> 79%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 24px)"
+    ],
+    "warnings": [],
+    "tokens": 751,
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "geom": [],
+    "sizes": [
+     14.0,
+     24.0,
+     34.0,
+     48.0,
+     95.0
+    ]
+   },
+   "after": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI tiles of kpis in two rows (numbers 74 -> 95px as grown)",
+     "slide 1: KPI values x3.41 (28 -> 95px), fill 40% -> 79%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 24px)"
+    ],
+    "warnings": [],
+    "tokens": 736,
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "geom": [],
+    "sizes": [
+     14.0,
+     24.0,
+     34.0,
+     48.0,
+     95.0
+    ]
+   },
+   "diff": 0.0,
+   "note": "all: w=\"1\" grow=\"1\" on an HStack child -> nothing (POM already gives basis 0, grow 1); alignItems=\"stretch\" -> nothing"
+  },
+  "centre_body": {
+   "before": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: sparse body centred: 224px above"
+    ],
+    "warnings": [],
+    "tokens": 138,
+    "fonts": {
+     "min": 22.0,
+     "max": 34.0
+    },
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "sizes": [
+     22.0,
+     34.0
+    ]
+   },
+   "after": {
+    "compiled": true,
+    "fitGrow": [],
+    "warnings": [],
+    "tokens": 153,
+    "fonts": {
+     "min": 22.0,
+     "max": 34.0
+    },
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "sizes": [
+     22.0,
+     34.0
+    ]
+   },
+   "diff": 0.0,
+   "note": "fit-grow centreBody writes margin.top = free / 2 -> the body band as grow=\"1\" justifyContent=\"center\""
+  },
+  "delta_pill": {
+   "before": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI tiles of kpis in two rows (numbers 74 -> 95px as grown)",
+     "slide 1: KPI values x3.41 (28 -> 95px), fill 40% -> 79%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 24px)"
+    ],
+    "warnings": [],
+    "tokens": 751,
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "geom": [],
+    "sizes": [
+     14.0,
+     24.0,
+     34.0,
+     48.0,
+     95.0
+    ]
+   },
+   "after": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI tiles of kpis in two rows (numbers 74 -> 95px as grown)",
+     "slide 1: KPI values x3.41 (28 -> 95px), fill 40% -> 79%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 24px)"
+    ],
+    "warnings": [],
+    "tokens": 771,
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "geom": [],
+    "sizes": [
+     14.0,
+     24.0,
+     34.0,
+     48.0,
+     95.0
+    ]
+   },
+   "diff": 0.0,
+   "note": "spec F (hero note pill): Text has no box, but delta.highlight=\"$toneSoft\" (allowed today) draws a tinted run"
+  },
+  "band_height": {
+   "before": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI values x2.54 (28 -> 71px), fill 15% -> 27%",
+     "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 40% -> 55%",
+     "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 55% -> 57%",
+     "slide 1: KPI values with a unit kept on one line (1)"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "tokens": 955,
+    "fonts": {
+     "min": 14.0,
+     "max": 71.0
+    },
+    "geom": [],
+    "sizes": [
+     14.0,
+     24.0,
+     28.0,
+     34.0,
+     36.0,
+     71.0
+    ]
+   },
+   "after": {
+    "compiled": true,
+    "fitGrow": [
+     "slide 1: KPI values x2.54 (28 -> 71px), fill 15% -> 29%",
+     "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 40% -> 55%",
+     "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 55% -> 57%",
+     "slide 1: KPI values with a unit kept on one line (1)"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "tokens": 975,
+    "fonts": {
+     "min": 14.0,
+     "max": 71.0
+    },
+    "geom": [],
+    "sizes": [
+     14.0,
+     24.0,
+     28.0,
+     34.0,
+     36.0,
+     71.0
+    ]
+   },
+   "diff": 0.0093,
+   "note": "KPI banded: bands of 1 and 2 lines put the values out of line; band.minH (allowed today, the LLM can write it) -> one band height"
+  }
+ }
+}

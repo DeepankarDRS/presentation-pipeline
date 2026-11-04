@@ -1,0 +1,142 @@
+{
+ "none": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ },
+ "marker.*": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ },
+ "item sizing": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ },
+ "group sizing": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ },
+ "item.padding*": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ },
+ "band.*": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ },
+ "alignItems+justify": {
+  "compiled": true,
+  "missing": []
+ },
+ "textGradient": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ },
+ "outline+glow": {
+  "compiled": true,
+  "missing": [
+   "ARR",
+   "Net revenue retention",
+   "Gross margin",
+   "CAC payback",
+   "$48.2M",
+   "114%",
+   "72.1%",
+   "14 months",
+   "+18% QoQ",
+   "+2 pts",
+   "-1.4 pts",
+   "-2 months"
+  ]
+ }
+}

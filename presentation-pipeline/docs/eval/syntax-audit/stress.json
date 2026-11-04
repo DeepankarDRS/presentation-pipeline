@@ -1,0 +1,7215 @@
+{
+ "kpi_row": {
+  "grid": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 120.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 49.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 77.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [
+     "NODE_VALUE_TEXT"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (6)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "$|4|8.|2",
+     "+18|%",
+     "Qo|Q"
+    ],
+    "overlap": [
+     "8.~+18",
+     "2~%",
+     "2~Qo"
+    ],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 74.0
+    },
+    "composition": {
+     "roas": "native",
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 63.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "BREAK",
+    "cause": "words lost: CAC payback",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "CAC payback"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: ROAS by campaign class",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "ROAS by campaign class",
+     "Generic search",
+     "Category / PLA"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  },
+  "strip": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 120.0
+    },
+    "composition": {
+     "kpis": "strip"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 71.0
+    },
+    "composition": {
+     "kpis": "strip"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 49.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "strip"
+    },
+    "codes": [
+     "NODE_VALUE_TEXT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 53.0
+    },
+    "composition": {
+     "kpis": "strip"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "no compile: addTextBox: width must be a finite positive EMU value",
+    "fonts": null,
+    "composition": {
+     "kpis": "strip"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": [
+     "addTextBox: width must be a finite positive EMU value"
+    ]
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "strip"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  },
+  "rows": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 120.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 70.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [
+     "NODE_VALUE_TEXT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 58.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "WORD_TOO_WIDE",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 62.0
+    },
+    "composition": {
+     "roas": "native",
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 59.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "BREAK",
+    "cause": "words lost: CAC payback",
+    "fonts": {
+     "min": 14.0,
+     "max": 95.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "CAC payback"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: ROAS by campaign class",
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [
+     "ROAS by campaign class",
+     "Generic search",
+     "Category / PLA"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [
+     "NODE_FOCUS_UNNAMED"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "composition": {
+     "kpis": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "banded": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 120.0
+    },
+    "composition": {
+     "kpis": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 71.0
+    },
+    "composition": {
+     "kpis": "banded"
+    },
+    "codes": [
+     "NODE_ATTR_IGNORED"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 49.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "banded"
+    },
+    "codes": [
+     "NODE_VALUE_TEXT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 53.0
+    },
+    "composition": {
+     "kpis": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "no compile: addTextBox: width must be a finite positive EMU value",
+    "fonts": null,
+    "composition": {
+     "kpis": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": [
+     "addTextBox: width must be a finite positive EMU value"
+    ]
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "bento": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 120.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 120.0
+    },
+    "composition": {
+     "kpis": "bento"
+    },
+    "codes": [
+     "NODE_ATTR_IGNORED"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 110.0
+    },
+    "composition": {
+     "kpis": "bento"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 77.0
+    },
+    "composition": {
+     "kpis": "grid"
+    },
+    "codes": [
+     "NODE_VALUE_TEXT",
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 120.0
+    },
+    "composition": {
+     "kpis": "bento"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (11)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "kpis": "bento"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "$4|8.2",
+     "rev|enu|e",
+     "rete|ntio|n"
+    ],
+    "overlap": [
+     "8.2~ARR",
+     "M~+18%",
+     "e~+2"
+    ],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 72.0
+    },
+    "composition": {
+     "kpis": "bento"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  }
+ },
+ "chart": {
+  "native": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (2)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "search~Category",
+     "Brand~Competitor"
+    ],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native",
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "BREAK",
+    "cause": "words lost: 1.9 L",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "1.9 L"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ITEM_MISSING",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {},
+    "codes": [
+     "NODE_ITEM_MISSING"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [
+     "A",
+     "B",
+     "C"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "Gap",
+     "Marketplace A",
+     "Marketplace B"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "BREAK",
+    "cause": "no compile: Unknown theme token \"$toneText\"; Unknown theme token \"$tone\"; Unknown theme token \"$tone\"; Unknown theme token \"$tone\"",
+    "fonts": null,
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": [
+     "Unknown theme token \"$toneText\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$tone\""
+    ]
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  },
+  "native labelled": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native labelled"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native labelled"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native labelled"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native labelled"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native labelled"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native labelled"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  },
+  "rows": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 20.0,
+     "max": 66.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 24.0,
+     "max": 81.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 17.0,
+     "max": 58.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "broken words (1): Competit|or",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [
+     "Competit|or"
+    ],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "rows",
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 40.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 18.0,
+     "max": 59.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ITEM_MISSING",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {},
+    "codes": [
+     "NODE_ITEM_MISSING"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [
+     "A",
+     "B",
+     "C"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 20.0,
+     "max": 66.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 20.0,
+     "max": 66.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "Gap",
+     "Marketplace A",
+     "Marketplace B"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 20.0,
+     "max": 66.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "BREAK",
+    "cause": "no compile: Unknown theme token \"$toneText\"; Unknown theme token \"$tone\"; Unknown theme token \"$tone\"; Unknown theme token \"$tone\"",
+    "fonts": null,
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": [
+     "Unknown theme token \"$toneText\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$tone\""
+    ]
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 20.0,
+     "max": 66.0
+    },
+    "composition": {
+     "roas": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  }
+ },
+ "timeline": {
+  "native": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_BOX_EMPTY",
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_BOX_EMPTY",
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_BOX_EMPTY",
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT",
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_BOX_EMPTY",
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap_short": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_BOX_EMPTY",
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap_short": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  },
+  "rail": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET,GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (1)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "retention~retarget"
+    ],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 54.0
+    },
+    "composition": {
+     "roadmap": "rail",
+     "kpis": "bento"
+    },
+    "codes": [
+     "NODE_LOOK_FROM_HINT",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_ATTR_ALIAS",
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ITEM_MISSING",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ITEM_MISSING",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [
+     "ARR",
+     "Net revenue retention",
+     "Gross margin"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "BREAK",
+    "cause": "no compile: Unknown theme token \"$toneText\"; Unknown theme token \"$tone\"; Unknown theme token \"$tone\"; Unknown theme token \"$tone\"; ",
+    "fonts": null,
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": [
+     "Unknown theme token \"$toneText\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$toneText\"",
+     "Unknown theme token \"$toneText\""
+    ]
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rail"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "columns": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (75)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "Gr|o|wt|h",
+     "ac|tiv|ati|on",
+     "se|ar|ch"
+    ],
+    "overlap": [
+     "U~Gr",
+     "L–~Gr",
+     "L–~o"
+    ],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "BREAK",
+    "cause": "text overlap (1)",
+    "fonts": {
+     "min": 14.0,
+     "max": 72.0
+    },
+    "composition": {
+     "roadmap": "columns",
+     "kpis": "bento"
+    },
+    "codes": [
+     "NODE_LOOK_FROM_HINT",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [
+     "$48.|2M…"
+    ],
+    "overlap": [
+     "2M~ARR"
+    ],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "BREAK",
+    "cause": "text overlap (1)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "retention~retarget"
+    ],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 36.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_ATTR_ALIAS",
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ITEM_MISSING",
+    "fonts": {
+     "min": 14.0,
+     "max": 36.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ITEM_MISSING",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "ARR",
+     "Net revenue retention",
+     "Gross margin"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 36.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "BREAK",
+    "cause": "no compile: Unknown theme token \"$tone\"; Unknown theme token \"$toneText\"; Unknown theme token \"$tone\"; Unknown theme token \"$toneTex",
+    "fonts": null,
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": [
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$toneText\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$toneText\"",
+     "Unknown theme token \"$tone\"",
+     "Unknown theme token \"$toneText\""
+    ]
+   },
+   "dark": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 36.0
+    },
+    "composition": {
+     "roadmap": "columns"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "rows": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 35.0
+    },
+    "composition": {
+     "roadmap": "rows"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (82)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rows"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "s|e|a|r|c|h",
+     "s|c|a|l|i|n|g|,",
+     "p|l|a|c|e|m|e|n|t"
+    ],
+    "overlap": [
+     "s~b",
+     "c~u",
+     "a~n"
+    ],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "rows"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "banded": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 37.0
+    },
+    "composition": {
+     "roadmap": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "BREAK",
+    "cause": "text overlap (16)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "banded"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "workstream~with",
+     "workstream~a",
+     "workstream~detail"
+    ],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "roadmap": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (30)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "banded"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [
+     "NODE_OVERLAP",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "Gro|wt|h",
+     "act|iva|tio|n",
+     "sea|rch"
+    ],
+    "overlap": [
+     "AUG~Gro",
+     "tio~sea",
+     "n~rch"
+    ],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roadmap": "banded"
+    },
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  }
+ },
+ "table": {
+  "native": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_CELL_FILLED"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "broken words (15): Market|place",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [
+     "Market|place",
+     "Market|place",
+     "abov|e"
+    ],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native",
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "BREAK",
+    "cause": "WORD_TOO_WIDE",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_CELL_FILLED"
+    ],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: ROAS by campaign class",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "ROAS by campaign class",
+     "Generic search",
+     "Category / PLA"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  },
+  "rows": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 31.0
+    },
+    "composition": {
+     "gaps": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (4)",
+    "fonts": {
+     "min": 14.0,
+     "max": 31.0
+    },
+    "composition": {
+     "gaps": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [
+     "MARKE|TPLACE",
+     "MARKE|TPLACE",
+     "allowabl|e"
+    ],
+    "overlap": [
+     "rd~Budge",
+     "loop~t",
+     "loop~tiers"
+    ],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "rows numbered": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 24.0
+    },
+    "composition": {
+     "gaps": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (37)",
+    "fonts": {
+     "min": 14.0,
+     "max": 31.0
+    },
+    "composition": {
+     "gaps": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "MA|RKE|TPL|ACE",
+     "MA|RKE|TPL|ACE",
+     "allowabl|e"
+    ],
+    "overlap": [
+     "ACE~CP",
+     "A~C",
+     "ACE~CPC"
+    ],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "columns": {
+   "one": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "Gap"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "BREAK",
+    "cause": "words lost: A",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "A"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap and its consequences for the plan",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "Gap and its consequences for the plan"
+    ],
+    "broken": [],
+    "overlap": [
+     "READINESS~A",
+     "READINESS~cell",
+     "READINESS~long"
+    ],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "columns"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [
+     "Gap"
+    ],
+    "broken": [
+     "abov|e",
+     "allow|able",
+     "MAR|KET|PLA|CE"
+    ],
+    "overlap": [
+     "PLA~CPC",
+     "CE~₹31.1",
+     "A~₹31.1"
+    ],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "Gap"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   }
+  },
+  "banded": {
+   "one": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "Gap"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "BREAK",
+    "cause": "words lost: A",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [
+     "A"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap and its consequences for the plan",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [],
+    "missing": [
+     "Gap and its consequences for the plan"
+    ],
+    "broken": [
+     "Internationalisati|on-readiness",
+     "Internationalisati|on-readiness",
+     "Internationalisati|on-readiness"
+    ],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "SLIDE_DENSE",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_SPILL"
+    ],
+    "missing": [
+     "Gap"
+    ],
+    "broken": [
+     "Mark|etpla|ce",
+     "Mark|etpla|ce",
+     "Mark|etpla|ce"
+    ],
+    "overlap": [
+     "weak~Phrase",
+     "weak~Weekly",
+     "d~Visibility"
+    ],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "Gap"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_ROWS_ADDED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "grid": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 46.0
+    },
+    "composition": {
+     "gaps": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (1)",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "gaps": "grid"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [
+     "Marke|tplace",
+     "Marke|tplace",
+     "abov|e"
+    ],
+    "overlap": [
+     "loop~Budg"
+    ],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   }
+  },
+  "grid numbered": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (86)",
+    "fonts": {
+     "min": 14.0,
+     "max": 41.0
+    },
+    "composition": {
+     "gaps": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "Ma|rke|tpl|ac|e",
+     "Ma|rke|tpl|ac|e",
+     "abov|e"
+    ],
+    "overlap": [
+     "e~C",
+     "e~C",
+     "0.~Au"
+    ],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "GROW_LONE_CARD"
+    ],
+    "compile_errors": []
+   }
+  },
+  "ledger": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "native"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 46.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (1)",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [
+     "abov|e",
+     "allow|able",
+     "allowa|ble"
+    ],
+    "overlap": [
+     "A~Marketplace"
+    ],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "roas": "native",
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: ROAS by campaign class",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "ROAS by campaign class",
+     "Generic search",
+     "Category / PLA"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "gaps": "ledger"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  }
+ },
+ "card_grid": {
+  "grid": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 44.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "broken words (8): leakag|e",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "SLIDE_DENSE",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [
+     "leakag|e",
+     "banne|rs",
+     "categ|ory"
+    ],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid",
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED"
+    ],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "Gap",
+     "Marketplace A",
+     "Marketplace B"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   }
+  },
+  "grid numbered": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 40.0
+    },
+    "composition": {
+     "levers": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid numbered"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "broken words (8): leakag|e",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "SLIDE_DENSE",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [
+     "leakag|e",
+     "banne|rs",
+     "categ|ory"
+    ],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   }
+  },
+  "rows": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "BREAK",
+    "cause": "text overlap (4)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OVERLAP",
+     "SLIDE_DENSE"
+    ],
+    "geom": [
+     "GEOM_COLLISION",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "programme~A",
+     "programme~LONG",
+     "programme~TAG"
+    ],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (91)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OUT_OF_BOUNDS",
+     "SLIDE_DENSE",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "O|r|g|a|n|i|c",
+     "s|h|a|r|e",
+     "f|e|l|l"
+    ],
+    "overlap": [
+     "rows:~•",
+     "narrow~Scale",
+     "narrow~exact"
+    ],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "rows numbered": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 40.0
+    },
+    "composition": {
+     "levers": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "BREAK",
+    "cause": "text overlap (4)",
+    "fonts": {
+     "min": 14.0,
+     "max": 40.0
+    },
+    "composition": {
+     "levers": "rows numbered"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OVERLAP",
+     "SLIDE_DENSE"
+    ],
+    "geom": [
+     "GEOM_COLLISION",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "programme~A",
+     "programme~LONG",
+     "programme~TAG"
+    ],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (90)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OUT_OF_BOUNDS",
+     "SLIDE_DENSE",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL",
+     "GEOM_TEXT_OVERFLOW"
+    ],
+    "missing": [],
+    "broken": [
+     "O|r|g|a|n|i|c",
+     "s|h|a|r|e",
+     "f|e|l|l"
+    ],
+    "overlap": [
+     "numbered:~Scale",
+     "numbered:~exact",
+     "s~H"
+    ],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rows"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "columns": {
+   "one": {
+    "verdict": "BREAK",
+    "cause": "words lost: LEVER 1",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "LEVER 1"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 44.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "BREAK",
+    "cause": "words lost: A LONG TAG THAT RUNS ON",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "A LONG TAG THAT RUNS ON",
+     "A LONG TAG THAT RUNS ON",
+     "A LONG TAG THAT RUNS ON"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "BREAK",
+    "cause": "words lost: LEVER 1",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "LEVER 1",
+     "LEVER 2",
+     "LEVER 3"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "no compile: addTextBox: width must be a finite positive EMU value",
+    "fonts": null,
+    "composition": {
+     "levers": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": [
+     "addTextBox: width must be a finite positive EMU value"
+    ]
+   },
+   "short": {
+    "verdict": "BREAK",
+    "cause": "words lost: LEVER 1",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "columns"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [
+     "LEVER 1",
+     "LEVER 2",
+     "LEVER 3"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   }
+  },
+  "banded": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "text overlap (24)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP",
+     "SLIDE_DENSE",
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [
+     "Sear|ch",
+     "LEV|ER",
+     "Plac|eme|nt"
+    ],
+    "overlap": [
+     "on~•",
+     "every~Scale",
+     "platform~•"
+    ],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "side": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded",
+     "gaps": "native"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "nested": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "mixed": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "missing": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [
+     "NODE_OVERLAP"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "EMPTY_TEXT_REMOVED",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "invented": {
+    "verdict": "BREAK",
+    "cause": "node error NODE_ATTR_UNKNOWN",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED",
+     "NODE_ATTR_UNKNOWN"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "refinref": {
+    "verdict": "BREAK",
+    "cause": "words lost: Gap",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [
+     "NODE_ATTR_DROPPED"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "Gap",
+     "Marketplace A",
+     "Marketplace B"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "item": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "tone": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   },
+   "dark": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "banded"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR",
+     "ZERO_SPACING"
+    ],
+    "compile_errors": []
+   }
+  },
+  "bento": {
+   "one": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 44.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "WARN",
+    "cause": "NODE_VARIANT_UNMET",
+    "fonts": {
+     "min": 14.0,
+     "max": 29.0
+    },
+    "composition": {
+     "levers": "grid"
+    },
+    "codes": [
+     "NODE_VARIANT_UNMET"
+    ],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "bento"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "BREAK",
+    "cause": "words lost: LEVER 3",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "bento"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "LEVER 3",
+     "LEVER 4",
+     "LEVER 5"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "no compile: addTextBox: width must be a finite positive EMU value",
+    "fonts": null,
+    "composition": {
+     "levers": "bento"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": [
+     "addTextBox: width must be a finite positive EMU value"
+    ]
+   },
+   "short": {
+    "verdict": "BREAK",
+    "cause": "words lost: LEVER 3",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "bento"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [
+     "LEVER 3",
+     "LEVER 4"
+    ],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   }
+  },
+  "steps": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "steps"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 41.0
+    },
+    "composition": {
+     "levers": "steps"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_SLIDE_SPARSE"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "BREAK",
+    "cause": "text overlap (20)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "steps"
+    },
+    "codes": [],
+    "warnings": [
+     "WORD_TOO_WIDE"
+    ],
+    "geom": [],
+    "missing": [],
+    "broken": [
+     "LEVE|R",
+     "Searc|h",
+     "Organi|c"
+    ],
+    "overlap": [
+     "platfor~•",
+     "m~•",
+     "0.4x~•"
+    ],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "steps"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "steps"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "no compile: addTextBox: width must be a finite positive EMU value",
+    "fonts": null,
+    "composition": {
+     "levers": "steps"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": [
+     "addTextBox: width must be a finite positive EMU value"
+    ]
+   },
+   "short": {
+    "verdict": "WARN",
+    "cause": "GEOM_CARD_EMPTY",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "steps"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [
+     "GEOM_CARD_EMPTY"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   }
+  },
+  "rail": {
+   "one": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "composition": {
+     "levers": "rail"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "sparse": {
+    "verdict": "PASS",
+    "cause": "",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rail"
+    },
+    "codes": [],
+    "warnings": [],
+    "geom": [],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [],
+    "compile_errors": []
+   },
+   "many": {
+    "verdict": "BREAK",
+    "cause": "text overlap (63)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rail"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OUT_OF_BOUNDS",
+     "SLIDE_DENSE"
+    ],
+    "geom": [
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "•~LEVER",
+     "Scale~2",
+     "•~Placement"
+    ],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "long": {
+    "verdict": "BREAK",
+    "cause": "GEOM_OFF_SLIDE,GEOM_SPILL",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rail"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OUT_OF_BOUNDS",
+     "SLIDE_DENSE"
+    ],
+    "geom": [
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "odd": {
+    "verdict": "BREAK",
+    "cause": "text overlap (8)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rail"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OUT_OF_BOUNDS",
+     "SLIDE_DENSE"
+    ],
+    "geom": [
+     "GEOM_COLLISION",
+     "GEOM_OFF_SLIDE",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "•~LEVER",
+     "Weekly~2",
+     "•~LEVER"
+    ],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "narrow": {
+    "verdict": "BREAK",
+    "cause": "GEOM_SPILL",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rail"
+    },
+    "codes": [],
+    "warnings": [
+     "AUTOFIT_OVERFLOW",
+     "NODE_OUT_OF_BOUNDS",
+     "SLIDE_DENSE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   },
+   "short": {
+    "verdict": "BREAK",
+    "cause": "text overlap (90)",
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "composition": {
+     "levers": "rail"
+    },
+    "codes": [],
+    "warnings": [
+     "SLIDE_DENSE"
+    ],
+    "geom": [
+     "GEOM_CARD_EMPTY",
+     "GEOM_COLLISION",
+     "GEOM_SPILL"
+    ],
+    "missing": [],
+    "broken": [],
+    "overlap": [
+     "Search~LEVER",
+     "Search~2",
+     "Organic~Placement"
+    ],
+    "normalize": [
+     "FONT_FLOOR"
+    ],
+    "compile_errors": []
+   }
+  }
+ }
+}

@@ -1,0 +1,1523 @@
+{
+ "plan_map": {
+  "kpi_row": [
+   [
+    "kpi_labels",
+    "label",
+    "kpis.N.label"
+   ],
+   [
+    "kpi_values",
+    "value",
+    "kpis.N.value"
+   ],
+   [
+    "kpi_deltas",
+    "delta",
+    "kpis.N.note"
+   ],
+   [
+    "kpi_icons",
+    "icon",
+    ""
+   ],
+   [
+    "kpi_tones",
+    "$tone* / color",
+    ""
+   ]
+  ],
+  "card_grid": [
+   [
+    "cards[].title",
+    "title",
+    ""
+   ],
+   [
+    "cards[].tag",
+    "tag",
+    ""
+   ],
+   [
+    "cards[].body",
+    "body",
+    ""
+   ],
+   [
+    "cards[].bullets",
+    "body (text); bullets (box, columns only)",
+    ""
+   ],
+   [
+    "cards[].icon",
+    "icon",
+    ""
+   ],
+   [
+    "cards[].tone",
+    "$tone* / color",
+    ""
+   ],
+   [
+    "cards[].key_phrase",
+    "",
+    ""
+   ],
+   [
+    "focus_card",
+    "(emphasis)",
+    ""
+   ],
+   [
+    "card_layout",
+    "variant steps / rail",
+    ""
+   ]
+  ],
+  "chart": [
+   [
+    "chart_title",
+    "title",
+    ""
+   ],
+   [
+    "chart_labels",
+    "label",
+    ""
+   ],
+   [
+    "chart_values / chart_series",
+    "value; bar",
+    ""
+   ],
+   [
+    "chart_type",
+    "",
+    ""
+   ]
+  ],
+  "timeline": [
+   [
+    "timeline_items[].date",
+    "date",
+    ""
+   ],
+   [
+    "timeline_items[].label",
+    "title (label. an alias)",
+    ""
+   ],
+   [
+    "timeline_items[].description",
+    "description",
+    ""
+   ],
+   [
+    "direction",
+    "direction",
+    ""
+   ]
+  ],
+  "table": [
+   [
+    "table_columns",
+    "header",
+    ""
+   ],
+   [
+    "table_rows[][0]",
+    "label",
+    ""
+   ],
+   [
+    "table_rows[][1..]",
+    "cell",
+    ""
+   ]
+  ]
+ },
+ "parts": {
+  "label": {
+   "kpi_row": "Text",
+   "chart": "Text",
+   "table": "Cell"
+  },
+  "value": {
+   "kpi_row": "Text",
+   "chart": "Text"
+  },
+  "delta": {
+   "kpi_row": "Text"
+  },
+  "icon": {
+   "kpi_row": "Icon",
+   "card_grid": "Icon"
+  },
+  "marker": {
+   "kpi_row": "Shape",
+   "timeline": "Shape"
+  },
+  "band": {
+   "kpi_row": "Box",
+   "card_grid": "Box",
+   "timeline": "Box",
+   "table": "Box"
+  },
+  "divider": {
+   "kpi_row": "Rule",
+   "card_grid": "Rule"
+  },
+  "item": {
+   "kpi_row": "Box",
+   "card_grid": "Box",
+   "timeline": "Box",
+   "table": "Box"
+  },
+  "tag": {
+   "card_grid": "Text"
+  },
+  "title": {
+   "card_grid": "Text",
+   "chart": "Text",
+   "timeline": "Text"
+  },
+  "body": {
+   "card_grid": "Text"
+  },
+  "number": {
+   "card_grid": "Text",
+   "table": "Text"
+  },
+  "bullets": {
+   "card_grid": "Box"
+  },
+  "bar": {
+   "chart": "Shape"
+  },
+  "date": {
+   "timeline": "Text"
+  },
+  "description": {
+   "timeline": "Text"
+  },
+  "connector": {
+   "timeline": "Shape"
+  },
+  "header": {
+   "table": "Cell"
+  },
+  "cell": {
+   "table": "Cell"
+  },
+  "stripe": {
+   "table": "Cell"
+  }
+ },
+ "meta": {
+  "ref": [
+   "kpi_row",
+   "card_grid",
+   "chart",
+   "timeline",
+   "table"
+  ],
+  "variant": [
+   "kpi_row",
+   "card_grid",
+   "chart",
+   "timeline",
+   "table"
+  ],
+  "cols": [
+   "kpi_row",
+   "card_grid"
+  ],
+  "color": [
+   "kpi_row",
+   "card_grid"
+  ],
+  "icon": [
+   "kpi_row",
+   "card_grid"
+  ],
+  "direction": [
+   "chart",
+   "timeline"
+  ],
+  "labels": [
+   "table"
+  ],
+  "icons": [
+   "table"
+  ]
+ },
+ "words": {
+  "grid": [
+   "kpi_row",
+   "card_grid",
+   "table"
+  ],
+  "strip": [
+   "kpi_row"
+  ],
+  "rows": [
+   "kpi_row",
+   "card_grid",
+   "chart",
+   "timeline",
+   "table"
+  ],
+  "banded": [
+   "kpi_row",
+   "card_grid",
+   "timeline",
+   "table"
+  ],
+  "bento": [
+   "kpi_row",
+   "card_grid"
+  ],
+  "grid numbered": [
+   "card_grid",
+   "table"
+  ],
+  "rows numbered": [
+   "card_grid",
+   "table"
+  ],
+  "columns": [
+   "card_grid",
+   "timeline",
+   "table"
+  ],
+  "steps": [
+   "card_grid"
+  ],
+  "rail": [
+   "card_grid",
+   "timeline"
+  ],
+  "native": [
+   "chart",
+   "timeline",
+   "table"
+  ],
+  "native labelled": [
+   "chart"
+  ],
+  "ledger": [
+   "table"
+  ]
+ },
+ "aliases": {
+  "kpi_row": {
+   "tag_aliases": {
+    "KpiGrid": "KpiRow"
+   },
+   "part_aliases": {
+    "note": "delta"
+   },
+   "aliases": {
+    "plain": "grid",
+    "filled": {
+     "variant": "grid",
+     "style": "filled"
+    },
+    "toned": {
+     "variant": "grid",
+     "style": "toned"
+    },
+    "bar": {
+     "variant": "grid",
+     "style": "bar"
+    },
+    "dot": {
+     "variant": "grid",
+     "style": "dot"
+    },
+    "bare": {
+     "variant": "grid",
+     "style": "bare"
+    },
+    "inverted": "grid",
+    "divided": "strip"
+   },
+   "meta_aliases": {
+    "layout": {
+     "row": "grid",
+     "grid": "grid",
+     "column": "rows"
+    },
+    "arrange": {
+     "label-first": "grid",
+     "icon-top": "grid",
+     "value-first": "bento",
+     "side": "rows",
+     "inline": "rows"
+    }
+   }
+  },
+  "card_grid": {
+   "tag_aliases": {},
+   "part_aliases": {},
+   "aliases": {
+    "lifted": "grid",
+    "column": {
+     "variant": "grid",
+     "style": "column"
+    },
+    "filled": {
+     "variant": "grid",
+     "style": "filled"
+    },
+    "outline": {
+     "variant": "grid",
+     "style": "outline"
+    },
+    "toned": {
+     "variant": "grid",
+     "style": "toned"
+    },
+    "accent_top": {
+     "variant": "grid",
+     "style": "accent_top"
+    },
+    "numerals": "grid numbered",
+    "inverted": "grid"
+   },
+   "meta_aliases": {
+    "layout": {
+     "grid": "grid",
+     "steps": "steps",
+     "rail": "rail"
+    },
+    "arrange": {
+     "stack": "grid",
+     "side": "rows"
+    }
+   }
+  },
+  "chart": {
+   "tag_aliases": {},
+   "part_aliases": {},
+   "aliases": {
+    "plain": "native",
+    "labelled": "native labelled",
+    "focus_label": "native labelled",
+    "horizontal": {
+     "variant": "native",
+     "direction": "horizontal"
+    }
+   },
+   "meta_aliases": {}
+  },
+  "timeline": {
+   "tag_aliases": {},
+   "part_aliases": {
+    "label": "title"
+   },
+   "aliases": {
+    "vertical": {
+     "variant": "native",
+     "direction": "vertical"
+    },
+    "cards": "columns",
+    "alternating": "rail"
+   },
+   "meta_aliases": {}
+  },
+  "table": {
+   "tag_aliases": {},
+   "part_aliases": {},
+   "aliases": {
+    "plain": "native",
+    "highlight_row": "native",
+    "zebra": {
+     "variant": "native",
+     "stripe.backgroundColor": "$surfaceAlt"
+    },
+    "dark_header": {
+     "variant": "native",
+     "header.backgroundColor": "$panelDark",
+     "header.color": "$onPanelDark",
+     "label.color": "$accentText"
+    }
+   },
+   "meta_aliases": {}
+  }
+ },
+ "sources": {
+  "kpi_row": {
+   "prompts_in_node": true,
+   "item_tag": "Kpi",
+   "styles": 5,
+   "blocks_tag": "KpiRow"
+  },
+  "card_grid": {
+   "prompts_in_node": true,
+   "item_tag": "Card",
+   "styles": 5,
+   "blocks_tag": "CardGrid"
+  },
+  "chart": {
+   "prompts_in_node": false,
+   "item_tag": null,
+   "styles": 0,
+   "blocks_tag": "Chart"
+  },
+  "timeline": {
+   "prompts_in_node": false,
+   "item_tag": null,
+   "styles": 0,
+   "blocks_tag": "Timeline"
+  },
+  "table": {
+   "prompts_in_node": false,
+   "item_tag": null,
+   "styles": 6,
+   "blocks_tag": "Table"
+  }
+ },
+ "tone": {
+  "kpi_row": {
+   "grid": "resolved",
+   "strip": "resolved",
+   "rows": "resolved",
+   "banded": "resolved",
+   "bento": "resolved"
+  },
+  "card_grid": {
+   "grid": "resolved",
+   "grid numbered": "resolved",
+   "rows": "resolved",
+   "rows numbered": "resolved",
+   "columns": "resolved",
+   "banded": "resolved",
+   "bento": "resolved",
+   "steps": "resolved",
+   "rail": "resolved"
+  },
+  "chart": {
+   "native": "left literal",
+   "native labelled": "left literal",
+   "rows": "left literal"
+  },
+  "timeline": {
+   "native": "resolved",
+   "rail": "resolved",
+   "columns": "left literal",
+   "rows": "left literal",
+   "banded": "left literal"
+  },
+  "table": {
+   "native": "resolved",
+   "rows": "resolved",
+   "rows numbered": "resolved",
+   "columns": "resolved",
+   "banded": "resolved",
+   "grid": "resolved",
+   "grid numbered": "resolved",
+   "ledger": "resolved"
+  }
+ },
+ "reach_summary": {
+  "kpi_row/grid": {
+   "(group box)": {
+    "reach": 37
+   },
+   "label": {
+    "reach": 13
+   },
+   "value": {
+    "reach": 12,
+    "noop": 1
+   },
+   "delta": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "marker": {
+    "reach": 1,
+    "noop": 10
+   },
+   "band": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 35,
+    "noop": 2
+   }
+  },
+  "kpi_row/strip": {
+   "(group box)": {
+    "reach": 36,
+    "noop": 1
+   },
+   "label": {
+    "reach": 13
+   },
+   "value": {
+    "reach": 12,
+    "noop": 1
+   },
+   "delta": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "marker": {
+    "reach": 1,
+    "noop": 10
+   },
+   "band": {
+    "noop": 37
+   },
+   "divider": {
+    "reach": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "kpi_row/rows": {
+   "(group box)": {
+    "reach": 36,
+    "noop": 1
+   },
+   "label": {
+    "reach": 13
+   },
+   "value": {
+    "reach": 12,
+    "noop": 1
+   },
+   "delta": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "marker": {
+    "reach": 1,
+    "noop": 10
+   },
+   "band": {
+    "noop": 37
+   },
+   "divider": {
+    "reach": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "kpi_row/banded": {
+   "(group box)": {
+    "reach": 37
+   },
+   "label": {
+    "reach": 13
+   },
+   "value": {
+    "reach": 12,
+    "noop": 1
+   },
+   "delta": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "marker": {
+    "noop": 11
+   },
+   "band": {
+    "reach": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "kpi_row/bento": {
+   "(group box)": {
+    "reach": 37
+   },
+   "label": {
+    "reach": 13
+   },
+   "value": {
+    "reach": 12,
+    "noop": 1
+   },
+   "delta": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "marker": {
+    "reach": 1,
+    "noop": 10
+   },
+   "band": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "card_grid/grid": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "card_grid/grid numbered": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "reach": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "card_grid/rows": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "reach": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "card_grid/rows numbered": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "noop": 9
+   },
+   "number": {
+    "reach": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "reach": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "card_grid/columns": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "noop": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "reach": 37
+   },
+   "bullets": {
+    "reach": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "card_grid/banded": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "reach": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 36,
+    "noop": 1
+   }
+  },
+  "card_grid/bento": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "noop": 1,
+    "reach": 12
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "card_grid/steps": {
+   "(group box)": {
+    "reach": 36,
+    "noop": 1
+   },
+   "tag": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "card_grid/rail": {
+   "(group box)": {
+    "reach": 37
+   },
+   "tag": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "body": {
+    "reach": 13
+   },
+   "icon": {
+    "reach": 9
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "bullets": {
+    "noop": 37
+   },
+   "divider": {
+    "noop": 2
+   },
+   "item": {
+    "reach": 35,
+    "noop": 2
+   }
+  },
+  "chart/native": {
+   "(group box)": {
+    "reach": 38
+   },
+   "title": {
+    "reach": 13
+   },
+   "label": {
+    "noop": 13
+   },
+   "value": {
+    "noop": 13
+   },
+   "bar": {
+    "noop": 11
+   }
+  },
+  "chart/native labelled": {
+   "(group box)": {
+    "reach": 38
+   },
+   "title": {
+    "reach": 13
+   },
+   "label": {
+    "reach": 2,
+    "noop": 11
+   },
+   "value": {
+    "noop": 13
+   },
+   "bar": {
+    "noop": 11
+   }
+  },
+  "chart/rows": {
+   "(group box)": {
+    "reach": 38
+   },
+   "title": {
+    "reach": 13
+   },
+   "label": {
+    "reach": 13
+   },
+   "value": {
+    "reach": 13
+   },
+   "bar": {
+    "reach": 11
+   }
+  },
+  "timeline/native": {
+   "(group box)": {
+    "reach": 37
+   },
+   "date": {
+    "reach": 1,
+    "noop": 12
+   },
+   "title": {
+    "reach": 1,
+    "noop": 12
+   },
+   "description": {
+    "reach": 1,
+    "noop": 12
+   },
+   "marker": {
+    "noop": 10,
+    "reach": 1
+   },
+   "connector": {
+    "noop": 10,
+    "reach": 1
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "noop": 37
+   }
+  },
+  "timeline/rail": {
+   "(group box)": {
+    "reach": 37
+   },
+   "date": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "description": {
+    "reach": 13
+   },
+   "marker": {
+    "reach": 11
+   },
+   "connector": {
+    "reach": 11
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "noop": 37
+   }
+  },
+  "timeline/columns": {
+   "(group box)": {
+    "reach": 37
+   },
+   "date": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "description": {
+    "reach": 13
+   },
+   "marker": {
+    "reach": 11
+   },
+   "connector": {
+    "reach": 11
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "timeline/rows": {
+   "(group box)": {
+    "reach": 37
+   },
+   "date": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "description": {
+    "reach": 13
+   },
+   "marker": {
+    "noop": 11
+   },
+   "connector": {
+    "noop": 11
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "timeline/banded": {
+   "(group box)": {
+    "reach": 37
+   },
+   "date": {
+    "reach": 13
+   },
+   "title": {
+    "reach": 13
+   },
+   "description": {
+    "reach": 13
+   },
+   "marker": {
+    "noop": 11
+   },
+   "connector": {
+    "noop": 11
+   },
+   "band": {
+    "reach": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "table/native": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "reach": 6
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "reach": 1,
+    "dropped": 36
+   }
+  },
+  "table/rows": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "noop": 6
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "table/rows numbered": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "noop": 6
+   },
+   "number": {
+    "reach": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "table/columns": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "noop": 6
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "reach": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "table/banded": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "noop": 6
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "reach": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "table/grid": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "noop": 6
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "table/grid numbered": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "noop": 6
+   },
+   "number": {
+    "reach": 13
+   },
+   "band": {
+    "reach": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  },
+  "table/ledger": {
+   "(group box)": {
+    "reach": 40
+   },
+   "header": {
+    "reach": 6
+   },
+   "label": {
+    "reach": 6
+   },
+   "cell": {
+    "reach": 6
+   },
+   "stripe": {
+    "reach": 6
+   },
+   "number": {
+    "noop": 13
+   },
+   "band": {
+    "noop": 37
+   },
+   "item": {
+    "reach": 37
+   }
+  }
+ },
+ "prompt_tokens": {
+  "kpi_row": {
+   "prompt_line": 108
+  },
+  "card_grid": {
+   "prompt_line": 98
+  },
+  "chart": {
+   "prompt_line": 51
+  },
+  "timeline": {
+   "prompt_line": 59
+  },
+  "table": {
+   "prompt_line": 209
+  },
+  "node_lines_all": 1826
+ },
+ "duplicates": {
+  "kpi_row": {
+   "grid": [],
+   "strip": [
+    "alignItems"
+   ],
+   "rows": [],
+   "banded": [
+    "alignItems",
+    "icon.name"
+   ],
+   "bento": [
+    "alignItems",
+    "icon.name",
+    "item.justifyContent",
+    "item.w"
+   ]
+  },
+  "card_grid": {
+   "grid": [],
+   "grid numbered": [],
+   "rows": [],
+   "rows numbered": [],
+   "columns": [],
+   "banded": [],
+   "bento": [],
+   "steps": [],
+   "rail": []
+  },
+  "chart": {
+   "native": [
+    "alignItems"
+   ],
+   "native labelled": [
+    "alignItems"
+   ],
+   "rows": []
+  },
+  "timeline": {
+   "native": [],
+   "rail": [
+    "gap",
+    "justifyContent"
+   ],
+   "columns": [
+    "gap",
+    "alignItems",
+    "item.gap",
+    "item.grow"
+   ],
+   "rows": [
+    "gap",
+    "item.padding",
+    "item.gap",
+    "item.alignItems",
+    "item.grow"
+   ],
+   "banded": [
+    "gap",
+    "alignItems",
+    "band.padding",
+    "item.gap",
+    "item.w",
+    "item.grow"
+   ]
+  },
+  "table": {
+   "native": [],
+   "rows": [
+    "gap",
+    "item.padding",
+    "item.gap",
+    "item.alignItems",
+    "item.grow"
+   ],
+   "rows numbered": [
+    "gap",
+    "item.padding",
+    "item.gap",
+    "item.alignItems",
+    "item.grow"
+   ],
+   "columns": [
+    "gap",
+    "alignItems",
+    "band.padding",
+    "band.justifyContent",
+    "item.padding",
+    "item.gap",
+    "item.justifyContent",
+    "item.grow"
+   ],
+   "banded": [
+    "gap",
+    "band.padding",
+    "item.gap",
+    "item.w",
+    "item.grow"
+   ],
+   "grid": [
+    "gap",
+    "item.padding",
+    "item.gap",
+    "item.justifyContent",
+    "item.w",
+    "item.grow"
+   ],
+   "grid numbered": [
+    "gap",
+    "band.alignItems",
+    "band.justifyContent",
+    "band.w",
+    "band.borderRadius",
+    "item.padding",
+    "item.gap",
+    "item.justifyContent",
+    "item.w",
+    "item.grow"
+   ],
+   "ledger": [
+    "gap",
+    "item.padding",
+    "item.justifyContent",
+    "item.w",
+    "item.grow"
+   ]
+  }
+ }
+}

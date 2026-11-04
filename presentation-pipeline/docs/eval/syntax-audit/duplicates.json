@@ -1,0 +1,93 @@
+{
+ "kpi_row strip alignItems=\"center\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 10,
+  "of": 12,
+  "codes": []
+ },
+ "kpi_row banded alignItems=\"center\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 10,
+  "of": 12,
+  "codes": []
+ },
+ "kpi_row bento alignItems=\"center\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 10,
+  "of": 12,
+  "codes": []
+ },
+ "chart native alignItems=\"center\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 0,
+  "of": 9,
+  "codes": []
+ },
+ "timeline rail gap=\"20\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 0,
+  "of": 8,
+  "codes": [
+   "NODE_TEXT_SPLIT"
+  ]
+ },
+ "timeline columns gap=\"20\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 0,
+  "of": 8,
+  "codes": [
+   "NODE_TEXT_SPLIT"
+  ]
+ },
+ "table rows gap=\"20\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 0,
+  "of": 20,
+  "codes": []
+ },
+ "table grid gap=\"20\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 0,
+  "of": 20,
+  "codes": []
+ },
+ "table ledger item.padding=\"10\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 0,
+  "of": 20,
+  "codes": []
+ },
+ "kpi_row grid alignItems=\"center\"": {
+  "compiled": true,
+  "node_ok": true,
+  "errors": "",
+  "lost": 0,
+  "of": 12,
+  "codes": []
+ },
+ "kpi_row grid beside table rows gap": {
+  "compiled": true,
+  "node_ok": true,
+  "codes": [],
+  "lost": 12,
+  "of": 12
+ }
+}

@@ -1,0 +1,276 @@
+{
+ "samples": {
+  "kpi_row": {
+   "composition": {
+    "tokens": 17,
+    "chars": 45,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "peers": [
+     76.0,
+     76.0,
+     76.0,
+     76.0
+    ],
+    "fitGrow": [
+     "slide 1: KPI values x2.73 (28 -> 76px), fill 40% -> 87%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 23px)"
+    ],
+    "codes": []
+   },
+   "atomic": {
+    "tokens": 513,
+    "chars": 1734,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 76.0
+    },
+    "peers": [
+     76.0,
+     76.0,
+     76.0,
+     76.0
+    ],
+    "fitGrow": [
+     "slide 1: KPI values x2.73 (28 -> 76px), fill 40% -> 87%",
+     "slide 1: KPI labels / deltas grow with their numbers (-> 23px)"
+    ],
+    "codes": []
+   },
+   "atomic free": {
+    "tokens": 547,
+    "chars": 1723,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 86.0
+    },
+    "peers": [
+     86.0,
+     86.0,
+     86.0,
+     86.0
+    ],
+    "fitGrow": [
+     "slide 1: KPI values x3.09 (28 -> 86px), fill 31% -> 65%",
+     "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 65% -> 70%",
+     "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 68% -> 60%",
+     "slide 1: KPI values with a unit kept on one line (1)"
+    ],
+    "codes": []
+   },
+   "pixel_diff_composition_atomic": 0.0123
+  },
+  "card_grid": {
+   "composition": {
+    "tokens": 17,
+    "chars": 51,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "peers": [],
+    "fitGrow": [],
+    "codes": []
+   },
+   "atomic": {
+    "tokens": 783,
+    "chars": 2424,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "peers": [
+     20.0,
+     20.0,
+     20.0,
+     20.0
+    ],
+    "fitGrow": [],
+    "codes": []
+   },
+   "atomic free": {
+    "tokens": 813,
+    "chars": 2495,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 34.0
+    },
+    "peers": [
+     20.0,
+     20.0,
+     20.0,
+     20.0
+    ],
+    "fitGrow": [],
+    "codes": []
+   },
+   "pixel_diff_composition_atomic": 0.0207
+  },
+  "timeline": {
+   "composition": {
+    "tokens": 16,
+    "chars": 50,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "peers": [],
+    "fitGrow": [
+     "slide 1: text x2.34 (e.g. 16 -> 28pt), fill 42% -> 88%"
+    ],
+    "codes": [
+     "NODE_TEXT_SPLIT"
+    ]
+   },
+   "atomic": {
+    "tokens": 814,
+    "chars": 2477,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 14.0,
+     "max": 48.0
+    },
+    "peers": [],
+    "fitGrow": [
+     "slide 1: text x2.34 (e.g. 16 -> 28pt), fill 42% -> 88%"
+    ],
+    "codes": []
+   },
+   "atomic free": {
+    "tokens": 556,
+    "chars": 1870,
+    "verdict": [
+     "PASS",
+     ""
+    ],
+    "fonts": {
+     "min": 24.0,
+     "max": 34.0
+    },
+    "peers": [],
+    "fitGrow": [
+     "slide 1: text x1.55 (e.g. 16 -> 24pt), spacing x1.40, fill 37% -> 55%",
+     "slide 1: text x2.98 (e.g. 24 -> 24pt), spacing x1.40, fill 62% -> 28%"
+    ],
+    "codes": []
+   },
+   "pixel_diff_composition_atomic": 0.0
+  }
+ },
+ "faults": {
+  "kpi item left out": {
+   "caught": true,
+   "codes": [
+    "error:NODE_ITEM_MISSING"
+   ]
+  },
+  "kpi fields swapped (value <-> note, one item)": {
+   "caught": false,
+   "codes": []
+  },
+  "kpi items swapped (value 0 <-> value 1)": {
+   "caught": false,
+   "codes": []
+  },
+  "kpi same ref twice": {
+   "caught": true,
+   "codes": [
+    "error:NODE_ITEM_MISSING",
+    "error:NODE_REF_DUPLICATE"
+   ]
+  },
+  "kpi index past the plan": {
+   "caught": true,
+   "codes": [
+    "error:NODE_ITEM_MISSING",
+    "error:NODE_REF_UNKNOWN"
+   ]
+  },
+  "kpi word typed instead of a ref": {
+   "caught": true,
+   "codes": [
+    "error:NODE_ITEM_MISSING"
+   ]
+  },
+  "kpi peer styled apart (one padding)": {
+   "caught": false,
+   "codes": []
+  },
+  "card item left out": {
+   "caught": true,
+   "codes": [
+    "error:NODE_ITEM_MISSING"
+   ]
+  },
+  "card fields swapped (title <-> tag)": {
+   "caught": false,
+   "codes": []
+  },
+  "card field forgotten (no body on one card)": {
+   "caught": false,
+   "codes": []
+  },
+  "card bullets forgotten on one card": {
+   "caught": false,
+   "codes": []
+  },
+  "card order changed": {
+   "caught": false,
+   "codes": []
+  }
+ },
+ "prompt": {
+  "composition_node_lines": 1826,
+  "atomic_prompt": 286,
+  "per_component_line": {
+   "kpi_row": 108,
+   "card_grid": 98,
+   "chart": 51,
+   "timeline": 59,
+   "table": 209
+  }
+ },
+ "atomic_xml": {
+  "kpi_row": "<VStack gap=\"0\" grow=\"1\" padding.left=\"8\" padding.right=\"8\"><HStack grow=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\"><Icon name=\"trending-up\" variant=\"square-filled\" bgColor=\"$positiveSoft\" color=\"$positiveText\" /><VStack gap=\"4\" grow=\"1\"><Text ref=\"kpis.0.label\" color=\"$positiveText\" /><Text ref=\"kpis.0.note\" color=\"$positiveText\" /></VStack><Text ref=\"kpis.0.value\" color=\"$positiveText\" textAlign=\"right\" /></HStack><HStack grow=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" borderTop.color=\"$border\" borderTop.width=\"1\"><Icon name=\"users\" variant=\"square-filled\" bgColor=\"$positiveSoft\" color=\"$positiveText\" /><VStack gap=\"4\" grow=\"1\"><Text ref=\"kpis.1.label\" color=\"$positiveText\" /><Text ref=\"kpis.1.note\" color=\"$positiveText\" /></VStack><Text ref=\"kpis.1.value\" color=\"$positiveText\" textAlign=\"right\" /></HStack><HStack grow=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" borderTop.color=\"$border\" borderTop.width=\"1\"><Icon name=\"percent\" variant=\"square-filled\" bgColor=\"$negativeSoft\" color=\"$negativeText\" /><VStack gap=\"4\" grow=\"1\"><Text ref=\"kpis.2.label\" color=\"$negativeText\" /><Text ref=\"kpis.2.note\" color=\"$negativeText\" /></VStack><Text ref=\"kpis.2.value\" color=\"$negativeText\" textAlign=\"right\" /></HStack><HStack grow=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" borderTop.color=\"$border\" borderTop.width=\"1\"><Icon name=\"clock\" variant=\"square-filled\" bgColor=\"$warningSoft\" color=\"$warningText\" /><VStack gap=\"4\" grow=\"1\"><Text ref=\"kpis.3.label\" color=\"$warningText\" /><Text ref=\"kpis.3.note\" color=\"$warningText\" /></VStack><Text ref=\"kpis.3.value\" color=\"$warningText\" textAlign=\"right\" /></HStack></VStack>",
+  "card_grid": "<VStack gap=\"18\" grow=\"1\"><HStack gap=\"18\" grow=\"1\"><VStack w=\"1\" grow=\"1\" gap=\"0\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\"><HStack alignItems=\"center\" backgroundColor=\"$panelDark\" padding=\"14\" gap=\"10\"><Icon ref=\"levers.0.icon\" size=\"22\" color=\"$onPanelDark\" /><VStack grow=\"1\"><Text ref=\"levers.0.title\" bold=\"true\" color=\"$onPanelDark\" /></VStack><Text ref=\"levers.0.tag\" w=\"max\" bold=\"true\" letterSpacing=\"1\" color=\"$onPanelDark\" /></HStack><VStack grow=\"1\" gap=\"10\" padding=\"18\"><Text ref=\"levers.0.body\" color=\"$textMuted\" /><Ul ref=\"levers.0.bullets\" fontSize=\"17\" color=\"$textMuted\" /></VStack></VStack><VStack w=\"1\" grow=\"1\" gap=\"0\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\"><HStack alignItems=\"center\" backgroundColor=\"$warning\" padding=\"14\" gap=\"10\"><Icon ref=\"levers.1.icon\" size=\"22\" color=\"$onAccent\" /><VStack grow=\"1\"><Text ref=\"levers.1.title\" bold=\"true\" color=\"$onAccent\" /></VStack><Text ref=\"levers.1.tag\" w=\"max\" bold=\"true\" letterSpacing=\"1\" color=\"$onAccent\" /></HStack><VStack grow=\"1\" gap=\"10\" padding=\"18\"><Text ref=\"levers.1.body\" color=\"$textMuted\" /><Ul ref=\"levers.1.bullets\" fontSize=\"17\" color=\"$textMuted\" /></VStack></VStack></HStack><HStack gap=\"18\" grow=\"1\"><VStack w=\"1\" grow=\"1\" gap=\"0\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\"><HStack alignItems=\"center\" backgroundColor=\"$accent\" padding=\"14\" gap=\"10\"><Icon ref=\"levers.2.icon\" size=\"22\" color=\"$onAccent\" /><VStack grow=\"1\"><Text ref=\"levers.2.title\" bold=\"true\" color=\"$onAccent\" /></VStack><Text ref=\"levers.2.tag\" w=\"max\" bold=\"true\" letterSpacing=\"1\" color=\"$onAccent\" /></HStack><VStack grow=\"1\" gap=\"10\" padding=\"18\"><Text ref=\"levers.2.body\" color=\"$textMuted\" /><Ul ref=\"levers.2.bullets\" fontSize=\"17\" color=\"$textMuted\" /></VStack></VStack><VStack w=\"1\" grow=\"1\" gap=\"0\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\"><HStack alignItems=\"center\" backgroundColor=\"$positive\" padding=\"14\" gap=\"10\"><Icon ref=\"levers.3.icon\" size=\"22\" color=\"$onAccent\" /><VStack grow=\"1\"><Text ref=\"levers.3.title\" bold=\"true\" color=\"$onAccent\" /></VStack><Text ref=\"levers.3.tag\" w=\"max\" bold=\"true\" letterSpacing=\"1\" color=\"$onAccent\" /></HStack><VStack grow=\"1\" gap=\"10\" padding=\"18\"><Text ref=\"levers.3.body\" color=\"$textMuted\" /><Ul ref=\"levers.3.bullets\" fontSize=\"17\" color=\"$textMuted\" /></VStack></VStack></HStack></VStack>",
+  "timeline": "<VStack grow=\"1\" gap=\"14\" justifyContent=\"center\"><HStack gap=\"0\" alignItems=\"end\"><VStack w=\"1\" grow=\"4\" gap=\"4\" padding=\"6\"><Text ref=\"roadmap.0.date\" bold=\"true\" letterSpacing=\"1\" textAlign=\"center\" color=\"$accentText\" /><Text ref=\"roadmap.0.title\" bold=\"true\" textAlign=\"center\" color=\"$textMain\" /><Text ref=\"roadmap.0.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"4\" gap=\"4\" padding=\"6\"><Text ref=\"roadmap.2.date\" bold=\"true\" letterSpacing=\"1\" textAlign=\"center\" color=\"$accentText\" /><Text ref=\"roadmap.2.title\" bold=\"true\" textAlign=\"center\" color=\"$accentText\" /><Text ref=\"roadmap.2.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"2\" /></HStack><HStack gap=\"0\" alignItems=\"center\"><VStack w=\"1\" grow=\"1\" /><HStack w=\"1\" grow=\"2\" alignItems=\"center\" gap=\"0\"><VStack w=\"max\" grow=\"1\" /><Shape shapeType=\"ellipse\" w=\"22\" h=\"22\" fill.color=\"$neutral\" /><Shape shapeType=\"rect\" w=\"max\" grow=\"1\" h=\"3\" fill.color=\"$border\" /></HStack><HStack w=\"1\" grow=\"2\" alignItems=\"center\" gap=\"0\"><Shape shapeType=\"rect\" w=\"max\" grow=\"1\" h=\"3\" fill.color=\"$border\" /><Shape shapeType=\"ellipse\" w=\"22\" h=\"22\" fill.color=\"$neutral\" /><Shape shapeType=\"rect\" w=\"max\" grow=\"1\" h=\"3\" fill.color=\"$border\" /></HStack><HStack w=\"1\" grow=\"2\" alignItems=\"center\" gap=\"0\"><Shape shapeType=\"rect\" w=\"max\" grow=\"1\" h=\"3\" fill.color=\"$border\" /><Shape shapeType=\"ellipse\" w=\"22\" h=\"22\" fill.color=\"$accent\" /><Shape shapeType=\"rect\" w=\"max\" grow=\"1\" h=\"3\" fill.color=\"$border\" /></HStack><HStack w=\"1\" grow=\"2\" alignItems=\"center\" gap=\"0\"><Shape shapeType=\"rect\" w=\"max\" grow=\"1\" h=\"3\" fill.color=\"$border\" /><Shape shapeType=\"ellipse\" w=\"22\" h=\"22\" fill.color=\"$neutral\" /><VStack w=\"max\" grow=\"1\" /></HStack><VStack w=\"1\" grow=\"1\" /></HStack><HStack gap=\"0\" alignItems=\"start\"><VStack w=\"1\" grow=\"2\" /><VStack w=\"1\" grow=\"4\" gap=\"4\" padding=\"6\"><Text ref=\"roadmap.1.date\" bold=\"true\" letterSpacing=\"1\" textAlign=\"center\" color=\"$accentText\" /><Text ref=\"roadmap.1.title\" bold=\"true\" textAlign=\"center\" color=\"$textMain\" /><Text ref=\"roadmap.1.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"4\" gap=\"4\" padding=\"6\"><Text ref=\"roadmap.3.date\" bold=\"true\" letterSpacing=\"1\" textAlign=\"center\" color=\"$accentText\" /><Text ref=\"roadmap.3.title\" bold=\"true\" textAlign=\"center\" color=\"$textMain\" /><Text ref=\"roadmap.3.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack></HStack></VStack>"
+ },
+ "free_xml": {
+  "kpi_row": "<VStack gap=\"14\" grow=\"1\"><HStack gap=\"14\" grow=\"1\"><VStack w=\"1\" grow=\"1\" gap=\"10\" padding=\"20\" backgroundColor=\"$surfaceAlt\" justifyContent=\"center\"><HStack gap=\"12\" alignItems=\"center\"><Text ref=\"kpis.0.value\" w=\"max\" color=\"$textMain\" /><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$positiveSoft\" borderRadius=\"12\"><Text ref=\"kpis.0.note\" w=\"max\" color=\"$positiveText\" /></HStack></HStack><Text ref=\"kpis.0.label\" color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"10\" padding=\"20\" backgroundColor=\"$surfaceAlt\" justifyContent=\"center\"><HStack gap=\"12\" alignItems=\"center\"><Text ref=\"kpis.1.value\" w=\"max\" color=\"$textMain\" /><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$positiveSoft\" borderRadius=\"12\"><Text ref=\"kpis.1.note\" w=\"max\" color=\"$positiveText\" /></HStack></HStack><Text ref=\"kpis.1.label\" color=\"$textMuted\" /></VStack></HStack><HStack gap=\"14\" grow=\"1\"><VStack w=\"1\" grow=\"1\" gap=\"10\" padding=\"20\" backgroundColor=\"$surfaceAlt\" justifyContent=\"center\"><HStack gap=\"12\" alignItems=\"center\"><Text ref=\"kpis.2.value\" w=\"max\" color=\"$textMain\" /><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$negativeSoft\" borderRadius=\"12\"><Text ref=\"kpis.2.note\" w=\"max\" color=\"$negativeText\" /></HStack></HStack><Text ref=\"kpis.2.label\" color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"10\" padding=\"20\" backgroundColor=\"$surfaceAlt\" justifyContent=\"center\"><HStack gap=\"12\" alignItems=\"center\"><Text ref=\"kpis.3.value\" w=\"max\" color=\"$textMain\" /><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$warningSoft\" borderRadius=\"12\"><Text ref=\"kpis.3.note\" w=\"max\" color=\"$warningText\" /></HStack></HStack><Text ref=\"kpis.3.label\" color=\"$textMuted\" /></VStack></HStack></VStack>",
+  "card_grid": "<VStack gap=\"10\" grow=\"1\"><HStack grow=\"1\" gap=\"24\" padding=\"16\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" alignItems=\"center\"><VStack w=\"22%\" gap=\"6\"><Icon ref=\"levers.0.icon\" size=\"26\" color=\"$accentText\" /><Text ref=\"levers.0.title\" bold=\"true\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Text ref=\"levers.0.body\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Ul ref=\"levers.0.bullets\" color=\"$textMuted\" /></VStack><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$accentSoft\" borderRadius=\"10\"><Text ref=\"levers.0.tag\" w=\"max\" bold=\"true\" color=\"$accentText\" /></HStack></HStack><HStack grow=\"1\" gap=\"24\" padding=\"16\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" alignItems=\"center\"><VStack w=\"22%\" gap=\"6\"><Icon ref=\"levers.1.icon\" size=\"26\" color=\"$accentText\" /><Text ref=\"levers.1.title\" bold=\"true\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Text ref=\"levers.1.body\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Ul ref=\"levers.1.bullets\" color=\"$textMuted\" /></VStack><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$accentSoft\" borderRadius=\"10\"><Text ref=\"levers.1.tag\" w=\"max\" bold=\"true\" color=\"$accentText\" /></HStack></HStack><HStack grow=\"1\" gap=\"24\" padding=\"16\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" alignItems=\"center\"><VStack w=\"22%\" gap=\"6\"><Icon ref=\"levers.2.icon\" size=\"26\" color=\"$accentText\" /><Text ref=\"levers.2.title\" bold=\"true\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Text ref=\"levers.2.body\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Ul ref=\"levers.2.bullets\" color=\"$textMuted\" /></VStack><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$accentSoft\" borderRadius=\"10\"><Text ref=\"levers.2.tag\" w=\"max\" bold=\"true\" color=\"$accentText\" /></HStack></HStack><HStack grow=\"1\" gap=\"24\" padding=\"16\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" alignItems=\"center\"><VStack w=\"22%\" gap=\"6\"><Icon ref=\"levers.3.icon\" size=\"26\" color=\"$accentText\" /><Text ref=\"levers.3.title\" bold=\"true\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Text ref=\"levers.3.body\" color=\"$textMain\" /></VStack><VStack w=\"1\" grow=\"1\"><Ul ref=\"levers.3.bullets\" color=\"$textMuted\" /></VStack><HStack w=\"max\" grow=\"0\" padding=\"6\" backgroundColor=\"$accentSoft\" borderRadius=\"10\"><Text ref=\"levers.3.tag\" w=\"max\" bold=\"true\" color=\"$accentText\" /></HStack></HStack></VStack>",
+  "timeline": "<HStack grow=\"1\" gap=\"10\" alignItems=\"center\"><VStack w=\"1\" grow=\"1\" gap=\"10\" alignItems=\"center\"><VStack w=\"110\" h=\"110\" justifyContent=\"center\" backgroundColor=\"$surfaceAlt\" borderRadius=\"55\"><Text ref=\"roadmap.0.date\" bold=\"true\" textAlign=\"center\" color=\"$accentText\" /></VStack><Text ref=\"roadmap.0.title\" bold=\"true\" textAlign=\"center\" color=\"$textMain\" /><Text ref=\"roadmap.0.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack><Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" /><VStack w=\"1\" grow=\"1\" gap=\"10\" alignItems=\"center\"><VStack w=\"110\" h=\"110\" justifyContent=\"center\" backgroundColor=\"$surfaceAlt\" borderRadius=\"55\"><Text ref=\"roadmap.1.date\" bold=\"true\" textAlign=\"center\" color=\"$accentText\" /></VStack><Text ref=\"roadmap.1.title\" bold=\"true\" textAlign=\"center\" color=\"$textMain\" /><Text ref=\"roadmap.1.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack><Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" /><VStack w=\"1\" grow=\"1\" gap=\"10\" alignItems=\"center\"><VStack w=\"110\" h=\"110\" justifyContent=\"center\" backgroundColor=\"$accent\" borderRadius=\"55\"><Text ref=\"roadmap.2.date\" bold=\"true\" textAlign=\"center\" color=\"$onAccent\" /></VStack><Text ref=\"roadmap.2.title\" bold=\"true\" textAlign=\"center\" color=\"$textMain\" /><Text ref=\"roadmap.2.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack><Icon name=\"arrow-right\" size=\"22\" color=\"$textMuted\" alignSelf=\"center\" /><VStack w=\"1\" grow=\"1\" gap=\"10\" alignItems=\"center\"><VStack w=\"110\" h=\"110\" justifyContent=\"center\" backgroundColor=\"$surfaceAlt\" borderRadius=\"55\"><Text ref=\"roadmap.3.date\" bold=\"true\" textAlign=\"center\" color=\"$accentText\" /></VStack><Text ref=\"roadmap.3.title\" bold=\"true\" textAlign=\"center\" color=\"$textMain\" /><Text ref=\"roadmap.3.description\" textAlign=\"center\" color=\"$textMuted\" /></VStack></HStack>"
+ }
+}
