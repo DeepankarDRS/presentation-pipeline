@@ -64,6 +64,7 @@ GATE_CASES = [
     "gj-h1-regen",
 ]
 _COMPILE_SCRIPT = _PIPELINE_ROOT / "src" / "node" / "compile-pom.js"
+ALL_NODES = "chart,timeline,kpi_row,card_grid,table,bullet_list"
 
 
 # ── running ─────────────────────────────────────────────────────────────────
@@ -452,7 +453,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--compose", action="store_true",
                         help="also draw each run's plans with the code composer -> decks/<case>__rN/composed.pptx (no API)")
     parser.add_argument("--out", type=Path, default=_PIPELINE_ROOT / "output" / "eval")
+    parser.add_argument("--nodes", action="store_true", help="all six composition nodes on, whatever .env says")
+    parser.add_argument("--max-cost", type=float,
+                        help="stop before the next run once this much is spent (USD); a run under way always finishes")
     args = parser.parse_args(argv)
+    if args.nodes:   # load_dotenv never overrides a key already set
+        os.environ.update(POM_BLOCKS="tiles", POM_NODES=ALL_NODES)
 
     stamp = f"{datetime.now():%Y%m%d-%H%M%S}"
     out_dir = args.out / f"{args.label}-{stamp}"
@@ -471,11 +477,17 @@ def main(argv: list[str] | None = None) -> int:
         setup_logging()
         file_log = add_file_log(out_dir / "run.log")   # full lines, travels in the bundle
         cases = []
+        skipped: list[str] = []
         for name in args.cases or GATE_CASES:
             case = load_case(name)
             golden = (evaluate_fixtures(_PIPELINE_ROOT / case["golden"], out_dir / "golden" / name)
                       if case.get("golden") else None)
             for r in range(1, args.repeat + 1):
+                spent = sum(c.get("cost") or 0 for c in cases)
+                if args.max_cost is not None and spent >= args.max_cost:
+                    print(f"STOP: ${spent:.3f} spent, --max-cost ${args.max_cost:.2f}; {name} run {r} not started", flush=True)
+                    skipped.append(f"{name} r{r}")
+                    continue
                 result = evaluate_case(case, r)
                 if golden:
                     score_against_golden(result, golden)
@@ -495,6 +507,9 @@ def main(argv: list[str] | None = None) -> int:
         "git_commit": _git_commit(),
         "models_sha": hashlib.sha256((_PIPELINE_ROOT / "models.yaml").read_bytes()).hexdigest()[:8],
         "fit_grow": os.environ.get("POM_FIT_GROW", "1"),
+        "pom_blocks": os.environ.get("POM_BLOCKS", ""),
+        "pom_nodes": os.environ.get("POM_NODES", ""),
+        "not_started": skipped if not args.fixtures else [],
         "aggregate": aggregate(cases),
         "cases": cases,
     }

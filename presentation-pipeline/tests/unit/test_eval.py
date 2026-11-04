@@ -286,3 +286,24 @@ def test_every_gate_case_loads_with_a_request():
 def test_gj_h1_case_matches_golden_deck():
     assert CASE.read_text(encoding="utf-8") == build_case(), "run: python -m scripts.make_gj_h1_case"
     assert "gj-h1-regen" in eval_run.GATE_CASES
+
+
+
+def test_nodes_flag_sets_the_route_and_max_cost_stops_before_the_next_run(tmp_path, monkeypatch):
+    import json
+    from scripts import eval_run as ER
+    monkeypatch.delenv("POM_NODES", raising=False)
+    monkeypatch.delenv("POM_BLOCKS", raising=False)
+    seen = []
+
+    def fake_case(case, repeat):
+        seen.append((case["name"], os.environ["POM_NODES"], os.environ["POM_BLOCKS"]))
+        return {"name": case["name"], "repeat": repeat, "run_id": "x", "passed": True, "error": None, "tokens_in": 0, "tokens_out": 0,
+                "cost": 0.6, "elapsed": 0.0, "expected_slides": 0, "slides": [], "_deck_pptx": None}
+
+    monkeypatch.setattr(ER, "evaluate_case", fake_case)
+    monkeypatch.setattr(ER, "load_case", lambda n: {"name": n})
+    assert ER.main(["a", "b", "c", "--label", "t", "--repeat", "1", "--nodes", "--max-cost", "1.0", "--out", str(tmp_path)]) == 0
+    assert [s[0] for s in seen] == ["a", "b"] and seen[0][1:] == (ER.ALL_NODES, "tiles")
+    results = json.loads(next(tmp_path.glob("t-*/results.json")).read_text(encoding="utf-8"))
+    assert results["not_started"] == ["c r1"] and results["pom_nodes"] == ER.ALL_NODES
