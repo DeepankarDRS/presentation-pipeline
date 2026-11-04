@@ -163,18 +163,13 @@ blocks:
       plain: {prompt: "the text as written"}
 
   table:
-    tag: Table                # every table variant stays a native Table: code sets cell fills
+    tag: Table                # only `native` is a real PowerPoint table
     family: native
     plan_kind: table
     emphasis_from: [design_hint]
     variants:                 # the compositions of `nodes.table` (POM_NODES=table, tables.py); names as there
       native:          {prompt: "POM's table: solid header band, striped rows, no borders, bold first column, the hinted row / column tinted"}
       rows:            {prompt: "one ruled row per table row: the first cell as its title, the other cells to the right"}
-      rows numbered:   {prompt: "rows with 01 02 03 leading each", requires: [no_own_numbers], fallback: rows}
-      columns:         {prompt: "one column per row: its first cell as a pill, each other cell in its own box", requires: [count_le_5, columns_le_6], fallback: native}
-      banded:          {prompt: "equal boxes, the first cell in a solid band over 'column: value' lines", requires: [count_le_6], fallback: native}
-      grid:            {prompt: "the table's rows and columns kept, every cell its own card under header pills", requires: [count_le_6, columns_le_6], fallback: native}
-      grid numbered:   {prompt: "grid with a 01 02 03 tile leading each row", requires: [count_le_6, columns_le_6, no_own_numbers], fallback: grid}
       ledger:          {prompt: "one solid header band (an icon over each column name) over joined, tinted rows", requires: [columns_le_6], fallback: native}
 
   chart:
@@ -957,70 +952,26 @@ nodes:
   table:
     tag: Table
     plan_kind: table
-    parts: {header: Cell, label: Cell, cell: Cell, stripe: Cell, number: Text, band: Box, item: Box}
-    meta: [ref, variant, labels, icons]
+    parts: {header: Cell, label: Cell, cell: Cell, stripe: Cell, item: Box}
+    meta: [ref, variant, icons]
     native_attributes: [cellBorder.color, cellBorder.width, cellBorder.dashType]   # the Table's own
-    code_owned: [defaultRowHeight]
+    code_owned: [defaultRowHeight, labels]   # labels: grid's, removed
     compositions:
       native:
-        ignores: [alignItems, gap, justifyContent, number, band]
+        ignores: [alignItems, gap, justifyContent]
         look:     {cellBorder.width: 0, header.backgroundColor: $accent, header.color: $onAccent, header.bold: "true",
                    label.color: $textMain, label.bold: "true", cell.color: $textMain,
                    stripe.backgroundColor: $surfaceAlt}   # striped, no borders (user 2026-11-02)
         emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.backgroundColor: $toneSoft,
                    label.color: $toneText, cell.backgroundColor: $toneSoft, cell.color: $toneText, cell.bold: "true"}
       rows:
-        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number, band]
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe]
         look:     {header.color: $textMuted, label.color: $textMain, cell.color: $textMain,
                    item.borderTop.color: $border, item.borderTop.width: 1}
         emphasis: {item.backgroundColor: $toneSoft, header.color: $toneText, label.color: $toneText,
                    cell.color: $toneText, cell.bold: "true"}
-      rows numbered:
-        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, band]
-        requires: [no_own_numbers]
-        fallback: rows
-        look:     {header.color: $textMuted, label.color: $textMain, cell.color: $textMain, number.color: $accentText,
-                   item.borderTop.color: $border, item.borderTop.width: 1}
-        emphasis: {item.backgroundColor: $toneSoft, header.color: $toneText, label.color: $toneText,
-                   cell.color: $toneText, cell.bold: "true", number.color: $toneText}
-      columns:                          # one column per row: the label as a band. pill, each other cell in its own box
-        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number]
-        requires: [count_le_5, columns_le_6]
-        fallback: native
-        look:     {band.backgroundColor: $accent, label.color: $onAccent, header.color: $textMuted, cell.color: $textMain,
-                   item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
-                   item.borderRadius: 8}
-        emphasis: {band.backgroundColor: $panelDark, label.color: $onPanelDark, header.color: $toneText,
-                   item.backgroundColor: $toneSoft, item.border.color: $tone}
-      banded:                           # equal boxes, the label in a solid band. over "column: value" lines
-        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number]
-        requires: [count_le_6]
-        fallback: native
-        look:     {band.backgroundColor: $accent, label.color: $onAccent, header.color: $textMuted, cell.color: $textMain,
-                   item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1}
-        emphasis: {band.backgroundColor: $panelDark, label.color: $onPanelDark, header.color: $toneText,
-                   cell.color: $toneText, cell.bold: "true"}
-      grid:                             # header pills over the columns, every cell its own card
-        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number, band]
-        requires: [count_le_6, columns_le_6]
-        fallback: native
-        look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
-                   cell.color: $textMain, item.backgroundColor: $surface, item.border.color: $border,
-                   item.border.width: 1, item.borderRadius: 8}
-        emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.color: $toneText, cell.color: $toneText, cell.bold: "true",
-                   item.backgroundColor: $toneSoft, item.border.color: $tone}
-      grid numbered:
-        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe]
-        requires: [count_le_6, columns_le_6, no_own_numbers]
-        fallback: grid
-        look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
-                   label.backgroundColor: $surfaceAlt, cell.color: $textMain, item.backgroundColor: $surface,
-                   item.border.color: $border, item.border.width: 1, item.borderRadius: 8,
-                   band.backgroundColor: $accent, number.color: $onAccent}
-        emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.color: $toneText, cell.color: $toneText, cell.bold: "true",
-                   item.backgroundColor: $toneSoft, item.border.color: $tone, band.backgroundColor: $tone}
       ledger:
-        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, number, band, stripe.bold, stripe.color, stripe.italic, stripe.textAlign, stripe.underline]
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe.bold, stripe.color, stripe.italic, stripe.textAlign, stripe.underline]
         requires: [columns_le_6]
         fallback: native
         look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
@@ -1029,6 +980,11 @@ nodes:
                    item.backgroundColor: $toneSoft}
     aliases:                            # the left-blocks draft's names
       plain: native
+      rows numbered: rows               # removed (user, 2026-11-04); the card looks draw an editable native table instead
+      columns: native
+      banded: native
+      grid: native
+      grid numbered: native
       highlight_row: native             # the emphasis look of native
       zebra: {variant: native, stripe.backgroundColor: $surfaceAlt}
       dark_header: {variant: native, header.backgroundColor: $panelDark, header.color: $onPanelDark,
@@ -1037,6 +993,5 @@ nodes:
       borderless: 'header.backgroundColor="$accentSoft" header.color="$textMain" stripe.backgroundColor="$surface"'   # compact number tables
       bordered: 'cellBorder.color="$border" cellBorder.width="1" header.backgroundColor="$accentSoft" header.color="$textMain" stripe.backgroundColor="$surface"'
       dark_header: 'header.backgroundColor="$panelDark" header.color="$onPanelDark" label.color="$accentText"'
-      label_cards: 'label.backgroundColor="$accent" label.color="$onAccent" header.backgroundColor="$surface" header.color="$textMuted" item.backgroundColor="$surfaceAlt" item.border.color="$surfaceAlt"'
       accent_edge: 'item.borderLeft.color="$accent" item.borderLeft.width="4" item.borderRadius="0"'
       lifted: 'item.border.color="$surface" item.shadow.type="outer" item.shadow.blur="8" item.shadow.offset="2" item.shadow.opacity="0.12" backgroundColor="$surfaceAlt" padding="18" borderRadius="10"'

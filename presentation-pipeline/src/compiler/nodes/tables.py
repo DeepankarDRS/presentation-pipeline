@@ -2,7 +2,7 @@
 
 The LLM writes one self-closing tag per table component; code draws it from the plan:
 
-    <Table ref="gaps" variant="rows numbered" grow="1" stripe.backgroundColor="$surfaceAlt"/>
+    <Table ref="gaps" variant="ledger" grow="1" stripe.backgroundColor="$surfaceAlt"/>
 
 Compositions (block-variants.yaml `nodes.table`; the sheet docs/eval/composition-left/table.png is what they draw):
 - `native` (default): POM's Table. Code writes every part onto the <Td>s, since POM ignores attributes on <Tr> (C1,
@@ -10,11 +10,11 @@ Compositions (block-variants.yaml `nodes.table`; the sheet docs/eval/composition
   rows: `zebra`), `item.backgroundColor` (every body cell). The table carries an id (tbl-<cid>) and no
   cell fontSize, so fit-grow sizes it from its text (14 px cells, column widths, rows) and, as the slide's main table,
   grows its text and rows into spare height, further than an LLM table (NODE_TABLE_CAPS).
-- `rows` / `rows numbered`: one ruled row per table row: [01] · the first cell as its title · the other cells; the
-  column names as small labels on top.
-- `columns` (≤ 5 rows, ≤ 6 columns): one column per row, its first cell as a `band.` pill, each other cell in its own
-  box (`item.`) under its column name.
-- `banded` (≤ 6 rows): equal boxes, the first cell in a solid `band.` over "column: value" lines.
+- `rows`: one ruled row per table row: the first cell as its title · the other cells; the column names as small labels
+  on top.
+- `ledger` (≤ 6 columns): one solid header band (an icon over each column name, from `icons`) over joined, tinted rows.
+Only `native` is a real PowerPoint table, which a person can edit by hand; the others are loose shapes. `rows numbered`,
+`columns`, `banded`, `grid` and `grid numbered` were removed (user, 2026-11-04): their names are aliases now.
 
 Code owns every word (verbatim, plan order), the numbers and the emphasis: the one row or column the design hint
 names, in the hint's tone ($tone / $toneSoft / $toneText -> positive, negative, warning; else accent). A row takes
@@ -402,108 +402,29 @@ def draw_native(comp: dict, box: dict, pick: Pick) -> str:
     return "".join(out) + "</Table>"
 
 
-def draw_rows(comp: dict, box: dict, pick: Pick, numbered: bool) -> str:
+def draw_rows(comp: dict, box: dict, pick: Pick) -> str:
     cid, (cols, rows) = comp["component_id"], grid(comp)
-    lead = '<VStack w="72" />' if numbered else ""
     lab = lambda i: T(cols[i].upper(), 13, pick.col(i)["header"], bold="true", letterSpacing="1")  # noqa: E731
-    head = (f'<HStack gap="20">{lead}<VStack w="24%">{lab(0)}</VStack>'
+    head = (f'<HStack gap="20"><VStack w="24%">{lab(0)}</VStack>'
             + "".join(f'<VStack w="1" grow="1">{lab(i)}</VStack>' for i in range(1, len(cols))) + "</HStack>") \
         if any(c.strip() for c in cols) else ""
     body = []
     for r, row in enumerate(rows):
         p = pick.row(r)
         item = {k: v for k, v in p["item"].items() if r or not k.startswith("borderTop")}   # no rule above the first
-        num = f'<VStack w="72">{T(f"{r + 1:02d}", 30, p["number"], bold="true")}</VStack>' if numbered else ""
         cells = "".join(f'<VStack w="1" grow="1"{A(pick.paint.box(r, i, {}))}>{pick.text(r, i, v, 18, pick.cell(r, i)["cell"])}</VStack>'
                         for i, v in enumerate(row) if i)
         body.append(f'<HStack id="card-{cid}-{r}" grow="1" gap="20" alignItems="center" padding="10"{A(item)}>'
-                    f'{num}<VStack w="24%"{A(pick.paint.box(r, 0, {}))}>{pick.text(r, 0, row[0], 22, p["label"], bold="true")}</VStack>{cells}</HStack>')
+                    f'<VStack w="24%"{A(pick.paint.box(r, 0, {}))}>{pick.text(r, 0, row[0], 22, p["label"], bold="true")}</VStack>{cells}</HStack>')
     return f'<VStack gap="8"{A(box)}>{head}<VStack gap="0" grow="1">{"".join(body)}</VStack></VStack>'
 
 
-def draw_columns(comp: dict, box: dict, pick: Pick) -> str:
-    cid, (cols, rows) = comp["component_id"], grid(comp)
-    out = []
-    for r, row in enumerate(rows):
-        p = pick.row(r)
-        pill = (f'<HStack padding="14" justifyContent="center"{A(pick.paint.box(r, 0, {"borderRadius": "24", **p["band"]}))}>'
-                f'{pick.text(r, 0, row[0], 19, p["label"], bold="true", textAlign="center")}</HStack>')
-        boxes = "".join(f'<VStack grow="1" gap="4" padding="14" justifyContent="center"{A(pick.paint.box(r, i, pick.cell(r, i)["item"]))}>'
-                        + (T(cols[i].upper(), 12, pick.cell(r, i)["header"], bold="true", letterSpacing="1") if cols[i].strip() else "")
-                        + f'{pick.text(r, i, v, 17, pick.cell(r, i)["cell"])}</VStack>' for i, v in enumerate(row) if i)
-        out.append(f'<VStack id="card-{cid}-{r}" w="1" grow="1" gap="10" alignItems="stretch">{pill}{boxes}</VStack>')
-    return f'<HStack gap="16" alignItems="stretch"{A(box)}>{"".join(out)}</HStack>'
-
-
-def per_line(n: int) -> int:
-    """Boxes per line in `banded`: 2 for 2 and 4, else up to 3 (5 -> 3 + 2, 6 -> 3 + 3)."""
-    return 2 if n in (2, 4) else min(n, 3)
-
-
-def draw_banded(comp: dict, box: dict, pick: Pick) -> str:
-    cid, (cols, rows) = comp["component_id"], grid(comp)
-    boxes = []
-    for r, row in enumerate(rows):
-        p = pick.row(r)
-        lines = "".join(
-            f'<HStack gap="12" alignItems="start"{A(pick.paint.box(r, i, {}))}><VStack w="34%">{T(cols[i], 15, pick.cell(r, i)["header"], bold="true")}</VStack>'
-            f'<VStack w="1" grow="1">{pick.text(r, i, v, 17, pick.cell(r, i)["cell"])}</VStack></HStack>'
-            for i, v in enumerate(row) if i)
-        item = {k: v for k, v in p["item"].items() if k != "backgroundColor"}
-        boxes.append(f'<VStack id="card-{cid}-{r}" w="1" grow="1" gap="0"{A(item)}>'
-                     f'<HStack padding="14"{A(pick.paint.box(r, 0, p["band"]))}>{pick.text(r, 0, row[0], 20, p["label"], bold="true")}</HStack>'
-                     f'<VStack grow="1" gap="10" padding="18"{A({"backgroundColor": p["item"].get("backgroundColor", "$surfaceAlt")})}>'
-                     f'{lines}</VStack></VStack>')
-    k = per_line(len(boxes))
-    return (f'<VStack gap="16"{A(box)}>' + "".join(f'<HStack gap="16" grow="1" alignItems="stretch">{"".join(boxes[j:j + k])}</HStack>'
-                                                  for j in range(0, len(boxes), k)) + "</VStack>")
-
-
-LABEL_W = "22%"   # the first column of a grid / ledger
+LABEL_W = "22%"   # the first column of a ledger
 
 
 def _boxed(p: dict) -> tuple[dict, dict]:
     """A Cell part drawn as a box around its Text: (box attributes, text attributes); backgroundColor goes on the box."""
     return {k: v for k, v in p.items() if k == "backgroundColor"}, {k: v for k, v in p.items() if k != "backgroundColor"}
-
-
-def draw_grid(comp: dict, box: dict, pick: Pick, numbered: bool, inside: bool) -> str:
-    """grid (numbered): the table's rows and columns kept, every cell its own card (`item.`). The header row is
-    pills (`header.`) over the columns; `labels="inside"` drops it and writes each column name in its cards instead.
-    numbered: a solid tile (`band.` box, `number.` text) leads each row. Headings (card-<cid>.th-<i>), first-column
-    boxes (card-<cid>.tl-<r>) and cells (card-<cid>.tc-<k>) are three fit-grow peer groups (in one group the bold label
-    read as each row's title and held the cells to title / 1.3), each evened to one size after the word guard
-    (fit-grow evenTableParts)."""
-    cid, (cols, rows) = comp["component_id"], grid(comp)
-    lead = '<VStack w="64" />' if numbered else ""
-
-    def heading(i: int, p: dict, px: int = 16) -> str:
-        hb, ht = _boxed(p["header"])
-        return (f'<HStack id="card-{cid}.th-{i}" padding="10" borderRadius="6"{A(hb)}>{T(cols[i], px, ht, bold="true")}</HStack>'
-                if hb else f'<VStack id="card-{cid}.th-{i}">{T(cols[i].upper(), 13, ht, bold="true", letterSpacing="1")}</VStack>')
-
-    def caps(i: int, p: dict) -> str:   # a column name written inside a card (labels="inside")
-        ht = {k: v for k, v in p["header"].items() if k != "backgroundColor"}
-        return T(cols[i].upper(), 12, ht, bold="true", letterSpacing="1") if inside and cols[i].strip() else ""
-
-    head = "" if inside or not any(c.strip() for c in cols) else (
-        f'<HStack gap="10" alignItems="end">{lead}<VStack w="{LABEL_W}">{heading(0, pick.col(0))}</VStack>'
-        + "".join(f'<VStack w="1" grow="1">{heading(i, pick.col(i))}</VStack>' for i in range(1, len(cols))) + "</HStack>")
-    body = []
-    for r, row in enumerate(rows):
-        p = pick.row(r)
-        lb, lt = _boxed(p["label"])
-        tile = ""
-        if numbered:
-            tile = (f'<VStack w="64" justifyContent="center" alignItems="center" borderRadius="8"{A(p["band"])}>'
-                    f'{T(f"{r + 1:02d}", 22, p["number"], bold="true")}</VStack>')
-        label = (f'<VStack id="card-{cid}.tl-{r}" w="{LABEL_W}" gap="4" padding="14" justifyContent="center" borderRadius="8"{A(pick.paint.box(r, 0, lb))}>'
-                 f'{caps(0, p)}{pick.text(r, 0, row[0], 19, lt, bold="true")}</VStack>')
-        cells = "".join(f'<VStack id="card-{cid}.tc-{r * len(cols) + i}" w="1" grow="1" gap="4" padding="14" justifyContent="center"{A(pick.paint.box(r, i, pick.cell(r, i)["item"]))}>'
-                        f'{caps(i, pick.cell(r, i))}{pick.text(r, i, v, 17, pick.cell(r, i)["cell"])}</VStack>'
-                        for i, v in enumerate(row) if i)
-        body.append(f'<HStack grow="1" gap="10" alignItems="stretch">{tile}{label}{cells}</HStack>')
-    return f'<VStack gap="10"{A(box)}>{head}{"".join(body)}</VStack>'
 
 
 def draw_ledger(comp: dict, box: dict, pick: Pick, icons: list[str]) -> str:
@@ -561,7 +482,7 @@ def draw(comp: dict, attrs: dict[str, str], flag, body: str = "") -> tuple[str, 
             del parts["item"][k]
     if paint and paint.boxed() and name == "native":
         flag("NODE_ATTR_DROPPED", ref, f'show="pills" / "bars" on <{TAG} ref="{ref}">: a native table cell holds only '
-             'text; use a card composition (grid, ledger, rows) for them. Removed.')
+             'text; use rows or ledger for them. Removed.')
         paint.pills, paint.bars = set(), {}
     focus = None if paint else emphasis(comp)
     box, rest, hi = compose.layers(nd, name, box, parts, focus is not None)
@@ -569,19 +490,10 @@ def draw(comp: dict, attrs: dict[str, str], flag, body: str = "") -> tuple[str, 
     box = {k: compose.tone_value(v, "accent") for k, v in box.items()}
     if name != "native" and not ({"h", "grow"} & set(box)):
         box["grow"] = "1"   # a native table sizes to its rows: fit-grow sets its columns, then grows it into spare height
-    inside = meta.get("labels") == "inside" and name.startswith("grid")
-    if inside:   # column names inside the cards: a pill's ink would vanish on a card, so caps text unless the LLM set it
-        for p, tone in ((rest, "$textMuted"), (hi, compose.tone_value("$toneText", role(comp, focus)))):
-            p["header"] = {k: v for k, v in p["header"].items() if k != "backgroundColor"}
-            if "color" not in parts["header"]:
-                p["header"]["color"] = tone
     pick = Pick(rest, hi, focus, paint)
     icons = [s.strip() for s in str(meta.get("icons") or "").split(",")]
     xml = (draw_native(comp, box, pick) if name == "native" else
-           draw_rows(comp, box, pick, name == "rows numbered") if name.startswith("rows") else
-           draw_grid(comp, box, pick, name == "grid numbered", inside) if name.startswith("grid") else
-           draw_ledger(comp, box, pick, icons) if name == "ledger" else
-           draw_columns(comp, box, pick) if name == "columns" else draw_banded(comp, box, pick))
+           draw_rows(comp, box, pick) if name == "rows" else draw_ledger(comp, box, pick, icons))
     return xml, {"composition": name, "focus": focus,
                  "highlights": bool(paint and (paint.fill or paint.ink or paint.spans))}
 
@@ -608,7 +520,7 @@ def node_lines() -> str:
         f'<{TAG} ref="<table id>" variant="..."/>: ' + "; ".join(f"{n} ({v['prompt']})" for n, v in vs.items()) + ".",
         "Code writes every cell and number; never type one. Layout (w, h, grow) and box attributes style the table's "
         "own box; parts header. (column names) label. (first column) cell. (other cells) stripe. (alternate rows) take "
-        "backgroundColor color bold italic textAlign in $tokens; item. / band. / number. on the drawn compositions. "
+        "backgroundColor color bold italic textAlign in $tokens; item. on rows and ledger. "
         f"No <Tr>, <Td> or fontSize. Recipes: {styles}.",
         "Colour by meaning with <Highlight/> inside the tag, a whole row or column first, then its exceptions (later "
         "marks win); without them code colours the row or column "
@@ -620,8 +532,8 @@ def node_lines() -> str:
         'compares) · <Highlight column="ROAS" max="good" min="bad"/> (highest / lowest value, its text)',
         '  <Highlight phrase="spend still rising" color="bad"/> (those words of a cell, in colour)',
         '  <Highlight column="QoQ" show="arrows"/> (▲ / ▼ before signed numbers; invert="true" when up is bad) · '
-        '<Highlight column="Status" show="pills"/> · <Highlight column="Spend" show="bars"/> (pills and bars: grid, '
-        'ledger, rows, columns, banded only)',
+        '<Highlight column="Status" show="pills"/> · <Highlight column="Spend" show="bars"/> (pills and bars: rows, '
+        'ledger only)',
         "Colour only what the headline or the hint is about.",
     ])
 

@@ -133,45 +133,31 @@ def test_unknown_variant_is_native():
     assert used(r, "match") == "native" and "NODE_VARIANT_UNKNOWN" in codes(r)
 
 
-def test_rows_and_numbered():
-    r = run('<Table ref="gaps" variant="rows numbered"/>', GAPS)
+def test_rows():
+    r = run('<Table ref="gaps" variant="rows"/>', GAPS)
     x = r["xml"]
-    assert used(r, "gaps") == "rows numbered"
-    assert all(f">0{i}</Text>" in x for i in range(1, 5)) and 'id="card-gaps-3"' in x
+    assert used(r, "gaps") == "rows" and 'id="card-gaps-3"' in x and ">01</Text>" not in x
     assert "MARKETPLACE A" in x and x.count('color="$positiveText"') >= 5     # Fix label + its 4 cells
     assert 'id="card-gapsx-' in x                                             # inner peer ids (C11)
     assert "borderTop" not in re.search(r'id="card-gaps-0"[^>]*>', x).group(0)
-    assert ">01</Text>" not in run('<Table ref="gaps" variant="rows"/>', GAPS)["xml"]
 
 
-def test_numbered_needs_no_own_numbers():
-    r = run('<Table ref="own" variant="rows numbered"/>', OWN)
-    assert used(r, "own") == "rows" and "NODE_VARIANT_UNMET" in codes(r)
-
-
-@pytest.mark.parametrize("word", ["columns", "banded"])
-def test_box_words(word):
+@pytest.mark.parametrize("word,drawn", [("rows numbered", "rows"), ("columns", "native"), ("banded", "native"),
+                                        ("grid", "native"), ("grid numbered", "native")])
+def test_removed_variants_draw_their_replacement(word, drawn):
     r = run(f'<Table ref="gaps" variant="{word}"/>', GAPS)
-    assert used(r, "gaps") == word and all(f'id="card-gaps-{i}"' in r["xml"] for i in range(4))
+    assert used(r, "gaps") == drawn and r["ok"] and "NODE_ATTR_ALIAS" in codes(r)
     assert all(c in r["xml"] for row in GAPS["content_data"]["table_rows"] for c in row)
 
 
-@pytest.mark.parametrize("word", ["columns", "banded"])
-def test_box_words_fall_back_on_tall_tables(word):
-    r = run(f'<Table ref="tall" variant="{word}"/>', TALL)
-    assert used(r, "tall") == "native" and "NODE_VARIANT_UNMET" in codes(r)
+def test_only_three_variants_are_offered():
+    assert list(TB.node()["compositions"]) == ["native", "rows", "ledger"]
+    assert list(spec.blocks()["table"]["variants"]) == ["native", "rows", "ledger"]
 
 
-def test_columns_needs_six_columns_or_fewer():
-    wide = {"component_id": "wide", "kind": "table", "content_data": {
-        "table_columns": list("ABCDEFG"), "table_rows": [list("1234567")]}}
-    assert not spec.check("columns_le_6", wide) and spec.check("count_le_5", wide)
-    assert used(run('<Table ref="wide" variant="columns"/>', wide), "wide") == "native"
-
-
-@pytest.mark.parametrize("n,k", [(1, 1), (2, 2), (3, 3), (4, 2), (5, 3), (6, 3)])
-def test_banded_per_line(n, k):
-    assert TB.per_line(n) == k
+def test_labels_inside_is_dropped_not_an_error():
+    r = run('<Table ref="gaps" variant="rows" labels="inside"/>', GAPS)
+    assert r["ok"] and "NODE_ATTR_DROPPED" in codes(r)
 
 
 def test_errors_and_literal_colours():
@@ -196,7 +182,7 @@ def test_composed_registry():
     assert "table" in composed.kinds_on() and composed.tag("table") == "Table"
     assert composed.all_drawn(p, "table") and composed.expand('<Table ref="gaps"/>', p)["components"]["gaps"]
     line = composed.prompt_line(dict(GAPS, count=1))
-    assert "4 rows x 4 columns" in line and "code colours column 'Fix'" in line and "columns | banded" in line
+    assert "4 rows x 4 columns" in line and "code colours column 'Fix'" in line and "rows | ledger" in line
     assert "TABLES" in composed.node_lines() and "borderless" in composed.node_lines() and "dash" not in composed.node_lines()
     assert "stripe.*" in composed.tag_attributes("table")
 
@@ -206,35 +192,7 @@ def test_off_without_pom_nodes(monkeypatch):
     assert "table" not in composed.kinds_on() and composed.drawn(plan(GAPS), "table") == {}
 
 
-# ── table as cards: grid / grid numbered / ledger (user, 2026-11-01) ─────────
-
-def test_grid_keeps_rows_columns_and_every_heading():
-    r = run('<Table ref="gaps" variant="grid"/>', GAPS)
-    x = r["xml"]
-    assert used(r, "gaps") == "grid" and r["ok"]
-    assert all(f">{h}</Text>" in x for h in GAPS["content_data"]["table_columns"])          # Gap included
-    assert all(c in x for row in GAPS["content_data"]["table_rows"] for c in row)
-    assert all(f'id="card-gaps.tl-{i}"' in x for i in range(4)) and x.count('id="card-gaps.tc-') == 12
-    assert x.count('id="card-gaps.th-') == 4                                                 # three peer groups
-    assert x.count('border.color="$positive"') == 4                                          # the Fix column's cards
-    assert 'backgroundColor="$positive"' in x and "$tone" not in x                           # its header pill
-
-
-def test_grid_labels_inside():
-    x = run('<Table ref="gaps" variant="grid" labels="inside"/>', GAPS)["xml"]
-    assert x.count(">GAP</Text>") == 4 and x.count(">MARKETPLACE A</Text>") == 4             # a name in every card
-    assert x.count(">FIX</Text>") == 4 and 'color="$positiveText"' in x
-    assert '<HStack padding="10" borderRadius="6"' not in x                                  # no header pills
-
-
-def test_grid_numbered_and_its_fallbacks():
-    r = run('<Table ref="gaps" variant="grid numbered"/>', GAPS)
-    assert used(r, "gaps") == "grid numbered" and all(f">0{i}</Text>" in r["xml"] for i in range(1, 5))
-    r = run('<Table ref="own" variant="grid numbered"/>', OWN)
-    assert used(r, "own") == "grid" and "NODE_VARIANT_UNMET" in codes(r)
-    r = run('<Table ref="tall" variant="grid"/>', TALL)
-    assert used(r, "tall") == "native" and "NODE_VARIANT_UNMET" in codes(r)
-
+# ── ledger (user, 2026-11-01) ─────────────────────────────────────────────────
 
 def test_ledger_icons_and_stripes():
     r = run('<Table ref="gaps" variant="ledger" icons="alert-triangle,store,shopping-cart,wrench"/>', GAPS)
@@ -245,10 +203,10 @@ def test_ledger_icons_and_stripes():
     assert "<Icon " not in run('<Table ref="gaps" variant="ledger"/>', GAPS)["xml"]           # no icons asked: names only
 
 
-@pytest.mark.parametrize("style", ["label_cards", "accent_edge", "lifted"])
-def test_grid_recipes_are_valid_attributes(style):
-    r = run(f'<Table ref="gaps" variant="grid" {TB.node()["styles"][style]}/>', GAPS)
-    assert used(r, "gaps") == "grid" and not [c for c in codes(r) if c in ("NODE_ATTR_UNKNOWN", "LITERAL_COLOR")]
+@pytest.mark.parametrize("style", ["accent_edge", "lifted"])
+def test_recipes_are_valid_attributes(style):
+    r = run(f'<Table ref="gaps" variant="ledger" {TB.node()["styles"][style]}/>', GAPS)
+    assert used(r, "gaps") == "ledger" and not [c for c in codes(r) if c in ("NODE_ATTR_UNKNOWN", "LITERAL_COLOR")]
 
 
 # ── highlights (user, 2026-11-02: fill = the cell's background, color = its text, phrases in <Span color>) ─────────
@@ -363,7 +321,7 @@ def test_highlight_other_children_dropped():
     assert "NODE_ATTR_DROPPED" in codes(res) and "<Td>x</Td>" not in res["xml"]
 
 
-@pytest.mark.parametrize("variant", ["rows", "columns", "banded", "grid", "grid numbered", "ledger"])
+@pytest.mark.parametrize("variant", ["rows", "ledger"])
 def test_highlight_on_every_composition(variant):
     res = hl('<Highlight row="Flipkart" fill="bad"/>', '<Highlight column="ROAS" max="good"/>',
              '<Highlight phrase="spend still rising" color="bad"/>', variant=variant)
@@ -423,7 +381,7 @@ def test_pills_take_the_cell_tone_in_card_compositions():
 
 
 def test_bars_sized_to_the_largest():
-    x = dl('<Highlight column="ARR" show="bars"/>', variant="grid")["xml"]
+    x = dl('<Highlight column="ARR" show="bars"/>', variant="ledger")["xml"]
     assert 'w="100%"' in x and 'w="51%"' in x and 'w="20%"' in x
 
 

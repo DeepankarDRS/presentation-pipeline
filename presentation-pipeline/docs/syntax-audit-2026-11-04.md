@@ -392,4 +392,6 @@ The px rows include each slide's root (`w="1280" h="720"`). Saved slides are fro
 9. **The look-parts question.** Do you want the pill, the side-by-side card and date-in-marker looks? If yes, that decides the escape in 3 for cards and timeline. *Recommend: decide from the right column of [atomic.png](eval/syntax-audit/atomic.png).*
 10. **Flexbox tidying** (`w="1"`, stretch, `centreBody`). *Recommend: later, after a replay. A prompt line on the `w="max"` axis trap is the one piece worth doing soon.*
 
+**Table variants (user, 2026-11-04).** `rows numbered`, `columns`, `banded`, `grid` and `grid numbered` are removed, so a person can edit tables by hand: only `native` is a real PowerPoint table ([table-variants.png](eval/syntax-audit/table-variants.png), [table-native-looks.png](eval/syntax-audit/table-native-looks.png)). `native`, `rows` and `ledger` remain; the removed names are aliases. The catalogue, stress and reach files above predate this.
+
 **After these,** the paid same-plan run (`scripts/composition_paid.py`) answers what this audit can't: does the LLM pick variants at all? In saved tile-tag slides only 2 of 37 group tags named one.
