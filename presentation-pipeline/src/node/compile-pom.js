@@ -17,7 +17,7 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { buildPptx, parseXml, ParseXmlError } from "@hirokisakabe/pom";
-import { chartPostSpecs, postProcessPptx } from "./pptx-post.js";
+import { chartPostSpecs, listPostSpecs, postProcessPptx } from "./pptx-post.js";
 import { loadFonts } from "./fonts.js";
 
 const SLIDE_SIZE = { w: 1280, h: 720 };
@@ -266,7 +266,7 @@ async function compile() {
     // table cells vertically centred (POM writes them top-anchored; see pptx-post.js)
     let buffer = await pptx.write({ outputType: "nodebuffer" });
     try {
-      buffer = await postProcessPptx(buffer, { charts: chartPostSpecs(originalXml) });
+      buffer = await postProcessPptx(buffer, { charts: chartPostSpecs(originalXml), lists: listPostSpecs(builtXml) });
     } catch (error) {
       // a post-process bug must not cost a retry: keep POM's own pptx
       result.warnings = [...(result.warnings ?? []), {

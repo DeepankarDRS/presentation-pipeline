@@ -1,21 +1,21 @@
 """The composition nodes switched on by POM_NODES (left-blocks spec §2.5), behind one interface for the validator,
 generator and context builder: chart (charts.py), timeline / process_arrow / flow (sequences.py), kpi_row /
-card_grid (tile_groups.py), table (tables.py)."""
+card_grid (tile_groups.py), table (tables.py), bullet_list (bullets.py)."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from src.compiler.nodes import charts, sequences, tables, tile_groups
+from src.compiler.nodes import bullets, charts, sequences, tables, tile_groups
 
 # plan-level content_data keys a drawn kind no longer needs in the prompt
 PLAN_KEYS = {"chart": ("chart_",), "timeline": ("timeline_items",), "process_arrow": ("process_steps",),
              "flow": ("flow_steps",), "kpi_row": ("kpi_",), "card_grid": ("card", "per_row", "focus_card"),
-             "table": ("table_",)}
+             "table": ("table_",), "bullet_list": ("bullets",)}
 
 # kind -> module for the one-kind nodes after chart, the sequences and the tile groups (each: on, TAG, components,
 # expand, node_lines, prompt_line, tag_attributes)
-MORE = {"table": tables}
+MORE = {"table": tables, "bullet_list": bullets}
 
 
 def kinds_on() -> list[str]:

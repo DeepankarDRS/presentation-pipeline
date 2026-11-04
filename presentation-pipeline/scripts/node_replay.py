@@ -5,7 +5,7 @@
     python -m scripts.node_replay --kind flow --no-render --limit 5
     (python -m scripts.chart_replay = --kind chart)
 
---kind: chart, timeline, process_arrow, flow or table. Takes every saved slide whose plan has one component of that kind with
+--kind: chart, timeline, process_arrow, flow, table or bullet_list. Takes every saved slide whose plan has one component of that kind with
 an id and whose XML has exactly one LLM-drawn node of its tag (<Chart>, <Timeline>, <ProcessArrow>, <Flow>), one per
 distinct XML (output/**/slides.json under --src, replays and galleries skipped). Arm A is the slide as the LLM wrote it.
 Arm B is the same XML with the LLM's node replaced by one <Tag ref> at its place: its card too (the nearest box around
@@ -35,7 +35,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow,table"
+os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow,table,bullet_list"
 
 from lxml import etree  # noqa: E402
 
@@ -43,7 +43,7 @@ from scripts.card_replay import BARE_AMP, SKIP, _parse, _serial, overlaps, rende
 from scripts.card_replay import sheets as card_sheets  # noqa: E402
 from scripts.kpi_replay import _theme, compile_slide, score  # noqa: E402
 from src.compiler.compiler_client import deck_font  # noqa: E402
-from src.compiler.nodes import composed, native, sequences, tables  # noqa: E402
+from src.compiler.nodes import bullets, compose, composed, native, sequences, tables  # noqa: E402
 LAYOUT_KEYS = ("w", "h", "grow", "minW", "maxW", "minH", "maxH", "alignSelf")
 SKIPPED: list[str] = []   # saved slides that could not be parsed
 _WORD = re.compile(r"[a-z0-9₹$%]+")
@@ -170,13 +170,88 @@ def llm_marks(table: etree._Element, comp: dict) -> list[str]:
     return marks
 
 
+def bullet_marks(ul: etree._Element, comp: dict) -> tuple[dict, list[str], Counter]:
+    """The LLM's own styling of its <Ul> as the tag's attributes and <Highlight>s (user 2026-11-04: can the tag replicate
+    the native attributes?). Returns (tag attributes, marks, what happened to each native attribute): carried, code (the
+    node writes it by itself), code-owned (sizes and fonts), changed (Mark -> colour, the user's rule), lost."""
+    pts, how, attrs, marks = bullets.items(comp), Counter(), {}, []
+    q = lambda s: native.x(s).replace('"', "&quot;")  # noqa: E731
+    norm = lambda s: " ".join(str(s).split()).casefold()  # noqa: E731
+    pieces = [p for s in pts for p in compose.split(s) if p]
+    for k, v in ul.attrib.items():
+        if k == "color":
+            if v == "$textMain":
+                how["list color: default"] += 1
+            elif v.startswith("$"):
+                attrs["color"] = v
+                how["list color: carried"] += 1
+            else:
+                how["list color: lost (not a token)"] += 1
+        elif k in ("fontSize", "lineHeight", "fontFamily"):
+            how[f"list {k}: code-owned"] += 1
+        elif k in ("bold", "italic", "textAlign"):
+            attrs["detail.bold" if k == "bold" else k] = v
+            how[f"list {k}: carried"] += 1
+        elif k not in LAYOUT_KEYS:
+            how[f"list {k}: lost"] += 1
+    for li in ul:
+        if li.tag != "Li":
+            continue
+        text = norm("".join(li.itertext()))
+        hit = next((s for s in pts if norm(s) == text), None)
+        for k, v in li.attrib.items():
+            if k in ("fontSize", "fontFamily"):
+                how[f"li {k}: code-owned"] += 1
+            elif hit is None:
+                how[f"li {k}: lost (point not in the plan as written)"] += 1
+            elif k == "color" and _tone(v):
+                marks.append(f'<Highlight item="{q(hit)}" color="{_tone(v)}"/>')
+                how["li color: carried"] += 1
+            elif k == "bold" and v == "true":
+                marks.append(f'<Highlight item="{q(hit)}" bold="true"/>')
+                how["li bold: carried"] += 1
+            else:
+                how[f"li {k}: lost ({v})"] += 1
+        for e in li.iter():
+            if e is li or not isinstance(e.tag, str):
+                continue
+            words = "".join(e.itertext()).strip()
+            bold = e.tag == "B" or e.get("bold") == "true"
+            tone = _tone(e.get("color"))
+            for k in ("fontSize", "fontFamily"):
+                if e.get(k):
+                    how[f"inline {k}: code-owned"] += 1
+            if e.tag == "Icon":
+                how["Icon in Li: POM strips it (rows + icons replaces it)"] += 1
+                continue
+            in_plan = any(words.lower() in p.lower() for p in pieces) if words else False
+            if not tone and not bold and e.tag != "Mark":
+                how[f"inline {e.tag}: no effect"] += 1
+            elif not in_plan:
+                how[f"inline {e.tag}: lost (words not one piece of the plan's point)"] += 1
+            elif not tone and bold and any(norm(words).rstrip(":") == norm(compose.split(s)[0]) for s in pts):
+                how["bold lead-in: code draws it"] += 1
+            elif e.tag == "Mark":
+                if tone:
+                    marks.append(f'<Highlight phrase="{q(words)}" color="{tone}"/>')
+                how["Mark: changed to colour (user rule)" if tone else "Mark: lost (no tone)"] += 1
+            elif tone or bold:
+                marks.append(f'<Highlight phrase="{q(words)}"' + (f' color="{tone}"' if tone else "")
+                             + (' bold="true"' if bold else "") + "/>")
+                how[f"inline {e.tag} {'colour' if tone else 'bold'}: carried"] += 1
+    return attrs, list(dict.fromkeys(marks)), how
+
+
 def rewrite(root: etree._Element, comp: dict, variant: str, marks_from_llm: bool = False) -> dict:
     tag = composed.tag(comp["kind"])
     chart = next(root.iter(tag))
     marks = llm_marks(chart, comp) if marks_from_llm and comp["kind"] == "table" else []
-    # a table node draws no card or title: the LLM keeps its own around the tag (user marks 2026-11-02: on 38 slides
-    # the replay had dropped the card and its title row)
-    el = chart if comp["kind"] == "table" else chart_card(chart, comp)
+    extra, how = {}, Counter()
+    if marks_from_llm and comp["kind"] == "bullet_list":
+        extra, marks, how = bullet_marks(chart, comp)
+    # a table or list node draws no card or title: the LLM keeps its own around the tag (user marks 2026-11-02: on 38
+    # slides the replay had dropped the card and its title row)
+    el = chart if comp["kind"] in ("table", "bullet_list") else chart_card(chart, comp)
     keep = {k: v for k, v in el.attrib.items() if k in LAYOUT_KEYS}
     if el is not chart:   # a card's height is the chart's plus the card's title row and padding (the LLM sized the chart)
         chrome = sum(float(el.get(k) or el.get("padding") or 0) for k in ("padding.top", "padding.bottom")) \
@@ -184,13 +259,13 @@ def rewrite(root: etree._Element, comp: dict, variant: str, marks_from_llm: bool
         keep.update({k: str(round(float(v) + chrome)) for k, v in chart.attrib.items()
                      if k in ("h", "minH") and k not in keep and re.fullmatch(r"\d+(?:\.\d+)?", v)})
     old = _serial(el)
-    attrs = {"ref": comp["component_id"], **({"variant": variant} if variant else {}), **keep}
+    attrs = {"ref": comp["component_id"], **({"variant": variant} if variant else {}), **keep, **extra}
     head = f"<{tag}" + "".join(f' {k}="{native.x(v)}"' for k, v in attrs.items())
     tag = f"{head}>{''.join(marks)}</{tag}>" if marks else head + " />"
     new = etree.fromstring(tag)
     new.tail = el.tail
     el.getparent().replace(el, new)
-    return {"old": old, "tag": tag, "card": el is not chart, "marks": len(marks)}
+    return {"old": old, "tag": tag, "card": el is not chart, "marks": len(marks), "native": dict(how)}
 
 
 _SHOWN = ("label", "title", "text", "date", "description")
@@ -201,6 +276,8 @@ def plan_items(comp: dict) -> list[str]:
     if comp["kind"] == "table":
         cols, rows = tables.grid(comp)
         return [c for c in cols + [v for r in rows for v in r] if c.strip()]
+    if comp["kind"] == "bullet_list":
+        return bullets.items(comp)
     return [f"{d} {h} {x}".strip() for d, h, x in sequences.items(comp)]
 
 
@@ -243,7 +320,7 @@ def run(src: Path, out: Path, do_render: bool, limit: int | None, variant: str, 
             continue
         done = rewrite(root, comp, variant, marks_from_llm)
         expanded = composed.expand(_serial(root), r["plan"])
-        row = {"case": r["case"], "source": r["source"], "card": done["card"], "tag": done["tag"], "marks": done["marks"],
+        row = {"case": r["case"], "source": r["source"], "card": done["card"], "tag": done["tag"], "marks": done["marks"], "native": done["native"],
                "b_issues": [i["code"] for i in expanded["issues"]], "drawn": expanded["components"],
                "tokens": {"A": tokens(done["old"]), "B": tokens(done["tag"])}}
         for arm, xml in (("A", BARE_AMP.sub("&amp;", r["xml"])), ("B", expanded["xml"])):
@@ -295,6 +372,9 @@ def summary(out: Path, results: list[dict], variant: str, kind: str = "chart") -
            f"marks per table {dict(sorted(Counter(r.get('marks', 0) for r in results).items()))} "
            f"(more than {tables.MANY_HIGHLIGHTS}: {sum(1 for r in results if r.get('marks', 0) > tables.MANY_HIGHLIGHTS)})"]
           if any(r.get("marks") for r in results) else []),
+        *(["", "What became of the LLM's native list attributes:", "",
+           *(f"- {k}: {v}" for k, v in sorted(sum((Counter(r.get("native") or {}) for r in results), Counter()).items()))]
+          if any(r.get("native") for r in results) else []),
     ]
     text = "\n".join(lines) + "\n"
     (out / "summary.md").write_text(text, encoding="utf-8")
@@ -303,7 +383,7 @@ def summary(out: Path, results: list[dict], variant: str, kind: str = "chart") -
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--kind", default="chart", choices=("chart", *sequences.KINDS, "table"))
+    ap.add_argument("--kind", default="chart", choices=("chart", *sequences.KINDS, "table", "bullet_list"))
     ap.add_argument("--src", type=Path, default=ROOT / "output", help="the folder holding saved runs' slides.json")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--variant", default="", help="composition for arm B (default: a bare tag)")
@@ -311,7 +391,7 @@ def main() -> int:
     ap.add_argument("--limit", type=int)
     ap.add_argument("--only", nargs="*", help="cases whose name contains one of these")
     ap.add_argument("--marks-from-llm", action="store_true",
-                    help="table: arm B gets <Highlight> marks made from the LLM's own colour coding")
+                    help="table / bullet_list: arm B gets <Highlight> marks made from the LLM's own colour coding")
     a = ap.parse_args()
     base = ROOT / "output" / f"{a.kind.replace('_', '-')}-replay"
     out = a.out or (base.with_name(f"{base.name}-{a.variant.replace(' ', '-')}") if a.variant else base)

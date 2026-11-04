@@ -13,6 +13,11 @@
 // <Chart>: POM's Chart has no data labels and no bar direction, so they are written here (chartPost):
 // `labels` = each value as a data label in the plan's number format `fmt` and the ink `ink` (a $token of
 // the slide's <Theme>), with no value axis; `barDir: "bar"` turns the bars, categories top-down.
+//
+// Lists the bullet node drew (src/compiler/nodes/bullets.py) carry `<!-- list-post {...} -->` comments: POM's <Ul> has
+// no marker colour and no paragraph spacing, so they are written here (listPost), found by their first words; the text
+// stays a real list. Numbered lists lose POM's startAt="1" on every paragraph (LibreOffice restarts at each: 1. 1. 1.;
+// 1 is the default, so nothing else changes).
 
 import JSZip from "jszip";
 import { DECK_FONT, POM_FAMILY } from "./fonts.js";
@@ -51,13 +56,56 @@ export function centreCells(slideXml, marginOf = cellMargin) {
 
 /** The chart-post spec of every <Chart> of a POM slide, in document order (null: none). Colour tokens are
  * resolved from the slide's <Theme>. */
-export function chartPostSpecs(pomXml) {
+function themeToken(pomXml) {
   const theme = /<Theme\b([^>]*)>/.exec(pomXml)?.[1] ?? "";
-  const token = (v) => {
+  return (v) => {
     const m = /^\$(\w+)$/.exec(String(v ?? ""));
     if (!m) return String(v ?? "").replace(/^#/, "");
     return new RegExp(`\\s${m[1]}="#?([0-9A-Fa-f]{6})"`).exec(theme)?.[1] ?? "1E293B";
   };
+}
+
+/** Per slide, the lists to post-edit: {first, gap, marker (hex)}. fit-grow writes first + gap; bullets.py the marker
+ * (a split list's columns share it: their ids start with the list's). */
+export function listPostSpecs(pomXml) {
+  const token = themeToken(pomXml);
+  return [...pomXml.matchAll(/<Slide\b[\s\S]*?<\/Slide>/g)].map(([slide]) => {
+    const specs = [...slide.matchAll(/<!--\s*list-post\s+(\{.*?\})\s*-->/g)].flatMap((m) => {
+      try { return [JSON.parse(m[1])]; } catch { return []; }
+    });
+    const markers = specs.filter((s) => s.marker);
+    return specs.filter((s) => s.first).map((s) => {
+      const marker = markers.find((k) => s.id.startsWith(k.id))?.marker;
+      return { first: s.first, gap: s.gap ?? 0, marker: marker ? token(marker) : null };
+    });
+  });
+}
+
+const unescapeXml = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, "&");
+
+/** One slide's XML with its lists' marker colour and point spacing; a list it cannot find stays POM's. */
+export function listPost(slideXml, specs) {
+  if (!specs?.length) return slideXml;
+  return slideXml.replace(/<p:sp>[\s\S]*?<\/p:sp>/g, (sp) => {
+    const paras = sp.match(/<a:p>[\s\S]*?<\/a:p>/g) ?? [];
+    if (!paras.length || !/<a:bu(?:Char|AutoNum)\b/.test(sp)) return sp;
+    const words = unescapeXml([...paras[0].matchAll(/<a:t\b[^>]*>([^<]*)<\/a:t>/g)].map((m) => m[1]).join(""));
+    const spec = specs.find((s) => words.startsWith(s.first));
+    if (!spec) return sp;
+    let k = 0;
+    const out = sp.replace(/<a:p>[\s\S]*?<\/a:p>/g, (p) => {
+      let q = p;
+      if (k > 0 && spec.gap >= 1) q = q.replace("</a:lnSpc>", `</a:lnSpc><a:spcBef><a:spcPts val="${Math.round(spec.gap * 75)}"/></a:spcBef>`);
+      if (spec.marker) q = q.replace(/<a:bu(?:SzPct|Font|Char|AutoNum)\b/, (m) => `<a:buClr><a:srgbClr val="${spec.marker}"/></a:buClr>${m}`);
+      k += 1;
+      return q;
+    });
+    return out.replace(/(<a:bodyPr\b[^>]*\sanchor=")t"/, '$1ctr"');   // what spacing cannot fill stays even above and below
+  });
+}
+
+export function chartPostSpecs(pomXml) {
+  const token = themeToken(pomXml);
   const out = [];
   let pending = null;
   for (const m of pomXml.matchAll(MARK_OR_CHART)) {
@@ -96,11 +144,12 @@ export function chartPost(chartXml, spec) {
 
 /** Post-process a built .pptx (Buffer in, Buffer out). `charts`: chartPostSpecs of the POM XML (the k-th <Chart>
  * is ppt/charts/chart<k+1>.xml: POM writes the charts in document order). */
-export async function postProcessPptx(buffer, { charts = [] } = {}) {
+export async function postProcessPptx(buffer, { charts = [], lists = [] } = {}) {
   const zip = await JSZip.loadAsync(buffer);
   for (const name of Object.keys(zip.files).filter((n) => SLIDE_RE.test(n))) {
     const xml = await zip.file(name).async("string");
-    const out = deckTypeface(centreCells(xml));
+    const k = Number(/slide(\d+)\.xml$/.exec(name)[1]) - 1;
+    const out = listPost(deckTypeface(centreCells(xml)), lists[k]).replace(/(<a:buAutoNum\b[^>]*?) startAt="1"/g, "$1");
     if (out !== xml) zip.file(name, out);
   }
   if (charts.some(Boolean)) {
