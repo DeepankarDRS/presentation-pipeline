@@ -28,7 +28,7 @@
     "buChar": 6,
     "buAutoNum": 0,
     "buClr": 6,
-    "spcBef": 0,
+    "spcBef": 4,
     "sizes_px": [
      28,
      32
@@ -67,7 +67,7 @@
    "slide 2: list spacing: 42px",
    "slide 3: split Ul (6 items) into 2 columns",
    "slide 3: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
-   "slide 3: list spacing: 1px, 1px",
+   "slide 3: list spacing: 42px, 42px",
    "slide 4: text x1.36 (e.g. 20 -> 27pt), fill 58% -> 87%",
    "slide 4: list spacing: 9px",
    "slide 5: spill fixed (dense: gap x0.5, padding x0.5): ul height 566 -> 608px",
@@ -356,8 +356,240 @@
     "buClr": 0,
     "spcBef": 0,
     "sizes_px": [
-     16,
-     17,
+     23,
+     28,
+     30,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     14,
+     19,
+     25,
+     32
+    ]
+   }
+  ],
+  "node_issues": [
+   "NODE_ATTR_DROPPED"
+  ],
+  "warnings": [
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP"
+  ],
+  "fitGrow": [
+   "slide 1: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 27% -> 42%",
+   "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 38% -> 38%",
+   "slide 2: text x2.98 (e.g. 16 -> 23pt), fill 51% -> 74%",
+   "slide 3: text x2.98 (e.g. 17 -> 28pt), fill 54% -> 84%",
+   "slide 4: text x2.98 (e.g. 17 -> 28pt), fill 57% -> 87%",
+   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+  ]
+ },
+ "native-graphite-dark": {
+  "slides": [
+   {
+    "list_shapes": 1,
+    "buChar": 3,
+    "buAutoNum": 0,
+    "buClr": 3,
+    "spcBef": 2,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 1,
+    "buChar": 5,
+    "buAutoNum": 0,
+    "buClr": 5,
+    "spcBef": 4,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 2,
+    "buChar": 6,
+    "buAutoNum": 0,
+    "buClr": 6,
+    "spcBef": 4,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 1,
+    "buChar": 8,
+    "buAutoNum": 0,
+    "buClr": 8,
+    "spcBef": 7,
+    "sizes_px": [
+     27,
+     32
+    ]
+   },
+   {
+    "list_shapes": 1,
+    "buChar": 5,
+    "buAutoNum": 0,
+    "buClr": 5,
+    "spcBef": 4,
+    "sizes_px": [
+     14,
+     20,
+     32
+    ]
+   }
+  ],
+  "node_issues": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 1: list spacing: 42px",
+   "slide 2: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 36% -> 52%",
+   "slide 2: list spacing: 42px",
+   "slide 3: split Ul (6 items) into 2 columns",
+   "slide 3: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 3: list spacing: 42px, 42px",
+   "slide 4: text x1.36 (e.g. 20 -> 27pt), fill 58% -> 87%",
+   "slide 4: list spacing: 9px",
+   "slide 5: spill fixed (dense: gap x0.5, padding x0.5): ul height 566 -> 608px",
+   "slide 5: list spacing: 4px"
+  ]
+ },
+ "native numbered-graphite-dark": {
+  "slides": [
+   {
+    "list_shapes": 1,
+    "buChar": 0,
+    "buAutoNum": 3,
+    "buClr": 3,
+    "spcBef": 2,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 1,
+    "buChar": 0,
+    "buAutoNum": 5,
+    "buClr": 5,
+    "spcBef": 4,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 1,
+    "buChar": 0,
+    "buAutoNum": 6,
+    "buClr": 6,
+    "spcBef": 5,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 1,
+    "buChar": 0,
+    "buAutoNum": 8,
+    "buClr": 8,
+    "spcBef": 7,
+    "sizes_px": [
+     27,
+     32
+    ]
+   },
+   {
+    "list_shapes": 1,
+    "buChar": 0,
+    "buAutoNum": 5,
+    "buClr": 5,
+    "spcBef": 4,
+    "sizes_px": [
+     14,
+     20,
+     32
+    ]
+   }
+  ],
+  "node_issues": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 1: list spacing: 42px",
+   "slide 2: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 36% -> 52%",
+   "slide 2: list spacing: 42px",
+   "slide 3: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 43% -> 63%",
+   "slide 3: list spacing: 39px",
+   "slide 4: text x1.36 (e.g. 20 -> 27pt), fill 58% -> 87%",
+   "slide 4: list spacing: 9px",
+   "slide 5: spill fixed (dense: gap x0.5, padding x0.5): ol height 566 -> 608px",
+   "slide 5: list spacing: 4px"
+  ]
+ },
+ "rows-graphite-dark": {
+  "slides": [
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     23,
+     30,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     23,
+     28,
+     30,
      32
     ]
    },
@@ -380,6 +612,174 @@
    "NODE_OVERLAP",
    "NODE_OVERLAP",
    "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP"
+  ],
+  "fitGrow": [
+   "slide 1: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 18% -> 28%",
+   "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 23% -> 23%",
+   "slide 2: text x2.98 (e.g. 16 -> 23pt), fill 51% -> 74%",
+   "slide 3: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 36% -> 56%",
+   "slide 3: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 50% -> 50%",
+   "slide 4: text x2.98 (e.g. 17 -> 28pt), fill 57% -> 87%",
+   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+  ]
+ },
+ "rows numbered-graphite-dark": {
+  "slides": [
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     28,
+     32,
+     45
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     23,
+     30,
+     32,
+     44
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     28,
+     32,
+     44
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     19,
+     25,
+     32,
+     33
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     14,
+     19,
+     25,
+     32,
+     33
+    ]
+   }
+  ],
+  "node_issues": [],
+  "warnings": [
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP"
+  ],
+  "fitGrow": [
+   "slide 1: text x2.06 (e.g. 17 -> 28pt), spacing x1.40, fill 22% -> 38%",
+   "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 33% -> 33%",
+   "slide 2: text x2.02 (e.g. 16 -> 23pt), fill 51% -> 74%",
+   "slide 3: text x2.02 (e.g. 17 -> 28pt), fill 43% -> 74%",
+   "slide 4: text x1.48 (e.g. 17 -> 25pt), fill 63% -> 88%",
+   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+  ]
+ },
+ "rows icons-graphite-dark": {
+  "slides": [
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     23,
+     30,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     28,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     23,
+     28,
+     30,
+     32
+    ]
+   },
+   {
+    "list_shapes": 0,
+    "buChar": 0,
+    "buAutoNum": 0,
+    "buClr": 0,
+    "spcBef": 0,
+    "sizes_px": [
+     14,
+     19,
+     25,
+     32
+    ]
+   }
+  ],
+  "node_issues": [
+   "NODE_ATTR_DROPPED"
+  ],
+  "warnings": [
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
+   "NODE_OVERLAP",
    "NODE_OVERLAP"
   ],
   "fitGrow": [
@@ -387,6 +787,7 @@
    "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 38% -> 38%",
    "slide 2: text x2.98 (e.g. 16 -> 23pt), fill 51% -> 74%",
    "slide 3: text x2.98 (e.g. 17 -> 28pt), fill 54% -> 84%",
+   "slide 4: text x2.98 (e.g. 17 -> 28pt), fill 57% -> 87%",
    "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
   ]
  }

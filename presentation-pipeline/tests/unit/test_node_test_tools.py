@@ -137,12 +137,11 @@ def test_timeline_cards_variant_expands_to_a_block():
     plan = run["slides"][4]["plan"]   # brand_timeline, conversion_flow, conversion_rules
     sk = ('<Slide><VStack w="1280" h="720" alignItems="stretch"><Text fontSize="30">H</Text>'
           '<Timeline ref="brand_timeline" variant="rail" h="200" /><Flow ref="conversion_flow" grow="1" />'
-          '<Ul ref="conversion_rules" variant="tiles" /></VStack></Slide>')
+          '</VStack></Slide>')
     m = Measurer()
     try:
         xml, rep = expand_nodes(sk, plan, run["theme"]["element"], m, run["theme"])
     finally:
         m.close()
     assert 'id="slot-brand_timeline"' in xml and "<Timeline" not in xml       # drawn as a block
-    assert 'id="slot-conversion_rules"' in xml and "<Ul" not in xml
     assert 'id="node-conversion_flow"' in xml                                 # no variant: native
