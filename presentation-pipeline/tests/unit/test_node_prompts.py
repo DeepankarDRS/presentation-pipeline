@@ -213,3 +213,38 @@ def test_regenerate_with_an_outline_replans_from_it_and_counts_the_planner(monke
 def test_paid_check_can_rerun_some_plans_on_one_arm():
     from scripts import composition_paid as CP
     assert CP.estimate(6, 1, ("B",))[0] == 6 and CP.estimate(22, 1)[0] == 44
+
+
+# ── after the rerun, 2026-11-04 ──────────────────────────────────────────────
+
+def test_a_bare_connector_style_is_dropped_and_its_dotted_form_kept():
+    from src.compiler.normalizer import normalize_xml
+    r = normalize_xml('<Slide><VStack><Flow connectorStyle="straight" connectorStyle.color="$neutral"><FlowNode id="a" text="A"/></Flow></VStack></Slide>')
+    assert 'connectorStyle="straight"' not in r["cleaned_xml"] and 'connectorStyle.color="$neutral"' in r["cleaned_xml"]
+
+
+def test_a_thin_bar_in_a_row_stays_thin():
+    from src.compiler.grow_fallback import keep_bars_thin
+    out, note = keep_bars_thin('<HStack><Shape shapeType="rect" w="4" h="max"/><VStack grow="1"/></HStack>')
+    assert note and 'h="max"' not in out and 'w="4"' in out and 'alignSelf="stretch"' in out
+
+
+@pytest.mark.parametrize("xml", [
+    '<VStack><Shape w="4" h="max"/></VStack>',                 # h="max" in a column is its main axis, as asked
+    '<HStack><Shape w="max" grow="1" h="2"/></HStack>',        # a connector line
+    '<HStack><Shape w="4" h="max" grow="1"/></HStack>',
+    '<HStack><VStack w="4" h="max"/></HStack>',
+])
+def test_other_max_sizes_are_left_alone(xml):
+    from src.compiler.grow_fallback import keep_bars_thin
+    assert keep_bars_thin(xml) == (xml, None)
+
+
+def test_prompt_says_what_has_no_ref_tag_and_that_peers_share_a_panel():
+    system, _ = prompts(KPIS)
+    assert "never as a ref tag" in system and "Peers look alike" in system and "border.color" in system
+
+
+def test_table_line_gives_the_words_for_a_heading():
+    _, user = prompts(dict(TABLE, content_summary="FLIPCART vs ZAROMA Key Metrics"))
+    assert "about: FLIPCART vs ZAROMA Key Metrics" in user and "short heading" in user

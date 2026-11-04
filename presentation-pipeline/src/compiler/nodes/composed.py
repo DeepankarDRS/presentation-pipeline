@@ -132,7 +132,11 @@ OVERRIDE = ("## CODE-DRAWN NODES\n"
             "A component whose line under COMPONENTS names a ref tag is drawn by code: place that tag once, and size it with "
             "w / h / grow like any box. Rules elsewhere in this prompt about building it by hand do not apply to it: "
             "<Tr> / <Td> / <Col>, <Li>, <ChartSeries>, <TimelineItem>, row heights, a Timeline's fixed h, label word limits. "
-            "Typing its content by hand, or leaving the tag out, is an error.")
+            "Typing its content by hand, or leaving the tag out, is an error. A component whose line names no ref tag "
+            "(a narrative, a callout, a title) has no node: write it by hand with <VStack> and <Text>, never as a ref tag.\n"
+            "Peers look alike: when one content component on the slide sits in a panel (a fill or a border), give the others "
+            "one too. A ref tag takes it as box attributes on the tag (padding, backgroundColor, border.color, border.width, "
+            "borderRadius); a hand-drawn component sits in a <VStack> with them.")
 
 
 def node_lines() -> str:

@@ -261,6 +261,36 @@ def size_row_symbols(xml: str) -> tuple[str, str | None]:
                  "the boxes beside them cannot squeeze them to zero width.")
 
 
+# ── a thin bar stays thin ────────────────────────────────────────────────────
+# h="max" on a child of an HStack grows it along the row, not down it: <Shape w="4" h="max"> beside text drew 148 px wide,
+# an empty block (paid check 2026-11-04, measured). alignSelf="stretch" gives the full height at the width asked.
+
+_SHAPE_W_RE = re.compile(r'\sw\s*=\s*"\d+(?:\.\d+)?"')
+_H_MAX_RE = re.compile(r'\sh\s*=\s*"max"')
+_GROW_RE = re.compile(r"\sgrow\s*=")
+
+
+def keep_bars_thin(xml: str) -> tuple[str, str | None]:
+    """Return (xml, message); message is None when nothing changed."""
+    edits: list[tuple[int, int, str]] = []
+    for el in _elements(xml):
+        if el["name"] != "HStack":
+            continue
+        for c in el["children"]:
+            if c["name"] != "Shape" or _GROW_RE.search(c["attrs"]) or not _SHAPE_W_RE.search(c["attrs"]):
+                continue
+            tag = xml[c["start"]:c["open_end"]]
+            m = _H_MAX_RE.search(tag)
+            if m:
+                new = "" if _ALIGNSELF_RE.search(tag) else ' alignSelf="stretch"'
+                edits.append((c["start"] + m.start(), c["start"] + m.end(), new))
+    if not edits:
+        return xml, None
+    for a, b, new in sorted(edits, reverse=True):
+        xml = xml[:a] + new + xml[b:]
+    return xml, f'Kept {len(edits)} thin bar(s) in a row at the width asked: h="max" there grows the width.'
+
+
 # ── peer cards in one row share one height ──────────────────────────────────
 # Rule K6 (peers look alike, presentation-rules-draft 2026-10-15): cards of the same kind side by side are one
 # size. With alignItems="start" / "center" / "end" on the row every card is as tall as its own text, so the card with

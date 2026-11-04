@@ -555,6 +555,9 @@ def prompt_line(comp: dict, headline: str = "") -> str:
     parts = [f"TABLE {cid}: {len(rows)} rows x {len(cols)} columns", f"longest cell {longest} chars",
              "variants " + " | ".join(ok)]
     cells = "\n".join(["  columns: " + " | ".join(cols)] + ["  " + " | ".join(r) for r in rows])
-    return ("; ".join(parts) + (f"\n  hint: {hint}" if hint else "") + f"\n{cells}\n"
+    about = " ".join(str(comp.get("content_summary") or "").split())
+    heading = (f'\n  about: {about}. Unless the slide title already says this, write a short heading from it as a <Text> '
+               "above the tag; code draws the column names, not a heading." if about else "")
+    return ("; ".join(parts) + (f"\n  hint: {hint}" if hint else "") + heading + f"\n{cells}\n"
             f'<{TAG} ref="{cid}"/> (or with <Highlight/> inside; without them code colours {em}); the cells are '
             "for reading: never type one yourself, code writes them from the plan")

@@ -15,6 +15,7 @@ from src.compiler.grow_fallback import (
     ensure_growing_band,
     fill_lone_child,
     share_row_height,
+    keep_bars_thin,
     size_row_symbols,
     stretch_peer_cards,
     unsqueeze_text_boxes,
@@ -93,7 +94,7 @@ _THEME_RE = re.compile(r"<Theme\b[^>]*?/>|<Theme\b[^>]*?>.*?</Theme>", re.DOTALL
 
 _OBJECT_ATTR_BASES: set[str] = {
     "border", "borderTop", "borderRight", "borderBottom", "borderLeft",
-    "cellBorder", "glow", "shadow", "textShadow",
+    "cellBorder", "glow", "shadow", "textShadow", "connectorStyle",
     "textGradient", "backgroundGradient", "borderGradient",
     "rotate", "rotation",
 }
@@ -969,6 +970,9 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     xml, symbol_note = size_row_symbols(xml)
     if symbol_note:
         issues.append({"code": "ROW_SYMBOL_SIZED", "message": symbol_note, "auto_fixed": True})
+    xml, bar_note = keep_bars_thin(xml)
+    if bar_note:
+        issues.append({"code": "THIN_BAR_KEPT", "message": bar_note, "auto_fixed": True})
     xml, peers_note = stretch_peer_cards(xml)
     if peers_note:
         issues.append({"code": "PEER_CARDS_STRETCHED", "message": peers_note, "auto_fixed": True})
