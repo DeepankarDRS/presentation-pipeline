@@ -260,6 +260,13 @@ def test_card_rows_numbered():
     assert used(r, "lv") == "rows"
 
 
+def test_card_bento_draws_every_tag():
+    """Small bento cards lost their tag, against "every word" (audit 2026-11-04: 4 of the 7 stress cases)."""
+    xml = run('<CardGrid ref="levers" variant="bento"/>', LEVERS)["xml"]
+    for c in LEVERS["content_data"]["cards"]:
+        assert not c.get("tag") or c["tag"].upper() in xml
+
+
 def test_card_bento_needs_focus():
     r = run('<CardGrid ref="nb" variant="bento"/>', NO_BULLETS)
     assert used(r, "nb") == "grid" and "NODE_VARIANT_UNMET" in codes(r)

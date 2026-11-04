@@ -381,8 +381,11 @@ def card_item(comp: dict, i: int, name: str, box: dict, parts: dict, role: str, 
     ink = "" if box.get("backgroundColor") in element_refs.READS_ON else tint
     icon_el = _stack("Icon", {"name": icon, "size": str(px["icon"]), **parts["icon"]}) if icon else None
     title_el = _card_text(title, px["title"], parts["title"], bold="true")
-    tag_el = _card_text(tag, px["tag"], parts["tag"], bold="true", letterSpacing="1") if tag and big else None
-    head = [icon_el, tag_el, title_el] if big else [_stack("HStack", {"gap": "10", "alignItems": "center"}, icon_el, title_el)]
+    tag_el = _card_text(tag, px["tag"], parts["tag"], bold="true", letterSpacing="1") if tag else None
+    # a small card: the icon leads the tag line, as on a grid card, or the title when there is no tag
+    head = ([icon_el, tag_el, title_el] if big else
+            [_stack("HStack", {"gap": "10", "alignItems": "center"}, icon_el, tag_el), title_el] if tag else
+            [_stack("HStack", {"gap": "10", "alignItems": "center"}, icon_el, title_el)])
     attrs = {"id": f"cardf-{cid}-{i}", "w": "40%", "justifyContent": "center", "borderRadius": "8", **box} if big else \
         {"id": f"card-{cid}-{i}", **box}
     return _stack("VStack", attrs, *head, _body(c, px["body"], parts["body"], ink), _bullets(c, px["bullets"], parts["body"]))

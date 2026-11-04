@@ -885,7 +885,7 @@ nodes:
         emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, title.color: $onPanelDark,
                    tag.color: $onPanelDark}
       bento:                            # the focus card large and dark, the others 2 + 1 beside it
-        ignores: [number, band, bullets, divider, tag.color]
+        ignores: [number, band, bullets, divider]
         requires: [layout_grid, count_ge_3, count_le_5, has_emphasis]   # a steps plan keeps its order (marks 5.2 / 5.3)
         fallback: grid
         look:     {gap: 18, item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
@@ -910,7 +910,7 @@ nodes:
       rows numbered: "rows led by a large 01 02 03"
       columns: "one column per card: a coloured pill head, the body, each bullet in its own box"
       banded: "boxes with a solid coloured band (icon, title, tag) over body and bullets"
-      bento: "the focus card as one large dark block, the others beside it"
+      bento: "the focus card as one large dark block, the others beside it; at least 500 px wide"
       steps: "cards in a row joined by arrows, the destination dark (default for steps plans)"
     aliases:                            # today's variant names (spec §7)
       lifted: grid
