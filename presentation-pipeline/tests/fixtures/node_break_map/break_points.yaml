@@ -223,13 +223,11 @@ series:
   labels: short
   style: w1
   variant: ''
-  holds_up_to: 7
+  holds_up_to: 12
   swept:
   - 2
   - 12
-  first_break:
-  - WORD_BROKEN
-  - OVERLAP
+  first_break: null
 - kind: cards
   placement: split-60
   direction: grid

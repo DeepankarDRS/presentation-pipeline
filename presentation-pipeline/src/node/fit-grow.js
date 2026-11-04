@@ -1315,18 +1315,18 @@ function childRanges(xml, el) {
 }
 
 /** The row `id` as a VStack of balanced HStack rows (the tiles unchanged), or null. */
-function asGrid(xml, id, rows) {
+function asGrid(xml, id, rows, min = REGRID_MIN, base = 9000, kid = (s) => s) {
   const el = findElement(xml, id);
   if (!el || el.name !== "HStack") return null;
   const kids = childRanges(xml, el);
-  if (kids.length < REGRID_MIN) return null;
+  if (kids.length < min) return null;
   const open = xml.slice(el.start, el.openEnd);
   const gap = (/\sgap\s*=\s*"([^"]*)"/.exec(open) ?? [])[1] ?? "0";
   const cols = Math.ceil(kids.length / rows);
   let body = "";
   for (let k = 0, r = 0; k < kids.length; k += cols, r += 1) {
-    body += `<HStack id="${ID_PREFIX}${9000 + r}" gap="${gap}" grow="1" alignItems="stretch">`
-      + kids.slice(k, k + cols).map(([s, e]) => xml.slice(s, e)).join("") + "</HStack>";
+    body += `<HStack id="${ID_PREFIX}${base + r}" gap="${gap}" grow="1" alignItems="stretch">`
+      + kids.slice(k, k + cols).map(([s, e]) => kid(xml.slice(s, e))).join("") + "</HStack>";
   }
   const vopen = open.replace(/^<HStack/, "<VStack").replace(/\/?>$/, ">");
   return xml.slice(0, el.start) + vopen + body + "</VStack>" + xml.slice(el.end);
@@ -1353,6 +1353,85 @@ async function regridTiles(xml, report) {
     if (two >= row * REGRID_GAIN) {
       xml = grid;
       report.push(`KPI tiles of ${id.slice(5)} in two rows (numbers ${row} -> ${two}px as grown)`);
+    }
+  }
+  return xml;
+}
+
+// --- phase 0c: a row of code-drawn items too narrow for its words takes fewer columns ---
+// A composition does not know its box: four tiles in a 280 px box get 60 px each, Yoga has no min-content width, and the
+// columns shrink until words break letter by letter or POM fails with "width must be a finite positive EMU value"
+// (docs/syntax-audit-2026-11-04.md §3, narrow). A row is reflowed only when a word cannot fit even at the guard's floor,
+// so a row the shrink guard can save stays a row. Rows inside an item (a KPI / card `rows` item) are not items, and the
+// cells of a code-drawn table (card-<cid>.th-0) must stay in line with the rows above and below: they stay.
+const REFLOW_ROUNDS = 8;
+const CODE_ITEM = /^card(f)?-(?![^"]*\.t[hlc]-)/;
+
+/** A Text under `n` whose longest word does not fit its box at the guard's floor. */
+function wordCannotFit(n, L) {
+  let bad = false;
+  walk(n, (c) => {
+    if (bad || c.type !== "text") return;
+    const fs = c.fontSize ?? 24;
+    const b = L.box(c);
+    bad = runWidest(c, guardFloor(fs) / fs, L.ctx).w > b.w - b.pl - b.pr + WORD_MARGIN;
+  });
+  return bad;
+}
+
+async function narrowRow(xml, tried) {
+  const L = await layout(xml);
+  try {
+    let found = null;
+    for (const root of L.slides) {
+      walk(root, (n) => {
+        if (found || n.type !== "hstack" || tried.has(n.id) || (n.children ?? []).length < 2) return;
+        const own = n.id ?? "";
+        const items = own.startsWith("kpig-") || (!CODE_ITEM.test(own) && n.children.some((c) => CODE_ITEM.test(c.id ?? "")));
+        if (items && wordCannotFit(n, L)) found = { id: n.id, n: n.children.length };
+      });
+    }
+    return found;
+  } finally {
+    L.free();
+  }
+}
+
+/** { fits: the grid's words fit at their floor, holds: no text collapsed to no height (POM would refuse to build it) }. */
+async function reflowCheck(xml, id) {
+  const L = await layout(xml);
+  try {
+    const el = L.byId.get(id);
+    let holds = true;
+    walk(el, (c) => { if (c.type === "text" && L.box(c).h <= 0) holds = false; });
+    return { fits: !wordCannotFit(el, L), holds };
+  } finally {
+    L.free();
+  }
+}
+
+async function reflowNarrow(xml, report) {
+  if (!/\sid="(?:kpig-|cardf?-)/.test(xml)) return xml;
+  const tried = new Set();
+  // a share of a row (bento's w="42%") would be a share of the whole row again
+  const whole = (s) => s.replace(/^(<\w+\b[^>]*?)\sw="[\d.]+%"/, '$1 w="1" grow="1"');
+  for (let round = 0; round < REFLOW_ROUNDS; round++) {
+    const row = await narrowRow(xml, tried);
+    if (!row) break;
+    tried.add(row.id);
+    let best = null, cols = row.n;
+    for (let rows = 2; rows <= row.n; rows++) {   // the first layout whose words fit, else the last that still holds
+      const grid = asGrid(xml, row.id, rows, 2, 9100 + round * 20, whole);
+      if (!grid) break;
+      const { fits, holds } = await reflowCheck(grid, row.id);
+      if (!holds) break;
+      best = grid;
+      cols = Math.ceil(row.n / rows);
+      if (fits) break;
+    }
+    if (best) {
+      xml = best;
+      report.push(`${row.n} items too narrow for their words: ${cols} column(s) in ${row.id}`);
     }
   }
   return xml;
@@ -2405,6 +2484,7 @@ async function fitSlide(inputXml, report, warnings = []) {
   LONE_GROUPS.clear();
   let xml = tagNodes(inputXml);
   xml = await respectHeights(xml, report);
+  if (process.env.POM_FIT_REFLOW !== "0") xml = await reflowNarrow(xml, report);
   xml = await wrapChipRows(xml, report);
   xml = await splitLists(xml, report);
   xml = await fitTables(xml, report);
