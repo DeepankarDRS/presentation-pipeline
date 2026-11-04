@@ -18,7 +18,7 @@ Automatic checks caught most breaks, and I read every sheet by eye on top; where
 | Is the syntax sound? | **The tag is: 15–27 tokens against 108–1,739 expanded, and no way to get a word wrong. The attribute layer is not.** 31% of attribute × composition pairs silently do nothing, and one allowed attribute can blank a KPI row with no error |
 | Where does it break? | **Boxes narrow for the content** (28 of 30 cases at 280 px: `requires` counts items and never looks at the box), card `rail` / `steps` with many or long items, and attributes the expander writes twice |
 | Should anything be introduced? | **No new structure: no slots, spans or item overrides.** Fix the attribute gate first. One optional addition: a parts escape for looks no composition reaches |
-| Build atomically instead? | **No, keep composition as the default.** Atomic reaches the same looks but costs 30–48 × the output tokens, and swapped fields pass unseen. Keep element refs as the escape hatch for looks a composition cannot draw |
+| Build atomically instead? | **No, keep composition as the default.** Atomic reaches the same looks but costs 30–51 × the output tokens, and swapped fields pass unseen. Keep element refs as the escape hatch for looks a composition cannot draw |
 | Are we really using flexbox? | **Yes.** POM is Yoga, and the expanders use it well for boxes. Flexbox cannot size type, and that is most of what fit-grow does. The real savings are small |
 
 ## Most serious finding: an allowed attribute blanks the KPI text
@@ -110,7 +110,7 @@ Each of these goes to a repair call and is not reported before compile.
 |---|---|---|---|
 | `kpi_deltas` | part `delta.`, but ref field `kpis.0.note` | one thing, two names on one node | no: use `delta` everywhere |
 | `timeline_items[].label` | part `title.` (`label.` an alias) | breaks spec N3 (part = key), for POM's own word | decide: rename the plan key or the part; the alias costs little |
-| `cards[].bullets` | text styled by `body.`; `bullets.` is a **box**, only in `columns` | `bullets.color` does nothing on 8 of 9 compositions | no: `bullets.` should style the bullets |
+| `cards[].bullets` | text styled by `body.`; `bullets.` is a **box**, only in `columns` | `bullets.backgroundColor` does nothing on 8 of 9 compositions, and `bullets.color` is an error | no: `bullets.` should style the bullets |
 | `cards[].key_phrase` | no part | its colour cannot be styled | fine: the phrase colour is code's |
 | `table_rows[][0]` | `label.` | `label.` means the first column here, a KPI's label there, and chart labels elsewhere | acceptable: each is "the row's name" |
 | `chart_type`, `chart_title` | code-owned; `title.` | fine | – |
@@ -195,7 +195,7 @@ Breaks by case: narrow 28, invented 10, ref-in-ref 10, long 7, short 5, missing 
 
 | Case | What happens | Cause | Severity |
 |---|---|---|---|
-| **narrow** (280 px beside a note) | letter-stacked words on 28 of 30; **strip, KPI banded, card columns, bento and steps fail to compile** (`addTextBox: width must be a finite positive EMU value`) | `requires` checks counts only; no composition knows its box. Yoga has no min-content width, so columns shrink to nothing (flex test `squeeze`) | **high** |
+| **narrow** (280 px beside a note) | 28 of 30 break, with letter-stacked or overlapping text; **strip, KPI banded, card columns, bento and steps fail to compile** (`addTextBox: width must be a finite positive EMU value`) | `requires` checks counts only; no composition knows its box. Yoga has no min-content width, so columns shrink to nothing (flex test `squeeze`) | **high** |
 | **card rail** (odd, long, many, short) | text overlaps and spills past the slide; even the sample of 4 full cards spills (`GEOM_SPILL`) | rail stacks 4+ full cards down the slide; its only `requires` is the layout | **high**: needs a cap, or a rule on bullets |
 | **card steps, many** | 9 cards in one row, letter-stacked | no count cap (`rows`, `columns`, `banded` have one) | medium |
 | **words dropped by design** | card `columns` and small `bento` cards drop the `tag`; table `columns` / `banded` drop the first column's name | composition doesn't draw the part. **It breaks "every word, verbatim"** (14 of the breaks outside narrow) | your call |
@@ -209,7 +209,7 @@ Breaks by case: narrow 28, invented 10, ref-in-ref 10, long 7, short 5, missing 
 
 ### Found by eye (the checks passed)
 
-- **Native timeline text is tiny** (about 9–12 px on a full slide) in every case, and native is what a bare tag picks for short labels. Its size is fixed by POM, and fit-grow cannot change it.
+- **Native timeline text is very small** on a full slide, in every case, and native is what a bare tag picks for short labels. Its size is fixed by POM, and fit-grow cannot change it.
 - **Empty cards.** Timeline `columns` and `banded`, and card `banded` with sparse text, leave the lower half or more empty; `one` and `sparse` show it most. This is your "grow the type" rule failing. I did not trace why growth stops here.
 - **Peers out of line.** KPI `banded` and `strip` put one-line and two-line labels in the same row, so the values do not line up. `strip` still decides the icon per tile (spec §6 finding 1, open as R5).
 - **Uneven grid tiles.** KPI `grid` with long values or an odd count draws unequal widths in a row (content width plus a share), because no `w` is set.
@@ -226,7 +226,7 @@ Checked against the stress cases, [composition-test](eval/composition-test/READM
 
 | # | Change | Evidence |
 |---|---|---|
-| F1 | One merge helper: an LLM attribute replaces the expander's literal, never adds a second | the blank KPI row, 40+ attribute × composition cases |
+| F1 | One merge helper: an LLM attribute replaces the expander's literal, never adds a second | the blank KPI row; 70 attribute × composition pairs write twice |
 | F2 | Filter per composition before the XML is written: an attribute this composition doesn't draw → `NODE_ATTR_NO_EFFECT` (report). Native tags pass only what POM accepts | 1,601 silent no-ops; 10 of 30 variants fail compile on allowed attributes |
 | F3 | Parse check in `tiles.fill`: a syntax error is an error, not "the normalizer reports it" (it doesn't) | the blank KPI row reports nothing |
 | F4 | `$tone*` either resolve to `accent` on chart and timeline, or drop with a report | compile failure |
@@ -240,7 +240,7 @@ Checked against the stress cases, [composition-test](eval/composition-test/READM
 | Spans (true bento) | no plan field; `<Card ref w="34%"/>` apart already gives uneven widths | **not needed now** |
 | Item overrides for chart / timeline | `item` case: no way to mark one point. But the emphasis already comes from the plan, and table has `<Highlight>` | **wait**: if the paid run shows the need, reuse `<Highlight>` rather than add tags |
 | Space-aware fallback (not syntax) | 28 of 30 narrow breaks; 5 compile failures | **yes, top need.** Fit-grow can measure the box and pick the fallback, as `regridTiles` already re-lays out |
-| Parts escape (`<Text ref="levers.0.title"/>` on every node) | Looks no composition reaches, rendered in [atomic.png](eval/syntax-audit/atomic.png), right column: the KPI delta as a pill beside the value (Genspark KPI-E, spec §11.1, still "find"), a card as title · body · bullets · tag pill, the date inside a large marker | **optional.** Exists for KPI, 60 lines of prototype for cards and timeline. Only if you want those looks |
+| Parts escape (`<Text ref="levers.0.title"/>` on every node) | Looks no composition reaches, rendered in [atomic.png](eval/syntax-audit/atomic.png), right column: the KPI delta as a pill beside the value (Genspark KPI-E, spec §11.1, still "find"), a card as title · body · bullets · tag pill, the date inside a large marker | **optional.** Exists for KPI, about 70 lines of prototype for cards and timeline. Only if you want those looks |
 | Per-row / per-column icons on table | composition test rows 2–3; `icons` works only on `ledger` | **small, optional**: extend `icons` to `rows` and `grid`, or say in the prompt that it's ledger only |
 
 **The pill.** Spec §11.1 asked whether POM can draw a pill from Text attributes alone. **No**: `highlight` is stripped and a Text has no box, so it needs a box part or the escape.
@@ -249,7 +249,7 @@ Nothing is needed for odd counts, per-item KPI and card styling, nesting, or dar
 
 ## 5. Atomic vs composition
 
-Three nodes built as small parts the LLM assembles, each part drawn from the plan by ref. KPI uses the real `fill_refs`. Card and timeline refs (`<Text ref="levers.0.title"/>`, `<Ul ref="levers.0.bullets"/>`, `<Icon ref="levers.0.icon"/>`, `<Text ref="roadmap.0.date"/>`) **don't exist**: a 60-line prototype in the script stands in, writing the same ids the expanders write.
+Three nodes built as small parts the LLM assembles, each part drawn from the plan by ref. KPI uses the real `fill_refs`. Card and timeline refs (`<Text ref="levers.0.title"/>`, `<Ul ref="levers.0.bullets"/>`, `<Icon ref="levers.0.icon"/>`, `<Text ref="roadmap.0.date"/>`) **don't exist**: a prototype of about 70 lines in the script (`atomic_fill`) stands in, writing the same ids the expanders write.
 
 **The limit of this comparison:** I wrote the atomic XML by hand, correctly, knowing the target. An LLM would make mistakes I didn't, so atomic's risk and its look quality are both best cases here.
 
@@ -280,7 +280,7 @@ Three nodes built as small parts the LLM assembles, each part drawn from the pla
 
 Swaps are the serious ones: a number under the wrong label is a wrong slide that passes every check. The validator could check "every field placed" and part order in peers, but no check can tell that a value under a label is the right pair when the refs inside one box are all legal, except comparing indices within a box, which would forbid some free layouts.
 
-**Evidence from the KPI element-ref arm** ([same-plan](eval/tile-nodes/same-plan/README.md), paid 2026-10-14, 12 plans): generator output 683–1,619 tokens with refs vs 192–1,124 with tile tags; cost −26% for tags; 0 values off the plan both ways; larger numbers with tags in 7 of 12, smaller in 3. Blind marks: tags 0, refs 3, same 9 (0.375). Two of the three losses were layout bugs fixed afterwards; the third was "the LLM decorating its own tiles more". So the LLM with refs did produce livelier tiles at about three times the output. Later free gates passed on compositions (kpi_row, card_grid 0.949, chart 0.868, timeline 0.739, table 0.97), but those drew bare tags with no LLM.
+**Evidence from the KPI element-ref arm** ([same-plan](eval/tile-nodes/same-plan/README.md), paid 2026-10-14, 12 plans): generator output 683–1,619 tokens with refs vs 192–1,124 with tile tags; cost −26% for tags; 0 values off the plan both ways; larger numbers with tags in 7 of 12, smaller in 3. Blind marks: tags 0, refs 3, same 9 (0.375). Two of the three losses were layout bugs fixed afterwards; the third was "the LLM decorating its own tiles more". So with refs the LLM did sometimes draw livelier tiles, at more output. Later free gates passed on compositions (kpi_row, card_grid 0.949, chart 0.868, timeline 0.739, table 0.97), but those drew bare tags with no LLM.
 
 **Recommendation: a hybrid, with composition as the rule.**
 
@@ -298,8 +298,8 @@ Swaps are the serious ones: a number under the wrong label is a wrong slide that
 | Feature | POM | Measured | Used by code / LLM |
 |---|---|---|---|
 | `gap`, `padding`, `grow`, `justifyContent`, `alignItems` | yes | as CSS. **`alignItems` defaults to stretch**, so writing it does nothing | heavily |
-| Equal columns | **automatic**: HStack children with no `w` get basis 0, grow 1 | `equal_no_w` = `w="1" grow="1"` to the pixel (393 / 394 / 393) | code writes `w="1"` 166 times across 30 expansions, all redundant |
-| `w="max"` | `flexGrow: 1` **on the parent's main axis** | in a VStack it grows the **height** (367 of 400 px); `h="max"` in an HStack grows the **width** | a trap the LLM's 309 uses walk into; AGENTS.md notes part of it |
+| Equal columns | **automatic**: HStack children with no `w` get basis 0, grow 1 | `equal_no_w` = `w="1" grow="1"` to the pixel (393 / 394 / 393) | code writes `w="1"` 166 times across 30 expansions; redundant in an HStack, tested there |
+| `w="max"` | `flexGrow: 1` **on the parent's main axis** | in a VStack it grows the **height** (367 of 400 px); `h="max"` in an HStack grows the **width** | the LLM wrote `w="max"` 309 times; fit-grow's `respectHeights` exists to undo the ballooning |
 | Content width, no growth | `w="max" grow="0"` works on a stack | 30, 123 px. **`grow="0"` on a Text is rejected**; with no `w` a stack collapses to 0 | unused |
 | Equal rows | `h="1" grow="1"` | 160 / 160 / 160 vs `grow="1"` alone 111 / 258 / 111; **but text overflows a full row** | unused |
 | `flexWrap` | yes | wraps at `minW`, last line widens | LLM 0 uses; code only `wrapChipRows` |
@@ -353,7 +353,7 @@ The px rows include each slide's root (`w="1280" h="720"`). Saved slides are fro
 |---|---|---|
 | Drop `w="1"` and `alignItems="stretch"` from a KPI grid | **0.0% of pixels differ**, −2% tokens, regrid intact | Safe on this slide; **replay before adopting**. Tidiness only: low priority |
 | `centreBody` → flex | **0.0%** | Works; small gain, simple case only |
-| Equal rows: `h="1" grow="1"` on card rows | rows equal, but **titles split 20 vs 34+ px between rows**, peers break | **Rejected**: worse under your rule, today's stays |
+| Equal rows: `h="1" grow="1"` on card rows | rows equal, but **peers split: sizes 20–48 px on the slide (before: 25–34), row 1 small and row 2 large** | **Rejected**: worse under your rule, today's stays |
 | The same on table grid rows | long row still taller after the spill fix; type smaller | **Rejected** |
 | Chart rows: value column `w="16%"` → content-sized | values 66 → 75 px, labels 20 → 23 px here, but **bar tracks differ when value widths differ**, and a bar's length is a share of its track, so **the chart would misstate the data** (`rows_cols_align`) | **Rejected as written. Better:** code computes that shared share from the longest value string (not rendered) |
 | `band.minH` to line up KPI bands | no fixed value works: type grows afterwards | **Rejected**: flexbox can't align across siblings. A fit-grow step that sets peer bands to the tallest would do it (not built) |

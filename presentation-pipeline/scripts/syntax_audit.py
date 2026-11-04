@@ -1185,31 +1185,36 @@ def B(i: str, attrs: str = "", text: str = "x", px: int = 18) -> str:
 
 
 LOREM = "Organic share fell on every platform and the home banners cost twice as much for less than half the return"
+def a_(attrs: str) -> str:
+    """'w=300 grow=1' -> 'w="300" grow="1"' (Python 3.11 takes no backslash inside an f-string expression)."""
+    return " ".join('{}="{}"'.format(*x.split("=")) for x in attrs.split())
+
+
 FLEX_TESTS: dict[str, dict] = {
     "equal_no_w": {"q": "HStack children with no w: equal columns? (POM: basis 0, grow 1)", "xml": f'<HStack id="r" h="120" gap="10">{B("a", text="short")}{B("b", text=LOREM)}{B("c", text="mid length text")}</HStack>'},
-    "equal_w1": {"q": 'the expanders\' w="1" grow="1": any different?', "xml": f'<HStack id="r" h="120" gap="10">{B("a", chr(119)+"=\"1\" grow=\"1\"", "short")}{B("b", "w=\"1\" grow=\"1\"", LOREM)}{B("c", "w=\"1\" grow=\"1\"", "mid length text")}</HStack>'},
-    "w_max_row": {"q": 'w="max" in an HStack: sized to content plus a share of the spare', "xml": f'<HStack id="r" h="120" gap="10">{B("a", "w=\"max\"", "short")}{B("b", "w=\"max\"", "much longer text in here")}</HStack>'},
-    "w_max_col": {"q": 'w="max" in a VStack: grows the HEIGHT (flexGrow on the main axis)', "xml": f'<VStack id="r" h="400" gap="10">{B("a", "w=\"max\"", "w max")}{B("b", "", "plain")}</VStack>'},
-    "h_max_row": {"q": 'h="max" in an HStack: grows the WIDTH', "xml": f'<HStack id="r" h="200" gap="10">{B("a", "w=\"200\" h=\"max\"", "h max w200")}{B("b", "w=\"200\"", "w200")}</HStack>'},
-    "content_w": {"q": 'content-sized, no growth: w="max" grow="0"', "xml": f'<HStack id="r" h="100" gap="10">{B("a", "w=\"max\" grow=\"0\"", "01")}{B("b", "w=\"max\" grow=\"0\"", "a longer label")}{B("c", "", "the rest")}</HStack>'},
-    "grow0_no_w": {"q": 'grow="0" with no w: the column collapses? (basis 0)', "xml": f'<HStack id="r" h="100" gap="10">{B("a", "grow=\"0\"", "collapses?")}{B("b", "", "the rest")}</HStack>'},
-    "rows_grow": {"q": 'VStack rows with grow="1", uneven content: equal heights?', "xml": f'<VStack id="r" h="500" gap="10">{B("a", "grow=\"1\"", "one")}{B("b", "grow=\"1\"", LOREM + " " + LOREM + " " + LOREM + " " + LOREM, 26)}{B("c", "grow=\"1\"", "three")}</VStack>'},
-    "rows_h1": {"q": 'the same with h="1" grow="1": equal heights?', "xml": f'<VStack id="r" h="500" gap="10">{B("a", "h=\"1\" grow=\"1\"", "one")}{B("b", "h=\"1\" grow=\"1\"", LOREM + " " + LOREM + " " + LOREM + " " + LOREM, 26)}{B("c", "h=\"1\" grow=\"1\"", "three")}</VStack>'},
-    "rows_h1_over": {"q": 'h="1" grow="1" when one row needs more than its share: does it overflow?', "xml": f'<VStack id="r" h="300" gap="10">{B("a", "h=\"1\" grow=\"1\"", "one")}{B("b", "h=\"1\" grow=\"1\"", " ".join([LOREM] * 4), 26)}{B("c", "h=\"1\" grow=\"1\"", "three")}</VStack>'},
+    "equal_w1": {"q": 'the expanders\' w="1" grow="1": any different?', "xml": f'<HStack id="r" h="120" gap="10">{B("a", a_("w=1 grow=1"), "short")}{B("b", a_("w=1 grow=1"), LOREM)}{B("c", a_("w=1 grow=1"), "mid length text")}</HStack>'},
+    "w_max_row": {"q": 'w="max" in an HStack: sized to content plus a share of the spare', "xml": f'<HStack id="r" h="120" gap="10">{B("a", a_("w=max"), "short")}{B("b", a_("w=max"), "much longer text in here")}</HStack>'},
+    "w_max_col": {"q": 'w="max" in a VStack: grows the HEIGHT (flexGrow on the main axis)', "xml": f'<VStack id="r" h="400" gap="10">{B("a", a_("w=max"), "w max")}{B("b", "", "plain")}</VStack>'},
+    "h_max_row": {"q": 'h="max" in an HStack: grows the WIDTH', "xml": f'<HStack id="r" h="200" gap="10">{B("a", a_("w=200 h=max"), "h max w200")}{B("b", a_("w=200"), "w200")}</HStack>'},
+    "content_w": {"q": 'content-sized, no growth: w="max" grow="0"', "xml": f'<HStack id="r" h="100" gap="10">{B("a", a_("w=max grow=0"), "01")}{B("b", a_("w=max grow=0"), "a longer label")}{B("c", "", "the rest")}</HStack>'},
+    "grow0_no_w": {"q": 'grow="0" with no w: the column collapses? (basis 0)', "xml": f'<HStack id="r" h="100" gap="10">{B("a", a_("grow=0"), "collapses?")}{B("b", "", "the rest")}</HStack>'},
+    "rows_grow": {"q": 'VStack rows with grow="1", uneven content: equal heights?', "xml": f'<VStack id="r" h="500" gap="10">{B("a", a_("grow=1"), "one")}{B("b", a_("grow=1"), LOREM + " " + LOREM + " " + LOREM + " " + LOREM, 26)}{B("c", a_("grow=1"), "three")}</VStack>'},
+    "rows_h1": {"q": 'the same with h="1" grow="1": equal heights?', "xml": f'<VStack id="r" h="500" gap="10">{B("a", a_("h=1 grow=1"), "one")}{B("b", a_("h=1 grow=1"), LOREM + " " + LOREM + " " + LOREM + " " + LOREM, 26)}{B("c", a_("h=1 grow=1"), "three")}</VStack>'},
+    "rows_h1_over": {"q": 'h="1" grow="1" when one row needs more than its share: does it overflow?', "xml": f'<VStack id="r" h="300" gap="10">{B("a", a_("h=1 grow=1"), "one")}{B("b", a_("h=1 grow=1"), " ".join([LOREM] * 4), 26)}{B("c", a_("h=1 grow=1"), "three")}</VStack>'},
     "wrap_grid": {"q": 'flexWrap="wrap" + minW: a grid from flexbox alone?', "xml": '<HStack id="r" flexWrap="wrap" gap="10" w="1200" h="400">' + "".join(B(f"c{i}", 'minW="360"', f"tile {i}") for i in range(5)) + "</HStack>"},
     "wrap_w33": {"q": 'flexWrap with w="32%" children: lines and last row', "xml": '<HStack id="r" flexWrap="wrap" gap="10" w="1200" h="400">' + "".join(B(f"c{i}", 'w="32%"', f"tile {i}") for i in range(5)) + "</HStack>"},
     "wrap_stretch": {"q": "do wrapped lines take the box's height? (POM sets no alignContent)", "xml": '<HStack id="r" flexWrap="wrap" gap="10" w="1200" h="500">' + "".join(B(f"c{i}", 'w="48%" grow="1"', f"tile {i}") for i in range(4)) + "</HStack>"},
-    "stretch_default": {"q": 'alignItems default: stretch? (peers in a row, no alignItems)', "xml": f'<HStack id="r" gap="10">{B("a", "w=\"300\"", "short")}{B("b", "w=\"300\"", LOREM + LOREM)}</HStack>'},
-    "squeeze": {"q": "narrow column: a word wider than its box (Yoga has no min-content)", "xml": f'<HStack id="r" h="120" gap="10">{B("a", "w=\"60\"", "Internationalisation")}{B("b", "", "the rest")}</HStack>'},
-    "shrink": {"q": "children too wide for the row: all shrink evenly, min width ignored?", "xml": f'<HStack id="r" w="600" h="100" gap="10">{B("a", "w=\"400\"", "a")}{B("b", "w=\"400\"", "b")}{B("c", "w=\"400\" minW=\"300\"", "c")}</HStack>'},
+    "stretch_default": {"q": 'alignItems default: stretch? (peers in a row, no alignItems)', "xml": f'<HStack id="r" gap="10">{B("a", a_("w=300"), "short")}{B("b", a_("w=300"), LOREM + LOREM)}</HStack>'},
+    "squeeze": {"q": "narrow column: a word wider than its box (Yoga has no min-content)", "xml": f'<HStack id="r" h="120" gap="10">{B("a", a_("w=60"), "Internationalisation")}{B("b", "", "the rest")}</HStack>'},
+    "shrink": {"q": "children too wide for the row: all shrink evenly, min width ignored?", "xml": f'<HStack id="r" w="600" h="100" gap="10">{B("a", a_("w=400"), "a")}{B("b", a_("w=400"), "b")}{B("c", a_("w=400 minW=300"), "c")}</HStack>'},
     "over_height": {"q": "content taller than the slide: Yoga shrinks children below their text", "xml": "".join(B(f"c{i}", "", " ".join([LOREM] * 3), 28) for i in range(5))},
     "absolute_child": {"q": 'position="absolute" inside a box: a badge anchored to its parent, no slide pixels', "xml": f'<VStack id="p" w="400" h="200" backgroundColor="$surfaceAlt"><Text fontSize="18" color="$textMain">card</Text><VStack id="badge" position="absolute" top="8" right="8" w="40" h="40" backgroundColor="$accent" /></VStack>'},
-    "negative_margin": {"q": "negative margin: can a block overlap its neighbour?", "xml": f'<HStack id="r" h="100" gap="0">{B("a", "w=\"300\"", "a")}{B("b", "w=\"300\" margin.left=\"-40\"", "b")}</HStack>'},
+    "negative_margin": {"q": "negative margin: can a block overlap its neighbour?", "xml": f'<HStack id="r" h="100" gap="0">{B("a", a_("w=300"), "a")}{B("b", a_("w=300 margin.left=-40"), "b")}</HStack>'},
     "justify_between": {"q": 'justifyContent="spaceBetween": value at the far right without widths', "xml": '<HStack id="r" h="60" justifyContent="spaceBetween" alignItems="center"><VStack id="a" w="max" grow="0"><Text fontSize="18" color="$textMain">Label</Text></VStack><VStack id="b" w="max" grow="0"><Text fontSize="24" color="$textMain">$48.2M</Text></VStack></HStack>'},
     "text_grow0": {"q": 'grow="0" on a Text: POM rejects it (stacks take it)', "xml": '<HStack id="r" h="60"><Text id="a" w="max" grow="0" fontSize="18" color="$textMain">Label</Text></HStack>'},
-    "rows_cols_align": {"q": "columns across sibling rows: content-sized leads do not line up", "xml": "".join(f'<HStack id="r{i}" h="50" gap="10">{B(f"a{i}", "w=\"max\" grow=\"0\"", t)}{B(f"b{i}", "", "bar")}</HStack>' for i, t in enumerate(("Search", "Category listing ads", "Brand")))},
-    "pct_vs_px": {"q": 'w="%" resolves against the parent content box', "xml": f'<HStack id="r" w="1000" padding="50" gap="10" h="80">{B("a", "w=\"50%\"", "a")}{B("b", "", "b")}</HStack>'},
-    "text_box_fills": {"q": "a box grows, its type does not: flexbox sizes boxes, never fonts", "xml": f'<VStack id="r" h="500">{B("a", "grow=\"1\"", "$48.2M", 28)}</VStack>'},
+    "rows_cols_align": {"q": "columns across sibling rows: content-sized leads do not line up", "xml": "".join(f'<HStack id="r{i}" h="50" gap="10">{B(f"a{i}", a_("w=max grow=0"), t)}{B(f"b{i}", "", "bar")}</HStack>' for i, t in enumerate(("Search", "Category listing ads", "Brand")))},
+    "pct_vs_px": {"q": 'w="%" resolves against the parent content box', "xml": f'<HStack id="r" w="1000" padding="50" gap="10" h="80">{B("a", a_("w=50%"), "a")}{B("b", "", "b")}</HStack>'},
+    "text_box_fills": {"q": "a box grows, its type does not: flexbox sizes boxes, never fonts", "xml": f'<VStack id="r" h="500">{B("a", a_("grow=1"), "$48.2M", 28)}</VStack>'},
 }
 
 
