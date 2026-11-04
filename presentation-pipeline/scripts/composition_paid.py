@@ -4,6 +4,8 @@
     python -m scripts.composition_paid --label dry --dry --limit 2            # free: fake generator (path check)
     python -m scripts.composition_paid --label nodes-paid --bundle            # paid, test PC (OPENAI_API_KEY)
     python -m scripts.composition_paid --label nodes-paid --rescore           # free: score + blind sheet again
+    python -m scripts.composition_paid --label b6 --arm B --names a,b --bundle --no-render   # paid: rerun some plans, one arm
+    python -m scripts.composition_paid --label b6 --rescore --a-from nodes-paid              # free: sheets against saved A
 
 The same saved slide plans go through the real graph from the plan (scripts.kpi_paid.run_one: style resolver ->
 context builder -> generator -> validator -> repairers; critic off), twice:
@@ -105,8 +107,8 @@ def missing_words(final_xml: str, plan: dict) -> list[str]:
     return out
 
 
-def estimate(n_items: int, repeat: int) -> tuple[int, float, float]:
-    n = n_items * repeat * len(ARMS)
+def estimate(n_items: int, repeat: int, arms: tuple[str, ...] = tuple(ARMS)) -> tuple[int, float, float]:
+    n = n_items * repeat * len(arms)
     return n, n * EST_RUN, n * EST_RUN_MAX
 
 
@@ -129,15 +131,16 @@ def _dry_xml(it: dict, arm: str) -> str:
 
 # ── the paid run ──────────────────────────────────────────────────────────────
 
-def run(label: str, repeat: int, cases: list[dict], max_cost: float, dry: bool = False) -> list[dict]:
+def run(label: str, repeat: int, cases: list[dict], max_cost: float, dry: bool = False,
+        arms: tuple[str, ...] = tuple(ARMS)) -> list[dict]:
     out = OUT / label
     runs, spent = [], 0.0
     for r in range(1, repeat + 1):
         for it in cases:
-            if not dry and spent + len(ARMS) * EST_RUN_MAX > max_cost:
+            if not dry and spent + len(arms) * EST_RUN_MAX > max_cost:
                 print(f"STOP: ${spent:.3f} spent; the next pair could pass --max-cost ${max_cost:.2f}", flush=True)
                 break
-            for arm in ARMS:
+            for arm in arms:
                 set_arm(arm)
                 case = f"{it['name']}-r{r}"
                 rid = f"comp-{arm}-{it['case']}-s{it['slide']}-r{r}-{int(time.time())}"
@@ -191,10 +194,21 @@ def compositions(first_xml: str, plan: dict) -> dict[str, dict]:
             for cid in {*written, *drawn}}
 
 
-def rescore(label: str, render: bool = True) -> list[dict]:
+def join_saved_a(out: Path, source: str, runs: list[dict]) -> list[dict]:
+    """A rerun of one arm: the same plans' saved A runs of an earlier check, so the sheets still compare both routes."""
+    src, cases = OUT / source, {r["case"] for r in runs}
+    saved = [r for r in json.loads((src / "runs.json").read_text(encoding="utf-8")) if r["arm"] == "A" and r["case"] in cases]
+    for r in saved:
+        shutil.copytree(src / "A" / r["case"], out / "A" / r["case"], dirs_exist_ok=True)
+    return [r for r in runs if r["arm"] != "A"] + saved
+
+
+def rescore(label: str, render: bool = True, a_from: str | None = None) -> list[dict]:
     out = OUT / label
     by_name = {it["name"]: it for it in items()}
     runs = json.loads((out / "runs.json").read_text(encoding="utf-8"))
+    if a_from:
+        runs = join_saved_a(out, a_from, runs)
     for row in runs:
         it = by_name[row["item"]]
         d = out / row["arm"] / row["case"]
@@ -263,6 +277,9 @@ def main() -> int:
     ap.add_argument("--repeat", type=int, default=1)
     ap.add_argument("--only", help="only the plans holding this node (table, chart, timeline, bullet_list, kpi_row, card_grid)")
     ap.add_argument("--limit", type=int, help="the first N plans (a dry path check)")
+    ap.add_argument("--names", help="only these plans: names from --estimate, comma separated")
+    ap.add_argument("--arm", choices=list(ARMS), help="only this arm")
+    ap.add_argument("--a-from", help="with --rescore: join this earlier label's saved A runs of the same plans")
     ap.add_argument("--max-cost", type=float, default=3.5, help="stop before a pair could pass this total (USD)")
     ap.add_argument("--estimate", action="store_true", help="free: print the cases and the cost estimate, then stop")
     ap.add_argument("--rescore", action="store_true", help="free: score saved runs again")
@@ -271,9 +288,17 @@ def main() -> int:
     ap.add_argument("--dry", action="store_true", help="free: fake generator, checks the path end to end")
     a = ap.parse_args()
     cases = [it for it in items() if not a.only or a.only in it["kind"].split("+")][:a.limit]
+    arms = (a.arm,) if a.arm else tuple(ARMS)
+    if a.names:
+        names = [n.strip() for n in a.names.split(",") if n.strip()]
+        unknown = sorted(set(names) - {it["name"] for it in cases})
+        if unknown:
+            print(f"unknown plan names: {', '.join(unknown)}")
+            return 2
+        cases = [it for it in cases if it["name"] in names]
     if not a.rescore:
-        n, est, worst = estimate(len(cases), a.repeat)
-        print(f"{len(cases)} plans x {a.repeat} repeat x {len(ARMS)} arms = {n} runs; estimate ${est:.2f} "
+        n, est, worst = estimate(len(cases), a.repeat, arms)
+        print(f"{len(cases)} plans x {a.repeat} repeat x {len(arms)} arms = {n} runs; estimate ${est:.2f} "
               f"(all long repairs ${worst:.2f}); stop at --max-cost ${a.max_cost:.2f}")
         for it in cases:
             print(f"  {it['kind']:30} {it['name']}")
@@ -281,7 +306,7 @@ def main() -> int:
             return 0
     if a.dry:
         shutil.rmtree(OUT / a.label, ignore_errors=True)
-        run(a.label, a.repeat, cases, a.max_cost, dry=True)
+        run(a.label, a.repeat, cases, a.max_cost, dry=True, arms=arms)
     elif not a.rescore:
         if not os.environ.get("OPENAI_API_KEY"):
             from dotenv import load_dotenv
@@ -294,8 +319,8 @@ def main() -> int:
         shutil.rmtree(OUT / a.label, ignore_errors=True)
         (OUT / a.label).mkdir(parents=True, exist_ok=True)
         add_file_log(OUT / a.label / "run.log")
-        run(a.label, a.repeat, cases, a.max_cost)
-    rescore(a.label, render=not a.no_render)
+        run(a.label, a.repeat, cases, a.max_cost, arms=arms)
+    rescore(a.label, render=not a.no_render, a_from=a.a_from)
     if a.bundle:
         print(f"EMAIL THIS FILE: {TS.bundle(a.label, OUT)}")   # zip layout as the tile same-plan check
     return 0

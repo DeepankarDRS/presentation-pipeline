@@ -33,15 +33,21 @@ def read(attrs: dict[str, str], ref: str, flag: Flag, nd: dict, meta_names: list
          tag: str | None = None) -> tuple[dict, dict, dict]:
     """(meta, box, parts) of a group tag; the rest flagged as tiles._read does. Box attributes are the group's own box.
     `meta_names` / `tag`: an item tag's (tile_groups). A part's old name (`part_aliases`: note. -> delta.) is read as
-    the new one, NODE_ATTR_ALIAS."""
+    the new one, NODE_ATTR_ALIAS. A whole attribute's other name (`attr_aliases`: connector.color -> connector.fill.color)
+    likewise; the real name wins when both are written."""
     d, tag, parts_of = tiles.data(), tag or nd["tag"], nd["parts"]
     meta_names = meta_names or nd["meta"]
     dropped = set(d["dropped"]["parts"]) | set(d["dropped"]["box"]) - {"borderRadius"}   # a block's box may round
     box_ok = set(d["box_attributes"]) | {"borderRadius"} | set(nd.get("native_attributes") or [])
     owned = set(nd.get("code_owned") or [])
-    old_parts = nd.get("part_aliases") or {}
+    old_parts, old_attrs = nd.get("part_aliases") or {}, nd.get("attr_aliases") or {}
     meta, box, parts = {}, {}, {p: {} for p in parts_of}
     for k, v in attrs.items():
+        if k in old_attrs:
+            flag("NODE_ATTR_ALIAS", ref, f'{k} on <{tag} ref="{ref}"> is {old_attrs[k]}.')
+            if old_attrs[k] in attrs:
+                continue
+            k = old_attrs[k]
         if k in meta_names:
             meta[k] = v
             continue

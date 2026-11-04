@@ -22,7 +22,8 @@ Margin & Padding: single number OR dot notation. NOT CSS shorthand.
 
 Dimensions: always > 0. w="0" or h="0" crashes the renderer.
 
-Enums: alignItems/justifyContent = start|center|end (NOT left/right)
+Enums: alignItems = start|center|end|stretch; justifyContent = start|center|end (NOT left/right)
+Leave a stack's alignItems as it is unless a problem below names it: code-drawn nodes need the width stretch gives them.
        textAlign = left|center|right (NOT start/end)
 
 Do NOT emit a <Theme> element — the pipeline injects it. Use $tokens for colors.

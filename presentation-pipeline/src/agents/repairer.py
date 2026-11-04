@@ -31,6 +31,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.agents.context_builder import build_contract
+from src.agents.generator import _render_prompts
 from src.agents.slide_component_planner import plan_single_slide
 from src.compiler.repair_guidance import (
     build_error_guidance,
@@ -47,17 +48,10 @@ logger = logging.getLogger(__name__)
 
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 _REPAIRER_DIR = _PROMPTS_DIR / "repairer"
-_GENERATOR_DIR = _PROMPTS_DIR / "generator"
 
 _repair_env = Environment(
     loader=FileSystemLoader(str(_REPAIRER_DIR)),
     keep_trailing_newline=True,
-)
-_gen_env = Environment(
-    loader=FileSystemLoader(str(_GENERATOR_DIR)),
-    keep_trailing_newline=True,
-    trim_blocks=True,
-    lstrip_blocks=True,
 )
 
 _SRC_DIR = Path(__file__).resolve().parent.parent
@@ -191,23 +185,36 @@ def _build_repair_context(
     }
 
 
-def _plan_to_outline_slide(plan: dict[str, Any]) -> dict[str, Any]:
-    """Convert a SlidePlan back to a minimal OutlineSlide dict for re-planning."""
-    content_data = plan.get("content_data", {})
-    key_messages = []
-    for comp in plan.get("components", []):
-        summary = comp.get("content_summary", "")
-        if summary:
-            key_messages.append(summary)
-    return {
-        "slide_index": plan.get("slide_index", 0),
-        "slide_title": plan.get("slide_title", content_data.get("title", "")),
-        "label": plan.get("label", ""),
-        "subtitle": plan.get("subtitle", ""),
-        "section": "",
-        "narrative_role": "",
-        "key_messages": key_messages,
-    }
+def replan(state: PresentationState, plan: dict[str, Any], idx: int,
+           repair_ctx: dict[str, Any]) -> tuple[dict[str, Any], Any]:
+    """(the plan to regenerate from, the planner's usage or None). Re-plans from the outline slide. With no outline
+    the plan stays: its summaries alone made the planner write them as slide text ("Closing recommendation sentence
+    about the approach", paid check 2026-11-04)."""
+    outline_plan = state.get("outline_plan") or {}
+    slide = next((dict(s) for s in outline_plan.get("slides", []) if s.get("slide_index") == idx), None)
+    if slide is None:
+        logger.info(f"repairer: no outline for slide {idx}: regenerating from its plan")
+        return plan, None
+    new_plan, usage = plan_single_slide(
+        slide,
+        outline_plan=outline_plan,
+        deck_settings=state.get("deck_settings"),
+        supplied_content=state.get("supplied_content"),
+        repair_context=repair_ctx,
+    )
+    new_plan["slide_index"] = plan.get("slide_index", 0)
+    return new_plan, usage
+
+
+def regenerate_prompts(state: PresentationState, new_plan: dict[str, Any], new_contract: dict[str, Any], idx: int,
+                       problems: list[str]) -> tuple[str, str]:
+    """The generator's own prompts for the new plan, so the code-drawn tags and their lines are in them, and what failed."""
+    plans = list(state.get("slide_plans") or [])
+    plans[idx:idx + 1] = [new_plan]
+    system, user = _render_prompts({**state, "slide_plans": plans, "contract": new_contract, "current_slide_index": idx})
+    if problems:
+        user += "\n\nThe previous attempt at this slide failed. Do not repeat:\n" + "\n".join(f"- {p}" for p in problems)
+    return system, user
 
 
 def build_patch_prompts(
@@ -477,31 +484,9 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             visual_failure=visual_layout_broken or visual_only_failure,
             has_compile_errors=has_compile_errors,
         )
-        # Prefer the original outline slide (rich key_messages + narrative context)
-        # over reconstructing from the failed plan's vague content_summary strings.
-        # The repair_context separately tells the planner which components to avoid.
-        state_outline_plan = state.get("outline_plan") or {}
-        state_outline_slides = state_outline_plan.get("slides", [])
-        outline_slide = next(
-            (dict(s) for s in state_outline_slides if s.get("slide_index") == idx),
-            None,
-        ) or _plan_to_outline_slide(plan)
-        # Pass the full outline_plan so the planner has correct deck context
-        # (all slide titles, total_slides count, core_hook).
-        outline_plan = state_outline_plan if state_outline_plan else {
-            "core_hook": state.get("core_hook", ""),
-            "slides": [outline_slide],
-        }
-
         logger.info(f"repairer: REGENERATE — re-planning slide {idx} with repair context")
         try:
-            new_plan, plan_usage = plan_single_slide(
-                outline_slide,
-                outline_plan=outline_plan,
-                deck_settings=state.get("deck_settings"),
-                supplied_content=state.get("supplied_content"),
-                repair_context=repair_ctx,
-            )
+            new_plan, plan_usage = replan(state, plan, idx, repair_ctx)
         except Exception as exc:
             logger.warning(f"repairer: plan_single_slide failed, falling back to PATCH: {exc}")
             norm = state.get("normalize_result") or {}
@@ -523,7 +508,6 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
                 failing_xml, system_prompt, user_prompt, slide_index=idx,
             )
 
-        new_plan["slide_index"] = plan.get("slide_index", 0)
         updated_plans = list(slide_plans)
         updated_plans[idx] = new_plan
 
@@ -531,32 +515,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             theme_info = state.get("resolved_theme") or {}
             new_contract = build_contract(new_plan, theme_info)
 
-            system_prompt = _gen_env.get_template("system.j2").render(
-                forbidden_tags=new_contract.get("forbidden_tags", []),
-                forbidden_attributes=new_contract.get("forbidden_attributes", []),
-                theme_element=new_contract.get("theme_element", state.get("theme_element", "")),
-                allowed_nodes=new_contract.get("allowed_nodes", []),
-                allowed_attributes=new_contract.get("allowed_attributes", {}),
-                node_hierarchy=new_contract.get("node_hierarchy", ""),
-                component_count=new_contract.get("component_count", 0),
-                house_style=new_contract.get("house_style", ""),
-                component_recipes=new_contract.get("component_recipes", ""),
-                notes=new_contract.get("notes", []),
-                core_hook=state.get("core_hook", ""),
-                slide_type=new_plan.get("slide_type", ""),
-            )
-            user_prompt = _gen_env.get_template("user.j2").render(
-                objective=state.get("raw_request", ""),
-                slide_title=new_plan.get("slide_title", ""),
-                label=new_plan.get("label", ""),
-                subtitle=new_plan.get("subtitle", ""),
-                core_hook=state.get("core_hook", ""),
-                components=new_plan.get("components", []),
-                layout_hint=new_plan.get("layout_hint", ""),
-                content_data=new_plan.get("content_data", {}),
-                supplied_content=state.get("supplied_content"),
-                slide_type=new_plan.get("slide_type", ""),
-            )
+            system_prompt, user_prompt = regenerate_prompts(state, new_plan, new_contract, idx, problems)
 
             llm = get_llm("generator")
             messages = [
@@ -619,7 +578,7 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             "retry_count": current_count + 1,
             "stall_detected": stalled,
             # the re-plan call is real spend: record it next to the regenerate call
-            "generation_history": [usage_record(plan_usage, "slide_component_planner", idx), record],
+            "generation_history": [*([usage_record(plan_usage, "slide_component_planner", idx)] if plan_usage else []), record],
         }
         if not truncated:
             result["current_xml"] = regenerated_xml

@@ -19,26 +19,14 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader
-
 from src.agents.context_builder import build_contract
-from src.agents.repairer import build_patch_prompts, _build_repair_context, _plan_to_outline_slide
-from src.agents.slide_component_planner import plan_single_slide
+from src.agents.repairer import build_patch_prompts, _build_repair_context, regenerate_prompts, replan
 from src.agents.validator import normalize_and_compile
 from src.compiler.repair_guidance import cap_diag_msg
 from src.state import AttemptRecord, PresentationState
 from src.utils.llm_client import extract_usage, get_llm, usage_record
 
 logger = logging.getLogger(__name__)
-
-_GENERATOR_DIR = Path(__file__).resolve().parent.parent / "prompts" / "generator"
-_gen_env = Environment(
-    loader=FileSystemLoader(str(_GENERATOR_DIR)),
-    keep_trailing_newline=True,
-    trim_blocks=True,
-    lstrip_blocks=True,
-)
-
 
 def _build_visual_problems(visual_issues: list[dict[str, Any]]) -> list[str]:
     problems: list[str] = []
@@ -74,45 +62,12 @@ def _do_patch(state, plan, problems, visual_issues, contract, theme_el, original
 def _do_regenerate(state, plan, problems, contract, theme_el, idx):
     """REGENERATE: replan the slide + generate fresh XML."""
     repair_ctx = _build_repair_context(plan, problems, visual_failure=True, has_compile_errors=False)
-    outline_slide = _plan_to_outline_slide(plan)
-    outline_plan = {"core_hook": state.get("core_hook", ""), "slides": [outline_slide]}
-
-    new_plan, plan_usage = plan_single_slide(
-        outline_slide,
-        outline_plan=outline_plan,
-        deck_settings=state.get("deck_settings"),
-        supplied_content=state.get("supplied_content"),
-        repair_context=repair_ctx,
-    )
-    new_plan["slide_index"] = plan.get("slide_index", 0)
+    new_plan, plan_usage = replan(state, plan, idx, repair_ctx)
 
     theme_info = state.get("resolved_theme") or {}
     new_contract = build_contract(new_plan, theme_info)
 
-    system_prompt = _gen_env.get_template("system.j2").render(
-        forbidden_tags=new_contract.get("forbidden_tags", []),
-        forbidden_attributes=new_contract.get("forbidden_attributes", []),
-        theme_element=new_contract.get("theme_element", theme_el),
-        allowed_nodes=new_contract.get("allowed_nodes", []),
-        allowed_attributes=new_contract.get("allowed_attributes", {}),
-        node_hierarchy=new_contract.get("node_hierarchy", ""),
-        component_count=new_contract.get("component_count", 0),
-        house_style=new_contract.get("house_style", ""),
-        component_recipes=new_contract.get("component_recipes", ""),
-        notes=new_contract.get("notes", []),
-        core_hook=state.get("core_hook", ""),
-        slide_type=new_plan.get("slide_type", ""),
-    )
-    user_prompt = _gen_env.get_template("user.j2").render(
-        objective=state.get("raw_request", ""),
-        slide_title=new_plan.get("slide_title", ""),
-        core_hook=state.get("core_hook", ""),
-        components=new_plan.get("components", []),
-        layout_hint=new_plan.get("layout_hint", ""),
-        content_data=new_plan.get("content_data", {}),
-        supplied_content=state.get("supplied_content"),
-        slide_type=new_plan.get("slide_type", ""),
-    )
+    system_prompt, user_prompt = regenerate_prompts(state, new_plan, new_contract, idx, problems)
 
     response = get_llm("generator").invoke([
         {"role": "system", "content": system_prompt},

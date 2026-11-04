@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 from src.agents.repairer import (
     repairer_node, _collect_problems, build_patch_prompts,
     _get_pre_issues, _get_compile_diags, _choose_strategy,
-    _build_repair_context, _plan_to_outline_slide, _cap_xml,
+    _build_repair_context, _cap_xml,
     PATCH, REGENERATE,
 )
 from src.compiler.repair_guidance import (
@@ -29,6 +29,7 @@ def _make_state(**overrides):
         ],
         "layout_hint": "Title at top, KPI tiles below",
     }]
+    state["outline_plan"] = {"slides": [{"slide_index": 0, "slide_title": "Dashboard", "key_messages": ["ARR up"]}]}
     state["contract"] = {
         "allowed_nodes": ["Slide", "Theme", "VStack", "HStack", "Text", "Shape", "Span"],
         "allowed_attributes": {"VStack": ["gap"], "Text": ["fontSize", "color", "bold"]},
@@ -222,22 +223,6 @@ def test_build_repair_context():
     assert "title" in ctx["failed_kinds"]
     assert len(ctx["errors"]) == 2
     assert "directive" in ctx
-
-
-def test_plan_to_outline_slide():
-    plan = {
-        "slide_index": 2,
-        "slide_title": "Revenue",
-        "components": [
-            {"kind": "chart", "content_summary": "Q4 revenue chart"},
-            {"kind": "title", "content_summary": "Revenue Overview"},
-        ],
-    }
-    outline = _plan_to_outline_slide(plan)
-    assert outline["slide_index"] == 2
-    assert outline["slide_title"] == "Revenue"
-    assert len(outline["key_messages"]) == 2
-    assert "Q4 revenue chart" in outline["key_messages"]
 
 
 # ── Shared tier-1 patch prompts ──────────────────────────────────────────

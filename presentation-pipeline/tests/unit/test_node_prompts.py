@@ -107,3 +107,109 @@ def test_paid_check_word_loss_reads_split_numbers_and_finds_a_real_loss():
     p = plan(KPIS)
     xml = '<Text>ARR</Text><Text>$48<Span>M</Span></Text><Text>NRR</Text><Text>114%</Text><Text>14 months</Text>'
     assert [m for m in CP.missing_words(xml, p)] == ["kpis: CAC"]
+
+
+# ── from the paid check, 2026-11-04 ──────────────────────────────────────────
+
+def slide(body, align="stretch"):
+    return f'<Slide><VStack w="1280" h="720" alignItems="{align}">{body}</VStack></Slide>'
+
+
+def test_the_attribute_names_the_llm_reached_for_are_read_not_errors():
+    cards = dict(CARDS, content_data={"card_layout": "grid", "cards": [{"title": "A", "bullets": ["one"]}, {"title": "B", "bullets": ["two"]}]})
+    r = composed.expand(slide('<Timeline ref="road" variant="columns" connector.color="$neutral"/>'
+                              '<CardGrid ref="levers" bullets.color="$surface"/>'), plan(LINE, cards))
+    assert r["ok"], r["issues"]
+    assert sum(i["code"] == "NODE_ATTR_ALIAS" for i in r["issues"]) == 2
+    assert 'fill.color="$neutral"' in r["xml"]
+    assert 'color="$surface"' in r["xml"]
+
+
+def test_the_real_attribute_name_wins_over_its_alias():
+    cards = dict(CARDS, content_data={"card_layout": "grid", "cards": [{"title": "A", "bullets": ["one"]}, {"title": "B", "bullets": ["two"]}]})
+    r = composed.expand(slide('<CardGrid ref="levers" body.color="$textMain" bullets.color="$surface"/>'), plan(cards))
+    assert r["ok"] and 'color="$surface"' not in r["xml"]
+
+
+@pytest.mark.parametrize("align,held", [("start", True), ("center", True), ("end", True), ("stretch", False)])
+def test_a_node_keeps_the_width_under_a_parent_that_does_not_stretch(align, held):
+    out = composed.hold_width(slide('<Timeline ref="road" grow="1"/>', align), plan(LINE))
+    assert ('alignSelf="stretch"' in out) is held
+
+
+def test_a_node_sized_by_the_llm_or_in_a_row_is_left_alone():
+    p = plan(LINE)
+    for xml in (slide('<Timeline ref="road" w="600"/>', "start"), slide('<Timeline ref="road" alignSelf="end"/>', "start"),
+                slide('<HStack alignItems="start"><Timeline ref="road"/></HStack>', "stretch"),
+                slide('<VStack alignItems="start"><Text>x</Text></VStack><Timeline ref="road"/>', "stretch")):
+        assert composed.hold_width(xml, p) == xml
+
+
+def test_a_ref_on_a_component_code_does_not_draw_says_how_to_write_it():
+    note = {"component_id": "callout", "kind": "narrative", "count": 1, "content_summary": "x",
+            "content_data": {"text": "What gets measured gets scaled."}}
+    r = composed.expand(slide('<CardGrid ref="levers"/><CardGrid ref="callout"/>'), plan(CARDS, note))
+    msg = next(i["message"] for i in r["issues"] if i["code"] == "NODE_REF_UNKNOWN")
+    assert not r["ok"] and "narrative" in msg and "by hand" in msg and "What gets measured gets scaled." in msg
+
+
+def test_a_ref_under_the_wrong_tag_names_the_right_tag():
+    r = composed.expand(slide('<CardGrid ref="kpis"/><CardGrid ref="levers"/>'), plan(KPIS, CARDS))
+    msg = next(i["message"] for i in r["issues"] if i["code"] == "NODE_REF_UNKNOWN")
+    assert '<KpiRow ref="kpis"/>' in msg
+
+
+class _Reply:
+    def __init__(self, xml):
+        self.content, self.seen = xml, []
+        self.response_metadata = {"token_usage": {"prompt_tokens": 1, "completion_tokens": 1}, "model_name": "fake"}
+
+    def invoke(self, messages):
+        self.seen.append(messages)
+        return self
+
+
+def _regen_state(**extra):
+    from src.state import initial_state
+    state = initial_state(run_id="regen", raw_request="r", deck_min_threshold=0, theme_name="corporate-slate")
+    state.update(slide_plans=[plan(LINE, LIST)], current_slide_index=0, retry_count=1, retry_tier=1, **extra)
+    from src.agents.style_resolver import resolve_theme
+    state["resolved_theme"] = resolve_theme("corporate-slate")
+    state["contract"] = context_builder.context_builder_node(state)["contract"]
+    state["normalize_result"] = {"issues": [], "cleaned_xml": "<Slide/>", "tags_xml": "<Slide/>"}
+    state["compile_result"] = {"ok": False, "diagnostics": [{"type": "INVALID_VALUE", "message": "width must be positive"}]}
+    return state
+
+
+def test_regenerate_with_no_outline_keeps_the_plan_and_asks_for_the_node_tags(monkeypatch):
+    from src.agents import repairer
+    llm = _Reply("<Slide/>")
+    monkeypatch.setattr(repairer, "get_llm", lambda step: llm)
+    planned = []
+    monkeypatch.setattr(repairer, "plan_single_slide", lambda *a, **k: planned.append(a))
+    result = repairer.repairer_node(_regen_state())
+    assert result["retry_tier"] == repairer.REGENERATE and not planned
+    assert result["slide_plans"][0]["components"][0]["content_data"]["timeline_items"][0]["label"] == "Build"
+    system, user = (m["content"] for m in llm.seen[0])
+    assert "CODE-DRAWN NODES" in system and '<Timeline ref="road"' in user and '<Ul ref="pts"' in user
+    assert "width must be positive" in user
+
+
+def test_regenerate_with_an_outline_replans_from_it_and_counts_the_planner(monkeypatch):
+    from src.agents import repairer
+    llm = _Reply("<Slide/>")
+    monkeypatch.setattr(repairer, "get_llm", lambda step: llm)
+    usage = {"tokens_in": 1, "tokens_out": 1, "tokens_reasoning": 0, "tokens_cached": 0, "model": "fake"}
+    planned = []
+    monkeypatch.setattr(repairer, "plan_single_slide", lambda s, **k: (planned.append(s), (plan(KPIS), usage))[1])
+    slide0 = {"slide_index": 0, "slide_title": "Head", "key_messages": ["ARR is $48M"]}
+    result = repairer.repairer_node(_regen_state(outline_plan={"slides": [slide0]}))
+    assert planned[0]["key_messages"] == ["ARR is $48M"]
+    assert result["slide_plans"][0]["components"][0]["kind"] == "kpi_row"
+    assert [getattr(h, "step", h.get("step") if isinstance(h, dict) else None) for h in result["generation_history"]][0] == "slide_component_planner"
+    assert "KPI TILES kpis" in llm.seen[0][1]["content"]
+
+
+def test_paid_check_can_rerun_some_plans_on_one_arm():
+    from scripts import composition_paid as CP
+    assert CP.estimate(6, 1, ("B",))[0] == 6 and CP.estimate(22, 1)[0] == 44

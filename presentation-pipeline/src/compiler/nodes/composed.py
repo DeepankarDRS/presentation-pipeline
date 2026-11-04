@@ -4,10 +4,11 @@ generator and context builder: chart (charts.py), timeline (sequences.py), kpi_r
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
-from src.compiler.nodes import bullets, charts, sequences, tables, tile_groups, validate
+from src.compiler.nodes import bullets, charts, compose, sequences, tables, tile_groups, validate
 
 # plan-level content_data keys a drawn kind no longer needs in the prompt
 PLAN_KEYS = {"chart": ("chart_",), "timeline": ("timeline_items",),
@@ -49,7 +50,53 @@ def all_drawn(plan: dict | None, kind: str) -> bool:
     return bool(n) and len(drawn(plan, kind)) == n
 
 
+def _parent_align(before: str) -> str | None:
+    """alignItems of the VStack the next tag sits in; None when it sits in anything else."""
+    stack: list[tuple[str, str]] = []
+    for m in compose._STACK.finditer(before):
+        close, name, attrs, selfclose = m.groups()
+        if close:
+            if stack:
+                stack.pop()
+        elif not selfclose:
+            stack.append((name, attrs))
+    if not stack or stack[-1][0] != "VStack":
+        return None
+    found = re.search(r'\balignItems="([^"]*)"', stack[-1][1])
+    return found.group(1) if found else None
+
+
+def hold_width(xml: str, plan: dict | None) -> str:
+    """A drawn node with no w in a VStack aligned start / center / end shrinks to its content: its inner w="1" columns
+    get no width and the compile crashes (paid check 2026-11-04: a repair changed the slide's stretch to start)."""
+    ids = {tag(k): set(drawn(plan, k)) for k in kinds_on()}
+    out, pos = [], 0
+    for t in validate.ref_tags(xml):
+        a = t["attrs"]
+        if a["ref"] in ids.get(t["tag"], ()) and not {"w", "alignSelf"} & set(a) \
+                and _parent_align(xml[:t["start"]]) in ("start", "center", "end"):
+            cut = t["start"] + 1 + len(t["tag"])
+            out += [xml[pos:cut], ' alignSelf="stretch"']
+            pos = cut
+    return "".join(out) + xml[pos:]
+
+
+def explain_unknown(issue: dict[str, Any], plan: dict | None) -> dict[str, Any]:
+    """A ref tag on a component of another kind: say what the component is, and hand over its words when code does not
+    draw it, because a patch sees only the XML (paid check 2026-11-04: a narrative written as <CardGrid ref>)."""
+    comp = next((c for c in (plan or {}).get("components") or [] if c.get("component_id") == issue.get("ref")), None)
+    if issue.get("code") != "NODE_REF_UNKNOWN" or comp is None:
+        return issue
+    cid, kind, head = comp["component_id"], comp.get("kind"), issue["message"].split(": ", 1)[0]
+    if cid in drawn(plan, kind):
+        return dict(issue, message=f'{head}: {cid} is a {kind}: place <{tag(kind)} ref="{cid}"/>.')
+    words = json.dumps(comp.get("content_data") or {}, ensure_ascii=False)
+    return dict(issue, message=f"{head}: {cid} is a {kind}, and code does not draw it. Remove this tag and write it by hand "
+                               f"with <VStack> and <Text>, with no ref. Its content: {words}")
+
+
 def expand(xml: str, plan: dict | None) -> dict[str, Any]:
+    xml = hold_width(xml, plan)
     out = {"xml": xml, "issues": [], "ok": True, "components": {}}
     fns = ((charts.expand,) if charts.on() else ()) + ((sequences.expand,) if sequences.kinds_on() else ()) \
         + ((tile_groups.expand,) if tile_groups.kinds_on() else ()) + tuple(m.expand for m in MORE.values() if m.on())
@@ -60,6 +107,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
     for issue in unplaced(xml, plan, out["components"]):
         out["issues"].append(issue)
         out["ok"] = False
+    out["issues"] = [explain_unknown(i, plan) for i in out["issues"]]
     out["xml"] = validate.one_value(out["xml"])
     return out
 

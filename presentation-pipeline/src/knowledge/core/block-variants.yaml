@@ -596,6 +596,7 @@ nodes:
     parts: {date: Text, title: Text, description: Text, marker: Shape, connector: Shape, band: Box, item: Box}
     one_hue: marker
     part_aliases: {label: title}   # POM's TimelineItem says title (titleColor); label. still read
+    attr_aliases: {connector.color: connector.fill.color}   # the LLM's name in the paid check (2 of 22 plans)
     meta: [ref, variant, direction]
     native_attributes: []
     code_owned: [dateColor, titleColor, descriptionColor, connectorColor, useColorForDate]
@@ -750,6 +751,7 @@ nodes:
     parts: {tag: Text, title: Text, body: Text, icon: Icon, number: Text, band: Box, bullets: Box, divider: Rule,
             item: Box}
     part_aliases: {}
+    attr_aliases: {bullets.color: body.color}   # bullets take the body's colour (3 of 22 plans in the paid check)
     meta: [ref, variant, cols, color, icon]
     item_meta: [ref, variant, color, icon]
     native_attributes: []
