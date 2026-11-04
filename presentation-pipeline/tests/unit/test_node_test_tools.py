@@ -116,9 +116,10 @@ def test_first_try_only_by_default(tmp_path):
     assert r["repairs"] == 0 and len(calls) == 1 and "NODE_REF_UNKNOWN" in r["issues_final"]
 
 
-# "rail" was the native timeline in the 1a names; since the composition convention (2026-10-28) it is the code-drawn
-# line + boxes (old `cards`), and the native one is `native`
-@pytest.mark.parametrize("tag,variant,block", [("Timeline", "cards", True), ("Timeline", "rail", True),
+# "rail" was the native timeline in the 1a names; since 2026-11-02 it is the alternating drawing (no Phase 0b block),
+# the line + boxes (old `cards`) is `columns`, and the native one is `native`
+@pytest.mark.parametrize("tag,variant,block", [("Timeline", "cards", True), ("Timeline", "columns", True),
+                                               ("Timeline", "rail", False),
                                                ("Timeline", "native", False),
                                                ("Ul", "tiles", True), ("Ul", "icon", False),
                                                ("ProcessArrow", "step_cards", True), ("ProcessArrow", "alternating", False)])
@@ -136,7 +137,7 @@ def test_timeline_cards_variant_expands_to_a_block():
     run = load_run(_FIX / "runs" / "decks" / "gate-deck-all-nodes-dense__r1")
     plan = run["slides"][4]["plan"]   # brand_timeline, conversion_flow, conversion_rules
     sk = ('<Slide><VStack w="1280" h="720" alignItems="stretch"><Text fontSize="30">H</Text>'
-          '<Timeline ref="brand_timeline" variant="rail" h="200" /><Flow ref="conversion_flow" grow="1" />'
+          '<Timeline ref="brand_timeline" variant="columns" h="200" /><Flow ref="conversion_flow" grow="1" />'
           '</VStack></Slide>')
     m = Measurer()
     try:

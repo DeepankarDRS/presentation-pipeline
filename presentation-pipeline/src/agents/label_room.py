@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any
 
 from src.agents.capacity import _as_cards, _label, _to_cards, direction_of, max_of
+from src.compiler.nodes.spec import nodes_on
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,8 @@ def _too_wide(words: list[tuple[str, float]], rooms: list[float]) -> tuple[str, 
 
 def enforce_label_room(components: list[dict[str, Any]]) -> list[str]:
     """Fix the plan in place where a diagram label's longest word cannot fit its room; one note per change."""
-    comps = [c for c in components if c.get("kind") in _SIZE and _labels(c)]
+    # a kind code draws (POM_NODES) sizes its own text: POM's fixed label boxes do not apply
+    comps = [c for c in components if c.get("kind") in _SIZE and _labels(c) and not nodes_on(c["kind"])]
     if not comps:
         return []
     measured = measure_words([(t, *_SIZE[c["kind"]]) for c in comps for t in _labels(c)])

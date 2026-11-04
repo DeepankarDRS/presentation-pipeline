@@ -42,6 +42,7 @@ timeline:
   min_items: 3
   max_items: {horizontal: 8, vertical: 8}
   max_label_words: 3
+  max_description_words: 20   # a milestone's detail, in its own field (user, 2026-11-02: never packed into the label)
 process_arrow:
   min_items: 3
   max_items: {horizontal: 7, vertical: 9}

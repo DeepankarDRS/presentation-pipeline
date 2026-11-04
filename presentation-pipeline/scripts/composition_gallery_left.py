@@ -24,7 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-os.environ["POM_NODES"] = "chart,timeline,process_arrow,flow,table"   # the composition nodes the bare tags need
+os.environ["POM_NODES"] = "chart,timeline,table"   # the composition nodes the bare tags need
 
 from scripts import composition_test as CT  # noqa: E402
 from scripts import left_blocks_gallery as LB  # noqa: E402
@@ -202,7 +202,7 @@ def bullets_banded() -> str:
                                                    for k in (0, 2)) + "</VStack>")
 
 
-# ── timeline / process_arrow / flow: bare tags drawn by sequences.py (POM_NODES); the hand-written XML of
+# ── timeline: bare tags drawn by sequences.py (POM_NODES); the hand-written XML of
 # 2026-10-27 that they replace drew the reference sheets ───────────────────────────────────────────────────────
 
 TIMELINE_SHORT = comp("roadmap_short", "timeline", {"direction": "horizontal", "timeline_items": [
@@ -293,17 +293,14 @@ def blocks() -> dict[str, tuple[list, list]]:
         "timeline": ([(f"today · {v}", [LB.TIMELINE], LB.timeline(v)) for v in ("rail", "cards", "columns")],
                      [("native · short labels (default)", [TIMELINE_SHORT], tag("Timeline", TIMELINE_SHORT)),
                       ("bare tag · labels with detail -> rail", [TIMELINE], tag("Timeline", TIMELINE)),
+                      ("rail · short labels", [TIMELINE_SHORT], tag("Timeline", TIMELINE_SHORT, "rail")),
+                      ("columns", [TIMELINE], tag("Timeline", TIMELINE, "columns")),
                       ("banded", [TIMELINE], tag("Timeline", TIMELINE, "banded")),
                       ("rows", [TIMELINE], tag("Timeline", TIMELINE, "rows"))]),
         "process": ([(f"today · {v}",) + LB.process(v) for v in ("chevrons", "numbered", "alternating")],
-                    [("bare tag · short steps -> native", [STEPS_SHORT], tag("ProcessArrow", STEPS_SHORT)),
-                     ("bare tag · long steps -> steps", [STEPS_LONG], tag("ProcessArrow", STEPS_LONG)),
-                     ("steps numbered · short steps", [STEPS_SHORT], tag("ProcessArrow", STEPS_SHORT, "steps numbered")),
-                     ("rail · short steps", [STEPS_SHORT], tag("ProcessArrow", STEPS_SHORT, "rail")),
-                     ("rail · long steps", [STEPS_LONG], tag("ProcessArrow", STEPS_LONG, "rail"))]),
+                    []),   # no node (user, 2026-11-02): the LLM draws process arrows as today
         "flow": ([(f"today · {v}",) + LB.flow(v) for v in ("boxes", "numbered", "step_cards")],
-                 [("native (default)", [FLOW], tag("Flow", FLOW)), ("steps", [FLOW], tag("Flow", FLOW, "steps")),
-                  ("steps numbered", [FLOW], tag("Flow", FLOW, "steps numbered"))]),
+                 []),   # no node (user, 2026-11-02): the LLM draws flows as today
         "callout": ([(f"today · {v}", [LB.TAKEAWAY], LB.beside_chart(LB.callout(v))) for v in ("tinted", "rule", "dark")],
                     [("native (default) · takeaway", [TAKEAWAY], LB.beside_chart(callout_native(TAKEAWAY))),
                      ("native · a quotation (content rule)", [QUOTE], LB.beside_chart(callout_native(QUOTE)))]),

@@ -18,6 +18,7 @@ SEVERITY = {
     "NODE_VARIANT_UNKNOWN": WARNING, "NODE_VARIANT_UNMET": WARNING, "LITERAL_COLOR": WARNING,
     "NODE_HIGHLIGHT_UNKNOWN": ERROR, "NODE_HIGHLIGHT_LIMIT": WARNING, "NODE_HIGHLIGHT_RULE": WARNING,
     "NODE_ATTR_DROPPED": REPORT, "NODE_ATTR_NO_EFFECT": REPORT, "NODE_ATTR_ALIAS": REPORT, "NODE_TEXT_SPLIT": REPORT,
+    "NODE_VERTICAL_ROWS": REPORT,
     "NODE_DEFAULT_FROM_CONTENT": REPORT, "NODE_TAG_ALIAS": REPORT, "NODE_LOOK_FROM_HINT": REPORT,
 }
 Flag = Callable[[str, "str | None", str], None]
@@ -186,12 +187,13 @@ def text(s: str, px: int, part: dict[str, str], **kw: str) -> str:
     return f'<Text fontSize="{px}"{a({**kw, **part})}>{native.x(s)}</Text>'
 
 
-_DASH = re.compile(r"\s+[—–]\s+")
+_DASH = re.compile(r"\s+[—–]\s+|(?<=[^\W\d_])—(?=[^\W\d_])")   # also "Benchmarking—conduct"; "6–11 AM" stays whole
 _COLON = re.compile(r":\s+")
 
 
 def split(s: str) -> tuple[str, str]:
-    """'Head — detail' / 'Head: detail' -> (head, detail), every word kept: at the first " — " and only then at ": "
+    """'Head — detail' / 'Head: detail' -> (head, detail), every word kept: at the first " — " (or an em dash between
+    two letters, unspaced) and only then at ": "
     (C10: "Phase 1: Foundation — detail" keeps the head "Phase 1: Foundation")."""
     s = str(s or "").strip()
     for rx in (_DASH, _COLON):

@@ -111,11 +111,10 @@ def _layout_attrs(a: dict) -> str:
 # D12 (user, 2026-10-07): in 1a a native tag whose `variant` is a block variant is drawn by the
 # Phase 0b block closest to it; variants with no Phase 0b block (Ul icon, ProcessArrow alternating,
 # Chart labelled / horizontal) stay native
-# (+ their composition names since 2026-10-28, block-variants.yaml: cards -> rail, columns -> banded, numbered ->
-# steps numbered, step_cards -> steps)
-BLOCK_VARIANTS = {"Timeline": {"cards", "columns", "rail", "banded"},
-                  "ProcessArrow": {"numbered", "step_cards", "steps", "steps numbered"},
-                  "Flow": {"numbered", "step_cards", "steps", "steps numbered"}, "Ul": {"tiles", "columns"}}
+# (+ the timeline composition names since 2026-11-02, block-variants.yaml: cards -> columns, + banded; `rail` is
+# now the alternating drawing, which has no Phase 0b block)
+BLOCK_VARIANTS = {"Timeline": {"cards", "columns", "banded"}, "ProcessArrow": {"numbered", "step_cards"},
+                  "Flow": {"numbered", "step_cards"}, "Ul": {"tiles", "columns"}}
 
 
 def as_block(t: dict, comp: dict) -> bool:

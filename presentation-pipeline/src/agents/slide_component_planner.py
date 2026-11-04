@@ -38,6 +38,7 @@ from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, hol
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
                                       flag_written_lines, instruction_lines, visual_directions)
 from src.compiler.node_facts import facts_text
+from src.compiler.nodes.spec import nodes_on
 from src.state import ChartTypeLiteral, ComponentPlan, PresentationState, SlidePlan
 from src.utils.llm_client import get_llm, length_limit_usage, unpack_raw, usage_record
 from src.utils.text_clean import clean_data
@@ -258,6 +259,7 @@ def plan_single_slide(
     )
     system_msg = _jinja_env.get_template("system.j2").render(
         hint_capabilities=planner_capabilities_section(), content_field=content_field,
+        timeline_node=nodes_on("timeline"),   # code draws the detail: the planner gives it its own field
     )
 
     llm = get_llm("slide_component_planner")

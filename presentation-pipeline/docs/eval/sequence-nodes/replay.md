@@ -2,6 +2,38 @@
 
 Command: `python -m scripts.node_replay --kind <timeline|process_arrow|flow> --src <main checkout>/output` (bare tags, Inter render). Blind sheets and `marks.csv` in `output/<kind>-replay/sheets/`.
 
+## 2026-11-02: timeline with the alternating rail as default (process / flow nodes dropped)
+
+The bare tag now draws `native` (short labels), `rail` (dots on a line, date / head / detail alternating above and
+below; ≤ 7 points) or `columns` (the old box-per-point rail); a vertical timeline that is not native draws `rows`
+(rail and columns lay points side by side; `NODE_VERTICAL_ROWS`, render: `vertical-check.png`).
+
+Fixes after the first runs:
+- Six-point slides spilled their card (one text per sixth of the width): each text now spans two dot gaps (n + 1
+  units, dot k at k + 1), neighbours on one side touch, none passes the edge.
+- On 6 slides the LLM had drawn POM's timeline with short titles and typed the details itself beside it (a row of
+  month notes, a list). Arm B kept that copy while the rail drew the details too, so they showed twice (user,
+  2026-11-02). The replay now drops the LLM's own copy beside the tag (a sibling of ≥ 6 words, ≥ 60% the
+  timeline's own); the generator line says "never type a date, label or detail yourself, beside it either".
+
+Slides: 23 (one timeline component with an id, one LLM-drawn <Timeline>); the LLM's card around it replaced too on 1; the LLM's own copy of its words beside it dropped on 6. B compositions: {'rail': 17, 'native': 6}. Skipped (not well-formed XML): 1.
+
+| | A (LLM's timeline) | B (Timeline tag) |
+|---|---|---|
+| compiled | 23 | 23 |
+| plan items not all on the slide | 28 | 0 |
+| GEOM_CARD_EMPTY | 7 | 1 |
+| GEOM_SLIDE_SPARSE | 0 | 0 |
+| broken words (render) | 11 | 11 |
+| text overlaps (render) | 22 | 7 |
+| WORD_TOO_WIDE | 5 | 5 |
+| LOW_CONTRAST | 1 | 1 |
+| timeline output tokens | 3377 | 342 (-90%) |
+
+B issues: {'NODE_DEFAULT_FROM_CONTENT': 17, 'NODE_TEXT_SPLIT': 8}
+
+### Earlier (2026-10-28, cards default)
+
 ## Timeline node: free replay (LLM layout kept), arm B = <Timeline ref>
 
 Slides: 23 (one timeline component with an id, one LLM-drawn <Timeline>); the LLM's card around it replaced too on 1. B compositions: {'rail': 17, 'native': 6}. Skipped (not well-formed XML): 1.
@@ -66,3 +98,11 @@ B issues: {}
   grows and the short rail boxes stand mostly empty. Not changed before the marks (one deck): options are keeping
   the LLM's `h` when the slide has no spare height, or growing the rail text further.
 - Plan items not all on the slide: the LLM's timelines dropped or re-cut words of 28 points (A); the tags 0.
+
+### Blind marks (user, 2026-11-02): passed
+
+Tag 14 / same 6 / LLM 3 = **0.739** (ties half); tag or same 20 / 23 (0.870). Rail: 14 wins, 3 losses; native: 6
+same. Reasons for the wins: mostly "better empty space allocation", "consistent, better for large content", "no
+overflow". The 3 losses: 2.3 and 5.2, where one point's whole sentence became a 21 px bold head (no " — " / ": "
+to split at; 5.2 has an unspaced "—"), and 2.4, four short labels just over native's 24 characters drawn large
+(5.3 / 5.4, the same deck's labels, went to the rail). Marks + key: `timeline-marks/`.

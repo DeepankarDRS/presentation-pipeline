@@ -247,7 +247,7 @@ Bare and lightly styled tags are unchanged: 102 expansions identical to the comm
 **Corrections to this report's measure.** The reach check first looked for the value in quotes, so it missed `bar.fill.color` in `chartColors` JSON; it also tested `marker.*` without a `shapeType`, and counted plans that fell back to another composition. Measured properly on this branch's nodes, 1,502 of 4,839 pairs (31%) do not reach the XML, the same share as the 1,601 of 5,091 above. The per-attribute lists in `reach.json` predate this and use the other branch's timeline.
 
 **Open from this fix.**
-- `ignores` for `timeline` describe this branch's node. `claude/left-blocks-build-0fe007` renames parts and adds `columns`, so re-measure that node's list when it merges, and add the two `compose` calls to its `draw` if the merge drops them.
+- `ignores` for `timeline` were re-measured after `claude/left-blocks-build-0fe007` merged (2026-11-04): 0 of 3,904 attribute x composition pairs silent on chart, timeline, KPI, cards and table; `bullet_list` also clean on its own probe. Sheet of every variant: [merged-all-variants.png](eval/syntax-audit/merged-all-variants.png).
 - "Reaches the XML" is not "changes the picture": an attribute can reach the XML and still look the same.
 - `POM_BLOCKS=tiles` without `POM_NODES` (the older tile route in `tiles.py` and `cards.py`) is not filtered. It gets F1, F3 and F5, not F2.
 
