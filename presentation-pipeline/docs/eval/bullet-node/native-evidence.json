@@ -53,7 +53,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     20,
+     17,
      32
     ]
    }
@@ -61,17 +61,17 @@
   "node_issues": [],
   "warnings": [],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 1: list spacing: 42px",
-   "slide 2: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 36% -> 52%",
+   "slide 2: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 29% -> 52%",
    "slide 2: list spacing: 42px",
    "slide 3: split Ul (6 items) into 2 columns",
-   "slide 3: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 3: list spacing: 42px, 42px",
-   "slide 4: text x1.36 (e.g. 20 -> 27pt), fill 58% -> 87%",
+   "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
    "slide 4: list spacing: 9px",
-   "slide 5: spill fixed (dense: gap x0.5, padding x0.5): ul height 566 -> 608px",
-   "slide 5: list spacing: 4px"
+   "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
+   "slide 5: list spacing: 26px"
   ]
  },
  "native numbered-corporate-slate": {
@@ -128,7 +128,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     20,
+     17,
      32
     ]
    }
@@ -136,16 +136,16 @@
   "node_issues": [],
   "warnings": [],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 1: list spacing: 42px",
-   "slide 2: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 36% -> 52%",
+   "slide 2: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 29% -> 52%",
    "slide 2: list spacing: 42px",
-   "slide 3: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 43% -> 63%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 35% -> 63%",
    "slide 3: list spacing: 39px",
-   "slide 4: text x1.36 (e.g. 20 -> 27pt), fill 58% -> 87%",
+   "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
    "slide 4: list spacing: 9px",
-   "slide 5: spill fixed (dense: gap x0.5, padding x0.5): ol height 566 -> 608px",
-   "slide 5: list spacing: 4px"
+   "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
+   "slide 5: list spacing: 26px"
   ]
  },
  "rows-corporate-slate": {
@@ -220,13 +220,13 @@
    "NODE_OVERLAP"
   ],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 18% -> 28%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 28%",
    "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 23% -> 23%",
-   "slide 2: text x2.98 (e.g. 16 -> 23pt), fill 51% -> 74%",
-   "slide 3: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 36% -> 56%",
+   "slide 2: text x2.98 (e.g. 14 -> 23pt), fill 47% -> 74%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 35% -> 56%",
    "slide 3: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 50% -> 50%",
-   "slide 4: text x2.98 (e.g. 17 -> 28pt), fill 57% -> 87%",
-   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+   "slide 4: text x2.98 (e.g. 16 -> 28pt), fill 54% -> 87%",
+   "slide 5: text x1.58 (e.g. 14 -> 19pt), fill 63% -> 85%"
   ]
  },
  "rows numbered-corporate-slate": {
@@ -275,10 +275,9 @@
     "buClr": 0,
     "spcBef": 0,
     "sizes_px": [
-     19,
-     25,
-     32,
-     33
+     20,
+     26,
+     32
     ]
    },
    {
@@ -291,8 +290,7 @@
      14,
      19,
      25,
-     32,
-     33
+     32
     ]
    }
   ],
@@ -301,16 +299,15 @@
    "NODE_OVERLAP",
    "NODE_OVERLAP",
    "NODE_OVERLAP",
-   "NODE_OVERLAP",
    "NODE_OVERLAP"
   ],
   "fitGrow": [
-   "slide 1: text x2.06 (e.g. 17 -> 28pt), spacing x1.40, fill 22% -> 38%",
+   "slide 1: text x2.27 (e.g. 16 -> 28pt), spacing x1.40, fill 20% -> 38%",
    "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 33% -> 33%",
-   "slide 2: text x2.02 (e.g. 16 -> 23pt), fill 51% -> 74%",
-   "slide 3: text x2.02 (e.g. 17 -> 28pt), fill 43% -> 74%",
-   "slide 4: text x1.48 (e.g. 17 -> 25pt), fill 63% -> 88%",
-   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+   "slide 2: text x2.22 (e.g. 14 -> 23pt), fill 47% -> 74%",
+   "slide 3: text x2.22 (e.g. 16 -> 28pt), fill 40% -> 74%",
+   "slide 4: text x1.61 (e.g. 16 -> 26pt), fill 59% -> 88%",
+   "slide 5: text x1.58 (e.g. 14 -> 19pt), fill 63% -> 85%"
   ]
  },
  "rows icons-corporate-slate": {
@@ -387,12 +384,12 @@
    "NODE_OVERLAP"
   ],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 27% -> 42%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 27% -> 42%",
    "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 38% -> 38%",
-   "slide 2: text x2.98 (e.g. 16 -> 23pt), fill 51% -> 74%",
-   "slide 3: text x2.98 (e.g. 17 -> 28pt), fill 54% -> 84%",
-   "slide 4: text x2.98 (e.g. 17 -> 28pt), fill 57% -> 87%",
-   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+   "slide 2: text x2.98 (e.g. 14 -> 23pt), fill 47% -> 74%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), fill 54% -> 84%",
+   "slide 4: text x2.98 (e.g. 16 -> 28pt), fill 54% -> 87%",
+   "slide 5: text x1.58 (e.g. 14 -> 19pt), fill 63% -> 85%"
   ]
  },
  "native-graphite-dark": {
@@ -449,7 +446,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     20,
+     17,
      32
     ]
    }
@@ -457,17 +454,17 @@
   "node_issues": [],
   "warnings": [],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 1: list spacing: 42px",
-   "slide 2: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 36% -> 52%",
+   "slide 2: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 29% -> 52%",
    "slide 2: list spacing: 42px",
    "slide 3: split Ul (6 items) into 2 columns",
-   "slide 3: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 3: list spacing: 42px, 42px",
-   "slide 4: text x1.36 (e.g. 20 -> 27pt), fill 58% -> 87%",
+   "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
    "slide 4: list spacing: 9px",
-   "slide 5: spill fixed (dense: gap x0.5, padding x0.5): ul height 566 -> 608px",
-   "slide 5: list spacing: 4px"
+   "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
+   "slide 5: list spacing: 26px"
   ]
  },
  "native numbered-graphite-dark": {
@@ -524,7 +521,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     20,
+     17,
      32
     ]
    }
@@ -532,16 +529,16 @@
   "node_issues": [],
   "warnings": [],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 22% -> 31%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 1: list spacing: 42px",
-   "slide 2: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 36% -> 52%",
+   "slide 2: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 29% -> 52%",
    "slide 2: list spacing: 42px",
-   "slide 3: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 43% -> 63%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 35% -> 63%",
    "slide 3: list spacing: 39px",
-   "slide 4: text x1.36 (e.g. 20 -> 27pt), fill 58% -> 87%",
+   "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
    "slide 4: list spacing: 9px",
-   "slide 5: spill fixed (dense: gap x0.5, padding x0.5): ol height 566 -> 608px",
-   "slide 5: list spacing: 4px"
+   "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
+   "slide 5: list spacing: 26px"
   ]
  },
  "rows-graphite-dark": {
@@ -616,13 +613,13 @@
    "NODE_OVERLAP"
   ],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 18% -> 28%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 28%",
    "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 23% -> 23%",
-   "slide 2: text x2.98 (e.g. 16 -> 23pt), fill 51% -> 74%",
-   "slide 3: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 36% -> 56%",
+   "slide 2: text x2.98 (e.g. 14 -> 23pt), fill 47% -> 74%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 35% -> 56%",
    "slide 3: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 50% -> 50%",
-   "slide 4: text x2.98 (e.g. 17 -> 28pt), fill 57% -> 87%",
-   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+   "slide 4: text x2.98 (e.g. 16 -> 28pt), fill 54% -> 87%",
+   "slide 5: text x1.58 (e.g. 14 -> 19pt), fill 63% -> 85%"
   ]
  },
  "rows numbered-graphite-dark": {
@@ -671,10 +668,9 @@
     "buClr": 0,
     "spcBef": 0,
     "sizes_px": [
-     19,
-     25,
-     32,
-     33
+     20,
+     26,
+     32
     ]
    },
    {
@@ -687,8 +683,7 @@
      14,
      19,
      25,
-     32,
-     33
+     32
     ]
    }
   ],
@@ -697,16 +692,15 @@
    "NODE_OVERLAP",
    "NODE_OVERLAP",
    "NODE_OVERLAP",
-   "NODE_OVERLAP",
    "NODE_OVERLAP"
   ],
   "fitGrow": [
-   "slide 1: text x2.06 (e.g. 17 -> 28pt), spacing x1.40, fill 22% -> 38%",
+   "slide 1: text x2.27 (e.g. 16 -> 28pt), spacing x1.40, fill 20% -> 38%",
    "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 33% -> 33%",
-   "slide 2: text x2.02 (e.g. 16 -> 23pt), fill 51% -> 74%",
-   "slide 3: text x2.02 (e.g. 17 -> 28pt), fill 43% -> 74%",
-   "slide 4: text x1.48 (e.g. 17 -> 25pt), fill 63% -> 88%",
-   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+   "slide 2: text x2.22 (e.g. 14 -> 23pt), fill 47% -> 74%",
+   "slide 3: text x2.22 (e.g. 16 -> 28pt), fill 40% -> 74%",
+   "slide 4: text x1.61 (e.g. 16 -> 26pt), fill 59% -> 88%",
+   "slide 5: text x1.58 (e.g. 14 -> 19pt), fill 63% -> 85%"
   ]
  },
  "rows icons-graphite-dark": {
@@ -783,12 +777,12 @@
    "NODE_OVERLAP"
   ],
   "fitGrow": [
-   "slide 1: text x2.98 (e.g. 17 -> 28pt), spacing x1.40, fill 27% -> 42%",
+   "slide 1: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 27% -> 42%",
    "slide 1: text x1.00 (e.g. 28 -> 28pt), spacing x1.40, fill 38% -> 38%",
-   "slide 2: text x2.98 (e.g. 16 -> 23pt), fill 51% -> 74%",
-   "slide 3: text x2.98 (e.g. 17 -> 28pt), fill 54% -> 84%",
-   "slide 4: text x2.98 (e.g. 17 -> 28pt), fill 57% -> 87%",
-   "slide 5: text x1.48 (e.g. 16 -> 19pt), fill 69% -> 85%"
+   "slide 2: text x2.98 (e.g. 14 -> 23pt), fill 47% -> 74%",
+   "slide 3: text x2.98 (e.g. 16 -> 28pt), fill 54% -> 84%",
+   "slide 4: text x2.98 (e.g. 16 -> 28pt), fill 54% -> 87%",
+   "slide 5: text x1.58 (e.g. 14 -> 19pt), fill 63% -> 85%"
   ]
  }
 }

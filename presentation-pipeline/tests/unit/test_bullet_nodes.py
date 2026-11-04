@@ -278,7 +278,10 @@ def compile_slide(tmp_path: Path, tag: str, comp=LEADS, env: dict | None = None)
 
 
 def test_compiled_is_one_real_list_with_marker_colour_and_spacing(tmp_path):
-    lists, _ = compile_slide(tmp_path, '<Ul ref="pts"/>')
+    long = {"component_id": "pts", "kind": "bullet_list", "content_data": {"bullets": [
+        "Recommendation ads: 11.3x ROAS at a third of Search spend, but they bring very few new buyers to the brand",
+        "Product C drags: 4.3x ROAS and 23% ACOS", "Review bids weekly", "Cap home banners"]}}   # too wide to split
+    lists, _ = compile_slide(tmp_path, '<Ul ref="pts"/>', long)
     assert len(lists) == 1 and lists[0].count("<a:buChar") == 4
     assert lists[0].count('<a:buClr><a:srgbClr val="2563EB"/></a:buClr>') == 4
     assert lists[0].count("<a:spcBef>") == 3 and 'anchor="ctr"' in lists[0]

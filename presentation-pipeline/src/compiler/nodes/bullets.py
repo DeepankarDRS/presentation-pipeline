@@ -235,7 +235,8 @@ def draw_native(comp: dict, box: dict, pick: Pick, numbered: bool, text: dict) -
         else:   # a point with no head: its words in the detail's style, the emphasis colour on them all
             part = {**p["detail"], "color": p["head"]["color"]} if pick.focus == i else p["detail"]
             lis.append(f"<Li>{runs(s, part, ph, base)}</Li>")
-    own = {"grow": "1", "fontSize": "20", "lineHeight": "1.4", **({"color": base} if base else {}), **text}
+    # 16 px: fit-grow grows it into its box; started larger it broke words in narrow boxes (replay 2026-11-04)
+    own = {"grow": "1", "fontSize": "16", "lineHeight": "1.4", **({"color": base} if base else {}), **text}
     marker = pick.rest["marker"].get("color")
     return (f'<VStack{A({"grow": "1", **box, "alignItems": "stretch"})}>{list_post(cid, marker)}'
             f'<{tag} id="lst-{cid}"{A(own)}>{"".join(lis)}</{tag}></VStack>')
@@ -249,7 +250,7 @@ def draw_rows(comp: dict, box: dict, pick: Pick, numbered: bool, icons: list[str
         p = pick.parts(i)
         ink = p["marker"]["color"]
         if numbered:
-            m = f'<VStack w="60"><Text id="cardn-{cid}-{i}" fontSize="22" bold="true" color="{X(ink)}">{i + 1:02d}</Text></VStack>'
+            m = f'<VStack w="60"><Text id="cardn-{cid}-{i}" fontSize="20" bold="true" color="{X(ink)}">{i + 1:02d}</Text></VStack>'
         elif icons:
             tone = "accent" if pick.paint.ink.get(i) is None and pick.focus != i else pick.paint.ink.get(i) or who
             m = f'<Icon name="{X(icons[i])}" size="22" variant="square-filled" bgColor="${tone}Soft" color="{X(ink)}" />'
@@ -259,10 +260,10 @@ def draw_rows(comp: dict, box: dict, pick: Pick, numbered: bool, icons: list[str
         head = {k: v for k, v in p["head"].items() if k != "bold"}
         ph = pick.phrases(i)
         if d:
-            words = (f'<Text id="lsth-{cid}-{i}" fontSize="17"{A(head)}{A(align)}{A({"bold": p["head"].get("bold", "true")})}>{runs(h, {}, ph)}</Text>'
-                     f'<Text fontSize="16"{A(p["detail"])}{A(align)}>{runs(d, {}, ph)}</Text>')
+            words = (f'<Text id="lsth-{cid}-{i}" fontSize="16"{A(head)}{A(align)}{A({"bold": p["head"].get("bold", "true")})}>{runs(h, {}, ph)}</Text>'
+                     f'<Text fontSize="14"{A(p["detail"])}{A(align)}>{runs(d, {}, ph)}</Text>')
         else:   # no head: the head's size and colour, regular, so a mixed list keeps one rhythm
-            words = f'<Text fontSize="17"{A(head)}{A(align)}>{runs(s, {}, ph)}</Text>'
+            words = f'<Text fontSize="16"{A(head)}{A(align)}>{runs(s, {}, ph)}</Text>'
         rule = {} if i == 0 else {k: v for k, v in pick.box(i).items() if k.startswith("borderTop")}
         item = {**{k: v for k, v in pick.box(i).items() if not k.startswith("borderTop")}, **rule}
         attrs = {"id": f"card-{cid}-{i}", "grow": "1", "gap": "14", "alignItems": "center", "padding.top": "6",
@@ -355,7 +356,8 @@ def node_lines() -> str:
         'Code writes every point; never type one, no <Li>, no fontSize. variant="rows" takes icons="name,name,..." '
         f"(one exact icon name per point, in order, up to {MAX_ICONS} points; on no other variant). Layout (w, h, grow) and box attributes style "
         "the list's own box; parts head. detail. (the words: color bold italic underline) marker. (color) item. (a "
-        "row's box, rows only) in $tokens; color on the tag colours all the words.",
+        "row's box, rows only) in $tokens; color on the tag colours all the words. rows needs about 40 px of height "
+        "per point: in a shorter box use native.",
         "Colour by meaning with <Highlight/> inside the tag (without them code colours the point the hint names); "
         "tones good | bad | watch | focus (emphasis, no meaning); name a point by its head or whole text, exactly as "
         "written, and copy a phrase exactly:",

@@ -224,17 +224,17 @@ def bullet_marks(ul: etree._Element, comp: dict) -> tuple[dict, list[str], Count
             if e.tag == "Icon":
                 how["Icon in Li: POM strips it (rows + icons replaces it)"] += 1
                 continue
+            words = words.rstrip(":").rstrip() if e.tag != "Mark" else words   # <B>Head:</B>: the colon is the separator
             in_plan = any(words.lower() in p.lower() for p in pieces) if words else False
             if not tone and not bold and e.tag != "Mark":
                 how[f"inline {e.tag}: no effect"] += 1
             elif not in_plan:
                 how[f"inline {e.tag}: lost (words not one piece of the plan's point)"] += 1
-            elif not tone and bold and any(norm(words).rstrip(":") == norm(compose.split(s)[0]) for s in pts):
+            elif not tone and bold and any(norm(words) == norm(compose.split(s)[0]) for s in pts):
                 how["bold lead-in: code draws it"] += 1
-            elif e.tag == "Mark":
-                if tone:
-                    marks.append(f'<Highlight phrase="{q(words)}" color="{tone}"/>')
-                how["Mark: changed to colour (user rule)" if tone else "Mark: lost (no tone)"] += 1
+            elif e.tag == "Mark":   # words take colour, never Mark (user 2026-11-02); a literal highlight reads as "watch"
+                marks.append(f'<Highlight phrase="{q(words)}" color="{tone or "watch"}"/>')
+                how["Mark: changed to colour (user rule)"] += 1
             elif tone or bold:
                 marks.append(f'<Highlight phrase="{q(words)}"' + (f' color="{tone}"' if tone else "")
                              + (' bold="true"' if bold else "") + "/>")
