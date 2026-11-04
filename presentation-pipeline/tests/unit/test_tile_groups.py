@@ -204,7 +204,7 @@ def test_card_numerals_alias_and_own_ordinal_fallback():
     assert used(r, "lv") == "grid" and "NODE_VARIANT_UNMET" in codes(r)
 
 
-@pytest.mark.parametrize("attr,word", [('layout="steps"', "steps"), ('layout="rail"', "rail"), ('arrange="side"', "rows")])
+@pytest.mark.parametrize("attr,word", [('layout="steps"', "steps"), ('layout="rail"', "steps"), ('arrange="side"', "rows")])
 def test_card_structure_aliases(attr, word):
     r = run(f'<CardGrid ref="plan30" {attr}/>', STEPS)
     assert used(r, "plan30") == word
@@ -235,11 +235,17 @@ def test_card_grid_is_todays_default():
     assert norm(old) == norm(new)
 
 
-def test_card_steps_default_and_rail():
+def test_card_steps_default():
     r = run('<CardGrid ref="plan30"/>', STEPS)
     assert used(r, "plan30") == "steps" and "NODE_DEFAULT_FROM_CONTENT" in codes(r) and 'name="arrow-right"' in r["xml"]
-    r = run('<CardGrid ref="levers" variant="rail"/>', LEVERS)
-    assert used(r, "levers") == "grid" and "NODE_VARIANT_UNMET" in codes(r)
+
+
+def test_card_rail_removed_draws_steps_or_grid():
+    r = run('<CardGrid ref="plan30" variant="rail"/>', STEPS)
+    assert used(r, "plan30") == "steps" and "NODE_ATTR_ALIAS" in codes(r) and r["ok"]
+    r = run('<CardGrid ref="levers" variant="rail"/>', LEVERS)     # a grid plan: steps' fallback
+    assert used(r, "levers") == "grid" and r["ok"]
+    assert "rail" not in spec.nodes()["card_grid"]["compositions"]
 
 
 def test_card_columns_need_bullets():

@@ -8,7 +8,7 @@
 The card tags are hand-written as the generator would write them under POM_BLOCKS=tiles; everything after that
 is the real pipeline (scripts.tile_gallery.compile_one: tiles.fill -> cards.expand, normalize_xml, compile-pom.js
 with fit-grow, LibreOffice). Writes <out>/<palette>-variants.png (each variant on the 5-card grid),
-<out>/<palette>-layouts.png (columns by text length, steps, rail) and <out>/<palette>-wrappers.png (the boxes the
+<out>/<palette>-layouts.png (columns by text length, steps) and <out>/<palette>-wrappers.png (the boxes the
 LLM puts around a group: a panel of the cards' own fill, a styled Text, a half-width column beside a chart).
 """
 
@@ -124,7 +124,6 @@ LAYOUTS = [
     ("7: 4 + 3", [SEVEN], '<CardGrid ref="sources" icon="database"/>'),
     ("steps: tags + bullets", [PLAN90], '<CardGrid ref="plan90"/>'),
     ("steps: numbered", [STEPS_PLAIN], '<CardGrid ref="flow"/>'),
-    ("rail", [STEPS_PLAIN], '<CardGrid ref="flow" layout="rail" variant="outline"/>'),
     ("side icons", [PRIORITIES], '<CardGrid ref="priorities" arrange="side" icon="target"/>'),
     ("numerals", [SHORT4], '<CardGrid ref="pillars" variant="numerals"/>'),
 ]

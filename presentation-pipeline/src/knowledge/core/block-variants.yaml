@@ -420,7 +420,7 @@ tile_nodes:
     group_tag: CardGrid
     item_tag: Card
     ref: {group: "<component_id>", item: "<component_id>.<index>"}
-    # focus_card (planner, settle_card_fields) -> design hint (spec.singled_out) -> the last step (steps / rail).
+    # focus_card (planner, settle_card_fields) -> design hint (spec.singled_out) -> the last step (steps).
     # The emphasis card draws `inverted` by default; the LLM never picks it (user, 2026-10-07 / 2026-10-13)
     emphasis_from: [focus_card, design_hint, destination]
     deferred_layouts: [matrix]   # a matrix card_grid keeps the hand-written route (user, 2026-10-13: 2 saved slides)
@@ -434,10 +434,10 @@ tile_nodes:
     group_attributes:
       ref:    {required: true}
       layout:
-        values: [grid, steps, rail]
+        values: [grid, steps]
         default: "the plan's card_layout"
-        match_plan: {grid: [grid], steps: [steps, rail]}   # else NODE_ATTR_DROPPED -> the plan's
-        # steps = cards in a row joined by arrows; rail = one card per row down a vertical line, the number left
+        match_plan: {grid: [grid], steps: [steps]}   # else NODE_ATTR_DROPPED -> the plan's
+        # steps = cards in a row joined by arrows
       cols:   {type: number, applies_to: [grid], default: "measured: 2-3 per row by text length, never more than 4"}
       shared: [variant, arrange, color, icon, parts]
 
@@ -819,7 +819,7 @@ nodes:
     native_attributes: []
     code_owned: []
     meta_aliases:
-      layout:  {grid: grid, steps: steps, rail: rail}
+      layout:  {grid: grid, steps: steps, rail: steps}
       arrange: {stack: grid, side: rows}
     compositions:
       grid:                             # today's lifted card with tones; the focus card dark
@@ -903,14 +903,6 @@ nodes:
         tone:     *card_tinted
         emphasis_requires: [count_ge_3]
         emphasis: *card_dark
-      rail:                             # today's rail: one card per row down a line, the number at the left
-        ignores: [number, band, bullets, divider, item.w, item.grow]
-        requires: [layout_steps]
-        fallback: grid
-        look:     *card_lifted
-        tone:     *card_tinted
-        emphasis_requires: [count_ge_3]
-        emphasis: *card_dark
     prompts:
       grid: "separate cards: icon, tag, title, body, bullets (default for grid plans)"
       grid numbered: "cards with a large 01 02 03 above each title"
@@ -920,9 +912,9 @@ nodes:
       banded: "boxes with a solid coloured band (icon, title, tag) over body and bullets"
       bento: "the focus card as one large dark block, the others beside it"
       steps: "cards in a row joined by arrows, the destination dark (default for steps plans)"
-      rail: "one card per row down a numbered line"
     aliases:                            # today's variant names (spec §7)
       lifted: grid
+      rail: steps                       # removed (user, 2026-11-04): it spilled from 4 cards
       column: {variant: grid, style: column}
       filled: {variant: grid, style: filled}
       outline: {variant: grid, style: outline}

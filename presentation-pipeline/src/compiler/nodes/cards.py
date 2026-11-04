@@ -369,8 +369,7 @@ def group_layout(comp: dict, meta: dict[str, str], ref: str, flag) -> str:
 
 
 def build_group(comp: dict, cards: list[etree._Element], meta: dict[str, str], box: tiles._Layer, ref: str,
-                flag, layout: str, numbers: list[str | None] | None = None) -> etree._Element:
-    """`numbers`: the rail's step numbers, one per card (None: no number)."""
+                flag, layout: str) -> etree._Element:
     gap = box.box.pop("gap", str(GAP))
     if layout == "steps":
         outer = etree.Element("HStack", gap="10", alignItems="stretch")
@@ -381,18 +380,6 @@ def build_group(comp: dict, cards: list[etree._Element], meta: dict[str, str], b
             outer.append(_peer(t))
             if shares and t.get("grow") == "1":
                 t.set("grow", shares[k])
-    elif layout == "rail":
-        outer = etree.Element("VStack", gap=gap)
-        for t, num in zip(cards, numbers or [None] * len(cards)):
-            row = etree.SubElement(outer, "HStack", gap="16", alignItems="stretch", grow="1")
-            lead = etree.SubElement(row, "VStack", w="64", minW="64", gap="6", alignItems="center")
-            if num:   # on the slide's background, not the card: the accent ink ("01" at 28 px is 43 px wide)
-                lead.append(_text(num, PX["number"], {"color": "$accentText"}, bold="true", textAlign="center",
-                                  w="64"))   # POM sizes a w="max" Text to its own (narrower) measure
-            etree.SubElement(lead, "VStack", w="2", grow="1", backgroundColor="$border")
-            t.set("w", "1")
-            t.set("grow", "1")
-            row.append(t)
     else:
         cols = None
         if meta.get("cols") is not None:
@@ -534,7 +521,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         layout = group_layout(comp, gmeta, cid, flag)
         mine = [i for i in range(len(cards_of(comp))) if (cid, i) not in outside]
         panel = tiles.panel_fill(g)
-        # steps: the number leads each card's tag line; rail: the rail draws it beside the card
+        # steps: the number leads each card's tag line
         # a slide's second card group reads as a different type of card (blind marks 2026-10-13: "variants for 2 types
         # of the cards"): open `column` cards unless the LLM names a variant; dense cards put their icons on the left
         second = "column" if len(seen) > 1 else None
@@ -545,7 +532,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         if not built:
             g.getparent().remove(g)
             continue
-        new = build_group(comp, built, gmeta, gbox, cid, flag, layout, [nums[i] for i in mine])
+        new = build_group(comp, built, gmeta, gbox, cid, flag, layout)
         new.tail = g.tail
         g.getparent().replace(g, new)
     for (cid, i), el in outside.items():
@@ -577,9 +564,9 @@ def node_lines() -> str:
     variants = "; ".join(f'{n} ({v["prompt"]})' for n, v in k["variants"].items())
     return "\n".join([
         "## CARDS (code draws them from the plan)",
-        f'<{GROUP} ref="<card_grid id>" layout="grid|steps|rail" cols="N"> draws every card in plan order with '
+        f'<{GROUP} ref="<card_grid id>" layout="grid|steps" cols="N"> draws every card in plan order with '
         f"the plan's text; holds only <{ITEM}>; its gap / box attributes are the group's box. steps = cards joined by "
-        "arrows, rail = one card per row down a line (steps plans only).",
+        "arrows (steps plans only).",
         f'<{ITEM} ref="<card_grid id>.<index>"/> inside the group restyles that card; outside, places it anywhere (the '
         f"group skips it). Each card once; write a <{ITEM}> only for a card that differs.",
         "Both take variant, arrange (stack | side = icon left), color, icon and parts: tag. title. body. number. = <Text> "

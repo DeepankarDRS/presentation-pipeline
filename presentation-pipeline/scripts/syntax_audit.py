@@ -101,7 +101,7 @@ def plan_for(kind: str, variant: str) -> dict:
     if kind == "kpi_row":
         return KPIS
     if kind == "card_grid":
-        return STEPS if variant in ("steps", "rail") else UNNUMBERED if variant.endswith("numbered") else CARDS
+        return STEPS if variant == "steps" else UNNUMBERED if variant.endswith("numbered") else CARDS
     if kind == "chart":
         return CHART
     if kind == "timeline":
@@ -697,7 +697,7 @@ LONG_TL = [{"date": "Q1 FY2026-27 onward", "label": f"{LONG_WORD} workstream {i}
 
 
 def stress_plan(kind: str, case: str, variant: str) -> dict:
-    steps = kind == "card_grid" and variant in ("steps", "rail")
+    steps = kind == "card_grid" and variant == "steps"
     lay = "steps" if steps else "grid"
     if kind == "kpi_row":
         return {"one": kpi(1), "sparse": kpi(4, deltas=False, tones=False, icons=False), "many": kpi(9), "odd": kpi(5),

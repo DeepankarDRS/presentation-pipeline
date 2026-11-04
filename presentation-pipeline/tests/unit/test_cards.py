@@ -1,5 +1,5 @@
 """Card tile nodes (docs/tile-nodes-spec-2026-10-12.md §3, §11), POM_BLOCKS=tiles: a bare <CardGrid> draws the
-plan's meaning (tones, focus card, key phrases), columns by text length, steps / rail, placement, NODE_* codes,
+plan's meaning (tones, focus card, key phrases), columns by text length, steps, placement, NODE_* codes,
 the LLM's wrapper boxes, the deferred matrix, the prompt lines and the generator / context hooks."""
 
 import copy
@@ -120,8 +120,8 @@ def test_steps_number_the_tag_line_join_with_arrows_and_darken_the_destination()
     assert len([e for e in root.iter("Icon") if e.get("name") == "arrow-right"]) == 3
     assert "01 · KICKOFF" in text_of(card_el(xml, "plan", 0))
     assert card_el(xml, "plan", 3).get("backgroundColor") == "$panelDark"
-    rail = run('<CardGrid ref="plan" layout="rail"/>')["xml"]
-    assert "01 · " not in rail and ">01<" in rail and "arrow-right" not in rail
+    rail = run('<CardGrid ref="plan" layout="rail"/>')     # removed: dropped, the plan's steps drawn
+    assert "NODE_ATTR_DROPPED" in codes(rail) and "01 · " in rail["xml"] and "arrow-right" in rail["xml"]
     bad = run('<CardGrid ref="bets" layout="steps"/>')
     assert "NODE_ATTR_DROPPED" in codes(bad) and "arrow-right" not in bad["xml"]
 

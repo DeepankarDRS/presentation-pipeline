@@ -13,7 +13,7 @@ are what they draw):
 - KPI: `grid` (today's tiles, tiles.assemble + tiles.build_group), `strip` (one shared box, hairlines, one row),
   `rows` (icon badge · label over delta · value at the right; today's inline tile), `banded` (a solid band over value +
   delta), `bento` (the emphasis item large and value first, the rest as rows beside it).
-- Cards: `grid` / `grid numbered` / `steps` / `rail` (today's cards, cards.assemble + cards.build_group), `rows` /
+- Cards: `grid` / `grid numbered` / `steps` (today's cards, cards.assemble + cards.build_group), `rows` /
   `rows numbered`, `columns` (a pill head, each bullet in its own box), `banded`, `bento`.
 Today's names are aliases (`KpiGrid`, `note.`, style variants -> recipes, `divided`, `numerals`, `layout`, `arrange`).
 
@@ -36,7 +36,7 @@ from src.compiler.nodes import cards, compose, element_refs, spec, tiles, valida
 KINDS = ("kpi_row", "card_grid")
 SEVERITY = compose.SEVERITY
 STRUCTURE = ("layout", "arrange")   # today's structure attributes: meta_aliases
-TODAY = {"grid", "grid numbered", "steps", "rail"}   # today's tiles / cards: drawn by tiles.py / cards.py, ids as today
+TODAY = {"grid", "grid numbered", "steps"}   # today's tiles / cards: drawn by tiles.py / cards.py, ids as today
 _ITEM_REF = tiles._ITEM_REF
 
 
@@ -341,7 +341,7 @@ def card_item(comp: dict, i: int, name: str, box: dict, parts: dict, role: str, 
     cid, c = comp["component_id"], cards.cards_of(comp)[i]
     tint = "$accentText" if role == "neutral" else f"${role}Text"
     title, tag = str(c.get("title") or ""), str(c.get("tag") or "").upper()
-    if name in ("grid", "grid numbered", "steps", "rail"):
+    if name in ("grid", "grid numbered", "steps"):
         box = {"borderRadius": "8", **box}   # cards are rounded (user, 2026-10-13); code's, like today
         el = cards.assemble(comp, i, box, parts, role, "side" if dense else "stack", icon,
                             number if name == "steps" else None, name == "grid numbered")
@@ -401,14 +401,13 @@ def _rows_of(xs: list[etree._Element], cols: int, gap: str) -> etree._Element:
 
 
 def card_group(comp: dict, name: str, items: list[tuple[int, etree._Element]], gbox: dict, meta: dict,
-               numbers: list[str | None], flag) -> str:
+               flag) -> str:
     cid, els = comp["component_id"], [e for _, e in items]
-    if name in ("grid", "grid numbered", "steps", "rail"):
+    if name in ("grid", "grid numbered", "steps"):
         layer = tiles._Layer(cards.card()["parts"])
         layer.box = dict(gbox)
-        layout = name if name in ("steps", "rail") else "grid"
-        return _xml(cards.build_group(comp, els, {k: v for k, v in meta.items() if k == "cols"}, layer, cid, flag,
-                                      layout, [numbers[i] for i, _ in items]))
+        layout = "steps" if name == "steps" else "grid"
+        return _xml(cards.build_group(comp, els, {k: v for k, v in meta.items() if k == "cols"}, layer, cid, flag, layout))
     gap = gbox.pop("gap", "18")
     if name in ("rows", "rows numbered"):
         for e in els:
@@ -462,7 +461,7 @@ def draw(comp: dict, gattrs: dict[str, str] | None, kids: dict[int, dict], apart
     emph_ok = focus_i is not None and not spec.failed_requires({"requires": c.get("emphasis_requires") or []}, comp)
     n = count(comp)
     numbers = [None] * n
-    if kind == "card_grid" and name in ("steps", "rail") and cards.numbered_ok(comp):
+    if kind == "card_grid" and name == "steps" and cards.numbered_ok(comp):
         numbers = [f"{k + 1:02d}" for k in range(n)]
     icons = element_refs._list(comp, "kpi_icons") if kind == "kpi_row" else [c_.get("icon") for c_ in cards.cards_of(comp)]
     dense = kind == "card_grid" and cards.dense(comp)
@@ -505,7 +504,7 @@ def draw(comp: dict, gattrs: dict[str, str] | None, kids: dict[int, dict], apart
     if gattrs is not None and mine and kind == "kpi_row":
         group = kpi_group(comp, name, [(i, drawn[i]) for i in mine], gb, meta, flag)
     elif gattrs is not None and mine:
-        group = card_group(comp, name, [(i, drawn[i]) for i in mine], gb, meta, numbers, flag)
+        group = card_group(comp, name, [(i, drawn[i]) for i in mine], gb, meta, flag)
     alone = {i: (drawn[i] if isinstance(drawn[i], str) else _xml(drawn[i])) for i in apart}
     return group, alone, {"composition": name, "focus": focus_i if emph_ok else None, "items": len(mine) + len(apart)}
 
