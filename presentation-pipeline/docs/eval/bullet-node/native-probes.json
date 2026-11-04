@@ -1,0 +1,377 @@
+{
+ "bare_ul_from_plan": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [],
+  "pptx": {
+   "shapes": 2,
+   "list_shapes": 1,
+   "buChar": 3,
+   "buAutoNum": 0,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "1200"
+  ],
+  "runs": [
+   [
+    "Scale exact match: winners a",
+    "",
+    "16202E",
+    ""
+   ],
+   [
+    "Cut broad leakage &amp; weak",
+    "",
+    "16202E",
+    ""
+   ],
+   [
+    "Weekly bid review",
+    "",
+    "16202E",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "lead_in_and_runs": {
+  "normalizer": [
+   "INVALID_CHILD",
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: split Ul (4 items) into 2 columns"
+  ],
+  "pptx": {
+   "shapes": 3,
+   "list_shapes": 2,
+   "buChar": 4,
+   "buAutoNum": 0,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "1500"
+  ],
+  "runs": [
+   [
+    "Scale exact match:",
+    "b",
+    "16202E",
+    ""
+   ],
+   [
+    "still rising",
+    "",
+    "16202E",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "box_attrs": {
+  "normalizer": [],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: sparse body centred: 130px above"
+  ],
+  "pptx": {
+   "shapes": 3,
+   "list_shapes": 1,
+   "buChar": 2,
+   "buAutoNum": 0,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "1500"
+  ],
+  "runs": [
+   [
+    "One",
+    "",
+    "",
+    ""
+   ],
+   [
+    "Two",
+    "",
+    "",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "grow_tall": {
+  "normalizer": [],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [],
+  "pptx": {
+   "shapes": 2,
+   "list_shapes": 1,
+   "buChar": 3,
+   "buAutoNum": 0,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "1200"
+  ],
+  "runs": [
+   [
+    "Short A",
+    "",
+    "",
+    ""
+   ],
+   [
+    "Short B",
+    "",
+    "",
+    ""
+   ],
+   [
+    "Short C",
+    "",
+    "",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "ol_numbered": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [],
+  "pptx": {
+   "shapes": 2,
+   "list_shapes": 1,
+   "buChar": 0,
+   "buAutoNum": 2,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "1500"
+  ],
+  "runs": [
+   [
+    "First",
+    "",
+    "",
+    ""
+   ],
+   [
+    "Second",
+    "",
+    "",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "two_uls": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: text x2.98 (e.g. 20 -> 28pt), spacing x1.40, fill 13% -> 21%"
+  ],
+  "pptx": {
+   "shapes": 3,
+   "list_shapes": 2,
+   "buChar": 4,
+   "buAutoNum": 0,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "2100"
+  ],
+  "runs": [
+   [
+    "A",
+    "",
+    "",
+    ""
+   ],
+   [
+    "B",
+    "",
+    "",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "ATTEMPT_icon_in_li": {
+  "normalizer": [
+   "TEXT_CONTAINER_FLATTENED",
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [],
+  "pptx": {
+   "shapes": 2,
+   "list_shapes": 1,
+   "buChar": 2,
+   "buAutoNum": 0,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "1500"
+  ],
+  "runs": [
+   [
+    "One",
+    "",
+    "",
+    ""
+   ],
+   [
+    "Two",
+    "",
+    "",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "ATTEMPT_nested_ul": {
+  "normalizer": [
+   "INVALID_CHILD",
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [],
+  "pptx": {
+   "shapes": 2,
+   "list_shapes": 1,
+   "buChar": 2,
+   "buAutoNum": 0,
+   "buClr": 0
+  },
+  "pPr": "<a:pPr algn=\"l\" marL=\"342900\" indent=\"-342900\">",
+  "sz": [
+   "1500"
+  ],
+  "runs": [
+   [
+    "One",
+    "",
+    "",
+    ""
+   ],
+   [
+    "Two",
+    "",
+    "",
+    ""
+   ]
+  ],
+  "bodyPr": "<a:bodyPr wrap=\"square\" anchor=\"t\" lIns=\"0\" rIns=\"0\" tIns=\"0\" bIns=\"0\"/>",
+  "box_fill_shape": 0
+ },
+ "ATTEMPT_gap": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: skipped (XML validation failed (1 error):\n  - <Ul>: Unknown attribute \"gap\". Did you mean \"top\"?)"
+  ],
+  "no_pptx": "❌ failure: UNKNOWN_ATTRIBUTE — <Ul>: Unknown attribute \"gap\". Did you mean \"top\"?\n   result: C:\\Users\\deepa\\AppData\\Local\\Temp\\claude\\9f914c71d6a1b931\\1cf07f2b-8664-4655-819c-b04f283d3c2e\\scratchpad\\probe\\ATTEMPT_gap\\compile-result.json\n"
+ },
+ "ATTEMPT_indent": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: skipped (XML validation failed (1 error):\n  - <Ul>: Unknown attribute \"indent\". Did you mean \"zIndex\"?)"
+  ],
+  "no_pptx": "❌ failure: UNKNOWN_ATTRIBUTE — <Ul>: Unknown attribute \"indent\". Did you mean \"zIndex\"?\n   result: C:\\Users\\deepa\\AppData\\Local\\Temp\\claude\\9f914c71d6a1b931\\1cf07f2b-8664-4655-819c-b04f283d3c2e\\scratchpad\\probe\\ATTEMPT_indent\\compile-result.json\n"
+ },
+ "ATTEMPT_marker": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: skipped (XML validation failed (1 error):\n  - <Ul>: Unknown attribute \"marker\". Did you mean \"margin\"?)"
+  ],
+  "no_pptx": "❌ failure: UNKNOWN_ATTRIBUTE — <Ul>: Unknown attribute \"marker\". Did you mean \"margin\"?\n   result: C:\\Users\\deepa\\AppData\\Local\\Temp\\claude\\9f914c71d6a1b931\\1cf07f2b-8664-4655-819c-b04f283d3c2e\\scratchpad\\probe\\ATTEMPT_marker\\compile-result.json\n"
+ },
+ "ATTEMPT_markerColor": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: skipped (XML validation failed (1 error):\n  - <Ul>: Unknown attribute \"bulletColor\")"
+  ],
+  "no_pptx": "❌ failure: UNKNOWN_ATTRIBUTE — <Ul>: Unknown attribute \"bulletColor\"\n   result: C:\\Users\\deepa\\AppData\\Local\\Temp\\claude\\9f914c71d6a1b931\\1cf07f2b-8664-4655-819c-b04f283d3c2e\\scratchpad\\probe\\ATTEMPT_markerColor\\compile-result.json\n"
+ },
+ "ATTEMPT_li_level": {
+  "normalizer": [
+   "GROW_BAND_ADDED"
+  ],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: skipped (XML validation failed (1 error):\n  - <Ul>.<Li>: Unknown attribute \"level\")"
+  ],
+  "no_pptx": "❌ failure: UNKNOWN_ATTRIBUTE — <Ul>.<Li>: Unknown attribute \"level\"\n   result: C:\\Users\\deepa\\AppData\\Local\\Temp\\claude\\9f914c71d6a1b931\\1cf07f2b-8664-4655-819c-b04f283d3c2e\\scratchpad\\probe\\ATTEMPT_li_level\\compile-result.json\n"
+ },
+ "ATTEMPT_valign": {
+  "normalizer": [],
+  "ok": null,
+  "errors": [],
+  "warnings": [],
+  "fitGrow": [
+   "slide 1: skipped (XML validation failed (1 error):\n  - <Ul>: Unknown attribute \"valign\")"
+  ],
+  "no_pptx": "❌ failure: UNKNOWN_ATTRIBUTE — <Ul>: Unknown attribute \"valign\"\n   result: C:\\Users\\deepa\\AppData\\Local\\Temp\\claude\\9f914c71d6a1b931\\1cf07f2b-8664-4655-819c-b04f283d3c2e\\scratchpad\\probe\\ATTEMPT_valign\\compile-result.json\n"
+ }
+}
