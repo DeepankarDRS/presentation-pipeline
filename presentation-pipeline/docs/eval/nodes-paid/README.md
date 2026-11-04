@@ -2,7 +2,7 @@
 
 Does the generator use the six code-drawn nodes well, and are the slides better than today's route? This is the first run where a real LLM writes the final tags. Free gates so far drew bare tags with no LLM.
 
-**Status: prepared, not run.** The paid run needs the user's OK. Estimate $1.76, stops by itself at $3.50.
+**Status: approved by the user 2026-11-04, not run yet.** Estimate $1.76, stops by itself at $3.50.
 
 ## What runs
 
@@ -65,7 +65,7 @@ python -m scripts.composition_paid --label nodes-paid --rescore
 - **Cost:** per arm.
 - **Quality:** blind marks on `sheets/` (`marks.csv`; `key.json` says which side is B).
 
-Proposed gate, for the user to confirm: B loses no plan words, no slide ends as a placeholder, and B wins the blind marks. Then `POM_NODES` becomes the default.
+**Pass rule (user, 2026-11-04):** B loses no plan words, no slide ends as a placeholder, and B wins the blind marks. Then `POM_NODES` becomes the default.
 
 ## What it does not cover
 
