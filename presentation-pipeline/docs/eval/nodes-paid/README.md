@@ -65,7 +65,7 @@ python -m scripts.composition_paid --label nodes-paid --rescore
 - **Cost:** per arm.
 - **Quality:** blind marks on `sheets/` (`marks.csv`; `key.json` says which side is B).
 
-**Pass rule (user, 2026-11-04):** B loses no plan words, no slide ends as a placeholder, and B wins the blind marks. Then `POM_NODES` becomes the default.
+Gate (user, 2026-11-04): B loses no plan words, no slide ends as a placeholder, and B wins the blind marks. Then `POM_NODES` becomes the default.
 
 ## What it does not cover
 
