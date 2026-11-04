@@ -283,7 +283,7 @@ tile_nodes:
 
   dropped:              # removed with info NODE_ATTR_DROPPED; code owns them
     box: [borderRadius, position, top, right, bottom, left, zIndex, id]   # square tiles (user, 2026-10-11 §11; kept 2026-10-12)
-    parts: [fontSize, fontFamily, lineHeight, text, size]                 # number / label sizes, deck font, icon size
+    parts: [fontSize, fontFamily, lineHeight, text, size, highlight]   # number / label sizes, deck font, icon size; the normalizer strips highlight
     content: true       # typed text or child nodes inside an item tag
 
   box_attributes: [backgroundColor, backgroundGradient, border, border.color, border.width, border.dashType,
@@ -294,7 +294,7 @@ tile_nodes:
                    opacity, w, h, grow, minW, maxW, minH, maxH, alignSelf, margin]
 
   part_nodes:           # part -> the POM node it becomes -> the attributes its prefix may carry
-    Text:  [color, bold, italic, underline, highlight, letterSpacing, textAlign, textGradient,
+    Text:  [color, bold, italic, underline, letterSpacing, textAlign, textGradient,
             glow.size, glow.opacity, glow.color, outline.size, outline.color]
     Icon:  [name, color, variant, bgColor, glow.size, glow.opacity, glow.color, outline.size, outline.color]
     Shape: [shapeType, w, h, fill.color, fill.transparency, line.color, line.width, line.dashType,
@@ -557,16 +557,21 @@ nodes:
     code_owned: [chartColors, chartType, title, showTitle]
     compositions:
       native:
+        ignores: [alignItems, label, value]
+        draws_only: {bar: [fill.color]}
         look:     {backgroundColor: $chartSurface, padding: 16, borderRadius: 8, title.color: $chartInk,
                    bar.fill.color: $neutral}
         emphasis: {bar.fill.color: $accent}
       native labelled:                  # the values as native data labels (pptx-post.js), in the plan's unit
+        ignores: [alignItems, value]
+        draws_only: {label: [color, bold], bar: [fill.color]}
         requires: [one_series, count_le_8, chart_is_bar]
         fallback: native
         look:     {backgroundColor: $chartSurface, padding: 16, borderRadius: 8, title.color: $chartInk,
                    bar.fill.color: $neutral, label.color: $chartInk}
         emphasis: {bar.fill.color: $accent}
       rows:                             # label · a bar of code-measured length · the plan's value verbatim
+        ignores: [showLegend]
         requires: [one_series, count_le_8]
         fallback: native
         look:     {title.color: $textMuted, label.color: $textMain, value.color: $textMain, bar.fill.color: $neutral}
@@ -599,22 +604,27 @@ nodes:
     code_owned: [dateColor, titleColor, descriptionColor, connectorColor, useColorForDate]
     compositions:
       native:
+        ignores: [alignItems, gap, justifyContent, band, item]
+        draws_only: {date: [color], label: [color], description: [color], marker: [fill.color], connector: [fill.color]}
         requires: [labels_short]
         fallback: rail
         look:     {date.color: $accentText, label.color: $textMain, description.color: $textMuted,
                    connector.fill.color: $border, marker.fill.color: $neutral}
         emphasis: {marker.fill.color: $accent}
       rail:
+        ignores: [band]
         look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
                    item.borderRadius: 8, item.padding: 20, date.color: $accentText, label.color: $textMain,
                    description.color: $textMuted, marker.fill.color: $neutral, connector.fill.color: $border}
         emphasis: {item.backgroundColor: $panelDark, date.color: $onPanelDark, label.color: $onPanelDark,
                    description.color: $onPanelDark, marker.fill.color: $accent}
       rows:
+        ignores: [marker, connector, band]
         look:     {date.color: $accentText, label.color: $textMain, description.color: $textMuted,
                    item.borderTop.color: $border, item.borderTop.width: 1}
         emphasis: {item.backgroundColor: $accentSoft}
       banded:
+        ignores: [marker, connector]
         look:     {item.border.color: $border, item.border.width: 1, item.backgroundColor: $surfaceAlt,
                    band.backgroundColor: $neutral, date.color: $textMain, label.color: $textMain,
                    description.color: $textMuted}
@@ -733,6 +743,7 @@ nodes:
       arrange: {label-first: grid, icon-top: grid, value-first: bento, side: rows, inline: rows}
     compositions:
       grid:                             # today's plain tile with tones; no emphasis unless the hint asks for it
+        ignores: [band, divider, value.bold, item.grow, item.borderRadius]
         look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
                    item.padding: 16, item.gap: 6, item.justifyContent: center, icon.color: $toneText,
                    label.color: $textMuted, value.color: $textMain, delta.color: $toneText}
@@ -745,6 +756,7 @@ nodes:
         emphasis: {item.backgroundColor: $panelDark, label.color: $onPanelDark, value.color: $onPanelDark,
                    delta.color: $onPanelDark, icon.color: $onPanelDark}
       strip:                            # one shared box, one row, hairlines between (today's divided)
+        ignores: [borderRadius, band, value.bold, item.borderRadius]
         requires: [count_le_5]
         fallback: grid
         look:     {backgroundColor: $surfaceAlt, border.color: $border, border.width: 1, padding: 28, gap: 28,
@@ -753,11 +765,13 @@ nodes:
         # no emphasis look: a hero value in a one-row strip is width-bound and wrapped its unit over the delta, and
         # in rows it shrank the other rows' labels (gallery 2026-11-01; the proof sheets drew none either)
       rows:                             # icon badge · label over delta · value at the right; hairlines between rows
+        ignores: [borderRadius, band, value.bold, item.borderRadius]
         look:     {gap: 0, padding.left: 8, padding.right: 8, item.gap: 18, item.alignItems: center,
                    item.padding.top: 10, item.padding.bottom: 10, divider.color: $border, divider.width: 1,
                    icon.variant: square-filled, icon.bgColor: $toneSoft, icon.color: $toneText,
                    label.color: $toneText, value.color: $toneText, delta.color: $toneText}
       banded:                           # a solid band (icon + label) over value + delta
+        ignores: [marker, divider, value.bold, item.borderRadius]
         requires: [count_le_5]
         fallback: grid
         look:     {gap: 18, item.gap: 0, item.backgroundColor: $surfaceAlt, item.border.color: $border,
@@ -766,6 +780,7 @@ nodes:
         # the band in its own tone, darker (user 2026-11-01: from the palette, not one dark colour)
         emphasis: {band.backgroundColor: $toneDark, icon.color: $onPanelDark, label.color: $onPanelDark}
       bento:                            # the emphasis item large, value first; the rest as rows beside it
+        ignores: [band, divider, value.bold, item.borderRadius]
         requires: [count_ge_3, has_emphasis]
         fallback: grid
         look:     {gap: 18, item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
@@ -813,6 +828,7 @@ nodes:
       arrange: {stack: grid, side: rows}
     compositions:
       grid:                             # today's lifted card with tones; the focus card dark
+        ignores: [number, band, bullets, divider]
         requires: [layout_grid]
         fallback: steps
         look:     &card_lifted
@@ -832,6 +848,7 @@ nodes:
                    item.shadow.opacity: null, item.padding: 20, title.color: $onPanelDark, body.color: $onPanelDark,
                    tag.color: $onPanelDark, number.color: $onPanelDark, icon.color: $onPanelDark}
       grid numbered:                    # + 01 02 03 above each title (today's numerals)
+        ignores: [band, bullets, divider]
         requires: [layout_grid, no_own_numbers]
         fallback: grid
         look:     {item.padding: 20, item.gap: 8, item.justifyContent: start, item.backgroundColor: $surfaceAlt,
@@ -840,6 +857,7 @@ nodes:
         emphasis_requires: [count_ge_3]
         emphasis: *card_dark
       rows:                             # one card per full-width row: icon · tag over title · body · bullets
+        ignores: [number, band, bullets, item.grow]
         requires: [count_le_6]
         fallback: grid
         look:     &card_rows
@@ -848,11 +866,13 @@ nodes:
                    tag.color: $toneText, title.color: $textMain, body.color: $textMuted}
         emphasis: {title.color: $toneText}
       rows numbered:                    # the same, code's 01 02 03 leading each row
+        ignores: [icon, band, bullets, item.grow]
         requires: [count_le_6, no_own_numbers]
         fallback: rows
         look:     *card_rows
         emphasis: {title.color: $toneText}
       columns:                          # a pill head (icon + title), the body, each bullet in its own box
+        ignores: [tag, number, divider, item.grow]
         requires: [bullets_every_card, count_le_5]
         fallback: grid
         look:     {gap: 18, item.gap: 12, band.backgroundColor: $tone, band.padding: 14, band.gap: 10,
@@ -861,6 +881,7 @@ nodes:
                    bullets.border.width: 1, bullets.borderRadius: 8, bullets.padding: 14}
         emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, title.color: $onPanelDark}
       banded:                           # a solid band (icon, title, tag at the right) over body + bullets
+        ignores: [number, bullets, divider, item.grow]
         requires: [count_le_6]
         fallback: grid
         look:     {gap: 18, item.gap: 0, item.backgroundColor: $surfaceAlt, item.border.color: $border,
@@ -869,6 +890,7 @@ nodes:
         emphasis: {band.backgroundColor: $panelDark, icon.color: $onPanelDark, title.color: $onPanelDark,
                    tag.color: $onPanelDark}
       bento:                            # the focus card large and dark, the others 2 + 1 beside it
+        ignores: [number, band, bullets, divider, tag.color]
         requires: [layout_grid, count_ge_3, count_le_5, has_emphasis]   # a steps plan keeps its order (marks 5.2 / 5.3)
         fallback: grid
         look:     {gap: 18, item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
@@ -879,6 +901,7 @@ nodes:
                    icon.color: $onPanelDark, tag.color: $onPanelDark, title.color: $onPanelDark,
                    body.color: $onPanelDark}
       steps:                            # today's steps: cards joined by arrows, numbered unless dated
+        ignores: [gap, number, band, bullets, divider]
         requires: [layout_steps]
         fallback: grid
         look:     *card_lifted
@@ -886,6 +909,7 @@ nodes:
         emphasis_requires: [count_ge_3]
         emphasis: *card_dark
       rail:                             # today's rail: one card per row down a line, the number at the left
+        ignores: [number, band, bullets, divider, item.w, item.grow]
         requires: [layout_steps]
         fallback: grid
         look:     *card_lifted
@@ -939,17 +963,20 @@ nodes:
     code_owned: [defaultRowHeight]
     compositions:
       native:
+        ignores: [alignItems, gap, justifyContent, number, band]
         look:     {cellBorder.width: 0, header.backgroundColor: $accent, header.color: $onAccent, header.bold: "true",
                    label.color: $textMain, label.bold: "true", cell.color: $textMain,
                    stripe.backgroundColor: $surfaceAlt}   # striped, no borders (user 2026-11-02)
         emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.backgroundColor: $toneSoft,
                    label.color: $toneText, cell.backgroundColor: $toneSoft, cell.color: $toneText, cell.bold: "true"}
       rows:
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number, band]
         look:     {header.color: $textMuted, label.color: $textMain, cell.color: $textMain,
                    item.borderTop.color: $border, item.borderTop.width: 1}
         emphasis: {item.backgroundColor: $toneSoft, header.color: $toneText, label.color: $toneText,
                    cell.color: $toneText, cell.bold: "true"}
       rows numbered:
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, band]
         requires: [no_own_numbers]
         fallback: rows
         look:     {header.color: $textMuted, label.color: $textMain, cell.color: $textMain, number.color: $accentText,
@@ -957,6 +984,7 @@ nodes:
         emphasis: {item.backgroundColor: $toneSoft, header.color: $toneText, label.color: $toneText,
                    cell.color: $toneText, cell.bold: "true", number.color: $toneText}
       columns:                          # one column per row: the label as a band. pill, each other cell in its own box
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number]
         requires: [count_le_5, columns_le_6]
         fallback: native
         look:     {band.backgroundColor: $accent, label.color: $onAccent, header.color: $textMuted, cell.color: $textMain,
@@ -965,6 +993,7 @@ nodes:
         emphasis: {band.backgroundColor: $panelDark, label.color: $onPanelDark, header.color: $toneText,
                    item.backgroundColor: $toneSoft, item.border.color: $tone}
       banded:                           # equal boxes, the label in a solid band. over "column: value" lines
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number]
         requires: [count_le_6]
         fallback: native
         look:     {band.backgroundColor: $accent, label.color: $onAccent, header.color: $textMuted, cell.color: $textMain,
@@ -972,6 +1001,7 @@ nodes:
         emphasis: {band.backgroundColor: $panelDark, label.color: $onPanelDark, header.color: $toneText,
                    cell.color: $toneText, cell.bold: "true"}
       grid:                             # header pills over the columns, every cell its own card
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe, number, band]
         requires: [count_le_6, columns_le_6]
         fallback: native
         look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
@@ -980,6 +1010,7 @@ nodes:
         emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.color: $toneText, cell.color: $toneText, cell.bold: "true",
                    item.backgroundColor: $toneSoft, item.border.color: $tone}
       grid numbered:
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, stripe]
         requires: [count_le_6, columns_le_6, no_own_numbers]
         fallback: grid
         look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,
@@ -989,6 +1020,7 @@ nodes:
         emphasis: {header.backgroundColor: $tone, header.color: $onAccent, label.color: $toneText, cell.color: $toneText, cell.bold: "true",
                    item.backgroundColor: $toneSoft, item.border.color: $tone, band.backgroundColor: $tone}
       ledger:
+        ignores: [cellBorder.color, cellBorder.dashType, cellBorder.width, number, band, stripe.bold, stripe.color, stripe.italic, stripe.textAlign, stripe.underline]
         requires: [columns_le_6]
         fallback: native
         look:     {header.backgroundColor: $accent, header.color: $onAccent, label.color: $textMain,

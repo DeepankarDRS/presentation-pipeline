@@ -28,12 +28,12 @@ from typing import Any
 
 from lxml import etree
 
-from src.compiler.nodes import spec
+from src.compiler.nodes import spec, validate
 from src.compiler.value_parts import is_sentence, split_value, unit_px, unit_share
 
 ERROR, WARNING, REPORT = "error", "warning", "report"
 SEVERITY = {
-    "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR,
+    "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR, "NODE_XML_INVALID": ERROR,
     # a label the LLM typed itself can sit beside the wrong value: CHEFFIN 4 (2026-10-20) typed 7 labels in
     # another order (two not in the brief) while code placed the values in plan order - every tile mislabelled
     "NODE_LABEL_MISSING": ERROR, "NODE_LABEL_PLACED": WARNING,
@@ -41,6 +41,7 @@ SEVERITY = {
     "NODE_FOCUS_UNNAMED": REPORT, "NODE_VALUE_TEXT": WARNING,
 }
 
+_TEXT_REF = re.compile(r"<Text\b[^<>]*\bref=")
 FIELDS = ("label", "value", "note")
 PLAN_KEY = {"label": "kpi_labels", "value": "kpi_values", "note": "kpi_deltas"}
 # type ramp (house-style.yaml): tile label 16; a note reads as a caption / label. Values start
@@ -143,6 +144,7 @@ def _set_text(el: etree._Element, field: str, text: str, size: int, share: float
 def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
     comps = kpi_components(plan)
     issues: list[dict[str, Any]] = []
+    xml = validate.one_value(xml)
     result: dict[str, Any] = {"xml": xml, "issues": issues, "ok": True, "components": {}}
 
     def flag(code: str, ref: str | None, message: str) -> None:
@@ -152,8 +154,12 @@ def fill_refs(xml: str, plan: dict | None) -> dict[str, Any]:
         return result
     try:
         root = etree.fromstring(f"<_r_>{xml}</_r_>".encode("utf-8"))
-    except etree.XMLSyntaxError:
-        return result   # the normalizer / parseXml report the XML itself
+    except etree.XMLSyntaxError as e:
+        # no ref can be written: POM may still accept this XML and draw the tiles empty, with no error from anything
+        if comps or _TEXT_REF.search(xml):
+            flag("NODE_XML_INVALID", None, f"The slide's XML cannot be parsed, so no KPI text was written: {e}.")
+            result["ok"] = False
+        return result
 
     changed = _unwrap_refs(root, flag)
     placed: dict[str, dict[int, set[str]]] = {cid: {} for cid in comps}

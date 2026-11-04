@@ -210,6 +210,8 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
     nd = node(kind)
     meta, box, parts = compose.read(attrs, ref, flag, nd)
     name, extra = compose.composition(nd, comp, meta.get("variant"), ref, flag)
+    compose.undrawn(nd, name, box, parts, ref, flag)
+    compose.no_item_tones(box, parts, ref, flag, nd["tag"])
     meta = {**extra, **meta}
     its, focus = items(comp), emphasis_index(comp)
     box, rest, hi = compose.layers(nd, name, box, parts, focus is not None)

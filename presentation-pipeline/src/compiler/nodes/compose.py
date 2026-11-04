@@ -17,7 +17,7 @@ SEVERITY = {
     "NODE_REF_UNKNOWN": ERROR, "NODE_REF_DUPLICATE": ERROR, "NODE_ITEM_MISSING": ERROR, "NODE_ATTR_UNKNOWN": ERROR,
     "NODE_VARIANT_UNKNOWN": WARNING, "NODE_VARIANT_UNMET": WARNING, "LITERAL_COLOR": WARNING,
     "NODE_HIGHLIGHT_UNKNOWN": ERROR, "NODE_HIGHLIGHT_LIMIT": WARNING, "NODE_HIGHLIGHT_RULE": WARNING,
-    "NODE_ATTR_DROPPED": REPORT, "NODE_ATTR_ALIAS": REPORT, "NODE_TEXT_SPLIT": REPORT,
+    "NODE_ATTR_DROPPED": REPORT, "NODE_ATTR_NO_EFFECT": REPORT, "NODE_ATTR_ALIAS": REPORT, "NODE_TEXT_SPLIT": REPORT,
     "NODE_DEFAULT_FROM_CONTENT": REPORT, "NODE_TAG_ALIAS": REPORT, "NODE_LOOK_FROM_HINT": REPORT,
 }
 Flag = Callable[[str, "str | None", str], None]
@@ -84,6 +84,38 @@ def tone_value(value: Any, role: str) -> str:
             return {"Soft": "$surfaceAlt", "Text": "$textMain", "Dark": "$panelDark"}.get(m.group(1) or "", "$neutral")
         return f"${role}{m.group(1) or ''}"
     return _TONE_TOKEN.sub(sub, str(value))
+
+
+def no_item_tones(box: dict, parts: dict, ref: str, flag: Flag, tag: str) -> None:
+    """A node whose plan has no item tones (chart, timeline): $tone* on the tag is the accent, reported. Left as it is,
+    the compiler rejects the token."""
+    for where, attrs in [("", box), *((f"{p}.", a) for p, a in parts.items())]:
+        for k, v in attrs.items():
+            new = tone_value(v, "accent")
+            if new != str(v):
+                attrs[k] = new
+                flag("NODE_ATTR_ALIAS", ref, f'{where}{k}="{v}" on <{tag} ref="{ref}">: its items have no tone; {new} used.')
+
+
+def undrawn(nd: dict, name: str, box: dict, parts: dict, ref: str, flag: Flag, tag: str | None = None) -> None:
+    """Remove, in place, the LLM's attributes this composition does not draw; report NODE_ATTR_NO_EFFECT. The composition's
+    `ignores` names a box attribute, a part, or part.attribute; `draws_only` {part: [attributes]} the only ones a part
+    takes. Without this they vanish silently, or reach a tag POM rejects (`cellBorder.color` on a VStack)."""
+    c = nd["compositions"][name]
+    ignores, only = set(c.get("ignores") or []), c.get("draws_only") or {}
+    tag = tag or nd["tag"]
+
+    def out(key: str) -> None:
+        flag("NODE_ATTR_NO_EFFECT", ref, f'{key} on <{tag} ref="{ref}">: variant="{name}" does not draw it; removed.')
+
+    for k in [k for k in box if k in ignores]:
+        del box[k]
+        out(k)
+    for p, attrs in parts.items():
+        for k in list(attrs):
+            if p in ignores or f"{p}.{k}" in ignores or (p in only and k not in only[p]):
+                del attrs[k]
+                out(f"{p}.{k}")
 
 
 def recipe(s: str) -> dict[str, str]:

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.compiler.nodes import charts, sequences, tables, tile_groups
+from src.compiler.nodes import charts, sequences, tables, tile_groups, validate
 
 # plan-level content_data keys a drawn kind no longer needs in the prompt
 PLAN_KEYS = {"chart": ("chart_",), "timeline": ("timeline_items",), "process_arrow": ("process_steps",),
@@ -56,6 +56,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
         r = fn(out["xml"], plan)
         out = {"xml": r["xml"], "issues": out["issues"] + r["issues"], "ok": out["ok"] and r["ok"],
                "components": {**out["components"], **r["components"]}}
+    out["xml"] = validate.one_value(out["xml"])
     return out
 
 

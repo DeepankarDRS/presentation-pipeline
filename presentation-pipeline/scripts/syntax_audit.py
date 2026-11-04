@@ -539,7 +539,7 @@ def reach_matrix() -> dict:
                     row[k] = f"crash:{type(e).__name__}"
                     continue
                 codes = {i["code"] for i in r["issues"]}
-                row[k] = ("reach" if f'"{v}"' in r["xml"] else "error" if "NODE_ATTR_UNKNOWN" in codes else
+                row[k] = ("reach" if v in r["xml"] else "error" if "NODE_ATTR_UNKNOWN" in codes else   # v unquoted: chartColors is JSON
                           "dropped" if "NODE_ATTR_DROPPED" in codes or "LITERAL_COLOR" in codes else "noop")
             out[kind][variant] = row
     return out

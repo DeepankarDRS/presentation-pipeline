@@ -549,6 +549,7 @@ def draw(comp: dict, attrs: dict[str, str], flag, body: str = "") -> tuple[str, 
     paint = highlights(comp, body, flag) if body.strip() else None
     meta, box, parts = compose.read(attrs, ref, flag, nd)
     name, extra = compose.composition(nd, comp, meta.get("variant"), ref, flag)
+    compose.undrawn(nd, name, box, parts, ref, flag)
     for k, v in extra.items():   # an alias's part attributes (zebra, dark_header), under the LLM's own
         head, _, sub = k.partition(".")
         if head in parts and sub:

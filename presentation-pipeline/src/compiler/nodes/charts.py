@@ -163,6 +163,8 @@ def draw(comp: dict, attrs: dict[str, str], headline: str, flag, theme: dict | N
     ref = comp["component_id"]
     meta, box, parts = compose.read(attrs, ref, flag, node())
     name, extra = compose.composition(node(), comp, meta.get("variant"), ref, flag)
+    compose.undrawn(node(), name, box, parts, ref, flag)
+    compose.no_item_tones(box, parts, ref, flag, TAG)
     meta = {**extra, **meta}
     focus = focus_index(comp, headline)
     if name != "native" and len(_series(comp)) > 1:

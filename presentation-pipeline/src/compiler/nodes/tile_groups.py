@@ -453,6 +453,9 @@ def draw(comp: dict, gattrs: dict[str, str] | None, kids: dict[int, dict], apart
     asked = meta.get("variant")
     hint_word, style, item_styles = (None, None, {}) if asked else _hint(nd, comp, flag)
     name, extra = compose.composition(nd, comp, asked or hint_word, cid, flag)
+    compose.undrawn(nd, name, gbox, gparts, cid, flag)
+    for i, (_, ibox, iparts) in kids.items():   # an item tag's box is its `item.`; placed apart, it sizes itself (w, grow)
+        compose.undrawn(nd, name, {}, iparts if i in apart else {**iparts, "item": ibox}, f"{cid}.{i}", flag, nd["item_tag"])
     style = extra.get("style") or style or ("column" if second and kind == "card_grid" else None)
     focus_i = emphasis_index(comp)
     c = nd["compositions"][name]

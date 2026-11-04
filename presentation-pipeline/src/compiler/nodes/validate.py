@@ -49,6 +49,23 @@ def attrs_of(s: str) -> dict[str, str]:
     return {m.group(1): m.group(2) if m.group(2) is not None else m.group(3) for m in _ATTR.finditer(s)}
 
 
+_OPEN_TAG = re.compile(r'<([A-Za-z][\w.]*)((?:\s+[\w.:-]+="[^"]*")+)(\s*/?>)')
+_TAG_ATTR = re.compile(r'([\w.:-]+)="([^"]*)"')
+
+
+def one_value(xml: str) -> str:
+    """Every attribute of an opening tag once, its last value: what POM reads from `gap="8" gap="40"`. An expander
+    writes its literal, then the LLM's attributes; lxml rejects the repeat, and fill_refs would leave every ref on the
+    slide empty (docs/syntax-audit-2026-11-04.md, the blank KPI row)."""
+    def sub(m: re.Match) -> str:
+        pairs = _TAG_ATTR.findall(m.group(2))
+        if len({k for k, _ in pairs}) == len(pairs):
+            return m.group(0)
+        return f"<{m.group(1)}" + "".join(f' {k}="{v}"' for k, v in dict(pairs).items()) + m.group(3)
+
+    return _OPEN_TAG.sub(sub, xml)
+
+
 def words(text: str) -> list[str]:
     return _WORD.findall(html.unescape(text).lower())
 

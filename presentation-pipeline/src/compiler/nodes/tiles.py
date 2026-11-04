@@ -610,8 +610,8 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
 def fill(xml: str, plan: dict | None) -> dict[str, Any]:
     """cards.expand (code writes the card text), expand, then element_refs.fill_refs; one result in fill_refs'
     shape, plus card_items {card_grid id: cards drawn from tile tags}."""
-    from src.compiler.nodes import cards   # cards builds on this module
-    crd = cards.expand(xml, plan)
+    from src.compiler.nodes import cards, validate   # cards builds on this module
+    crd = cards.expand(validate.one_value(xml), plan)
     exp = expand(crd["xml"], plan)
     exp["issues"] = crd["issues"] + exp["issues"]
     exp["ok"] = exp["ok"] and crd["ok"]

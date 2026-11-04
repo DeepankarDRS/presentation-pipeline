@@ -232,6 +232,25 @@ Checked against the stress cases, [composition-test](eval/composition-test/READM
 | F4 | `$tone*` either resolve to `accent` on chart and timeline, or drop with a report | compile failure |
 | F5 | Remove `highlight` from `part_nodes.Text` (the normalizer strips it) | `delta.highlight` has no effect |
 
+**Applied 2026-11-04 (free, no API calls).** Render of the two formerly blank slides: [fixed-blank-kpi.png](eval/syntax-audit/fixed-blank-kpi.png).
+
+| # | How | Measured after |
+|---|---|---|
+| F1 | `validate.one_value`: one pass after the expanders and before any lxml parse; the last value wins, as in POM. The expanders' f-strings are untouched | both blank slides: 0 words lost |
+| F2 | `ignores` / `draws_only` per composition in `block-variants.yaml`, applied by `compose.undrawn` to the LLM's attributes only. An item placed apart keeps its own box attributes | every-attribute tag compiles on all 29 compositions (10 failed before); of 4,839 attribute × composition pairs, 0 are silent |
+| F3 | `element_refs.fill_refs`: `NODE_XML_INVALID` (error, goes to repair) when the slide has KPI content or a `<Text ref>` | unit tests |
+| F4 | `compose.no_item_tones`: `$tone*` on chart and timeline → accent, reported | all four tokens compile on both nodes |
+| F5 | `highlight` moved from the allowed Text attributes to `dropped.parts` (a report, not a repair) | unit tests |
+
+Bare and lightly styled tags are unchanged: 102 expansions identical to the commit before. Unit tests: 2,035 pass, the same 4 known failures (+29 in `tests/unit/test_attribute_layer.py`).
+
+**Corrections to this report's measure.** The reach check first looked for the value in quotes, so it missed `bar.fill.color` in `chartColors` JSON; it also tested `marker.*` without a `shapeType`, and counted plans that fell back to another composition. Measured properly on this branch's nodes, 1,502 of 4,839 pairs (31%) do not reach the XML, the same share as the 1,601 of 5,091 above. The per-attribute lists in `reach.json` predate this and use the other branch's timeline.
+
+**Open from this fix.**
+- `ignores` for `timeline` describe this branch's node. `claude/left-blocks-build-0fe007` renames parts and adds `columns`, so re-measure that node's list when it merges, and add the two `compose` calls to its `draw` if the merge drops them.
+- "Reaches the XML" is not "changes the picture": an attribute can reach the XML and still look the same.
+- `POM_BLOCKS=tiles` without `POM_NODES` (the older tile route in `tiles.py` and `cards.py`) is not filtered. It gets F1, F3 and F5, not F2.
+
 **Candidates for new syntax:**
 
 | Candidate | Evidence | Verdict |
@@ -362,7 +381,7 @@ The px rows include each slide's root (`w="1280" h="720"`). Saved slides are fro
 
 ## 7. Decisions for you, ranked
 
-1. **Fix the attribute layer before any paid run (F1–F5).** The blank KPI row reports nothing and would look like a generator failure. *Recommend: yes, first, about one session.*
+1. **Fix the attribute layer before any paid run (F1–F5).** *Done 2026-11-04, see §4.*
 2. **Space-aware fallback.** Should a composition fall back when its box can't hold it, chosen by fit-grow's measure? 28 of 30 narrow cases break, 5 don't compile. *Recommend: yes; at the least, catch the compile failure.*
 3. **Keep composition as the default, element refs as an opt-in escape.** *Recommend: yes. Not atomic: 30–51 × the tokens and swapped values pass unseen.*
 4. **Caps and defaults.** Card `rail`: cap it (or ban it with bullets on 4+ cards). Card `steps`: at most 6. Timeline bare tag: start at `rail`, not `native`, whose type is fixed and tiny. *Recommend: all three.*
