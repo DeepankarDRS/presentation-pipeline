@@ -2456,25 +2456,93 @@ async function fitSlide(inputXml, report, warnings = []) {
 }
 
 // --- last phase: what POM's lists cannot say --------------------------------------
-// A list the bullet node drew (bullets.py, id lst-) shares its box's spare height between its points. POM has no
-// paragraph spacing, so the gap travels as a <!-- list-post --> comment to pptx-post.js with the first words of the
-// list (how it finds the text box). Without this comment the slide keeps POM's plain list.
+// A list the bullet node drew (bullets.py, id lst-) fills its box in two steps (user marks 2026-11-04: size first,
+// spacing only with what is left). The type grows past growText's 88% limit up to BODY_CAP; a card title it would pass
+// grows with it (held at the title, pair 1.4 stayed at 18 px with 27 px gaps). Then the spare height goes between the points. POM has no paragraph spacing, so that gap travels as a
+// <!-- list-post --> comment to pptx-post.js with the first words of the list (how it finds the text box). Without this
+// comment the slide keeps POM's plain list. Two columns of one split list are one group: one size, one gap, their rows
+// level (marks: gaps of 29 and 38 px on the two columns read as uneven).
 
 const LIST_GAP_MAX = 1.5;    // x the font size: past it, points read as unrelated lines
+const LIST_FULL = 0.92;      // slack for renderer wrap drift
+
+const isNodeList = (n) => (n.type === "ul" || n.type === "ol") && n.id?.startsWith("lst-") && n.items.length > 0;
+
+async function listGroups(xml) {
+  const L = await layout(xml);
+  const groups = new Map();
+  try {
+    for (const root of L.slides) {
+      const parents = new Map();
+      walk(root, (n, p) => parents.set(n, p));
+      walk(root, (n, p) => {
+        if (!isNodeList(n)) return;
+        const titles = [];
+        for (let a = p; a && parents.get(a); a = parents.get(a)) {
+          if (!hasBoxStyle(a)) continue;
+          walk(a, (d) => { if (d.type === "text" && d.bold && d.id) titles.push(d); });
+          break;
+        }
+        const top = Math.max(0, ...titles.map((d) => d.fontSize ?? 24));
+        const key = p?.type === "hstack" && p.children.every(isNodeList) ? p.id : n.id;
+        const g = groups.get(key) ?? { ids: [], fs: n.fontSize ?? 24, titles: new Map() };
+        g.ids.push(n.id);
+        for (const d of titles) if ((d.fontSize ?? 24) === top) g.titles.set(d.id, top);   // its card's title, not a bold line in it
+        groups.set(key, g);
+      });
+    }
+  } finally { L.free(); }
+  return [...groups.values()];
+}
+
+/** The group's lists at font size f, a card title below f raised to it. */
+function listsAt(xml, g, f) {
+  const lists = g.ids.reduce((acc, id) => setAttrs(acc, id, { fontSize: f }), xml);
+  return [...g.titles].reduce((acc, [id, px]) => (px < f ? setAttrs(acc, id, { fontSize: f }) : acc), lists);
+}
+
+/** Whether every list of the group holds its text at font size f, in the box it has, with no word past it. */
+async function listsHold(xml, g, f) {
+  const x = listsAt(xml, g, f);
+  const before = await layout(xml), T = await layout(x);
+  try {
+    // no new word past its box, and no slide fuller than it was (a slide already past 720 may still fill its own box)
+    const was = wordsOver(before, [...g.ids, ...g.titles.keys()]);
+    const over = [...wordsOver(T, [...g.ids, ...g.titles.keys()])].filter((id) => !was.has(id));
+    return !over.length && g.ids.every((id) => {
+      const n = T.byId.get(id), b = T.box(n);
+      return natural(n, T) <= b.h * LIST_FULL && b.h <= before.box(before.byId.get(id)).h + 1;
+    }) && T.slides.every((r, j) => natural(r, T) <= Math.max(natural(before.slides[j], before), SLIDE.h) + 1);
+  } finally { before.free(); T.free(); }
+}
 
 async function spaceLists(xml, report) {
+  const groups = await listGroups(xml);
+  for (const g of groups) {
+    let lo = g.fs, hi = Math.max(BODY_CAP, g.fs);
+    while (lo < hi) {
+      const f = Math.ceil((lo + hi) / 2);
+      if (await listsHold(xml, g, f)) lo = f; else hi = f - 1;
+    }
+    if (lo > g.fs) {
+      xml = listsAt(xml, g, lo);
+      report.push(`list text ${g.fs} -> ${lo}px`);
+    }
+    g.fs = lo;
+  }
   const L = await layout(xml);
   const edits = [];
   try {
-    for (const root of L.slides) walk(root, (n) => {
-      if ((n.type !== "ul" && n.type !== "ol") || !n.id?.startsWith("lst-") || !n.items.length) return;
-      const fs = n.fontSize ?? 24;
-      const spare = Math.max(0, L.box(n).h - natural(n, L)) * 0.92;   // slack for renderer wrap drift
-      const gap = n.items.length > 1 ? Math.min(spare / (n.items.length - 1), LIST_GAP_MAX * fs) : 0;
-      const spec = JSON.stringify({ id: n.id, first: n.items[0].text.slice(0, 40), gap: Math.round(gap * 10) / 10 })
-        .replace(/-/g, "\\u002d");   // a comment may not hold "--"
-      edits.push([n.id, spec, Math.round(gap)]);
-    });
+    for (const g of groups) {
+      const nodes = g.ids.map((id) => L.byId.get(id));
+      const gaps = nodes.filter((n) => n.items.length > 1).map((n) => Math.max(0, L.box(n).h - natural(n, L)) * LIST_FULL / (n.items.length - 1));
+      const gap = gaps.length ? Math.min(...gaps, LIST_GAP_MAX * g.fs) : 0;
+      for (const n of nodes) {
+        const spec = JSON.stringify({ id: n.id, first: n.items[0].text.slice(0, 40), gap: Math.round(gap * 10) / 10 })
+          .replace(/-/g, "\\u002d");   // a comment may not hold "--"
+        edits.push([n.id, spec, Math.round(gap)]);
+      }
+    }
   } finally { L.free(); }
   for (const [id, spec] of edits) {
     const el = findElement(xml, id);

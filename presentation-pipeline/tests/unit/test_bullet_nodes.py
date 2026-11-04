@@ -287,6 +287,47 @@ def test_compiled_is_one_real_list_with_marker_colour_and_spacing(tmp_path):
     assert lists[0].count("<a:spcBef>") == 3 and 'anchor="ctr"' in lists[0]
 
 
+def _sizes(sp):
+    return {round(int(v) / 75) for v in re.findall(r'\bsz="(\d+)"', sp)}
+
+
+def test_type_grows_before_spacing_takes_what_is_left(tmp_path):
+    """user marks 2026-11-04 (pairs 1.4, 3.4, 7.4): increase the size, not just leave the space."""
+    lists, _ = compile_slide(tmp_path, '<Ul ref="pts"/>', {"component_id": "pts", "kind": "bullet_list", "content_data": {"bullets": [
+        "Recommendation ads: 11.3x ROAS at a third of Search spend, but they bring very few new buyers to the brand",
+        "Product C drags: 4.3x ROAS and 23% ACOS", "Review bids weekly", "Cap home banners"]}})
+    assert _sizes(lists[0]) == {28}
+
+
+def test_list_text_stays_at_its_cards_title(tmp_path):
+    tag = ('<VStack grow="1" padding="20" backgroundColor="$surface" border.color="$border" border.width="1">'
+           '<Text fontSize="18" bold="true">Card title</Text><Ul ref="pts"/></VStack>')
+    lists, _ = compile_slide(tmp_path, tag)
+    x = zipfile.ZipFile(tmp_path / "presentation.pptx").read("ppt/slides/slide1.xml").decode("utf-8")
+    title = next(s for s in re.findall(r"<p:sp>.*?</p:sp>", x, re.S) if "Card title" in s)
+    assert max(_sizes(lists[0])) <= max(_sizes(title))   # growth raises the title too; the list never passes it
+
+
+def test_columns_share_one_size_and_one_gap(tmp_path):
+    """marks: gaps of 29 and 38 px on the two columns of pair 2.2."""
+    short = {"component_id": "pts", "kind": "bullet_list", "content_data": {"bullets": [f"Short point {i}" for i in range(5)]}}
+    lists, _ = compile_slide(tmp_path, '<Ul ref="pts"/>', short)
+    assert len(lists) == 2 and _sizes(lists[0]) == _sizes(lists[1])
+    gaps = [set(re.findall(r'spcPts val="(\d+)"', s)) for s in lists]
+    assert gaps[0] and gaps[0] == gaps[1]
+
+
+def test_spacing_tight_is_the_list_without_gaps(tmp_path):
+    """marks: spacing between points needs to be a style choice (pair 2.4)."""
+    lists, _ = compile_slide(tmp_path, '<Ul ref="pts" spacing="tight"/>')
+    assert all("<a:spcBef" not in s and 'anchor="t"' in s and "<a:buClr" in s for s in lists)
+
+
+@pytest.mark.parametrize("tag", ['<Ul ref="pts" spacing="wide"/>', '<Ul ref="pts" variant="rows" spacing="tight"/>'])
+def test_spacing_elsewhere_is_reported(tag):
+    assert "NODE_ATTR_DROPPED" in codes(run(tag))
+
+
 def test_without_fit_grow_it_stays_pom_s_plain_list(tmp_path):
     lists, _ = compile_slide(tmp_path, '<Ul ref="pts"/>', env={"POM_FIT_GROW": "0"})
     assert len(lists) == 1 and lists[0].count("<a:buChar") == 4 and "<a:buClr" not in lists[0] and "<a:spcBef" not in lists[0]

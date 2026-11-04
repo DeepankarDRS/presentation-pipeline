@@ -936,7 +936,7 @@ nodes:
     tag: Ul
     plan_kind: bullet_list
     parts: {head: Run, detail: Run, marker: Marker, item: Box}
-    meta: [ref, variant, icons]
+    meta: [ref, variant, icons, spacing]
     native_attributes: [color, textAlign, italic]   # all the words of the list, on every composition
     compositions:
       native:

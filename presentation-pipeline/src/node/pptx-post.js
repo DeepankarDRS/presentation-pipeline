@@ -75,8 +75,8 @@ export function listPostSpecs(pomXml) {
     });
     const markers = specs.filter((s) => s.marker);
     return specs.filter((s) => s.first).map((s) => {
-      const marker = markers.find((k) => s.id.startsWith(k.id))?.marker;
-      return { first: s.first, gap: s.gap ?? 0, marker: marker ? token(marker) : null };
+      const own = markers.find((k) => s.id.startsWith(k.id));
+      return { first: s.first, gap: own?.tight ? 0 : s.gap ?? 0, tight: !!own?.tight, marker: own?.marker ? token(own.marker) : null };
     });
   });
 }
@@ -100,7 +100,8 @@ export function listPost(slideXml, specs) {
       k += 1;
       return q;
     });
-    return out.replace(/(<a:bodyPr\b[^>]*\sanchor=")t"/, '$1ctr"');   // what spacing cannot fill stays even above and below
+    // what spacing cannot fill stays even above and below (spacing="tight": the list sits at the top of its box)
+    return spec.tight ? out : out.replace(/(<a:bodyPr\b[^>]*\sanchor=")t"/, '$1ctr"');
   });
 }
 

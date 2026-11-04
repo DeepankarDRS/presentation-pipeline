@@ -6,9 +6,10 @@ The LLM writes one tag per bullet_list component; code draws it from the plan:
 
 Compositions (block-variants.yaml `nodes.bullet_list`):
 - `native` (default and the fallback of everything): POM's real list, one text box, hand-editable in PowerPoint.
-  A "Head: detail" point's head is bold, every word kept. fit-grow sizes it and splits 4+ short points into two real
-  lists; it writes what POM has no attribute for (the marker colour, the spacing between points) as a `list-post`
-  comment for pptx-post.js. If that step is skipped the slide keeps POM's plain list.
+  A "Head: detail" point's head is bold, every word kept. fit-grow sizes it (type first, then spacing with what is
+  left; `spacing="tight"` keeps the points together) and splits 4+ short points into two real lists; it writes what POM
+  has no attribute for (the marker colour, the spacing between points) as a `list-post` comment for pptx-post.js. If
+  that step is skipped the slide keeps POM's plain list.
 - `native numbered`: POM's real numbered list; a list carrying its own numbers falls back to `native`.
 - `rows` (`icons="target,scissors,..."`: an icon per point) / `rows numbered`: one ruled row per point: a marker, then
   the head over the detail.
@@ -33,6 +34,7 @@ TAG = "Ul"
 HIGHLIGHT_ATTRS = {"phrase", "item", "color", "fill", "bold"}
 TEXT_ATTRS = ("color", "textAlign", "italic")           # on the tag: the whole list's words, on every composition
 NATIVE_NO_BOX = ("gap", "alignItems", "justifyContent")  # a native list sits alone in its box, stretched
+SPACINGS = ("even", "tight")   # even: points share the box's spare height (default); tight: at the top, no extra gaps
 MAX_ICONS = 6   # past it a full slide's rows are too short for fit-grow to grow their text (gallery, 8 points: 16 px)
 _ICON_NAMES = Path(__file__).resolve().parents[2] / "knowledge" / "core" / "icon-names.txt"
 X = native.x
@@ -214,14 +216,15 @@ class Pick:
         return {**p, "backgroundColor": f"${self.paint.fill[i]}Soft"} if i in self.paint.fill else p
 
 
-def list_post(cid: str, marker: str | None) -> str:
-    """The marker colour for pptx-post.js (POM's lists have no attribute for it). Hyphens are escaped: a comment may
-    not hold "--"."""
-    spec_ = json.dumps({"id": f"lst-{cid}", "marker": marker or ""}, ensure_ascii=True).replace("-", "\\u002d")
+def list_post(cid: str, marker: str | None, tight: bool = False) -> str:
+    """The marker colour and spacing choice for pptx-post.js (POM's lists have no attribute for them). Hyphens are
+    escaped: a comment may not hold "--"."""
+    spec_ = json.dumps({"id": f"lst-{cid}", "marker": marker or "", **({"tight": True} if tight else {})},
+                       ensure_ascii=True).replace("-", "\\u002d")
     return f"<!-- list-post {spec_} -->"
 
 
-def draw_native(comp: dict, box: dict, pick: Pick, numbered: bool, text: dict) -> str:
+def draw_native(comp: dict, box: dict, pick: Pick, numbered: bool, text: dict, tight: bool = False) -> str:
     cid, tag = comp["component_id"], "Ol" if numbered else "Ul"
     base = pick.rest["detail"].get("color")
     lis = []
@@ -238,7 +241,7 @@ def draw_native(comp: dict, box: dict, pick: Pick, numbered: bool, text: dict) -
     # 16 px: fit-grow grows it into its box; started larger it broke words in narrow boxes (replay 2026-11-04)
     own = {"grow": "1", "fontSize": "16", "lineHeight": "1.4", **({"color": base} if base else {}), **text}
     marker = pick.rest["marker"].get("color")
-    return (f'<VStack{A({"grow": "1", **box, "alignItems": "stretch"})}>{list_post(cid, marker)}'
+    return (f'<VStack{A({"grow": "1", **box, "alignItems": "stretch"})}>{list_post(cid, marker, tight)}'
             f'<{tag} id="lst-{cid}"{A(own)}>{"".join(lis)}</{tag}></VStack>')
 
 
@@ -328,7 +331,12 @@ def draw(comp: dict, attrs: dict[str, str], flag, body: str = "") -> tuple[str, 
     pick = Pick(rest, hi, focus, paint)
     list_text = {k: v for k, v in text.items() if k == "textAlign"}
     icons = _icons(meta, name, len(pts), ref, flag)
-    xml = (draw_native(comp, box, pick, name == "native numbered", list_text) if is_native
+    tight = meta.get("spacing") == "tight"
+    if "spacing" in meta and (not is_native or meta["spacing"] not in SPACINGS):
+        flag("NODE_ATTR_DROPPED", ref, f'spacing="{meta["spacing"]}" on <{TAG} ref="{ref}">: variant native or native '
+             f'numbered takes {" / ".join(SPACINGS)}; removed.')
+        tight = False
+    xml = (draw_native(comp, box, pick, name == "native numbered", list_text, tight) if is_native
            else draw_rows(comp, box, pick, name == "rows numbered", icons, who, list_text))
     return xml, {"composition": name, "focus": focus, "icons": bool(icons),
                  "highlights": bool(paint and (paint.ink or paint.fill or paint.phrases))}
@@ -357,7 +365,8 @@ def node_lines() -> str:
         f"(one exact icon name per point, in order, up to {MAX_ICONS} points; on no other variant). Layout (w, h, grow) and box attributes style "
         "the list's own box; parts head. detail. (the words: color bold italic underline) marker. (color) item. (a "
         "row's box, rows only) in $tokens; color on the tag colours all the words. rows needs about 40 px of height "
-        "per point: in a shorter box use native.",
+        "per point: in a shorter box use native. On native, spacing=\"tight\" keeps the points together at the top "
+        "instead of sharing the spare height.",
         "Colour by meaning with <Highlight/> inside the tag (without them code colours the point the hint names); "
         "tones good | bad | watch | focus (emphasis, no meaning); name a point by its head or whole text, exactly as "
         "written, and copy a phrase exactly:",

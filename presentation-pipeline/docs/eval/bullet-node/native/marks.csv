@@ -1,29 +1,29 @@
 pair,choice,reason
-1.1,,
-1.2,,
-1.3,,
-1.4,,
-2.1,,
-2.2,,
-2.3,,
-2.4,,
-3.1,,
-3.2,,
-3.3,,
-3.4,,
-4.1,,
-4.2,,
-4.3,,
-4.4,,
-5.1,,
-5.2,,
-5.3,,
-5.4,,
-6.1,,
-6.2,,
-6.3,,
-6.4,,
-7.1,,
-7.2,,
-7.3,,
-7.4,,
+1.1,1,looks  better as recommendation
+1.2,same,
+1.3,2,spacing is well deserved
+1.4,2,it is better to increase size not just  leave the space 
+2.1,same,
+2.2,1,the two point in paralle looks good
+2.3,2,looks better
+2.4,1,looks better I think spacing in between needs to be style choice
+3.1,2,like the color code
+3.2,1,no nesting points required
+3.3,same,
+3.4,1,better so push spaing only when there is a space left after everything
+4.1,same,though I like we can match the bulelt color with the theme
+4.2,same,though I like we can match the bulelt color with the theme
+4.3,2,parallel goof and spacing good
+4.4,2,better than 2 colored points
+5.1,2,better 
+5.2,1,better 
+5.3,2,better 
+5.4,1,better 
+6.1,1,like bigger fontsieze to fill the space
+6.2,1,like bigger fontsieze to fill the space
+6.3,same,
+6.4,1,I donot need 2 recommendation 
+7.1,1,better
+7.2,2,better
+7.3,1,like color code
+7.4,1,better coverage of empty space but same case if we have space increase the spacing else remove them for dense case or similar solution s

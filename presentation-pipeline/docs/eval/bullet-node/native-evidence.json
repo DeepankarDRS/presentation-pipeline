@@ -41,7 +41,7 @@
     "buClr": 8,
     "spcBef": 7,
     "sizes_px": [
-     27,
+     28,
      32
     ]
    },
@@ -53,7 +53,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     17,
+     18,
      32
     ]
    }
@@ -69,9 +69,11 @@
    "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 3: list spacing: 42px, 42px",
    "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
-   "slide 4: list spacing: 9px",
+   "slide 4: list text 27 -> 28px",
+   "slide 4: list spacing: 7px",
    "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
-   "slide 5: list spacing: 26px"
+   "slide 5: list text 17 -> 18px",
+   "slide 5: list spacing: 12px"
   ]
  },
  "native numbered-corporate-slate": {
@@ -116,7 +118,7 @@
     "buClr": 8,
     "spcBef": 7,
     "sizes_px": [
-     27,
+     28,
      32
     ]
    },
@@ -128,7 +130,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     17,
+     18,
      32
     ]
    }
@@ -143,9 +145,11 @@
    "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 35% -> 63%",
    "slide 3: list spacing: 39px",
    "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
-   "slide 4: list spacing: 9px",
+   "slide 4: list text 27 -> 28px",
+   "slide 4: list spacing: 7px",
    "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
-   "slide 5: list spacing: 26px"
+   "slide 5: list text 17 -> 18px",
+   "slide 5: list spacing: 12px"
   ]
  },
  "rows-corporate-slate": {
@@ -434,7 +438,7 @@
     "buClr": 8,
     "spcBef": 7,
     "sizes_px": [
-     27,
+     28,
      32
     ]
    },
@@ -446,7 +450,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     17,
+     18,
      32
     ]
    }
@@ -462,9 +466,11 @@
    "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 17% -> 31%",
    "slide 3: list spacing: 42px, 42px",
    "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
-   "slide 4: list spacing: 9px",
+   "slide 4: list text 27 -> 28px",
+   "slide 4: list spacing: 7px",
    "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
-   "slide 5: list spacing: 26px"
+   "slide 5: list text 17 -> 18px",
+   "slide 5: list spacing: 12px"
   ]
  },
  "native numbered-graphite-dark": {
@@ -509,7 +515,7 @@
     "buClr": 8,
     "spcBef": 7,
     "sizes_px": [
-     27,
+     28,
      32
     ]
    },
@@ -521,7 +527,7 @@
     "spcBef": 4,
     "sizes_px": [
      14,
-     17,
+     18,
      32
     ]
    }
@@ -536,9 +542,11 @@
    "slide 3: text x2.98 (e.g. 16 -> 28pt), spacing x1.40, fill 35% -> 63%",
    "slide 3: list spacing: 39px",
    "slide 4: text x1.70 (e.g. 16 -> 27pt), fill 46% -> 87%",
-   "slide 4: list spacing: 9px",
+   "slide 4: list text 27 -> 28px",
+   "slide 4: list spacing: 7px",
    "slide 5: text x1.08 (e.g. 16 -> 17pt), fill 63% -> 80%",
-   "slide 5: list spacing: 26px"
+   "slide 5: list text 17 -> 18px",
+   "slide 5: list spacing: 12px"
   ]
  },
  "rows-graphite-dark": {
