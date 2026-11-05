@@ -1,5 +1,7 @@
 # Composition nodes: full-deck run
 
+**2026-11-05: `POM_NODES` (all six) and `POM_BLOCKS=tiles` are now the code default on `feat/tile-nodes`; `POM_NODES=` (set, empty) turns them off.** One smaller confirming run replaces the table below: `gate-deck-xtsy-qcomm` and `deck-product-launch-data`, about $0.54, `--max-cost 1`.
+
 The same-plan check (`docs/eval/nodes-paid/README.md`) passed the user's gate on saved plans, one slide at a time. This run covers what it could not: fresh plans from today's planners, whole decks, and the real repair count, which decides whether route B saves money.
 
 **Status: prepared 2026-11-05; the user runs it on the test PC.** Estimate about $1.05, stops by itself at $2.00.

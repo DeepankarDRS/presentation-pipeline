@@ -54,6 +54,7 @@ def value_of(xml, i, cid="kpis"):
 @pytest.fixture(autouse=True)
 def tiles_mode(monkeypatch):
     monkeypatch.setenv("POM_BLOCKS", "tiles")
+    monkeypatch.setenv("POM_NODES", "")   # tile tags, not the composition nodes (test_node_prompts.py has those)
 
 
 # ── every variant and arrangement ─────────────────────────────────────────────

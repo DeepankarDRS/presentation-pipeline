@@ -37,7 +37,8 @@ def test_two_slides_of_one_deck_share_everything_before_this_slide():
     assert len(head_a) > 0.5 * len(b)
 
 
-def test_per_slide_parts_come_after_the_mark():
+def test_per_slide_parts_come_after_the_mark(monkeypatch):
+    monkeypatch.setenv("POM_NODES", "")   # with kinds code draws there are fewer recipes to list
     head, tail = _system(DATA).split(MARK)
     for per_slide in ("## SLIDE TYPE", "## ALLOWED NODES", "## ALLOWED ATTRIBUTES PER NODE", "## NODE HIERARCHY",
                       "## COMPONENT RECIPES", "## VISUAL-INTENT TRANSLATION", "## NOTES FOR THIS SLIDE"):

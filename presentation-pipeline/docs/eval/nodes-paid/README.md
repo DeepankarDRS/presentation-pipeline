@@ -115,3 +115,7 @@ Gate (user, 2026-11-04): B loses no plan words, no slide ends as a placeholder, 
 - **The planners.** Plans are saved ones, so the planner's new timeline `description` field is not exercised: none of the saved timelines has it. A full-deck run after this one covers it.
 - **The visual critic and its repairer.** Critic off here; they still see expanded XML.
 - **Plans from today's planners.** Saved plans date from 2026-10-11 to 2026-10-16.
+
+## PowerPoint look, free (2026-11-05)
+
+LibreOffice drew neither the black table lines nor the stripes PowerPoint showed. `python -m scripts.nodes_powerpoint` (test PC, no LLM calls) recompiles the saved table slides of this check on both routes, and each saved full-deck run on route B, exports them through PowerPoint and writes `output/composition-paid/nodes-ppt.zip`: a blind sheet of the table pairs, the deck images, each slide's pptx.

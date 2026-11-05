@@ -334,3 +334,13 @@ def test_a_compiled_native_table_has_no_zero_lines_or_default_style(tmp_path):
     x = z.read("ppt/slides/slide1.xml").decode("utf-8")
     assert not re.search(r'<a:ln[LRTB] w="0"><a:solidFill', x) and "<a:noFill/></a:lnL>" in x
     assert "5C22544A" not in x and 'bandRow="1"' not in x
+
+
+def test_all_six_composition_nodes_are_the_default(monkeypatch):
+    from src.compiler.nodes import composed, element_refs
+    monkeypatch.delenv("POM_NODES", raising=False)
+    monkeypatch.delenv("POM_BLOCKS", raising=False)
+    assert sorted(composed.kinds_on()) == sorted(["chart", "timeline", "kpi_row", "card_grid", "table", "bullet_list"])
+    assert element_refs.mode() == "tiles"
+    monkeypatch.setenv("POM_NODES", "")   # set but empty still turns them off
+    assert composed.kinds_on() == []

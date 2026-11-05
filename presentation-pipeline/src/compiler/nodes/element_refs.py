@@ -74,10 +74,10 @@ WEIGHT_RANK = {"hero": 0, "peer": 1, "supporting": 2, "minor": 3}
 
 
 def mode() -> str:
-    """`POM_BLOCKS`: kpi (default since 2026-10-11: kpi_row components become element refs) | tiles (the LLM writes
-    <KpiGrid> / <Kpi> tile nodes, src/compiler/nodes/tiles.py; opt-in) | off (the old route)."""
-    v = os.environ.get("POM_BLOCKS", "kpi").strip().lower()
-    return v if v in ("off", "kpi", "tiles") else "kpi"
+    """`POM_BLOCKS`: tiles (default, with POM_NODES: the LLM writes tile and composition tags,
+    src/compiler/nodes/tiles.py) | kpi (kpi_row components become element refs) | off (the old route)."""
+    v = os.environ.get("POM_BLOCKS", "tiles").strip().lower()
+    return v if v in ("off", "kpi", "tiles") else "tiles"
 
 
 def refs_on() -> bool:

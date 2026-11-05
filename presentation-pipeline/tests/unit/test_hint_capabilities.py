@@ -79,7 +79,8 @@ def test_planner_schema_description_is_scoped():
     assert "intra-component" not in desc
 
 
-def test_generator_user_prompt_shows_scope_under_component():
+def test_generator_user_prompt_shows_scope_under_component(monkeypatch):
+    monkeypatch.setenv("POM_NODES", "")   # a table code draws carries none of this in the prompt
     env = Environment(loader=FileSystemLoader("src/prompts/generator"), trim_blocks=True, lstrip_blocks=True)
     comp = {"kind": "table", "component_id": "roas", "count": 1,
             "design_hint": "color ROAS below 1x in negative", "content_data": {}}
