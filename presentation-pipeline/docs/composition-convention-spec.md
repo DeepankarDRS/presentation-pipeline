@@ -1,4 +1,523 @@
-# One composition convention for every derived node (spec draft, 2026-10-27)
+# Composition nodes: reference and design record
+
+**Status: for senior review, 2026-11-05.** This document has two parts:
+
+- **Part A (reference)** describes the code on `feat/tile-nodes` at `b1d1328`: every native node, every reference binding and every derived node. Variant tables are generated from `block-variants.yaml`, and each behaviour stated was run through the real expander and compiler.
+- **Part B (design record)** is the spec as approved on 2026-10-27 and extended on 2026-11-03, kept so its decisions and reasons stay readable. Other documents cite its section numbers, so they are unchanged. **Where the two differ, Part A is right.**
+
+## A.0 Summary
+
+A slide reaches the `.pptx` like this:
+
+```text
+plan JSON -> generator LLM writes POM XML -> composed.expand (derived nodes) -> element_refs / tiles fill (references)
+          -> normalize_xml -> fit-grow (sizes type to the boxes) -> POM 10.3.0 compile -> pptx-post
+```
+
+| Topic | Position today |
+|---|---|
+| Families | Three: **native** (the LLM writes POM XML), **reference binding** (the LLM lays out, code writes the words), **derived** (the LLM places one tag, code draws the block) |
+| Derived nodes built | Six: `chart`, `timeline`, `kpi_row`, `card_grid`, `table`, `bullet_list`, with 28 variants in all |
+| Plan kinds still written by hand | Nine: `title`, `narrative`, `caption`, `layer`, `process_arrow`, `flow`, `pyramid`, `tree`, `matrix` |
+| On by default? | **No.** With no settings, only KPI text is bound by reference. All six nodes need `POM_NODES` (A.1) |
+| Proof with a real LLM | One paid same-plan run; its rerun's result is not in the repo, and the full-deck run has not been run (A.8) |
+
+**Please review first:** the open points in A.9, especially the missing rerun result, the three overlapping variant vocabularies, and the 280 px box.
+
+## A.1 The three families and the switches
+
+| Family | What the LLM writes | What code does | Example |
+|---|---|---|---|
+| **Native** | The POM node in full, with its text | Normalizes and fits it; never changes POM's syntax | `<Pyramid h="240"><PyramidLevel label="Top"/></Pyramid>` |
+| **Reference binding** | Its own boxes, with a reference where each piece of plan text goes | Writes the text, sizes and ids | `<Text ref="kpis.0.value"/>` |
+| **Derived** (also "composition node") | One tag naming a plan component | Expands it into native nodes from the plan | `<CardGrid ref="levers" variant="banded" grow="1"/>` |
+
+**A naming trap:** `variant="native"` on a derived node is still derived. The LLM writes `<Table ref="gaps" variant="native"/>`, and code writes the real `<Table><Tr><Td>`. `blocks.*.family: native` in the YAML means the same thing, and `spec.DERIVED_TAGS` lists only the two tags that are not POM names.
+
+Two settings choose the route (`.env`, read per process):
+
+| Route | `POM_BLOCKS` | `POM_NODES` | Effect |
+|---|---|---|---|
+| Old | `off` | empty | Everything by hand |
+| **Default** | `kpi` (also when unset) | empty | KPI text by field reference; everything else by hand |
+| A | `tiles` | empty | Older tile tags `<KpiGrid>` / `<CardGrid>`; the rest by hand |
+| **B** | `tiles` | `chart,timeline,kpi_row,card_grid,table,bullet_list` | All six derived. `python -m scripts.eval_run ... --nodes` sets this |
+
+Each kind in `POM_NODES` switches on alone. `kpi_row` also needs `POM_BLOCKS` to be `kpi` or `tiles`, because `<KpiRow>` expands into field references that `fill_refs` then fills.
+
+## A.2 Every plan kind, by route
+
+These are the 15 kinds of `state.ComponentKindLiteral`. "Hand" means the LLM writes native POM XML from the plan's text.
+
+| Plan kind | Plan content (`planner_schema_typed.py`) | Default | Route A | Route B |
+|---|---|---|---|---|
+| `kpi_row` | `kpi_labels`, `kpi_values`, optional `kpi_deltas`, `kpi_directions`, `kpi_tones`, `kpi_icons` | `<Text ref>` | `<KpiGrid ref>` | `<KpiRow ref>` |
+| `card_grid` | `card_layout`, `cards[]` (`title`, `tag`, `body`, `bullets`, `tone`, `key_phrase`, `icon`), `focus_card` | Hand | `<CardGrid ref>`, tile variants | `<CardGrid ref>`, compositions |
+| `card_grid`, `card_layout: matrix` | also `columns`, `rows` | Hand | Hand | Hand (deferred) |
+| `chart` | `chart_title`, `chart_labels`, `chart_values` or `chart_series` | Hand | Hand | `<Chart ref>` |
+| `table` | `table_columns`, `table_rows` | Hand | Hand | `<Table ref>` |
+| `timeline` | `direction`, `timeline_items[]` (`date`, `label`, `description`) | Hand | Hand | `<Timeline ref>` |
+| `bullet_list` | `bullets` | Hand | Hand | `<Ul ref>` |
+| `process_arrow` | `direction`, `process_steps` | Hand | Hand | Hand (node dropped) |
+| `flow` | `direction`, `flow_steps` | Hand | Hand | Hand (node dropped) |
+| `pyramid` | `direction`, `pyramid_levels` | Hand | Hand | Hand |
+| `tree` | `layout`, `tree_nodes` | Hand | Hand | Hand |
+| `matrix` | `x_axis`, `y_axis`, `quadrants`, `matrix_items` | Hand | Hand | Hand |
+| `title` | `title`, `subtitle` | Hand | Hand | Hand |
+| `narrative`, `caption` | `text` | Hand | Hand | Hand |
+| `layer` | `description`, `layers`, `center`, `nodes`, `connections` | Hand | Hand | Hand |
+
+### When each was introduced
+
+| Date | What | Code | Evidence |
+|---|---|---|---|
+| 2026-10-11 | KPI field references, on by default | `element_refs.py` | `docs/kpi-node-pilot-2026-10-11.md` |
+| 2026-10-12 | KPI tile tags `<KpiGrid>` / `<Kpi>`, route A | `tiles.py` | `docs/tile-nodes-spec-2026-10-12.md` |
+| 2026-10-13 | Card tile tags `<CardGrid>` / `<Card>`, route A | `cards.py` | same, §11 |
+| 2026-10-28 | Chart node; timeline, process arrow and flow nodes | `charts.py`, `sequences.py`, `composed.py` | `docs/eval/chart-node/`, `docs/eval/sequence-nodes/` |
+| 2026-11-01 | KPI and card compositions; table node | `tile_groups.py`, `tables.py` | `docs/eval/composition-convention/`, `docs/eval/table-node/` |
+| 2026-11-02 | **Process arrow and flow nodes dropped**: POM's fixed boxes hold about two words, and the code-drawn steps were card grids under another name | `sequences.py` | `docs/eval/sequence-nodes/` |
+| 2026-11-04 | Bullet node; **five table variants and card `rail` deleted** | `bullets.py` | `docs/eval/bullet-node/`, `docs/syntax-audit-2026-11-04.md` |
+
+## A.3 Native nodes
+
+These are the POM 10.3.0 tags the LLM may write, from `knowledge/core/nodes.yaml`. Every tag below compiled in a test slide at this commit. The attribute lists come from `nodes.yaml`; `tests/unit/test_upstream_reference.py` compiles POM's own reference examples. This project never changes POM's syntax.
+
+### Structure and layout
+
+| Tag | Own attributes | Children |
+|---|---|---|
+| `Slide` | none | any layout or content node |
+| `Theme` | one per colour token, 6-digit hex only | none |
+| `VStack`, `HStack` | `gap`, `alignItems`, `justifyContent`, `flexWrap` | any layout or content node |
+| `Layer` | `w`, `h`, `padding`, `margin`, `backgroundColor`, `border`, `borderRadius`, `opacity`, `shadow` | any node, each with `x` and `y` |
+
+### Content
+
+| Tag | Own attributes | Children |
+|---|---|---|
+| `Text` | `fontSize`, `color`, `textAlign`, `bold`, `italic`, `underline`, `strike`, `subscript`, `superscript`, `fontFamily`, `lineHeight`, `letterSpacing`, `textGradient`, `glow.*`, `outline.*`, `rotate` | inline tags |
+| `Shape` | `shapeType` (required), `text`, `fill.*`, `line.*`, `outline.*`, `glow.*`, `rotate`, and the text attributes | none |
+| `Icon` | `name`, `size`, `color`, `variant`, `bgColor`, `rotate` | none |
+| `Svg` | `w`, `h`, `color` | one `<svg>` |
+| `Ul` | `fontSize`, `color`, `textAlign`, `bold`, `italic`, `strike`, `subscript`, `superscript`, `underline`, `fontFamily`, `lineHeight` | `Li` |
+| `Ol` | as `Ul`, plus `numberType`, `numberStartAt` | `Li` |
+| `Li` | `bold`, `italic`, `strike`, `subscript`, `superscript`, `underline`, `color`, `fontSize`, `fontFamily` | inline tags |
+
+**Inline tags:** `B`, `I`, `U`, `S`, `Sub`, `Sup`, `Span` (`color`, `fontFamily`, `fontSize`, `letterSpacing`), `A` (`href`).
+
+**Common attributes** on most nodes (`core/attributes.yaml`): `id`, `w`, `h`, `grow`, `minW`, `maxW`, `minH`, `maxH`, `padding`, `margin`, `backgroundColor`, `backgroundGradient`, `border`, `borderTop` / `Right` / `Bottom` / `Left`, `borderRadius`, `opacity`, `zIndex`, `position`, `top`, `right`, `bottom`, `left`, `alignSelf`, `shadow`.
+
+### Data and diagrams
+
+| Tag | Own attributes | Children |
+|---|---|---|
+| `Table` | `defaultRowHeight`, `cellBorder.color` / `width` / `dashType` | `Col`, `Tr` |
+| `Col` | `width` (not `w`) | none |
+| `Tr` | `height` | `Td` |
+| `Td` | `fontSize`, `color`, `textAlign`, `bold`, `italic`, `underline`, `strike`, `subscript`, `superscript`, `fontFamily`, `backgroundColor`, `colspan`, `rowspan` | inline tags |
+| `Chart` | `chartType` (`bar`, `line`, `pie`, `area`, `doughnut`, `radar`), `h` (required), `showLegend`, `showTitle`, `title`, `chartColors`, `radarStyle`, `sparkline` | `ChartSeries` |
+| `ChartSeries` | `name` | `ChartDataPoint` |
+| `ChartDataPoint` | `label`, `value` (both required) | none |
+| `Timeline` | `direction`, `dateColor`, `titleColor`, `descriptionColor`, `connectorColor`, `connectorGradient`, `useColorForDate`, `fontFamily`, `w`, `h` | `TimelineItem` |
+| `TimelineItem` | `date`, `title` (both required), `description`, `color`, `dateColor` | none |
+| `ProcessArrow` | `direction`, `itemWidth`, `itemHeight`, `gap`, `fontSize`, `bold`, `italic`, `strike`, `underline`, `highlight`, `fontFamily`, `w`, `h` | `ProcessArrowStep` |
+| `ProcessArrowStep` | `label` (required), `color`, `textColor` | none |
+| `Flow` | `direction`, `nodeWidth`, `nodeHeight`, `nodeGap`, `connectorStyle.*`, `w`, `h` | `FlowNode`, `FlowConnection` |
+| `FlowNode` | `id`, `shape`, `text` (all required), `color`, `textColor`, `width`, `height` | none |
+| `FlowConnection` | `from`, `to` (both required), `label`, `color`, `labelColor` | none |
+| `Pyramid` | `direction`, `fontSize`, `bold`, `fontFamily`, `w`, `h` | `PyramidLevel` |
+| `PyramidLevel` | `label` (required), `color`, `textColor` | none |
+| `Tree` | `layout`, `nodeShape`, `textColor`, `nodeWidth`, `nodeHeight`, `levelGap`, `siblingGap`, `connectorStyle.*`, `w`, `h` | one `TreeItem` |
+| `TreeItem` | `label` (required), `color`, `textColor` | `TreeItem` |
+| `Matrix` | `w`, `h`, `axisLabelColor`, `quadrantLabelColor`, `itemLabelColor` | `MatrixAxes`, `MatrixQuadrants`, `MatrixItem` |
+| `MatrixAxes` | `x`, `y` (label strings, both required) | none |
+| `MatrixQuadrants` | `topLeft`, `topRight`, `bottomLeft`, `bottomRight` (all required) | none |
+| `MatrixItem` | `label`, `x`, `y` (0 to 1; all required), `color`, `textColor` | none |
+| `Line` | `x1`, `y1`, `x2`, `y2` (all required), `color`, `lineWidth`, `dashType`, `beginArrow`, `endArrow` | none |
+| `Arrow` | `from`, `to` (both required), `color`, `lineWidth`, `dashType`, `beginArrow`, `endArrow` | none |
+
+`Image` is deferred and not offered to the LLM.
+
+### Limits to review against
+
+- **POM's flexbox is Yoga.** There is no `alignContent` and no min-content width, `grow="0"` is rejected on `Text`, and `w="max"` grows along the parent's main axis (`docs/syntax-audit-2026-11-04.md` §6).
+- **Item tags reject borders:** `Td`, `Li`, `Col`, `FlowNode`, `TimelineItem`, `ProcessArrowStep`, `PyramidLevel`, `MatrixItem`. The normalizer removes them (`ITEM_BORDER_REMOVED`).
+- **`Td` holds no `Icon` or stack.** Enrichment is composed around core nodes, never inside them.
+- **Native diagrams have small fixed boxes** that only shrink: chevrons 150 × 80, flow nodes 120 × 60, timeline titles 120 px. This is why process arrow and flow left the derived set.
+- **`Theme` is hex only,** with no fonts or alpha.
+- **The normalizer repairs some native XML without a retry,** for example `SHAPE_TYPE_ALIAS`, `ALPHA_COLOR_BLENDED`, `TEXT_BOX_UNSQUEEZED`, `GROW_BAND_ADDED`, `GROW_ROWS_ADDED`, `TEXT_CONTAINER_FLATTENED`, `UNKNOWN_ICON_REMOVED`.
+
+## A.4 Reference bindings
+
+A reference ties something on the slide to the plan by id, so the LLM never types the content. There are five forms.
+
+| Form | Written as | Binds to | Available on |
+|---|---|---|---|
+| **Group** | `<CardGrid ref="levers"/>` | A whole plan component | The six derived tags (and `<KpiGrid>` in route A) |
+| **Item** | `<Card ref="levers.1"/>` | One item, by index from 0 | `<Kpi>`, `<Card>` only |
+| **Field** | `<Text ref="kpis.0.value"/>` | One field of one item | `kpi_row` only: `label`, `value`, `note` |
+| **Marks by name** | `<Highlight column="Fix" color="good"/>` inside the tag | Rows, columns, cells, points or phrases, by their text | `<Table ref>`, `<Ul ref>` only |
+| **POM ids** | `<Arrow from="s1" to="s2"/>` | Another node's `id` | POM's own, unrelated to `ref` |
+
+### Group and item references
+
+```xml
+<CardGrid ref="levers" grow="1">
+  <Card ref="levers.1" title.color="$negativeText" item.backgroundColor="$warningSoft"/>
+</CardGrid>
+
+<HStack grow="1" gap="18">
+  <Card ref="levers.0" w="40%"/>
+  <CardGrid ref="levers" cols="2" w="1" grow="1"/>
+</HStack>
+```
+
+An item tag **inside** its group restyles that item. **Outside**, it places the item anywhere, and the group skips it; this is how the LLM gets flexbox freedom with no new syntax.
+
+### Field references
+
+The LLM draws its own tiles and code fills the text:
+
+```xml
+<HStack gap="12" grow="1">
+  <VStack padding="16" gap="6" backgroundColor="$surfaceAlt">
+    <Text ref="kpis.0.label"/>
+    <Text ref="kpis.0.value"/>
+    <Text ref="kpis.0.note"/>
+  </VStack>
+</HStack>
+```
+
+| Field | Plan key | Code also sets |
+|---|---|---|
+| `label` | `kpi_labels` | Size 16; a role or tone colour if the LLM gave no `$token` |
+| `value` | `kpi_values` | One size per component, the unit as a span, peer ids so values grow together (28 to 96 px; a hero starts at 72 and reaches 120) |
+| `note` | `kpi_deltas` | Size 16; a role or tone colour if the LLM gave no `$token` |
+
+Everything else on the tile (boxes, fills, bars, icons) is the LLM's. Text on a dark fill gets a readable colour. If the LLM leaves out a label, code draws it (`NODE_LABEL_PLACED`, a warning). **Cards have no field references**: `<Text ref="levers.0.title"/>` is an error. They were prototyped for the audit and rejected as a default (`docs/syntax-audit-2026-11-04.md` §5: 46 × the tokens, and swapped fields pass unseen).
+
+### Marks by name
+
+| On | Target | Effect | Rules |
+|---|---|---|---|
+| `<Table ref>` | `row`, `column`, `cell="row / column"`, `phrase` | `fill` (background), `color` (text) | `above` / `below` / `else`, `max` / `min`; `show="arrows"` (`invert`), `show="pills"` and `show="bars"` (those two on `rows` and `ledger` only) |
+| `<Ul ref>` | `item`, `phrase` | `color`, `fill` (on rows only), `bold` | |
+
+Tones are `good`, `bad`, `watch`, `focus`. A name or phrase not in the plan is `NODE_HIGHLIGHT_UNKNOWN` (error). Other tags drop `<Highlight>` with a report.
+
+### Binding rules
+
+- **One nesting level.** A reference is never placed inside another. `<Table ref>` inside `<CardGrid ref>` is removed and becomes `NODE_ITEM_MISSING` (error), because the table is then missing from the slide.
+- **Each component once.** A second copy, or the same item twice, is `NODE_REF_DUPLICATE` (error).
+- **Each drawn component must appear.** Leaving it out, or typing it by hand, is `NODE_ITEM_MISSING` (error).
+- **Wrong kind.** A derived tag on a component with no node (a narrative written as `<CardGrid ref>`) is `NODE_REF_UNKNOWN` (error); the message hands over the component's words so the repair can write it by hand.
+- **Kinds that can never be referenced:** `title` and `layer` (`spec.NO_REF_KINDS`).
+
+### Ids code writes
+
+fit-grow reads these to size peers together. The LLM does not see or write them.
+
+| Id prefix | Marks |
+|---|---|
+| `kpiv<rank>-`, `kpih<rank>-` | KPI values, and a hero value; rank comes from the plan's `weight` |
+| `kpil-` | KPI labels |
+| `kpig-`, `cardg-` | A KPI or card group whose columns code chose, so fit-grow may re-grid it |
+| `card-<cid>-<i>`, `card-<cid>x-<n>` | Items, and their inner boxes |
+| `cardt-`, `cardb-`, `cardn-`, `cardf-` | Card title, body, numeral, and the `bento` focus block |
+| `tbl-` | Table |
+| `lst-`, `lsth-` | Bullet list, and a row head |
+
+## A.5 Derived nodes
+
+### How a tag resolves
+
+1. **Alias:** an old variant name maps to its replacement (`NODE_ATTR_ALIAS`, a report). Saved slides keep working.
+2. **No variant:** on KPI and cards, the design hint can name a word (hero or spotlight gives `bento`, ruled gives `rows`, strip gives `strip`; `NODE_LOOK_FROM_HINT`). Otherwise the first variant whose `requires` hold, along the fallback chain (`NODE_DEFAULT_FROM_CONTENT`).
+3. **Unknown variant:** the default (`NODE_VARIANT_UNKNOWN`, a warning).
+4. **`requires` fails:** the `fallback` chain (`NODE_VARIANT_UNMET`, a warning). The prompt line offers only the variants that fit.
+5. **Emphasis** always comes from the plan (`focus_card`, the hint, or the last step), never from the LLM.
+
+The tables below come from `nodes.<kind>` in `block-variants.yaml`. "In the `.pptx`" was read from compiled files. **Only `table native`, `chart native` / `native labelled` and `bullet_list native` / `native numbered` stay real PowerPoint objects** that a person can edit as one; everything else is loose shapes.
+
+**`requires` checks** (`spec.check`), all on the plan, none on the box: `count_le_N` / `count_ge_3` count items; `layout_grid` / `layout_steps` read `card_layout`; `has_emphasis` means the plan singles out one item; `no_own_numbers` means no item already carries a number or date; `bullets_every_card`; `rows_fit` estimates bullet height; `columns_le_6`; `labels_short` means every label is at most 24 characters with no detail; `one_series`; `chart_is_bar`.
+
+### `chart`: `<Chart ref>`
+
+The chart type, colours and focus bar are code's. `direction="horizontal"` turns native bars. Chart text takes no attribute, so style power lives in `rows`.
+
+| Variant | What it draws | Needs → else | Ignores (reported if written) | In the `.pptx` |
+|---|---|---|---|---|
+| `native` | the chart, one hue, the focus bar in the accent | nothing | `alignItems`, `label`, `value`; only `bar.fill.color` | real chart |
+| `native labelled` | each bar's value written on it, no value axis | `one_series`, `count_le_8`, `chart_is_bar` → `native` | `alignItems`, `value`; only `label.color/bold`, `bar.fill.color` | real chart |
+| `rows` | one row per point: label, a bar, the value as written | `one_series`, `count_le_8` → `native` | `showLegend` | loose shapes |
+
+- **Tag attributes:** `ref`, `variant`, `direction`
+- **Parts:** `title.` (Text), `label.` (Text), `value.` (Text), `bar.` (Shape)
+- **Native attributes passed on:** `showLegend`. **Code-owned, dropped if written:** `chartColors`, `chartType`, `title`, `showTitle`
+- **Recipes:** none
+- **Aliases:** `plain` → `native`, `labelled` → `native labelled`, `focus_label` → `native labelled`, `horizontal` → `native`
+
+### `timeline`: `<Timeline ref>`
+
+The default is chosen from the content: `native` needs short labels with no detail, so a timeline with detail starts at `rail`. A vertical timeline that is not native draws `rows`. With this node on, the planner fills `description` as its own field.
+
+| Variant | What it draws | Needs → else | Ignores (reported if written) | In the `.pptx` |
+|---|---|---|---|---|
+| `native` | POM's timeline: dots on a line, short labels only | `labels_short` → `rail` | `alignItems`, `gap`, `justifyContent`, `band`, `item`; only `date.color`, `title.color`, `description.color`, `marker.fill.color`, `connector.fill.color` | loose shapes |
+| `rail` | dots on a line, date and label alternating above and below | `count_le_7` → `columns` | `band`, `item` | loose shapes |
+| `columns` | a line with a dot per point, one box per point under it | nothing | `band` | loose shapes |
+| `rows` | one point per ruled row: date, head, detail; what a vertical timeline with details draws | nothing | `marker`, `connector`, `band` | loose shapes |
+| `banded` | equal boxes, the date in a solid band: done / now / ahead | nothing | `marker`, `connector` | loose shapes |
+
+- **Tag attributes:** `ref`, `variant`, `direction`
+- **Parts:** `date.` (Text), `title.` (Text), `description.` (Text), `marker.` (Shape), `connector.` (Shape), `band.` (Box), `item.` (Box)
+- **Native attributes passed on:** none. **Code-owned, dropped if written:** `dateColor`, `titleColor`, `descriptionColor`, `connectorColor`, `useColorForDate`
+- **Recipes:** none
+- **Aliases:** `vertical` → `native`, `cards` → `columns`, `alternating` → `rail`
+
+### `kpi_row`: `<KpiRow ref>` and `<Kpi ref>`
+
+Expands into field references (A.4). `cols` is a measured knob that code may overrule. `size="hero"` on an item needs the plan's emphasis item.
+
+| Variant | What it draws | Needs → else | Ignores (reported if written) | In the `.pptx` |
+|---|---|---|---|---|
+| `grid` | separate tiles, icon and label over the value and delta (default) | nothing | `band`, `divider`, `value.bold`, `item.grow`, `item.borderRadius` | loose shapes |
+| `strip` | one shared box, items side by side split by hairlines, one row (at most 5) | `count_le_5` → `grid` | `borderRadius`, `band`, `value.bold`, `item.borderRadius` | loose shapes |
+| `rows` | one item per ruled row: icon badge, label over delta, the value at the right | nothing | `borderRadius`, `band`, `value.bold`, `item.borderRadius` | loose shapes |
+| `banded` | equal boxes, each with a solid coloured band holding icon + label (at most 5) | `count_le_5` → `grid` | `marker`, `divider`, `value.bold`, `item.borderRadius` | loose shapes |
+| `bento` | the emphasis item as one large dark block, the others as rows beside it | `count_ge_3`, `has_emphasis` → `grid` | `band`, `divider`, `value.bold`, `item.borderRadius` | loose shapes |
+
+- **Tag attributes:** `ref`, `variant`, `cols`, `color`, `icon`. On the item tag: `ref`, `variant`, `color`, `icon`, `size`
+- **Parts:** `label.` (Text), `value.` (Text), `delta.` (Text), `icon.` (Icon), `marker.` (Shape), `band.` (Box), `divider.` (Rule), `item.` (Box)
+- **Native attributes passed on:** none. **Code-owned, dropped if written:** none
+- **Recipes:** `filled`, `toned`, `bar`, `dot`, `bare`
+- **Aliases:** `plain` → `grid`, `filled` → `grid`, `toned` → `grid`, `bar` → `grid`, `dot` → `grid`, `bare` → `grid`, `inverted` → `grid`, `divided` → `strip`
+
+### `card_grid`: `<CardGrid ref>` and `<Card ref>`
+
+`rows_fit` (`cards.rows_fit`) estimates bullet lines against a full slide, because bullets set a row's height while body text can shrink. A `card_layout: matrix` plan has no node and stays hand-written.
+
+| Variant | What it draws | Needs → else | Ignores (reported if written) | In the `.pptx` |
+|---|---|---|---|---|
+| `grid` | separate cards: icon, tag, title, body, bullets (default for grid plans) | `layout_grid` → `steps` | `number`, `band`, `bullets`, `divider` | loose shapes |
+| `grid numbered` | cards with a large 01 02 03 above each title | `layout_grid`, `no_own_numbers` → `grid` | `band`, `bullets`, `divider` | loose shapes |
+| `rows` | one card per ruled full-width row: icon, tag over title, body, bullets | `count_le_6`, `rows_fit` → `grid` | `number`, `band`, `bullets`, `item.grow` | loose shapes |
+| `rows numbered` | rows led by a large 01 02 03 | `count_le_6`, `no_own_numbers`, `rows_fit` → `rows` | `icon`, `band`, `bullets`, `item.grow` | loose shapes |
+| `columns` | one column per card: the tag, a coloured pill head, the body, each bullet in its own box | `bullets_every_card`, `count_le_5` → `grid` | `number`, `divider`, `item.grow` | loose shapes |
+| `banded` | boxes with a solid coloured band (icon, title, tag) over body and bullets | `count_le_6` → `grid` | `number`, `bullets`, `divider`, `item.grow` | loose shapes |
+| `bento` | the focus card as one large dark block, the others beside it; at least 500 px wide | `layout_grid`, `count_ge_3`, `count_le_5`, `has_emphasis` → `grid` | `number`, `band`, `bullets`, `divider` | loose shapes |
+| `steps` | cards in a row joined by arrows, the destination dark (default for steps plans) | `layout_steps` → `grid` | `gap`, `number`, `band`, `bullets`, `divider` | loose shapes |
+
+- **Tag attributes:** `ref`, `variant`, `cols`, `color`, `icon`. On the item tag: `ref`, `variant`, `color`, `icon`
+- **Parts:** `tag.` (Text), `title.` (Text), `body.` (Text), `icon.` (Icon), `number.` (Text), `band.` (Box), `bullets.` (Box), `divider.` (Rule), `item.` (Box)
+- **Native attributes passed on:** none. **Code-owned, dropped if written:** none
+- **Recipes:** `column`, `filled`, `outline`, `toned`, `accent_top`
+- **Aliases:** `lifted` → `grid`, `rail` → `steps`, `column` → `grid`, `filled` → `grid`, `outline` → `grid`, `toned` → `grid`, `accent_top` → `grid`, `numerals` → `grid numbered`, `inverted` → `grid`
+
+### `bullet_list`: `<Ul ref>`
+
+`native` is the default and the end of every fallback. `spacing="tight"` keeps points at the top, and fit-grow splits 4+ short points into two real lists. `icons` works on `rows`, up to 6 points.
+
+| Variant | What it draws | Needs → else | Ignores (reported if written) | In the `.pptx` |
+|---|---|---|---|---|
+| `native` | a real editable list: bold lead-ins, accent markers, points spaced to fill its box; 4+ short points split into two columns by themselves | nothing | none | real list (one text box) |
+| `native numbered` | the same list, auto-numbered | `no_own_numbers` → `native` | none | real list (one text box) |
+| `rows` | one ruled row per point: a dot (or an icon), the head over the detail | nothing | none | loose shapes |
+| `rows numbered` | rows with 01 02 03 leading each | `no_own_numbers` → `rows` | none | loose shapes |
+
+- **Tag attributes:** `ref`, `variant`, `icons`, `spacing`
+- **Parts:** `head.` (Run), `detail.` (Run), `marker.` (Marker), `item.` (Box)
+- **Native attributes passed on:** `color`, `textAlign`, `italic`. **Code-owned, dropped if written:** none
+- **Recipes:** none
+- **Aliases:** `plain` → `native`, `icon` → `rows`, `columns` → `native`
+
+### `table`: `<Table ref>`
+
+`native` is the only real PowerPoint table, so a person can drag its columns. Pills and bars work only on `rows` and `ledger`; `icons` only on `ledger`.
+
+| Variant | What it draws | Needs → else | Ignores (reported if written) | In the `.pptx` |
+|---|---|---|---|---|
+| `native` | POM's table: solid header band, striped rows, no borders, bold first column, the hinted row / column tinted | nothing | `alignItems`, `gap`, `justifyContent` | real table |
+| `rows` | one ruled row per table row: the first cell as its title, the other cells to the right | nothing | `cellBorder.color`, `cellBorder.dashType`, `cellBorder.width`, `stripe` | loose shapes |
+| `ledger` | one solid header band (an icon over each column name) over joined, tinted rows | `columns_le_6` → `native` | `cellBorder.color`, `cellBorder.dashType`, `cellBorder.width`, `stripe.bold`, `stripe.color`, `stripe.italic`, `stripe.textAlign`, `stripe.underline` | loose shapes |
+
+- **Tag attributes:** `ref`, `variant`, `icons`
+- **Parts:** `header.` (Cell), `label.` (Cell), `cell.` (Cell), `stripe.` (Cell), `item.` (Box)
+- **Native attributes passed on:** `cellBorder.color`, `cellBorder.width`, `cellBorder.dashType`. **Code-owned, dropped if written:** `defaultRowHeight`, `labels`
+- **Recipes:** `borderless`, `bordered`, `dark_header`, `accent_edge`, `lifted`
+- **Aliases:** `plain` → `native`, `rows numbered` → `rows`, `columns` → `native`, `banded` → `native`, `grid` → `native`, `grid numbered` → `native`, `highlight_row` → `native`, `zebra` → `native`, `dark_header` → `native`
+
+### Names that no longer exist
+
+Table and card names still work as aliases, so saved slides keep drawing.
+
+| Removed | Now draws | Why |
+|---|---|---|
+| Table `rows numbered` | `rows` | Hand-editability: only `native` is a real table (user, 2026-11-04) |
+| Table `columns`, `banded`, `grid`, `grid numbered` | `native` | Same |
+| Card `rail` | `steps` (`grid` on a grid plan) | Spilled from 4 cards (user, 2026-11-04) |
+| Bullet `grid`, `banded` | Unknown, so the default | Removed before merging, as duplicates of the card grid (user, 2026-11-04) |
+| `process_arrow`, `flow` nodes | Hand-written POM | See A.2 |
+
+Older names still read: KPI `plain`, `filled`, `toned`, `bar`, `dot`, `bare`, `inverted`, `divided`, and card `lifted`, `column`, `filled`, `outline`, `toned`, `accent_top`, `numerals`, `inverted`. `arrange` and `layout` also map to compositions, and `<KpiGrid>` to `<KpiRow>` (`NODE_TAG_ALIAS`).
+
+### Never built
+
+`Callout` and `SlideHeader` appear in `spec.DERIVED_TAGS` and `blocks`, but no expander exists. Narratives and titles are written by hand. Matrix `grid` was rendered only.
+
+## A.6 Who owns what, and how style works
+
+| Owner | Controls |
+|---|---|
+| **Code** | Every word and number, verbatim and in plan order; which parts appear and their order; type sizes; word fit; the emphasis item; ids |
+| **LLM** | Layout around the tag; `w`, `h`, `grow`, `min*`, `max*`, `alignSelf`; the variant; every style attribute |
+
+Later layers win: **composition `look` → `tone` → `emphasis` → the hint's or alias's recipe → group attributes → item tag.**
+
+| Written as | Reaches | Example |
+|---|---|---|
+| A box attribute on the group | The group's own box only, no cascade | `backgroundColor="$surfaceAlt"` |
+| `item.<box attribute>` on the group | Every item's box | `item.borderLeft.color="$tone"` |
+| `<part>.<attribute>` on the group | That part in every item | `title.color="$toneText"` |
+| Either, on an item tag | That one item | `<Card ref="levers.1" title.color="$negativeText"/>` |
+
+**Part attribute types** (`compose.part_attrs`):
+
+| Type | Attributes |
+|---|---|
+| Text | `color`, `bold`, `italic`, `underline`, `letterSpacing`, `textAlign`, `textGradient`, `glow.size`, `glow.opacity`, `glow.color`, `outline.size`, `outline.color` |
+| Icon | `name`, `color`, `variant`, `bgColor`, `glow.size`, `glow.opacity`, `glow.color`, `outline.size`, `outline.color` |
+| Shape | `shapeType`, `w`, `h`, `fill.color`, `fill.transparency`, `line.color`, `line.width`, `line.dashType`, `glow.size`, `glow.opacity`, `glow.color` |
+| Rule | `color`, `width` |
+| Cell | `backgroundColor`, `color`, `bold`, `italic`, `underline`, `textAlign` |
+| Run | `color`, `bold`, `italic`, `underline` |
+| Marker | `color` |
+| Box | the box attributes below |
+
+**Box attributes:** `backgroundColor`, `backgroundGradient`, `border`, `border.color`, `border.width`, `border.dashType`, `borderTop.color`, `borderTop.width`, `borderRight.color`, `borderRight.width`, `borderBottom.color`, `borderBottom.width`, `borderLeft.color`, `borderLeft.width`, `padding`, `padding.top`, `padding.right`, `padding.bottom`, `padding.left`, `gap`, `alignItems`, `justifyContent`, `shadow.type`, `shadow.blur`, `shadow.offset`, `shadow.color`, `shadow.opacity`, `opacity`, `w`, `h`, `grow`, `minW`, `maxW`, `minH`, `maxH`, `alignSelf`, `margin`.
+
+**Colours are `$tokens` only.** A typed hex is removed (`LITERAL_COLOR`, a warning), so a theme switch restyles the slide. `$tone`, `$toneSoft`, `$toneText` and `$toneDark` follow each item's plan tone: good is `$positive*`, bad is `$negative*`, watch is `$warning*`, and none is `$accent*`. Charts and timelines have no item tones, so there `$tone*` becomes the accent, with a report.
+
+**Dropped with a report, never followed:** `fontSize`, `fontFamily`, `lineHeight`, `text`, `size`, `highlight` on parts; `position`, `top`, `right`, `bottom`, `left`, `zIndex`, `id` on boxes; and each node's code-owned attributes.
+
+**Style recipes** (`styles:`) are prompt examples, not values the tag accepts as a recipe name. The LLM can write any allowed combination.
+
+## A.7 Validation codes
+
+An **error** goes to the repairer, which costs a call. A **warning** or **report** is logged and the slide proceeds.
+
+| Code | Level | Trigger |
+|---|---|---|
+| `NODE_REF_UNKNOWN` | Error | Bad id or index; a tag on a kind with no node; `<Text ref>` on a card or with field `delta`; a tag from another route |
+| `NODE_REF_DUPLICATE` | Error | The same group or item placed twice |
+| `NODE_ITEM_MISSING` | Error | A drawn component left out, nested in another reference, or missing items |
+| `NODE_ATTR_UNKNOWN` | Error | An invented attribute or part (`foo="1"`, `nosuch.color`) |
+| `NODE_HIGHLIGHT_UNKNOWN` | Error | A `<Highlight>` target or attribute not in the plan or grammar |
+| `NODE_LABEL_MISSING` | Error | A label typed by hand in a tile, where it could sit beside the wrong value |
+| `NODE_XML_INVALID` | Error | A slide with KPI references that cannot be parsed |
+| `NODE_VARIANT_UNKNOWN`, `NODE_VARIANT_UNMET` | Warning | Unknown variant; `requires` failed, fallback drawn |
+| `LITERAL_COLOR` | Warning | A typed colour |
+| `NODE_HIGHLIGHT_LIMIT`, `NODE_HIGHLIGHT_RULE` | Warning | More than 6 marks (all drawn); a value rule on cells without one unit |
+| `NODE_LABEL_PLACED`, `NODE_FIELD_MISSING` | Warning | Code placed a label; a field reference left out |
+| `NODE_ATTR_DROPPED`, `NODE_ATTR_NO_EFFECT` | Report | Code-owned attribute removed; the variant does not draw it |
+| `NODE_ATTR_ALIAS`, `NODE_TAG_ALIAS` | Report | An old name was read |
+| `NODE_DEFAULT_FROM_CONTENT`, `NODE_LOOK_FROM_HINT`, `NODE_TEXT_SPLIT`, `NODE_VERTICAL_ROWS` | Report | Code chose a default; a hint named the look; a label split into head and detail; a vertical timeline drew `rows` |
+
+## A.8 Evidence
+
+**Measured at this commit (free):**
+
+| Check | Result |
+|---|---|
+| Every variant compiled on a sample plan | 28 of 28 |
+| Attribute × variant pairs that silently do nothing | 0 of 3,904 on five nodes; `bullet_list` 0 flagged of 344 on its own probe, after discarding on/off values equal to the default |
+| Unit tests | 2120 pass, with the 4 known failures. Left out: one new test in `b1d1328` that leaks `POM_NODES` and fails 6 later tests; the next local commit, `b2ed3c5`, fixes it |
+
+**Free blind marks.** The user's marks on bare tags against the LLM's own drawing, with no LLM writing the tags. The gate is at least 0.5, and by the user's rule a tie counts as satisfied. The other two columns show how much rests on that rule.
+
+| Node | Node wins | LLM wins | Same | Ties satisfied | Ties split | Ties left out | Source (`docs/eval/`) |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `kpi_row`, `card_grid` | 11 | 2 | 26 | 0.949 | 0.615 | 0.846 | `composition-convention/replay.md` |
+| `chart` | 3 | **7** | 43 | 0.868 | **0.462** | **0.300** | `chart-node/replay.md` |
+| `timeline` | 14 | 3 | 6 | 0.870 | 0.739 | 0.824 | `sequence-nodes/replay.md` |
+| `table` | 10 | 2 | 54 | 0.970 | 0.561 | 0.833 | `table-node/replay.md` |
+| `bullet_list` | 17 | 5 | 6 | 0.821 | 0.714 | 0.773 | `bullet-node/replay.md` |
+
+**Card stress review** (8 variants × 8 cases, `docs/syntax-audit-2026-11-04.md` §7): 33 pass, 23 warn, 8 break, and all 8 breaks are the 280 px box. The other nodes had the wider audit run before this round's changes, not a re-run.
+
+**Paid same-plan check** (22 saved plans, each drawn by routes A and B, first run 2026-11-04, $1.40, `docs/eval/nodes-paid/README.md`):
+
+| | Route A | Route B |
+|---|---:|---:|
+| Compiled first try | 21 of 22 | 16 of 22 |
+| Repair passes | 1 | 10 |
+| Placeholder slides | 0 | 1 |
+| Plan words lost | 0 | 12, on 2 slides |
+| Cost | $0.675 | $0.726 |
+| Blind marks | 4 | 8 (10 the same) |
+
+So the first run did **not** meet the gate (no words lost, no placeholder, B wins the marks). Five causes were fixed, in `05a69db` and `98e800d`, and the 6 failed slides were set for a rerun. See A.9 item 1 for that rerun's status.
+
+**Not yet run:** the full-deck run on fresh plans (`docs/eval/nodes-deck/README.md`, about $1.05, stops at $2). It is the first test of the planner's timeline `description` field and of the real repair cost.
+
+## A.9 Open points for review
+
+**Evidence**
+
+1. **The rerun's result is not in the repo.** `docs/eval/nodes-deck/README.md` says the same-plan check passed the gate; `docs/eval/nodes-paid/README.md` still says "gate not met yet", and `0aaeab5` ("gate confirmed") only records the gate's wording. No `nodes-b6` results exist in `docs/` or on the build PC. Until they are added, treat the pass as unverified.
+2. **`chart` passes only because ties count as satisfied.** The LLM won 7 of the 10 decisive pairs (0.462 with ties split, 0.300 with ties left out). Every other node stays above 0.5 under all three rules.
+3. **The silent-attribute probe proves an attribute reaches the XML,** not that it changes the picture.
+
+**Design**
+
+4. **Three variant vocabularies share one YAML.** `nodes` is what route B reads, `tile_nodes` is route A's, and `blocks` holds the 1a route's plus the prompt phrases for four nodes. Route A's code (`tiles.py`, `cards.py`) sits beside `tile_groups.py`, which reuses parts of it. Should route A go once B is the default?
+5. **Code that production does not call.** `validate.check_skeleton`, `prompt_lines.py` and most `native.py` fillers are reached only from the 1a harnesses (`scripts/node_test.py`, `scripts/phase0b/expand.py`) and tests. In `native.py`, `x`, `number`, `chart`, `_direction` and `LAYOUT` are live.
+6. **Words that break spec D2** ("a word means the same on every block"): timeline `rail` and `columns` draw differently from what the words meant on cards. Field `note` and part `delta.` also name the same thing.
+7. **Should `NODE_ATTR_UNKNOWN` stay an error?** Code draws the block correctly without the attribute, so an invented name pays for a repair. The first paid run had 5 such first-try errors, since aliased.
+8. **Only 5 of 28 variants stay real PowerPoint objects.** The user weighs hand-editing heavily; `rows` and `ledger` on tables were kept knowingly.
+
+**Known limits**
+
+9. **Narrow boxes.** All variants break in a 280 px box, and `requires` checks only content, never the box. `reflowNarrow` in fit-grow helps columns of code-drawn items, but a composition cannot switch at that point, because fit-grow runs after expansion. How often real slides get such a box is not measured.
+10. **`rows_fit` assumes a full slide body.** Card `rows` beside another component can still overflow.
+11. **`grid` spills on 5 to 6 cards with three bullets each.** Left unfixed on purpose: none of the 63 saved `grid` plans with 5+ cards has bullets. Re-count if the planner changes.
+12. **Layers over derived blocks.** The LLM cannot know where a block ends after fit-grow. Anchors (Part B §13.2) are not built, and a missed `<Arrow>` id is only a compile warning.
+13. **No result is recorded for `<Highlight>` written by a real generator on lists,** which the bullet node still owes.
+14. **Route A lacks the attribute filter.** `POM_BLOCKS=tiles` without `POM_NODES` does not report attributes that do nothing.
+15. **Visual polish:** a long tag on one `columns` card drops its pill below its peers; a `bento` box needs at least 500 px, stated in the prompt but not enforced.
+16. **Still open from the audit:** `docs/syntax-audit-2026-11-04.md` §7 decisions 3, 6, 7, 8, 9 and 10, and whether callout and header stay hand-written.
+
+## A.10 Where the code is
+
+| Path | Holds |
+|---|---|
+| `src/knowledge/core/block-variants.yaml` | `nodes` (route B), `tile_nodes` (route A), `blocks` |
+| `src/knowledge/core/nodes.yaml`, `attributes.yaml` | The native allowlist and attributes |
+| `src/compiler/nodes/composed.py` | One interface for all six nodes; missing-node and wrong-kind checks |
+| `src/compiler/nodes/compose.py` | Shared attribute reading, `$tone`, the no-effect filter |
+| `src/compiler/nodes/spec.py` | YAML loading, `requires` checks, `POM_NODES` |
+| `charts.py`, `sequences.py`, `tile_groups.py`, `tables.py`, `bullets.py` | The six expanders |
+| `element_refs.py` | Field references and `fill_refs` |
+| `tiles.py`, `cards.py` | Route A's tile tags, parts reused by `tile_groups.py` |
+| `src/agents/validator.py` | Where expansion runs, before `normalize_xml` |
+| `src/node/fit-grow.js` | Type sizing, peer groups, regrid, reflow |
+
+The node tests, free and with no API key:
+
+```bash
+pytest tests/unit/test_block_variant_names.py tests/unit/test_tile_groups.py tests/unit/test_table_nodes.py tests/unit/test_bullet_nodes.py tests/unit/test_sequence_nodes.py tests/unit/test_cards.py tests/unit/test_attribute_layer.py tests/unit/test_node_prompts.py -q
+```
+
+---
+
+# Part B: design record (2026-10-27 to 2026-11-03)
+
+Kept as written, with section numbers unchanged, apart from notes marked **Now:** where the text would mislead. Part A is the current state.
+
+**Superseded since this was written:** `variant` on an item is read as an alias, not dropped (§2.2). A nested or missing component is now an error through `composed.unplaced`, although `validate.check_skeleton` stays unwired (§12.6, §13.3). Of §13.5, the merge and the unit tests are done; the `NODE_ATTR_UNKNOWN` severity and the anchor decision are not, and the paid run went ahead without them. The undated evidence in §6 and the old variant names in §5, §7 and §11 predate the deletions.
+
+## One composition convention for every derived node (spec draft, 2026-10-27)
 
 Status: **approved by the user, 2026-10-27**: D1–D5, plus the §8 replacement and edits C1–C14 from
 `docs/eval/composition-left/README.md` (folded in below). Build per §10; the 8 remaining blocks go one block per
@@ -24,7 +543,7 @@ Builds on:
 | D4 | Today's style variant names | **They leave the tag.** `plain filled toned bar dot bare inverted` (KPI) and `lifted column filled outline toned accent_top inverted` (cards) become **style recipes**: 1–4 attributes each with `item.` / `$tone`, down from 6–34. They stay in `block-variants.yaml` for the prompt's examples and for the hint mapping. Emphasis and tone colours become part of each composition's default look (§3). |
 | D5 | Where the theme defaults live | **One place: `block-variants.yaml` (renamed `nodes`), one `look` per composition, written only in palette tokens and `$tone*`.** `palettes.yaml` keeps supplying the token values, and `house-style.yaml` keeps the type ramp. Resolution order: composition look → group attributes → item attributes (§4). |
 | D6 | KPI compositions | `grid` (default) · `strip` · `rows` · `banded` · `bento` (rendered, §6) |
-| D7 | Card compositions | `grid` (default) · `grid numbered` · `rows` / `rows numbered` · `columns` · `banded` · `bento` · `steps` · `rail` (rendered: `rows numbered`, `columns`, `banded`, `bento`, §6) |
+| D7 | Card compositions | `grid` (default) · `grid numbered` · `rows` / `rows numbered` · `columns` · `banded` · `bento` · `steps` · `rail` (rendered: `rows numbered`, `columns`, `banded`, `bento`, §6). **Now:** `rail` removed (A.5) |
 
 ## 1. Why one convention
 
@@ -108,8 +627,8 @@ MODIFIER = numbered | labelled
 quotation is a content rule of `native`, not a word). A later block that needs a structure no word covers
 adds one word to this table, with its meaning. It never reuses a word with a new meaning.
 - **`ledger`** (table, user 2026-11-01): one solid header band, an icon over each column name (the tag's
-  `icons`), over joined rows tinted by turns. The table also takes the shared `grid` / `grid numbered` (every
-  cell its own card under the header; `labels="inside"` writes each column name in its cards instead).
+  `icons`), over joined rows tinted by turns. The table also took the shared `grid` / `grid numbered`. **Now:**
+  both removed, along with `labels` (A.5).
 
 **Head / detail split (C10).** Where a composition shows a string item as a head and a detail, code splits it
 at the first " — " and only then at ": ", so "Phase 1: Foundation — detail" gives the head "Phase 1:
@@ -244,7 +763,7 @@ Fields: `kpi_row` = `kpi_labels / kpi_values / kpi_deltas / kpi_tones / kpi_icon
 | `banded` | a `band.` (icon, title, tag at right) over body + bullets | ≤ 6 cards → `grid` | band `$tone`, body `$surfaceAlt` | band `$panelDark` |
 | `bento` | the focus card as a large block, the others 2 + 1 beside it | `focus_card` set, 3–5 cards → `grid` | big `$panelDark`; small cards toned | is the big block |
 | `steps` (default for `card_layout: steps`) | today's steps (arrows; numbered unless dated) | as today | `lifted` | the destination |
-| `rail` | today's rail | as today | `outline` | the destination |
+| `rail` | **Now:** removed, the name draws `steps` (A.5) | | | |
 
 ## 6. Proof (free): the sheets
 
@@ -364,7 +883,7 @@ Drawn and rendered in `docs/eval/composition-left/` (R1; the hand-written XML ea
 
 | Block (tag) | Compositions (`variant`, default first) | requires → fallback | Becomes a style recipe |
 |---|---|---|---|
-| table (`<Table>`) | `native` · `rows` / `rows numbered` · `columns` · `banded` | `columns`: ≤ 5 rows, ≤ 6 columns; `banded`: ≤ 6 rows → `native` | `plain` (default look), `zebra` (`stripe.`), `dark_header` (`header.` / `label.`); `highlight_row` = emphasis look; `minimal` dropped (C2) |
+| table (`<Table>`) | **Now:** `native` · `rows` · `ledger` (A.5). Approved then: `native` · `rows` / `rows numbered` · `columns` · `banded` | `ledger`: ≤ 6 columns → `native` | `plain` (default look), `zebra` (`stripe.`), `dark_header` (`header.` / `label.`); `highlight_row` = emphasis look; `minimal` dropped (C2) |
 | chart (`<Chart>`) | `native` · `native labelled` · `rows` | `labelled` / `rows`: one series, ≤ 8 points (bar for `labelled`) → `native` | `focus_label` = emphasis look of `native labelled`; `horizontal` → `direction` |
 | bullet_list (`<Ul>`, user 2026-11-04: `grid` / `banded` deleted as the card grid's looks, `docs/eval/bullet-node/`) | `native` · `native numbered` · `rows` (optional `icons`, ≤ 6 points) / `rows numbered` | numbered: no own numbers → `native` / `rows`; anything that cannot be composed → `native`, POM's real list | `lead` = `native` default; `icon` = `rows` + `icons`; `columns` = fit-grow's automatic split (4+ short points) |
 | timeline (`<Timeline>`) | `native` · `rail` · `columns` · `rows` · `banded` | `native`: every label ≤ 24 characters with no detail → else `rail` (dots on a line, date / head / detail alternating above and below); `rail`: ≤ 7 points → else `columns` (a box per point under the line). Default chosen from content (2026-11-02) | `vertical` → `direction`; `cards` → `columns`; `alternating` → `rail` |
@@ -485,7 +1004,7 @@ and results in `docs/eval/ownership-probe/`.
 | Layer | What | Who writes it | Changed by us? |
 |---|---|---|---|
 | 1 native POM nodes | `Text`, `Shape`, `VStack` / `HStack`, `Layer`, `Line`, `Arrow`, `Table`, `Chart`, `Ul`, `Timeline`, `ProcessArrow`, `Flow`, `Pyramid`, `Tree`, `Matrix`… | the LLM (free XML), or code inside a composition node | **never.** Fixed syntax (POM 10.3.0); we only compose around it |
-| 2 composition nodes | `<Tag ref variant …/>`: `KpiRow`, `CardGrid`, `Chart`, `Table`, `Timeline` today (`src/compiler/nodes/`: `tile_groups`, `cards`, `charts`, `sequences`, `tables`) | the LLM places the tag; code expands it from the plan into layer-1 nodes | yes, one kind at a time behind `POM_NODES` |
+| 2 composition nodes | `<Tag ref variant …/>`: `KpiRow`, `CardGrid`, `Chart`, `Table`, `Timeline`, and **now** `Ul` (`src/compiler/nodes/`: `tile_groups`, `cards`, `charts`, `sequences`, `tables`, `bullets`) | the LLM places the tag; code expands it from the plan into layer-1 nodes | yes, one kind at a time behind `POM_NODES` |
 | 3 free LLM XML | slide layout, header (`title`), decor and arrow layers (`layer`), and any block with no node | the LLM | prompt and knowledge only |
 
 ### 12.2 The rule
@@ -512,7 +1031,7 @@ tags, `<Highlight>` in `<Table>`). A ref inside an LLM card is fine (probe d1).
 - **A kind becomes a node only if its free replay and the user's blind marks beat the LLM.** process_arrow and flow
   were dropped on 2026-11-02 (`claude/left-blocks-build-0fe007`, f49fab6): POM's fixed-size chevrons and flow boxes hold
   about 2 words, and the code-drawn steps were card grids under another name. They stay layer-1 native nodes that the
-  LLM draws. This branch's `block-variants.yaml` still lists them under `nodes:`, and the merge must take f49fab6.
+  LLM draws. **Now:** merged.
 - **Every kind keeps a native fallback** (`variant="native"`, or the `requires` → `fallback` chain).
 - **One source of truth:** `block-variants.yaml` (`nodes.<kind>`: tag, parts, compositions, styles, aliases). It is read
   by `spec.py` and guarded by the R8 test (`tests/unit/test_block_variant_names.py`).
@@ -539,9 +1058,9 @@ whose final size code or fit-grow decides. The LLM writes `<KpiRow ref/>` and ne
 
 | Status | Kinds |
 |---|---|
-| node (layer 2) | kpi_row (KpiRow), card_grid (CardGrid), chart, table, timeline (after `claude/left-blocks-build-0fe007` merges) |
+| node (layer 2) | kpi_row (KpiRow), card_grid (CardGrid), chart, table, timeline, bullet_list (all merged, **Now:** 2026-11-04) |
 | native, drawn by the LLM (layer 1 / 3) | process_arrow, flow (dropped 2026-11-02), pyramid, tree, matrix (C9; matrix `grid` only rendered), title / header, layer |
-| undecided | **bullet_list** (compositions approved in §8, not built; 66 of 142 saved lists split "Head: detail", so `rows` / `grid` have a case), **callout** (narrative: one item, so the gain is only the quote rule C5; candidate to stay LLM-drawn), **header** (`title` is in `NO_REF_KINDS`; keep it LLM-drawn unless a blind sheet says otherwise) |
+| undecided | **Now:** bullet_list is a node (A.5). **callout** (narrative: one item, so the gain is only the quote rule C5; candidate to stay LLM-drawn), **header** (`title` is in `NO_REF_KINDS`; keep it LLM-drawn unless a blind sheet says otherwise) |
 
 ### 13.2 Fixing the layer risk (proposal, in order)
 
