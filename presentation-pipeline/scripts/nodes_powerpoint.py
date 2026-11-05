@@ -147,6 +147,7 @@ def bundle(out: Path) -> Path:
 def main() -> int:
     out = CP.OUT / LABEL_NAME
     shutil.rmtree(out, ignore_errors=True)
+    (out.parent / f"{out.name}.zip").unlink(missing_ok=True)   # a failed run must not leave an old zip to email
     out.mkdir(parents=True)
     checks: dict = {}
     pairs = same_plan(out, checks)
@@ -154,7 +155,10 @@ def main() -> int:
     n = decks(out, checks)
     (out / "checks.json").write_text(json.dumps(checks, indent=1), encoding="utf-8")
     left = {k: sum(c[k] for c in checks.values()) for k in ("tables", "zero_lines_solid", "default_style", "band_rows")}
+    made = list((out / "slides").rglob("presentation.pptx"))
+    fonts = sum(any(x.endswith(".fntdata") for x in zipfile.ZipFile(p).namelist()) for p in made)
     print(f"pairs on the blind sheet: {len(pairs)}; deck slides: {n}; in the tables: {left}")
+    print(f"slides with embedded fonts: {fonts} of {len(made)}")
     if not pairs and not n:
         print("Nothing was drawn: see the lines above (no saved slides, or PowerPoint did not export).")
         return 1
