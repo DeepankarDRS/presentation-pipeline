@@ -28,6 +28,7 @@ from scripts import composition_paid as CP  # noqa: E402
 from scripts.kpi_replay import compile_slide  # noqa: E402
 from scripts.node_test_sheet import GAP, H, LABEL, PER_SHEET, W  # noqa: E402
 from src.compiler.compiler_client import deck_font  # noqa: E402
+from src.compiler.font_embed import embed_deck_fonts  # noqa: E402
 from src.compiler.screenshot import render_screenshots  # noqa: E402
 
 LABEL_NAME = "nodes-ppt"
@@ -52,6 +53,7 @@ def draw(arm: str, xml: str, theme: str, dest: Path, checks: dict) -> Path | Non
         print(f"  NOT COMPILED {dest}: {str(done['res'].get('diagnostics'))[:200]}", flush=True)
         return None
     checks[str(dest.relative_to(dest.parents[2]))] = table_checks(pptx)
+    embed_deck_fonts(pptx)   # a PC without Inter would otherwise draw another font and the layout drifts
     res = render_screenshots(str(pptx), str(dest))
     if not res.ok or not res.slides:
         print(f"  NOT RENDERED {dest}: {res.error}", flush=True)
