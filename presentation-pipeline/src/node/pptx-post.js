@@ -54,6 +54,26 @@ export function centreCells(slideXml, marginOf = cellMargin) {
   });
 }
 
+/** PowerPoint draws a zero-width line as a hairline, in its colour (LibreOffice draws nothing): any line of width 0, on a
+ * table cell or a shape, becomes no line. Seen on the test PC's renders, 2026-11-05: black lines on every native table. */
+export function noHairlines(slideXml) {
+  return slideXml
+    .replace(/<a:(ln[LRTB]?)\b([^>/]*\bw="0"[^>/]*)>[\s\S]*?<\/a:\1>/g, '<a:$1$2><a:noFill/></a:$1>')
+    .replace(/<a:(ln[LRTB]?)\b([^>/]*\bw="0"[^>/]*)\/>/g, '<a:$1$2><a:noFill/></a:$1>');
+}
+
+/** A table shows only the colours its cells name: POM marks every table Medium Style 2 with banded rows, so in PowerPoint
+ * a cell with no fill of its own took the style's stripe. "No Style, No Grid" has no fill and no lines of its own. */
+const NO_TABLE_STYLE = "{2D5ABB26-0587-4C30-8999-92F81FD0307C}";
+export function plainTableStyle(slideXml) {
+  return slideXml.replace(/<a:tblPr\b[^>]*?(?:\/>|>[\s\S]*?<\/a:tblPr>)/g, (pr) => {
+    const bare = pr.replace(/\sbandRow="1"/, "");
+    return /<a:tableStyleId>/.test(bare)
+      ? bare.replace(/<a:tableStyleId>[^<]*<\/a:tableStyleId>/, `<a:tableStyleId>${NO_TABLE_STYLE}</a:tableStyleId>`)
+      : bare;
+  });
+}
+
 /** The chart-post spec of every <Chart> of a POM slide, in document order (null: none). Colour tokens are
  * resolved from the slide's <Theme>. */
 function themeToken(pomXml) {
@@ -150,7 +170,7 @@ export async function postProcessPptx(buffer, { charts = [], lists = [] } = {}) 
   for (const name of Object.keys(zip.files).filter((n) => SLIDE_RE.test(n))) {
     const xml = await zip.file(name).async("string");
     const k = Number(/slide(\d+)\.xml$/.exec(name)[1]) - 1;
-    const out = listPost(deckTypeface(centreCells(xml)), lists[k]).replace(/(<a:buAutoNum\b[^>]*?) startAt="1"/g, "$1");
+    const out = listPost(noHairlines(plainTableStyle(deckTypeface(centreCells(xml)))), lists[k]).replace(/(<a:buAutoNum\b[^>]*?) startAt="1"/g, "$1");
     if (out !== xml) zip.file(name, out);
   }
   if (charts.some(Boolean)) {

@@ -84,7 +84,8 @@ def plan_texts(comp: dict) -> list[str]:
             out += [str(c.get("title") or ""), str(c.get("tag") or ""), body, *bullets]
         return out
     if kind == "chart":
-        return [str(x) for x in cd.get("chart_labels") or []]
+        return [str(x) for x in cd.get("chart_labels") or []] + [str(s.get("name") or "") for s in cd.get("chart_series") or []
+                                                                 if isinstance(s, dict)]
     if kind == "table":
         return [str(x) for x in cd.get("table_columns") or []] + [str(x) for r in cd.get("table_rows") or [] for x in r]
     if kind == "timeline":
@@ -94,11 +95,22 @@ def plan_texts(comp: dict) -> list[str]:
     return []
 
 
+def legend_hidden(xml: str) -> str:
+    """The XML without the series names a reader cannot see: those of a chart whose legend is off."""
+    def strip(m: re.Match) -> str:
+        return m.group(0) if 'showLegend="false"' not in m.group(1) else re.sub(r'(<ChartSeries\b[^>]*)\sname="[^"]*"', r"\1", m.group(0))
+    return re.sub(r"<Chart\b([^>]*)>.*?</Chart>", strip, xml, flags=re.S)
+
+
 def missing_words(final_xml: str, plan: dict) -> list[str]:
     """Plan texts the slide does not show: under 80% of their words on it (a split or wrapped text still counts)."""
     # also with inline tags closed up: a number and its unit are one word split by a span ("$48.2<Span>M</Span>")
     closed = re.sub(r"</?(?:Span|B|I|U|S|Mark)(?=[\s>/])[^>]*>", "", final_xml)
-    seen, out = validate.xml_words(final_xml) | validate.xml_words(closed), []
+    seen, out = validate.xml_words(legend_hidden(final_xml)) | validate.xml_words(legend_hidden(closed)), []
+    for m in re.finditer(r"<Chart\b([^>]*)>(.*?)</Chart>", final_xml, re.S):   # a legend shows its series names
+        if 'showLegend="false"' not in m.group(1):
+            for name in re.findall(r'<ChartSeries\b[^>]*\sname="([^"]*)"', m.group(2)):
+                seen |= set(validate.words(name))
     for comp in plan.get("components") or []:
         for t in plan_texts(comp):
             ws = validate.words(t)

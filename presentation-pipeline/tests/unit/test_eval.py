@@ -292,8 +292,8 @@ def test_gj_h1_case_matches_golden_deck():
 def test_nodes_flag_sets_the_route_and_max_cost_stops_before_the_next_run(tmp_path, monkeypatch):
     import json
     from scripts import eval_run as ER
-    monkeypatch.delenv("POM_NODES", raising=False)
-    monkeypatch.delenv("POM_BLOCKS", raising=False)
+    monkeypatch.setenv("POM_NODES", "")     # setenv, so the --nodes switches are undone after this test
+    monkeypatch.setenv("POM_BLOCKS", "")
     seen = []
 
     def fake_case(case, repeat):

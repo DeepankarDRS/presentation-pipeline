@@ -505,6 +505,30 @@ def _is_rest_colour(c: str) -> bool:
     return hi - lo < 0.12 or (hi + lo) / 2 > 0.78
 
 
+_CHART_BLOCK_RE = re.compile(r"<Chart\b([^>]*)>(.*?)</Chart>", re.S)
+_SERIES_NAME_RE = re.compile(r'<ChartSeries\b[^>]*\sname="([^"]*)"')
+_LEGEND_OFF_RE = re.compile(r'(\sshowLegend\s*=\s*)"false"')
+
+
+def _restore_legends(xml: str) -> tuple[str, list[str]]:
+    """A chart of two or more series with its legend off and no key: the bars are not told apart (CHEFFIN, 2026-11-05: three
+    colours, nothing naming them). A key is the series names written on the slide (chart.yaml teaches a key in the title
+    row), and those charts keep their legend off."""
+    shown = {w.lower() for w in re.findall(r"\w+", re.sub(r"<[^>]+>", " ", xml))}
+    restored: list[str] = []
+
+    def _fix(m: re.Match) -> str:
+        names = _SERIES_NAME_RE.findall(m.group(2))
+        if len(names) < 2 or not _LEGEND_OFF_RE.search(m.group(1)):
+            return m.group(0)
+        if all(w.lower() in shown for n in names for w in re.findall(r"\w+", n)):
+            return m.group(0)
+        restored.extend(names)
+        return m.group(0).replace(m.group(1), _LEGEND_OFF_RE.sub(r'\1"true"', m.group(1)), 1)
+
+    return _CHART_BLOCK_RE.sub(_fix, xml), restored
+
+
 def _chart_focus(xml: str) -> tuple[str, dict[str, int]]:
     counts = {"latest": 0, "named": 0, "one_hue": 0}
     headline = _headline(xml)
@@ -684,6 +708,10 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
         if dropped:
             note("BARE_OBJECT_ATTR_DROPPED", "Dropped attribute(s) whose value is a word where POM reads an object "
                  f"(a shadow word becomes a dot-form shadow): {', '.join(sorted(set(dropped)))}.")
+        xml, restored = _restore_legends(xml)
+        if restored:
+            note("CHART_LEGEND_RESTORED", "Turned the legend on for a chart of several series with no key on the slide: "
+                 f"{', '.join(restored)}.")
         xml, n = _expand_border_shorthand(xml)
         if n:
             note("BORDER_SHORTHAND_EXPANDED", f'Rewrote {n} CSS-style border.width="t r b l" as per-side borders.')

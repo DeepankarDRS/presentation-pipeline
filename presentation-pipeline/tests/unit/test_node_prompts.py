@@ -1,6 +1,8 @@
 """The prompts and the repair path of a slide whose components code draws (POM_NODES): what the generator and the
 repairer are actually given. Found by running the graph with a fake LLM, 2026-11-04."""
 
+from pathlib import Path
+
 import pytest
 
 from src.agents import context_builder, generator
@@ -248,3 +250,87 @@ def test_prompt_says_what_has_no_ref_tag_and_that_peers_share_a_panel():
 def test_table_line_gives_the_words_for_a_heading():
     _, user = prompts(dict(TABLE, content_summary="FLIPCART vs ZAROMA Key Metrics"))
     assert "about: FLIPCART vs ZAROMA Key Metrics" in user and "short heading" in user
+
+
+# ── what the test PC's PowerPoint renders showed, 2026-11-05 ─────────────────
+
+CHART3 = '<Slide><VStack>{}<Chart showLegend="false" chartType="bar"><ChartSeries name="Actual CPC"><ChartDataPoint label="A" value="1"/></ChartSeries><ChartSeries name="Allowable CPC"><ChartDataPoint label="A" value="1"/></ChartSeries></Chart></VStack></Slide>'
+
+
+def test_a_chart_of_several_series_with_no_key_gets_its_legend():
+    from src.compiler.normalizer import _restore_legends
+    out, names = _restore_legends(CHART3.format(""))
+    assert 'showLegend="true"' in out and names == ["Actual CPC", "Allowable CPC"]
+
+
+def test_a_chart_with_a_key_on_the_slide_or_one_series_keeps_its_legend_off():
+    from src.compiler.normalizer import _restore_legends
+    keyed = CHART3.format('<Text>Actual CPC</Text><Text>Allowable CPC</Text>')
+    assert _restore_legends(keyed) == (keyed, [])
+    one = '<Chart showLegend="false"><ChartSeries name="Revenue"><ChartDataPoint label="A" value="1"/></ChartSeries></Chart>'
+    assert _restore_legends(one) == (one, [])
+
+
+def test_a_drawn_chart_keeps_the_legend_when_the_llm_turns_it_off():
+    from src.compiler.normalizer import normalize_xml
+    chart = {"component_id": "c", "kind": "chart", "count": 1, "content_summary": "x", "design_hint": "",
+             "content_data": {"chart_type": "bar", "chart_labels": ["A", "B"],
+                              "chart_series": [{"name": "Actual CPC", "values": ["1", "2"]}, {"name": "Allowable CPC", "values": ["3", "4"]}]}}
+    r = composed.expand(slide('<Chart ref="c" showLegend="false"/>'), plan(chart))
+    out = normalize_xml(r["xml"])
+    assert 'showLegend="true"' in out["cleaned_xml"] and any(i["code"] == "CHART_LEGEND_RESTORED" for i in out["issues"])
+
+
+def test_the_word_check_counts_series_names_only_when_a_reader_can_see_them():
+    from scripts import composition_paid as CP
+    chart = {"component_id": "c", "kind": "chart", "content_data": {"chart_labels": ["A"], "chart_series": [{"name": "Actual CPC"}, {"name": "Allowable CPC"}]}}
+    hidden = CHART3.format("").replace('label="A"', 'label="A"')
+    assert [m for m in CP.missing_words(hidden, plan(chart))] == ["c: Actual CPC", "c: Allowable CPC"]
+    assert CP.missing_words(hidden.replace('showLegend="false"', 'showLegend="true"'), plan(chart)) == []
+    assert CP.missing_words(CHART3.format("<Text>Actual CPC</Text><Text>Allowable CPC</Text>"), plan(chart)) == []
+
+
+def _node(js):
+    import json
+    import shutil
+    import subprocess
+    if not shutil.which("node"):
+        pytest.skip("node not installed")
+    r = subprocess.run(["node", "--input-type=module", "-e", js], capture_output=True, text=True, cwd=Path(__file__).resolve().parents[2])
+    assert r.returncode == 0, r.stderr
+    return json.loads(r.stdout)
+
+
+def test_zero_width_lines_become_no_line_on_any_table_or_shape_and_real_lines_stay():
+    out = _node("""import { noHairlines as f } from './src/node/pptx-post.js';
+      console.log(JSON.stringify([
+        f('<a:tcPr><a:lnL w="0"><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:lnL><a:lnB w="12700"><a:solidFill><a:srgbClr val="CAD5E4"/></a:solidFill></a:lnB></a:tcPr>'),
+        f('<p:spPr><a:ln w="0"><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:ln></p:spPr>'),
+        f('<p:spPr><a:ln w="0"/></p:spPr>'),
+        f(f('<a:lnL w="0"><a:solidFill/></a:lnL>'))]));""")
+    assert '<a:lnL w="0"><a:noFill/></a:lnL>' in out[0] and 'w="12700"><a:solidFill><a:srgbClr val="CAD5E4"/>' in out[0]
+    assert out[1] == '<p:spPr><a:ln w="0"><a:noFill/></a:ln></p:spPr>' and out[2] == out[1]
+    assert out[3] == '<a:lnL w="0"><a:noFill/></a:lnL>'
+
+
+def test_every_table_loses_the_default_style_and_its_bands():
+    out = _node("""import { plainTableStyle as f } from './src/node/pptx-post.js';
+      console.log(JSON.stringify([
+        f('<a:tblPr firstRow="1" bandRow="1"><a:tableStyleId>{5C22544A-7EE6-4342-B048-85BDC9FD1C3A}</a:tableStyleId></a:tblPr>'),
+        f('<a:tblPr bandRow="1"/>')]));""")
+    assert out[0] == '<a:tblPr firstRow="1"><a:tableStyleId>{2D5ABB26-0587-4C30-8999-92F81FD0307C}</a:tableStyleId></a:tblPr>'
+    assert out[1] == "<a:tblPr/>"
+
+
+def test_a_compiled_native_table_has_no_zero_lines_or_default_style(tmp_path):
+    import re
+    import zipfile
+    from src.agents.style_resolver import resolve_theme
+    from src.agents.validator import normalize_and_compile
+    r = composed.expand(slide('<Table ref="gaps"/>'), plan(TABLE))
+    ok, cr = normalize_and_compile(r["xml"], resolve_theme("corporate-slate")["element"], tmp_path)
+    assert ok, cr
+    z = zipfile.ZipFile(tmp_path / "presentation.pptx")
+    x = z.read("ppt/slides/slide1.xml").decode("utf-8")
+    assert not re.search(r'<a:ln[LRTB] w="0"><a:solidFill', x) and "<a:noFill/></a:lnL>" in x
+    assert "5C22544A" not in x and 'bandRow="1"' not in x
