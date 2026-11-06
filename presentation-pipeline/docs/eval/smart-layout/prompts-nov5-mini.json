@@ -1,0 +1,87 @@
+[
+ {
+  "slide": 0,
+  "kinds": [
+   "title",
+   "caption"
+  ],
+  "blueprint": "cover",
+  "in_system_prompt": true,
+  "chars": 758,
+  "reference_xml_empty": true,
+  "in_user_prompt": false,
+  "system_chars": 42519
+ },
+ {
+  "slide": 1,
+  "kinds": [
+   "title",
+   "kpi_row",
+   "narrative"
+  ],
+  "blueprint": "kpi_only",
+  "in_system_prompt": true,
+  "chars": 762,
+  "reference_xml_empty": true,
+  "in_user_prompt": false,
+  "system_chars": 43457
+ },
+ {
+  "slide": 2,
+  "kinds": [
+   "title",
+   "chart",
+   "narrative"
+  ],
+  "blueprint": "chart_left__narrative_right",
+  "in_system_prompt": true,
+  "chars": 777,
+  "reference_xml_empty": true,
+  "in_user_prompt": false,
+  "system_chars": 43254
+ },
+ {
+  "slide": 3,
+  "kinds": [
+   "title",
+   "card_grid",
+   "narrative",
+   "narrative"
+  ],
+  "blueprint": "pillar_cards",
+  "in_system_prompt": true,
+  "chars": 712,
+  "reference_xml_empty": true,
+  "in_user_prompt": false,
+  "system_chars": 43707
+ },
+ {
+  "slide": 4,
+  "kinds": [
+   "title",
+   "kpi_row",
+   "narrative"
+  ],
+  "blueprint": "kpi_only",
+  "in_system_prompt": true,
+  "chars": 762,
+  "reference_xml_empty": true,
+  "in_user_prompt": false,
+  "system_chars": 43457
+ },
+ {
+  "slide": 5,
+  "kinds": [
+   "title",
+   "table",
+   "table",
+   "narrative"
+  ],
+  "blueprint": "table_with_action_cards",
+  "in_system_prompt": true,
+  "chars": 774,
+  "reference_xml_empty": true,
+  "in_user_prompt": false,
+  "system_chars": 43397
+ }
+]

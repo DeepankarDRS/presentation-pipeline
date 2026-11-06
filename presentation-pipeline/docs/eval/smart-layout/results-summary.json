@@ -1,0 +1,311 @@
+{
+ "slides": 27,
+ "tested": 24,
+ "one_component": 3,
+ "arms": [
+  {
+   "arm": "today",
+   "offered": 24,
+   "compiled": 24,
+   "hard_faults": 6,
+   "slides_with_hard_fault": 2,
+   "too_wide_words": 1,
+   "rendered_broken": 0,
+   "rendered_overlaps": 0,
+   "empty_flags": 14,
+   "median_fill": 0.231,
+   "median_score": 129.3,
+   "median_font": 19.0
+  },
+  {
+   "arm": "static",
+   "offered": 20,
+   "compiled": 19,
+   "hard_faults": 0,
+   "slides_with_hard_fault": 0,
+   "too_wide_words": 0,
+   "rendered_broken": 0,
+   "rendered_overlaps": 0,
+   "empty_flags": 14,
+   "median_fill": 0.252,
+   "median_score": 135.6,
+   "median_font": 24.0
+  },
+  {
+   "arm": "solver",
+   "offered": 24,
+   "compiled": 24,
+   "hard_faults": 7,
+   "slides_with_hard_fault": 2,
+   "too_wide_words": 4,
+   "rendered_broken": 4,
+   "rendered_overlaps": 1,
+   "empty_flags": 20,
+   "median_fill": 0.244,
+   "median_score": 134.4,
+   "median_font": 25.0
+  },
+  {
+   "arm": "best_k",
+   "offered": 24,
+   "compiled": 24,
+   "hard_faults": 4,
+   "slides_with_hard_fault": 2,
+   "too_wide_words": 0,
+   "rendered_broken": 0,
+   "rendered_overlaps": 3,
+   "empty_flags": 12,
+   "median_fill": 0.255,
+   "median_score": 136.2,
+   "median_font": 26.0
+  },
+  {
+   "arm": "library",
+   "offered": 14,
+   "compiled": 14,
+   "hard_faults": 0,
+   "slides_with_hard_fault": 0,
+   "too_wide_words": 0,
+   "rendered_broken": 4,
+   "rendered_overlaps": 0,
+   "empty_flags": 9,
+   "median_fill": 0.256,
+   "median_score": 138.0,
+   "median_font": 25.0
+  }
+ ],
+ "static_vs_today": {
+  "slides": 19,
+  "clearly_higher": 3,
+  "clearly_lower": 2,
+  "within_margin": 14
+ },
+ "solver_vs_today": {
+  "slides": 24,
+  "clearly_higher": 4,
+  "clearly_lower": 4,
+  "within_margin": 16
+ },
+ "best_k_vs_today": {
+  "slides": 24,
+  "clearly_higher": 9,
+  "clearly_lower": 1,
+  "within_margin": 14
+ },
+ "library_vs_today": {
+  "slides": 14,
+  "clearly_higher": 2,
+  "clearly_lower": 3,
+  "within_margin": 9
+ },
+ "guarded_changed": 9,
+ "static_could_not_place_all": [
+  "closing_cta+1",
+  "chart_hero__sidebar_cards+1",
+  "chart_left__narrative_right+1",
+  "table_with_action_cards+2",
+  "table_roadmap+2",
+  "kpi_only+1",
+  "table_with_action_cards+2",
+  "pillar_cards+3",
+  "pillar_cards+1",
+  "pillar_cards+1",
+  "pillar_cards+2",
+  "pillar_cards+2",
+  "table_with_action_cards+2"
+ ],
+ "static_offered": 20,
+ "library_coverage": {
+  "slides_with_a_donor": 14,
+  "of": 24
+ },
+ "seconds_per_slide_median": 16.9,
+ "best_arrangement_by_kinds": {
+  "bullet_list + card_grid + narrative": {
+   "side by side": 1
+  },
+  "bullet_list + card_grid + narrative + table": {
+   "side by side": 1
+  },
+  "bullet_list + flow + timeline": {
+   "stacked": 1
+  },
+  "bullet_list + layer + narrative": {
+   "side by side": 1
+  },
+  "bullet_list + narrative": {
+   "side by side": 1,
+   "stacked": 1
+  },
+  "card_grid + chart + narrative": {
+   "side by side": 1
+  },
+  "card_grid + kpi_row": {
+   "stacked": 2
+  },
+  "card_grid + narrative": {
+   "side by side": 2,
+   "stacked": 1
+  },
+  "card_grid + process_arrow": {
+   "stacked": 1
+  },
+  "chart + kpi_row": {
+   "side by side": 1
+  },
+  "chart + kpi_row + narrative": {
+   "side by side": 2
+  },
+  "chart + narrative": {
+   "side by side": 1
+  },
+  "kpi_row + narrative": {
+   "side by side": 2,
+   "stacked": 1
+  },
+  "matrix + pyramid + table": {
+   "side by side": 1
+  },
+  "narrative + table": {
+   "side by side": 2
+  },
+  "narrative + timeline": {
+   "stacked": 1
+  }
+ },
+ "stress": {
+  "kind_sets_seen": 88,
+  "slides_tried": 67,
+  "plans_with_a_kind_code_cannot_draw_bare": 21,
+  "any_candidate_compiled": 67,
+  "best_has_no_hard_fault": 67,
+  "best_no_broken_word": 60,
+  "best_not_sparse": 67,
+  "best_arrangement_by_kinds": {
+   "bullet_list": {
+    "side by side": 1
+   },
+   "bullet_list + card_grid": {
+    "side by side": 1,
+    "stacked": 1
+   },
+   "bullet_list + card_grid + chart + narrative": {
+    "side by side": 1
+   },
+   "bullet_list + card_grid + chart + table": {
+    "side by side": 1
+   },
+   "bullet_list + card_grid + narrative": {
+    "side by side": 4
+   },
+   "bullet_list + card_grid + narrative + table": {
+    "side by side": 2
+   },
+   "bullet_list + card_grid + table": {
+    "side by side": 1
+   },
+   "bullet_list + chart": {
+    "side by side": 1
+   },
+   "bullet_list + chart + kpi_row": {
+    "side by side": 1
+   },
+   "bullet_list + chart + kpi_row + table": {
+    "side by side": 4
+   },
+   "bullet_list + chart + narrative": {
+    "side by side": 2
+   },
+   "bullet_list + chart + narrative + table": {
+    "side by side": 2
+   },
+   "bullet_list + chart + table": {
+    "side by side": 1
+   },
+   "bullet_list + kpi_row": {
+    "side by side": 1
+   },
+   "bullet_list + kpi_row + narrative": {
+    "side by side": 1,
+    "stacked": 1
+   },
+   "bullet_list + kpi_row + narrative + table": {
+    "side by side": 1
+   },
+   "bullet_list + kpi_row + table": {
+    "stacked": 1
+   },
+   "bullet_list + kpi_row + timeline": {
+    "stacked": 1
+   },
+   "bullet_list + narrative": {
+    "stacked": 2,
+    "side by side": 2
+   },
+   "bullet_list + narrative + table": {
+    "stacked": 1,
+    "side by side": 1
+   },
+   "bullet_list + table": {
+    "stacked": 1
+   },
+   "card_grid": {
+    "stacked": 1,
+    "side by side": 1
+   },
+   "card_grid + chart + narrative": {
+    "side by side": 1
+   },
+   "card_grid + kpi_row + narrative": {
+    "side by side": 1
+   },
+   "card_grid + narrative": {
+    "stacked": 1,
+    "side by side": 2
+   },
+   "card_grid + table": {
+    "stacked": 1
+   },
+   "chart + kpi_row": {
+    "side by side": 1
+   },
+   "chart + kpi_row + narrative": {
+    "side by side": 2
+   },
+   "chart + kpi_row + narrative + table": {
+    "side by side": 3
+   },
+   "chart + narrative": {
+    "side by side": 2
+   },
+   "chart + narrative + table": {
+    "side by side": 1
+   },
+   "chart + table": {
+    "side by side": 1
+   },
+   "kpi_row": {
+    "side by side": 1
+   },
+   "kpi_row + narrative": {
+    "side by side": 3,
+    "stacked": 1
+   },
+   "kpi_row + narrative + table": {
+    "side by side": 2
+   },
+   "kpi_row + table": {
+    "side by side": 1
+   },
+   "narrative + table": {
+    "side by side": 3
+   },
+   "narrative + table + timeline": {
+    "side by side": 1
+   },
+   "narrative + timeline": {
+    "side by side": 1
+   }
+  }
+ }
+}

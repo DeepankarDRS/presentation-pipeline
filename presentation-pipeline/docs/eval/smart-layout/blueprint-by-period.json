@@ -1,0 +1,82 @@
+{
+ "before_2026-10-08": {
+  "slides": 122,
+  "with_blueprint": 90,
+  "split_agree_blueprint": 0.689,
+  "split_kappa_blueprint": 0.374,
+  "split_kappa_hint": 0.572,
+  "split_agree_hint": 0.787,
+  "bands_in_range": 0.333,
+  "distinct_layouts_per_blueprint": {
+   "table_with_action_cards": [
+    17,
+    14
+   ],
+   "pillar_cards": [
+    17,
+    17
+   ],
+   "kpi_only": [
+    16,
+    13
+   ],
+   "kpi_snapshot": [
+    16,
+    16
+   ],
+   "chart_and_table": [
+    8,
+    7
+   ],
+   "chart_left__narrative_right": [
+    6,
+    4
+   ]
+  },
+  "pad36": [
+   78,
+   2,
+   32
+  ]
+ },
+ "from_2026-10-08": {
+  "slides": 258,
+  "with_blueprint": 202,
+  "split_agree_blueprint": 0.723,
+  "split_kappa_blueprint": 0.236,
+  "split_kappa_hint": 0.448,
+  "split_agree_hint": 0.725,
+  "bands_in_range": 0.673,
+  "distinct_layouts_per_blueprint": {
+   "kpi_only": [
+    82,
+    38
+   ],
+   "pillar_cards": [
+    60,
+    53
+   ],
+   "table_with_action_cards": [
+    22,
+    16
+   ],
+   "kpi_snapshot": [
+    21,
+    15
+   ],
+   "chart_and_table": [
+    6,
+    4
+   ],
+   "table_roadmap": [
+    5,
+    5
+   ]
+  },
+  "pad36": [
+   2,
+   0,
+   56
+  ]
+ }
+}

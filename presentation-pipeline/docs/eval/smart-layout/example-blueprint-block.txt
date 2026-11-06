@@ -1,0 +1,19 @@
+## BLUEPRINT (a tested reference layout - adapt it to this slide)
+A tested layout skeleton for a similar set of components is shown below. Use it as a
+starting point: add, drop or reorder bands when this slide's components and LAYOUT
+INTENT call for it. Keep its sizing approach: bands marked [grow=N] share the spare
+height, the others size to their content.
+
+Root: <VStack> padding=36 gap=14
+Bands (4):
+  1. header [auto]
+  2. kpi_row [auto] children_w=max
+  3. detail_cards [grow=1] (optional) children_w=max
+  4. callout [auto] (optional)
+
+### Reference implementation
+This XML shows working nesting, flex properties and spacing for this blueprint.
+Reuse what fits (w, grow, minH, gap, padding, borderRadius, alignItems); never copy its content.
+```xml
+
+```

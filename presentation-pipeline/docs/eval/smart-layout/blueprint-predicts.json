@@ -1,0 +1,193 @@
+{
+ "slides_total_seen": 533,
+ "slides_scored_2plus_components": 424,
+ "with_blueprint": 326,
+ "no_blueprint": 98,
+ "band_count_within_skeleton_range": 0.571,
+ "copy_test": {
+  "padding": {
+   "36": {
+    "n": 326,
+    "same_as_skeleton": 0.328,
+    "top": [
+     [
+      "48",
+      156
+     ],
+     [
+      "36",
+      107
+     ],
+     [
+      "40",
+      34
+     ],
+     [
+      "44",
+      13
+     ]
+    ]
+   },
+   "(no blueprint)": {
+    "n": 98,
+    "same_as_skeleton": 0.0,
+    "top": [
+     [
+      "48",
+      50
+     ],
+     [
+      "38",
+      23
+     ],
+     [
+      "56",
+      10
+     ],
+     [
+      "40",
+      9
+     ]
+    ]
+   }
+  },
+  "gap": {
+   "14": {
+    "n": 326,
+    "same_as_skeleton": 0.123,
+    "top": [
+     [
+      "28",
+      106
+     ],
+     [
+      "18",
+      53
+     ],
+     [
+      "24",
+      50
+     ],
+     [
+      "22",
+      47
+     ]
+    ]
+   },
+   "(no blueprint)": {
+    "n": 98,
+    "same_as_skeleton": 0.0,
+    "top": [
+     [
+      "28",
+      28
+     ],
+     [
+      "18",
+      25
+     ],
+     [
+      "32",
+      21
+     ],
+     [
+      "24",
+      11
+     ]
+    ]
+   }
+  }
+ },
+ "split_agree_blueprint": 0.699,
+ "split_kappa_blueprint": 0.291,
+ "split_agree_layout_hint": 0.75,
+ "split_kappa_layout_hint": 0.497,
+ "hint_slides": 424,
+ "drawn_split_rate": 0.375,
+ "distinct_layouts": 237,
+ "H_layout_bits": 7.62,
+ "H_layout_given_blueprint": 5.13,
+ "H_layout_given_kinds": 2.77,
+ "H_layout_given_kinds_and_blueprint": 2.77,
+ "same_kinds_two_blueprints": {
+  "slides": 0,
+  "kind_sets": 0,
+  "H_layout_given_kinds": 0,
+  "H_layout_given_kinds_and_blueprint": 0,
+  "split_kappa": 0.0
+ },
+ "per_blueprint": {
+  "chart_and_table": {
+   "n": 14,
+   "skeleton_bands": 1,
+   "skeleton_split": true,
+   "drawn_same_band_count": 0.0,
+   "drawn_split": 0.86,
+   "distinct_layouts": 10
+  },
+  "chart_hero__sidebar_cards": {
+   "n": 3,
+   "skeleton_bands": 1,
+   "skeleton_split": true,
+   "drawn_same_band_count": 0.0,
+   "drawn_split": 0.33,
+   "distinct_layouts": 3
+  },
+  "chart_left__narrative_right": {
+   "n": 13,
+   "skeleton_bands": 1,
+   "skeleton_split": true,
+   "drawn_same_band_count": 0.15,
+   "drawn_split": 0.46,
+   "distinct_layouts": 10
+  },
+  "kpi_only": {
+   "n": 108,
+   "skeleton_bands": 3,
+   "skeleton_split": false,
+   "drawn_same_band_count": 0.19,
+   "drawn_split": 0.07,
+   "distinct_layouts": 56
+  },
+  "kpi_snapshot": {
+   "n": 41,
+   "skeleton_bands": 3,
+   "skeleton_split": true,
+   "drawn_same_band_count": 0.12,
+   "drawn_split": 0.66,
+   "distinct_layouts": 35
+  },
+  "kpi_top__table_full": {
+   "n": 8,
+   "skeleton_bands": 3,
+   "skeleton_split": false,
+   "drawn_same_band_count": 0.0,
+   "drawn_split": 0.75,
+   "distinct_layouts": 8
+  },
+  "pillar_cards": {
+   "n": 85,
+   "skeleton_bands": 1,
+   "skeleton_split": false,
+   "drawn_same_band_count": 0.27,
+   "drawn_split": 0.33,
+   "distinct_layouts": 75
+  },
+  "table_roadmap": {
+   "n": 9,
+   "skeleton_bands": 1,
+   "skeleton_split": false,
+   "drawn_same_band_count": 0.33,
+   "drawn_split": 1.0,
+   "distinct_layouts": 8
+  },
+  "table_with_action_cards": {
+   "n": 45,
+   "skeleton_bands": 3,
+   "skeleton_split": false,
+   "drawn_same_band_count": 0.11,
+   "drawn_split": 0.49,
+   "distinct_layouts": 35
+  }
+ }
+}
