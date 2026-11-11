@@ -64,33 +64,20 @@ forbidden_attributes:
 
 # ── NOT-this -> use-this (put this table in the prompt) ──────────────────────
 translations:
+  # Each mistake once in the generator prompt: enum values (left / start), <br>, lowercase inline tags and the
+  # one-line rule for inline tags are taught by system.j2 and components/text.yaml pitfalls (2026-11-11).
+  # `node:` = only on a slide whose ALLOWED NODES include it (per slide, after "## THIS SLIDE").
   - { wrong: 'width="600"',            right: 'w="600"' }
   - { wrong: 'height="400"',           right: 'h="400"' }
   - { wrong: 'font-size: 24px',        right: 'fontSize="24"' }
   - { wrong: 'style="color:#f00"',     right: 'color="$negative"  (a palette token)' }
   - { wrong: 'class="card"',           right: '(no equivalent — use explicit attributes)' }
-  - { wrong: '<br/>',                  right: 'separate <Text> nodes in a <VStack>' }
   - { wrong: '<div>',                  right: '<VStack> or <HStack>' }
   - { wrong: '<p>',                    right: '<Text>' }
-  - { wrong: '<span>',                 right: '<Span> (capital S), only inside <Text>' }
   - { wrong: 'color="#FF0000"',        right: 'color="$negative"  (a palette token, never a hex)' }
   - { wrong: 'color="red"',            right: 'color="$negative"  (named colors throw at render)' }
   - { wrong: 'flex="1"',               right: 'grow="1"' }
-  - { wrong: 'justifyContent="left"',  right: 'justifyContent="start"' }
-  - { wrong: 'alignItems="right"',     right: 'alignItems="end"' }
-  - { wrong: 'textAlign="start"',      right: 'textAlign="left"' }
-  - { wrong: '<a href="...">',        right: '<A href="..."> (capital A, Phase D inline tag)' }
-  - { wrong: '<sub>',                 right: '<Sub> (capital S, Phase D inline tag)' }
-  - { wrong: '<sup>',                 right: '<Sup> (capital S, Phase D inline tag)' }
-  - { wrong: '<u>',                   right: '<U> (capital U, Phase D inline tag)' }
-  - { wrong: '<s>',                   right: '<S> (capital S, Phase D inline tag)' }
-  - { wrong: '<svg>',                 right: '<Svg> (capital S, Phase D) — wraps an inner <svg> child element' }
-  - wrong: |
-      <Li>Normal
-        <Span color="$negative">red</Span>
-        item
-      </Li>
-    right: "<Li>Normal <Span color=\"$negative\">red</Span> item</Li>  — inline tags and surrounding text MUST be on one line; a newline before/after the tag renders as a literal line break"
+  - { wrong: '<svg>',                  right: '<Svg> (capital S) — wraps an inner <svg> child element', node: Svg }
 
 # ── Value constraints (Type 3 render errors pass XML parsing then fail) ───────
 value_constraints:
@@ -126,17 +113,14 @@ value_constraints:
 
 # ── Semantic rules from llm.md "Notes" ─────────────────────────────────────
 semantic_rules:
-  - "alignItems / justifyContent use start / center / end (NOT left / right)."
-  - "textAlign uses left / center / right (NOT start / end)."
-  - "Property names are w / h, never width / height."
+  # enum values, w / h and the single <Theme> are in system.j2; a rule with `node:` is per slide (see translations)
   - "A <Slide> must have at least one child."
-  - "At most one <Theme>, at the top level, before the slides."
   - "$token references only resolve inside color attributes and gradient strings — never in text content or non-color attributes."
   - "Referencing an undefined $token is a validation error."
-  - "Arrow from/to must reference valid id attributes on connectable nodes (Text, Shape with rect/roundRect/ellipse)."
-  - "Layer children must specify x and y for absolute positioning."
-  - "FlowConnection from/to must reference FlowNode ids within the same Flow."
-  - "MatrixItem x and y must be 0-1 normalised floats."
+  - { node: Arrow, rule: "Arrow from/to must reference valid id attributes on connectable nodes (Text, Shape with rect/roundRect/ellipse)." }
+  - { node: Layer, rule: "Layer children must specify x and y for absolute positioning." }
+  - { node: FlowConnection, rule: "FlowConnection from/to must reference FlowNode ids within the same Flow." }
+  - { node: MatrixItem, rule: "MatrixItem x and y must be 0-1 normalised floats." }
 
 # ── Build diagnostics (warnings, not parse errors) ──────────────────────────
 diagnostics:

@@ -12,7 +12,7 @@ POM is NOT HTML:
   CORRECT: <Li>Normal <Span color="$negative">red</Span> item</Li>
   WRONG:   <Li>Normal\n  <Span color="$negative">red</Span>\n  item\n</Li>
 
-Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName.
+Colors: palette tokens only, written as $tokenName. Never a hex value or a colour name.
   VALID: color="$textMain"  backgroundColor="$accentSoft"  (palette tokens only, chartColors too: $chart1..)
   INVALID: color="#FF0000"  color="red"
 

@@ -82,7 +82,7 @@ content_rules:
   - "KPI values keep the plan's units: a large value with the unit in a smaller <Span>"
   - "Charts and tables show exactly the points and rows the plan gives — never pad them"
   - "Bullet points: the plan's points, each one short sentence"
-  - "Deltas: show direction (+18% QoQ, -2.3 pts) with appropriate $positive/$negative color"
+  - "Deltas: show direction (+18% QoQ, -2.3 pts) in $positiveText / $negativeText (COLOR ROLES)"
 
 design_principles:
   - "Use $surfaceAlt cards to group related content — never float raw text on the background"

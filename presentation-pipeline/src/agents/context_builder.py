@@ -282,12 +282,19 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
     prompt small. Component pitfalls and validation rules are always included.
     """
     notes: list[str] = []
+    # a translation / rule with `node:` only on a slide that allows that node (kinds=[] = the deck's shared notes)
+    nodes = {n for kind in kinds for n in _KIND_TO_NODES.get(kind, [])}
 
     for row in (validation.get("translations") or []):
-        notes.append(f"NOT {row.get('wrong')}  ->  {row.get('right')}")
+        if row.get("node") in (None, *nodes):
+            notes.append(f"NOT {row.get('wrong')}  ->  {row.get('right')}")
 
     for rule in (validation.get("semantic_rules") or []):
-        notes.append(rule)
+        if isinstance(rule, dict):
+            if rule.get("node") in nodes:
+                notes.append(rule["rule"])
+        else:
+            notes.append(rule)
 
     for pitfall in (text_yaml.get("pitfalls") or []):
         notes.append(pitfall)
@@ -699,8 +706,8 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         struct = blueprint.get("structure", {})
         bands = struct.get("bands", [])
         lines = [
-            f"Root: <{struct.get('root', 'VStack')}> "
-            f"padding={struct.get('padding', 36)} gap={struct.get('gap', 14)}",
+            # root padding / gap come from FRAME (48-56 / 24-36, 2026-10-08), not the older blueprint numbers
+            f"Root: <{struct.get('root', 'VStack')}> (padding and gap per FRAME)",
             f"Bands ({len(bands)}):",
         ]
         for i, band in enumerate(bands, 1):
