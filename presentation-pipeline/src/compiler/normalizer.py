@@ -964,6 +964,30 @@ _SHAPE_ALIASES = {"circle": "ellipse", "oval": "ellipse", "square": "rect", "rec
 _SHAPE_ALIAS_RE = re.compile(r'shapeType="(' + "|".join(_SHAPE_ALIASES) + r')"', re.IGNORECASE)
 
 
+# Diagram labels are attributes; the LLM forces a line break with &#10; (paid run 2026-11-12:
+# "Category&#10;leadership" on both pyramids) and POM prints the entity as text. The label wraps by itself.
+_DIAGRAM_LABEL_TAG = re.compile(
+    r"<(?:PyramidLevel|ProcessArrowStep|FlowNode|FlowConnection|TreeItem|TimelineItem|MatrixItem)\b[^>]*>")
+_ATTR_BREAK = re.compile(r"\s*(?:&#(?:10|13|x0*[aAdD]);|\n|\r)+\s*")
+
+
+def _flatten_item_label_breaks(xml: str) -> tuple[str, int]:
+    count = 0
+
+    def tag(m: re.Match) -> str:
+        nonlocal count
+
+        def value(v: re.Match) -> str:
+            nonlocal count
+            new, n = _ATTR_BREAK.subn(" ", v.group(2))
+            count += n
+            return f'{v.group(1)}="{new.strip() if n else new}"'
+
+        return re.sub(r'(\b[\w.]+)="([^"]*)"', value, m.group(0))
+
+    return _DIAGRAM_LABEL_TAG.sub(tag, xml), count
+
+
 def normalize_xml(raw_xml: str) -> dict[str, Any]:
     """Normalize raw LLM XML output: strip fences, fix colors, remove br/hr.
 
@@ -1000,6 +1024,15 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
         issues.append({
             "code": "HASH_COLOR",
             "message": f"Stripped leading '#' from {len(hash_hits)} color value(s).",
+            "auto_fixed": True,
+        })
+
+    xml, n_breaks = _flatten_item_label_breaks(xml)
+    if n_breaks:
+        issues.append({
+            "code": "LABEL_BREAK_REMOVED",
+            "message": f"Replaced {n_breaks} line break(s) inside diagram labels with a space "
+                       "(POM prints &#10; literally; labels wrap on their own).",
             "auto_fixed": True,
         })
 

@@ -105,3 +105,20 @@ def test_every_listed_fill_gets_a_readable_label(name):
     out, _ = readable_item_text(_pyramid(*[f'color="{f}"' for f in fills]), el)
     for fill, ink in re.findall(r'color="\$(\w+)" textColor="\$(\w+)"', out):
         assert contrast(t[ink], t[fill]) >= 4.5, (fill, ink)
+
+
+def test_line_breaks_in_diagram_labels_become_spaces():
+    """Paid run 2026-11-12: the LLM wrote label="Category&#10;leadership"; POM printed the entity as text."""
+    from src.compiler.normalizer import normalize_xml
+    xml = ('<Slide><VStack w="1280" h="720"><Pyramid direction="up">'
+           '<PyramidLevel label="Category&#10;leadership" color="$step1" />'
+           '<PyramidLevel label="Loyal &#xA; subscribers" color="$step2" /></Pyramid>'
+           '<Matrix><MatrixItem label="+ Bundle offers&#10;+ Referral program" x="0.2" y="0.8" /></Matrix>'
+           '<Text fontSize="16">kept&#10;as is</Text></VStack></Slide>')
+    res = normalize_xml(xml)
+    out = res["cleaned_xml"]
+    assert 'label="Category leadership"' in out and 'label="Loyal subscribers"' in out
+    assert 'label="+ Bundle offers + Referral program"' in out
+    assert "&#10;" not in out.split("<Text")[0]
+    assert "LABEL_BREAK_REMOVED" in [i["code"] for i in res["issues"]]
+    assert "LABEL_BREAK_REMOVED" not in [i["code"] for i in normalize_xml(out)["issues"]]
