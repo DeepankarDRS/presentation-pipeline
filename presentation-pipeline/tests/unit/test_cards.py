@@ -274,3 +274,17 @@ def test_a_step_body_of_several_points_draws_one_point_per_line():
     assert "Scale proven clusters at 0.25x. or better" in xml
     grid = _grid("g", [{"title": "A", "body": "One. Two."}, {"title": "B", "body": "Three"}])
     assert "<Li" not in run('<CardGrid ref="g"/>', {"components": [grid]})["xml"]   # grids keep their body line
+
+
+def test_light_fill_on_the_focus_card_takes_light_card_ink():
+    """Gate deck 2026-11-12: the LLM gave the dark destination step a light fill; its "04" tag kept
+    $onPanelDark and could not be read. A dark fill the LLM picks keeps the light ink."""
+    xml = run('<CardGrid ref="plan"><Card ref="plan.3" backgroundColor="$accentSoft" '
+              'title.color="$accentText"/></CardGrid>')["xml"]
+    card = card_el(xml, "plan", 3)
+    assert card.get("backgroundColor") == "$accentSoft"
+    inks = {e.get("color") for e in card.iter("Text", "Icon")}
+    assert "$onPanelDark" not in inks and "$accentText" in inks
+    dark = card_el(run('<CardGrid ref="plan"><Card ref="plan.3" backgroundColor="$negativeDark"/></CardGrid>')["xml"],
+                   "plan", 3)
+    assert "$onPanelDark" in {e.get("color") for e in dark.iter("Text")}

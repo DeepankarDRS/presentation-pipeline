@@ -171,6 +171,12 @@ def _patch(how: Any, vs: dict, name: str) -> tuple[str, dict]:
     return name, how if isinstance(how, dict) else {}
 
 
+_ON_DARK_INK = {"$onPanelDark", "$onAccent"}   # light inks of the dark fills (element_refs.ON_FILL)
+_LIGHT_FILLS = {"$surface", "$surfaceAlt", "$chartSurface"}   # + any $*Soft tint
+_LIGHT_INK = {"title": "$textMain", "body": "$textMuted", "bullets": "$textMain", "tag": "$textMuted",
+              "number": "$textMuted", "icon": "$accentText"}
+
+
 def _readable(fill: str, color: str | None) -> str | None:
     """The ink a part takes on a dark fill (element_refs.READS_ON / ON_FILL), else its own colour."""
     if fill in element_refs.READS_ON and color not in element_refs.READS_ON[fill]:
@@ -275,6 +281,10 @@ def assemble(comp: dict, i: int, box: dict[str, str], parts: dict[str, dict[str,
     for p in parts:   # text and icons read on a dark fill
         if fill in element_refs.READS_ON:
             parts[p]["color"] = _readable(fill, parts[p].get("color"))
+        elif (fill.endswith("Soft") or fill in _LIGHT_FILLS) and parts[p].get("color") in _ON_DARK_INK:
+            # the dark focus card's ink left on a light fill the LLM gave it (gate deck 2026-11-12: "03" in
+            # $onPanelDark on $accentSoft): the part takes its light-card ink
+            parts[p]["color"] = _LIGHT_INK.get(p, "$textMain")
 
     c = cards_of(comp)[i]
     body, bullets = _lines(c)

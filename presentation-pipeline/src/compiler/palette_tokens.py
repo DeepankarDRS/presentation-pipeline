@@ -39,6 +39,8 @@ TEXT_MIN = 4.5
 BORDER_MIN = 1.4
 SOFT_MIX_LIGHT = 0.13
 SOFT_MIX_DARK = 0.22
+SOFT_CHROMA_LIGHT = 0.025   # OKLCH chroma floor of a *Soft tint (_soft_hue_floor); corporate-slate's is 0.025
+SOFT_CHROMA_DARK = 0.045
 NEUTRAL_MIX_LIGHT = 0.22
 NEUTRAL_MIX_DARK = 0.32
 PANEL_DARK_L = 0.2
@@ -102,6 +104,7 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
 
     for role in STATUS_ROLES:
         soft = mix(palette[role], surface_alt, SOFT_MIX_DARK if dark else SOFT_MIX_LIGHT)
+        soft = _soft_hue_floor(soft, palette[role], SOFT_CHROMA_DARK if dark else SOFT_CHROMA_LIGHT)
         out[f"{role}Soft"] = soft
         out[f"{role}Text"] = _step_lightness(
             palette[role], [surface, surface_alt, soft], darken=not dark)
@@ -280,6 +283,24 @@ def _oklch_hex(L: float, C: float, h: float) -> str | None:
         return None
     v = _okl()
     return _hex(tuple(v.lin2s(c) for c in rgb))  # type: ignore[arg-type]
+
+
+def _soft_hue_floor(soft: str, role_color: str, floor: float) -> str:
+    """A tint keeps its colour's hue: a dark, low-chroma accent mixed 13% into a warm card came
+    out grey (mbb-blue 042440 on F2F0E9 -> D3D5D3, OKLCH C 0.003; paid run 2026-11-12, diagrams
+    and focus cards read grey). Same lightness, the role's own hue, chroma raised to `floor`
+    (never above the role's own). A role that is grey on purpose (C < 0.04) is left alone."""
+    L, C, _ = _lch(soft)
+    _, role_c, role_h = _lch(role_color)
+    if C >= floor or role_c < 0.04:
+        return soft
+    c = min(floor, role_c)
+    while c > C:
+        out = _oklch_hex(L, c, role_h)
+        if out:
+            return out
+        c -= 0.002
+    return soft
 
 
 def _lch(hex_: str) -> tuple[float, float, float]:
