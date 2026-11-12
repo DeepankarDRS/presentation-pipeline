@@ -33,7 +33,8 @@ from typing import Any
 STATUS_ROLES = ("accent", "positive", "negative", "warning")
 DERIVED_KEYS = tuple(f"{r}Soft" for r in STATUS_ROLES) + tuple(
     f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral", "border", "panelDark", "onPanelDark") + tuple(
-    f"{r}Dark" for r in STATUS_ROLES)
+    f"{r}Dark" for r in STATUS_ROLES) + tuple(f"step{i}" for i in range(1, 6)) + tuple(
+    f"onStep{i}" for i in range(1, 6)) + ("inkDark", "inkLight")
 
 TEXT_MIN = 4.5
 BORDER_MIN = 1.4
@@ -139,6 +140,44 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
         while contrast(out["onPanelDark"], dark_fill) < TEXT_MIN and _lightness(dark_fill) > 0.04:
             dark_fill = _with_lightness(dark_fill, _lightness(dark_fill) - 0.03)
         out[f"{role}Dark"] = dark_fill.upper()
+    out.update(step_ramp(accent, surface_alt, dark, (text_main, surface)))
+    # last-resort label inks on a mid-tone fill (warm-editorial's $positive: its brown ink reaches 3.99:1)
+    out["inkDark"], out["inkLight"] = "000000", "FFFFFF"
+    return out
+
+
+# --- order ramp: $step1..$step5 + $onStep1..$onStep5 (diagram items in order: stages, tiers, a funnel) ---
+# One hue (the accent's), lightness monotone from the card outward: light palettes light -> dark, dark palettes
+# dark -> light. The step nearest the card still reads on it (>= STEP_EDGE_MIN), steps >= 0.06 apart in OKLCH L
+# (dataviz ordinal checks, research 2026-11-12). onStepN: the most readable ink on stepN.
+STEP_EDGE_MIN = 2.0
+STEP_CHROMA = (0.07, 0.15)
+
+
+def step_ramp(accent: str, card: str, dark: bool, inks: tuple[str, ...] = ()) -> dict[str, str]:
+    _, c_acc, hue = _lch(accent)
+    chroma = min(max(c_acc, STEP_CHROMA[0]), STEP_CHROMA[1]) if c_acc >= 0.04 else c_acc
+
+    def at(L: float) -> str:
+        c = chroma
+        while c > 0.0:
+            out = _oklch_hex(L, c, hue)
+            if out:
+                return out
+            c -= 0.005
+        return _oklch_hex(L, 0.0, hue) or "808080"
+
+    if dark:
+        start, end, move = 0.55, 0.90, 0.01
+    else:
+        start, end, move = 0.74, 0.32, -0.01
+    while contrast(at(start), card) < STEP_EDGE_MIN and (0.40 < start < 0.75 if not dark else start < 0.72):
+        start += move
+    steps = [at(start + (end - start) * k / 4) for k in range(5)]
+    out: dict[str, str] = {}
+    for i, s in enumerate(steps, 1):
+        out[f"step{i}"] = s.upper()
+        out[f"onStep{i}"] = max((*inks, "FFFFFF", "111111"), key=lambda c, s=s: contrast(c, s)).upper()
     return out
 
 

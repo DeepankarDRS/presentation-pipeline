@@ -28,7 +28,7 @@ from src.compiler.layout_audit import audit_layout
 from src.compiler.nodes import composed, element_refs, tiles
 from src.compiler.normalizer import (
     _BARE_AMP_RE, apply_box, dark_cover, ensure_single_theme, has_dark_panel, normalize_xml, pre_validate,
-    soften_dark_panels,
+    readable_item_text, soften_dark_panels,
 )
 from src.state import PresentationState
 
@@ -117,6 +117,11 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
         if n:
             norm["issues"].append({"code": "BOX_STYLE_APPLIED", "auto_fixed": True,
                                    "message": f"{n} box(es) given the palette's box style."})
+    # the LLM picks each diagram item's fill; code makes its label readable on it
+    norm["cleaned_xml"], n = readable_item_text(norm["cleaned_xml"], theme_el)
+    if n:
+        norm["issues"].append({"code": "DIAGRAM_TEXT_READABLE", "auto_fixed": True,
+                               "message": f"{n} diagram item label(s) given a colour that reads on their fill."})
     if any(has_dark_panel(c.get("xml") or "") for c in state.get("completed_slides") or []):
         norm["cleaned_xml"], n_dark = soften_dark_panels(norm["cleaned_xml"])
         if n_dark:

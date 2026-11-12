@@ -58,6 +58,9 @@ treatments:
   status_dots:
     intent: status dot beside each label
     technique: '<HStack gap="8" alignItems="center"><Shape shapeType="ellipse" w="10" h="10" fill.color="$positive" /><Text>label</Text></HStack> ($positive good, $negative bad, $warning watch, $neutral no status)'
+  item_colors:
+    intent: colour the diagram's items by what they mean (any items in focus, groups, an order, a status)
+    technique: 'each item''s own color=, chosen per item: $accent strong, $accentSoft normal, $neutral muted, $step1..$step5 an order (stages, tiers, a funnel; light to dark), $positive / $warning / $negative or their Soft tints a status (with a sign or word); same meaning = same colour, all equal = one colour, at most 3 colours (the step ramp counts as one, the status colours as one), the strong ones few; textColor optional (code makes it readable)'
   focus:
     intent: one item in focus, the rest recede
     technique: 'the ONE item the headline names: backgroundColor="$accentSoft" on its card / tile / row (or the item''s color="$accent" on a timeline / flow / step) and its key figure color="$accentText" bold; every other item keeps $surfaceAlt, $textMain values and $neutral marks (dots, bars, icons); never two items in focus'
@@ -81,22 +84,22 @@ kinds:
     treatments: [series_color, accent_border, lift, header_icon]
     never: "anything inside <Chart> except its series"
   timeline:
-    treatments: [emphasis, focus, sentiment, accent_border, lift, header_icon]
+    treatments: [item_colors, emphasis, focus, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on items (use the item's own color)"
   flow:
-    treatments: [emphasis, focus, sentiment, accent_border, lift, header_icon]
+    treatments: [item_colors, emphasis, focus, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on items (use the item's own color)"
   tree:
-    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    treatments: [item_colors, emphasis, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on items (use the item's own color)"
   matrix:
-    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    treatments: [item_colors, emphasis, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on items (use the item's own color)"
   process_arrow:
-    treatments: [emphasis, focus, sentiment, accent_border, lift, header_icon]
+    treatments: [item_colors, emphasis, focus, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on steps (use the step's own color)"
   pyramid:
-    treatments: [emphasis, sentiment, accent_border, lift, header_icon]
+    treatments: [item_colors, emphasis, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on levels (use the level's own color)"
   card_grid:
     treatments: [emphasis, focus, sentiment, highlight_text, icon_tiles, inverted_panel, accent_border, lift]

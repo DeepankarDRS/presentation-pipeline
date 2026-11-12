@@ -759,6 +759,61 @@ def dark_cover(xml: str, theme_element: str) -> tuple[str, int]:
     return "".join(out), 1
 
 
+# --- diagram items: the LLM picks each item's fill, code makes its label readable (2026-11-12) ---
+_ITEM_TAG = re.compile(r"<(PyramidLevel|ProcessArrowStep|FlowNode|TreeItem)\b[^>]*?/?>")
+_ITEM_INKS = ("$textMain", "$surface", "$onAccent", "$onPanelDark")
+_LAST_INKS = ("$inkDark", "$inkLight")
+TEXT_MIN_ITEM = 4.5
+
+
+def readable_item_text(xml: str, theme_element: str) -> tuple[str, int]:
+    """Every pyramid level, process step, flow node and tree node with a fill gets a label colour that reads
+    on it: the LLM's own textColor when it reaches 4.5:1, else $onStepN on $stepN, else the best of the
+    theme's inks. Fills and textColors resolve through the theme ($token) or are hex. Returns (xml, fixed)."""
+    tokens = dict(re.findall(r'(\w+)="([0-9A-Fa-f]{6})"', theme_element or ""))
+    if not tokens:
+        return xml, 0
+
+    def hex_of(v: str | None) -> str | None:
+        if not v:
+            return None
+        v = v.strip().lstrip("#")
+        return tokens.get(v[1:]) if v.startswith("$") else (v if re.fullmatch(r"[0-9A-Fa-f]{6}", v) else None)
+
+    count = 0
+
+    def one(m: re.Match) -> str:
+        nonlocal count
+        tag = m.group(0)
+        fill = re.search(r'\scolor="([^"]+)"', tag)
+        bg = hex_of(fill.group(1)) if fill else None
+        if not bg:
+            return tag
+        now = re.search(r'\stextColor="([^"]+)"', tag)
+        ink_now = hex_of(now.group(1)) if now else None
+        if ink_now and contrast(ink_now, bg) >= TEXT_MIN_ITEM:
+            return tag
+        step = re.fullmatch(r"\$step(\d)", fill.group(1))
+        if step and f"onStep{step.group(1)}" in tokens:
+            ink = f"$onStep{step.group(1)}"
+        else:
+            def best(inks: tuple[str, ...]) -> str | None:
+                return max((t for t in inks if t[1:] in tokens), key=lambda t: contrast(tokens[t[1:]], bg),
+                           default=None)
+            ink = best(_ITEM_INKS)   # the theme's own inks first; pure black / white only when none reads
+            if ink and contrast(tokens[ink[1:]], bg) < TEXT_MIN_ITEM:
+                ink = best(_ITEM_INKS + _LAST_INKS)
+        if not ink or (now and now.group(1) == ink):
+            return tag
+        count += 1
+        if now:
+            return tag[:now.start()] + f' textColor="{ink}"' + tag[now.end():]
+        end = "/>" if tag.endswith("/>") else ">"
+        return tag[: -len(end)].rstrip() + f' textColor="{ink}"' + (" />" if end == "/>" else ">")
+
+    return _ITEM_TAG.sub(one, xml), count
+
+
 def _tidy_text_whitespace(xml: str) -> tuple[str, int]:
     """Text written over several indented lines keeps its newline + indent as characters: the
     CHEFFIN cover title started with '\\n          CHEFFIN…' and rendered pushed right. Collapse
