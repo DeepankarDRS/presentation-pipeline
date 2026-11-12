@@ -60,3 +60,13 @@ def test_questionnaire_non_default_choices(mock_input):
     assert ctx["slide_count"] == "3-5 slides"
     assert ctx["focus"] == "Comparison"
     assert result["deck_min_threshold"] == 4
+
+
+def test_seed_palettes_listed_by_their_mode():
+    """A seed palette keeps `mode` under `seed:`; dark seeds must be listed with the dark themes."""
+    from src.agents.questionnaire import _load_palette_names
+    names = [n for n, _ in _load_palette_names()]
+    first_dark = names.index("graphite-dark")
+    for dark_seed in ("ocean-dark", "mbb-blue-dark", "perceptis-dark"):
+        assert names.index(dark_seed) >= first_dark
+    assert names.index("mbb-blue") < first_dark

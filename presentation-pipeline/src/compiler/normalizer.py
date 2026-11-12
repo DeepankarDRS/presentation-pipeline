@@ -22,6 +22,7 @@ from src.compiler.grow_fallback import (
 )
 from src.compiler.kpi_grid import kpi_rows
 from src.compiler.icons import fix_icon_names
+from src.compiler.palette_tokens import contrast
 from src.utils.text_clean import strip_illegal
 
 
@@ -662,6 +663,100 @@ def soften_dark_panels(xml: str) -> tuple[str, int]:
                        lambda c: f'{c.group(1)}="{_ON_DARK.get(c.group(2), c.group(2))}"', panel)
         xml = xml[:start] + panel + xml[end:]
         count += 1
+
+
+# --- deck look (palettes.yaml `cover` / `box`), applied by the validator after normalize_xml ---
+_BOX_OWNED = re.compile(r'\s(?:borderRadius|border\.(?:color|width|dashType)|shadow\.[\w]+)="[^"]*"')
+_OPACITY = re.compile(r'\sopacity="')
+_FILLED = re.compile(r'\sbackgroundColor="(?!\$surface")|\sborder\.(?:color|width)="')
+
+
+def _slide_root(xml: str) -> re.Match | None:
+    """The opening tag of the stack that fills the slide: the first stack after `<Slide>`."""
+    slide = xml.find("<Slide")
+    m = _STACK_TAG_RE.search(xml, slide) if slide >= 0 else None
+    return m if m and not m.group(1) else None
+
+
+def apply_box(xml: str, box: dict[str, Any]) -> tuple[str, int]:
+    """Write the palette's box attributes onto every filled or bordered VStack / HStack but the
+    slide root. Code-drawn nodes are plain stacks by now, so they get it too. borderLeft / borderTop
+    accent bars stay; a box with `opacity` gets no shadow (it shows through). Idempotent."""
+    if not box:
+        return xml, 0
+    root = _slide_root(xml)
+    count = 0
+
+    def one(m: re.Match) -> str:
+        nonlocal count
+        tag = m.group(0)
+        if m.group(1) or (root and m.start() == root.start()) or not _FILLED.search(tag):
+            return tag
+        end = "/>" if tag.endswith("/>") else ">"
+        body = _BOX_OWNED.sub("", tag[: -len(end)])
+        see_through = bool(_OPACITY.search(body))
+        attrs = "".join(f' {k}="{v}"' for k, v in box.items() if not (see_through and k.startswith("shadow.")))
+        count += 1
+        return body + attrs + end
+
+    return _STACK_TAG_RE.sub(one, xml), count
+
+
+_COLOR_ATTR = re.compile(r'(\b(?:color|fill\.color|line\.color)=")(\$\w+)"')
+_FILL_ATTR = re.compile(r'(\b(?:fill\.color|line\.color)=")(\$\w+)"')
+_ANY_TAG = re.compile(r"<(/?)([A-Za-z][\w.]*)\b[^>]*?(/?)>")
+_OWN_FILL = re.compile(r'\s(?:backgroundColor|backgroundGradient|fill\.color)="')
+
+
+def dark_cover(xml: str, theme_element: str) -> tuple[str, int]:
+    """Cover / closing slide on the dark ground: the root fill becomes $coverDark (the palette's
+    panelDark under its own name, so the one-dark-panel rule does not count it) and text drawn
+    straight on it turns light. Anything inside an element with its own fill (box, Text, cell,
+    Shape) keeps its colours. An accent fill too close to the ground becomes $accentAlt.
+    Returns (xml, 1) when the root changed."""
+    m = _slide_root(xml)
+    tokens = dict(re.findall(r'(\w+)="([0-9A-Fa-f]{6})"', theme_element or ""))
+    ground = tokens.get("coverDark")
+    if not m or not ground:
+        return xml, 0
+
+    def readable(name: str, target: float = 4.5) -> bool:
+        return name in tokens and contrast(tokens[name], ground) >= target
+
+    accent = next((f"${n}" for n in ("accentAlt", "accentSoft") if readable(n)), "$onPanelDark")
+    on_ground = {"$textMain": "$onPanelDark", "$textMuted": "$neutral" if readable("neutral") else "$onPanelDark",
+                 "$accent": accent, "$accentText": accent}
+    accent_fill_lost = "accent" in tokens and contrast(tokens["accent"], ground) < 1.5
+
+    root = re.sub(r'\s(?:backgroundColor|backgroundGradient)="[^"]*"', "", m.group(0))
+    root = root[:-1].rstrip("/") + ' backgroundColor="$coverDark"' + ("/>" if m.group(3) else ">")
+
+    def recolor(tag: str) -> str:
+        # an element with its own fill keeps its text colours: only the fill itself meets the ground
+        attrs = _FILL_ATTR if _OWN_FILL.search(tag) else _COLOR_ATTR
+        tag = attrs.sub(lambda c: c.group(1) + on_ground.get(c.group(2), c.group(2)) + '"', tag)
+        if accent_fill_lost:
+            tag = tag.replace('backgroundColor="$accent"', 'backgroundColor="$accentAlt"')
+        return tag
+
+    # every element after the root: tags on the ground are recoloured, then an element with its
+    # own fill shields everything inside it (its own tag sits on the ground, its children do not)
+    out, filled, pos = [xml[:m.start()], root], [], m.end()
+    for t in _ANY_TAG.finditer(xml, m.end()):
+        out.append(xml[pos:t.start()])
+        tag = t.group(0)
+        if t.group(1):
+            if filled:
+                filled.pop()
+        else:
+            if not any(filled):
+                tag = recolor(tag)
+            if not t.group(3):
+                filled.append(bool(_OWN_FILL.search(t.group(0))))
+        out.append(tag)
+        pos = t.end()
+    out.append(xml[pos:])
+    return "".join(out), 1
 
 
 def _tidy_text_whitespace(xml: str) -> tuple[str, int]:

@@ -26,7 +26,10 @@ from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
 from src.compiler.nodes import composed, element_refs, tiles
-from src.compiler.normalizer import _BARE_AMP_RE, ensure_single_theme, has_dark_panel, normalize_xml, pre_validate, soften_dark_panels
+from src.compiler.normalizer import (
+    _BARE_AMP_RE, apply_box, dark_cover, ensure_single_theme, has_dark_panel, normalize_xml, pre_validate,
+    soften_dark_panels,
+)
 from src.state import PresentationState
 
 logger = logging.getLogger(__name__)
@@ -97,12 +100,28 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
     norm = normalize_xml(xml)
     norm["tags_xml"] = tags_xml
     norm["issues"] = [dict(i, auto_fixed=i["severity"] != "error") for i in ref_issues] + norm["issues"]
+    theme_el = (state.get("contract") or {}).get("theme_element") or state.get("theme_element", "")
+    # Deck look from the palette (palettes.yaml `cover` / `box`): code owns it, so every slide
+    # and every node gets the same shape whatever the LLM wrote.
+    look = state.get("resolved_theme") or {}
+    idx = state.get("current_slide_index", 0)
+    this_plan = slide_plans[idx] if idx < len(slide_plans) else {}
+    slide_type = this_plan.get("slide_type") if isinstance(this_plan, dict) else getattr(this_plan, "slide_type", None)
+    if look.get("cover") == "dark" and slide_type in ("cover", "closing"):
+        norm["cleaned_xml"], n = dark_cover(norm["cleaned_xml"], theme_el)
+        if n:
+            norm["issues"].append({"code": "DARK_COVER_APPLIED", "auto_fixed": True,
+                                   "message": f"{slide_type} slide on the palette's dark ground."})
+    if look.get("box"):
+        norm["cleaned_xml"], n = apply_box(norm["cleaned_xml"], look["box"])
+        if n:
+            norm["issues"].append({"code": "BOX_STYLE_APPLIED", "auto_fixed": True,
+                                   "message": f"{n} box(es) given the palette's box style."})
     if any(has_dark_panel(c.get("xml") or "") for c in state.get("completed_slides") or []):
         norm["cleaned_xml"], n_dark = soften_dark_panels(norm["cleaned_xml"])
         if n_dark:
             norm["issues"].append({"code": "DARK_PANEL_SOFTENED", "auto_fixed": True,
                                    "message": f"{n_dark} dark panel(s) became tinted cards (one dark panel per deck)."})
-    theme_el = (state.get("contract") or {}).get("theme_element") or state.get("theme_element", "")
     cleaned = ensure_single_theme(norm["cleaned_xml"], theme_el)
     speaker_notes = norm.get("speaker_notes", "")
 

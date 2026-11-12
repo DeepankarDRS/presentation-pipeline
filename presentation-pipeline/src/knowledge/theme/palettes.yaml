@@ -542,6 +542,37 @@ palettes:
       accentAlt: "#48A3DA"
       chart: ["#042440", "#48A3DA", "#1B6CB3", "#6FD2EF", "#808080"]
 
+  # Deck look, optional on any palette (no field = today's look). Code applies both in the
+  # validator, after the LLM and the composition nodes have drawn the slide:
+  #   cover: dark  - cover + closing slides sit on $coverDark (= panelDark, own name so the
+  #                  one-dark-panel rule ignores it); text on the ground turns light
+  #   box: {...}   - POM attributes written onto every filled / bordered box but the slide root
+  #                  (borderLeft / borderTop accent bars kept; no shadow on a box with opacity)
+  #   panelDark    - may sit beside `seed:` to set the dark ground (seed palettes only)
+  mbb-blue-frame:
+    tone: "MBB Blue with navy cover / closing and square framed boxes"
+    seed:   # same as mbb-blue
+      mode: light
+      background: "#FFFFFF"
+      card: "#F2F0E9"
+      ink: "#000000"
+      muted: "#808080"
+      accent: "#042440"
+      accentAlt: "#48A3DA"
+      chart: ["#042440", "#48A3DA", "#1B6CB3", "#6FD2EF", "#808080"]
+    panelDark: "#051D2F"
+    cover: dark
+    box:
+      borderRadius: "0"
+      border.color: "$textMain"
+      border.width: "2"
+      shadow.type: outer
+      shadow.blur: "0"
+      shadow.offset: "4"
+      shadow.angle: "45"
+      shadow.color: "$textMain"
+      shadow.opacity: "1"
+
   mbb-blue-dark:
     tone: "Deep navy canvas, sky-blue accents (Perceptis MBB Blue title slides)"
     seed:
