@@ -778,10 +778,50 @@ def settle_card_fields(comp: dict[str, Any]) -> None:
 
 # ── entry point ─────────────────────────────────────────────────────────────
 
+HEADER_REPEATED = "HEADER_REPEATED"
+_HEADER_KINDS = ("narrative", "caption")
+
+
+def _same_text(a: str, b: str) -> bool:
+    norm = lambda t: " ".join(re.findall(r"\w+", (t or "").lower()))   # noqa: E731
+    return bool(norm(a)) and norm(a) == norm(b)
+
+
+def drop_header_repeats(plan: dict[str, Any]) -> list[str]:
+    """Drop a narrative or caption whose whole text is the slide's kicker, headline or subtitle: code draws the
+    header, so the component would show it twice. A/B check 2026-11-12: the new prompt's planner put the kicker in a
+    narrative on 5 of 31 slides ("THE PROBLEM", "EXECUTIVE SUMMARY")."""
+    header = [plan.get(k) or "" for k in ("label", "slide_title", "subtitle")]
+    notes, keep = [], []
+    for comp in plan.get("components") or []:
+        text = (comp.get("content_data") or {}).get("text") if comp.get("kind") in _HEADER_KINDS else None
+        if isinstance(text, str) and any(_same_text(text, h) for h in header):
+            _flag(plan, HEADER_REPEATED, comp.get("component_id", ""), f"repeats the slide header: {text[:60]}")
+            notes.append(f"dropped {comp.get('kind')} '{comp.get('component_id', '')}': it only repeats the slide "
+                         f"header ({text[:60]})")
+            continue
+        keep.append(comp)
+    if len(keep) < len(plan.get("components") or []):
+        plan["components"] = keep
+    return notes
+
+
+_WRAPPED = re.compile(r"^\s*\(([^()]*)\)\s*$")
+
+
+def unwrap_kpi_deltas(comp: dict[str, Any]) -> None:
+    """A kpi_row change wrapped in brackets as the brief writes it after the value ("$48.2M (+18% QoQ)") is drawn
+    without them: on a tile the change has its own line, so the brackets carry nothing."""
+    data = comp.get("content_data") or {}
+    if comp.get("kind") == "kpi_row" and isinstance(data.get("kpi_deltas"), list):
+        data["kpi_deltas"] = [_WRAPPED.sub(r"\1", d) if isinstance(d, str) else d for d in data["kpi_deltas"]]
+
+
 def finalize_plan(plan: dict[str, Any], brief_text: str, instructions: list[str] | tuple[str, ...] = ()) -> list[str]:
     """Run every code fix and the thin-slide report on a finished plan, in place.
     Returns the plain-words notes; `plan["plan_flags"]` lists what was found."""
     notes = drop_instruction_text(plan, brief_text, instructions)
+    notes += drop_header_repeats(plan)
     notes += drop_repeated_bodies(plan)
     notes += drop_shared_card_lines(plan, brief_text)
     notes += drop_duplicate_items(plan)
@@ -794,6 +834,7 @@ def finalize_plan(plan: dict[str, Any], brief_text: str, instructions: list[str]
         _flag(plan, PLAN_EMPTY, "", "the plan has no components")
     for comp in plan.get("components") or []:
         notes += settle_kpi_tones(comp)
+        unwrap_kpi_deltas(comp)
         settle_kpi_icons(comp)
         settle_card_fields(comp)
         vals = (comp.get("content_data") or {}).get("kpi_values") or [] if comp.get("kind") == "kpi_row" else []

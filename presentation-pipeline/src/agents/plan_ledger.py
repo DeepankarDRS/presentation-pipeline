@@ -34,8 +34,9 @@ SHAPE_MISFIT = "SHAPE_MISFIT"
 _ROUTING = Path(__file__).resolve().parent.parent / "knowledge" / "core" / "routing.yaml"
 
 # keys of content_data that are settings, not text the audience reads
+# (a matrix item's x / y stay text: its position shows "low effort, high impact" as surely as words do)
 _NOT_TEXT = {"tone", "icon", "key_phrase", "card_layout", "chart_type", "direction", "layout", "body_source",
-             "kpi_directions", "kpi_tones", "kpi_icons", "focus_card", "x", "y", "per_row"}
+             "kpi_directions", "kpi_tones", "kpi_icons", "focus_card", "per_row"}
 # a brief piece: a line, a bullet, a ";" item, an arrow step; arrows inside brackets stay ("(top -> bottom)")
 _PIECES = re.compile(r"\n|(?:^|\s)[*•·]\s|;|→|->")
 _BRACKETED = re.compile(r"\([^()]*\)")
@@ -81,9 +82,11 @@ def brief_items(slide: dict[str, Any], instructions: list[str] | tuple[str, ...]
             continue   # a table's header row ("Metric | Value"): it names columns, it is not an item
         if _DIRECTIVE.match(line):
             continue   # "Show progression from A to B", "Use arrow visuals": how to draw, not what to say
-        protected = _BRACKETED.sub(lambda m: m.group(0).replace("→", "\x00").replace("->", "\x01"), line)
+        # separators inside brackets stay ("(top -> bottom)", "(Effort low→high; Impact low→high)")
+        protected = _BRACKETED.sub(lambda m: m.group(0).replace("→", "\x00").replace("->", "\x01")
+                                   .replace(";", "\x02"), line)
         for raw in _PIECES.split(protected):
-            raw = raw.replace("\x00", "→").replace("\x01", "->").strip()
+            raw = raw.replace("\x00", "→").replace("\x01", "->").replace("\x02", ";").strip()
             if raw.endswith(":"):
                 continue   # a bare label ("Benefits:"): it heads the items after it
             piece = " ".join(raw.split()).strip(" .,-–—:")

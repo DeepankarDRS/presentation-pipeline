@@ -155,3 +155,44 @@ def test_items_the_brief_files_itself_are_not_flagged():
         plan = {"components": [_cards(("Reach", ["Search ads", "Display banners"]),
                                       ("Retention", ["Loyalty emails", "Win-back offers"]))]}
         assert flag_placed_items(plan, brief) == [] and "placed_items" not in plan, brief
+
+
+# ── found in the planner A/B (2026-11-12) ───────────────────────────────────
+
+def test_separators_inside_brackets_do_not_split_an_item_and_a_position_is_shown():
+    slide = _slide("2x2 (Effort low→high; Impact low→high): Item A: low effort, high impact; Item B: high effort, "
+                   "low impact")
+    items = brief_items(slide)
+    assert not any(i.startswith(("Impact low", "2x2 (Effort low→high")) and ";" not in i for i in items)
+    plan = _plan(_comp("m", "matrix", {"x_axis": "Effort", "y_axis": "Impact", "matrix_items": [
+        {"label": "Item A", "x": "low", "y": "high"}, {"label": "Item B", "x": "high", "y": "low"}]}))
+    assert ledger_problems(plan, slide) == []
+
+
+def test_a_bullet_the_brief_files_under_its_card_is_not_a_placement():
+    brief = ("Sources: North report\nSources: South data\nSources: East data\n"
+             "Note: South sheets differ; East data was used for the totals")
+    plan = {"components": [_cards(("Sources", ["North report", "South data", "East data"]),
+                                  ("Note", ["South sheets differ", "East data was used for the totals"]))]}
+    assert flag_placed_items(plan, brief) == []
+    steps = "Month 1 Audit: channel review, offer audit → Month 2 Launch: start pilot, open bundles"
+    plan = {"components": [_cards(("Audit", ["channel review", "offer audit"]), ("Launch", ["start pilot", "open bundles"]))]}
+    assert flag_placed_items(plan, steps) == []
+
+
+def test_a_component_that_only_repeats_the_header_is_dropped():
+    from src.agents.plan_checks import HEADER_REPEATED, finalize_plan
+    plan = {"label": "THE PROBLEM", "slide_title": "Costs rise", "subtitle": "Across teams", "components": [
+        _comp("k", "narrative", {"text": "THE PROBLEM"}), _comp("s", "caption", {"text": "Across teams."}),
+        _comp("n", "narrative", {"text": "Costs rise across teams, slowing delivery."})]}
+    finalize_plan(plan, "Costs rise across teams, slowing delivery.")
+    assert [c["component_id"] for c in plan["components"]] == ["n"]
+    assert HEADER_REPEATED in [f["code"] for f in plan["plan_flags"]]
+
+
+def test_a_bracketed_kpi_change_loses_its_brackets():
+    from src.agents.plan_checks import finalize_plan
+    plan = {"components": [_comp("k", "kpi_row", {"kpi_labels": ["A", "B"], "kpi_values": ["$4M", "11%"],
+                                                  "kpi_deltas": ["(+18% QoQ)", "(net) of returns"]})]}
+    finalize_plan(plan, "A: $4M (+18% QoQ); B: 11% (net) of returns")
+    assert plan["components"][0]["content_data"]["kpi_deltas"] == ["+18% QoQ", "(net) of returns"]

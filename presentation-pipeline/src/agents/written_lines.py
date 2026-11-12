@@ -10,6 +10,7 @@ key messages. A written line may never carry a number — those are removed here
 from __future__ import annotations
 
 import re
+from collections import Counter
 from typing import Any
 
 _WORD = re.compile(r"[a-z0-9₹%]+")
@@ -229,27 +230,43 @@ def flag_written_lines(plan: dict[str, Any], brief_text: str) -> list[str]:
     return notes
 
 
+_PLACE_PIECES = re.compile(r"\n|;|\||→|->")
+
+
 def flag_placed_items(plan: dict[str, Any], brief_text: str) -> list[str]:
     """Content policy 2026-10-04, "inferred": a card bullet copied from the brief but filed under a card the brief does
     not tie it to (items listed apart from the groups, placed by meaning; principle 3 of the planner prompt). Such a
-    bullet is from the brief, yet no brief line holds it together with its card's title. Listed in
-    plan["placed_items"] ("Card: item") for the user to review; nothing is changed."""
-    lines = [ln for ln in (brief_text or "").split("\n") if ln.strip()]
+    bullet comes from a brief line whose items went to 2+ cards, and no line or piece (a ";" / "|" part, an arrow step)
+    names its card's title beside it: the title's words outside the items it holds ("Month 1 Audit: ..., offer audit"
+    names "Audit"; "Areas: Search visibility expansion, Sponsored placements" names no "Visibility"). Listed in
+    plan["placed_items"] ("Card: item") for the user to review; nothing is changed. A/B check 2026-11-12: the first
+    version took a long note sharing words with short bullets as their source, and lost a title word a bullet holds."""
+    lines = [ln for ln in (brief_text or "").split("\n") if _words(ln)]
+    pieces = lines + [p for p in _PLACE_PIECES.split(brief_text or "") if _words(p)]
     placed: list[str] = []
     for comp in plan.get("components", []):
         if comp.get("kind") != "card_grid":
             continue
         cards = [c for c in (comp.get("content_data") or {}).get("cards") or [] if isinstance(c, dict)]
         pairs = [(i, str(b)) for i, c in enumerate(cards) for b in c.get("bullets") or []]
-        for ln in lines:
-            fed = [(i, b) for i, b in pairs if from_brief(b, ln)]
+
+        def named(i: int, piece: str) -> bool:
+            """The piece names card i's title outside the items it holds (a word in another item is no name)."""
+            rest = Counter(_words(piece))
+            for _, b in pairs:
+                if from_brief(b, piece):
+                    rest -= Counter(_words(b))
+            return bool(set(_words(str(cards[i].get("title") or ""))) & set(rest))
+
+        for line in lines:
+            fed = [(i, b) for i, b in pairs if from_brief(b, line)]
             if len({i for i, _ in fed}) < 2:
-                continue   # a line that feeds one card is that card's own line: not a placement
-            rest = set(_words(ln)) - {w for _, b in fed for w in _words(b)}   # the line without its items
+                continue   # a line that feeds one card is that card's own: not a placement
             for i, b in fed:
-                title = set(_words(str(cards[i].get("title") or "")))
-                if title and not title & rest:   # the line never names this card: the planner chose the group
-                    placed.append(f"{cards[i].get('title', '')}: {b}")
+                item = f"{cards[i].get('title', '')}: {b}"
+                if item in placed or any(named(i, p) for p in pieces if from_brief(b, p)):
+                    continue   # some piece of the brief files this bullet under its card itself
+                placed.append(item)
     if placed:
         plan["placed_items"] = placed
         return [f"placed {len(placed)} brief item(s) under cards by meaning, listed for review: " + "; ".join(placed[:4])]

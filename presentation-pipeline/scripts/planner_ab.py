@@ -5,6 +5,7 @@ differs, and both arms are scored by this branch's code.
     python -m scripts.planner_ab plan --arm new --label ab1                  # paid, ~$1.2 (31 slides)
     python -m scripts.planner_ab plan --arm old --ref 747ce68 --label ab1    # paid, ~$1.5; makes a checkout of the ref
     python -m scripts.planner_ab score --label ab1 --bundle                  # free: summary.md, zip to send back
+    python -m scripts.planner_ab score --label ab2 --old-from ab1 --bundle   # a new-arm re-run against ab1's old arm
     python -m scripts.planner_ab plan --arm new --label smoke --cases deck-qbr-data --slides 1   # ~$0.05 path check
 
 Inputs: docs/eval/planner-ab/inputs.json (5 decks, 31 slides: QBR, product launch, quick-commerce strategy, ad audit,
@@ -201,6 +202,8 @@ def _totals(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 def score(a: argparse.Namespace) -> int:
     out = OUT / a.label
+    if a.old_from and not (out / "old.json").exists():   # reuse a paid old arm (same inputs, same old commit)
+        shutil.copy(OUT / a.old_from / "old.json", out / "old.json")
     arms = {arm: [score_row(r) for r in json.loads((out / f"{arm}.json").read_text(encoding="utf-8"))]
             for arm in ("old", "new") if (out / f"{arm}.json").exists()}
     totals = {arm: _totals(rows) for arm, rows in arms.items()}
@@ -249,6 +252,7 @@ def main() -> int:
     s = sub.add_parser("score", help="free: compare the arms of a label")
     s.add_argument("--label", required=True)
     s.add_argument("--bundle", action="store_true", help="zip output/planner-ab/<label> to send back")
+    s.add_argument("--old-from", default="", help="copy old.json from this label (the old arm needs no new run)")
     a = ap.parse_args()
     return plan_arm(a) if a.cmd == "plan" else score(a)
 

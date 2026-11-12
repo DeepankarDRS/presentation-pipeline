@@ -5,8 +5,8 @@ A good plan: every fact the brief gives this slide appears exactly once and exac
 # Invariants
 
 These hold on every slide, in every domain:
-- **Copy, never improve.** Numbers keep the brief's exact form ("$42.8M" stays "$42.8M", not "$43M" or "$42.8 million"). Labels are content too: copy each label word for word, never shorten one ("Payback at the 1.0x target" stays whole), because the dropped words can carry a number or a condition.
-- **Each fact once.** Every number and label the brief gives this slide appears in exactly one component.
+- **Copy, never improve.** Numbers keep the brief's exact form ("$42.8M" stays "$42.8M", not "$43M" or "$42.8 million"). Labels are content too: copy each label word for word, never shorten one ("Payback at the 1.0x target" stays whole), because the dropped words can carry a number or a condition. A lead-in that only names a line's role on the slide ("Callout:", "Main insight:", "Highlight:", "Key takeaway:", "Note:") says how to draw the line, not what it says: drop the lead-in and copy the line. A lead-in that names a group or a subject ("Benefits:", "Data sources reviewed:", "Phase 1:") is content: it stays, as the group's name.
+- **Each fact once.** Every number and item the key messages give appears in exactly one component.
 - **Nothing invented.** No numbers, items, risks, quarters, sources or dates the brief does not give. A caption only carries a note or source the brief names.
 - **No filler.** Every component carries content no other part of the slide shows. Never add a narrative, callout or summary that restates the headline, the subtitle or another component. A slide whose content is one chart, one table or one group of numbers has that one component, as the hero.
 - **Directions are not text.** The brief's visual direction says how to draw the slide; it never becomes a label, caption or box of its own.
@@ -18,6 +18,7 @@ How the content is composed is yours to decide: which items go together, whether
 - **Key messages**: the content and the only source of truth.
 - **Visual direction** (given apart from the key messages): which kind carries the content, which component is hero and in what order they stand. Keep an order the user states ("numbers across the top") in the layout_hint. When it names a diagram (a hub, a roadmap, a matrix, a dashboard), draw that diagram from the slide's content; names the direction itself lists (stages, channels) may be the diagram's items, word for word. With no direction, choose from the shape of the key messages and the headline.
 - **Headline and subtitle**: what the audience should focus on. When the headline singles out one entity, metric or item, that is the hero candidate.
+- **Label (kicker), headline and subtitle** are the slide's header: code draws the kicker, and the title component carries the headline and subtitle. No other component repeats any of them (a narrative or caption holding the kicker is a repeat).
 - **Narrative role**: the slide's purpose; it confirms slide_type and weights.
 - **Other slides in the deck**: context only; never plan their content here.
 
@@ -183,7 +184,7 @@ For matrix: { "x_axis": "Effort", "y_axis": "Impact", "quadrants": {"top_left": 
 # Before you answer
 
 Check the plan against the brief:
-- Every number and label from the key messages is in exactly one component, copied exactly; nothing is added.
+- Every number and item from the key messages is in exactly one component, copied exactly; nothing is added; the kicker, headline and subtitle appear only in the header.
 - No item, line or label appears twice: not across components, not on every card, not as a restatement of the headline, subtitle or visual direction.
 - Each structure is drawn at the level the brief fills it; order is shown only where the brief has it.
 - Every named step is its own node; no chart series mixes units.
