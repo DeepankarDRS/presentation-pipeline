@@ -46,10 +46,9 @@ def test_card_grid_has_hint_scope():
 def test_planner_routes_parallel_items_phases_and_word_grids_to_cards():
     p = _prompt()
     assert "| card_grid (card_layout \"grid\") |" in p
-    assert "| card_grid (card_layout \"steps\") |" in p
+    assert "| card_grid (card_layout \"steps\"), up to" in p
     assert "| card_grid (card_layout \"matrix\") |" in p
     assert "bullet_list (an icon per point)" not in p          # batch A routing replaced
-    assert "Example 5 — Parallel named items" in p
     assert "use card_grid, steps layout" in p                   # pyramid / chevron detail
 
 
@@ -58,7 +57,7 @@ def test_highlight_default_follows_the_layout():
     destination) and hubs (the centre); grids equal unless singled out; matrices may mark several."""
     p = _prompt()
     assert "steps → ONE card, the destination" in p
-    assert "a hub or engine with inputs and outputs → ONE card, the centre" in p
+    assert "a hub with spokes, or a centre with inputs and outputs → ONE card, the centre" in p
     assert "grid of parallel items → all cards equal" in p
     assert "matrix → every cell the brief marks" in p
 

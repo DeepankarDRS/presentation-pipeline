@@ -1,0 +1,658 @@
+{
+ "source": "output/card-plans/typed-schema/runs.json, repeat 1 of each case (outlines of 2026-10-15)",
+ "decks": [
+  {
+   "case": "deck-qbr-data",
+   "outline": {
+    "deck_title": "Q3 FY26 Business Review",
+    "core_hook": "ARR and NRR are accelerating, but Gross Margin slipped and CAC payback — while improving — still requires operational fixes to make growth durable.",
+    "slides": [
+     {
+      "slide_index": 0,
+      "label": "",
+      "slide_title": "Q3 FY26 Business Review",
+      "subtitle": "Acme Analytics — Executive Update",
+      "section": "",
+      "narrative_role": "Opens the deck with the quarter and audience framing so executives see this is the company-level Q3 FY26 update and decision forum.",
+      "key_messages": [
+       "Q3 FY26 Business Review",
+       "Acme Analytics — Executive Update"
+      ],
+      "visual_emphasis": "big title and executive subtitle as the hero"
+     },
+     {
+      "slide_index": 1,
+      "label": "EXECUTIVE SUMMARY",
+      "slide_title": "Strong revenue and retention, with mixed efficiency signals",
+      "subtitle": "Q3 FY26 · QoQ changes",
+      "section": "Context",
+      "narrative_role": "Summarizes the headline KPIs to expose the tension in the core_hook: top-line and retention momentum versus margin and efficiency headwinds that require action.",
+      "key_messages": [
+       "ARR: $48.2M (+18% QoQ)",
+       "NRR: 114% (+2 pts)",
+       "Gross Margin: 72.1% (-1.4 pts)",
+       "CAC Payback: 14 months (-2 months)",
+       "Momentum is driven by ARR growth and NRR expansion while Gross Margin dipped; CAC Payback improved but remains a focus for efficiency."
+      ],
+      "visual_emphasis": "KPI scorecard as hero with a one-line synthesis below"
+     },
+     {
+      "slide_index": 2,
+      "label": "REVENUE TREND",
+      "slide_title": "Revenue rose to $48.2M in Q3 FY26",
+      "subtitle": "Revenue Trend ($M) · last six quarters",
+      "section": "Performance",
+      "narrative_role": "Shows the six-quarter revenue trajectory to establish that ARR growth is accelerating and to provide context for the ARR headline number.",
+      "key_messages": [
+       "Revenue by quarter: Q2 FY25 $28.4M, Q3 FY25 $31.2M, Q4 FY25 $36.1M, Q1 FY26 $39.1M, Q2 FY26 $42.3M, Q3 FY26 $48.2M"
+      ],
+      "visual_emphasis": "bar chart as hero showing six-quarter trend"
+     },
+     {
+      "slide_index": 3,
+      "label": "SEGMENT PERFORMANCE",
+      "slide_title": "Enterprise leads ARR at $28.1M in Q3 FY26",
+      "subtitle": "ARR and customer counts by segment",
+      "section": "Performance",
+      "narrative_role": "Breaks down ARR and customer counts to show which segments are driving growth and where customer density sits relative to ARR contribution.",
+      "key_messages": [
+       "Enterprise: ARR $28.1M, QoQ Growth +22%, Customers 142 | Mid-Market: ARR $14.4M, QoQ Growth +14%, Customers 487 | SMB: ARR $5.7M, QoQ Growth +8%, Customers 2,341",
+       "Enterprise represents the largest ARR concentration while SMB holds the largest customer count, indicating higher ARR per customer in Enterprise."
+      ],
+      "visual_emphasis": "data table as hero with Enterprise row highlighted"
+     },
+     {
+      "slide_index": 4,
+      "label": "Q4 PRIORITIES",
+      "slide_title": "Three operational priorities to convert momentum into durable growth",
+      "subtitle": "Targets for Q4 FY26",
+      "section": "Recommendation",
+      "narrative_role": "Presents the focused execution items that resolve the core_hook by targeting enterprise bookings, CAC payback improvement, and product delivery before the board meeting.",
+      "key_messages": [
+       "Close 3 enterprise logos worth $4M+ combined ARR",
+       "Launch self-serve onboarding to reduce CAC payback to 10 months",
+       "Ship analytics v2 dashboard before Jan board meeting",
+       "These priorities directly target revenue expansion, CAC payback reduction, and product readiness ahead of the Jan board meeting."
+      ],
+      "visual_emphasis": "priorities list as action items with emphasis on enterprise bookings and CAC reduction"
+     }
+    ]
+   },
+   "supplied_content": {
+    "title": "Q3 FY26 Business Review",
+    "subtitle": "Acme Analytics — Executive Update",
+    "kpi_labels": [
+     "ARR",
+     "NRR",
+     "Gross Margin",
+     "CAC Payback"
+    ],
+    "kpi_values": [
+     "$48.2M",
+     "114%",
+     "72.1%",
+     "14 months"
+    ],
+    "kpi_deltas": [
+     "+18% QoQ",
+     "+2 pts",
+     "-1.4 pts",
+     "-2 months"
+    ],
+    "kpi_directions": [
+     "up",
+     "up",
+     "down",
+     "up"
+    ],
+    "chart_type": "bar",
+    "chart_title": "Revenue Trend ($M)",
+    "chart_labels": [
+     "Q2 FY25",
+     "Q3 FY25",
+     "Q4 FY25",
+     "Q1 FY26",
+     "Q2 FY26",
+     "Q3 FY26"
+    ],
+    "chart_values": [
+     28.4,
+     31.2,
+     36.1,
+     39.1,
+     42.3,
+     48.2
+    ],
+    "table_columns": [
+     "Segment",
+     "ARR",
+     "QoQ Growth",
+     "Customers"
+    ],
+    "table_rows": [
+     [
+      "Enterprise",
+      "$28.1M",
+      "+22%",
+      "142"
+     ],
+     [
+      "Mid-Market",
+      "$14.4M",
+      "+14%",
+      "487"
+     ],
+     [
+      "SMB",
+      "$5.7M",
+      "+8%",
+      "2,341"
+     ]
+    ],
+    "bullets": [
+     "Close 3 enterprise logos worth $4M+ combined ARR",
+     "Launch self-serve onboarding to reduce CAC payback to 10 months",
+     "Ship analytics v2 dashboard before Jan board meeting"
+    ]
+   }
+  },
+  {
+   "case": "deck-product-launch-data",
+   "outline": {
+    "deck_title": "Nexus API Gateway",
+    "core_hook": "Teams manage multiple gateways and suffer configuration-driven outages — Nexus centralizes gateway control to cut config time and outages while enabling zero-downtime scaling.",
+    "slides": [
+     {
+      "slide_index": 0,
+      "label": "",
+      "slide_title": "Nexus API Gateway",
+      "subtitle": "One gateway. Every API. Zero downtime.",
+      "section": "",
+      "narrative_role": "Introduce the product and tagline so the audience understands the single-line value promise that the rest of the deck will prove with problems, mechanics, results and timeline.",
+      "key_messages": [
+       "Nexus API Gateway",
+       "One gateway. Every API. Zero downtime."
+      ],
+      "visual_emphasis": "big product name and tagline as hero"
+     },
+     {
+      "slide_index": 1,
+      "label": "THE PROBLEM",
+      "slide_title": "Multiple gateways create time drain and operational risk",
+      "subtitle": "Observed across engineering organizations",
+      "section": "Context",
+      "narrative_role": "Establishes the operational pain that Nexus must resolve, creating the tension the core_hook names (multiple gateways → outages & blind spots).",
+      "key_messages": [
+       "Teams manage 4+ separate gateways averaging 2.3 hours/week each on config",
+       "68% of outages last quarter traced to gateway misconfiguration",
+       "No unified view of API traffic across services — teams fly blind",
+       "These operational issues increase risk, slow development, and make incidents harder to diagnose."
+      ],
+      "visual_emphasis": "three pain-point bullets as hero with a short impact summary"
+     },
+     {
+      "slide_index": 2,
+      "label": "PRODUCT · PIPELINE",
+      "slide_title": "Five-step pipeline unifies connection, routing, security, monitoring, and scale",
+      "subtitle": "From existing APIs to zero-downtime scaling",
+      "section": "Solution",
+      "narrative_role": "Explains how Nexus resolves the problem by showing the end-to-end mechanics that eliminate fragmented gateways and provide unified control and visibility.",
+      "key_messages": [
+       "Connect → Route → Secure → Monitor → Scale",
+       "Connect — point Nexus at your existing APIs via auto-discovery",
+       "Route — drag-and-drop routing rules with automatic conflict detection",
+       "Secure — one-click mTLS, rate limiting, and OAuth2 per-route",
+       "Monitor — unified dashboard with per-route latency, error rates, throughput",
+       "Scale — auto-scaling based on traffic patterns with zero-downtime deploys"
+      ],
+      "visual_emphasis": "process flow with step descriptions; ordered process as hero"
+     },
+     {
+      "slide_index": 3,
+      "label": "BETA RESULTS",
+      "slide_title": "Private beta delivered large improvements in operations and developer experience",
+      "subtitle": "Measured during private beta",
+      "section": "Evidence",
+      "narrative_role": "Deepens the deck's tension by resolving it with measured outcomes from the private beta — demonstrating the platform's ability to cut config time, reduce outages, and improve latency and NPS.",
+      "key_messages": [
+       "Config Time: 15 min/wk (-89%)",
+       "Outages: 1/quarter (-92%)",
+       "API Latency: 38ms (-73%)",
+       "Dev NPS: 71 (+49 pts)",
+       "These metrics were observed during our private beta and indicate material improvement in stability and developer satisfaction."
+      ],
+      "visual_emphasis": "KPI tiles as hero with one-line contextual note"
+     },
+     {
+      "slide_index": 4,
+      "label": "VALUE PROP",
+      "slide_title": "Consolidate gateways to reduce risk, save time, and restore visibility",
+      "subtitle": "",
+      "section": "Benefits",
+      "narrative_role": "Summarizes why the measured improvements matter for customers and what operational changes Nexus unlocks for engineering teams.",
+      "key_messages": [
+       "Reduces configuration overhead and human error by centralizing route and policy management",
+       "Prevents routing conflicts and enforces consistent security per-route to improve reliability",
+       "Provides a single source of truth for traffic and performance so teams can diagnose issues faster",
+       "Enables safe, zero-downtime autoscaling and deployments so traffic-driven growth doesn't cause outages"
+      ],
+      "visual_emphasis": "benefit statements as the primary focus with supporting icons"
+     },
+     {
+      "slide_index": 5,
+      "label": "LAUNCH TIMELINE",
+      "slide_title": "Clear rollout path from private beta to compliance-certified GA",
+      "subtitle": "Oct 2026 → Apr 2027",
+      "section": "Go-to-market",
+      "narrative_role": "Closes the deck by showing the concrete launch milestones and timing that move Nexus from private beta to GA with compliance certifications.",
+      "key_messages": [
+       "Oct 2026: Private beta (12 customers)",
+       "Dec 2026: Public beta, self-serve signup",
+       "Feb 2027: GA launch + enterprise tier",
+       "Apr 2027: SOC2 + HIPAA certification"
+      ],
+      "visual_emphasis": "horizontal timeline with four milestone markers"
+     }
+    ]
+   },
+   "supplied_content": {
+    "title": "Nexus API Gateway",
+    "subtitle": "One gateway. Every API. Zero downtime.",
+    "bullets": [
+     "Teams manage 4+ separate gateways averaging 2.3 hours/week each on config",
+     "68% of outages last quarter traced to gateway misconfiguration",
+     "No unified view of API traffic across services — teams fly blind"
+    ],
+    "flow_steps": [
+     "Connect",
+     "Route",
+     "Secure",
+     "Monitor",
+     "Scale"
+    ],
+    "kpi_labels": [
+     "Config Time",
+     "Outages",
+     "API Latency",
+     "Dev NPS"
+    ],
+    "kpi_values": [
+     "15 min/wk",
+     "1/quarter",
+     "38ms",
+     "71"
+    ],
+    "kpi_deltas": [
+     "-89%",
+     "-92%",
+     "-73%",
+     "+49 pts"
+    ],
+    "kpi_directions": [
+     "up",
+     "up",
+     "up",
+     "up"
+    ],
+    "timeline_items": [
+     {
+      "date": "Oct 2026",
+      "label": "Private beta (12 customers)"
+     },
+     {
+      "date": "Dec 2026",
+      "label": "Public beta, self-serve signup"
+     },
+     {
+      "date": "Feb 2027",
+      "label": "GA launch + enterprise tier"
+     },
+     {
+      "date": "Apr 2027",
+      "label": "SOC2 + HIPAA certification"
+     }
+    ]
+   }
+  },
+  {
+   "case": "gate-deck-xtsy-qcomm",
+   "outline": {
+    "deck_title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+    "core_hook": "Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, but visibility, availability and repeat purchase gaps limit XTSY's scale — data-led commerce execution and automation close the gap.",
+    "slides": [
+     {
+      "slide_index": 0,
+      "label": "",
+      "slide_title": "Unlocking the Next Phase of Growth for XTSY on Quick Commerce",
+      "subtitle": "Building Category Share, Visibility and Consumer Penetration Through Data-Led Commerce Execution",
+      "section": "Context",
+      "narrative_role": "Introduce the central opportunity: quick commerce is a strategic growth channel for XTSY and sets the agenda for the rest of the deck (what to optimize and why).",
+      "key_messages": [
+       "Status: XTSY live on Zepto, Swiggy Instamart and Blinkit",
+       "Quick Commerce is becoming a primary consumption channel for impulse and instant-need beverage categories, creating a significant opportunity for XTSY to scale."
+      ],
+      "visual_emphasis": "ecosystem map showing Zepto, Blinkit and Instamart connected to XTSY growth engine (visual hero)"
+     },
+     {
+      "slide_index": 1,
+      "label": "",
+      "slide_title": "Why the Energy Drink Category is Built for Quick Commerce",
+      "subtitle": "",
+      "section": "Context",
+      "narrative_role": "Establish the behavioural fit between energy-drink consumption occasions and the instant-fulfilment value proposition of quick commerce, creating demand-side justification for investment.",
+      "key_messages": [
+       "Consumer purchase occasions by daypart: Pre-workout consumption; Gaming sessions; Late-night work/study; Travel & commuting; Party & social occasions; Instant energy requirements",
+       "Key Insight: Energy drinks have one of the strongest instant-need consumption behaviors, making them highly compatible with Quick Commerce.",
+       "Show: Category growth drivers · Consumer demand moments · Impulse purchase behaviour"
+      ],
+      "visual_emphasis": "daypart occasions map as hero with demand moments and impulse behavior callouts"
+     },
+     {
+      "slide_index": 2,
+      "label": "",
+      "slide_title": "Growth Opportunities for XTSY Across Quick Commerce Platforms",
+      "subtitle": "",
+      "section": "Opportunity",
+      "narrative_role": "Translate consumer fit into platform-specific opportunity areas so stakeholders can see where to act across visibility, conversion and retention levers.",
+      "key_messages": [
+       "Opportunity Matrix rows: Visibility · Conversion · Repeat Purchase · Market Expansion",
+       "Opportunity Matrix columns: Zepto · Blinkit · Instamart",
+       "Opportunity Areas: Search visibility expansion · Sponsored placements · Category page dominance · New city penetration · Portfolio expansion · Basket attachment opportunities · Subscription/repeat purchase growth",
+       "Key Takeaway: Growth is not limited to ad spends; it is unlocked through visibility, availability, discoverability and repeat purchase strategies."
+      ],
+      "visual_emphasis": "matrix as hero (rows = levers, columns = platforms) with opportunity bullets per cell"
+     },
+     {
+      "slide_index": 3,
+      "label": "",
+      "slide_title": "Our 4-Phase Framework to Build Category Share",
+      "subtitle": "",
+      "section": "Strategy",
+      "narrative_role": "Provide a stepwise roadmap that links foundational fixes to market-share capture and then to scalable, profitable growth — so investments map to outcomes.",
+      "key_messages": [
+       "Phase 1: Foundation & Hygiene · Availability tracking · OOS reduction · Search audit · Visibility benchmark · Portfolio prioritization",
+       "Phase 2: Market Share Capture · Search dominance · Sponsored placements · Keyword expansion · Competitor conquesting · Category page visibility",
+       "Phase 3: Consumer Expansion · New-to-brand acquisition · New-to-category targeting · Cross-platform expansion · Geo expansion",
+       "Phase 4: Scale & Profitability · Automation-led optimization · Incrementality focus · Repeat purchase acceleration · Portfolio scaling",
+       "Show progression from Visibility → Offtakes → Market Share → Profitability"
+      ],
+      "visual_emphasis": "4-stage roadmap as hero showing phased progression from foundation to profitability"
+     },
+     {
+      "slide_index": 4,
+      "label": "",
+      "slide_title": "How Our Commerce Intelligence Platform Drives Faster Growth",
+      "subtitle": "",
+      "section": "Capabilities",
+      "narrative_role": "Explain the measurement and insight capabilities that let XTSY identify gaps and scale the right tactics across cities, SKUs and platforms.",
+      "key_messages": [
+       "Visual: Control Tower Dashboard (platform control tower as visual)",
+       "TRACKING: Share of Search · Share of Shelf · Availability Monitoring · Pricing Intelligence · Competitor Monitoring",
+       "INSIGHTS: SKU-level performance · City-level opportunity mapping · Platform-wise growth pockets · Category trends",
+       "Key Message: What gets measured gets scaled."
+      ],
+      "visual_emphasis": "control-tower dashboard as hero with tracking metrics as KPI tiles and insights as supporting maps/charts"
+     },
+     {
+      "slide_index": 5,
+      "label": "",
+      "slide_title": "Ads Automation Engine Designed for Quick Commerce",
+      "subtitle": "",
+      "section": "Capabilities",
+      "narrative_role": "Show how automation shortens decision cycles and improves efficiency so advertising and visibility investments convert into faster business outcomes.",
+      "key_messages": [
+       "Automation workflow: Platform Data → Decision Engine → Bid Optimization · Budget Reallocation · Keyword Expansion · Placement Optimization → Business Outcome",
+       "Benefits: Faster optimization cycles · Reduced manual intervention · Improved ROAS · Improved share of visibility · Higher conversion efficiency",
+       "Highlight: Automation allows brands to react in hours instead of weeks."
+      ],
+      "visual_emphasis": "automation workflow as hero with benefits as supporting callouts"
+     },
+     {
+      "slide_index": 6,
+      "label": "",
+      "slide_title": "Expected Business Impact for XTSY",
+      "subtitle": "",
+      "section": "Impact",
+      "narrative_role": "Synthesize how combined intelligence, automation and execution map to business outcomes XTSY cares about (visibility → offtakes → share).",
+      "key_messages": [
+       "Expected impact areas: Category Visibility ↑ · Search Share ↑ · Sponsored Placement Share ↑ · New Consumer Acquisition ↑ · Repeat Purchase Rate ↑ · Market Share ↑ · Sales Velocity ↑",
+       "Message: Combining category intelligence, automation and performance execution creates a scalable growth engine."
+      ],
+      "visual_emphasis": "impact framework as hero using arrow visuals to show directional improvement across business metrics"
+     },
+     {
+      "slide_index": 7,
+      "label": "",
+      "slide_title": "Roadmap for the Next 90 Days",
+      "subtitle": "",
+      "section": "Recommendation",
+      "narrative_role": "Present a tight 90-day sequence of audit, activation and optimization that operationalizes the framework and delivers measurable share gains quickly.",
+      "key_messages": [
+       "Month 1: Audit & Benchmarking · Category assessment · Search visibility audit · Availability review · Platform diagnostics",
+       "Month 2: Growth Activation · Search scaling · Placement expansion · Competitor conquesting · Portfolio prioritization",
+       "Month 3: Optimization & Scale · Automation deployment · Budget optimization · Expansion planning · Growth measurement",
+       "Closing Statement: \"Winning Quick Commerce is no longer about spending more. It is about capturing visibility faster, converting demand better and scaling through intelligence and automation.\""
+      ],
+      "visual_emphasis": "90-day action plan timeline as hero with month-by-month tasks"
+     }
+    ]
+   },
+   "supplied_content": null
+  },
+  {
+   "case": "gate-deck-cheffin-full",
+   "outline": {
+    "deck_title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+    "core_hook": "CHEFFIN is spending heavily across FLIPCART and ZAROMA but the current traffic economics are structurally weak — CPCs are far above what current AOV and CVR can support, so campaign-level fixes alone won't restore profitability.",
+    "slides": [
+     {
+      "slide_index": 0,
+      "label": "",
+      "slide_title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+      "subtitle": "Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap",
+      "section": "",
+      "narrative_role": "Open the deck with the engagement scope and set expectations for a concise audit that ties performance to operating gaps and a takeover roadmap.",
+      "key_messages": [
+       "Prepared by our agency",
+       "Scope: FLIPCART Targeting (last 90 days), FLIPCART Search Term report, ZAROMA April–June campaign, city and keyword views"
+      ],
+      "visual_emphasis": "cover with marketplace growth theme and FLIPCART + ZAROMA visual cues"
+     },
+     {
+      "slide_index": 1,
+      "label": "EXECUTIVE SUMMARY",
+      "slide_title": "The account is spending at scale, but not yet buying profitable demand.",
+      "subtitle": "",
+      "section": "Context",
+      "narrative_role": "Establish the high-level performance picture and introduce the central diagnosis that explains why current spend is not translating to profitable sales.",
+      "key_messages": [
+       "Combined spend: ₹114.9L",
+       "Combined revenue: ₹37.4L",
+       "Combined ROAS: 0.33x",
+       "FLIPCART ROAS: 0.34x",
+       "ZAROMA ROAS: 0.32x",
+       "Main insight: Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR.",
+       "Callout: “This is a media economics problem, not just a campaign hygiene problem.”"
+      ],
+      "visual_emphasis": "KPI scorecard (combined + platform ROAS) with one-line insight callout"
+     },
+     {
+      "slide_index": 2,
+      "label": "ECONOMICS",
+      "slide_title": "CPC is nearly 3x higher than what current conversion economics can support.",
+      "subtitle": "",
+      "section": "Problem",
+      "narrative_role": "Deepen the tension by quantifying the gap between actual CPC and the break-even (allowable) CPC derived from current AOV and CVR, showing why bids alone cannot fix profitability.",
+      "key_messages": [
+       "Platform | Actual CPC | Allowable CPC for 1.0x ROAS | Gap",
+       "FLIPCART | ₹31.1 | ₹10.7 | Actual CPC is ~2.9x allowable",
+       "ZAROMA | ₹46.2 | ₹14.8 | Actual CPC is ~3.1x allowable",
+       "Main insight: At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together."
+      ],
+      "visual_emphasis": "bar chart comparing actual CPC vs allowable CPC (platform-level)"
+     },
+     {
+      "slide_index": 3,
+      "label": "DATA & METHODOLOGY",
+      "slide_title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+      "subtitle": "",
+      "section": "Methodology",
+      "narrative_role": "Show the evidence base and data hygiene steps to establish credibility for the metrics and gaps presented in the audit.",
+      "key_messages": [
+       "Data sources reviewed: FLIPCART Targeting last 90 days report",
+       "Data sources reviewed: FLIPCART Search Term report",
+       "Data sources reviewed: ZAROMA campaign-level data",
+       "Data sources reviewed: ZAROMA city-level data",
+       "Data sources reviewed: ZAROMA keyword-level data",
+       "Note: Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated from raw data.",
+       "Note: ZAROMA sheets appear to have different coverage; campaign-level totals were used as the primary platform total source and city/keyword sheets were used for diagnostics.",
+       "Key formulas: ROAS = Revenue or Sales / Spend",
+       "Key formulas: ACOS = Spend / Sales",
+       "Key formulas: CTR = Clicks / Impressions",
+       "Key formulas: CPC = Spend / Clicks",
+       "Key formulas: CVR = Orders or Purchases / Clicks",
+       "Key formulas: CPA = Spend / Orders or Purchases",
+       "Key formulas: AOV = Sales / Orders or Purchases",
+       "Key formulas: Allowable CPC for 1.0x ROAS = AOV × CVR"
+      ],
+      "visual_emphasis": "source list with two short data-quality callouts"
+     },
+     {
+      "slide_index": 4,
+      "label": "FLIPCART SNAPSHOT",
+      "slide_title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+      "subtitle": "",
+      "section": "Platform Deep Dive",
+      "narrative_role": "Present the FLIPCART platform metrics that show volume but poor revenue efficiency, reinforcing the need for structural fixes rather than only tactical changes.",
+      "key_messages": [
+       "Spend: ₹29.4L",
+       "Ad sales: ₹10.1L",
+       "ROAS: 0.34x",
+       "CPC: ₹31.1",
+       "CVR: 5.5%",
+       "AOV: ₹195",
+       "Allowable CPC for 1.0x ROAS: ₹10.7",
+       "Main insight: FLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+      ],
+      "visual_emphasis": "metric scorecard with small supporting table (platform KPIs)"
+     },
+     {
+      "slide_index": 5,
+      "label": "FLIPCART DIAGNOSIS",
+      "slide_title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+      "subtitle": "",
+      "section": "Diagnosis",
+      "narrative_role": "Diagnose which ad types and match/targeting layers are working and which are not, to justify protecting high-performing pockets and tightening control on discovery/low-intent layers.",
+      "key_messages": [
+       "Ad Type | Spend Share | Sales Share | ROAS | Interpretation",
+       "SP: Spend Share 75.6%, Sales Share 75.3%, ROAS 0.34x, Interpretation: Main volume driver, but inefficient overall",
+       "SBV: Spend Share 12.8%, Sales Share 8.5%, ROAS 0.23x, Interpretation: Weak video efficiency",
+       "SBT: Spend Share 9.3%, Sales Share 15.1%, ROAS 0.56x, Interpretation: Best ad type; under-allocated",
+       "SD: Spend Share 2.4%, Sales Share 1.1%, ROAS 0.17x, Interpretation: Weak conversion quality",
+       "Match/targeting performance: Exact ROAS: 0.44x; Phrase ROAS: 0.26x; Auto ROAS: 0.30x; Category ROAS: 0.25x; Broad ROAS: 0.22x; Audience ROAS: 0.15x",
+       "Main insight: Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control."
+      ],
+      "visual_emphasis": "two mini-tables: ad-type breakdown (hero) and match-type ROAS (supporting)"
+     }
+    ]
+   },
+   "supplied_content": null
+  },
+  {
+   "case": "gate-deck-all-nodes-dense",
+   "outline": {
+    "deck_title": "BREWLY Growth Strategy FY27",
+    "core_hook": "Repeat customers now drive most of BREWLY's revenue, so profitable scale requires prioritising high-margin website channels and retention levers (subscriptions, bundles, referrals) over acquisition-heavy marketplaces.",
+    "slides": [
+     {
+      "slide_index": 0,
+      "label": "",
+      "slide_title": "BREWLY Growth Strategy FY27",
+      "subtitle": "Where we stand, what is working, and the 90-day plan to scale profitably",
+      "section": "Cover",
+      "narrative_role": "Introduce the deck's scope and the single strategic aim: convert the retention-led momentum into a repeatable, high-margin scaling plan.",
+      "key_messages": [
+       "Where we stand, what is working, and the 90-day plan to scale profitably",
+       "Prepared by the Growth Team | October 2026"
+      ],
+      "visual_emphasis": "big title with concise subtitle and a small authorship line"
+     },
+     {
+      "slide_index": 1,
+      "label": "PERFORMANCE",
+      "slide_title": "Repeat customers now drive most of BREWLY's revenue.",
+      "subtitle": "",
+      "section": "Performance",
+      "narrative_role": "Establish the quantitative evidence that retention is the current growth engine and frame where margin and efficiency sit across the business.",
+      "key_messages": [
+       "Annual revenue: ₹14.2Cr",
+       "Revenue growth: +38%",
+       "Blended ROAS: 2.4x",
+       "Customer acquisition cost: ₹410",
+       "62% of revenue comes from repeat customers, up from 41% a year ago.",
+       "Quarterly revenue (₹ Cr): Q1 FY26: 2.6 | Q2 FY26: 2.9 | Q3 FY26: 3.3 | Q4 FY26: 3.6 | Q1 FY27: 3.9 | Q2 FY27: 4.4",
+       "Growth came from retention and pricing, not from buying more traffic."
+      ],
+      "visual_emphasis": "KPI scorecard across the top, one dominant repeat-revenue number as hero, quarterly revenue bar chart supporting"
+     },
+     {
+      "slide_index": 2,
+      "label": "CHANNELS",
+      "slide_title": "The website earns the best margin; bundles and referrals are the quick wins.",
+      "subtitle": "",
+      "section": "Channels",
+      "narrative_role": "Show channel-level economics to justify prioritising website initiatives and low-effort, high-impact retention tactics.",
+      "key_messages": [
+       "Website: Revenue ₹7.1Cr, ROAS 3.1x, Gross Margin 64% | QUIKMART: Revenue ₹4.3Cr, ROAS 2.2x, Gross Margin 55% | DASHCART: Revenue ₹2.8Cr, ROAS 1.4x, Gross Margin 47%",
+       "Pyramid of brand priorities (top to bottom): Category leadership | Loyal subscribers | Consistent experience | Fresh roast quality",
+       "2x2 (Effort low→high; Impact low→high): Bundle offers: low effort, high impact; Referral program: low effort, high impact; Own delivery fleet: high effort, high impact; Loyalty app: high effort, low impact"
+      ],
+      "visual_emphasis": "full-width channel economics table as hero, pyramid priorities left as supporting visual, 2x2 matrix right as tactical prioritisation"
+     },
+     {
+      "slide_index": 3,
+      "label": "OPERATIONS",
+      "slide_title": "One team and one platform run a four-stage fulfilment chain.",
+      "subtitle": "",
+      "section": "Operations",
+      "narrative_role": "Explain the operational model and team structure that enables consistent fulfilment and supports scaling across channels.",
+      "key_messages": [
+       "Roast → Pack → Dispatch → Deliver",
+       "Org chart: Head of Growth → Performance Lead; Retention Lead; Marketplace Lead",
+       "Architecture layers top→bottom: Channels: Website, QUIKMART, DASHCART | Customer data: profiles, purchase history | Operations: roastery, inventory, delivery"
+      ],
+      "visual_emphasis": "process flow as hero, org chart supporting left, layered architecture diagram supporting right"
+     },
+     {
+      "slide_index": 4,
+      "label": "JOURNEY",
+      "slide_title": "Five milestones built the brand; one decision flow now converts each visitor.",
+      "subtitle": "",
+      "section": "Customer",
+      "narrative_role": "Link the brand's milestone history to the current simple conversion flow that preserves retention focus and prevents offer overlap.",
+      "key_messages": [
+       "Timeline: 2021: Café opens | 2022: Website launch | 2023: Subscriptions live | 2024: QUIKMART listing | 2025: DASHCART listing",
+       "Visitor lands → Bought before? → Yes: Subscription offer / No: Trial pack → Checkout",
+       "Returning buyers never see the trial pack | First-time visitors get one offer | Every offer ends at one checkout"
+      ],
+      "visual_emphasis": "timeline across the top as narrative backbone, conversion decision flow large left, rules as concise takeaways right"
+     },
+     {
+      "slide_index": 5,
+      "label": "PLAN",
+      "slide_title": "Four pillars and a 90-day plan take BREWLY from audit to scale.",
+      "subtitle": "",
+      "section": "Plan",
+      "narrative_role": "Resolve the core_hook by mapping concrete pillars to a time-bound 90-day activation and scale plan focused on retention and high-margin channels.",
+      "key_messages": [
+       "Pillars: Subscriptions: deepen repeat buying | Bundles: lift order value | Gifting: open corporate demand | Content: build the community",
+       "Month 1 Audit: channel economics review, offer audit → Month 2 Activate: launch bundles, start referral pilot → Month 3 Scale: shift budget to winning channels, expand subscriptions"
+      ],
+      "visual_emphasis": "four equal-weight pillar tiles across the top, ordered 90-day phases as a linear roadmap below"
+     }
+    ]
+   },
+   "supplied_content": null
+  }
+ ]
+}

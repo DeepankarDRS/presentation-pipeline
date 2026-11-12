@@ -7,8 +7,7 @@ the field as an object, the model starts one inside the string and the grammar c
 unescaped quote. Research and the choice of this design: docs/planner-output-schema-research-2026-10-15.md.
 
 Design: `components` is a union (JSON-schema anyOf) of one component model per kind. Each starts with
-`component_id` and a `kind` const, carries only the fields its kind uses (chart_type / series_count for a
-chart, columns / rows for a table, items / orientation for list kinds) and a typed `content` whose keys are
+`component_id` and a `kind` const, carries only the fields its kind uses (chart_type for a chart; counts and orientation are read from the content by code) and a typed `content` whose keys are
 today's content_data keys, so `content_data_of` gives plan_checks / generator / tile nodes the same dict.
 Optional keys are nullable (strict mode requires every key); None is dropped on the way out.
 """
@@ -19,7 +18,7 @@ from typing import Annotated, Any, Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, create_model
 
-from src.state import ChartTypeLiteral, OrientationLiteral, SlideTypeLiteral, WeightLiteral
+from src.state import ChartTypeLiteral, SlideTypeLiteral, WeightLiteral
 
 ToneLiteral = Literal["good", "bad", "watch", ""]
 LevelLiteral = Literal["low", "mid", "high"]
@@ -33,6 +32,7 @@ class _Strict(BaseModel):
 # ── content per kind (keys = today's content_data keys) ─────────────────────
 
 class TitleContent(_Strict):
+    """The slide's headline as the brief gives it."""
     title: str
     subtitle: Optional[str] = None
 
@@ -43,13 +43,19 @@ class TextContent(_Strict):
 
 
 class KpiRowContent(_Strict):
-    """One entry per tile in every list, same order."""
+    """One entry per tile in every list, in the brief's order. Labels and values word for word."""
     kpi_labels: list[str]
-    kpi_values: list[str]
-    kpi_deltas: Optional[list[str]] = None
+    kpi_values: list[str] = Field(description='The figure only ("$42.8M", "38%"), never a sentence.')
+    kpi_deltas: Optional[list[str]] = Field(default=None, description='Change or short note per tile, "" when none.')
     kpi_directions: Optional[list[Literal["", "up", "down", "neutral"]]] = None
-    kpi_tones: Optional[list[ToneLiteral]] = None
-    kpi_icons: Optional[list[str]] = None
+    kpi_tones: list[ToneLiteral] = Field(
+        default_factory=list,
+        description='What each number means for the slide\'s story, not which way it moved: good (a win or fix), bad (a loss, leak or risk), '
+                    'watch (mixed, near a limit), "" (neutral context, a target, or no judgement in the brief).')
+    kpi_icons: list[str] = Field(
+        default_factory=list,
+        description='One generic Lucide icon name per tile for what it measures (wallet, users, clock), '
+                    'or "" on every tile when no symbol fits. No brand logos.')
 
 
 # a number, or the brief's own text of one ("0.34x", "₹8.2"): the chart node parses it, plan checks match it
@@ -62,7 +68,8 @@ class ChartSeries(_Strict):
 
 
 class ChartContent(_Strict):
-    """chart_values for one series, chart_series for several (the chart's type is the component's chart_type)."""
+    """chart_values for one series, chart_series for several (the chart's type is the component's chart_type).
+    All series share one unit; values copied from the brief."""
     chart_title: Optional[str] = None
     chart_labels: list[str]
     chart_values: Optional[list[ChartValue]] = None
@@ -70,6 +77,7 @@ class ChartContent(_Strict):
 
 
 class TableContent(_Strict):
+    """Entities as rows, measures as columns; cells copied from the brief."""
     table_columns: list[str]
     table_rows: list[list[str]]
 
@@ -135,21 +143,25 @@ class MatrixContent(_Strict):
 
 
 class Card(_Strict):
-    """tag / body / bullets only when the key_messages give them."""
+    """tag / body / bullets only when the brief gives them (or a written body, see the system prompt)."""
     title: str
-    tag: Optional[str] = None
+    tag: Optional[str] = Field(default=None, description="A time window, phase or step label from the brief.")
     body: Optional[str] = None
-    bullets: Optional[list[str]] = None
-    tone: Optional[ToneLiteral] = None
-    key_phrase: Optional[str] = None
-    icon: Optional[str] = None
+    bullets: Optional[list[str]] = Field(default=None, description="The brief's items that belong to this card.")
+    tone: ToneLiteral = Field(default="", description='As kpi_tones: good / bad / watch / "" (neutral).')
+    key_phrase: Optional[str] = Field(
+        default=None, description="The few words of body the audience should catch, copied exactly; null when none.")
+    icon: str = Field(default="", description='Generic Lucide icon name for the card, or "" on every card.')
 
 
 class CardGridContent(_Strict):
-    """matrix layout: columns and rows name the grid, cards in row order (one per row x column)."""
+    """grid = parallel items; steps = an ordered sequence joined by arrows; matrix = named rows x columns of words
+    (columns and rows name the grid, cards in row order, one per row x column)."""
     card_layout: Literal["grid", "steps", "matrix"]
     cards: list[Card]
-    focus_card: Optional[int] = None
+    focus_card: Optional[int] = Field(
+        default=None, description="Index of the ONE card the headline or brief singles out; null when the cards are "
+                                  "equal, and on steps when the focus is the last step.")
     columns: Optional[list[str]] = None
     rows: Optional[list[str]] = None
 
@@ -190,24 +202,18 @@ CONTENT_BY_KIND: dict[str, type[_Strict]] = {
 
 # ── one component model per kind ────────────────────────────────────────────
 
-# repeated in all 15 component models, so no descriptions: the system prompt explains each field
+# repeated in all 15 component models, so no descriptions: the system prompt explains each field once.
+# Order = decide, then fill: weight and design_hint come before content. Counts (count / items / rows / columns /
+# series_count) and orientation are not asked: code reads them from the content
+# (`slide_component_planner.derive_counts`), so they never disagree with it.
 _ID = (str, ...)
-_COUNT = (int, Field(default=1, ge=1, le=20))
-_ITEMS = (int, Field(default=0, ge=0))
-_TAIL = {
-    "content_summary": (str, ""),
-    "design_hint": (str, ""),
+_HEAD = {
     "weight": (WeightLiteral, "peer"),
+    "design_hint": (str, ""),
+    "content_summary": (str, ""),
 }
-# fields of today's PlannerComponent each kind keeps (the rest are always empty for it)
 _KIND_FIELDS: dict[str, dict[str, Any]] = {
-    "chart": {"chart_type": (ChartTypeLiteral, ...), "series_count": (int, Field(default=1, ge=0))},
-    "table": {"columns": (int, Field(default=0, ge=0)), "rows": (int, Field(default=0, ge=0))},
-    "bullet_list": {"items": _ITEMS}, "pyramid": {"items": _ITEMS}, "card_grid": {"items": _ITEMS},
-    "timeline": {"items": _ITEMS, "orientation": (OrientationLiteral, "")},
-    "flow": {"items": _ITEMS, "orientation": (OrientationLiteral, "")},
-    "process_arrow": {"items": _ITEMS, "orientation": (OrientationLiteral, "")},
-    "tree": {"items": _ITEMS, "orientation": (OrientationLiteral, "")},
+    "chart": {"chart_type": (ChartTypeLiteral, ...)},
 }
 
 
@@ -218,8 +224,8 @@ def _component_name(kind: str) -> str:
 COMPONENT_BY_KIND: dict[str, type[BaseModel]] = {
     kind: create_model(
         _component_name(kind), __config__=ConfigDict(extra="forbid"),
-        component_id=_ID, kind=(Literal[kind], ...), **_KIND_FIELDS.get(kind, {}),
-        count=_COUNT, content=(content, ...), **_TAIL,
+        component_id=_ID, kind=(Literal[kind], ...), **_HEAD, **_KIND_FIELDS.get(kind, {}),
+        content=(content, ...),
     )
     for kind, content in CONTENT_BY_KIND.items()
 }
@@ -255,14 +261,14 @@ class PlannerSlideTyped(BaseModel):
     slide_type: SlideTypeLiteral = Field(
         description="cover | content | data | section_break | closing (see the system prompt)."
     )
+    layout_hint: str = Field(
+        description="The composition, decided before the components: which component carries the most weight and "
+                    "how the others relate to it, by component_id (a priority statement, no pixels)."
+    )
     components: list[Annotated[TypedComponent, Field()]] = Field(  # type: ignore[valid-type]
         min_length=1,
         description="Components this slide contains, each with a unique component_id, its kind and its own "
                     "content. Never merge data across components."
-    )
-    layout_hint: str = Field(
-        description="Freeform layout INTENT: which regions carry the most weight and how the components relate "
-                    "(a priority statement, not pixel dimensions)."
     )
 
 
@@ -271,7 +277,8 @@ class PlannerSlideTyped(BaseModel):
 def content_data_of(component: BaseModel) -> dict[str, Any]:
     """The component's content as today's content_data dict (None keys dropped; a chart's type copied in,
     as `_settle_chart_type` expects)."""
-    data = component.content.model_dump(exclude_none=True)  # type: ignore[attr-defined]
+    # defaults (None, [], "") mean "not given": dropped, so a saved content_data round-trips unchanged
+    data = component.content.model_dump(exclude_none=True, exclude_defaults=True)  # type: ignore[attr-defined]
     chart_type = getattr(component, "chart_type", "")
     if chart_type:
         data = {"chart_type": chart_type, **data}

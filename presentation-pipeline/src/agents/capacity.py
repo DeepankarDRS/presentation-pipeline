@@ -131,7 +131,8 @@ def _metric_table_to_kpis(comp: dict[str, Any]) -> list[dict[str, Any]] | None:
     if len(cols) != 2 or len(rows) < 3 or any(not isinstance(r, list) or len(r) != 2 for r in rows):
         return None
     labels, values = [str(r[0]) for r in rows], [str(r[1]) for r in rows]
-    if not all(re.search(r"\d", v) for v in values) or len({_unit(v) for v in values}) < 2:
+    # figures only: a sentence that holds a number is not a tile value
+    if not all(re.search(r"\d", v) and len(v.split()) <= 3 for v in values) or len({_unit(v) for v in values}) < 2:
         return None
     n, most = len(rows), max_of("kpi_row", "per_row")
     kpis = {k: v for k, v in comp.items() if k not in ("content_data", "columns", "rows", "chart_type")}

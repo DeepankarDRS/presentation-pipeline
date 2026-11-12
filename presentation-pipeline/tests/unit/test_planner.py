@@ -71,7 +71,9 @@ def test_planner_slide_to_state_chart_fields():
             PlannerComponent(
                 component_id="revenue_chart",
                 kind="chart", count=6, chart_type="bar",
-                series_count=3, content_summary="Revenue by quarter"
+                series_count=1, content_summary="Revenue by quarter",
+                content_data_json='{"chart_labels": ["Q1", "Q2"], "chart_series": [{"name": "A", "values": [1, 2]}, '
+                                  '{"name": "B", "values": [3, 4]}, {"name": "C", "values": [5, 6]}]}',
             ),
         ],
         layout_hint="Chart centered",
@@ -80,8 +82,8 @@ def test_planner_slide_to_state_chart_fields():
     comp = result["components"][0]
     assert comp["kind"] == "chart"
     assert comp["chart_type"] == "bar"
-    assert comp["series_count"] == 3
-    assert comp["count"] == 6
+    assert comp["series_count"] == 3          # read from the content, not the LLM's number
+    assert comp["count"] == 1
     assert comp["component_id"] == "revenue_chart"
 
 
@@ -91,8 +93,10 @@ def test_planner_slide_to_state_table_fields():
         components=[
             PlannerComponent(
                 component_id="segment_table",
-                kind="table", count=1, columns=4, rows=3,
-                content_summary="Segment breakdown"
+                kind="table", count=1, columns=2, rows=9,
+                content_summary="Segment breakdown",
+                content_data_json='{"table_columns": ["Segment", "Revenue", "Growth", "Margin"], '
+                                  '"table_rows": [["A", "1", "2", "3"], ["B", "1", "2", "3"], ["C", "1", "2", "3"]]}',
             ),
         ],
         layout_hint="Table fills width",
@@ -454,3 +458,25 @@ def test_planner_prompt_lets_a_slide_group_its_numbers_into_several_kpi_rows():
     # content conserved (labels word for word), composition the planner's own choice, variety welcome
     assert "copy each label word for word" in text and "There is no single right arrangement" in text
     assert "keep them in the same group, next to each other" in text   # an actual and its target (plans check 2026-10-12)
+
+
+def test_counts_and_orientation_come_from_the_content():
+    """The typed schema no longer asks for count / items / rows / columns / series_count / orientation:
+    derive_counts reads them from the content, so they never disagree with it."""
+    from src.agents.slide_component_planner import derive_counts
+    cases = [
+        ({"kind": "kpi_row", "content_data": {"kpi_labels": ["a", "b", "c"], "kpi_values": ["1", "2", "3"]}},
+         {"count": 3}),
+        ({"kind": "card_grid", "content_data": {"cards": [{"title": "a"}, {"title": "b"}]}}, {"count": 1, "items": 2}),
+        ({"kind": "flow", "content_data": {"direction": "vertical", "flow_steps": ["a", "b", "c", "d"]}},
+         {"items": 4, "orientation": "vertical"}),
+        ({"kind": "tree", "content_data": {"layout": "horizontal", "tree_nodes": [
+            {"label": "r", "children": [{"label": "a"}, {"label": "b", "children": [{"label": "c"}]}]}]}},
+         {"items": 4, "orientation": "horizontal"}),
+        ({"kind": "table", "content_data": {"table_columns": ["x", "y"], "table_rows": [["1", "2"]]}},
+         {"columns": 2, "rows": 1}),
+        ({"kind": "chart", "content_data": {"chart_values": [1, 2, 3]}}, {"series_count": 1}),
+    ]
+    for comp, expected in cases:
+        derive_counts(comp)
+        assert {k: comp[k] for k in expected} == expected, comp["kind"]

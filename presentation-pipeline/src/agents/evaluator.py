@@ -88,6 +88,7 @@ def _build_step_summary(history: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "tokens_reasoning": record.get("tokens_reasoning", 0),
             "tokens_cached": record.get("tokens_cached", 0),
             "reask": bool(record.get("reask", False)),
+            "reask_outcome": record.get("reask_outcome"),   # what the re-ask fixed or broke
             "cost": cost,
             "stalled": record.get("stalled", False),
             "errors_in_count": len(record.get("errors_in", [])),

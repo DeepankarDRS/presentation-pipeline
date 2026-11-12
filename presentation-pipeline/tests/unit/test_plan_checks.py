@@ -10,6 +10,8 @@ from src.agents.plan_checks import (
     find_problems, finalize_plan, is_instruction_text, label_overlap, reask_context, tones_from_hint,
 )
 from src.agents.planner_schema import PlannerSlide
+from src.agents.planner_schema_typed import PlannerSlideTyped
+from src.utils.strict_schema import sent_schema
 from src.agents.written_lines import drop_repeated_bodies
 
 BRIEF = "Q3 review. ARR $48.2M. Close 3 enterprise logos. Ship analytics v2 before the board meeting."
@@ -154,7 +156,9 @@ USAGE = {"tokens_in": 100, "tokens_out": 10, "tokens_reasoning": 3, "tokens_cach
 
 
 def good():
-    return plan([comp("k", "kpi_row", {"kpi_labels": ["ARR"], "kpi_values": ["$48.2M"]}, "hero")])
+    # every item of the brief, the change too: the item ledger (plan_ledger) re-asks for a dropped figure
+    return plan([comp("k", "kpi_row", {"kpi_labels": ["ARR"], "kpi_values": ["$48.2M"], "kpi_deltas": ["+18% QoQ"]},
+                      "hero")])
 
 
 def bad():
@@ -362,7 +366,9 @@ def test_finalize_takes_hint_tones_only_when_the_planner_wrote_none_and_says_so(
 def test_the_planner_prompt_asks_for_kpi_tones_by_meaning():
     from pathlib import Path
     text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
-    assert '"kpi_tones": ["good", "good", "bad"]' in text and "not which way it moved" in text
+    assert '"kpi_tones": ["good", "good", "bad"]' in text   # the string route's content section
+    typed = sent_schema(PlannerSlideTyped)["$defs"]["KpiRowContent"]["properties"]["kpi_tones"]["description"]
+    assert "not which way it moved" in typed and "good" in typed and "watch" in typed
     assert "kpi_tones" in PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
 
 
@@ -410,7 +416,11 @@ def test_focus_card_singles_out_its_card_before_the_hint():
 def test_the_planner_prompt_asks_for_card_tones_phrases_and_focus():
     from pathlib import Path
     text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
-    assert '"focus_card": 4' in text and "key_phrase (card_grid" in text and "tone (card_grid)" in text
+    assert '"focus_card": 1' in text and '"key_phrase"' in text and '"tone": "good"' in text   # string route
+    card = sent_schema(PlannerSlideTyped)["$defs"]["Card"]["properties"]
+    grid = sent_schema(PlannerSlideTyped)["$defs"]["CardGridContent"]["properties"]
+    assert "copied exactly" in card["key_phrase"]["description"] and "kpi_tones" in card["tone"]["description"]
+    assert "ONE card" in grid["focus_card"]["description"]
     desc = PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
     assert "focus_card" in desc and "key_phrase" in desc and '\\"tone\\"' not in desc and '"tone"' in desc
 
@@ -480,3 +490,46 @@ def test_kpi_icons_are_real_names_on_every_item_or_none():
         k = comp("k", "kpi_row", data(bad))
         finalize_plan(plan([k]), BRIEF)
         assert "kpi_icons" not in k["content_data"]
+
+
+# ── edit or plan again (2026-11-12): the previous plan is shown only for item problems ──────────────
+
+def test_item_problems_edit_the_previous_plan_and_other_problems_plan_again():
+    from src.agents.plan_checks import edits_only
+    from src.agents.plan_ledger import ITEM_MISSING, ITEM_REPEATED, SHAPE_MISFIT
+    item = [{"code": ITEM_MISSING, "component_id": "", "detail": "1 item(s) ... on no component: +18% QoQ"}]
+    assert edits_only(item) and edits_only(item + [{"code": ITEM_REPEATED, "component_id": "", "detail": "x"}])
+    assert not edits_only([])
+    for other in (PLAN_EMPTY, SHAPE_MISFIT):   # the layout itself is in doubt: no anchor on the old plan
+        assert not edits_only(item + [{"code": other, "component_id": "k", "detail": "kpi_row 'k' x"}])
+    ctx = reask_context(item, previous_plan=good(), content_field="content")
+    shown = json.loads(ctx["previous_plan"])
+    assert shown["components"][0]["content"]["kpi_values"] == ["$48.2M"] and "kind" in shown["components"][0]
+    assert ctx["directive"].startswith("Edit the previous plan")
+    again = reask_context(item)
+    assert again["previous_plan"] == "" and again["directive"].startswith("Plan this slide again")
+
+
+def test_a_missing_item_reask_sends_the_previous_plan_and_logs_its_outcome():
+    dropped = plan([comp("k", "kpi_row", {"kpi_labels": ["ARR"], "kpi_values": ["$48.2M"]}, "hero")])
+    (p, history), m = run([(dropped, USAGE), (good(), USAGE)])
+    ctx = m.call_args_list[1].kwargs["repair_context"]
+    assert '"$48.2M"' in ctx["previous_plan"] and ctx["directive"].startswith("Edit")
+    out = history[1]["reask_outcome"]
+    assert out["mode"] == "edit" and out["fixed"] == ["ITEM_MISSING"] and out["new"] == [] and out["kept"] == "reask"
+
+
+def test_an_empty_plan_is_planned_again_without_the_previous_plan():
+    (p, history), m = run([(bad(), USAGE), (good(), USAGE)])
+    ctx = m.call_args_list[1].kwargs["repair_context"]
+    assert ctx["previous_plan"] == "" and ctx["directive"].startswith("Plan this slide again")
+    assert history[1]["reask_outcome"]["mode"] == "replan"
+
+
+def test_the_previous_plan_reaches_the_prompt():
+    from src.agents.slide_component_planner import _jinja_env
+    ctx = reask_context([{"code": "ITEM_MISSING", "component_id": "", "detail": "x"}], previous_plan=good())
+    text = _jinja_env.get_template("user.j2").render(slide=SLIDE, content_messages=[], visual_directions=[],
+                                                     deck_context=[], total_slides=1, repair_context=ctx,
+                                                     content_field="content")
+    assert "<previous_plan>" in text and '"$48.2M"' in text

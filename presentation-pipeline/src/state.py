@@ -120,6 +120,7 @@ class SlidePlan(TypedDict, total=False):
     data_provenance: dict[str, ProvenanceLiteral]  # content_data key → source
     capacity_fixes: list[str]        # components converted past capacity.yaml (plan check)
     written_lines: list[str]         # card lines the planner wrote (not in the brief), for review
+    placed_items: list[str]          # brief items the planner filed under a card by meaning ("Card: item"), for review
     plan_flags: list[PlanFlag]       # plan_checks findings
     plan_source: PlanSourceLiteral   # "fallback" when the planner failed twice (outline lines as a bullet list)
 
@@ -148,6 +149,8 @@ class AttemptRecord(TypedDict, total=False):
     step: StepLiteral       # pipeline step that made the call (llm_client.usage_record)
     slide_index: int | None  # 0-based; None for a deck-level call
     reask: bool             # a planner re-ask after a failed plan (step 0)
+    reask_mode: str         # "edit" (saw the previous plan: item problems only) or "replan"
+    reask_outcome: dict[str, Any]  # mode, codes before/after, fixed, new, kept (plan_with_reask)
 
 
 class Diagnostic(TypedDict):

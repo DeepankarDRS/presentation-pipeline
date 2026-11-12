@@ -1,0 +1,92 @@
+# Relationship -> kind: the ONE routing table (2026-11-12). The slide component planner's prompt renders it
+# (system.j2, "Relationship -> kind") and code checks plans against it (src/agents/plan_ledger.py, SHAPE_MISFIT), so
+# the rule the planner reads and the rule code enforces cannot drift apart.
+# Rows are about the SHAPE of content (subjects, measures, ordered points, words or figures), never a topic.
+# Cells are Jinja: cap / span render the limits from capacity.yaml. `kind_timeline_node` replaces `kind` when code draws
+# timelines (POM_NODES=timeline).
+rows:
+  - id: subject_measures
+    states: One subject's measures, any number of them
+    kind: "kpi_row ({{ span('kpi_row', 'per_row') }} per row; tiles in the brief's order)"
+    not_for: several subjects sharing the measures (table); a two-column "label | value" table
+  - id: two_subjects
+    states: One measure for two subjects
+    kind: kpi_row, the two side by side
+    not_for: a two-row table
+  - id: ordered_points
+    states: "One measure at {{ cap.chart.min_points }}+ ordered points (time, stages)"
+    kind: chart (line, area or bar)
+    not_for: fewer points (kpi_row)
+  - id: many_subjects
+    states: One measure across 3+ subjects
+    kind: chart (bar; largest first unless the labels have their own order)
+    not_for: values in different units on one axis
+  - id: shares
+    states: Shares of one whole
+    kind: chart (pie or doughnut)
+    not_for: parts that do not add up to a whole
+  - id: subjects_by_measures
+    states: Several subjects × several measures
+    kind: "table (≤ {{ cap.table.max_rows }} body rows, ≤ {{ cap.table.max_cols }} columns)"
+    not_for: cells that are sentences
+  - id: word_grid
+    states: Named rows × named columns whose cells are words the brief gives
+    kind: card_grid (card_layout "matrix")
+    not_for: numeric cells (table); cells the brief does not fill
+  - id: groups
+    states: Items grouped under labels
+    kind: card_grid (card_layout "grid"), a card per group with its items as bullets
+    not_for: one component per group; one card per bare item
+  - id: parallel
+    states: Parallel items with no order (each with or without a line)
+    kind: card_grid (card_layout "grid")
+    not_for: chevrons or arrows (they claim an order)
+  - id: detailed_steps
+    states: Ordered steps that each carry detail
+    kind: "card_grid (card_layout \"steps\"), up to {{ cap.card_grid.steps_max }} in a row; more wrap as a grid, so give each step its own order in its tag (\"Step 1\", \"Month 2\") when the brief numbers or dates them"
+    not_for: chevrons plus a separate list
+  - id: short_steps
+    states: Ordered short steps
+    kind: "process_arrow: items = steps ({{ span('process_arrow') }}), labels ≤ {{ cap.process_arrow.max_label_words }} words"
+    not_for: unordered items; steps with sub-detail
+  - id: process
+    states: A process with a decision, or steps too long for chevrons
+    kind: "flow: items = nodes ({{ span('flow') }})"
+    not_for: a plain sequence of short steps (process_arrow)
+  - id: dated
+    states: Dated events
+    kind: "timeline: items = milestones ({{ span('timeline') }}); date and label ≤ {{ cap.timeline.max_label_words }} words each"
+    kind_timeline_node: "timeline: items = milestones ({{ span('timeline') }}); each a date, a label (the milestone's name, ≤ {{ cap.timeline.max_label_words }} words) and, when the brief gives detail, a description (≤ {{ cap.timeline.max_description_words }} words)"
+    not_for: undated items
+  - id: hierarchy
+    states: Parent–child hierarchy
+    kind: tree
+    not_for: more than 3 levels
+  - id: positions
+    states: Items placed on two independent axes, positions stated in the brief
+    kind: "matrix: items = positioned items ({{ span('matrix') }})"
+    not_for: positions the brief does not give; rows × columns grids
+  - id: levels
+    states: Levels of importance or priority
+    kind: "pyramid ({{ span('pyramid') }} levels, short labels)"
+    not_for: sentences or detail (use card_grid, steps layout)
+  - id: spatial
+    states: Positions that themselves carry meaning (a hub with spokes, a map)
+    kind: layer
+    not_for: any process, workflow or sequence
+  - id: takeaways
+    states: Takeaways, actions, read-outs
+    kind: bullet_list
+    not_for: a set of named items the slide is about (card_grid)
+  - id: interpretation
+    states: An interpretation the data itself does not show
+    kind: narrative
+    not_for: restating the headline or the data
+  - id: note
+    states: A note or source the brief names
+    kind: caption
+    not_for: made-up sources
+  - id: headline
+    states: The headline
+    kind: title (minor on content and data slides; hero only on cover and section_break)
+    not_for: "—"

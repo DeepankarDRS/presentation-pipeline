@@ -145,7 +145,8 @@ def as_union(c: dict[str, Any], content: BaseModel) -> BaseModel:
              if k in ("series_count", "columns", "rows", "items", "orientation")}
     if c["kind"] == "chart":
         extra["chart_type"] = c.get("chart_type") or c["content_data"].get("chart_type") or "bar"
-    return model(**_common(c), **extra, content=content)
+    common = {k: v for k, v in _common(c).items() if k in model.model_fields}   # typed components ask no count
+    return model(**common, **extra, content=content)
 
 
 def written_forms(c: dict[str, Any], content: BaseModel) -> dict[str, Any]:

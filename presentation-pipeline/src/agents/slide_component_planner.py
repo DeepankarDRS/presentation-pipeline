@@ -34,9 +34,12 @@ from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.planner_schema_typed import PlannerSlideTyped, content_data_of
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
-from src.agents.plan_checks import PLAN_EMPTY, find_problems, finalize_plan, holds_no_content, reask_context
+from src.agents.plan_ledger import plan_problems, routing_rows
+from src.agents.plan_checks import (PLAN_EMPTY, edits_only, find_problems, finalize_plan, holds_no_content,
+                                   reask_context)
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
-                                      flag_written_lines, instruction_lines, visual_directions)
+                                      flag_placed_items, flag_written_lines, instruction_lines,
+                                      visual_directions)
 from src.compiler.node_facts import facts_text
 from src.compiler.nodes.spec import nodes_on
 from src.state import ChartTypeLiteral, ComponentPlan, PresentationState, SlidePlan
@@ -69,7 +72,9 @@ _jinja_env = Environment(
 # component capacity (knowledge/core/capacity.yaml) — the prompt's limits come from here;
 # what a diagram draws comes from its verified facts (knowledge/components/<kind>.yaml)
 _jinja_env.globals.update(cap=capacity(), span=span, max_of=max_of, placements=placements, content_field="content_data_json",
-                          facts=lambda kind: facts_text(kind, "planner"))
+                          facts=lambda kind: facts_text(kind, "planner"),
+                          # the one routing table (knowledge/core/routing.yaml): the prompt renders it, plan_ledger checks it
+                          routing_rows=routing_rows)
 
 # ── Conversion helpers ──────────────────────────────────────────────────────
 
@@ -121,6 +126,33 @@ def parse_content_data(text: str) -> dict[str, Any]:
     return data
 
 
+_ITEM_LISTS = {"bullet_list": "bullets", "pyramid": "pyramid_levels", "card_grid": "cards",
+               "timeline": "timeline_items", "flow": "flow_steps", "process_arrow": "process_steps"}
+
+
+def _tree_size(nodes: Any) -> int:
+    return sum(1 + _tree_size(n.get("children")) for n in nodes or [] if isinstance(n, dict))
+
+
+def derive_counts(comp: ComponentPlan) -> None:
+    """count / items / columns / rows / series_count / orientation read from the content, so they never disagree
+    with it (the typed schema no longer asks for them; on the string route they override the LLM's numbers)."""
+    kind, data = comp.get("kind"), comp.get("content_data") or {}
+    comp["count"] = len(data.get("kpi_values") or []) or 1 if kind == "kpi_row" else 1
+    if kind in _ITEM_LISTS:
+        comp["items"] = len(data.get(_ITEM_LISTS[kind]) or [])
+    elif kind == "tree":
+        comp["items"] = _tree_size(data.get("tree_nodes"))
+    if kind == "table":
+        comp["columns"] = len(data.get("table_columns") or [])
+        comp["rows"] = len(data.get("table_rows") or [])
+    if kind == "chart":
+        comp["series_count"] = len(data.get("chart_series") or []) or 1
+    direction = data.get("layout") if kind == "tree" else data.get("direction")
+    if kind in ("timeline", "flow", "process_arrow", "tree") and direction in ("horizontal", "vertical"):
+        comp["orientation"] = direction
+
+
 def _planner_slide_to_state(
     idx: int,
     slide: PlannerSlide | PlannerSlideTyped,
@@ -137,12 +169,11 @@ def _planner_slide_to_state(
         comp = ComponentPlan(
             component_id=c.component_id,
             kind=c.kind,
-            count=c.count,
+            count=1,
             content_summary=c.content_summary,
         )
-        # a typed component carries only the fields its kind uses
-        for field in ("chart_type", "series_count", "columns", "rows", "items", "orientation", "design_hint",
-                      "weight"):
+        # a typed component carries only the fields its kind uses; counts come from the content (derive_counts)
+        for field in ("chart_type", "design_hint", "weight"):
             if value := getattr(c, field, None):
                 comp[field] = value  # type: ignore[literal-required]
 
@@ -161,6 +192,7 @@ def _planner_slide_to_state(
         if c.kind == "chart":
             _settle_chart_type(comp, comp_data)
         comp["content_data"] = comp_data
+        derive_counts(comp)
         components.append(comp)
 
     capacity_fixes = enforce_capacity(components)
@@ -288,7 +320,7 @@ def plan_single_slide(
     )
     brief_text = brief_text_for(slide, supplied_content)
     notes = (drop_visual_directions(plan, directions, content_lines(slide, directions))
-             + flag_written_lines(plan, brief_text))
+             + flag_written_lines(plan, brief_text) + flag_placed_items(plan, brief_text))
     if finalize:
         notes += finalize_plan(plan, brief_text, instruction_lines(outline_plan))
     for note in notes:
@@ -345,12 +377,19 @@ def plan_with_reask(
     best_count = 0
     problems: list[dict[str, str]] = []
     first_problems: list[dict[str, str]] = []
+    first_plan: SlidePlan | None = None
+    mode = ""
     for attempt in range(2):
+        repair = None
+        if attempt:
+            # an item fix edits the previous plan; any other problem plans again, not anchored on it
+            mode = "edit" if first_plan is not None and edits_only(problems) else "replan"
+            repair = reask_context(problems, previous_plan=first_plan if mode == "edit" else None,
+                                   content_field="content" if planner_schema() == "typed" else "content_data_json")
         try:
             plan, usage = plan_single_slide(
                 slide, outline_plan=outline_plan, deck_settings=deck_settings,
-                supplied_content=supplied_content,
-                repair_context=reask_context(problems) if attempt else None, finalize=False,
+                supplied_content=supplied_content, repair_context=repair, finalize=False,
             )
         except Exception as exc:
             spent = length_limit_usage(exc)
@@ -359,20 +398,29 @@ def plan_with_reask(
                              f"limit before answering: {spent['tokens_reasoning']} of {spent['tokens_out']} "
                              f"output tokens were reasoning ({spent['model']})")
                 history.append(usage_record(spent, "slide_component_planner", idx, reask=bool(attempt),
-                                            failed="length"))
+                                            failed="length", **({"reask_mode": mode} if attempt else {})))
             else:
                 logger.error(f"slide_component_planner: slide {idx + 1} attempt {attempt + 1} failed: {exc}")
             problems = [{"code": PLAN_EMPTY, "component_id": "", "detail": "the previous planner call failed"}]
             if attempt == 0:
                 first_problems = problems
             continue
-        history.append(usage_record(usage, "slide_component_planner", idx, reask=bool(attempt)))
-        problems = find_problems(plan, brief_text, instruction_lines(outline_plan))
+        record = usage_record(usage, "slide_component_planner", idx, reask=bool(attempt))
+        history.append(record)
+        problems = (find_problems(plan, brief_text, instruction_lines(outline_plan))
+                    + plan_problems(plan, slide, instruction_lines(outline_plan)))
         if best is None or len(problems) < best_count:
             best, best_count = plan, len(problems)
+        if attempt:
+            # each re-ask is logged with what it fixed, what it broke and which plan was kept, so a check that
+            # raises false alarms (the model "fixes" a right plan) shows up in the run data
+            record["reask_outcome"] = outcome = reask_outcome(mode, first_problems, problems, kept_reask=best is plan)
+            logger.info(f"slide_component_planner: slide {idx + 1} re-ask ({mode}) fixed {outcome['fixed']}, "
+                        f"new {outcome['new']}, kept the {'re-ask' if best is plan else 'first plan'}")
         if not problems:
             break
         if attempt == 0:
+            first_plan = plan
             first_problems = problems
             logger.info(f"slide_component_planner: slide {idx + 1} re-ask: "
                         + "; ".join(p["detail"] for p in problems))
@@ -393,6 +441,16 @@ def plan_with_reask(
     if notes:
         best["capacity_fixes"] = [*best.get("capacity_fixes", []), *notes]
     return best, history
+
+
+def reask_outcome(mode: str, before: list[dict[str, str]], after: list[dict[str, str]],
+                  kept_reask: bool) -> dict[str, Any]:
+    """What one re-ask did: problem codes before and after, the codes it cleared (fixed) and the ones it brought
+    (new), and which plan was kept. Kept in the history record, so runs can show how often each check's re-ask
+    helps; a code that is often 'fixed' into a worse plan points at a false alarm in that check."""
+    b, a = [p["code"] for p in before], [p["code"] for p in after]
+    return {"mode": mode, "before": b, "after": a, "fixed": sorted(set(b) - set(a)), "new": sorted(set(a) - set(b)),
+            "kept": "reask" if kept_reask else "first"}
 
 
 # ── Serial batch node (used when SERIALIZE_SLIDES=True) ────────────────────

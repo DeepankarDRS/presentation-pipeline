@@ -17,9 +17,11 @@ estimate set on the 17 hold-out plans (docs/derived-blocks-planning-2026-10-06.m
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any
 
+from src.agents.plan_ledger import ITEM_MISSING, ITEM_REPEATED
 from src.agents.written_lines import (NOTES_LABEL, drop_repeated_bodies, drop_shared_card_lines, from_brief,
                                       matches_instruction)
 from src.compiler.value_parts import is_sentence
@@ -33,6 +35,12 @@ KPI_VALUE_TEXT = "KPI_VALUE_TEXT"   # a kpi_row value that is a sentence, not a 
 # writes only plan text, so a line the planner dropped is lost; the LLM used to recover or invent one)
 CARD_LINES_DROPPED = "CARD_LINES_DROPPED"
 REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, KPI_VALUE_TEXT, CARD_LINES_DROPPED)
+# problems an edit of the previous plan fixes: an item is missing, drawn twice, or dropped from its card. The layout
+# was right, so the re-ask sees the previous plan and changes only these. Any other problem (an empty component, a
+# shape the routing table sends elsewhere, a sentence as a tile value, instruction text) means the layout itself is
+# in doubt: the re-ask plans again without the previous plan, so it is not anchored on it (research 2026-11-12:
+# repair with external feedback suits strong models; anchoring on a failed attempt hurts a wrong layout).
+EDIT_CODES = frozenset({ITEM_MISSING, ITEM_REPEATED, CARD_LINES_DROPPED})
 
 # the keys that hold a component's content; a block kind with none of them filled is empty
 _CONTENT_KEYS: dict[str, tuple[str, ...]] = {
@@ -184,23 +192,49 @@ def dropped_card_lines(comp: dict[str, Any], brief_text: str) -> list[str]:
     return out
 
 
-def reask_context(problems: list[dict[str, str]]) -> dict[str, Any]:
-    """The `repair_context` block of the planner's user prompt, naming what to fix."""
+def edits_only(problems: list[dict[str, str]]) -> bool:
+    """True when every problem is one an edit of the previous plan fixes (EDIT_CODES)."""
+    return bool(problems) and all(p["code"] in EDIT_CODES for p in problems)
+
+
+def previous_plan_json(plan: dict[str, Any], content_field: str = "content") -> str:
+    """The previous plan as the planner wrote it (its own field names), for an edit re-ask."""
+    comps = []
+    for c in plan.get("components") or []:
+        out = {k: c[k] for k in ("component_id", "kind", "weight", "design_hint", "chart_type") if c.get(k)}
+        out[content_field] = c.get("content_data") or {}
+        comps.append(out)
+    return json.dumps({"slide_type": plan.get("slide_type", ""), "layout_hint": plan.get("layout_hint", ""),
+                       "components": comps}, ensure_ascii=False)
+
+
+def reask_context(problems: list[dict[str, str]], previous_plan: dict[str, Any] | None = None,
+                  content_field: str = "content") -> dict[str, Any]:
+    """The `repair_context` block of the planner's user prompt, naming what to fix. With `previous_plan` (only when
+    `edits_only`), the re-ask edits that plan; without it, it plans the slide again."""
     kinds = sorted({p["detail"].split(" ")[0] for p in problems if p["component_id"]})
+    start = ("Edit the previous plan below: fix only the problems listed and keep every other component, its kind, "
+             "weight and content as it is. " if previous_plan is not None else "Plan this slide again. ")
     return {
         "failed_kinds": kinds or ["(whole plan)"],
         "errors": [p["detail"] for p in problems],
-        "directive": ("Plan this slide again. Fill every component's content_data from the key messages "
+        "previous_plan": previous_plan_json(previous_plan, content_field) if previous_plan is not None else "",
+        "directive": (start + "Fill every component's content_data from the key messages "
                       "(no empty components). Slide text must be what the audience reads: never an "
                       "instruction to the presenter, never speaker notes, never 'show / highlight / break down / "
-                      "walk through ...' directions. Keep the other components that were right."
+                      "walk through ...' directions."
                       + (" A kpi_row's kpi_values hold the figure only (e.g. '0.29x', '₹10.0L'), with the metric "
                          "name in kpi_labels; findings written as sentences belong in a card_grid (one card per "
                          "finding) or a bullet_list, not in a kpi_row." if any(p["code"] == KPI_VALUE_TEXT
                                                                               for p in problems) else "")
                       + (" A card_grid card copies its own line from the key messages into body (or bullets) when the "
                          "key messages give one; code draws only what the plan holds." if any(
-                             p["code"] == CARD_LINES_DROPPED for p in problems) else "")),
+                             p["code"] == CARD_LINES_DROPPED for p in problems) else "")
+                      + (" Every item of the key messages appears exactly once on the slide: add each missing item to "
+                         "the component it belongs to, and keep a repeated item in one component only." if any(
+                             p["code"] in ("ITEM_MISSING", "ITEM_REPEATED") for p in problems) else "")
+                      + (" Route each component by the shape of its content, as the routing table says."
+                         if any(p["code"] == "SHAPE_MISFIT" for p in problems) else "")),
     }
 
 

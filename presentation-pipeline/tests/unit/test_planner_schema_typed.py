@@ -39,7 +39,7 @@ SAMPLES = {
                "matrix_items": [{"label": "Search", "x": "low", "y": "high"}]},
     "card_grid": {"card_layout": "matrix", "columns": ["Web", "App"], "rows": ["Visibility"], "focus_card": 1,
                   "cards": [{"title": "Search", "tone": "good", "icon": "search"},
-                            {"title": "Home screen", "body": "Placement on day 1", "key_phrase": "day 1", "tone": ""}]},
+                            {"title": "Home screen", "body": "Placement on day 1", "key_phrase": "day 1"}]},
     "layer": {"description": "Three layers", "layers": [{"title": "Channels", "items": ["Website", "App"]}]},
 }
 
@@ -77,6 +77,26 @@ def test_each_component_starts_with_its_id_and_kind():
         assert list(model.model_fields)[:2] == ["component_id", "kind"], kind
 
 
+def test_decisions_come_before_content_and_counts_are_not_asked():
+    """Decide, then fill: the slide's layout_hint before its components, a component's weight and hint before its
+    content. Counts and orientation are read from the content by code (derive_counts), never asked."""
+    assert list(PlannerSlideTyped.model_fields) == ["slide_type", "layout_hint", "components"]
+    for kind, model in COMPONENT_BY_KIND.items():
+        fields = list(model.model_fields)
+        assert fields[-1] == "content" and fields.index("weight") < fields.index("content"), kind
+        assert not {"count", "items", "rows", "columns", "series_count", "orientation"} & set(fields), kind
+
+
+def test_tones_and_icons_are_always_answered():
+    """Without examples the planner skipped optional tone / icon fields; the schema now requires them ("" allowed)."""
+    defs = sent_schema(PlannerSlideTyped)["$defs"]
+    for model, keys in (("KpiRowContent", ("kpi_tones", "kpi_icons")), ("Card", ("tone", "icon"))):
+        for key in keys:
+            prop = defs[model]["properties"][key]
+            assert "null" not in json.dumps(prop.get("type", prop.get("anyOf", ""))), (model, key)
+            assert key in defs[model]["required"], (model, key)
+
+
 @pytest.mark.parametrize("kind", sorted(SAMPLES))
 def test_typed_content_gives_todays_content_data(kind):
     data = SAMPLES[kind]
@@ -93,15 +113,15 @@ def test_typed_content_rejects_keys_of_another_kind_and_bad_values():
         content_from_data("kpi_row", {"kpi_labels": ["a"], "kpi_values": ["1"], "kpi_tones": ["great"]})
     with pytest.raises(ValidationError):   # kind and content must match
         PlannerSlideTyped.model_validate({"slide_type": "data", "layout_hint": "", "components": [
-            {"component_id": "t", "kind": "table", "count": 1, "columns": 0, "rows": 0, "content": {"bullets": ["a"]},
+            {"component_id": "t", "kind": "table", "content": {"bullets": ["a"]},
              "content_summary": "", "design_hint": "", "weight": "peer"}]})
 
 
 def _typed_reply() -> PlannerSlideTyped:
     return PlannerSlideTyped.model_validate({"slide_type": "data", "layout_hint": "kpis on top", "components": [
-        {"component_id": "slide_title", "kind": "title", "count": 1, "content": {"title": "Q3", "subtitle": None},
+        {"component_id": "slide_title", "kind": "title", "content": {"title": "Q3", "subtitle": None},
          "content_summary": "", "design_hint": "", "weight": "minor"},
-        {"component_id": "rev", "kind": "chart", "chart_type": "bar", "series_count": 1, "count": 1,
+        {"component_id": "rev", "kind": "chart", "chart_type": "bar",
          "content": {"chart_title": None, "chart_labels": ["Q1", "Q2"], "chart_values": [1.5, 2.0],
                      "chart_series": None},
          "content_summary": "revenue", "design_hint": "", "weight": "hero"},
@@ -146,8 +166,7 @@ def test_plan_single_slide_uses_the_chosen_schema_and_names_its_field(mock_get_l
     plan, _ = plan_single_slide(slide, outline_plan={"slides": [slide]})
     assert llm.with_structured_output.call_args.args[0] is model
     system, user = llm.with_structured_output.return_value.invoke.call_args.args[0]
-    for msg in (system.content, user.content):
-        assert f'"{field}"' in msg or f" {field}" in msg
-        if field == "content":
-            assert "content_data_json" not in msg
+    assert f'"{field}"' in system.content or f" {field}" in system.content   # the user message no longer repeats it
+    if field == "content":
+        assert all("content_data_json" not in m for m in (system.content, user.content))
     assert plan["components"][0]["content_data"]["title"] == "Q3"

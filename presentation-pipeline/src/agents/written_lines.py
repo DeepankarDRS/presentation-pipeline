@@ -229,6 +229,33 @@ def flag_written_lines(plan: dict[str, Any], brief_text: str) -> list[str]:
     return notes
 
 
+def flag_placed_items(plan: dict[str, Any], brief_text: str) -> list[str]:
+    """Content policy 2026-10-04, "inferred": a card bullet copied from the brief but filed under a card the brief does
+    not tie it to (items listed apart from the groups, placed by meaning; principle 3 of the planner prompt). Such a
+    bullet is from the brief, yet no brief line holds it together with its card's title. Listed in
+    plan["placed_items"] ("Card: item") for the user to review; nothing is changed."""
+    lines = [ln for ln in (brief_text or "").split("\n") if ln.strip()]
+    placed: list[str] = []
+    for comp in plan.get("components", []):
+        if comp.get("kind") != "card_grid":
+            continue
+        cards = [c for c in (comp.get("content_data") or {}).get("cards") or [] if isinstance(c, dict)]
+        pairs = [(i, str(b)) for i, c in enumerate(cards) for b in c.get("bullets") or []]
+        for ln in lines:
+            fed = [(i, b) for i, b in pairs if from_brief(b, ln)]
+            if len({i for i, _ in fed}) < 2:
+                continue   # a line that feeds one card is that card's own line: not a placement
+            rest = set(_words(ln)) - {w for _, b in fed for w in _words(b)}   # the line without its items
+            for i, b in fed:
+                title = set(_words(str(cards[i].get("title") or "")))
+                if title and not title & rest:   # the line never names this card: the planner chose the group
+                    placed.append(f"{cards[i].get('title', '')}: {b}")
+    if placed:
+        plan["placed_items"] = placed
+        return [f"placed {len(placed)} brief item(s) under cards by meaning, listed for review: " + "; ".join(placed[:4])]
+    return []
+
+
 def drop_repeated_bodies(plan: dict[str, Any]) -> list[str]:
     """Remove a card body that only repeats its title (hold-out agency 4: "Intent-layer campaign
     structure" / "Intent-layer campaign structure."): same words, or every body word is in the title.
