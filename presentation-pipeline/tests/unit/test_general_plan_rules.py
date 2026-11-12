@@ -196,3 +196,15 @@ def test_a_bracketed_kpi_change_loses_its_brackets():
                                                   "kpi_deltas": ["(+18% QoQ)", "(net) of returns"]})]}
     finalize_plan(plan, "A: $4M (+18% QoQ); B: 11% (net) of returns")
     assert plan["components"][0]["content_data"]["kpi_deltas"] == ["+18% QoQ", "(net) of returns"]
+
+
+def test_a_lead_in_colon_is_dropped_from_card_titles_and_heading_lines():
+    from src.agents.plan_checks import finalize_plan
+    plan = {"components": [_cards(("Key formulas:", ["A = B / C"]), ("Notes", ["Data was rebuilt from raw files"])),
+                           _comp("h", "narrative", {"text": "Benefits:"}),
+                           _comp("n", "narrative", {"text": "Two causes: price and reach, both measured weekly:"})]}
+    finalize_plan(plan, "Key formulas: A = B / C\nNotes: Data was rebuilt from raw files\nBenefits: x")
+    cards = plan["components"][0]["content_data"]["cards"]
+    assert [c["title"] for c in cards] == ["Key formulas", "Notes"]
+    assert plan["components"][1]["content_data"]["text"] == "Benefits"
+    assert plan["components"][2]["content_data"]["text"].endswith(":")   # a sentence, not a heading: left alone

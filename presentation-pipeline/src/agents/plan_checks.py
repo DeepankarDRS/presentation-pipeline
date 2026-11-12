@@ -806,6 +806,31 @@ def drop_header_repeats(plan: dict[str, Any]) -> list[str]:
     return notes
 
 
+_TRAILING_COLON = re.compile(r"\s*[:：]\s*$")
+
+
+def strip_lead_in_colons(plan: dict[str, Any]) -> list[str]:
+    """A brief's lead-in copied with its colon ("Benefits:", "Key formulas:") as a card title, or as a short heading
+    line (a narrative or caption of 6 words or fewer), is drawn without the colon: on the slide it is a name, not a
+    lead-in. A colon inside a title stays ("Phase 1: Foundation"). A/B check 2026-11-12 (ab2): 12 such titles and
+    heading lines on 7 of 31 slides."""
+    fixed = []
+    for comp in plan.get("components") or []:
+        data = comp.get("content_data") or {}
+        if comp.get("kind") == "card_grid":
+            for card in data.get("cards") or []:
+                title = card.get("title") if isinstance(card, dict) else None
+                if isinstance(title, str) and _TRAILING_COLON.search(title):
+                    card["title"] = _TRAILING_COLON.sub("", title)
+                    fixed.append(card["title"])
+        elif comp.get("kind") in _HEADER_KINDS:
+            text = data.get("text")
+            if isinstance(text, str) and _TRAILING_COLON.search(text) and len(text.split()) <= 6:
+                data["text"] = _TRAILING_COLON.sub("", text)
+                fixed.append(data["text"])
+    return [f"lead-in colon dropped from: {', '.join(fixed[:5])}"] if fixed else []
+
+
 _WRAPPED = re.compile(r"^\s*\(([^()]*)\)\s*$")
 
 
@@ -822,6 +847,7 @@ def finalize_plan(plan: dict[str, Any], brief_text: str, instructions: list[str]
     Returns the plain-words notes; `plan["plan_flags"]` lists what was found."""
     notes = drop_instruction_text(plan, brief_text, instructions)
     notes += drop_header_repeats(plan)
+    notes += strip_lead_in_colons(plan)
     notes += drop_repeated_bodies(plan)
     notes += drop_shared_card_lines(plan, brief_text)
     notes += drop_duplicate_items(plan)
