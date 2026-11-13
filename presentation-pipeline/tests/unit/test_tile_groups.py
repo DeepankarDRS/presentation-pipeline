@@ -482,3 +482,24 @@ def test_highlight_in_the_prompt_and_contract():
     tags, lines, attrs = G.tags_contract("kpi_row")
     assert "Highlight" in tags and "item" in attrs["Highlight"]
     assert "<Highlight/>" in G.prompt_line(KPIS)
+
+
+def test_highlight_options_follow_the_plan():
+    """Each group's line lists the colour codes its plan fits: status fills only on the items whose tone differs,
+    phases on ordered cards, categories on alike parallel cards; never a fill on every item."""
+    def kpi(tones):
+        return {"component_id": "k", "kind": "kpi_row", "content_data": {
+            "kpi_labels": ["A", "B", "C", "D"], "kpi_values": ["1", "2", "3", "4"], "kpi_tones": tones}}
+
+    def grid(layout, tones):
+        return {"component_id": "c", "kind": "card_grid", "content_data": {"card_layout": layout, "cards": [
+            {"title": t, "tone": tone} for t, tone in zip("WXYZ", tones)]}}
+
+    mixed = G.prompt_line(kpi(["good", "good", "bad", "watch"]))
+    assert '<Highlight item="C" fill="bad"/>' in mixed and '<Highlight item="D" fill="watch"/>' in mixed
+    assert 'item="A"' not in mixed
+    assert "Colour code" not in G.prompt_line(kpi(["good"] * 4))   # alike: the numbers' colour carries it
+    assert 'head="phase"' in G.prompt_line(grid("steps", ["", "", "", ""]))
+    alike = G.prompt_line(grid("grid", ["good"] * 4))
+    assert 'edge="category"' in alike and "fill=" not in alike
+    assert 'item.backgroundColor="$toneSoft"' not in G.node_lines()   # no recipe that tints every box

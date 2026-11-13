@@ -58,7 +58,9 @@ def test_highlight_default_follows_the_layout():
     p = _prompt()
     assert "steps → ONE card, the destination" in p
     assert "a hub with spokes, or a centre with inputs and outputs → ONE card, the centre" in p
-    assert "grid of parallel items → all cards equal" in p
+    # 2026-11-13: "equal" read as "no colour" (all-alike cards); a grid has no focus, but may colour by category
+    assert "grid of parallel items → none, unless the brief or headline singles one out" in p
+    assert "each their own colour on its header or top edge" in p
     assert "matrix → every cell the brief marks" in p
 
 

@@ -796,8 +796,9 @@ def node_lines() -> str:
             f"{n} ({v})" for n, v in nd["prompts"].items())
             + f'. Inside, <{nd["item_tag"]} ref="<id>.<index>"/> restyles one item; outside, places it anywhere in its '
             f"group's form. Parts: {parts}")
+        # a recipe that tints every box by its tone ($toneSoft) is not offered: box colour is a <Highlight> per item
         lines.append("Style recipes (attributes, write them on the group or an item): "
-                     + "; ".join(f"{k}: {v}" for k, v in nd["styles"].items()) + ".")
+                     + "; ".join(f"{k}: {v}" for k, v in nd["styles"].items() if "$toneSoft" not in v) + ".")
     lines.append("Self-closing items: code writes every word, number, size, column and the emphasis item. Style is "
                  "attributes in $tokens: item.<box attribute> styles every item's box, <part>.<attribute> every item's "
                  "part; $tone / $toneSoft / $toneText follow each item's tone (good / bad / watch, else the accent). "
@@ -821,7 +822,10 @@ def node_lines() -> str:
         "  Hint words -> Highlight: 'X in negative / positive / warning' -> fill or color bad / good / watch on X; "
         "'focus on X', 'tint X' -> fill=\"focus\"; 'dark / inverted X' -> fill=\"dark\"; 'accent border' -> edge=\"focus\" side=\"left\" (on X, or *); "
         "'by stage / phase' -> phase; 'each pillar / segment / platform its colour' -> category; 'lift / elevate' -> "
-        'item.shadow.type="outer" item.shadow.blur="6" item.shadow.offset="2" on the group.',
+        'item.shadow.type="outer" item.shadow.blur="6" item.shadow.offset="2" on the group; \'all positive / equal '
+        "toned' -> no fill (code colours the numbers), an edge or head by category or phase if the items are "
+        "parallel or ordered. Never item.backgroundColor with a status or Soft token on the group.",
+        "  Each group's line under THIS SLIDE lists the Highlights its plan fits; pick by the hint, or none.",
     ]
     return "\n".join(lines)
 
@@ -867,4 +871,25 @@ def prompt_line(comp: dict, headline: str = "") -> str:
               "colour only by <Highlight>)") if any(tones) else "no tones",
              "variants " + " | ".join(ok)]
     return ("; ".join(parts) + f'. <{nd["tag"]} ref="{cid}"/> (or with <Highlight/> inside) or <{nd["item_tag"]} '
-            f'ref="{cid}.N"/>; never type a label, value or title yourself: code writes them from the plan')
+            f'ref="{cid}.N"/>; never type a label, value or title yourself: code writes them from the plan'
+            + highlight_options(comp, tones))
+
+
+def highlight_options(comp: dict, tones: list[str]) -> str:
+    """The colour codes this group's plan fits, for the generator to choose from (the hint decides; none is drawn
+    unless written): status fills on the items whose tone differs from the rest, phases on ordered cards, categories
+    on parallel cards whose tones are alike."""
+    labels, n = _labels(comp), count(comp)
+    name = lambda i: (labels[i] if i < len(labels) and labels[i] else str(i)).replace('"', "'")
+    set_ = [t for t in tones if t]
+    common = max(sorted(set(set_)), key=set_.count) if set_ else ""
+    odd = [i for i, t in enumerate(tones) if t and (t != common or len(set(set_)) == 1 and len(set_) < n)]
+    opts = []
+    if odd and len(odd) < n:
+        opts.append(" ".join(f'<Highlight item="{name(i)}" fill="{tones[i]}"/>' for i in odd[:3]))
+    if comp["kind"] == "card_grid" and n >= 3:
+        if cards.layout_of(comp) == "steps":
+            opts.append('<Highlight item="*" head="phase"/> (or edge="phase")')
+        elif not odd:
+            opts.append('<Highlight item="*" edge="category"/> (or head="category")')
+    return (". Colour code that fits this plan (by the hint, or none): " + " | ".join(opts)) if opts else ""
