@@ -144,13 +144,16 @@ class MatrixContent(_Strict):
 
 class Card(_Strict):
     """tag / body / bullets only when the brief gives them (or a written body, see the system prompt)."""
-    title: str
+    title: str = Field(description="Short (about six words): the action or name; what qualifies it (a target, "
+                                   "figure, deadline, purpose) goes to body, word for word.")
     tag: Optional[str] = Field(default=None, description="A time window, phase or step label from the brief.")
     body: Optional[str] = None
     bullets: Optional[list[str]] = Field(default=None, description="The brief's items that belong to this card.")
     tone: ToneLiteral = Field(default="", description='As kpi_tones: good / bad / watch / "" (neutral).')
     key_phrase: Optional[str] = Field(
-        default=None, description="The few words of body the audience should catch, copied exactly; null when none.")
+        default=None, description="The few words of body or bullets the audience should catch (a figure, target, "
+                                  "deadline or the line's point), copied exactly; on every card that has a body or "
+                                  "bullets, null only on a card with a title alone.")
     icon: str = Field(default="", description='Generic Lucide icon name for the card, or "" on every card.')
 
 

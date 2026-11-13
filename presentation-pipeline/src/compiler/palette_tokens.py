@@ -33,12 +33,15 @@ from typing import Any
 STATUS_ROLES = ("accent", "positive", "negative", "warning")
 DERIVED_KEYS = tuple(f"{r}Soft" for r in STATUS_ROLES) + tuple(
     f"{r}Text" for r in STATUS_ROLES) + ("onAccent", "neutral", "border", "panelDark", "onPanelDark") + tuple(
-    f"{r}Dark" for r in STATUS_ROLES)
+    f"{r}Dark" for r in STATUS_ROLES) + tuple(f"step{i}" for i in range(1, 6)) + tuple(
+    f"onStep{i}" for i in range(1, 6)) + ("inkDark", "inkLight")
 
 TEXT_MIN = 4.5
 BORDER_MIN = 1.4
 SOFT_MIX_LIGHT = 0.13
 SOFT_MIX_DARK = 0.22
+SOFT_CHROMA_LIGHT = 0.025   # OKLCH chroma floor of a *Soft tint (_soft_hue_floor); corporate-slate's is 0.025
+SOFT_CHROMA_DARK = 0.045
 NEUTRAL_MIX_LIGHT = 0.22
 NEUTRAL_MIX_DARK = 0.32
 PANEL_DARK_L = 0.2
@@ -102,6 +105,7 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
 
     for role in STATUS_ROLES:
         soft = mix(palette[role], surface_alt, SOFT_MIX_DARK if dark else SOFT_MIX_LIGHT)
+        soft = _soft_hue_floor(soft, palette[role], SOFT_CHROMA_DARK if dark else SOFT_CHROMA_LIGHT)
         out[f"{role}Soft"] = soft
         out[f"{role}Text"] = _step_lightness(
             palette[role], [surface, surface_alt, soft], darken=not dark)
@@ -136,6 +140,44 @@ def derive_tokens(palette: dict[str, Any]) -> dict[str, str]:
         while contrast(out["onPanelDark"], dark_fill) < TEXT_MIN and _lightness(dark_fill) > 0.04:
             dark_fill = _with_lightness(dark_fill, _lightness(dark_fill) - 0.03)
         out[f"{role}Dark"] = dark_fill.upper()
+    out.update(step_ramp(accent, surface_alt, dark, (text_main, surface)))
+    # last-resort label inks on a mid-tone fill (warm-editorial's $positive: its brown ink reaches 3.99:1)
+    out["inkDark"], out["inkLight"] = "000000", "FFFFFF"
+    return out
+
+
+# --- order ramp: $step1..$step5 + $onStep1..$onStep5 (diagram items in order: stages, tiers, a funnel) ---
+# One hue (the accent's), lightness monotone from the card outward: light palettes light -> dark, dark palettes
+# dark -> light. The step nearest the card still reads on it (>= STEP_EDGE_MIN), steps >= 0.06 apart in OKLCH L
+# (dataviz ordinal checks, research 2026-11-12). onStepN: the most readable ink on stepN.
+STEP_EDGE_MIN = 2.0
+STEP_CHROMA = (0.07, 0.15)
+
+
+def step_ramp(accent: str, card: str, dark: bool, inks: tuple[str, ...] = ()) -> dict[str, str]:
+    _, c_acc, hue = _lch(accent)
+    chroma = min(max(c_acc, STEP_CHROMA[0]), STEP_CHROMA[1]) if c_acc >= 0.04 else c_acc
+
+    def at(L: float) -> str:
+        c = chroma
+        while c > 0.0:
+            out = _oklch_hex(L, c, hue)
+            if out:
+                return out
+            c -= 0.005
+        return _oklch_hex(L, 0.0, hue) or "808080"
+
+    if dark:
+        start, end, move = 0.55, 0.90, 0.01
+    else:
+        start, end, move = 0.74, 0.32, -0.01
+    while contrast(at(start), card) < STEP_EDGE_MIN and (0.40 < start < 0.75 if not dark else start < 0.72):
+        start += move
+    steps = [at(start + (end - start) * k / 4) for k in range(5)]
+    out: dict[str, str] = {}
+    for i, s in enumerate(steps, 1):
+        out[f"step{i}"] = s.upper()
+        out[f"onStep{i}"] = max((*inks, "FFFFFF", "111111"), key=lambda c, s=s: contrast(c, s)).upper()
     return out
 
 
@@ -280,6 +322,24 @@ def _oklch_hex(L: float, C: float, h: float) -> str | None:
         return None
     v = _okl()
     return _hex(tuple(v.lin2s(c) for c in rgb))  # type: ignore[arg-type]
+
+
+def _soft_hue_floor(soft: str, role_color: str, floor: float) -> str:
+    """A tint keeps its colour's hue: a dark, low-chroma accent mixed 13% into a warm card came
+    out grey (mbb-blue 042440 on F2F0E9 -> D3D5D3, OKLCH C 0.003; paid run 2026-11-12, diagrams
+    and focus cards read grey). Same lightness, the role's own hue, chroma raised to `floor`
+    (never above the role's own). A role that is grey on purpose (C < 0.04) is left alone."""
+    L, C, _ = _lch(soft)
+    _, role_c, role_h = _lch(role_color)
+    if C >= floor or role_c < 0.04:
+        return soft
+    c = min(floor, role_c)
+    while c > C:
+        out = _oklch_hex(L, c, role_h)
+        if out:
+            return out
+        c -= 0.002
+    return soft
 
 
 def _lch(hex_: str) -> tuple[float, float, float]:

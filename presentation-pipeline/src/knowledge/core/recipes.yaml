@@ -140,7 +140,10 @@ timeline: |
   # longer than two words (that column at least 24 + 60 px per further item tall).
   # STRICT (horizontal): date = 1-2 words, title = 1-2 words ONLY.
   # Every label is 120 px wide: full sentences wrap and collide.
-  # Colour: the item the headline names (now / the goal) $accent, the rest $neutral.
+  # Marker colour: YOUR choice per item, by what it means: $accent (strong), $accentSoft (normal),
+  # $neutral (muted), $step1..$step5 (an order: stages, tiers, a funnel; light to dark), $positive / $warning /
+  # $negative or their Soft tints (status, with a sign or word). Same meaning = same colour; all equal = one
+  # colour; at most 3 colours (the step ramp counts as one, the status colours as one); keep the strong ones few.
   <VStack padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Rollout timeline</Text>
     <Timeline direction="horizontal" h="150" dateColor="$textMuted" titleColor="$textMain" connectorColor="$accent">
@@ -155,7 +158,10 @@ matrix: |
   # Matrix in a card: put it in a column >= 50% of the slide; the card takes its
   # weight's grow, the Matrix fills it (h="max" minH="260"). 4 items max, ONE-word labels, spread the x/y (no two within
   # 0.18 on both axes). Never a white textColor on a light card.
-  # Colour: the item(s) the headline names $accent, the rest $neutral.
+  # Dot colour: YOUR choice per item, by what it means: $accent (strong), $accentSoft (normal),
+  # $neutral (muted), $step1..$step5 (an order: stages, tiers, a funnel; light to dark), $positive / $warning /
+  # $negative or their Soft tints (status, with a sign or word). Same meaning = same colour; all equal = one
+  # colour; at most 3 colours (the step ramp counts as one, the status colours as one); keep the strong ones few.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <HStack justifyContent="spaceBetween"><Text fontSize="14" bold="true" color="$textMain">Prioritisation</Text><Text fontSize="14" color="$textMuted">Impact x Effort</Text></HStack>
     <Matrix h="max" minH="260" axisLabelColor="$textMuted" quadrantLabelColor="$textMuted" itemLabelColor="$textMain">
@@ -175,7 +181,11 @@ process_arrow: |
   # full-width band of its own, vertical in a column beside another component (itemWidth
   # about the column's width). Step labels are 1-2 SHORT words only (longer text clips inside the
   # chevron). One chevron per step the plan names. fontSize MUST be >= 14. NEVER go below 14.
-  # Colour: steps $accentSoft + $textMain, the destination (or current) step $accent + $onAccent.
+  # Colour: YOUR choice per item, by what it means: $accent (strong), $accentSoft (normal),
+  # $neutral (muted), $step1..$step5 (an order: stages, tiers, a funnel; light to dark), $positive / $warning /
+  # $negative or their Soft tints (status, with a sign or word). Same meaning = same colour; all equal = one
+  # colour; at most 3 colours (the step ramp counts as one, the status colours as one); keep the strong ones few.
+  # textColor is optional: code sets one that reads on the fill.
   <VStack grow="1" padding="18" gap="10" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Delivery process</Text>
     <ProcessArrow h="max" minH="90" direction="horizontal" fontSize="14" bold="true">
@@ -195,8 +205,11 @@ flow: |
   # about the column's width, nodeGap 24-40 when the column is short). Nodes are drawn in
   # one line: connect each to the next only.
   # FlowNode text is 14 px (fixed by POM, no fontSize). 1-2 word labels only.
-  # Colour: nodes $accentSoft + $textMain, the outcome node $accent + $onAccent,
-  # a decision $warningSoft + $textMain, a "no" path $negative.
+  # Colour: YOUR choice per item, by what it means: $accent (strong), $accentSoft (normal),
+  # $neutral (muted), $step1..$step5 (an order: stages, tiers, a funnel; light to dark), $positive / $warning /
+  # $negative or their Soft tints (status, with a sign or word). Same meaning = same colour; all equal = one
+  # colour; at most 3 colours (the step ramp counts as one, the status colours as one); keep the strong ones few.
+  # textColor is optional: code sets one that reads on the fill.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Approval flow</Text>
     <Flow direction="horizontal" h="max" minH="200" nodeWidth="150" nodeHeight="56" nodeGap="64">
@@ -214,7 +227,11 @@ pyramid: |
   # Pyramid in a card: NO h, NO grow on the card; Pyramid h = 52 x levels + 20, no w
   # (it never scales up). Scale fontSize with level count.
   # direction: up | down — the plan's choice: up for tiers / a hierarchy, down for a funnel.
-  # Colour: levels $accentSoft + textColor $textMain, the level the headline names $accent + $onAccent.
+  # Colour: YOUR choice per item, by what it means: $accent (strong), $accentSoft (normal),
+  # $neutral (muted), $step1..$step5 (an order: stages, tiers, a funnel; light to dark), $positive / $warning /
+  # $negative or their Soft tints (status, with a sign or word). Same meaning = same colour; all equal = one
+  # colour; at most 3 colours (the step ramp counts as one, the status colours as one); keep the strong ones few.
+  # textColor is optional: code sets one that reads on the fill.
   # fontSize: 16 (3 levels), 15 (4), 14 (5+). NEVER below 14.
   <VStack padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Operating model</Text>
@@ -231,7 +248,7 @@ pyramid_with_annotations: |
   # Use when each level needs an explanation beyond the label.
   # Pyramid gets 55% width, annotations get 45%. fontSize="14" for 5 levels.
   # direction: up | down — the plan's choice (up: tiers, down: a funnel).
-  # Level colours as in `pyramid`: one level $accent + $onAccent, the rest $accentSoft + $textMain.
+  # Level colours: your choice, as in `pyramid`.
   # The annotation card of the $accent level has borderLeft $accent, the others $neutral.
   <HStack gap="24" alignItems="center">
     <Pyramid direction="up" w="55%" h="280" fontSize="14" bold="true">
@@ -285,8 +302,12 @@ tree: |
   # Tree in a card: card grow per weight, Tree h="max" minH="200" (nodes are
   # enlarged to fill the box after generation). One root. Keep depth <= 3 and total nodes
   # <= ~10; short labels. layout: vertical | horizontal — the plan's choice, with its band:
-  # vertical in a full-width band, horizontal for many leaves or in a column beside another component. Colour: root $accent + textColor $onAccent, the rest
-  # $accentSoft + $textMain.
+  # vertical in a full-width band, horizontal for many leaves or in a column beside another component.
+  # Colour: YOUR choice per item, by what it means: $accent (strong), $accentSoft (normal),
+  # $neutral (muted), $step1..$step5 (an order: stages, tiers, a funnel; light to dark), $positive / $warning /
+  # $negative or their Soft tints (status, with a sign or word). Same meaning = same colour; all equal = one
+  # colour; at most 3 colours (the step ramp counts as one, the status colours as one); keep the strong ones few.
+  # textColor is optional: code sets one that reads on the fill.
   <VStack grow="2" padding="18" gap="8" backgroundColor="$surfaceAlt" borderRadius="14" border.color="$border" border.width="1">
     <Text fontSize="14" bold="true" color="$textMain">Org structure</Text>
     <Tree layout="vertical" h="max" minH="200" nodeShape="roundRect" textColor="$textMain" nodeWidth="130" nodeHeight="46" levelGap="52" siblingGap="22" connectorStyle.color="$neutral" connectorStyle.width="2">

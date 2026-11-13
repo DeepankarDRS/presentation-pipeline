@@ -61,7 +61,8 @@ def _load_palette_names() -> list[tuple[str, str]]:
     light, dark = [], []
     for name, info in palettes.items():
         tone = info.get("tone", "")
-        if info.get("mode") == "dark":
+        mode = (info.get("seed") or {}).get("mode") or info.get("mode")   # seed palettes keep mode under seed:
+        if mode == "dark":
             dark.append((name, tone))
         else:
             light.append((name, tone))

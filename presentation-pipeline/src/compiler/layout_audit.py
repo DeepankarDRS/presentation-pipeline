@@ -364,7 +364,7 @@ def _check_table_width(root: ET.Element, issues: list[dict[str, str]]) -> None:
 # of its own (inherits POM's default) is not judged, to keep false alarms out.
 MIN_CONTRAST = 4.5
 # codes recorded for scoring only: never shown to the critic, so they never trigger a repair
-REPORT_ONLY_CODES = {"LOW_CONTRAST", "LITERAL_COLOR",
+REPORT_ONLY_CODES = {"LOW_CONTRAST", "LITERAL_COLOR", "COLOR_BALANCE",
                      # what is drawn vs its box (src/compiler/geometry_audit.py, 2026-10-07)
                      "GEOM_SPILL", "GEOM_COLLISION", "GEOM_OFF_SLIDE", "GEOM_TEXT_OVERFLOW",
                      "GEOM_CARD_EMPTY", "GEOM_BOX_EMPTY", "GEOM_SLIDE_SPARSE", "PLACEHOLDER_TEXT"}
@@ -490,6 +490,40 @@ def _check_literal_colors(root: ET.Element, issues: list[dict[str, str]]) -> Non
         })
 
 
+# COLOR_BALANCE (report only, 2026-11-12): the LLM picks each diagram item's colour; this notes overuse.
+# A diagram stays readable with at most 3 colours (the $step ramp and the status colours each count
+# as one), its strong ($accent) items
+# under half of them, and one kind of colour (an order ramp is not mixed with status colours).
+_DIAGRAM_ITEMS = {"Pyramid": "PyramidLevel", "ProcessArrow": "ProcessArrowStep", "Flow": "FlowNode",
+                  "Tree": "TreeItem", "Timeline": "TimelineItem", "Matrix": "MatrixItem"}
+_STATUS_FILLS = {f"${r}{s}" for r in ("positive", "warning", "negative") for s in ("", "Soft")}
+MAX_DIAGRAM_COLOURS = 3
+
+
+def _check_color_balance(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    notes: list[str] = []
+    for diagram, item in _DIAGRAM_ITEMS.items():
+        for d in root.iter(diagram):
+            fills = [(el.get("color") or "").strip() for el in d.iter(item)]
+            fills = [f for f in fills if f]
+            if len(fills) < 2:
+                continue
+            ramp = any(f.startswith("$step") for f in fills)
+            status = any(f in _STATUS_FILLS for f in fills)
+            # the ramp and the status colours each count as one colour family
+            colours = ({f for f in fills if not f.startswith("$step") and f not in _STATUS_FILLS}
+                       | ({"$step"} if ramp else set()) | ({"status"} if status else set()))
+            strong = sum(f == "$accent" for f in fills)
+            if len(colours) > MAX_DIAGRAM_COLOURS:
+                notes.append(f"{diagram}: {len(colours)} colours on {len(fills)} items (keep <= {MAX_DIAGRAM_COLOURS})")
+            if len(fills) >= 3 and strong * 2 >= len(fills):
+                notes.append(f"{diagram}: {strong} of {len(fills)} items strong ($accent), so none stands out")
+            if ramp and status:
+                notes.append(f"{diagram}: an order ramp mixed with status colours")
+    if notes:
+        issues.append({"severity": "low", "code": "COLOR_BALANCE", "message": "; ".join(notes) + "."})
+
+
 def audit_layout(xml: str) -> list[dict[str, str]]:
     """Parse POM XML and check spatial/layout constraints.
 
@@ -516,5 +550,6 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_table_width(root, issues)
     _check_contrast(root, issues)
     _check_literal_colors(root, issues)
+    _check_color_balance(root, issues)
 
     return issues

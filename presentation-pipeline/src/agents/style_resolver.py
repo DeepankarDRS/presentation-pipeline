@@ -22,7 +22,7 @@ from typing import Any
 import yaml
 
 from src.compiler.palette_tokens import (
-    MAX_CHART_COLORS, derive_tokens, expand_seed, separate_chart_colors, separate_polarity,
+    MAX_CHART_COLORS, derive_tokens, expand_seed, parse_color, separate_chart_colors, separate_polarity,
 )
 from src.state import PresentationState
 
@@ -56,8 +56,11 @@ def _build_theme(name: str, palette_data: dict[str, Any]) -> dict[str, Any]:
     chartSurface / chartInk gets surfaceAlt / textMain so $chartSurface always resolves.
     chartColors become chart1..chartN tokens: POM 10.3.0 resolves $tokens inside
     chartColors (verified 2026-10-22), so charts follow a theme switch."""
+    raw = palette_data
     if "seed" in palette_data:
-        palette_data = expand_seed(palette_data["seed"])
+        # a seed palette may still author its dark panel beside the seed (e.g. a brand navy)
+        palette_data = {**expand_seed(palette_data["seed"]),
+                        **{k: parse_color(raw[k]) for k in ("panelDark", "onPanelDark") if raw.get(k)}}
     mode = palette_data.get("mode", "light")
     # positive / negative apart in lightness + for colour-blind readers before the derived roles
     # (2026-10-22 chart pass, palette_tokens.separate_polarity)
@@ -66,6 +69,11 @@ def _build_theme(name: str, palette_data: dict[str, Any]) -> dict[str, Any]:
     tokens.setdefault("chartSurface", palette_data["surfaceAlt"])
     tokens.setdefault("chartInk", palette_data["textMain"])
     tokens.update(derive_tokens(palette_data))
+    # the dark cover / closing ground (`cover: dark`): panelDark under its own name, so the
+    # validator's one-dark-panel rule (it looks for $panelDark / $textMain fills) does not count it.
+    # Every theme defines it: the editor's theme switch keeps $tokens, so a deck drawn with
+    # `cover: dark` must still compile under any other palette.
+    tokens["coverDark"] = tokens["panelDark"]
     chart_colors = [str(c).upper() for c in (palette_data.get("chartColors") or [palette_data["accent"]])]
     # separable series (lightness band, colour-blind + normal-vision gaps, 2026-10-22 chart pass)
     chart_colors = separate_chart_colors(chart_colors, tokens["chartSurface"])[:MAX_CHART_COLORS]
@@ -84,6 +92,9 @@ def _build_theme(name: str, palette_data: dict[str, Any]) -> dict[str, Any]:
         # the pair for a one-series-in-focus chart
         "chart_focus": {"focus": "$accent", "rest": "$neutral"},
         "element": f"<Theme {token_attrs} />",
+        # deck look (palettes.yaml `cover` / `box`): applied by code in the validator
+        "cover": raw.get("cover", "surface"),
+        "box": dict(raw.get("box") or {}),
     }
 
 
@@ -109,7 +120,8 @@ def theme_names() -> list[str]:
 def resolve_theme(theme_name: str) -> dict[str, Any]:
     """Resolve a theme name to a full theme dict.
 
-    Returns: {name, mode, is_dark, chart_colors, chart_tokens, chart_colors_json, chart_focus, element}
+    Returns: {name, mode, is_dark, chart_colors, chart_tokens, chart_colors_json, chart_focus, element,
+              cover, box}
     Callable from any node — not coupled to the graph.
     """
     if not theme_name or theme_name == _DEFAULT_NAME:

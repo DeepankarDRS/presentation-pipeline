@@ -22,6 +22,8 @@ from src.compiler.grow_fallback import (
 )
 from src.compiler.kpi_grid import kpi_rows
 from src.compiler.icons import fix_icon_names
+from src.compiler.ink_on_fill import fix_ink_on_fill
+from src.compiler.palette_tokens import contrast
 from src.utils.text_clean import strip_illegal
 
 
@@ -664,6 +666,155 @@ def soften_dark_panels(xml: str) -> tuple[str, int]:
         count += 1
 
 
+# --- deck look (palettes.yaml `cover` / `box`), applied by the validator after normalize_xml ---
+_BOX_OWNED = re.compile(r'\s(?:borderRadius|border\.(?:color|width|dashType)|shadow\.[\w]+)="[^"]*"')
+_OPACITY = re.compile(r'\sopacity="')
+_FILLED = re.compile(r'\sbackgroundColor="(?!\$surface")|\sborder\.(?:color|width)="')
+
+
+def _slide_root(xml: str) -> re.Match | None:
+    """The opening tag of the stack that fills the slide: the first stack after `<Slide>`."""
+    slide = xml.find("<Slide")
+    m = _STACK_TAG_RE.search(xml, slide) if slide >= 0 else None
+    return m if m and not m.group(1) else None
+
+
+def apply_box(xml: str, box: dict[str, Any]) -> tuple[str, int]:
+    """Write the palette's box attributes onto every filled or bordered VStack / HStack but the
+    slide root. Code-drawn nodes are plain stacks by now, so they get it too. borderLeft / borderTop
+    accent bars stay; a box with `opacity` gets no shadow (it shows through). Idempotent."""
+    if not box:
+        return xml, 0
+    root = _slide_root(xml)
+    count = 0
+
+    def one(m: re.Match) -> str:
+        nonlocal count
+        tag = m.group(0)
+        if m.group(1) or (root and m.start() == root.start()) or not _FILLED.search(tag):
+            return tag
+        end = "/>" if tag.endswith("/>") else ">"
+        body = _BOX_OWNED.sub("", tag[: -len(end)])
+        see_through = bool(_OPACITY.search(body))
+        attrs = "".join(f' {k}="{v}"' for k, v in box.items() if not (see_through and k.startswith("shadow.")))
+        count += 1
+        return body + attrs + end
+
+    return _STACK_TAG_RE.sub(one, xml), count
+
+
+_COLOR_ATTR = re.compile(r'(\b(?:color|fill\.color|line\.color)=")(\$\w+)"')
+_FILL_ATTR = re.compile(r'(\b(?:fill\.color|line\.color)=")(\$\w+)"')
+_ANY_TAG = re.compile(r"<(/?)([A-Za-z][\w.]*)\b[^>]*?(/?)>")
+_OWN_FILL = re.compile(r'\s(?:backgroundColor|backgroundGradient|fill\.color)="')
+
+
+def dark_cover(xml: str, theme_element: str) -> tuple[str, int]:
+    """Cover / closing slide on the dark ground: the root fill becomes $coverDark (the palette's
+    panelDark under its own name, so the one-dark-panel rule does not count it) and text drawn
+    straight on it turns light. Anything inside an element with its own fill (box, Text, cell,
+    Shape) keeps its colours. An accent fill too close to the ground becomes $accentAlt.
+    Returns (xml, 1) when the root changed."""
+    m = _slide_root(xml)
+    tokens = dict(re.findall(r'(\w+)="([0-9A-Fa-f]{6})"', theme_element or ""))
+    ground = tokens.get("coverDark")
+    if not m or not ground:
+        return xml, 0
+
+    def readable(name: str, target: float = 4.5) -> bool:
+        return name in tokens and contrast(tokens[name], ground) >= target
+
+    accent = next((f"${n}" for n in ("accentAlt", "accentSoft") if readable(n)), "$onPanelDark")
+    on_ground = {"$textMain": "$onPanelDark", "$textMuted": "$neutral" if readable("neutral") else "$onPanelDark",
+                 "$accent": accent, "$accentText": accent}
+    accent_fill_lost = "accent" in tokens and contrast(tokens["accent"], ground) < 1.5
+
+    root = re.sub(r'\s(?:backgroundColor|backgroundGradient)="[^"]*"', "", m.group(0))
+    root = root[:-1].rstrip("/") + ' backgroundColor="$coverDark"' + ("/>" if m.group(3) else ">")
+
+    def recolor(tag: str) -> str:
+        # an element with its own fill keeps its text colours: only the fill itself meets the ground
+        attrs = _FILL_ATTR if _OWN_FILL.search(tag) else _COLOR_ATTR
+        tag = attrs.sub(lambda c: c.group(1) + on_ground.get(c.group(2), c.group(2)) + '"', tag)
+        if accent_fill_lost:
+            tag = tag.replace('backgroundColor="$accent"', 'backgroundColor="$accentAlt"')
+        return tag
+
+    # every element after the root: tags on the ground are recoloured, then an element with its
+    # own fill shields everything inside it (its own tag sits on the ground, its children do not)
+    out, filled, pos = [xml[:m.start()], root], [], m.end()
+    for t in _ANY_TAG.finditer(xml, m.end()):
+        out.append(xml[pos:t.start()])
+        tag = t.group(0)
+        if t.group(1):
+            if filled:
+                filled.pop()
+        else:
+            if not any(filled):
+                tag = recolor(tag)
+            if not t.group(3):
+                filled.append(bool(_OWN_FILL.search(t.group(0))))
+        out.append(tag)
+        pos = t.end()
+    out.append(xml[pos:])
+    return "".join(out), 1
+
+
+# --- diagram items: the LLM picks each item's fill, code makes its label readable (2026-11-12) ---
+_ITEM_TAG = re.compile(r"<(PyramidLevel|ProcessArrowStep|FlowNode|TreeItem)\b[^>]*?/?>")
+_ITEM_INKS = ("$textMain", "$surface", "$onAccent", "$onPanelDark")
+_LAST_INKS = ("$inkDark", "$inkLight")
+TEXT_MIN_ITEM = 4.5
+
+
+def readable_item_text(xml: str, theme_element: str) -> tuple[str, int]:
+    """Every pyramid level, process step, flow node and tree node with a fill gets a label colour that reads
+    on it: the LLM's own textColor when it reaches 4.5:1, else $onStepN on $stepN, else the best of the
+    theme's inks. Fills and textColors resolve through the theme ($token) or are hex. Returns (xml, fixed)."""
+    tokens = dict(re.findall(r'(\w+)="([0-9A-Fa-f]{6})"', theme_element or ""))
+    if not tokens:
+        return xml, 0
+
+    def hex_of(v: str | None) -> str | None:
+        if not v:
+            return None
+        v = v.strip().lstrip("#")
+        return tokens.get(v[1:]) if v.startswith("$") else (v if re.fullmatch(r"[0-9A-Fa-f]{6}", v) else None)
+
+    count = 0
+
+    def one(m: re.Match) -> str:
+        nonlocal count
+        tag = m.group(0)
+        fill = re.search(r'\scolor="([^"]+)"', tag)
+        bg = hex_of(fill.group(1)) if fill else None
+        if not bg:
+            return tag
+        now = re.search(r'\stextColor="([^"]+)"', tag)
+        ink_now = hex_of(now.group(1)) if now else None
+        if ink_now and contrast(ink_now, bg) >= TEXT_MIN_ITEM:
+            return tag
+        step = re.fullmatch(r"\$step(\d)", fill.group(1))
+        if step and f"onStep{step.group(1)}" in tokens:
+            ink = f"$onStep{step.group(1)}"
+        else:
+            def best(inks: tuple[str, ...]) -> str | None:
+                return max((t for t in inks if t[1:] in tokens), key=lambda t: contrast(tokens[t[1:]], bg),
+                           default=None)
+            ink = best(_ITEM_INKS)   # the theme's own inks first; pure black / white only when none reads
+            if ink and contrast(tokens[ink[1:]], bg) < TEXT_MIN_ITEM:
+                ink = best(_ITEM_INKS + _LAST_INKS)
+        if not ink or (now and now.group(1) == ink):
+            return tag
+        count += 1
+        if now:
+            return tag[:now.start()] + f' textColor="{ink}"' + tag[now.end():]
+        end = "/>" if tag.endswith("/>") else ">"
+        return tag[: -len(end)].rstrip() + f' textColor="{ink}"' + (" />" if end == "/>" else ">")
+
+    return _ITEM_TAG.sub(one, xml), count
+
+
 def _tidy_text_whitespace(xml: str) -> tuple[str, int]:
     """Text written over several indented lines keeps its newline + indent as characters: the
     CHEFFIN cover title started with '\\n          CHEFFIN…' and rendered pushed right. Collapse
@@ -814,6 +965,30 @@ _SHAPE_ALIASES = {"circle": "ellipse", "oval": "ellipse", "square": "rect", "rec
 _SHAPE_ALIAS_RE = re.compile(r'shapeType="(' + "|".join(_SHAPE_ALIASES) + r')"', re.IGNORECASE)
 
 
+# Diagram labels are attributes; the LLM forces a line break with &#10; (paid run 2026-11-12:
+# "Category&#10;leadership" on both pyramids) and POM prints the entity as text. The label wraps by itself.
+_DIAGRAM_LABEL_TAG = re.compile(
+    r"<(?:PyramidLevel|ProcessArrowStep|FlowNode|FlowConnection|TreeItem|TimelineItem|MatrixItem)\b[^>]*>")
+_ATTR_BREAK = re.compile(r"\s*(?:&#(?:10|13|x0*[aAdD]);|\n|\r)+\s*")
+
+
+def _flatten_item_label_breaks(xml: str) -> tuple[str, int]:
+    count = 0
+
+    def tag(m: re.Match) -> str:
+        nonlocal count
+
+        def value(v: re.Match) -> str:
+            nonlocal count
+            new, n = _ATTR_BREAK.subn(" ", v.group(2))
+            count += n
+            return f'{v.group(1)}="{new.strip() if n else new}"'
+
+        return re.sub(r'(\b[\w.]+)="([^"]*)"', value, m.group(0))
+
+    return _DIAGRAM_LABEL_TAG.sub(tag, xml), count
+
+
 def normalize_xml(raw_xml: str) -> dict[str, Any]:
     """Normalize raw LLM XML output: strip fences, fix colors, remove br/hr.
 
@@ -850,6 +1025,15 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
         issues.append({
             "code": "HASH_COLOR",
             "message": f"Stripped leading '#' from {len(hash_hits)} color value(s).",
+            "auto_fixed": True,
+        })
+
+    xml, n_breaks = _flatten_item_label_breaks(xml)
+    if n_breaks:
+        issues.append({
+            "code": "LABEL_BREAK_REMOVED",
+            "message": f"Replaced {n_breaks} line break(s) inside diagram labels with a space "
+                       "(POM prints &#10; literally; labels wrap on their own).",
             "auto_fixed": True,
         })
 
@@ -1013,6 +1197,11 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
     xml, lone_note = fill_lone_child(xml)
     if lone_note:
         issues.append({"code": "GROW_LONE_CARD", "message": lone_note, "auto_fixed": True})
+
+    xml, n_ink = fix_ink_on_fill(xml)
+    if n_ink:
+        issues.append({"code": "INK_ON_FILL", "auto_fixed": True,
+                       "message": f"{n_ink} text colour(s) that cannot read on their light fill became readable ink."})
 
     cleaned = xml.strip() + "\n"
     auto_fixed = sum(1 for i in issues if i["auto_fixed"])
