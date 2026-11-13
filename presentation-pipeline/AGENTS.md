@@ -52,6 +52,8 @@ All run from `presentation-pipeline/`. Every run writes to `output/runs/<run_id>
 | Composition nodes in PowerPoint (free, test PC; `docs/eval/nodes-paid/README.md`) | `python -m scripts.nodes_powerpoint` |
 | Composition nodes, whole decks on fresh plans (paid, ~$1.05, stops at $2; `docs/eval/nodes-deck/README.md`) | `python -m scripts.eval_run gate-deck-xtsy-qcomm gate-deck-agency-takeover gate-deck-all-nodes-dense deck-product-launch-data --repeat 1 --label nodes-deck --nodes --max-cost 2 --bundle` |
 | Composition nodes, all six vs today's route on the same plans (paid, ~$1.76, stops at $3.50; `docs/eval/nodes-paid/README.md`) | `python -m scripts.composition_paid --label nodes-paid --bundle --no-render`; free: `--estimate`, `--dry`, `--rescore` |
+| Slide component planner A/B: old commit vs this branch on the same saved outlines (paid ~$0.4 per arm; `score` free) | `python -m scripts.planner_ab plan --arm new --label <l>` · `plan --arm old --label <l>` · `score --label <l> [--old-from <l0>] --bundle` |
+| Slides from both A/B arms' plans, this branch's generator (paid ~$2, stops at $3.50; `sheet` / `score` free, build PC) | `python -m scripts.planner_look run --old-from <l0> --new-from <l> --label <look> --bundle` · `sheet --label <look>` · `score --label <look>` |
 | Card tile nodes, paid check on fresh plans (test PC, ~$1.90) | `python -m scripts.card_plan_only --repeat 3 --label card-plans --bundle`, then `python -m scripts.card_paid --plans card-plans --repeat 3 --label card-paid --bundle`; free: `--rescore`, `--dry` |
 
 Known pre-existing unit-test failures on a clean `uv sync` (verified 2026-10-04: 556 pass, 4 fail; 2026-10-11: 839 pass before the KPI pilot — not regressions):
