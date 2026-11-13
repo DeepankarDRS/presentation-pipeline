@@ -113,6 +113,25 @@ class _Layer:
             self.box[key] = str(value)
 
 
+def _merged(layers: list[_Layer]) -> dict[tuple[str, str], str]:
+    """(part or "", key) -> value after laying `layers` in order."""
+    out: dict[tuple[str, str], str] = {}
+    for layer in layers:
+        out.update({("", k): v for k, v in layer.box.items()})
+        out.update({(p, k): v for p, a in layer.parts.items() for k, v in a.items()})
+    return out
+
+
+def _without(layer: _Layer, restated: dict[tuple[str, str], str]) -> _Layer:
+    """`layer` less the attributes that only repeat a default the tone look replaced."""
+    if not restated:
+        return layer
+    out = _Layer(list(layer.parts))
+    out.box = {k: v for k, v in layer.box.items() if restated.get(("", k)) != v}
+    out.parts = {p: {k: v for k, v in a.items() if restated.get((p, k)) != v} for p, a in layer.parts.items()}
+    return out
+
+
 def _look(look: dict, role: str, parts: dict[str, str] | None = None) -> _Layer:
     layer = _Layer(parts)
     for k, v in (look or {}).items():
@@ -280,8 +299,10 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
     # an item's own variant replaces the group's (its look does not sit on the group variant's, e.g. a plain
     # hairline under an inverted tile); the group's attributes still apply under it
     layers = [_look(kpi()["house_look"], role)]
+    restated: dict[tuple[str, str], str] = {}   # (part or "", key) -> the default the tone look replaced
     if not imeta.get("variant"):
         name = _variant(comp, i, gmeta.get("variant"), cid, flag, group=group is not None)
+        before = _merged(layers + [_look(vs[name]["look"], role)])
         patch: dict = {}
         if imeta.get("color") in ROLE_OF:   # the item's own colour is its tone: a look that shows it
             how = vs[name].get("with_color", name)
@@ -290,6 +311,11 @@ def build_tile(comp: dict, i: int, group: tuple[dict, _Layer] | None, item: tupl
             how = (vs[name].get("with_tone") or {}).get(tone_of(comp, i))
             name, patch = (how, {}) if isinstance(how, str) else (name, how or {})
         layers += [_look(vs[name]["look"], role), _look(patch, role)]
+        after = _merged(layers)
+        restated = {k: v for k, v in before.items() if after.get(k) != v}
+    # the LLM restating the default look (backgroundColor="$surfaceAlt", look3 QBR 2) must not wipe the tone look
+    gparts = _without(gparts, restated)
+    ibox, iparts = _without(ibox, restated), _without(iparts, restated)
     layers.append(gparts)
     if imeta.get("variant"):
         name = _variant(comp, i, imeta["variant"], ref, flag)

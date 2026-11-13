@@ -63,7 +63,7 @@ class PlannerComponent(BaseModel):
                     "Must match the component's schema:\n"
                     "  title: {\"title\": \"...\", \"subtitle\": \"...\"}\n"
                     "  kpi_row: {\"kpi_labels\": [...], \"kpi_values\": [...], "
-                    "\"kpi_deltas\": [change or short note, ...], \"kpi_directions\": [...], "
+                    "\"kpi_deltas\": [change with its number, or \"\", ...], \"kpi_directions\": [...], "
                     "\"kpi_tones\": [\"good\" | \"bad\" | \"watch\" | \"\", ...] (what each number means), "
                     "\"kpi_icons\": [\"<lucide name>\", ...] (every item or none)}\n"
                     "  chart: {\"chart_type\": \"bar\", \"chart_title\": \"...\", "

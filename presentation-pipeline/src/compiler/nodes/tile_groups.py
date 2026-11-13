@@ -149,19 +149,27 @@ def item_style(nd: dict, name: str, comp: dict, i: int, role: str, focus: bool, 
     c = nd["compositions"][name]
     box: dict[str, str] = {}
     parts: dict[str, dict[str, str]] = {p: {} for p in nd["parts"] if p != "item"}
-    _put(box, parts, c.get("look") or {}, role)
+    look = c.get("look") or {}
+    _put(box, parts, look, role)
     tone = {"positive": "good", "negative": "bad", "warning": "watch"}.get(role, "")
-    _put(box, parts, (c.get("tone") or {}).get(tone) or {}, role)
+    toned = (c.get("tone") or {}).get(tone) or {}
+    _put(box, parts, toned, role)
     emph = (c.get("emphasis") or {}) if focus else {}
     _put(box, parts, emph, role)
     _put(box, parts, recipe, role, skip=set(emph))
+    # the LLM restating the composition's default (item.backgroundColor="$surfaceAlt" on a grid, look3 QBR 2) must not
+    # wipe the tone look: a group / item attribute equal to the look's own value is skipped where the tone set the key
+    restated = {k for k in toned if look.get(k) is not None}
+
+    def _keep(attrs: dict) -> dict:
+        return {k: v for k, v in attrs.items() if not (k in restated and v == look[k])}
     flat = {f"item.{k}" if p == "item" else f"{p}.{k}": v for p, a in gparts.items() for k, v in a.items()}
-    _put(box, parts, flat, role, skip=set(emph))
+    _put(box, parts, _keep(flat), role, skip=set(emph))
     hero = emph.get("size") == "hero"
     if item:
         meta, ibox, iparts = item
-        _put(box, parts, {f"item.{k}": v for k, v in ibox.items()}, role)
-        _put(box, parts, {f"{p}.{k}": v for p, a in iparts.items() for k, v in a.items()}, role)
+        _put(box, parts, _keep({f"item.{k}": v for k, v in ibox.items()}), role)
+        _put(box, parts, _keep({f"{p}.{k}": v for p, a in iparts.items() for k, v in a.items()}), role)
         _put(box, parts, compose.recipe(nd["styles"].get(meta.get("style"), "")), role)
         if meta.get("size") == "hero":
             hero = hero or focus

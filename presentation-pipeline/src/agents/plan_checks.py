@@ -17,6 +17,7 @@ estimate set on the 17 hold-out plans (docs/derived-blocks-planning-2026-10-06.m
 
 from __future__ import annotations
 
+import itertools
 import json
 import re
 from typing import Any
@@ -31,10 +32,13 @@ PLAN_INSTRUCTION_TEXT = "PLAN_INSTRUCTION_TEXT"
 PLAN_DUPLICATE_ITEMS = "PLAN_DUPLICATE_ITEMS"
 SLIDE_SPARSE = "SLIDE_SPARSE"
 KPI_VALUE_TEXT = "KPI_VALUE_TEXT"   # a kpi_row value that is a sentence, not a figure (KPI pilot 2026-10-11)
+# a brief sentence holding a number cut into one tile's label / value / delta ("Teams manage" | "4+" | "separate
+# gateways"; look3 launch 2, look2 "62% up from 41%"): the tile reads as a fragment, not a metric
+KPI_FRAGMENT = "KPI_FRAGMENT"
 # a title-only card whose title the brief follows with its own line (tile-nodes §11: under card tile nodes code
 # writes only plan text, so a line the planner dropped is lost; the LLM used to recover or invent one)
 CARD_LINES_DROPPED = "CARD_LINES_DROPPED"
-REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, KPI_VALUE_TEXT, CARD_LINES_DROPPED)
+REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, KPI_VALUE_TEXT, KPI_FRAGMENT, CARD_LINES_DROPPED)
 # problems an edit of the previous plan fixes: an item is missing, drawn twice, or dropped from its card. The layout
 # was right, so the re-ask sees the previous plan and changes only these. Any other problem (an empty component, a
 # shape the routing table sends elsewhere, a sentence as a tile value, instruction text) means the layout itself is
@@ -120,6 +124,46 @@ def is_empty(comp: dict[str, Any]) -> bool:
     return not any(_filled(data.get(k)) for k in keys)
 
 
+_RUN_WORD = re.compile(r"[a-z0-9]+")
+
+
+def _word_run(text: str) -> list[str]:
+    return _RUN_WORD.findall((text or "").lower())
+
+
+def _runs_in(parts: list[str], brief_lines: list[str]) -> bool:
+    """Some order of `parts` reads as one unbroken run of words (4 or more) in one line of the brief."""
+    for order in itertools.permutations(parts):
+        run = _word_run(" ".join(order))
+        if len(run) >= 4 and any(f" {' '.join(run)} " in line for line in brief_lines):
+            return True
+    return False
+
+
+def kpi_fragments(comp: dict[str, Any], brief_text: str) -> list[str]:
+    """A kpi_row's tiles that are a brief sentence cut into label / value / delta: the tile's parts read in the brief
+    as one run of words AND one part is no metric part - a label opening in lower case ("averaging", "of outages
+    ..."), a delta with no number ("separate gateways"), or a value with words after the figure ("4+ separate
+    gateways"). "ARR | $48.2M | +18% QoQ" runs in "ARR: $48.2M (+18% QoQ)" but is a metric: not flagged."""
+    if comp.get("kind") != "kpi_row" or not brief_text:
+        return []
+    data = comp.get("content_data") or {}
+    labels, values, deltas = (list(data.get(k) or []) for k in ("kpi_labels", "kpi_values", "kpi_deltas"))
+    brief = [f" {' '.join(_word_run(line))} " for line in brief_text.splitlines()]
+    out = []
+    for i, value in enumerate(values):
+        label = str(labels[i]).strip() if i < len(labels) else ""
+        delta = str(deltas[i]).strip() if i < len(deltas) else ""
+        value = str(value).strip()
+        first = label.split()[0] if label else ""
+        words_after = [w for w in value.split()[1:] if re.search(r"[A-Za-z]", w)]
+        odd = ((first.isalpha() and first.islower()) or (delta and not re.search(r"\d", delta))
+               or len(words_after) >= 2)
+        if odd and _runs_in([x for x in (label, value, delta) if x], brief):
+            out.append(" | ".join(x for x in (label, value, delta) if x))
+    return out
+
+
 def holds_no_content(plan: dict[str, Any]) -> bool:
     """No component past the headline and captions carries any content: the generator would
     write the whole slide from the summaries (wide-kpi XTSY slide 5, 2026-10-13: both answers'
@@ -160,6 +204,10 @@ def find_problems(plan: dict[str, Any], brief_text: str,
                 problems.append({"code": KPI_VALUE_TEXT, "component_id": cid,
                                  "detail": f"kpi_row '{cid}' has {len(prose)} sentence(s) as kpi_values, not figures: "
                                            f"{prose[0][:80]}"})
+        cut = kpi_fragments(comp, brief_text)
+        if cut:
+            problems.append({"code": KPI_FRAGMENT, "component_id": cid,
+                             "detail": f"kpi_row '{cid}' cuts a sentence into {len(cut)} tile(s): {cut[0][:80]}"})
         if comp.get("kind") == "card_grid":
             dropped = dropped_card_lines(comp, brief_text)
             if dropped:
@@ -227,6 +275,11 @@ def reask_context(problems: list[dict[str, str]], previous_plan: dict[str, Any] 
                          "name in kpi_labels; findings written as sentences belong in a card_grid (one card per "
                          "finding) or a bullet_list, not in a kpi_row." if any(p["code"] == KPI_VALUE_TEXT
                                                                               for p in problems) else "")
+                      + (" A kpi_row tile is a metric: kpi_labels names what is measured, kpi_values holds the figure, "
+                         "kpi_deltas holds a change with its number or stays empty. A sentence that holds a number is "
+                         "not cut into tiles: keep it whole as text (narrative or bullet_list) with the number in it, "
+                         "or name the metric in the label." if any(p["code"] == KPI_FRAGMENT for p in problems)
+                         else "")
                       + (" A card_grid card copies its own line from the key messages into body (or bullets) when the "
                          "key messages give one; code draws only what the plan holds." if any(
                              p["code"] == CARD_LINES_DROPPED for p in problems) else "")
@@ -866,6 +919,9 @@ def finalize_plan(plan: dict[str, Any], brief_text: str, instructions: list[str]
         vals = (comp.get("content_data") or {}).get("kpi_values") or [] if comp.get("kind") == "kpi_row" else []
         if any(is_sentence(str(v)) for v in vals):
             _flag(plan, KPI_VALUE_TEXT, comp.get("component_id", ""), "kpi_values hold sentences, not figures")
+        cut = kpi_fragments(comp, brief_text)
+        if cut:
+            _flag(plan, KPI_FRAGMENT, comp.get("component_id", ""), f"tiles cut from a sentence: {cut[0][:80]}")
     sparse = sparse_flag(plan)
     if sparse:
         plan.setdefault("plan_flags", []).append(sparse)

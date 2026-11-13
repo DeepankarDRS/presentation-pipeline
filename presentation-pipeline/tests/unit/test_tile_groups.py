@@ -410,3 +410,15 @@ def test_kpi_grid_emphasis_only_on_a_dark_hint():
     dark = dict(KPIS, design_hint="ARR on an inverted dark tile")
     xml = run('<KpiRow ref="kpis" variant="grid"/>', dark)["xml"]
     assert 'backgroundColor="$panelDark"' in xml and 'size="hero"' not in xml
+
+
+def test_restated_default_fill_keeps_the_tone_tint():
+    """look3 QBR 2: the generator wrote item.backgroundColor="$surfaceAlt" (the grid's own default) on the group and
+    every tile drew white; a restated default no longer wipes the bad / watch tint, a real colour still wins."""
+    fills = lambda xml: re.findall(r'backgroundColor="(\$\w+)"', xml)
+    xml = run('<KpiRow ref="kpis" variant="grid" item.backgroundColor="$surfaceAlt" item.border.color="$border"/>',
+              KPIS)["xml"]
+    assert "$negativeSoft" in fills(xml) and "$warningSoft" in fills(xml)
+    assert 'border.color="$negative"' in xml
+    asked = fills(run('<KpiRow ref="kpis" variant="grid" item.backgroundColor="$accentSoft"/>', KPIS)["xml"])
+    assert "$negativeSoft" not in asked and asked.count("$accentSoft") >= 4

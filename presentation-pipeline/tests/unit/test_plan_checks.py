@@ -533,3 +533,35 @@ def test_the_previous_plan_reaches_the_prompt():
                                                      deck_context=[], total_slides=1, repair_context=ctx,
                                                      content_field="content")
     assert "<previous_plan>" in text and '"$48.2M"' in text
+
+
+# ── KPI_FRAGMENT: a brief sentence cut into tiles (look3 launch 2) ──────────
+
+def _kpis(labels, values, deltas):
+    return {"component_id": "k", "kind": "kpi_row",
+            "content_data": {"kpi_labels": labels, "kpi_values": values, "kpi_deltas": deltas}}
+
+
+LAUNCH_BRIEF = ("Teams manage 4+ separate gateways averaging 2.3 hours/week each on config\n"
+                "68% of outages last quarter traced to gateway misconfiguration")
+
+
+def test_kpi_fragment_flags_a_cut_sentence():
+    from src.agents.plan_checks import KPI_FRAGMENT, REASK_CODES, find_problems, kpi_fragments
+    new = _kpis(["Teams manage", "averaging", "of outages last quarter traced to gateway misconfiguration"],
+                ["4+", "2.3 hours/week", "68%"], ["separate gateways", "each on config", ""])
+    assert len(kpi_fragments(new, LAUNCH_BRIEF)) == 3
+    old = _kpis(["Teams manage"], ["4+ separate gateways"], ["averaging 2.3 hours/week each on config"])
+    assert kpi_fragments(old, LAUNCH_BRIEF)
+    probs = find_problems({"components": [new]}, LAUNCH_BRIEF)
+    assert KPI_FRAGMENT in REASK_CODES and any(p["code"] == KPI_FRAGMENT for p in probs)
+
+
+def test_kpi_fragment_leaves_metrics_alone():
+    from src.agents.plan_checks import kpi_fragments
+    qbr = _kpis(["ARR", "NRR", "CAC Payback"], ["$48.2M", "114%", "14 months"], ["+18% QoQ", "+2 pts", "-2 months"])
+    assert kpi_fragments(qbr, "ARR: $48.2M (+18% QoQ)\nNRR: 114% (+2 pts)\nCAC Payback: 14 months (-2 months)") == []
+    named = _kpis(["Gateways per team", "Outages from misconfiguration"], ["4+", "68%"], ["", ""])
+    assert kpi_fragments(named, LAUNCH_BRIEF) == []
+    note = _kpis(["Repeat rate"], ["41%"], ["vs target"])   # a note with no number, but not a run of the brief
+    assert kpi_fragments(note, "Repeat rate is 41%, below target") == []
