@@ -54,8 +54,8 @@ class KpiRowContent(_Strict):
                     'watch (mixed, near a limit), "" (neutral context, a target, or no judgement in the brief).')
     kpi_icons: list[str] = Field(
         default_factory=list,
-        description='One generic Lucide icon name per tile for what it measures (wallet, users, clock), '
-                    'or "" on every tile when no symbol fits. No brand logos.')
+        description='One generic Lucide icon name per tile for what it measures (wallet, users, clock, percent); '
+                    'give every tile one, "" on every tile only when no symbol fits any of them. No brand logos.')
 
 
 # a number, or the brief's own text of one ("0.34x", "₹8.2"): the chart node parses it, plan checks match it

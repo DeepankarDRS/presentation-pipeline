@@ -5,6 +5,8 @@ validator and repairers (critic off), deck by deck, so the only difference betwe
     python -m scripts.planner_look run --old-from ab1 --new-from ab3 --label look1 --bundle   # paid, ~$2 (10 decks)
     python -m scripts.planner_look run --old-from ab1 --new-from ab3 --label smoke --cases deck-qbr-data   # ~$0.4
     python -m scripts.planner_look sheet --label look1      # free, build PC (LibreOffice): blind sheets + marks.csv
+    python -m scripts.planner_look run --old-from ab1 --new-from ab4 --label look2 --arms new --bundle   # new arm only
+    python -m scripts.planner_look sheet --label look2 --old-decks-from look1   # pairs against look1's old decks
     python -m scripts.planner_look score --label look1      # free: after you fill marks.csv
 
 run (test PC): needs output/planner-ab/<old-from>/old.json and output/planner-ab/<new-from>/new.json. Per case and
@@ -100,15 +102,16 @@ def run(a: argparse.Namespace) -> int:
     out.mkdir(parents=True, exist_ok=True)
     setup_logging()
     add_file_log(out / "run.log")
-    plans = {"old": arm_plans(a.old_from, "old"), "new": arm_plans(a.new_from, "new")}
-    cases = [c for c in plans["old"] if c in plans["new"] and (not a.cases or c in a.cases)]
+    arms = [arm for arm in ARMS if arm in a.arms]
+    plans = {arm: arm_plans(a.old_from if arm == "old" else a.new_from, arm) for arm in arms}
+    cases = [c for c in plans[arms[0]] if all(c in plans[arm] for arm in arms) and (not a.cases or c in a.cases)]
     rows: list[dict[str, Any]] = []
     spent = 0.0
     for case in cases:
         if spent > a.max_cost:
             print(f"stopped at ${spent:.2f} (--max-cost {a.max_cost}) before {case}")
             break
-        for arm in ARMS:
+        for arm in arms:
             print(f"{case} {arm}: {len(plans[arm][case])} slides ...", flush=True)
             try:
                 row = draw(case, plans[arm][case], out / arm / case)
@@ -148,6 +151,8 @@ def _slide_pngs(deck: Path) -> list[Path]:
 def sheet(a: argparse.Namespace) -> int:
     from PIL import Image, ImageDraw
     out = OUT / a.label
+    if a.old_decks_from and not (out / "old").exists():   # the old arm drawn in an earlier look run
+        shutil.copytree(OUT / a.old_decks_from / "old", out / "old")
     sheets = out / "sheets"
     sheets.mkdir(exist_ok=True)
     rng = random.Random(f"planner-look-{a.label}")
@@ -192,7 +197,8 @@ def score(a: argparse.Namespace) -> int:
     reasons = []
     with open(out / "marks.csv", encoding="utf-8") as f:
         for m in csv.DictReader(f):
-            choice = (m.get("choice") or "").strip()
+            choice = (m.get("choice") or "").strip().lower()
+            choice = "=" if choice in ("same", "tie", "equal", "both") else choice
             if choice not in ("1", "2", "="):
                 continue
             p = key[int(m["pair"])]
@@ -220,9 +226,13 @@ def main() -> int:
     r.add_argument("--cases", nargs="*", default=[])
     r.add_argument("--max-cost", type=float, default=3.5)
     r.add_argument("--bundle", action="store_true")
+    r.add_argument("--arms", nargs="+", choices=ARMS, default=list(ARMS),
+                   help="draw only these arms (new only: reuse an earlier look run's old decks at sheet time)")
     for name in ("sheet", "score"):
         s = sub.add_parser(name)
         s.add_argument("--label", required=True)
+        if name == "sheet":
+            s.add_argument("--old-decks-from", default="", help="copy the old decks of this earlier look label")
     a = ap.parse_args()
     return {"run": run, "sheet": sheet, "score": score}[a.cmd](a)
 
