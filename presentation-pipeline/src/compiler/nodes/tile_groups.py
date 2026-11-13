@@ -450,10 +450,156 @@ def _peer(e: etree._Element) -> etree._Element:
     return e
 
 
+# ── colour by <Highlight> ─────────────────────────────────────────────────────
+# The generator colour-codes items inside the group tag, as on tables and lists (2026-11-13: the gj-h1 and production
+# CHEFFIN decks colour item by item: one tinted tile, a coloured edge or head per category or phase, a dark read-out):
+#   <KpiRow ref="k"><Highlight item="Gross Margin" fill="bad"/><Highlight item="ARR" color="good"/></KpiRow>
+#   <CardGrid ref="c"><Highlight item="*" edge="category"/><Highlight item="Scale" head="phase"/></CardGrid>
+# item = an item's label / title (or its index, or * for every item). Carrier = the attribute: fill (the item's box),
+# edge (a bar on its top, side="left" for the left), head (its band where the composition draws one, else a thick
+# top edge), color (its key text). Meaning = the value: good / bad / watch / focus (status, accent), dark (inverted),
+# category (each item its own series colour), phase (the light-to-dark order ramp). Code picks the tokens and inks.
+
+HL_CARRIERS = ("fill", "edge", "head", "color")
+HL_MEANINGS = ("good", "bad", "watch", "focus", "dark", "category", "phase")
+HL_ATTRS = {"item", "side", *HL_CARRIERS}
+_HL_STATUS = {"good": "positive", "bad": "negative", "watch": "warning", "focus": "accent"}
+_HL_TEXT = {"kpi_row": ("label", "value", "delta", "icon"), "card_grid": ("tag", "title", "body", "icon", "number")}
+_HL_KEY = {"kpi_row": ("value", "delta"), "card_grid": ("title", "tag", "icon")}
+_HL_BAND_TEXT = {"kpi_row": ("label", "icon"), "card_grid": ("title", "tag", "icon")}
+_HL_CATEGORIES = 6   # $chart1..$chart6: the palette's separable series colours
+
+
+def _labels(comp: dict) -> list[str]:
+    if comp["kind"] == "card_grid":
+        return [str(c.get("title") or "") for c in cards.cards_of(comp)]
+    return [str(v) for v in element_refs._list(comp, "kpi_labels")]
+
+
+def highlights(comp: dict, body: str, flag) -> dict[int, list[tuple[str, str, str]]]:
+    """The group's <Highlight> children -> {item: [(carrier, meaning, side)]}. An item name not in the plan or an
+    unknown attribute / meaning is NODE_HIGHLIGHT_UNKNOWN (an error: the generator fixes it)."""
+    cid, tag = comp["component_id"], node(comp["kind"])["tag"]
+    try:
+        kids = [k for k in etree.fromstring(f"<x>{body}</x>") if isinstance(k.tag, str) and k.tag == "Highlight"]
+    except etree.XMLSyntaxError:
+        if "<Highlight" in body:
+            flag("NODE_HIGHLIGHT_UNKNOWN", cid, f'the children of <{tag} ref="{cid}"> are not readable XML: write only '
+                 f'<Highlight .../> and item tags inside it.')
+        return {}
+    norm = lambda s: " ".join(str(s).split()).casefold()  # noqa: E731
+    names = [norm(x) for x in _labels(comp)]
+    out: dict[int, list[tuple[str, str, str]]] = {}
+
+    def bad(msg: str) -> None:
+        flag("NODE_HIGHLIGHT_UNKNOWN", cid, f'<Highlight> in <{tag} ref="{cid}">: {msg}')
+
+    for h in kids:
+        at = {k: " ".join(v.split()) for k, v in h.attrib.items()}
+        if set(at) - HL_ATTRS:
+            bad(f'unknown attribute {", ".join(sorted(set(at) - HL_ATTRS))} (use item, and one of fill / edge / head / '
+                "color, side for an edge).")
+            continue
+        want = norm(at.get("item", ""))
+        if want == "*":
+            idx = list(range(len(names)))
+        elif want.isdigit() and int(want) < len(names):
+            idx = [int(want)]
+        else:
+            idx = [i for i, n in enumerate(names) if n == want] or [i for i, n in enumerate(names) if want and want in n]
+            if len(idx) != 1:
+                bad(f'item="{at.get("item", "")}" names no single item; use one of: '
+                    + ", ".join(f'"{x}"' for x in _labels(comp)) + ', or "*".')
+                continue
+        for carrier in HL_CARRIERS:
+            meaning = at.get(carrier, "").lower()
+            if not meaning:
+                continue
+            if meaning not in HL_MEANINGS:
+                bad(f'{carrier}="{meaning}": use {" / ".join(HL_MEANINGS)}.')
+                continue
+            for i in idx:
+                out.setdefault(i, []).append((carrier, meaning, at.get("side", "top").lower()))
+    return out
+
+
+def _phase_step(i: int, n: int, lightest: int = 1) -> int:
+    """Item i of n on the 5-step ramp, light to dark; one item takes the darkest. A thin edge starts at step 2: step 1
+    vanished on a light slide (look3 redraw 2026-11-13)."""
+    return 5 if n <= 1 else lightest + round(i * (5 - lightest) / (n - 1))
+
+
+def paint(comp: dict, name: str, i: int, marks: list[tuple[str, str, str]], box: dict, parts: dict, flag) -> None:
+    """Lay item i's <Highlight>s over its resolved (box, parts), in place: they come last, so they win."""
+    kind, cid = comp["kind"], comp["component_id"]
+    n, c = count(comp), node(kind)["compositions"][name]
+    band = "band" in parts and "band" not in (c.get("ignores") or [])
+
+    def ink(names: tuple[str, ...], colour: str) -> None:
+        for p in names:
+            if p in parts:
+                parts[p]["color"] = colour
+
+    def edge(token: str, side: str, width: str = "5") -> None:
+        # rows draw their divider as a top border: an edge there goes on the left
+        s = "Left" if side == "left" or name in ("rows", "rows numbered") else "Top"
+        box[f"border{s}.color"], box[f"border{s}.width"] = token, width
+
+    for carrier, meaning, side in marks:
+        k = _phase_step(i, n, 2 if carrier == "edge" else 1)
+        if meaning in _HL_STATUS:
+            r = _HL_STATUS[meaning]
+            solid, soft, text, deep, on_deep = f"${r}", f"${r}Soft", f"${r}Text", f"${r}Dark", "$onPanelDark"
+            if meaning == "focus":
+                deep, on_deep = "$accent", "$onAccent"
+        elif meaning == "dark":
+            solid = soft = deep = "$panelDark"
+            text = on_deep = "$onPanelDark"
+        elif meaning == "phase":
+            solid = soft = deep = f"$step{k}"
+            text = on_deep = f"$onStep{k}"
+        else:   # category
+            solid = deep = f"$chart{i % _HL_CATEGORIES + 1}"
+            soft = text = ""
+            on_deep = "$inkLight"   # bold head text on a mid-tone series colour (LOW_CONTRAST reports a weak pair)
+        if carrier == "color":
+            if meaning not in _HL_STATUS:
+                flag("NODE_HIGHLIGHT_RULE", f"{cid}.{i}", f'color="{meaning}": text colours are good / bad / watch / '
+                     "focus; drawn as an edge.")
+                edge(solid, side)
+                continue
+            ink(_HL_KEY[kind], text)
+        elif carrier == "fill":
+            if meaning == "category":
+                flag("NODE_HIGHLIGHT_RULE", f"{cid}.{i}", 'fill="category": a category colours an edge or a head, not '
+                     "the box; drawn as an edge.")
+                edge(solid, side)
+                continue
+            box["backgroundColor"] = soft
+            if "border.color" in box:
+                box["border.color"] = solid
+            if meaning in _HL_STATUS:
+                ink(_HL_KEY[kind], text)
+            else:   # a dark or ramp fill: every text reads on it, flat like the code's own dark card
+                ink(_HL_TEXT[kind], text)
+                for key in [key for key in box if key.startswith("shadow.")]:
+                    del box[key]
+        elif carrier == "edge":
+            edge(solid, side)
+        else:   # head
+            if band:
+                parts["band"]["backgroundColor"] = deep
+                ink(_HL_BAND_TEXT[kind], on_deep)
+            else:
+                edge(solid, "top", "8")
+                if meaning in _HL_STATUS:
+                    ink(_HL_KEY[kind][:1], text)
+
+
 # ── one group ─────────────────────────────────────────────────────────────────
 
 def draw(comp: dict, gattrs: dict[str, str] | None, kids: dict[int, dict], apart: set[int], flag,
-         second: bool = False) -> tuple[str, dict[int, str], dict]:
+         second: bool = False, marks: dict[int, list] | None = None) -> tuple[str, dict[int, str], dict]:
     """A component's group tag (attrs; None when only items placed apart) -> (the group's XML, {placed-apart item:
     its XML}, what was drawn). `kids`: item tags inside the group by index; `apart`: items whose tag stands elsewhere
     (their attrs in kids too); `second`: a slide's second card group (today: drawn as open columns)."""
@@ -488,6 +634,8 @@ def draw(comp: dict, gattrs: dict[str, str] | None, kids: dict[int, dict], apart
         focus = emph_ok and i == focus_i
         rec = compose.recipe(nd["styles"].get(item_styles.get(i) or style or "", ""))
         box, parts, hero = item_style(nd, name, comp, i, role, focus, rec, gparts, item)
+        if marks and marks.get(i):
+            paint(comp, name, i, marks[i], box, parts, flag)
         if item and item[0].get("size") == "hero" and not hero:
             flag("NODE_VARIANT_UNMET", f"{cid}.{i}", f'size="hero" on ref="{cid}.{i}" needs the plan\'s emphasis item; '
                  "normal used.")
@@ -593,7 +741,9 @@ def _expand_kind(xml: str, plan: dict | None, kind: str) -> dict[str, Any]:
     for cid in list(dict.fromkeys(list(groups) + [c for c, _ in apart])):
         comp, g = comps[cid], groups.get(cid)
         kids: dict[int, tuple] = {}
+        marks: dict[int, list] = {}
         if g is not None:
+            marks = highlights(comp, g["body"], flag)
             for k in validate.ref_tags(g["body"]):
                 key = item_key(k, cid) if k["tag"] == itag else None
                 if k["tag"] != itag:
@@ -603,15 +753,15 @@ def _expand_kind(xml: str, plan: dict | None, kind: str) -> dict[str, Any]:
                          "place each item once.")
                 elif key:
                     kids[key[1]] = _item_read(k["attrs"], node(kind), k["attrs"]["ref"], flag)
-            if re.sub(rf"<{itag}\b[^<>]*?/>", "", g["body"]).strip():
-                flag("NODE_ATTR_DROPPED", cid, f'children inside <{gtag} ref="{cid}"> other than <{itag}/> tags: code '
-                     "writes the group from the plan; removed.")
+            if re.sub(rf"<(?:{itag}|Highlight)\b[^<>]*?/>", "", g["body"]).strip():
+                flag("NODE_ATTR_DROPPED", cid, f'children inside <{gtag} ref="{cid}"> other than <{itag}/> and '
+                     "<Highlight/> tags: code writes the group from the plan; removed.")
         mine_apart = {i for c, i in apart if c == cid}
         for i in mine_apart:
             kids[i] = _item_read(apart[(cid, i)]["attrs"], nd, f"{cid}.{i}", flag)
         second = kind == "card_grid" and g is not None and sum(1 for c in groups if c != cid
                                                                and groups[c]["start"] < g["start"]) > 0
-        group, alone, info = draw(comp, g["attrs"] if g else None, kids, mine_apart, flag, second)
+        group, alone, info = draw(comp, g["attrs"] if g else None, kids, mine_apart, flag, second, marks)
         ids = (lambda x: x) if info["composition"] in TODAY else compose.inner_ids   # today's forms: as today
         if g is not None:
             g["xml"] = ids(group)
@@ -652,6 +802,27 @@ def node_lines() -> str:
                  "attributes in $tokens: item.<box attribute> styles every item's box, <part>.<attribute> every item's "
                  "part; $tone / $toneSoft / $toneText follow each item's tone (good / bad / watch, else the accent). "
                  "No fontSize.")
+    lines += [
+        "COLOUR CODE with <Highlight/> inside the group tag: code colours an item's number by its tone, nothing else. "
+        "Every box colour is YOUR choice, per item, for what the item means:",
+        '  <Highlight item="<label or title, or *>" fill|edge|head|color="<meaning>"/> (edge may add side="left")',
+        "  fill = the item's box tinted · edge = a bar on its top · head = its solid band (banded, columns; else a thick "
+        "top bar) · color = its number / title only",
+        "  good / bad / watch = status (wins, losses, watch) · focus = the one the headline names · dark = an inverted "
+        "item · category = each item its own colour (pillars, segments, platforms; an edge or a head) · phase = a "
+        "light-to-dark order (stages, months, steps)",
+        "  A fill marks a difference: the bad metric among good ones, the item the headline names. Items that all "
+        "mean the same take no fill (one colour on all = no meaning); give them an edge or head by category or "
+        "phase, or leave them plain.",
+        '  <KpiRow ref="snapshot"><Highlight item="Gross Margin" fill="bad"/><Highlight item="CAC Payback" '
+        'fill="watch"/></KpiRow>',
+        '  <CardGrid ref="pillars" variant="banded"><Highlight item="*" head="category"/></CardGrid>',
+        '  <CardGrid ref="roadmap"><Highlight item="*" edge="phase"/><Highlight item="Scale" fill="dark"/></CardGrid>',
+        "  Hint words -> Highlight: 'X in negative / positive / warning' -> fill or color bad / good / watch on X; "
+        "'focus on X', 'tint X' -> fill=\"focus\"; 'dark / inverted X' -> fill=\"dark\"; 'accent border' -> edge=\"focus\" side=\"left\" (on X, or *); "
+        "'by stage / phase' -> phase; 'each pillar / segment / platform its colour' -> category; 'lift / elevate' -> "
+        'item.shadow.type="outer" item.shadow.blur="6" item.shadow.offset="2" on the group.',
+    ]
     return "\n".join(lines)
 
 
@@ -671,8 +842,10 @@ def tags_contract(kind: str) -> tuple[list[str], list[str], dict[str, list[str]]
     """(tags, hierarchy lines, {tag: attributes}) for the generator's ALLOWED NODES (as tiles.tags_contract)."""
     nd = node(kind)
     g, it = nd["tag"], nd["item_tag"]
-    return [g, it], [f"  <{g}> -> {it}", f"  <{it}> -- LEAF (no children)"], {g: tag_attributes(kind),
-                                                                              it: item_attributes(kind)}
+    return [g, it, "Highlight"], [f"  <{g}> -> {it}, Highlight", f"  <{it}> -- LEAF (no children)",
+                                  "  <Highlight> -- LEAF (no children)"], {g: tag_attributes(kind),
+                                                                            it: item_attributes(kind),
+                                                                            "Highlight": sorted(HL_ATTRS)}
 
 
 def prompt_line(comp: dict, headline: str = "") -> str:
@@ -690,7 +863,8 @@ def prompt_line(comp: dict, headline: str = "") -> str:
                 + ", ".join(f"{i} {str(c.get('title') or '')}".strip() for i, c in enumerate(cs)))
         tones = [cards.tone_of(comp, i) for i in range(n)]
     parts = [head, f"emphasis {f}" if f is not None else "no emphasis item",
-             "tones " + " ".join(f"{i}={t}" for i, t in enumerate(tones) if t) if any(tones) else "no tones",
+             ("tones " + " ".join(f"{i}={t}" for i, t in enumerate(tones) if t) + " (code colours the numbers; box "
+              "colour only by <Highlight>)") if any(tones) else "no tones",
              "variants " + " | ".join(ok)]
-    return ("; ".join(parts) + f'. <{nd["tag"]} ref="{cid}"/> or <{nd["item_tag"]} ref="{cid}.N"/>; never type a label, '
-            "value or title yourself: code writes them from the plan")
+    return ("; ".join(parts) + f'. <{nd["tag"]} ref="{cid}"/> (or with <Highlight/> inside) or <{nd["item_tag"]} '
+            f'ref="{cid}.N"/>; never type a label, value or title yourself: code writes them from the plan')

@@ -679,9 +679,9 @@ nodes:
         look:     {item.backgroundColor: $surfaceAlt, item.border.color: $border, item.border.width: 1,
                    item.padding: 16, item.gap: 6, item.justifyContent: center, icon.color: $toneText,
                    label.color: $textMuted, value.color: $textMain, delta.color: $toneText}
-        tone:     {bad: {item.backgroundColor: $toneSoft, item.border.color: $tone, value.color: $toneText},
-                   watch: {item.backgroundColor: $toneSoft, item.border.color: $tone, value.color: $toneText},
-                   good: {value.color: $toneText}}
+        # the tone colours the number only; a box fill is the generator's choice, by <Highlight> (2026-11-13: code's
+        # automatic tint filled every all-same-tone row, e.g. four green cards on product-launch 5)
+        tone:     {bad: {value.color: $toneText}, watch: {value.color: $toneText}, good: {value.color: $toneText}}
         # a highlight must mean something (user 2026-11-01): the dark tile only when the design hint asks for a dark /
         # inverted item; no hero size in a grid (the hero is bento's: one item, the rest its subs)
         emphasis_requires: [count_ge_3, hint_dark]
@@ -770,10 +770,8 @@ nodes:
                    item.shadow.offset: 2, item.shadow.color: $textMain, item.shadow.opacity: 0.1,
                    icon.color: $toneText, tag.color: $toneText, number.color: $toneText, title.color: $textMain,
                    body.color: $textMuted}
-        tone:     &card_tinted
-                  {bad: {item.backgroundColor: $toneSoft, item.border.color: $tone},
-                   watch: {item.backgroundColor: $toneSoft, item.border.color: $tone},
-                   good: {item.backgroundColor: $toneSoft, item.border.color: $tone}}
+        tone:     &card_tinted   # no fill by tone: the tag / icon carry it; a box fill is a <Highlight> (2026-11-13)
+                  {bad: {}, watch: {}, good: {}}
         emphasis_requires: [count_ge_3]
         emphasis: &card_dark
                   {item.backgroundColor: $panelDark, item.border.color: null, item.border.width: null,

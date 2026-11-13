@@ -61,6 +61,9 @@ treatments:
   item_colors:
     intent: colour the diagram's items by what they mean (any items in focus, groups, an order, a status)
     technique: 'each item''s own color=, chosen per item: $accent strong, $accentSoft normal, $neutral muted, $step1..$step5 an order (stages, tiers, a funnel; light to dark), $positive / $warning / $negative or their Soft tints a status (with a sign or word); same meaning = same colour, all equal = one colour, at most 3 colours (the step ramp counts as one, the status colours as one), the strong ones few; textColor optional (code makes it readable)'
+  box_colors:
+    intent: colour the cards by what they are (each pillar / segment its own colour, phases light to dark)
+    technique: 'each card''s top edge (borderTop.color, width 5) or head in its own colour: $chart1, $chart2 .. for categories, $step1 .. $step5 for an order (light to dark); never the same fill on every card (code-drawn cards: <Highlight item="*" edge="category"/> or head="phase")'
   focus:
     intent: one item in focus, the rest recede
     technique: 'the ONE item the headline names: backgroundColor="$accentSoft" on its card / tile / row (or the item''s color="$accent" on a timeline / flow / step) and its key figure color="$accentText" bold; every other item keeps $surfaceAlt, $textMain values and $neutral marks (dots, bars, icons); never two items in focus'
@@ -102,7 +105,7 @@ kinds:
     treatments: [item_colors, emphasis, sentiment, accent_border, lift, header_icon]
     never: "extra nodes or borders on levels (use the level's own color)"
   card_grid:
-    treatments: [emphasis, focus, sentiment, highlight_text, icon_tiles, inverted_panel, accent_border, lift]
+    treatments: [emphasis, focus, sentiment, highlight_text, icon_tiles, box_colors, inverted_panel, accent_border, lift]
     never: "a bullet or icon list in place of the cards"
   layer:
     treatments: [emphasis, sentiment, accent_border, lift]

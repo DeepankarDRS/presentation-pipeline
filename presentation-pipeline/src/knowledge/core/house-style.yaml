@@ -272,10 +272,10 @@ render_gotchas:
      $textMain bg on a LIGHT theme only; on a DARK theme use $surfaceAlt bg."
 
 design_variety: >
-  Lay out each slide for its own content, but keep ONE card treatment, one type
-  ramp and one KPI tile style across the deck. One emphasis per slide (a tinted
-  tile, the highlighted bar, the highlighted row). Use at most ONE dark panel
-  ($textMain bg) per deck, and only when the plan has a read-out to anchor.
+  Lay out each slide for its own content; keep one type ramp, one card shape and
+  one colour per meaning across the deck. Colour items by meaning (status, one
+  focus, category or phase edges); never one fill on every item. At most one
+  dark read-out panel per slide.
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:
@@ -292,6 +292,6 @@ checklist:
   - "An HStack inside a VStack gets its width by stretch (no w); inside an HStack, w=\"max\" or %."
   - "No fixed-px width on a text or chart column."
   - "Bullet lists: every point of the plan, fontSize 14-16; 6+ points split into two columns."
-  - "At most one hero_panel. Accent used as a highlight, not a fill."
+  - "At most one hero_panel per slide. Accent as a highlight or an edge, never one fill on every item."
   - "If the slide looks half empty, give its main band grow - never add content the
      plan does not have, and don't stretch a table card."

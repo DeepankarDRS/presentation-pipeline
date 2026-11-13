@@ -226,9 +226,12 @@ def test_card_words(word):
 
 
 def test_card_grid_is_todays_default():
-    """grid with no attributes draws what today's bare <CardGrid> draws (the passed card gate's look)."""
-    old = cards.expand('<Slide><VStack w="1280" h="720"><CardGrid ref="levers"/></VStack></Slide>', plan(LEVERS))["xml"]
-    new = run('<CardGrid ref="levers" variant="grid"/>', LEVERS)["xml"]
+    """grid with no attributes draws what today's bare <CardGrid> draws (the passed card gate's look); without tones,
+    since the composition no longer tints a card by its tone (2026-11-13: a fill is a <Highlight>)."""
+    cd = LEVERS["content_data"]
+    untoned = dict(LEVERS, content_data=dict(cd, cards=[{k: v for k, v in c.items() if k != "tone"} for c in cd["cards"]]))
+    old = cards.expand('<Slide><VStack w="1280" h="720"><CardGrid ref="levers"/></VStack></Slide>', plan(untoned))["xml"]
+    new = run('<CardGrid ref="levers" variant="grid"/>', untoned)["xml"]
 
     def norm(x):   # attribute order may differ
         return sorted(tuple(sorted(re.findall(r'(\S+?)="([^"]*)"', t))) for t in re.findall(r"<[A-Z][^<>]*>", x))
@@ -393,7 +396,7 @@ def test_prompt_lines():
     assert "variants grid | strip | rows | banded | bento" in line and "emphasis 0" in line
     assert "columns" not in composed.prompt_line(NO_BULLETS)
     tags, _, attrs = composed.tags_contract("card_grid")
-    assert tags == ["CardGrid", "Card"] and "item.*" in attrs["CardGrid"] and "variant" in attrs["Card"]
+    assert tags == ["CardGrid", "Card", "Highlight"] and "item.*" in attrs["CardGrid"] and "variant" in attrs["Card"]
 
 
 def test_card_bento_not_on_steps():
@@ -412,13 +415,70 @@ def test_kpi_grid_emphasis_only_on_a_dark_hint():
     assert 'backgroundColor="$panelDark"' in xml and 'size="hero"' not in xml
 
 
-def test_restated_default_fill_keeps_the_tone_tint():
-    """look3 QBR 2: the generator wrote item.backgroundColor="$surfaceAlt" (the grid's own default) on the group and
-    every tile drew white; a restated default no longer wipes the bad / watch tint, a real colour still wins."""
-    fills = lambda xml: re.findall(r'backgroundColor="(\$\w+)"', xml)
-    xml = run('<KpiRow ref="kpis" variant="grid" item.backgroundColor="$surfaceAlt" item.border.color="$border"/>',
-              KPIS)["xml"]
-    assert "$negativeSoft" in fills(xml) and "$warningSoft" in fills(xml)
-    assert 'border.color="$negative"' in xml
-    asked = fills(run('<KpiRow ref="kpis" variant="grid" item.backgroundColor="$accentSoft"/>', KPIS)["xml"])
-    assert "$negativeSoft" not in asked and asked.count("$accentSoft") >= 4
+# ── colour by <Highlight> (2026-11-13) ─────────────────────────────────────────
+
+def _fills(xml):
+    return re.findall(r'backgroundColor="(\$\w+)"', xml)
+
+
+def test_tone_colours_the_number_not_the_box():
+    """No fill from the plan tone: bad / watch tiles and toned cards stay plain, the number / tag carry the tone."""
+    xml = run('<KpiRow ref="kpis" variant="grid"/>', KPIS)["xml"]
+    assert not {"$negativeSoft", "$warningSoft", "$positiveSoft"} & set(_fills(xml))
+    xml = run('<CardGrid ref="levers" variant="grid"/>', LEVERS)["xml"]
+    assert not {"$negativeSoft", "$warningSoft", "$positiveSoft"} & set(_fills(xml))
+
+
+def test_highlight_fill_by_status():
+    res = run('<KpiRow ref="kpis" variant="grid"><Highlight item="Gross margin" fill="bad"/>'
+              '<Highlight item="cac payback" fill="watch"/><Highlight item="ARR" color="good"/></KpiRow>', KPIS)
+    assert res["ok"] and "NODE_ATTR_DROPPED" not in codes(res)
+    xml = res["xml"]
+    assert _fills(xml).count("$negativeSoft") == 1 and _fills(xml).count("$warningSoft") == 1
+    assert 'border.color="$negative"' in xml and "$positiveSoft" not in xml
+
+
+def test_highlight_every_item_by_category_and_phase():
+    xml = run('<KpiRow ref="kpis" variant="grid"><Highlight item="*" edge="category"/></KpiRow>', KPIS)["xml"]
+    assert [f"$chart{k}" for k in range(1, 5)] == re.findall(r'borderTop\.color="(\$\w+)"', xml)
+    xml = run('<CardGrid ref="levers" variant="banded"><Highlight item="*" head="phase"/></CardGrid>', LEVERS)["xml"]
+    assert {"$step1", "$step5"} <= set(_fills(xml)) and 'color="$onStep5"' in xml
+
+
+def test_highlight_dark_and_left_edge():
+    xml = run('<CardGrid ref="levers" variant="grid"><Highlight item="Pricing" fill="dark"/>'
+              '<Highlight item="Search" edge="bad" side="left"/></CardGrid>', LEVERS)["xml"]
+    assert 'backgroundColor="$panelDark"' in item_tag(xml, "levers", 2) or "$panelDark" in xml
+    assert 'borderLeft.color="$negative"' in xml
+
+
+def test_highlight_unknown_item_or_meaning_is_an_error():
+    res = run('<KpiRow ref="kpis"><Highlight item="EBITDA" fill="bad"/></KpiRow>', KPIS)
+    assert "NODE_HIGHLIGHT_UNKNOWN" in codes(res) and not res["ok"]
+    res = run('<KpiRow ref="kpis"><Highlight item="ARR" fill="loud"/></KpiRow>', KPIS)
+    assert "NODE_HIGHLIGHT_UNKNOWN" in codes(res)
+
+
+def test_highlight_category_fill_becomes_an_edge():
+    res = run('<KpiRow ref="kpis" variant="grid"><Highlight item="ARR" fill="category"/></KpiRow>', KPIS)
+    assert "NODE_HIGHLIGHT_RULE" in codes(res) and 'borderTop.color="$chart1"' in res["xml"]
+
+
+def test_highlight_edge_on_rows_goes_left_and_dark_fill_is_flat():
+    xml = run('<CardGrid ref="levers" variant="rows"><Highlight item="*" edge="category"/></CardGrid>', LEVERS)["xml"]
+    assert 'borderLeft.color="$chart1"' in xml and 'borderTop.color="$chart' not in xml
+    xml = run('<CardGrid ref="levers" variant="grid"><Highlight item="Pricing" fill="dark"/></CardGrid>', LEVERS)["xml"]
+    dark = [t for t in re.findall(r"<VStack[^<>]*>", xml) if '"$panelDark"' in t]
+    assert dark and not any("shadow." in t for t in dark)
+
+
+def test_highlight_unreadable_children_are_reported():
+    res = run('<KpiRow ref="kpis"><Highlight item="ARR" fill="bad"></KpiRow>', KPIS)
+    assert "NODE_HIGHLIGHT_UNKNOWN" in codes(res)
+
+
+def test_highlight_in_the_prompt_and_contract():
+    assert "<Highlight" in G.node_lines() and "category" in G.node_lines()
+    tags, lines, attrs = G.tags_contract("kpi_row")
+    assert "Highlight" in tags and "item" in attrs["Highlight"]
+    assert "<Highlight/>" in G.prompt_line(KPIS)
