@@ -40,6 +40,14 @@ export const THEME_PALETTES: ThemePalette[] = [
   { id: 'mbb-green-dark', label: 'MBB Green Dark', tone: "Dark teal-green canvas, sage accents (Perceptis MBB Green title slides)", mode: 'dark', accent: '5FBFA0', accentAlt: 'B9D9CF', surface: '03302A', surfaceAlt: '005947', textMain: 'FFFFFF', textMuted: 'B9D9CF', border: '355955', chartColors: ['5FBFA0', '8BC0AF', '367B69', '808080', '26CF64'] },
   { id: 'mbb-red', label: 'MBB Red', tone: "Consulting white, black ink, red accents (Perceptis MBB Red)", mode: 'light', accent: 'CC2225', accentAlt: '8C1A1C', surface: 'FFFFFF', surfaceAlt: 'F2F0E9', textMain: '000000', textMuted: '6C6C6C', border: 'E0E0E0', chartColors: ['CC2225', '8C1A1C', 'F28B8C', '979797', '4D4D4D'] },
   { id: 'mbb-red-dark', label: 'MBB Red Dark', tone: "Charcoal canvas, bright red accents (Perceptis MBB Red title slides)", mode: 'dark', accent: 'FD2729', accentAlt: 'F28B8C', surface: '1C1C1C', surfaceAlt: '2A2A2A', textMain: 'FFFFFF', textMuted: '979797', border: '494949', chartColors: ['FD2729', 'F28B8C', 'CC2225', '979797', '26CF64'] },
+  // Frame look (palettes.yaml `cover: dark` + `box:`, 2026-11-13): same colours as the base palette
+  { id: 'mbb-blue-frame', label: 'MBB Blue Frame', tone: "MBB Blue with navy cover / closing and square framed boxes", mode: 'light', accent: '042440', accentAlt: '2A91CF', surface: 'FFFFFF', surfaceAlt: 'F2F0E9', textMain: '000000', textMuted: '6C6C6C', border: 'E0E0E0', chartColors: ['042440', '48A3DA', '1B6CB3', '808080', '15803D'] , coverDark: '051D2F', boxFrame: true },
+  { id: 'mbb-green-frame', label: 'MBB Green Frame', tone: "MBB Green with dark green cover / closing and square framed boxes", mode: 'light', accent: '005947', accentAlt: '367B69', surface: 'FFFFFF', surfaceAlt: 'F2F0E9', textMain: '000000', textMuted: '6C6C6C', border: 'E0E0E0', chartColors: ['005947', '6FA898', '808080', '15803D', 'B45309'] , coverDark: '03302A', boxFrame: true },
+  { id: 'mbb-red-frame', label: 'MBB Red Frame', tone: "MBB Red with charcoal cover / closing and square framed boxes", mode: 'light', accent: 'CC2225', accentAlt: '8C1A1C', surface: 'FFFFFF', surfaceAlt: 'F2F0E9', textMain: '000000', textMuted: '6C6C6C', border: 'E0E0E0', chartColors: ['CC2225', '8C1A1C', 'F28B8C', '979797', '4D4D4D'] , coverDark: '1C1C1C', boxFrame: true },
+  { id: 'perceptis-frame', label: 'Perceptis Frame', tone: "Perceptis with deep green cover / closing and square framed boxes", mode: 'light', accent: '084132', accentAlt: '009367', surface: 'FFFFFF', surfaceAlt: 'F2F0E9', textMain: '000000', textMuted: '6C6C6C', border: 'E0E0E0', chartColors: ['084132', '009367', '00C384', '808080', '15803D'] , coverDark: '052A20', boxFrame: true },
+  { id: 'boardroom-orange-frame', label: 'Boardroom Orange Frame', tone: "Boardroom orange with slate cover / closing and square framed boxes", mode: 'light', accent: 'F4541E', accentAlt: '5B2A86', surface: 'FFFFFF', surfaceAlt: 'F8FAFC', textMain: '0F172A', textMuted: '6B7280', border: 'D1D4DB', chartColors: ['F4541E', '5B2A86', 'B23A2D', '15803D', '6B7280'] , coverDark: '0F172A', boxFrame: true },
+  { id: 'navy-orange-frame',      label: 'Navy Orange Frame',      tone: "Navy on white, orange accent, navy cover / closing and square framed boxes", mode: 'light', accent: 'F7941D', accentAlt: '673AB7', surface: 'FFFFFF', surfaceAlt: 'F4F3F0', textMain: '112340', textMuted: '5A6578', border: 'E8E6E3', chartColors: ['F7941D', '673AB7', 'B39DDB', '95A5B6', '2E7D32'] , coverDark: '112340', boxFrame: true },
+  { id: 'graphite-mono-frame',    label: 'Graphite Mono Frame',    tone: "White and charcoal, blue pop, charcoal cover / closing and square framed boxes", mode: 'light', accent: '0066FF', accentAlt: '6B7280', surface: 'FFFFFF', surfaceAlt: 'F2F3F5', textMain: '2C2C2C', textMuted: '5F6368', border: 'E1E3E6', chartColors: ['0066FF', '2C2C2C', '9CA3AF', '60A5FA', '4B5563'] , coverDark: '2C2C2C', boxFrame: true },
 ];
 
 // Theme picker filter groups for light palettes; dark palettes are grouped by mode.
@@ -52,6 +60,8 @@ export const THEME_MOODS: Record<string, ThemeMood> = {
   'paper-clay': 'warm', 'bone-copper': 'warm', 'terracotta-light': 'warm',
   'ocean-light': 'cool', 'boardroom-orange': 'brand',
   'mbb-blue': 'brand', 'perceptis': 'brand', 'mbb-green': 'brand', 'mbb-red': 'brand',
+  'mbb-blue-frame': 'brand', 'mbb-green-frame': 'brand', 'mbb-red-frame': 'brand', 'perceptis-frame': 'brand',
+  'boardroom-orange-frame': 'brand', 'navy-orange-frame': 'brand', 'graphite-mono-frame': 'brand',
 };
 
 export const STEP_LABELS: Record<string, string> = {

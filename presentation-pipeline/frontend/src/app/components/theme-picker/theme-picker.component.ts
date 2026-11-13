@@ -121,19 +121,19 @@ type ThemeFilter = 'all' | ThemeMood | 'dark';
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <!-- Cover slide -->
           <div class="md:col-span-2 [container-type:inline-size]">
-            <div class="relative aspect-video w-full overflow-hidden rounded-lg shadow-sm" [style.backgroundColor]="'#' + s.surface">
+            <div class="relative aspect-video w-full overflow-hidden rounded-lg shadow-sm" [style.backgroundColor]="'#' + (s.coverDark ?? s.surface)">
               <div class="absolute inset-y-0 left-0 w-[58%] p-[7%] flex flex-col justify-between" [style.backgroundColor]="'#' + cover(s)">
-                <div class="text-[2.6cqw] font-semibold uppercase tracking-[.14em]" [style.color]="'#' + s.accent">Quarterly review</div>
+                <div class="text-[2.6cqw] font-semibold uppercase tracking-[.14em]" [style.color]="'#' + coverAccent(s)">Quarterly review</div>
                 <div>
                   <div class="text-[6.5cqw] font-extrabold leading-[1.05]" [style.color]="'#' + onCover(s)">Q3 Revenue<br />Review</div>
-                  <div class="mt-[3%] h-[1cqw] w-[10cqw] rounded-full" [style.backgroundColor]="'#' + s.accent"></div>
+                  <div class="mt-[3%] h-[1cqw] w-[10cqw] rounded-full" [style.backgroundColor]="'#' + coverAccent(s)"></div>
                 </div>
                 <div class="text-[2.2cqw] opacity-70" [style.color]="'#' + onCover(s)">Board update · Oct 2026</div>
               </div>
               <div class="absolute inset-y-0 right-0 w-[42%] p-[6%] flex flex-col justify-center gap-[3%]">
-                <div class="text-[2.4cqw] font-medium" [style.color]="'#' + s.textMuted">Revenue</div>
-                <div class="text-[5.5cqw] font-extrabold leading-none" [style.color]="'#' + s.accent">$4.2M</div>
-                <div class="text-[2.4cqw] font-semibold" [style.color]="'#' + s.accentAlt">▲ 12% QoQ</div>
+                <div class="text-[2.4cqw] font-medium" [class.opacity-70]="!!s.coverDark" [style.color]="'#' + (s.coverDark ? onCover(s) : s.textMuted)">Revenue</div>
+                <div class="text-[5.5cqw] font-extrabold leading-none" [style.color]="'#' + coverAccent(s)">$4.2M</div>
+                <div class="text-[2.4cqw] font-semibold" [class.opacity-80]="!!s.coverDark" [style.color]="'#' + (s.coverDark ? onCover(s) : s.accentAlt)">▲ 12% QoQ</div>
                 <div class="mt-[4%] flex items-end gap-[6%] h-[28%]">
                   @for (b of bars; track $index) {
                     <div class="flex-1 rounded-t-sm" [style.height.%]="b" [style.backgroundColor]="'#' + chart(s, $index)"></div>
@@ -157,17 +157,21 @@ type ThemeFilter = 'all' | ThemeMood | 'dark';
               <div class="mt-[2%] h-[0.7cqw] w-[8cqw] rounded-full" [style.backgroundColor]="'#' + s.accent"></div>
               <div class="absolute left-[6%] right-[6%] bottom-[8%] top-[44%] flex gap-[4%]">
                 <div
-                  class="w-[34%] rounded-md p-[5%] flex flex-col justify-center"
+                  class="w-[34%] p-[5%] flex flex-col justify-center"
+                  [class.rounded-md]="!s.boxFrame"
                   [style.backgroundColor]="'#' + s.surfaceAlt"
-                  [style.boxShadow]="'inset 0 0 0 1px #' + s.border + ', inset 0 3px 0 0 #' + s.accent"
+                  [style.border]="frameBorder(s)"
+                  [style.boxShadow]="(s.boxFrame ? frameShadow(s) + ', ' : 'inset 0 0 0 1px #' + s.border + ', ') + 'inset 0 3px 0 0 #' + s.accent"
                 >
                   <div class="text-[5.5cqw] font-extrabold leading-none" [style.color]="'#' + s.accent">$4.2M</div>
                   <div class="text-[2.2cqw] mt-[6%]" [style.color]="'#' + s.textMuted">Net revenue</div>
                 </div>
                 <div
-                  class="flex-1 rounded-md px-[5%] pt-[4%] pb-[3%] flex flex-col"
+                  class="flex-1 px-[5%] pt-[4%] pb-[3%] flex flex-col"
+                  [class.rounded-md]="!s.boxFrame"
                   [style.backgroundColor]="'#' + s.surfaceAlt"
-                  [style.boxShadow]="'inset 0 0 0 1px #' + s.border"
+                  [style.border]="frameBorder(s)"
+                  [style.boxShadow]="s.boxFrame ? frameShadow(s) : 'inset 0 0 0 1px #' + s.border"
                 >
                   <div class="flex-1 flex items-end gap-[8%]">
                     @for (b of bars; track $index) {
@@ -243,9 +247,24 @@ export class ThemePickerComponent implements ControlValueAccessor {
     return p.mode === 'dark' ? 'dark' : THEME_MOODS[p.id] ?? 'cool';
   }
 
-  /** Bold block color for the cover: ink on light themes, the surface on dark ones. */
+  /** Bold block color for the cover: the palette's dark cover ground, else ink on light themes, the surface on dark ones. */
   cover(p: ThemePalette): string {
-    return p.mode === 'dark' ? p.surface : p.textMain;
+    return p.coverDark ?? (p.mode === 'dark' ? p.surface : p.textMain);
+  }
+
+  /** Accent on the cover; on a dark cover ground (`cover: dark`) light text, as the pipeline's dark_cover does. */
+  coverAccent(p: ThemePalette): string {
+    return p.coverDark ? this.onCover(p) : p.accent;
+  }
+
+  /** Frame look (`box:` in palettes.yaml): 2px ink border, scaled to the preview. */
+  frameBorder(p: ThemePalette): string | null {
+    return p.boxFrame ? `0.35cqw solid #${p.textMain}` : null;
+  }
+
+  /** Frame look: hard 4px shadow down-right (blur 0), scaled to the preview. */
+  frameShadow(p: ThemePalette): string {
+    return `0.7cqw 0.7cqw 0 0 #${p.textMain}`;
   }
 
   onCover(p: ThemePalette): string {
