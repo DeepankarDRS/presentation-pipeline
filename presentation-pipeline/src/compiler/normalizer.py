@@ -640,10 +640,21 @@ def has_dark_panel(xml: str) -> bool:
     return any(p in xml for p in DARK_PANELS)
 
 
+_CODE_ITEM_RE = re.compile(r'^<\w+[^>]*\sid="card-')
+_TILE_VALUE_RE = re.compile(r'\sid="kpiv\d*-')
+
+
+def _code_item(panel: str) -> bool:
+    """A card or KPI tile code drew from the plan: dark only because the generator marked that one item
+    (<Highlight fill="dark"/>, the plan's focus card): an explicit choice, kept (user, 2026-11-13). The rule is
+    for the generator's free-form panels (2026-10-08: a $textMain panel on 6 of 8 slides)."""
+    return bool(_CODE_ITEM_RE.match(panel)) or len(_TILE_VALUE_RE.findall(panel)) == 1
+
+
 def soften_dark_panels(xml: str) -> tuple[str, int]:
-    count = 0
+    count = pos = 0
     while True:
-        hits = [(xml.find(p), p) for p in DARK_PANELS if p in xml]
+        hits = [(xml.find(p, pos), p) for p in DARK_PANELS if xml.find(p, pos) >= 0]
         if not hits:
             return xml, count
         at, found = min(hits)
@@ -659,6 +670,9 @@ def soften_dark_panels(xml: str) -> tuple[str, int]:
             if depth == 0:
                 end = m.end()
                 break
+        if _code_item(xml[start:end]):
+            pos = at + len(found)
+            continue
         panel = xml[start:end].replace(found, 'backgroundColor="$accentSoft"', 1)
         panel = re.sub(r'\b(color|textColor)="([^"]+)"',
                        lambda c: f'{c.group(1)}="{_ON_DARK.get(c.group(2), c.group(2))}"', panel)

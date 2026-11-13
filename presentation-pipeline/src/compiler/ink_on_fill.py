@@ -68,3 +68,71 @@ def fix_ink_on_fill(xml: str) -> tuple[str, int]:
             stack.append((tag, own.group(1) if own else None))
     out.append(xml[pos:])
     return "".join(out), count
+
+
+# --- text on a colour fill: a <Highlight> head or fill, a category / phase band (look5, 2026-11-13) ---
+# White ink on every $chartN head read poorly on the light series colours (XTSY "Market Expansion" on light cyan),
+# and a focus fill ($accentSoft) on a dark palette is a mid tone under muted body text. The surface family is left
+# to fix_ink_on_fill (built to carry $textMain); every other token fill has its text judged by real contrast.
+_PLAIN_FILLS = {"$surface", "$surfaceAlt", "$coverDark"}
+_INKS = ("$textMain", "$onPanelDark", "$onAccent", "$surface")
+_LAST = ("$inkDark", "$inkLight")
+_SIZE_RE = re.compile(r'(?<![\w.])fontSize="(\d+(?:\.\d+)?)"')
+_BOLD_RE = re.compile(r'(?<![\w.])bold="true"')
+_INK_TAGS_FILL = {"Text", "Span", "B", "I", "U", "Icon"}
+
+
+def readable_on_colour_fills(xml: str, theme_element: str) -> tuple[str, int]:
+    """Text, spans and icons whose colour does not reach WCAG on the token fill they sit on (4.5:1, 3:1 for large
+    text >= 24 px or bold >= 19 px and for icons) take the theme ink that reads best: $onStepN on $stepN, else the
+    theme's own inks, pure black / white last. Only token fills outside the surface family; text over <Layer>
+    shapes and literal colours are left alone. Returns (xml, changed)."""
+    from src.compiler.palette_tokens import contrast
+    tokens = dict(re.findall(r'(\w+)="([0-9A-Fa-f]{6})"', theme_element or ""))
+    if not tokens:
+        return xml, 0
+    hex_of = lambda t: tokens.get(t[1:]) if t and t.startswith("$") else None
+    stack: list[tuple[str, str | None, float]] = []   # (tag, own fill, inherited size)
+    out: list[str] = []
+    pos = count = 0
+    for m in _TAG_RE.finditer(xml):
+        closing, tag, attrs, selfclose = m.group(1), m.group(2), m.group(3), m.group(4)
+        out.append(xml[pos:m.start()])
+        pos = m.end()
+        if closing:
+            if stack:
+                stack.pop()
+            out.append(m.group(0))
+            continue
+        own = _FILL_RE.search(attrs)
+        size_m = _SIZE_RE.search(attrs)
+        size = float(size_m.group(1)) if size_m else (stack[-1][2] if stack else 16.0)
+        fill = own.group(1) if own else next((f for _, f, _ in reversed(stack) if f), None)
+        if (tag in _INK_TAGS_FILL and fill and fill not in _PLAIN_FILLS and hex_of(fill)
+                and not any(t == _OVER_SHAPES for t, _, _ in stack)):
+            bg = hex_of(fill)
+            need = 3.0 if tag == "Icon" or size >= 24 or (size >= 19 and _BOLD_RE.search(attrs)) else 4.5
+
+            def _ink(c: re.Match) -> str:
+                nonlocal count
+                now = hex_of(c.group(2))
+                if not now or contrast(now, bg) >= need:
+                    return c.group(0)
+                step = re.fullmatch(r"\$step(\d)", fill)
+                pick = f"$onStep{step.group(1)}" if step and f"onStep{step.group(1)}" in tokens else None
+                if not pick:
+                    pick = max((t for t in _INKS if t[1:] in tokens), key=lambda t: contrast(tokens[t[1:]], bg),
+                               default=None)
+                    if not pick or contrast(tokens[pick[1:]], bg) < need:
+                        pick = max((t for t in _INKS + _LAST if t[1:] in tokens),
+                                   key=lambda t: contrast(tokens[t[1:]], bg), default=pick)
+                if not pick or pick == c.group(2):
+                    return c.group(0)
+                count += 1
+                return c.group(1) + pick + c.group(3)
+            attrs = _COLOR_RE.sub(_ink, attrs)
+        out.append(f"<{tag}{attrs}{selfclose}>")
+        if not selfclose:
+            stack.append((tag, own.group(1) if own else None, size))
+    out.append(xml[pos:])
+    return "".join(out), count

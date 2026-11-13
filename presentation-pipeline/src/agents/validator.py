@@ -26,7 +26,7 @@ from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
 from src.compiler.nodes import composed, element_refs, tiles
-from src.compiler.ink_on_fill import fix_ink_on_fill
+from src.compiler.ink_on_fill import fix_ink_on_fill, readable_on_colour_fills
 from src.compiler.normalizer import (
     _BARE_AMP_RE, apply_box, dark_cover, ensure_single_theme, has_dark_panel, normalize_xml, pre_validate,
     readable_item_text, soften_dark_panels,
@@ -130,6 +130,11 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
                                    "message": f"{n_dark} dark panel(s) became tinted cards (one dark panel per deck)."})
             # the softened panel's own inks the soften map does not know ($positiveSoft spans, look2 pair 26)
             norm["cleaned_xml"], _ = fix_ink_on_fill(norm["cleaned_xml"])
+    # text on a colour fill (a <Highlight> head, a category / phase band, a focus tint on a dark palette)
+    norm["cleaned_xml"], n = readable_on_colour_fills(norm["cleaned_xml"], theme_el)
+    if n:
+        norm["issues"].append({"code": "TEXT_ON_FILL_READABLE", "auto_fixed": True,
+                               "message": f"{n} text colour(s) on a coloured fill changed to an ink that reads on it."})
     cleaned = ensure_single_theme(norm["cleaned_xml"], theme_el)
     speaker_notes = norm.get("speaker_notes", "")
 
