@@ -165,7 +165,7 @@ def test_seed_palettes_meet_their_contrast_targets(name):
 
 
 # Brand oranges kept on purpose (palettes.yaml comment on saascolor: 2.3-2.6:1 as text).
-ACCENT_BELOW_3 = {"saascolor", "navy-orange"}
+ACCENT_BELOW_3 = {"saascolor", "navy-orange", "navy-orange-frame"}
 
 
 @pytest.mark.parametrize("name", theme_names())

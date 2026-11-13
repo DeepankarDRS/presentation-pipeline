@@ -171,6 +171,10 @@ export interface ThemePalette {
   textMuted: string;
   border: string;
   chartColors: string[];
+  /** palettes.yaml `cover: dark`: cover + closing slides sit on this dark ground. */
+  coverDark?: string;
+  /** palettes.yaml `box:` frame look: square boxes, ink border, hard offset shadow. */
+  boxFrame?: boolean;
 }
 
 export type ThemeMood = 'cool' | 'warm' | 'bold' | 'brand';

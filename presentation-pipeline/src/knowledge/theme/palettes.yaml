@@ -573,6 +573,157 @@ palettes:
       shadow.color: "$textMain"
       shadow.opacity: "1"
 
+  mbb-green-frame:
+    tone: "MBB Green with dark green cover / closing and square framed boxes"
+    seed:   # same as mbb-green
+      mode: light
+      background: "#FFFFFF"
+      card: "#F2F0E9"
+      ink: "#000000"
+      muted: "#808080"
+      accent: "#005947"
+      accentAlt: "#367B69"
+      chart: ["#005947", "#367B69", "#6FA898", "#B9D9CF", "#808080"]
+    panelDark: "#03302A"
+    cover: dark
+    box:
+      borderRadius: "0"
+      border.color: "$textMain"
+      border.width: "2"
+      shadow.type: outer
+      shadow.blur: "0"
+      shadow.offset: "4"
+      shadow.angle: "45"
+      shadow.color: "$textMain"
+      shadow.opacity: "1"
+
+  mbb-red-frame:
+    tone: "MBB Red with charcoal cover / closing and square framed boxes"
+    seed:   # same as mbb-red
+      mode: light
+      background: "#FFFFFF"
+      card: "#F2F0E9"
+      ink: "#000000"
+      muted: "#979797"
+      accent: "#CC2225"
+      accentAlt: "#8C1A1C"
+      negative: "#991B1B"   # 2026-10-27: the default DC2626 is the accent's red (dE 6.4)
+      chart: ["#CC2225", "#8C1A1C", "#F28B8C", "#979797", "#4D4D4D"]
+    panelDark: "#1C1C1C"
+    cover: dark
+    box:
+      borderRadius: "0"
+      border.color: "$textMain"
+      border.width: "2"
+      shadow.type: outer
+      shadow.blur: "0"
+      shadow.offset: "4"
+      shadow.angle: "45"
+      shadow.color: "$textMain"
+      shadow.opacity: "1"
+
+  perceptis-frame:
+    tone: "Perceptis with deep green cover / closing and square framed boxes"
+    seed:   # same as perceptis
+      mode: light
+      background: "#FFFFFF"
+      card: "#F2F0E9"
+      ink: "#000000"
+      muted: "#808080"
+      accent: "#084132"
+      accentAlt: "#009367"
+      chart: ["#084132", "#009367", "#00C887", "#9FE8CF", "#808080"]
+    panelDark: "#052A20"
+    cover: dark
+    box:
+      borderRadius: "0"
+      border.color: "$textMain"
+      border.width: "2"
+      shadow.type: outer
+      shadow.blur: "0"
+      shadow.offset: "4"
+      shadow.angle: "45"
+      shadow.color: "$textMain"
+      shadow.opacity: "1"
+
+  boardroom-orange-frame:
+    tone: "Boardroom orange with slate cover / closing and square framed boxes"
+    seed:   # same as boardroom-orange
+      mode: light
+      background: "#FFFFFF"
+      card: "#F8FAFC"
+      ink: "#0F172A"
+      muted: "#6B7280"
+      border: "#E5E7EB"
+      accent: "#F4541E"
+      accentAlt: "#5B2A86"
+      positive: "#15803D"
+      negative: "#B23A2D"
+      chart: ["#F4541E", "#5B2A86", "#B23A2D", "#15803D", "#6B7280"]
+    cover: dark
+    box:
+      borderRadius: "0"
+      border.color: "$textMain"
+      border.width: "2"
+      shadow.type: outer
+      shadow.blur: "0"
+      shadow.offset: "4"
+      shadow.angle: "45"
+      shadow.color: "$textMain"
+      shadow.opacity: "1"
+
+  navy-orange-frame:   # same colours as navy-orange
+    tone: "Navy on white, orange accent, navy cover / closing and square framed boxes"
+    mode: light
+    surface: "FFFFFF"
+    surfaceAlt: "F4F3F0"
+    accent: "F7941D"
+    accentAlt: "673AB7"
+    positive: "2E7D32"
+    negative: "A84531"
+    warning: "8A6A00"    # 2026-10-07 P3: was the same as negative
+    textMain: "112340"
+    textMuted: "5A6578"
+    border: "E8E6E3"
+    chartColors: ["F7941D", "673AB7", "B39DDB", "95A5B6", "2E7D32", "A84531"]
+    cover: dark
+    box:
+      borderRadius: "0"
+      border.color: "$textMain"
+      border.width: "2"
+      shadow.type: outer
+      shadow.blur: "0"
+      shadow.offset: "4"
+      shadow.angle: "45"
+      shadow.color: "$textMain"
+      shadow.opacity: "1"
+
+  graphite-mono-frame:   # same colours as graphite-mono
+    tone: "White and charcoal, blue pop, charcoal cover / closing and square framed boxes"
+    mode: light
+    surface: "FFFFFF"
+    surfaceAlt: "F2F3F5"
+    accent: "0066FF"
+    accentAlt: "6B7280"
+    positive: "15803D"
+    negative: "DC2626"
+    warning: "B45309"
+    textMain: "2C2C2C"
+    textMuted: "5F6368"
+    border: "E1E3E6"
+    chartColors: ["0066FF", "2C2C2C", "9CA3AF", "60A5FA", "4B5563"]
+    cover: dark
+    box:
+      borderRadius: "0"
+      border.color: "$textMain"
+      border.width: "2"
+      shadow.type: outer
+      shadow.blur: "0"
+      shadow.offset: "4"
+      shadow.angle: "45"
+      shadow.color: "$textMain"
+      shadow.opacity: "1"
+
   mbb-blue-dark:
     tone: "Deep navy canvas, sky-blue accents (Perceptis MBB Blue title slides)"
     seed:
