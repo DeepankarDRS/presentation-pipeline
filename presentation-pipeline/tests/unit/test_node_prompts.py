@@ -231,9 +231,21 @@ def test_a_thin_bar_in_a_row_stays_thin():
     assert note and 'h="max"' not in out and 'w="4"' in out and 'alignSelf="stretch"' in out
 
 
+def test_a_thin_bar_with_grow_and_no_height_stays_thin():
+    """look6 CHEFFIN s2: <Shape w="4" grow="1"> beside a quote drew half the card wide."""
+    from src.compiler.grow_fallback import keep_bars_thin
+    out, note = keep_bars_thin('<HStack><Shape shapeType="rect" w="4" backgroundColor="$accent" grow="1"/>'
+                               '<VStack grow="1"/></HStack>')
+    shape = out[out.index("<Shape"):out.index("/>") + 2]
+    assert note and "grow" not in shape and 'w="4"' in shape and 'alignSelf="stretch"' in shape
+
+
 @pytest.mark.parametrize("xml", [
     '<VStack><Shape w="4" h="max"/></VStack>',                 # h="max" in a column is its main axis, as asked
     '<HStack><Shape w="max" grow="1" h="2"/></HStack>',        # a connector line
+    '<HStack><Shape w="1" grow="1" h="10"/></HStack>',         # a connector line with a width of 1 (210 saved slides)
+    '<HStack><Shape w="40" grow="1"/></HStack>',               # wider than a bar: may mean to fill
+    '<VStack><Shape w="4" grow="1"/></VStack>',                # grow in a column is its height, as asked
     '<HStack><Shape w="4" h="max" grow="1"/></HStack>',
     '<HStack><VStack w="4" h="max"/></HStack>',
 ])

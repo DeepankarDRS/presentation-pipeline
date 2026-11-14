@@ -103,6 +103,7 @@ const LIST_HEAD_CAP = 30;    // a list row's head (bullets.py ids lsth-) stays b
 const NUMERAL_CAP = 72;      // a card's "01" (cards.py numerals) stays a step above its title
 const BODY_CAP = 28;
 const LABEL_CAP = 24;
+const HEAD_CAP = 28;         // a text alone on its own fill in a card (head band, pill, tag): header-sized (textTargets)
 const TITLE_RATIO = 1.3;
 const ICON_CAP = 56;
 const STAT_SIDE = 0.45;
@@ -1524,6 +1525,18 @@ function textTargets(stack) {
   // next to a diagram / table / chart, a card's text is its header: header-sized at most
   // ("Optimization Timeline" grew to ~40px and pushed its timeline out of the card)
   const beside = hasRigid(stack) ? LABEL_CAP : Infinity;
+  // a text alone on its own fill inside a box that holds other text is a head band, pill or tag: header-sized
+  // at most (look6 2026-11-14: a banded card's head title grew 20 -> 48 px while its body stayed empty below)
+  const up = new Map();
+  walk(stack, (n, parent) => { if (parent) up.set(n, parent); });
+  const texts = (s) => { let k = 0; walk(s, (d) => { if (d.id && ["text", "ul", "ol"].includes(d.type)) k++; }); return k; };
+  const onOwnFill = (n) => {
+    let a = up.get(n);
+    while (a && a !== stack && a.backgroundColor === undefined && a.backgroundGradient === undefined) a = up.get(a);
+    if (!a || a === stack || texts(a) !== 1) return false;
+    for (let b = up.get(a); b; b = b === stack ? undefined : up.get(b)) if (hasBoxStyle(b) && texts(b) > 1) return true;
+    return false;
+  };
   const out = [];
   const frozen = [];   // sizes of texts in the box that do not grow here
   let smallestFixed = Infinity;
@@ -1550,7 +1563,7 @@ function textTargets(stack) {
     const label = /[A-Z]/.test(text) && text === text.toUpperCase() || n.letterSpacing !== undefined;
     const title = n.type === "text" && !!n.bold && !label;
     out.push({ id: n.id, f, text, sig, title, label: n.type === "text" && label, heading: title || (n.type === "text" && label),
-      listHead: /^lsth-/.test(n.id) });
+      listHead: /^lsth-/.test(n.id), head: onOwnFill(n) });
   });
   // a stat value / hero number (a short number >= 1.5x the smallest text in the box) is
   // the box's anchor: frozen here (growStats sizes it)
@@ -1579,7 +1592,7 @@ function textTargets(stack) {
     // grown text stays 2px below every bigger text in the box that does not grow (a label
     // under a "₹59.8 Cr" with an inline unit size never passes the number)
     const above = Math.min(...frozen.filter((f) => f > t.f)) - 2;
-    t.cap = Math.max(t.f, Math.min(cap, ceiling, above, beside));
+    t.cap = Math.max(t.f, Math.min(cap, ceiling, above, beside, t.head ? HEAD_CAP : Infinity));
   }
   return out;
 }
@@ -1592,7 +1605,10 @@ function sizesAt(targets, s) {
   const titles = targets.filter((t) => t.title);
   return targets.map((t) => {
     let size = scaled(t, s);
-    if (!t.heading) for (const h of titles) if (h.f > t.f) size = Math.min(size, Math.max(t.f, Math.floor(scaled(h, s) / TITLE_RATIO)));
+    // a head band's title sits on its own fill, apart from the body: the body only stays below it
+    // (at 1 / 1.3 of a capped head title the body stopped at 21 px and its card stayed 60% empty, look6 QBR s5)
+    if (!t.heading) for (const h of titles) if (h.f > t.f) size = Math.min(size, Math.max(t.f,
+      h.head ? scaled(h, s) - 2 : Math.floor(scaled(h, s) / TITLE_RATIO)));
     return size;
   });
 }

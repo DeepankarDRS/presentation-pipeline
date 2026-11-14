@@ -265,9 +265,14 @@ def size_row_symbols(xml: str) -> tuple[str, str | None]:
 # h="max" on a child of an HStack grows it along the row, not down it: <Shape w="4" h="max"> beside text drew 148 px wide,
 # an empty block (paid check 2026-11-04, measured). alignSelf="stretch" gives the full height at the width asked.
 
-_SHAPE_W_RE = re.compile(r'\sw\s*=\s*"\d+(?:\.\d+)?"')
+_SHAPE_W_RE = re.compile(r'\sw\s*=\s*"(\d+(?:\.\d+)?)"')
 _H_MAX_RE = re.compile(r'\sh\s*=\s*"max"')
 _GROW_RE = re.compile(r"\sgrow\s*=")
+_GROW_ATTR_RE = re.compile(r'\sgrow\s*=\s*"[^"]*"')
+_H_ANY_RE = re.compile(r'\sh\s*=\s*"[^"]*"')
+# grow on a child of an HStack is the same slip: <Shape w="4" grow="1"> beside a quote drew half the card wide
+# (look6 CHEFFIN s2, 2026-11-14; 115 of ~19k saved slide XMLs). Only a thin bar: a wider Shape with grow may mean to fill.
+THIN_BAR_W = 12
 
 
 def keep_bars_thin(xml: str) -> tuple[str, str | None]:
@@ -277,18 +282,24 @@ def keep_bars_thin(xml: str) -> tuple[str, str | None]:
         if el["name"] != "HStack":
             continue
         for c in el["children"]:
-            if c["name"] != "Shape" or _GROW_RE.search(c["attrs"]) or not _SHAPE_W_RE.search(c["attrs"]):
+            w = _SHAPE_W_RE.search(c["attrs"])
+            if c["name"] != "Shape" or not w:
                 continue
             tag = xml[c["start"]:c["open_end"]]
-            m = _H_MAX_RE.search(tag)
-            if m:
-                new = "" if _ALIGNSELF_RE.search(tag) else ' alignSelf="stretch"'
-                edits.append((c["start"] + m.start(), c["start"] + m.end(), new))
+            g = _GROW_ATTR_RE.search(tag) if _GROW_RE.search(c["attrs"]) else None
+            # a Shape with any height of its own is left as written: <Shape w="1" grow="1" h="10"> is a horizontal
+            # connector meant to run along the row (210 in the saved slides); only a thin bar with no height is a slip
+            if g and (float(w.group(1)) > THIN_BAR_W or _H_ANY_RE.search(tag)):
+                continue
+            spans = [s for s in (g, _H_MAX_RE.search(tag)) if s]
+            stretch = "" if _ALIGNSELF_RE.search(tag) else ' alignSelf="stretch"'
+            for k, s in enumerate(sorted(spans, key=lambda s: s.start())):
+                edits.append((c["start"] + s.start(), c["start"] + s.end(), stretch if k == 0 else ""))
     if not edits:
         return xml, None
     for a, b, new in sorted(edits, reverse=True):
         xml = xml[:a] + new + xml[b:]
-    return xml, f'Kept {len(edits)} thin bar(s) in a row at the width asked: h="max" there grows the width.'
+    return xml, f'Kept {len(edits)} thin bar(s) in a row at the width asked: h="max" or grow there grows the width.'
 
 
 # ── peer cards in one row share one height ──────────────────────────────────
