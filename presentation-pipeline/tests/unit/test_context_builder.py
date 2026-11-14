@@ -139,6 +139,30 @@ def test_notes_always_includes_translations():
     assert len(translation_notes) > 5
 
 
+def test_node_notes_only_on_slides_that_allow_the_node():
+    """Arrow / Layer / Flow / Matrix / Svg notes stay out of the shared deck notes (2026-11-11)."""
+    validation = _load_yaml("core/validation.yaml")
+    text_yaml = _load_yaml("components/text.yaml")
+    theme = {"name": "test", "mode": "light"}
+    deck = " ".join(_select_notes([], validation, text_yaml, {}, theme))
+    layer = " ".join(_select_notes(["layer"], validation, text_yaml, {}, theme))
+    matrix = " ".join(_select_notes(["matrix"], validation, text_yaml, {}, theme))
+    for marker in ("Arrow from/to", "Layer children", "FlowConnection", "MatrixItem", "<Svg>"):
+        assert marker not in deck
+    assert "Arrow from/to" in layer and "Layer children" in layer and "<Svg>" in layer
+    assert "MatrixItem" in matrix and "Layer children" not in matrix
+
+
+def test_each_rule_is_in_the_generator_prompt_once():
+    """No duplicate between system.j2 and the deck notes (2026-11-11 cleanup)."""
+    validation = _load_yaml("core/validation.yaml")
+    text_yaml = _load_yaml("components/text.yaml")
+    notes = " ".join(_select_notes([], validation, text_yaml, {}, {"name": "test", "mode": "light"}))
+    for gone in ("Phase D", "<br/>", 'textAlign="start"  ->', 'justifyContent="left"', "Property names are w / h",
+                 "At most one <Theme>"):
+        assert gone not in notes
+
+
 def test_notes_includes_chart_guidance():
     validation = _load_yaml("core/validation.yaml")
     text_yaml = _load_yaml("components/text.yaml")

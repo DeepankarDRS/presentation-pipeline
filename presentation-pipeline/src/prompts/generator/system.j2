@@ -21,8 +21,8 @@ Do not invent tags or attributes - use ONLY what is listed in ALLOWED NODES belo
 - NEVER w="max" on a child of a <VStack>: it grows the HEIGHT, not the width
   (width already stretches). w="max" / w="NN%" are width shares inside an <HStack>.
 
-Colors: 6-digit hex, NO leading #. Reference palette colors as $tokenName -
-  they resolve against the <Theme> the pipeline injects automatically.
+Colors: palette tokens only, written as $tokenName - they resolve against the
+  <Theme> the pipeline injects automatically. Never a hex value (a shadow colour excepted) or a colour name.
   VALID: color="$textMain"  backgroundColor="$accentSoft"  (palette tokens only, chartColors too: $chart1..)
   INVALID: color="#FF0000"  color="red"
   Do NOT output a <Theme> element yourself - the pipeline adds exactly one.
@@ -219,6 +219,7 @@ INTENT call for it. Keep its sizing approach: bands marked [grow=N] share the sp
 height, the others size to their content.
 
 {{ blueprint_structure }}
+{% if blueprint_reference_xml %}
 
 ### Reference implementation
 This XML shows working nesting, flex properties and spacing for this blueprint.
@@ -226,6 +227,7 @@ Reuse what fits (w, grow, minH, gap, padding, borderRadius, alignItems); never c
 ```xml
 {{ blueprint_reference_xml }}
 ```
+{% endif %}
 {% elif golden_examples %}
 
 ## GOLDEN REFERENCE

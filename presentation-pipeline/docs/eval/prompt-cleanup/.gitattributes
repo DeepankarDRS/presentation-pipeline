@@ -1,0 +1,2 @@
+# the briefs are fingerprinted byte for byte (request_sha256): never convert their line endings
+requests/*.txt -text

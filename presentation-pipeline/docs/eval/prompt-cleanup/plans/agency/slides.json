@@ -1,0 +1,888 @@
+[
+  {
+    "slide_index": 0,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <HStack gap=\"16\" alignItems=\"start\" justifyContent=\"spaceBetween\">\n      <VStack gap=\"8\" alignItems=\"start\">\n        <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">PLATFORM A · 01</Text>\n        <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">Campaign-purpose governance is the biggest [Platform A] <Span color=\"$accentText\">unlock</Span>.</Text>\n        <Text fontSize=\"18\" color=\"$textMuted\">Campaign classes and ROAS show where budget is misallocated</Text>\n      </VStack>\n    </HStack>\n    <HStack gap=\"28\" grow=\"3\" alignItems=\"stretch\">\n      <VStack grow=\"2\" padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"4\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"chart-column\" size=\"20\" color=\"$accent\" />\n          <Text fontSize=\"16\" bold=\"true\" color=\"$textMain\">Campaign-class ROAS</Text>\n        </HStack>\n        <Chart h=\"max\" minH=\"220\" chartType=\"bar\" showLegend=\"false\" chartColors='[\"C82020\",\"147739\",\"147739\",\"C82020\"]'>\n          <ChartSeries name=\"ROAS\">\n            <ChartDataPoint label=\"Generic search\" value=\"0.29\" />\n            <ChartDataPoint label=\"Category / PLA campaigns\" value=\"0.80\" />\n            <ChartDataPoint label=\"Brand campaigns\" value=\"0.99\" />\n            <ChartDataPoint label=\"Competitor campaigns\" value=\"0.15\" />\n          </ChartSeries>\n        </Chart>\n      </VStack>\n      <VStack w=\"38%\" padding=\"24\" gap=\"10\" backgroundColor=\"$textMain\" borderRadius=\"14\" justifyContent=\"center\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"triangle-alert\" size=\"24\" color=\"$negative\" />\n          <Text fontSize=\"18\" color=\"$surfaceAlt\" bold=\"true\">CPD/BOTD placements</Text>\n        </HStack>\n        <Text fontSize=\"16\" color=\"$surfaceAlt\" lineHeight=\"1.4\">CPD/BOTD placements consumed around <Span color=\"$negativeText\" bold=\"true\">₹10.0L</Span> and generated only around ₹9.7K revenue.</Text>\n      </VStack>\n    </HStack>\n    <VStack padding=\"16\" gap=\"4\" backgroundColor=\"$accentSoft\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" justifyContent=\"center\">\n      <Text fontSize=\"14\" bold=\"true\" color=\"$accentText\" letterSpacing=\"1\">RECOMMENDATION</Text>\n      <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">Recommendation: Separate performance media from visibility/awareness placements. <Span color=\"$accentText\">CPD/BOTD</Span> should not be funded like performance campaigns unless the objective is clearly awareness or incrementality.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-agency-takeover-122ca8\\screenshots\\slide-0.png",
+    "slide_plan": {
+      "slide_index": 0,
+      "slide_title": "Campaign-purpose governance is the biggest [Platform A] unlock.",
+      "label": "PLATFORM A · 01",
+      "subtitle": "Campaign classes and ROAS show where budget is misallocated",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Headline and subtitle",
+          "design_hint": "color the phrase '[Platform A] unlock' in the title to emphasize the core insight",
+          "weight": "minor",
+          "content_data": {
+            "title": "Campaign-purpose governance is the biggest [Platform A] unlock.",
+            "subtitle": "Campaign classes and ROAS show where budget is misallocated"
+          }
+        },
+        {
+          "component_id": "kicker_label",
+          "kind": "caption",
+          "count": 1,
+          "content_summary": "Section/kicker label",
+          "design_hint": "render as a small muted tag in the corner to mark the slide (subtle emphasis)",
+          "weight": "minor",
+          "content_data": {
+            "text": "PLATFORM A · 01"
+          }
+        },
+        {
+          "component_id": "roas_chart",
+          "kind": "chart",
+          "count": 1,
+          "content_summary": "ROAS comparison across campaign classes (values copied verbatim)",
+          "chart_type": "bar",
+          "series_count": 1,
+          "design_hint": "color-code bars by performance (0.99x / 0.80x in positive color; 0.29x / 0.15x in negative color) and visually call out that CPD/BOTD is handled separately in the CPD callout",
+          "weight": "hero",
+          "content_data": {
+            "chart_type": "bar",
+            "chart_title": "Campaign-class ROAS",
+            "chart_labels": [
+              "Generic search",
+              "Category / PLA campaigns",
+              "Brand campaigns",
+              "Competitor campaigns"
+            ],
+            "chart_values": [
+              "around 0.29x",
+              "around 0.80x",
+              "around 0.99x",
+              "around 0.15x"
+            ]
+          }
+        },
+        {
+          "component_id": "cpdbotd_card",
+          "kind": "card_grid",
+          "count": 1,
+          "content_summary": "CPD/BOTD spend and revenue (exact figures)",
+          "items": 1,
+          "design_hint": "inverted panel on the CPD/BOTD card; emphasize the key_phrase '₹10.0L' in negative color and show an alert icon",
+          "weight": "supporting",
+          "content_data": {
+            "card_layout": "grid",
+            "cards": [
+              {
+                "title": "CPD/BOTD placements",
+                "body": "CPD/BOTD placements consumed around ₹10.0L and generated only around ₹9.7K revenue.",
+                "tone": "bad",
+                "icon": "alert-triangle",
+                "key_phrase": "₹10.0L"
+              }
+            ],
+            "per_row": 1
+          }
+        },
+        {
+          "component_id": "recommendation",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Recommendation to separate performance and awareness placements (verbatim)",
+          "design_hint": "accent border on the callout and color the phrase 'CPD/BOTD' to draw attention to the recommendation",
+          "weight": "supporting",
+          "content_data": {
+            "text": "Recommendation: Separate performance media from visibility/awareness placements. CPD/BOTD should not be funded like performance campaigns unless the objective is clearly awareness or incrementality."
+          }
+        }
+      ],
+      "layout_hint": "roas_chart is the primary element (hero) occupying the main band; cpdbotd_card is a supporting callout visually attached to or beside the chart (callout emphasis); recommendation is a slim supporting band below the chart; slide_title runs across the top with kicker_label as a small tag.",
+      "content_data": {
+        "title": "Campaign-purpose governance is the biggest [Platform A] unlock.",
+        "subtitle": "Campaign classes and ROAS show where budget is misallocated",
+        "text": "Recommendation: Separate performance media from visibility/awareness placements. CPD/BOTD should not be funded like performance campaigns unless the objective is clearly awareness or incrementality.",
+        "chart_type": "bar",
+        "chart_title": "Campaign-class ROAS",
+        "chart_labels": [
+          "Generic search",
+          "Category / PLA campaigns",
+          "Brand campaigns",
+          "Competitor campaigns"
+        ],
+        "chart_values": [
+          "around 0.29x",
+          "around 0.80x",
+          "around 0.99x",
+          "around 0.15x"
+        ],
+        "card_layout": "grid",
+        "cards": [
+          {
+            "title": "CPD/BOTD placements",
+            "body": "CPD/BOTD placements consumed around ₹10.0L and generated only around ₹9.7K revenue.",
+            "tone": "bad",
+            "icon": "alert-triangle",
+            "key_phrase": "₹10.0L"
+          }
+        ],
+        "focus_card": 1,
+        "per_row": 1
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "text": "sample",
+        "chart_type": "sample",
+        "chart_title": "sample",
+        "chart_labels": "sample",
+        "chart_values": "sample",
+        "card_layout": "sample",
+        "cards": "sample",
+        "focus_card": "sample",
+        "per_row": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 1,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"40\" gap=\"22\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">PLATFORM A · 02</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\"><Span color=\"$accentText\" bold=\"true\">Exact match</Span> outperforms phrase and broad, but keyword governance needs sharper control.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Plus city-level allocation is misaligned with conversion economics</Text>\n    </VStack>\n    <HStack gap=\"24\" alignItems=\"stretch\">\n      <VStack padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" w=\"62%\">\n        <Text fontSize=\"18\" bold=\"true\" color=\"$textMain\" margin.bottom=\"2\">Match-type performance</Text>\n        <Table defaultRowHeight=\"40\" cellBorder.color=\"$border\" cellBorder.width=\"1\">\n          <Col width=\"140\" />\n          <Col />\n          <Col />\n          <Col />\n          <Col />\n          <Col />\n          <Tr>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Match type</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">Spend</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">Rev</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$accentText\" textAlign=\"right\">ROAS</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">CPC</Td>\n            <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"right\">CVR</Td>\n          </Tr>\n          <Tr>\n            <Td backgroundColor=\"$surface\" color=\"$textMuted\">Phrase Match</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹45.5L</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹14.6L</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">0.32x</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹62.0</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">8.6%</Td>\n          </Tr>\n          <Tr>\n            <Td backgroundColor=\"$accentSoft\" color=\"$accentText\" bold=\"true\">Exact Match</Td>\n            <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">₹21.3L</Td>\n            <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">₹8.8L</Td>\n            <Td backgroundColor=\"$accentSoft\" color=\"$accentText\" bold=\"true\" textAlign=\"right\">0.41x</Td>\n            <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">₹59.5</Td>\n            <Td backgroundColor=\"$accentSoft\" color=\"$textMain\" textAlign=\"right\">10.9%</Td>\n          </Tr>\n          <Tr>\n            <Td backgroundColor=\"$surface\" color=\"$textMuted\">Broad Match</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹1.9L</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹0.4L</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">0.23x</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">₹64.7</Td>\n            <Td backgroundColor=\"$surface\" color=\"$textMain\" textAlign=\"right\">6.2%</Td>\n          </Tr>\n        </Table>\n      </VStack>\n      <VStack gap=\"16\" w=\"38%\" alignItems=\"stretch\">\n        <HStack gap=\"12\" alignItems=\"stretch\">\n          <VStack w=\"max\" padding=\"18\" gap=\"8\" backgroundColor=\"$positiveSoft\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n            <HStack gap=\"8\" alignItems=\"center\">\n              <Icon name=\"trending-up\" size=\"24\" color=\"$positive\" />\n              <Text fontSize=\"16\" color=\"$positiveText\" bold=\"true\">Winners</Text>\n            </HStack>\n            <Ul fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.4\">\n              <Li>[Brand] phrase</Li>\n              <Li>[Brand] exact</Li>\n              <Li>paneer makhani</Li>\n              <Li>curry</Li>\n              <Li>shahi paneer gravy</Li>\n            </Ul>\n          </VStack>\n          <VStack w=\"max\" padding=\"18\" gap=\"8\" backgroundColor=\"$negativeSoft\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n            <HStack gap=\"8\" alignItems=\"center\">\n              <Icon name=\"triangle-alert\" size=\"24\" color=\"$negative\" />\n              <Text fontSize=\"16\" color=\"$negativeText\" bold=\"true\">Weak terms</Text>\n            </HStack>\n            <Ul fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.4\">\n              <Li>butter chicken phrase</Li>\n              <Li>instant food phrase</Li>\n              <Li>ready to cook paneer phrase</Li>\n              <Li>mix phrase</Li>\n              <Li>instant gravy broad</Li>\n              <Li>ready masala</Li>\n              <Li>instant dal makhani</Li>\n              <Li>meat masala</Li>\n              <Li>kilrr chicken masala</Li>\n            </Ul>\n          </VStack>\n        </HStack>\n        <VStack padding=\"16\" gap=\"6\" backgroundColor=\"$accentSoft\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\">\n          <Text fontSize=\"14\" bold=\"true\" color=\"$accentText\" letterSpacing=\"1\">CITY-LEVEL ROAS</Text>\n          <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.45\">No major high-spend city crossed <Span color=\"$accentText\" bold=\"true\">0.5x</Span> ROAS. Bengaluru was the best large city at around <Span color=\"$accentText\" bold=\"true\">0.45x</Span> ROAS, but still below desired efficiency. Cities needing immediate review include Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi.</Text>\n        </VStack>\n      </VStack>\n    </HStack>\n    <HStack gap=\"18\" alignItems=\"stretch\">\n      <VStack padding=\"16\" gap=\"6\" backgroundColor=\"$positiveSoft\" borderLeft.color=\"$positive\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\" w=\"max\">\n        <Text fontSize=\"14\" color=\"$positiveText\" bold=\"true\" letterSpacing=\"1\">RECOMMENDATION</Text>\n        <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.4\">Scale exact winners, reduce phrase/broad leakage, and create strict budgets for competitor and generic discovery terms.</Text>\n      </VStack>\n      <VStack padding=\"16\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" borderRadius=\"14\" justifyContent=\"center\" w=\"max\">\n        <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"1\">RECOMMENDATION</Text>\n        <Text fontSize=\"14\" color=\"$textMain\" lineHeight=\"1.4\">Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand.</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-agency-takeover-122ca8\\screenshots\\slide-1.png",
+    "slide_plan": {
+      "slide_index": 1,
+      "slide_title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+      "label": "PLATFORM A · 02",
+      "subtitle": "Plus city-level allocation is misaligned with conversion economics",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Slide headline and subtitle",
+          "design_hint": "Color the phrase \"Exact match\" in the title to draw attention; keep the subtitle muted",
+          "weight": "minor",
+          "content_data": {
+            "title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+            "subtitle": "Plus city-level allocation is misaligned with conversion economics"
+          }
+        },
+        {
+          "component_id": "match_table",
+          "kind": "table",
+          "count": 1,
+          "content_summary": "Match-type performance with Spend, Rev, ROAS, CPC, CVR for Phrase / Exact / Broad",
+          "columns": 6,
+          "rows": 3,
+          "design_hint": "Highlight the Exact Match row and accent the ROAS cell \"0.41x\" as the best-performing row; keep the ROAS column visually distinct",
+          "weight": "hero",
+          "content_data": {
+            "table_columns": [
+              "Match type",
+              "Spend",
+              "Rev",
+              "ROAS",
+              "CPC",
+              "CVR"
+            ],
+            "table_rows": [
+              [
+                "Phrase Match",
+                "₹45.5L",
+                "₹14.6L",
+                "0.32x",
+                "₹62.0",
+                "8.6%"
+              ],
+              [
+                "Exact Match",
+                "₹21.3L",
+                "₹8.8L",
+                "0.41x",
+                "₹59.5",
+                "10.9%"
+              ],
+              [
+                "Broad Match",
+                "₹1.9L",
+                "₹0.4L",
+                "0.23x",
+                "₹64.7",
+                "6.2%"
+              ]
+            ]
+          }
+        },
+        {
+          "component_id": "term_cards",
+          "kind": "card_grid",
+          "count": 1,
+          "content_summary": "Two cards: Winners list and Weak terms list",
+          "items": 2,
+          "design_hint": "Render the Winners card in a positive color and the Weak terms card in a negative color; show each term as a bullet within its card",
+          "weight": "peer",
+          "content_data": {
+            "card_layout": "grid",
+            "cards": [
+              {
+                "title": "Winners",
+                "bullets": [
+                  "[Brand] phrase",
+                  "[Brand] exact",
+                  "paneer makhani",
+                  "curry",
+                  "shahi paneer gravy"
+                ],
+                "tone": "good",
+                "icon": "trending-up"
+              },
+              {
+                "title": "Weak terms",
+                "bullets": [
+                  "butter chicken phrase",
+                  "instant food phrase",
+                  "ready to cook paneer phrase",
+                  "mix phrase",
+                  "instant gravy broad",
+                  "ready masala",
+                  "instant dal makhani",
+                  "meat masala",
+                  "kilrr chicken masala"
+                ],
+                "tone": "bad",
+                "icon": "alert-triangle"
+              }
+            ],
+            "per_row": 2
+          }
+        },
+        {
+          "component_id": "city_roas_callout",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "City-level ROAS observations and list of cities needing review",
+          "design_hint": "Accent border on this callout and emphasize the ROAS figures \"0.5x\" and \"0.45x\" so the city shortfall is clear",
+          "weight": "supporting",
+          "content_data": {
+            "text": "No major high-spend city crossed 0.5x ROAS. Bengaluru was the best large city at around 0.45x ROAS, but still below desired efficiency. Cities needing immediate review include Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi."
+          }
+        },
+        {
+          "component_id": "recommendations",
+          "kind": "bullet_list",
+          "count": 2,
+          "content_summary": "Two recommendation bullets: keyword governance actions and budget reallocation criteria",
+          "items": 2,
+          "design_hint": "Color-code the first bullet (scale exact / reduce leakage) as positive/action and the second (reallocate budget based on City-level ROAS...) as an operational criterion with an accent border",
+          "weight": "supporting",
+          "content_data": {
+            "bullets": [
+              "Recommendation: Scale exact winners, reduce phrase/broad leakage, and create strict budgets for competitor and generic discovery terms.",
+              "Recommendation: Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand."
+            ]
+          }
+        }
+      ],
+      "layout_hint": "match_table is the primary element (hero) centered on the slide; term_cards sits beside or below it as prominent supporting context; city_roas_callout is a supporting callout near the table; recommendations is a slim supporting list below or to the side.",
+      "content_data": {
+        "title": "Exact match outperforms phrase and broad, but keyword governance needs sharper control.",
+        "subtitle": "Plus city-level allocation is misaligned with conversion economics",
+        "table_columns": [
+          "Match type",
+          "Spend",
+          "Rev",
+          "ROAS",
+          "CPC",
+          "CVR"
+        ],
+        "table_rows": [
+          [
+            "Phrase Match",
+            "₹45.5L",
+            "₹14.6L",
+            "0.32x",
+            "₹62.0",
+            "8.6%"
+          ],
+          [
+            "Exact Match",
+            "₹21.3L",
+            "₹8.8L",
+            "0.41x",
+            "₹59.5",
+            "10.9%"
+          ],
+          [
+            "Broad Match",
+            "₹1.9L",
+            "₹0.4L",
+            "0.23x",
+            "₹64.7",
+            "6.2%"
+          ]
+        ],
+        "card_layout": "grid",
+        "cards": [
+          {
+            "title": "Winners",
+            "bullets": [
+              "[Brand] phrase",
+              "[Brand] exact",
+              "paneer makhani",
+              "curry",
+              "shahi paneer gravy"
+            ],
+            "tone": "good",
+            "icon": "trending-up"
+          },
+          {
+            "title": "Weak terms",
+            "bullets": [
+              "butter chicken phrase",
+              "instant food phrase",
+              "ready to cook paneer phrase",
+              "mix phrase",
+              "instant gravy broad",
+              "ready masala",
+              "instant dal makhani",
+              "meat masala",
+              "kilrr chicken masala"
+            ],
+            "tone": "bad",
+            "icon": "alert-triangle"
+          }
+        ],
+        "per_row": 2,
+        "text": "No major high-spend city crossed 0.5x ROAS. Bengaluru was the best large city at around 0.45x ROAS, but still below desired efficiency. Cities needing immediate review include Hyderabad, Chennai, Jaipur, Sas Nagar, Surat, Nashik, Mumbai, and Delhi.",
+        "bullets": [
+          "Recommendation: Scale exact winners, reduce phrase/broad leakage, and create strict budgets for competitor and generic discovery terms.",
+          "Recommendation: Reallocate budget based on City-level ROAS, SKU availability, delivery strength, inventory depth, price competitiveness, conversion rate, CPC, and organic demand."
+        ]
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "table_columns": "sample",
+        "table_rows": "sample",
+        "card_layout": "sample",
+        "cards": "sample",
+        "per_row": "sample",
+        "text": "sample",
+        "bullets": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 2,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">CROSS-PLATFORM</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" lineHeight=\"1.15\">[Platform B] and [Platform A] show the same operating gap: <B>spend is not governed tightly enough by economics</B>.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Five shared operational gaps and corrective fixes</Text>\n    </VStack>\n    <VStack padding=\"24\" gap=\"14\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" borderLeft.width=\"4\" borderLeft.color=\"$accent\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <Text fontSize=\"22\" bold=\"true\" color=\"$textMain\" margin.bottom=\"8\">Cross-Platform Operational Gaps: [Platform B] vs [Platform A]</Text>\n      <Table defaultRowHeight=\"64\" cellBorder.color=\"$border\" cellBorder.width=\"1\">\n        <Col width=\"260\" />\n        <Col />\n        <Col />\n        <Col width=\"260\" />\n        <Tr height=\"40\">\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\">Gap</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"left\">[Platform B]</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"left\">[Platform A]</Td>\n          <Td bold=\"true\" backgroundColor=\"$surfaceAlt\" color=\"$textMain\" textAlign=\"left\">Fix</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$accentSoft\" color=\"$accentText\" bold=\"true\">Gap 1 - CPC above allowable level</Td>\n          <Td backgroundColor=\"$warningSoft\" color=\"$warningText\"><B>[Platform B] CPC ₹31.1</B> vs allowable <Span color=\"$positiveText\">₹10.7</Span></Td>\n          <Td backgroundColor=\"$negativeSoft\" color=\"$negativeText\"><B>[Platform A] CPC ₹46.2</B> vs allowable <Span color=\"$positiveText\">₹14.8</Span></Td>\n          <Td backgroundColor=\"$positiveSoft\" color=\"$positiveText\" bold=\"true\">Break-even CPC bidding model</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\">Gap 2 - Discovery leakage</Td>\n          <Td backgroundColor=\"$warningSoft\" color=\"$warningText\">[Platform B] Auto, phrase, category, broad weak.</Td>\n          <Td backgroundColor=\"$warningSoft\" color=\"$warningText\">[Platform A] Phrase, broad, generic weak.</Td>\n          <Td backgroundColor=\"$positiveSoft\" color=\"$positiveText\">Weekly harvesting and negative loop</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\">Gap 3 - Budget not following winners</Td>\n          <Td backgroundColor=\"$warningSoft\" color=\"$warningText\">[Platform B] SBT and exact under-scaled.</Td>\n          <Td backgroundColor=\"$warningSoft\" color=\"$warningText\">[Platform A] Brand and category/PLA under-allocated.</Td>\n          <Td backgroundColor=\"$positiveSoft\" color=\"$positiveText\">Budget tiering by ROAS, CVR, and intent</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\">Gap 4 - Visibility spend not separated</Td>\n          <Td backgroundColor=\"$warningSoft\" color=\"$warningText\">[Platform B] SD/AMC weak.</Td>\n          <Td backgroundColor=\"$warningSoft\" color=\"$warningText\">[Platform A] CPD/BOTD weak.</Td>\n          <Td backgroundColor=\"$positiveSoft\" color=\"$positiveText\">Separate awareness and performance budgets</Td>\n        </Tr>\n        <Tr>\n          <Td backgroundColor=\"$surface\" color=\"$textMuted\">Gap 5 - Reporting and governance gaps</Td>\n          <Td backgroundColor=\"$negativeSoft\" color=\"$negativeText\">[Platform B] Broken pivot ratios.</Td>\n          <Td backgroundColor=\"$negativeSoft\" color=\"$negativeText\">[Platform A] Sheet reconciliation differences.</Td>\n          <Td backgroundColor=\"$positiveSoft\" color=\"$positiveText\">Raw-data dashboard and source-of-truth reporting</Td>\n        </Tr>\n      </Table>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-agency-takeover-122ca8\\screenshots\\slide-2.png",
+    "slide_plan": {
+      "slide_index": 2,
+      "slide_title": "[Platform B] and [Platform A] show the same operating gap: spend is not governed tightly enough by economics.",
+      "label": "CROSS-PLATFORM",
+      "subtitle": "Five shared operational gaps and corrective fixes",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Kicker + headline and subtitle",
+          "design_hint": "color the kicker word 'CROSS-PLATFORM' as an accent and bold the phrase 'spend is not governed tightly enough by economics' to anchor the slide",
+          "weight": "minor",
+          "content_data": {
+            "title": "CROSS-PLATFORM — [Platform B] and [Platform A] show the same operating gap: spend is not governed tightly enough by economics.",
+            "subtitle": "Five shared operational gaps and corrective fixes"
+          }
+        },
+        {
+          "component_id": "gap_comparison_table",
+          "kind": "table",
+          "count": 5,
+          "content_summary": "Five-row comparison of gaps with per-platform notes and fixes",
+          "columns": 4,
+          "rows": 5,
+          "design_hint": "treat the table as a side-by-side comparison: shade the Fix column in a positive color, mark the Platform B and Platform A issue cells in warning/negative tones, and emphasize Gap 1 row (the CPC values ₹31.1, ₹10.7, ₹46.2, ₹14.8) so it reads as the clearest economic failure",
+          "weight": "hero",
+          "content_data": {
+            "table_columns": [
+              "Gap",
+              "[Platform B]",
+              "[Platform A]",
+              "Fix"
+            ],
+            "table_rows": [
+              [
+                "Gap 1 - CPC above allowable level",
+                "[Platform B] CPC ₹31.1 vs allowable ₹10.7",
+                "[Platform A] CPC ₹46.2 vs allowable ₹14.8",
+                "Break-even CPC bidding model"
+              ],
+              [
+                "Gap 2 - Discovery leakage",
+                "[Platform B] Auto, phrase, category, broad weak.",
+                "[Platform A] Phrase, broad, generic weak.",
+                "Weekly harvesting and negative loop"
+              ],
+              [
+                "Gap 3 - Budget not following winners",
+                "[Platform B] SBT and exact under-scaled.",
+                "[Platform A] Brand and category/PLA under-allocated.",
+                "Budget tiering by ROAS, CVR, and intent"
+              ],
+              [
+                "Gap 4 - Visibility spend not separated",
+                "[Platform B] SD/AMC weak.",
+                "[Platform A] CPD/BOTD weak.",
+                "Separate awareness and performance budgets"
+              ],
+              [
+                "Gap 5 - Reporting and governance gaps",
+                "[Platform B] Broken pivot ratios.",
+                "[Platform A] Sheet reconciliation differences.",
+                "Raw-data dashboard and source-of-truth reporting"
+              ]
+            ]
+          }
+        }
+      ],
+      "layout_hint": "gap_comparison_table is the primary element in the main band; slide_title sits across the top as a narrow header.",
+      "content_data": {
+        "title": "CROSS-PLATFORM — [Platform B] and [Platform A] show the same operating gap: spend is not governed tightly enough by economics.",
+        "subtitle": "Five shared operational gaps and corrective fixes",
+        "table_columns": [
+          "Gap",
+          "[Platform B]",
+          "[Platform A]",
+          "Fix"
+        ],
+        "table_rows": [
+          [
+            "Gap 1 - CPC above allowable level",
+            "[Platform B] CPC ₹31.1 vs allowable ₹10.7",
+            "[Platform A] CPC ₹46.2 vs allowable ₹14.8",
+            "Break-even CPC bidding model"
+          ],
+          [
+            "Gap 2 - Discovery leakage",
+            "[Platform B] Auto, phrase, category, broad weak.",
+            "[Platform A] Phrase, broad, generic weak.",
+            "Weekly harvesting and negative loop"
+          ],
+          [
+            "Gap 3 - Budget not following winners",
+            "[Platform B] SBT and exact under-scaled.",
+            "[Platform A] Brand and category/PLA under-allocated.",
+            "Budget tiering by ROAS, CVR, and intent"
+          ],
+          [
+            "Gap 4 - Visibility spend not separated",
+            "[Platform B] SD/AMC weak.",
+            "[Platform A] CPD/BOTD weak.",
+            "Separate awareness and performance budgets"
+          ],
+          [
+            "Gap 5 - Reporting and governance gaps",
+            "[Platform B] Broken pivot ratios.",
+            "[Platform A] Sheet reconciliation differences.",
+            "Raw-data dashboard and source-of-truth reporting"
+          ]
+        ]
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "table_columns": "sample",
+        "table_rows": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 3,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"32\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\" alignItems=\"start\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">AGENCY SYSTEM</Text>\n      <VStack gap=\"6\" alignItems=\"start\">\n        <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">We would run this as a <Span color=\"$accentText\">profit-led</Span> marketplace growth system.</Text>\n        <Text fontSize=\"18\" color=\"$textMuted\">Six operational pillars to stop leakage and drive profitable scale</Text>\n      </VStack>\n    </VStack>\n    <VStack grow=\"2\" gap=\"18\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n      <HStack grow=\"1\" gap=\"18\" alignItems=\"stretch\">\n        <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"bar-chart-3\" size=\"28\" color=\"$positive\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Raw-data reporting and weekly diagnostics.</Text>\n        </VStack>\n        <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"target\" size=\"28\" color=\"$positive\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Intent-layer campaign structure.</Text>\n        </VStack>\n        <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"percent\" size=\"28\" color=\"$positive\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Break-even CPC and target ACOS bidding.</Text>\n        </VStack>\n      </HStack>\n      <HStack grow=\"1\" gap=\"18\" alignItems=\"stretch\">\n        <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"search\" size=\"28\" color=\"$positive\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Weekly search-term harvesting and negative keyword loop.</Text>\n        </VStack>\n        <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"map-pin\" size=\"28\" color=\"$positive\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">SKU, city, and inventory-aware budget allocation.</Text>\n        </VStack>\n        <VStack w=\"32%\" padding=\"24\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"trending-up\" size=\"28\" color=\"$positive\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">AOV and CVR improvement through bundles, multipacks, PDP, offers, and creative.</Text>\n        </VStack>\n      </HStack>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-agency-takeover-122ca8\\screenshots\\slide-3.png",
+    "slide_plan": {
+      "slide_index": 3,
+      "slide_title": "We would run this as a profit-led marketplace growth system.",
+      "label": "AGENCY SYSTEM",
+      "subtitle": "Six operational pillars to stop leakage and drive profitable scale",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "slide_kicker",
+          "kind": "caption",
+          "count": 1,
+          "content_summary": "kicker label",
+          "design_hint": "render as a small, muted uppercase label above the title (small-caps tone)",
+          "weight": "minor",
+          "content_data": {
+            "text": "AGENCY SYSTEM"
+          }
+        },
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "headline and subtitle",
+          "design_hint": "color the phrase 'profit-led' in the title as an accent to draw attention",
+          "weight": "minor",
+          "content_data": {
+            "title": "We would run this as a profit-led marketplace growth system.",
+            "subtitle": "Six operational pillars to stop leakage and drive profitable scale"
+          }
+        },
+        {
+          "component_id": "pillars_grid",
+          "kind": "card_grid",
+          "count": 6,
+          "content_summary": "six operational pillars listed as equal cards",
+          "items": 6,
+          "design_hint": "render as six equal-weight cards arranged in a 3×2 grid to read as a six-pillar system; icon in each card; no single card in focus; lift the card band slightly for emphasis",
+          "weight": "hero",
+          "content_data": {
+            "card_layout": "grid",
+            "cards": [
+              {
+                "title": "Raw-data reporting and weekly diagnostics.",
+                "tone": "good",
+                "icon": "bar-chart-3"
+              },
+              {
+                "title": "Intent-layer campaign structure.",
+                "tone": "good",
+                "icon": "target"
+              },
+              {
+                "title": "Break-even CPC and target ACOS bidding.",
+                "tone": "good",
+                "icon": "percent"
+              },
+              {
+                "title": "Weekly search-term harvesting and negative keyword loop.",
+                "tone": "good",
+                "icon": "search"
+              },
+              {
+                "title": "SKU, city, and inventory-aware budget allocation.",
+                "tone": "good",
+                "icon": "map-pin"
+              },
+              {
+                "title": "AOV and CVR improvement through bundles, multipacks, PDP, offers, and creative.",
+                "tone": "good",
+                "icon": "trending-up"
+              }
+            ],
+            "per_row": 3
+          }
+        }
+      ],
+      "layout_hint": "pillars_grid is the primary element and should occupy the main band as a 3×2 grid; slide_kicker appears above the slide_title at the top-left; slide_title (headline + subtitle) sits above the pillars as the header.",
+      "content_data": {
+        "text": "AGENCY SYSTEM",
+        "title": "We would run this as a profit-led marketplace growth system.",
+        "subtitle": "Six operational pillars to stop leakage and drive profitable scale",
+        "card_layout": "grid",
+        "cards": [
+          {
+            "title": "Raw-data reporting and weekly diagnostics.",
+            "tone": "good",
+            "icon": "bar-chart-3"
+          },
+          {
+            "title": "Intent-layer campaign structure.",
+            "tone": "good",
+            "icon": "target"
+          },
+          {
+            "title": "Break-even CPC and target ACOS bidding.",
+            "tone": "good",
+            "icon": "percent"
+          },
+          {
+            "title": "Weekly search-term harvesting and negative keyword loop.",
+            "tone": "good",
+            "icon": "search"
+          },
+          {
+            "title": "SKU, city, and inventory-aware budget allocation.",
+            "tone": "good",
+            "icon": "map-pin"
+          },
+          {
+            "title": "AOV and CVR improvement through bundles, multipacks, PDP, offers, and creative.",
+            "tone": "good",
+            "icon": "trending-up"
+          }
+        ],
+        "per_row": 3
+      },
+      "data_provenance": {
+        "text": "sample",
+        "title": "sample",
+        "subtitle": "sample",
+        "card_layout": "sample",
+        "cards": "sample",
+        "per_row": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 4,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"56\" gap=\"32\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"10\" alignItems=\"stretch\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">90-DAY PLAN</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\"><Span color=\"$accentText\" bold=\"true\">First stop leakage</Span>, then rebuild, then scale only where economics prove out.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Concrete 30/60/90 actions to stabilize, rebuild, and scale</Text>\n    </VStack>\n    <HStack grow=\"2\" gap=\"20\" alignItems=\"stretch\">\n      <VStack w=\"max\" padding=\"24\" gap=\"12\" backgroundColor=\"$accentSoft\" borderRadius=\"16\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"shield-alert\" size=\"28\" color=\"$textMain\" />\n          <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"1\">Days 0–7</Text>\n        </HStack>\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Days 0–7 (Stabilize)</Text>\n        <Ul fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">\n          <Li>Days 0–7 (Stabilize) — [Platform B]: <Span color=\"$negativeText\" bold=\"true\"> Pause or negative 10+ click zero-sales terms. Reduce bids on ROAS &lt;0.25x.</Span> Protect brand and exact winners. Cap SD, AMC, and weak category/competitor campaigns.</Li>\n          <Li>Days 0–7 (Stabilize) — [Platform A]: <Span color=\"$warningText\" bold=\"true\"> Cap CPD/BOTD unless awareness is objective. Reduce weak phrase/broad bids.</Span> Protect brand and exact winners. Identify low-ROAS city/SKU combinations.</Li>\n        </Ul>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"bar-chart-3\" size=\"28\" color=\"$accent\" />\n          <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">Days 8–30</Text>\n        </HStack>\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Days 8–30 (Rebuild)</Text>\n        <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">Days 8–30 (Rebuild): Restructure by intent, SKU, city, and objective. Move converting terms into exact. Add negatives. Create budget tiers and build CPC ceilings.</Text>\n      </VStack>\n      <Icon name=\"arrow-right\" size=\"20\" color=\"$textMuted\" alignSelf=\"center\" />\n      <VStack w=\"max\" padding=\"24\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"16\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\">\n        <HStack gap=\"8\" alignItems=\"center\">\n          <Icon name=\"trending-up\" size=\"28\" color=\"$accent\" />\n          <Text fontSize=\"14\" color=\"$textMuted\" bold=\"true\" letterSpacing=\"1\">Days 31–90</Text>\n        </HStack>\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Days 31–90 (Scale)</Text>\n        <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.45\">Days 31–90 (Scale): Increase budgets on high-CVR/ROAS clusters. Test bundles for AOV. Run SBT/SBV/video tests on proven demand. Forecast budget by efficiency tier.</Text>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-agency-takeover-122ca8\\screenshots\\slide-4.png",
+    "slide_plan": {
+      "slide_index": 4,
+      "slide_title": "First stop leakage, then rebuild, then scale only where economics prove out.",
+      "label": "90-DAY PLAN",
+      "subtitle": "Concrete 30/60/90 actions to stabilize, rebuild, and scale",
+      "slide_type": "content",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Headline and subtitle for the 90-day plan",
+          "design_hint": "color the phrase 'First stop leakage' in the title to emphasize priority; render a small muted '90-DAY PLAN' kicker above the title",
+          "weight": "minor",
+          "content_data": {
+            "title": "First stop leakage, then rebuild, then scale only where economics prove out.",
+            "subtitle": "Concrete 30/60/90 actions to stabilize, rebuild, and scale"
+          }
+        },
+        {
+          "component_id": "plan_steps",
+          "kind": "card_grid",
+          "count": 3,
+          "content_summary": "Three-step 30/60/90 plan with platform-specific actions in the Stabilize step",
+          "items": 3,
+          "design_hint": "steps layout with forward arrows; make the Days 0–7 (Stabilize) card the visual focus (dark/inverted panel) since stopping leakage is priority (focus_card=0); visually call out platform-specific bullets: color Platform B bullets in negative color and Platform A bullets in warning color; lift the cards slightly and connect them left-to-right to show progression",
+          "weight": "hero",
+          "content_data": {
+            "card_layout": "steps",
+            "cards": [
+              {
+                "title": "Days 0–7 (Stabilize)",
+                "tag": "Days 0–7",
+                "bullets": [
+                  "Days 0–7 (Stabilize) — [Platform B]: Pause or negative 10+ click zero-sales terms. Reduce bids on ROAS <0.25x. Protect brand and exact winners. Cap SD, AMC, and weak category/competitor campaigns.",
+                  "Days 0–7 (Stabilize) — [Platform A]: Cap CPD/BOTD unless awareness is objective. Reduce weak phrase/broad bids. Protect brand and exact winners. Identify low-ROAS city/SKU combinations."
+                ],
+                "icon": "shield-alert"
+              },
+              {
+                "title": "Days 8–30 (Rebuild)",
+                "tag": "Days 8–30",
+                "body": "Days 8–30 (Rebuild): Restructure by intent, SKU, city, and objective. Move converting terms into exact. Add negatives. Create budget tiers and build CPC ceilings.",
+                "icon": "bar-chart-3"
+              },
+              {
+                "title": "Days 31–90 (Scale)",
+                "tag": "Days 31–90",
+                "body": "Days 31–90 (Scale): Increase budgets on high-CVR/ROAS clusters. Test bundles for AOV. Run SBT/SBV/video tests on proven demand. Forecast budget by efficiency tier.",
+                "icon": "trending-up"
+              }
+            ],
+            "focus_card": 0
+          }
+        }
+      ],
+      "layout_hint": "plan_steps is the primary horizontal steps band across the slide; slide_title is a slim header above it.",
+      "content_data": {
+        "title": "First stop leakage, then rebuild, then scale only where economics prove out.",
+        "subtitle": "Concrete 30/60/90 actions to stabilize, rebuild, and scale",
+        "card_layout": "steps",
+        "cards": [
+          {
+            "title": "Days 0–7 (Stabilize)",
+            "tag": "Days 0–7",
+            "bullets": [
+              "Days 0–7 (Stabilize) — [Platform B]: Pause or negative 10+ click zero-sales terms. Reduce bids on ROAS <0.25x. Protect brand and exact winners. Cap SD, AMC, and weak category/competitor campaigns.",
+              "Days 0–7 (Stabilize) — [Platform A]: Cap CPD/BOTD unless awareness is objective. Reduce weak phrase/broad bids. Protect brand and exact winners. Identify low-ROAS city/SKU combinations."
+            ],
+            "icon": "shield-alert"
+          },
+          {
+            "title": "Days 8–30 (Rebuild)",
+            "tag": "Days 8–30",
+            "body": "Days 8–30 (Rebuild): Restructure by intent, SKU, city, and objective. Move converting terms into exact. Add negatives. Create budget tiers and build CPC ceilings.",
+            "icon": "bar-chart-3"
+          },
+          {
+            "title": "Days 31–90 (Scale)",
+            "tag": "Days 31–90",
+            "body": "Days 31–90 (Scale): Increase budgets on high-CVR/ROAS clusters. Test bundles for AOV. Run SBT/SBV/video tests on proven demand. Forecast budget by efficiency tier.",
+            "icon": "trending-up"
+          }
+        ],
+        "focus_card": 0
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "card_layout": "sample",
+        "cards": "sample",
+        "focus_card": "sample"
+      },
+      "plan_flags": [
+        {
+          "code": "SLIDE_SPARSE",
+          "component_id": "",
+          "detail": "thin slide: about 6.0 units of content (limit 9)"
+        }
+      ]
+    }
+  },
+  {
+    "slide_index": 5,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"48\" gap=\"28\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">RECOMMENDATION</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">The current account needs a <Span color=\"$accentText\" bold=\"true\">sharper operator</Span>, not just more spend.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Pitch to take over plus required data to move from diagnosis to execution</Text>\n    </VStack>\n    <VStack grow=\"3\" gap=\"24\">\n      <VStack padding=\"32\" gap=\"14\" backgroundColor=\"$accentSoft\" borderRadius=\"18\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n        <Text fontSize=\"20\" color=\"$textMain\" lineHeight=\"1.4\">The data shows that [Brand] has demand pockets that work, but the current operating model is allowing too much budget to flow into weak-intent, high-CPC traffic. Our agency would bring a <Span color=\"$accent\" bold=\"true\">structured, data-led marketplace growth system</Span> that connects media spend to SKU economics, city performance, search intent, and profitability.</Text>\n      </VStack>\n      <HStack gap=\"18\" alignItems=\"stretch\">\n        <VStack w=\"32%\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"search\" size=\"28\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">[Platform B] data needed</Text>\n          <Ul fontSize=\"15\" color=\"$textMuted\">\n            <Li>Search term</Li>\n            <Li>placement</Li>\n            <Li>advertised product reports</Li>\n            <Li>SQP data</Li>\n          </Ul>\n        </VStack>\n        <VStack w=\"32%\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"shopping-cart\" size=\"28\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">[Platform A] data needed</Text>\n          <Ul fontSize=\"15\" color=\"$textMuted\">\n            <Li>SKU-level campaign data</Li>\n            <Li>city-wise availability</Li>\n            <Li>organic sales</Li>\n            <Li>keyword-level order/revenue</Li>\n          </Ul>\n        </VStack>\n        <VStack w=\"32%\" padding=\"20\" gap=\"10\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" border.color=\"$border\" border.width=\"1\" justifyContent=\"center\">\n          <Icon name=\"target\" size=\"28\" color=\"$accent\" alignSelf=\"start\" />\n          <Text fontSize=\"18\" color=\"$textMain\" bold=\"true\">Business data needed</Text>\n          <Ul fontSize=\"15\" color=\"$textMuted\">\n            <Li>Target ACOS by SKU</Li>\n            <Li>Margin by SKU</Li>\n            <Li>Launch vs profitability priorities</Li>\n          </Ul>\n        </VStack>\n      </HStack>\n      <VStack padding=\"18\" gap=\"6\" backgroundColor=\"$surfaceAlt\" borderRadius=\"14\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" shadow.type=\"outer\" shadow.blur=\"6\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n        <Text fontSize=\"16\" color=\"$textMain\" lineHeight=\"1.4\">30-day transition audit and account takeover sprint.</Text>\n      </VStack>\n    </VStack>\n    <VStack padding=\"14\" gap=\"4\" backgroundColor=\"$surfaceAlt\" borderRadius=\"12\" shadow.type=\"outer\" shadow.blur=\"4\" shadow.offset=\"2\" shadow.color=\"000\" justifyContent=\"center\">\n      <Text fontSize=\"15\" color=\"$textMain\" lineHeight=\"1.4\">The audit findings above are the basis for a rapid takeover; deeper access will enable execution of <Span color=\"$accent\" bold=\"true\">break-even CPC bidding</Span>, city/SKU budget tiers, and weekly harvesting.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-agency-takeover-122ca8\\screenshots\\slide-5.png",
+    "slide_plan": {
+      "slide_index": 5,
+      "slide_title": "The current account needs a sharper operator, not just more spend.",
+      "label": "RECOMMENDATION",
+      "subtitle": "Pitch to take over plus required data to move from diagnosis to execution",
+      "slide_type": "closing",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Headline and subtitle",
+          "design_hint": "title is a slim header band; emphasize the word 'sharper operator' in the title",
+          "weight": "minor",
+          "content_data": {
+            "title": "The current account needs a sharper operator, not just more spend.",
+            "subtitle": "Pitch to take over plus required data to move from diagnosis to execution"
+          }
+        },
+        {
+          "component_id": "closing_statement",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Closing statement: agency takeover as resolution",
+          "design_hint": "dark / inverted panel; lift the card and color the key phrase 'structured, data-led marketplace growth system' in the accent color so it reads as the core offer",
+          "weight": "hero",
+          "content_data": {
+            "text": "The data shows that [Brand] has demand pockets that work, but the current operating model is allowing too much budget to flow into weak-intent, high-CPC traffic. Our agency would bring a structured, data-led marketplace growth system that connects media spend to SKU economics, city performance, search intent, and profitability."
+          }
+        },
+        {
+          "component_id": "datasets_checklist",
+          "kind": "card_grid",
+          "count": 3,
+          "content_summary": "Three cards listing required datasets for Platform B, Platform A and business",
+          "items": 3,
+          "design_hint": "icon in each tile; three equal cards presented as a compact checklist (no single card highlighted) so the dataset checklist reads as supporting elements",
+          "weight": "supporting",
+          "content_data": {
+            "card_layout": "grid",
+            "cards": [
+              {
+                "title": "[Platform B] data needed",
+                "bullets": [
+                  "Search term",
+                  "placement",
+                  "advertised product reports",
+                  "SQP data"
+                ],
+                "icon": "search"
+              },
+              {
+                "title": "[Platform A] data needed",
+                "bullets": [
+                  "SKU-level campaign data",
+                  "city-wise availability",
+                  "organic sales",
+                  "keyword-level order/revenue"
+                ],
+                "icon": "shopping-cart"
+              },
+              {
+                "title": "Business data needed",
+                "bullets": [
+                  "Target ACOS by SKU",
+                  "Margin by SKU",
+                  "Launch vs profitability priorities"
+                ],
+                "icon": "target"
+              }
+            ],
+            "per_row": 3
+          }
+        },
+        {
+          "component_id": "recommended_next_step",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Immediate next step",
+          "design_hint": "accent border on the component's card to mark this as the immediate action",
+          "weight": "supporting",
+          "content_data": {
+            "text": "30-day transition audit and account takeover sprint."
+          }
+        },
+        {
+          "component_id": "execution_note",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Note on how audit enables execution",
+          "design_hint": "lift / elevate the card slightly and color the key phrase 'break-even CPC bidding' to call out the primary execution lever",
+          "weight": "minor",
+          "content_data": {
+            "text": "The audit findings above are the basis for a rapid takeover; deeper access will enable execution of break-even CPC bidding, city/SKU budget tiers, and weekly harvesting."
+          }
+        }
+      ],
+      "layout_hint": "closing_statement is the primary element (hero) in the main band; directly beneath it, datasets_checklist sits as the supporting checklist; recommended_next_step is a supporting callout below the checklist; execution_note is a slim minor band under everything; slide_title is the top header.",
+      "content_data": {
+        "title": "The current account needs a sharper operator, not just more spend.",
+        "subtitle": "Pitch to take over plus required data to move from diagnosis to execution",
+        "text": "The audit findings above are the basis for a rapid takeover; deeper access will enable execution of break-even CPC bidding, city/SKU budget tiers, and weekly harvesting.",
+        "card_layout": "grid",
+        "cards": [
+          {
+            "title": "[Platform B] data needed",
+            "bullets": [
+              "Search term",
+              "placement",
+              "advertised product reports",
+              "SQP data"
+            ],
+            "icon": "search"
+          },
+          {
+            "title": "[Platform A] data needed",
+            "bullets": [
+              "SKU-level campaign data",
+              "city-wise availability",
+              "organic sales",
+              "keyword-level order/revenue"
+            ],
+            "icon": "shopping-cart"
+          },
+          {
+            "title": "Business data needed",
+            "bullets": [
+              "Target ACOS by SKU",
+              "Margin by SKU",
+              "Launch vs profitability priorities"
+            ],
+            "icon": "target"
+          }
+        ],
+        "per_row": 3
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "text": "sample",
+        "card_layout": "sample",
+        "cards": "sample",
+        "per_row": "sample"
+      }
+    }
+  }
+]

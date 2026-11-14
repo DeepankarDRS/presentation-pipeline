@@ -1,0 +1,789 @@
+[
+  {
+    "slide_index": 0,
+    "xml": "<Slide>\n  <HStack w=\"1280\" h=\"720\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack grow=\"1\" padding=\"72\" gap=\"20\">\n      <VStack grow=\"3\" gap=\"20\" justifyContent=\"center\">\n        <Text fontSize=\"56\" bold=\"true\" color=\"$textMain\" textAlign=\"left\" lineHeight=\"1.15\">CHEFFIN <Span color=\"$accentText\">FLIPCART</Span> &amp; <Span color=\"$accentText\">ZAROMA</Span> Ads Audit</Text>\n        <Shape shapeType=\"rect\" w=\"96\" h=\"6\" backgroundColor=\"$accent\" />\n        <Text fontSize=\"26\" color=\"$textMuted\" lineHeight=\"1.4\">Last 90 Days Performance Review | Key Gaps, Opportunities &amp; Takeover Roadmap</Text>\n      </VStack>\n      <Text fontSize=\"16\" color=\"$textMuted\">Prepared by <B>our agency</B></Text>\n    </VStack>\n    <VStack w=\"400\" padding=\"56\" backgroundColor=\"$accent\" justifyContent=\"end\">\n      <Text fontSize=\"110\" bold=\"true\" color=\"$onAccent\">Ads</Text>\n    </VStack>\n  </HStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-cheffin-full-6a6006\\screenshots\\slide-0.png",
+    "slide_plan": {
+      "slide_index": 0,
+      "slide_title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+      "label": "",
+      "subtitle": "",
+      "slide_type": "cover",
+      "components": [
+        {
+          "component_id": "audit_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Audit headline and review scope.",
+          "design_hint": "Color FLIPCART and ZAROMA with equal neutral accent emphasis to establish the marketplace theme; keep CHEFFIN prominent and the subtitle subordinate.",
+          "weight": "hero",
+          "content_data": {
+            "title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+            "subtitle": "Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap"
+          }
+        },
+        {
+          "component_id": "agency_attribution",
+          "kind": "caption",
+          "count": 1,
+          "content_summary": "Agency attribution.",
+          "design_hint": "Gently emphasize 'our agency' within an otherwise understated attribution.",
+          "weight": "minor",
+          "content_data": {
+            "text": "Prepared by our agency"
+          }
+        }
+      ],
+      "layout_hint": "audit_title dominates the cover with generous breathing room and equal visual emphasis for both marketplaces; agency_attribution sits at the bottom as a quiet credit.",
+      "content_data": {
+        "title": "CHEFFIN FLIPCART & ZAROMA Ads Audit",
+        "subtitle": "Last 90 Days Performance Review | Key Gaps, Opportunities & Takeover Roadmap",
+        "text": "Prepared by our agency"
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "text": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 1,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"22\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">EXECUTIVE SUMMARY</Text>\n      <Text fontSize=\"32\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">The account is spending at scale, but <Span color=\"$negativeText\">not yet buying profitable demand</Span>.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Both platforms show the same structural issue.</Text>\n    </VStack>\n    <HStack gap=\"22\" alignItems=\"stretch\" id=\"kpig-combined_metrics\" grow=\"3\"><VStack backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" padding=\"16\" gap=\"6\" justifyContent=\"center\" grow=\"1\"><HStack gap=\"10\" alignItems=\"center\"><Icon name=\"wallet\" size=\"22\" color=\"$accentText\"/><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-combined_metrics-0\">Combined spend</Text></HStack><Text color=\"$textMain\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-combined_metrics-0\">₹114.9<Span fontSize=\"17\">L</Span></Text></VStack><VStack backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" padding=\"16\" gap=\"6\" justifyContent=\"center\" grow=\"1\"><HStack gap=\"10\" alignItems=\"center\"><Icon name=\"shopping-cart\" size=\"22\" color=\"$accentText\"/><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-combined_metrics-1\">Combined revenue</Text></HStack><Text color=\"$textMain\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-combined_metrics-1\">₹37.4<Span fontSize=\"17\">L</Span></Text></VStack><VStack backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" padding=\"16\" gap=\"6\" justifyContent=\"center\" grow=\"1\"><HStack gap=\"10\" alignItems=\"center\"><Icon name=\"percent\" size=\"22\" color=\"$negativeText\"/><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-combined_metrics-2\">Combined ROAS</Text></HStack><Text color=\"$negativeText\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-combined_metrics-2\">0.33<Span fontSize=\"17\">x</Span></Text></VStack></HStack>\n    <HStack grow=\"2\" gap=\"22\" alignItems=\"stretch\">\n      <HStack gap=\"16\" alignItems=\"stretch\" id=\"kpig-platform_returns\" w=\"40%\"><VStack backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" padding=\"16\" gap=\"6\" justifyContent=\"center\" grow=\"1\"><HStack gap=\"10\" alignItems=\"center\"><Icon name=\"percent\" size=\"22\" color=\"$negativeText\"/><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-platform_returns-0\">FLIPCART ROAS</Text></HStack><Text color=\"$negativeText\" fontSize=\"28\" bold=\"true\" id=\"kpiv2-platform_returns-0\">0.34<Span fontSize=\"17\">x</Span></Text></VStack><VStack backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" padding=\"16\" gap=\"6\" justifyContent=\"center\" grow=\"1\"><HStack gap=\"10\" alignItems=\"center\"><Icon name=\"percent\" size=\"22\" color=\"$negativeText\"/><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-platform_returns-1\">ZAROMA ROAS</Text></HStack><Text color=\"$negativeText\" fontSize=\"28\" bold=\"true\" id=\"kpiv2-platform_returns-1\">0.32<Span fontSize=\"17\">x</Span></Text></VStack></HStack>\n      <VStack grow=\"1\" w=\"60%\" padding=\"22\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" borderRadius=\"12\" alignItems=\"stretch\"><!-- list-post {\"id\": \"lst\\u002dstructural_diagnosis\", \"marker\": \"$accent\", \"tight\": true} --><Ul id=\"lst-structural_diagnosis\" grow=\"1\" fontSize=\"16\" lineHeight=\"1.4\" color=\"$textMain\"><Li><B>Both FLIPCART and ZAROMA show the same structural issue</B>: CPC is too high relative to AOV and CVR.</Li><Li>“This is a media economics problem, not just a campaign hygiene problem.”</Li></Ul></VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-cheffin-full-6a6006\\screenshots\\slide-1.png",
+    "slide_plan": {
+      "slide_index": 1,
+      "slide_title": "The account is spending at scale, but not yet buying profitable demand.",
+      "label": "EXECUTIVE SUMMARY",
+      "subtitle": "Both platforms show the same structural issue.",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Executive summary headline and subtitle.",
+          "design_hint": "Color the phrase “not yet buying profitable demand” in negative to establish the efficiency problem.",
+          "weight": "minor",
+          "content_data": {
+            "title": "The account is spending at scale, but not yet buying profitable demand.",
+            "subtitle": "Both platforms show the same structural issue."
+          }
+        },
+        {
+          "component_id": "combined_metrics",
+          "kind": "kpi_row",
+          "count": 3,
+          "content_summary": "Combined spending scale, revenue and return.",
+          "design_hint": "Use large values with neutral spend and revenue treatments; render Combined ROAS in negative to distinguish inefficient return from spending scale.",
+          "weight": "hero",
+          "content_data": {
+            "kpi_labels": [
+              "Combined spend",
+              "Combined revenue",
+              "Combined ROAS"
+            ],
+            "kpi_values": [
+              "₹114.9L",
+              "₹37.4L",
+              "0.33x"
+            ],
+            "kpi_deltas": [
+              "",
+              "",
+              ""
+            ],
+            "kpi_directions": [
+              "",
+              "",
+              ""
+            ],
+            "kpi_tones": [
+              "",
+              "",
+              "bad"
+            ],
+            "kpi_icons": [
+              "wallet",
+              "shopping-cart",
+              "percent"
+            ]
+          }
+        },
+        {
+          "component_id": "platform_returns",
+          "kind": "kpi_row",
+          "count": 2,
+          "content_summary": "Both platforms have similarly weak returns.",
+          "design_hint": "Give both platform tiles equal treatment and negative-colored values; keep their visual scale smaller than the combined metrics.",
+          "weight": "supporting",
+          "content_data": {
+            "kpi_labels": [
+              "FLIPCART ROAS",
+              "ZAROMA ROAS"
+            ],
+            "kpi_values": [
+              "0.34x",
+              "0.32x"
+            ],
+            "kpi_deltas": [
+              "",
+              ""
+            ],
+            "kpi_directions": [
+              "",
+              ""
+            ],
+            "kpi_tones": [
+              "bad",
+              "bad"
+            ],
+            "kpi_icons": [
+              "percent",
+              "percent"
+            ]
+          }
+        },
+        {
+          "component_id": "structural_diagnosis",
+          "kind": "bullet_list",
+          "count": 1,
+          "content_summary": "Shared economic diagnosis and the distinction from campaign hygiene.",
+          "items": 2,
+          "design_hint": "Use an accent border on the component card; color “CPC is too high” in negative and bold “media economics problem” within the quotation.",
+          "weight": "supporting",
+          "content_data": {
+            "bullets": [
+              "Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR.",
+              "“This is a media economics problem, not just a campaign hygiene problem.”"
+            ]
+          }
+        }
+      ],
+      "layout_hint": "combined_metrics carries the primary emphasis beneath slide_title. Below it, platform_returns and structural_diagnosis share the supporting region, connecting the equal platform comparison to the shared economic diagnosis.",
+      "content_data": {
+        "title": "The account is spending at scale, but not yet buying profitable demand.",
+        "subtitle": "Both platforms show the same structural issue.",
+        "kpi_labels": [
+          "FLIPCART ROAS",
+          "ZAROMA ROAS"
+        ],
+        "kpi_values": [
+          "0.34x",
+          "0.32x"
+        ],
+        "kpi_deltas": [
+          "",
+          ""
+        ],
+        "kpi_directions": [
+          "",
+          ""
+        ],
+        "kpi_tones": [
+          "bad",
+          "bad"
+        ],
+        "kpi_icons": [
+          "percent",
+          "percent"
+        ],
+        "bullets": [
+          "Both FLIPCART and ZAROMA show the same structural issue: CPC is too high relative to AOV and CVR.",
+          "“This is a media economics problem, not just a campaign hygiene problem.”"
+        ]
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "kpi_labels": "sample",
+        "kpi_values": "sample",
+        "kpi_deltas": "sample",
+        "kpi_directions": "sample",
+        "kpi_tones": "sample",
+        "kpi_icons": "sample",
+        "bullets": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 2,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\" alignItems=\"stretch\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">CORE ECONOMICS PROBLEM</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">CPC is <Span color=\"$negativeText\">nearly 3x higher</Span> than what current conversion economics can support.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Allowable CPC is benchmarked to 1.0x ROAS.</Text>\n    </VStack>\n    <VStack backgroundColor=\"$chartSurface\" padding=\"16\" borderRadius=\"8\" h=\"max\" minH=\"260\" grow=\"3\" gap=\"8\" alignItems=\"stretch\"><Chart w=\"max\" chartColors=\"[&quot;$chart1&quot;, &quot;$chart2&quot;]\" chartType=\"bar\" showLegend=\"true\" h=\"max\"><ChartSeries name=\"Actual CPC\"><ChartDataPoint label=\"FLIPCART\nActual CPC is ~2.9x allowable\" value=\"31.1\" /><ChartDataPoint label=\"ZAROMA\nActual CPC is ~3.1x allowable\" value=\"46.2\" /></ChartSeries><ChartSeries name=\"Allowable CPC for 1.0x ROAS\"><ChartDataPoint label=\"FLIPCART\nActual CPC is ~2.9x allowable\" value=\"10.7\" /><ChartDataPoint label=\"ZAROMA\nActual CPC is ~3.1x allowable\" value=\"14.8\" /></ChartSeries></Chart></VStack>\n    <VStack grow=\"1\" padding=\"18\" backgroundColor=\"$surfaceAlt\" borderRadius=\"12\" border.color=\"$border\" border.width=\"1\" borderLeft.color=\"$accent\" borderLeft.width=\"5\" alignItems=\"stretch\"><!-- list-post {\"id\": \"lst\\u002deconomics_levers\", \"marker\": \"$accent\", \"tight\": true} --><Ul id=\"lst-economics_levers\" grow=\"1\" fontSize=\"16\" lineHeight=\"1.4\" color=\"$textMain\"><Li><Span color=\"$positiveText\">At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together.</Span></Li><Li>Break-even CPC rules by platform, keyword, SKU, city, and campaign objective.</Li></Ul></VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-cheffin-full-6a6006\\screenshots\\slide-2.png",
+    "slide_plan": {
+      "slide_index": 2,
+      "slide_title": "CPC is nearly 3x higher than what current conversion economics can support.",
+      "label": "CORE ECONOMICS PROBLEM",
+      "subtitle": "Allowable CPC is benchmarked to 1.0x ROAS.",
+      "slide_type": "content",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Core economics diagnosis.",
+          "design_hint": "Color the phrase “nearly 3x higher” in negative to signal the traffic-cost problem.",
+          "weight": "minor",
+          "content_data": {
+            "title": "CPC is nearly 3x higher than what current conversion economics can support.",
+            "subtitle": "Allowable CPC is benchmarked to 1.0x ROAS."
+          }
+        },
+        {
+          "component_id": "cpc_comparison",
+          "kind": "chart",
+          "count": 1,
+          "content_summary": "Actual versus allowable CPC for both platforms, with each platform’s stated gap retained in its category label.",
+          "chart_type": "bar",
+          "series_count": 2,
+          "design_hint": "Highlight the Actual CPC series in negative against a neutral Allowable CPC for 1.0x ROAS series; give both platforms equal treatment.",
+          "weight": "hero",
+          "content_data": {
+            "chart_type": "bar",
+            "chart_labels": [
+              "FLIPCART\nActual CPC is ~2.9x allowable",
+              "ZAROMA\nActual CPC is ~3.1x allowable"
+            ],
+            "chart_series": [
+              {
+                "name": "Actual CPC",
+                "values": [
+                  "₹31.1",
+                  "₹46.2"
+                ]
+              },
+              {
+                "name": "Allowable CPC for 1.0x ROAS",
+                "values": [
+                  "₹10.7",
+                  "₹14.8"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "component_id": "economics_levers",
+          "kind": "bullet_list",
+          "count": 1,
+          "content_summary": "Linked economic levers and the required granularity of break-even CPC rules.",
+          "items": 2,
+          "design_hint": "Color “CPC reduction, CVR improvement, AOV improvement” in positive as corrective levers; use an accent border on the component’s card.",
+          "weight": "supporting",
+          "content_data": {
+            "bullets": [
+              "At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together.",
+              "Break-even CPC rules by platform, keyword, SKU, city, and campaign objective."
+            ]
+          }
+        }
+      ],
+      "layout_hint": "cpc_comparison is the dominant comparison beneath slide_title, with paired bars for each platform. economics_levers sits below the chart as supporting operating-model guidance.",
+      "content_data": {
+        "title": "CPC is nearly 3x higher than what current conversion economics can support.",
+        "subtitle": "Allowable CPC is benchmarked to 1.0x ROAS.",
+        "chart_type": "bar",
+        "chart_labels": [
+          "FLIPCART\nActual CPC is ~2.9x allowable",
+          "ZAROMA\nActual CPC is ~3.1x allowable"
+        ],
+        "chart_series": [
+          {
+            "name": "Actual CPC",
+            "values": [
+              "₹31.1",
+              "₹46.2"
+            ]
+          },
+          {
+            "name": "Allowable CPC for 1.0x ROAS",
+            "values": [
+              "₹10.7",
+              "₹14.8"
+            ]
+          }
+        ],
+        "bullets": [
+          "At the current AOV and CVR, the brand needs CPC reduction, CVR improvement, AOV improvement, or all three together.",
+          "Break-even CPC rules by platform, keyword, SKU, city, and campaign objective."
+        ]
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "chart_type": "sample",
+        "chart_labels": "sample",
+        "chart_series": "sample",
+        "bullets": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 3,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"40\" gap=\"22\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">DATA &amp; METHODOLOGY</Text>\n      <Text fontSize=\"32\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">We rebuilt the audit from <Span color=\"$accent\">raw performance data</Span>, not surface-level reports.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">ZAROMA April, May, and June data.</Text>\n    </VStack>\n    <HStack gap=\"22\" grow=\"3\" alignItems=\"stretch\">\n      <VStack w=\"60%\" gap=\"16\">\n        <VStack justifyContent=\"center\" alignItems=\"stretch\" grow=\"3\"><VStack gap=\"12\"><HStack gap=\"12\" alignItems=\"stretch\"><VStack id=\"card-reviewed_sources-0\" borderRadius=\"12\" padding=\"16\" gap=\"8\" justifyContent=\"start\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"4\" shadow.offset=\"2\" shadow.color=\"$textMain\" shadow.opacity=\"0.1\" w=\"1\" grow=\"1\"><Icon name=\"chart-column\" size=\"26\" color=\"$textMuted\" alignSelf=\"start\"/><Text fontSize=\"20\" bold=\"true\" id=\"cardt-reviewed_sources-0\" color=\"$textMain\">FLIPCART Targeting last 90 days report</Text></VStack><VStack id=\"card-reviewed_sources-1\" borderRadius=\"12\" padding=\"16\" gap=\"8\" justifyContent=\"start\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"4\" shadow.offset=\"2\" shadow.color=\"$textMain\" shadow.opacity=\"0.1\" w=\"1\" grow=\"1\"><Icon name=\"chart-column\" size=\"26\" color=\"$textMuted\" alignSelf=\"start\"/><Text fontSize=\"20\" bold=\"true\" id=\"cardt-reviewed_sources-1\" color=\"$textMain\">FLIPCART Search Term report</Text></VStack></HStack><HStack gap=\"12\" alignItems=\"stretch\"><VStack id=\"card-reviewed_sources-2\" borderRadius=\"12\" padding=\"16\" gap=\"8\" justifyContent=\"start\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"4\" shadow.offset=\"2\" shadow.color=\"$textMain\" shadow.opacity=\"0.1\" w=\"1\" grow=\"1\"><Icon name=\"chart-column\" size=\"26\" color=\"$textMuted\" alignSelf=\"start\"/><Text fontSize=\"20\" bold=\"true\" id=\"cardt-reviewed_sources-2\" color=\"$textMain\">ZAROMA campaign-level data</Text></VStack><VStack id=\"card-reviewed_sources-3\" borderRadius=\"12\" padding=\"16\" gap=\"8\" justifyContent=\"start\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"4\" shadow.offset=\"2\" shadow.color=\"$textMain\" shadow.opacity=\"0.1\" w=\"1\" grow=\"1\"><Icon name=\"chart-column\" size=\"26\" color=\"$textMuted\" alignSelf=\"start\"/><Text fontSize=\"20\" bold=\"true\" id=\"cardt-reviewed_sources-3\" color=\"$textMain\">ZAROMA city-level data</Text></VStack></HStack><HStack gap=\"12\" alignItems=\"stretch\"><VStack id=\"card-reviewed_sources-4\" borderRadius=\"12\" padding=\"16\" gap=\"8\" justifyContent=\"start\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" shadow.type=\"outer\" shadow.blur=\"4\" shadow.offset=\"2\" shadow.color=\"$textMain\" shadow.opacity=\"0.1\" w=\"1\" grow=\"1\"><Icon name=\"chart-column\" size=\"26\" color=\"$textMuted\" alignSelf=\"start\"/><Text fontSize=\"20\" bold=\"true\" id=\"cardt-reviewed_sources-4\" color=\"$textMain\">ZAROMA keyword-level data</Text></VStack></HStack></VStack></VStack>\n        <VStack grow=\"2\" padding=\"18\" backgroundColor=\"$surfaceAlt\" border.color=\"$border\" border.width=\"1\" borderRadius=\"12\" alignItems=\"stretch\"><!-- list-post {\"id\": \"lst\\u002dreconciliation_notes\", \"marker\": \"$textMuted\", \"tight\": true} --><Ul id=\"lst-reconciliation_notes\" grow=\"1\" fontSize=\"16\" lineHeight=\"1.4\" color=\"$textMain\"><Li><B>Note</B>: Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.</Li><Li><B>Note</B>: ZAROMA sheets appear to have different coverage, so campaign-level totals were used as primary totals and city/keyword sheets were used for diagnostics.</Li></Ul></VStack>\n      </VStack>\n      <VStack w=\"40%\" gap=\"14\" padding=\"22\" backgroundColor=\"$surfaceAlt\" border.color=\"$accent\" border.width=\"1\" borderRadius=\"12\">\n        <HStack gap=\"12\" alignItems=\"center\">\n          <Icon name=\"settings\" size=\"24\" color=\"$textMuted\" />\n          <Text fontSize=\"22\" bold=\"true\" color=\"$textMain\">Calculation definitions</Text>\n        </HStack>\n        <VStack grow=\"1\"><HStack id=\"card-metric_definitions-0\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-1\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-2\"><Text id=\"lsth-metric_definitions-0\" fontSize=\"16\" color=\"$textMain\" bold=\"true\">Note</Text><Text fontSize=\"14\" color=\"$textMain\">ROAS = Revenue or Sales / Spend</Text></VStack></HStack><HStack id=\"card-metric_definitions-1\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\" borderTop.color=\"$border\" borderTop.width=\"1\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-3\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-4\"><Text fontSize=\"16\" color=\"$textMain\">ACOS = Spend / Sales</Text></VStack></HStack><HStack id=\"card-metric_definitions-2\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\" borderTop.color=\"$border\" borderTop.width=\"1\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-5\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-6\"><Text fontSize=\"16\" color=\"$textMain\">CTR = Clicks / Impressions</Text></VStack></HStack><HStack id=\"card-metric_definitions-3\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\" borderTop.color=\"$border\" borderTop.width=\"1\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-7\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-8\"><Text fontSize=\"16\" color=\"$textMain\">CPC = Spend / Clicks</Text></VStack></HStack><HStack id=\"card-metric_definitions-4\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\" borderTop.color=\"$border\" borderTop.width=\"1\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-9\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-10\"><Text fontSize=\"16\" color=\"$textMain\">CVR = Orders or Purchases / Clicks</Text></VStack></HStack><HStack id=\"card-metric_definitions-5\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\" borderTop.color=\"$border\" borderTop.width=\"1\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-11\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-12\"><Text fontSize=\"16\" color=\"$textMain\">CPA = Spend / Orders or Purchases</Text></VStack></HStack><HStack id=\"card-metric_definitions-6\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\" borderTop.color=\"$border\" borderTop.width=\"1\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-13\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-14\"><Text fontSize=\"16\" color=\"$textMain\">AOV = Sales / Orders or Purchases</Text></VStack></HStack><HStack id=\"card-metric_definitions-7\" grow=\"1\" gap=\"14\" alignItems=\"center\" padding.top=\"6\" padding.bottom=\"6\" borderTop.color=\"$border\" borderTop.width=\"1\"><VStack w=\"22\" alignItems=\"center\" id=\"card-metric_definitionsx-15\"><Shape shapeType=\"ellipse\" w=\"10\" h=\"10\" fill.color=\"$textMuted\" /></VStack><VStack w=\"1\" grow=\"1\" gap=\"2\" id=\"card-metric_definitionsx-16\"><Text fontSize=\"16\" color=\"$textMain\">Allowable CPC for 1.0x ROAS = AOV × CVR</Text></VStack></HStack></VStack>\n      </VStack>\n    </HStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-cheffin-full-6a6006\\screenshots\\slide-3.png",
+    "slide_plan": {
+      "slide_index": 3,
+      "slide_title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+      "label": "DATA & METHODOLOGY",
+      "subtitle": "ZAROMA April, May, and June data.",
+      "slide_type": "content",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Methodology headline and data coverage.",
+          "design_hint": "Color the phrase “raw performance data” in accent to emphasize the evidence-led approach.",
+          "weight": "minor",
+          "content_data": {
+            "title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+            "subtitle": "DATA & METHODOLOGY\nZAROMA April, May, and June data."
+          }
+        },
+        {
+          "component_id": "reviewed_sources",
+          "kind": "card_grid",
+          "count": 5,
+          "content_summary": "Five source datasets reviewed.",
+          "items": 5,
+          "design_hint": "Use equally weighted source cards with a generic icon in each; keep all source names fully visible and avoid highlighting one platform.",
+          "weight": "peer",
+          "content_data": {
+            "card_layout": "grid",
+            "cards": [
+              {
+                "title": "FLIPCART Targeting last 90 days report",
+                "icon": "file-spreadsheet"
+              },
+              {
+                "title": "FLIPCART Search Term report",
+                "icon": "search"
+              },
+              {
+                "title": "ZAROMA campaign-level data",
+                "icon": "megaphone"
+              },
+              {
+                "title": "ZAROMA city-level data",
+                "icon": "map-pin"
+              },
+              {
+                "title": "ZAROMA keyword-level data",
+                "icon": "text-search"
+              }
+            ],
+            "per_row": 3
+          }
+        },
+        {
+          "component_id": "reconciliation_notes",
+          "kind": "bullet_list",
+          "count": 2,
+          "content_summary": "Data reliability caveats and reconciliation decisions.",
+          "items": 2,
+          "design_hint": "Color “unreliable or zeroed” and “different coverage” in warning; emphasize “ratios were recalculated” and “campaign-level totals were used as primary totals” in positive.",
+          "weight": "supporting",
+          "content_data": {
+            "bullets": [
+              "Note: Some FLIPCART pivot metrics were unreliable or zeroed, so ratios were recalculated.",
+              "Note: ZAROMA sheets appear to have different coverage, so campaign-level totals were used as primary totals and city/keyword sheets were used for diagnostics."
+            ]
+          }
+        },
+        {
+          "component_id": "metric_definitions",
+          "kind": "bullet_list",
+          "count": 8,
+          "content_summary": "Exact calculation definitions used in the audit.",
+          "items": 8,
+          "design_hint": "Give the definitions card an accent border and a calculator icon in its header; use consistent inline emphasis for each metric label without singling out one formula.",
+          "weight": "peer",
+          "content_data": {
+            "bullets": [
+              "Note: ROAS = Revenue or Sales / Spend",
+              "ACOS = Spend / Sales",
+              "CTR = Clicks / Impressions",
+              "CPC = Spend / Clicks",
+              "CVR = Orders or Purchases / Clicks",
+              "CPA = Spend / Orders or Purchases",
+              "AOV = Sales / Orders or Purchases",
+              "Allowable CPC for 1.0x ROAS = AOV × CVR"
+            ]
+          }
+        }
+      ],
+      "layout_hint": "reviewed_sources and metric_definitions share the main reading area as peers beneath slide_title. Place reconciliation_notes beneath reviewed_sources so the source evidence and its caveats read together, while the complete calculation reference remains alongside.",
+      "content_data": {
+        "title": "We rebuilt the audit from raw performance data, not surface-level reports.",
+        "subtitle": "DATA & METHODOLOGY\nZAROMA April, May, and June data.",
+        "card_layout": "grid",
+        "cards": [
+          {
+            "title": "FLIPCART Targeting last 90 days report",
+            "icon": "file-spreadsheet"
+          },
+          {
+            "title": "FLIPCART Search Term report",
+            "icon": "search"
+          },
+          {
+            "title": "ZAROMA campaign-level data",
+            "icon": "megaphone"
+          },
+          {
+            "title": "ZAROMA city-level data",
+            "icon": "map-pin"
+          },
+          {
+            "title": "ZAROMA keyword-level data",
+            "icon": "text-search"
+          }
+        ],
+        "per_row": 3,
+        "bullets": [
+          "Note: ROAS = Revenue or Sales / Spend",
+          "ACOS = Spend / Sales",
+          "CTR = Clicks / Impressions",
+          "CPC = Spend / Clicks",
+          "CVR = Orders or Purchases / Clicks",
+          "CPA = Spend / Orders or Purchases",
+          "AOV = Sales / Orders or Purchases",
+          "Allowable CPC for 1.0x ROAS = AOV × CVR"
+        ]
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "card_layout": "sample",
+        "cards": "sample",
+        "per_row": "sample",
+        "bullets": "sample"
+      }
+    }
+  },
+  {
+    "slide_index": 4,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"36\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">FLIPCART PERFORMANCE SNAPSHOT</Text>\n      <Text fontSize=\"36\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\">FLIPCART is generating traffic, but at <Span color=\"$negativeText\">weak revenue efficiency</Span>.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Last 90 days · targeting performance</Text>\n    </VStack>\n    <VStack padding.left=\"8\" padding.right=\"8\" grow=\"3\"><HStack grow=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" backgroundColor=\"$surfaceAlt\" id=\"card-performance_table-0\"><VStack gap=\"4\" grow=\"1\" id=\"card-performance_tablex-1\"><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-performance_table-0\">Spend</Text></VStack><Text color=\"$textMain\" textAlign=\"right\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-performance_table-0\">₹29.4<Span fontSize=\"17\">L</Span></Text></HStack><HStack grow=\"1\" borderTop.color=\"$border\" borderTop.width=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" backgroundColor=\"$surfaceAlt\" id=\"card-performance_table-1\"><VStack gap=\"4\" grow=\"1\" id=\"card-performance_tablex-2\"><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-performance_table-1\">Ad sales</Text></VStack><Text color=\"$textMain\" textAlign=\"right\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-performance_table-1\">₹10.1<Span fontSize=\"17\">L</Span></Text></HStack><HStack grow=\"1\" borderTop.color=\"$border\" borderTop.width=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" backgroundColor=\"$surfaceAlt\" id=\"card-performance_table-2\"><VStack gap=\"4\" grow=\"1\" id=\"card-performance_tablex-3\"><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-performance_table-2\">ROAS</Text></VStack><Text color=\"$negativeText\" textAlign=\"right\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-performance_table-2\">0.34<Span fontSize=\"17\">x</Span></Text></HStack><HStack grow=\"1\" borderTop.color=\"$border\" borderTop.width=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" backgroundColor=\"$surfaceAlt\" id=\"card-performance_table-3\"><VStack gap=\"4\" grow=\"1\" id=\"card-performance_tablex-4\"><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-performance_table-3\">CPC</Text></VStack><Text color=\"$negativeText\" textAlign=\"right\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-performance_table-3\">₹31.1</Text></HStack><HStack grow=\"1\" borderTop.color=\"$border\" borderTop.width=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" backgroundColor=\"$surfaceAlt\" id=\"card-performance_table-4\"><VStack gap=\"4\" grow=\"1\" id=\"card-performance_tablex-5\"><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-performance_table-4\">CVR</Text></VStack><Text color=\"$textMain\" textAlign=\"right\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-performance_table-4\">5.5<Span fontSize=\"17\">%</Span></Text></HStack><HStack grow=\"1\" borderTop.color=\"$border\" borderTop.width=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" backgroundColor=\"$surfaceAlt\" id=\"card-performance_table-5\"><VStack gap=\"4\" grow=\"1\" id=\"card-performance_tablex-6\"><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-performance_table-5\">AOV</Text></VStack><Text color=\"$textMain\" textAlign=\"right\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-performance_table-5\">₹195</Text></HStack><HStack grow=\"1\" borderTop.color=\"$border\" borderTop.width=\"1\" gap=\"18\" alignItems=\"center\" padding.top=\"10\" padding.bottom=\"10\" backgroundColor=\"$surfaceAlt\" id=\"card-performance_table-6\"><VStack gap=\"4\" grow=\"1\" id=\"card-performance_tablex-7\"><Text color=\"$textMuted\" fontSize=\"16\" id=\"kpil-performance_table-6\">Allowable CPC for 1.0x ROAS</Text></VStack><Text color=\"$textMain\" textAlign=\"right\" fontSize=\"28\" bold=\"true\" id=\"kpiv0-performance_table-6\">₹10.7</Text></HStack></VStack>\n    <VStack padding=\"16\" gap=\"4\" backgroundColor=\"$surfaceAlt\" border.color=\"$accent\" border.width=\"1\" borderRadius=\"12\">\n      <Text fontSize=\"18\" color=\"$textMain\" lineHeight=\"1.4\">FLIPCART’s CPC is <Span color=\"$negativeText\">almost 3x higher</Span> than the CPC the current AOV and CVR can support.</Text>\n    </VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-cheffin-full-6a6006\\screenshots\\slide-4.png",
+    "slide_plan": {
+      "slide_index": 4,
+      "slide_title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+      "label": "FLIPCART PERFORMANCE SNAPSHOT",
+      "subtitle": "Last 90 days · targeting performance",
+      "slide_type": "data",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "FLIPCART targeting performance diagnosis",
+          "design_hint": "Color the phrase “weak revenue efficiency” in negative color.",
+          "weight": "minor",
+          "content_data": {
+            "title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+            "subtitle": "Last 90 days · targeting performance"
+          }
+        },
+        {
+          "component_id": "performance_table",
+          "kind": "kpi_row",
+          "count": 7,
+          "content_summary": "Seven performance metrics in the brief’s order",
+          "design_hint": "Lightly shade the Value column; use negative text for the below-breakeven ROAS and unsupported CPC, while keeping the allowable CPC benchmark neutral.",
+          "weight": "hero",
+          "content_data": {
+            "kpi_labels": [
+              "Spend",
+              "Ad sales",
+              "ROAS",
+              "CPC",
+              "CVR",
+              "AOV",
+              "Allowable CPC for 1.0x ROAS"
+            ],
+            "kpi_values": [
+              "₹29.4L",
+              "₹10.1L",
+              "0.34x",
+              "₹31.1",
+              "5.5%",
+              "₹195",
+              "₹10.7"
+            ],
+            "kpi_deltas": [
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "kpi_directions": [
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "per_row": 4
+          }
+        },
+        {
+          "component_id": "economics_diagnosis",
+          "kind": "narrative",
+          "count": 1,
+          "content_summary": "Traffic costs exceed what current basket and conversion economics support",
+          "design_hint": "Use an accent border on the card and negative color on “almost 3x higher”.",
+          "weight": "supporting",
+          "content_data": {
+            "text": "FLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+          }
+        }
+      ],
+      "layout_hint": "performance_table is the primary element beneath slide_title, preserving the Metric | Value format and the brief’s row order. economics_diagnosis sits below the table as a supporting interpretation.",
+      "content_data": {
+        "title": "FLIPCART is generating traffic, but at weak revenue efficiency.",
+        "subtitle": "Last 90 days · targeting performance",
+        "kpi_labels": [
+          "Spend",
+          "Ad sales",
+          "ROAS",
+          "CPC",
+          "CVR",
+          "AOV",
+          "Allowable CPC for 1.0x ROAS"
+        ],
+        "kpi_values": [
+          "₹29.4L",
+          "₹10.1L",
+          "0.34x",
+          "₹31.1",
+          "5.5%",
+          "₹195",
+          "₹10.7"
+        ],
+        "kpi_deltas": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "kpi_directions": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "per_row": 4,
+        "text": "FLIPCART’s CPC is almost 3x higher than the CPC the current AOV and CVR can support."
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "kpi_labels": "sample",
+        "kpi_values": "sample",
+        "kpi_deltas": "sample",
+        "kpi_directions": "sample",
+        "per_row": "sample",
+        "text": "sample"
+      },
+      "capacity_fixes": [
+        "performance_table: 2-column metric table of one entity -> kpi_row (7 tiles); the brief's table switched because the metrics read better as tiles"
+      ]
+    }
+  },
+  {
+    "slide_index": 5,
+    "xml": "<Slide>\n  <VStack w=\"1280\" h=\"720\" padding=\"32\" gap=\"18\" alignItems=\"stretch\" backgroundColor=\"$surface\">\n    <VStack gap=\"8\">\n      <Text fontSize=\"14\" color=\"$accentText\" bold=\"true\" letterSpacing=\"2\">FLIPCART TARGETING DIAGNOSIS</Text>\n      <Text fontSize=\"32\" color=\"$textMain\" bold=\"true\" lineHeight=\"1.15\"><Span color=\"$accent\">SBT and exact match</Span> are the strongest pockets; discovery layers are dragging ROAS down.</Text>\n      <Text fontSize=\"18\" color=\"$textMuted\">Relative strength supports selective scaling, not broad expansion.</Text>\n    </VStack>\n    <HStack gap=\"22\" alignItems=\"stretch\">\n      <VStack grow=\"2\" padding=\"16\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"12\" border.color=\"$border\" border.width=\"1\">\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Ad-type allocation and efficiency</Text>\n        <Table id=\"tbl-ad_type_table\" w=\"max\" cellBorder.width=\"0\"><Col /><Col /><Col /><Col /><Col /><Tr><Td backgroundColor=\"$surfaceAlt\" color=\"$textMuted\" bold=\"true\">Ad Type</Td><Td backgroundColor=\"$surfaceAlt\" color=\"$textMuted\" bold=\"true\">Spend Share</Td><Td backgroundColor=\"$surfaceAlt\" color=\"$textMuted\" bold=\"true\">Sales Share</Td><Td backgroundColor=\"$surfaceAlt\" color=\"$textMuted\" bold=\"true\">ROAS</Td><Td backgroundColor=\"$surfaceAlt\" color=\"$textMuted\" bold=\"true\">Interpretation</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\">SP</Td><Td color=\"$textMain\">75.6%</Td><Td color=\"$textMain\">75.3%</Td><Td color=\"$textMain\">0.34x</Td><Td color=\"$textMain\">Main volume driver, but inefficient overall</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\" backgroundColor=\"$surface\">SBV</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">12.8%</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">8.5%</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">0.23x</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">Weak video efficiency</Td></Tr><Tr><Td color=\"$accentText\" bold=\"true\" backgroundColor=\"$accentSoft\">SBT</Td><Td color=\"$accentText\" backgroundColor=\"$accentSoft\" bold=\"true\">9.3%</Td><Td color=\"$accentText\" backgroundColor=\"$accentSoft\" bold=\"true\">15.1%</Td><Td color=\"$accentText\" backgroundColor=\"$accentSoft\" bold=\"true\">0.56x</Td><Td color=\"$accentText\" backgroundColor=\"$accentSoft\" bold=\"true\">Best ad type; under-allocated</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\" backgroundColor=\"$surface\">SD</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">2.4%</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">1.1%</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">0.17x</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">Weak conversion quality</Td></Tr></Table>\n      </VStack>\n      <VStack grow=\"1\" padding=\"16\" gap=\"12\" backgroundColor=\"$surfaceAlt\" borderRadius=\"12\" border.color=\"$border\" border.width=\"1\">\n        <Text fontSize=\"20\" color=\"$textMain\" bold=\"true\">Match and targeting ROAS</Text>\n        <Table id=\"tbl-targeting_table\" w=\"max\" cellBorder.width=\"0\"><Col /><Col /><Tr><Td backgroundColor=\"$surfaceAlt\" color=\"$textMuted\" bold=\"true\">Match / targeting performance</Td><Td backgroundColor=\"$surfaceAlt\" color=\"$textMuted\" bold=\"true\">ROAS</Td></Tr><Tr><Td color=\"$accentText\" bold=\"true\" backgroundColor=\"$accentSoft\">Exact ROAS</Td><Td color=\"$accentText\" backgroundColor=\"$accentSoft\" bold=\"true\">0.44x</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\" backgroundColor=\"$surface\">Phrase ROAS</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">0.26x</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\">Auto ROAS</Td><Td color=\"$textMain\">0.30x</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\" backgroundColor=\"$surface\">Category ROAS</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">0.25x</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\">Broad ROAS</Td><Td color=\"$textMain\">0.22x</Td></Tr><Tr><Td color=\"$textMain\" bold=\"true\" backgroundColor=\"$surface\">Audience ROAS</Td><Td color=\"$textMain\" backgroundColor=\"$surface\">0.15x</Td></Tr></Table>\n      </VStack>\n    </HStack>\n    <VStack grow=\"1\" padding=\"16\" backgroundColor=\"$surfaceAlt\" borderRadius=\"12\" border.color=\"$border\" border.width=\"1\" alignItems=\"stretch\"><!-- list-post {\"id\": \"lst\\u002dallocation_actions\", \"marker\": \"$accent\", \"tight\": true} --><Ul id=\"lst-allocation_actions\" grow=\"1\" fontSize=\"16\" lineHeight=\"1.4\" color=\"$textMain\"><Li>Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control.</Li><Li>Spend reallocation from low-intent traffic to proven high-intent pockets.</Li></Ul></VStack>\n  </VStack>\n</Slide>\n",
+    "speaker_notes": "",
+    "screenshot_path": "C:\\Users\\deesharma\\Documents\\mcp_back_front\\presentation-pipeline\\presentation-pipeline\\output\\runs\\gate-deck-cheffin-full-6a6006\\screenshots\\slide-5.png",
+    "slide_plan": {
+      "slide_index": 5,
+      "slide_title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+      "label": "FLIPCART TARGETING DIAGNOSIS",
+      "subtitle": "Relative strength supports selective scaling, not broad expansion.",
+      "slide_type": "content",
+      "components": [
+        {
+          "component_id": "slide_title",
+          "kind": "title",
+          "count": 1,
+          "content_summary": "Targeting diagnosis and selective-scaling framing.",
+          "design_hint": "Use accent color on “SBT and exact match” to signal relative strength without implying profitability.",
+          "weight": "minor",
+          "content_data": {
+            "title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+            "subtitle": "Relative strength supports selective scaling, not broad expansion."
+          }
+        },
+        {
+          "component_id": "ad_type_table",
+          "kind": "table",
+          "count": 1,
+          "content_summary": "Ad-type allocation, revenue contribution, efficiency, and interpretation.",
+          "columns": 5,
+          "rows": 4,
+          "design_hint": "Shade the SBT row in accent to connect its spend share, sales share, and relative ROAS strength; color the weak-efficiency interpretation phrases in negative.",
+          "weight": "hero",
+          "content_data": {
+            "table_columns": [
+              "Ad Type",
+              "Spend Share",
+              "Sales Share",
+              "ROAS",
+              "Interpretation"
+            ],
+            "table_rows": [
+              [
+                "SP",
+                "75.6%",
+                "75.3%",
+                "0.34x",
+                "Main volume driver, but inefficient overall"
+              ],
+              [
+                "SBV",
+                "12.8%",
+                "8.5%",
+                "0.23x",
+                "Weak video efficiency"
+              ],
+              [
+                "SBT",
+                "9.3%",
+                "15.1%",
+                "0.56x",
+                "Best ad type; under-allocated"
+              ],
+              [
+                "SD",
+                "2.4%",
+                "1.1%",
+                "0.17x",
+                "Weak conversion quality"
+              ]
+            ]
+          }
+        },
+        {
+          "component_id": "targeting_table",
+          "kind": "table",
+          "count": 1,
+          "content_summary": "ROAS comparison across six match and targeting layers.",
+          "columns": 2,
+          "rows": 6,
+          "design_hint": "Shade the Exact ROAS row in accent as the relative strength; use negative color for the weaker discovery-layer values, retaining the supplied row order.",
+          "weight": "supporting",
+          "content_data": {
+            "table_columns": [
+              "Match / targeting performance",
+              "ROAS"
+            ],
+            "table_rows": [
+              [
+                "Exact ROAS",
+                "0.44x"
+              ],
+              [
+                "Phrase ROAS",
+                "0.26x"
+              ],
+              [
+                "Auto ROAS",
+                "0.30x"
+              ],
+              [
+                "Category ROAS",
+                "0.25x"
+              ],
+              [
+                "Broad ROAS",
+                "0.22x"
+              ],
+              [
+                "Audience ROAS",
+                "0.15x"
+              ]
+            ]
+          }
+        },
+        {
+          "component_id": "allocation_actions",
+          "kind": "bullet_list",
+          "count": 1,
+          "content_summary": "Selective protection, tighter targeting control, and spend reallocation.",
+          "items": 2,
+          "design_hint": "Use positive color on “protected and scaled carefully” and “proven high-intent pockets”; use negative color on “need tighter control” to distinguish fixes from weaknesses.",
+          "weight": "supporting",
+          "content_data": {
+            "bullets": [
+              "Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control.",
+              "Spend reallocation from low-intent traffic to proven high-intent pockets."
+            ]
+          }
+        }
+      ],
+      "layout_hint": "Below slide_title, ad_type_table is the primary comparison with targeting_table as a compact companion beside it. Place allocation_actions beneath both tables as the shared action readout.",
+      "content_data": {
+        "title": "SBT and exact match are the strongest pockets; discovery layers are dragging ROAS down.",
+        "subtitle": "Relative strength supports selective scaling, not broad expansion.",
+        "table_columns": [
+          "Match / targeting performance",
+          "ROAS"
+        ],
+        "table_rows": [
+          [
+            "Exact ROAS",
+            "0.44x"
+          ],
+          [
+            "Phrase ROAS",
+            "0.26x"
+          ],
+          [
+            "Auto ROAS",
+            "0.30x"
+          ],
+          [
+            "Category ROAS",
+            "0.25x"
+          ],
+          [
+            "Broad ROAS",
+            "0.22x"
+          ],
+          [
+            "Audience ROAS",
+            "0.15x"
+          ]
+        ],
+        "bullets": [
+          "Exact match and SBT should be protected and scaled carefully. Phrase, auto, category, broad, and audience layers need tighter control.",
+          "Spend reallocation from low-intent traffic to proven high-intent pockets."
+        ]
+      },
+      "data_provenance": {
+        "title": "sample",
+        "subtitle": "sample",
+        "table_columns": "sample",
+        "table_rows": "sample",
+        "bullets": "sample"
+      }
+    }
+  }
+]

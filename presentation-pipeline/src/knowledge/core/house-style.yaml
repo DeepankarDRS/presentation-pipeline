@@ -125,7 +125,7 @@ sizing: |
     plan does not have.
   height-weight and visual-intent are NOT POM attributes - never put them in XML.
   TEXT: keep the plan's wording. A long point wraps to 2-3 lines; split long lists
-  into two columns instead of cutting them. Never shrink the font below 14.
+  into two columns instead of cutting them.
 
 data_nodes: |
   Chart / Matrix / Flow / Tree / ProcessArrow: h="max" minH (Chart 180, Matrix 260,
@@ -168,7 +168,8 @@ recipes:
     borderLeft.color="$accent" borderLeft.width="5" and normal $textMain text
     instead. Heading is short (long headings wrap to 3 lines and overrun the
     panel); body the plan's sentence(s); optional a 2-3 row stat list. A panel
-    with heading + body + stats needs the height - give it grow. One per slide.
+    with heading + body + stats needs the height - give it grow. At most one per slide; on a LIGHT theme (a dark
+    panel) at most one per deck (DESIGN VARIETY).
   micro_pair: >
     a label-over-value stat with no card: <VStack gap="4"><Text 16
     "$textMuted">Label</Text><Text 32-48 bold "$textMain">Value</Text></VStack>.
@@ -177,7 +178,7 @@ recipes:
     justifyContent of a vertical card.
   accent_bar: '<Shape shapeType="rect" w="120" h="6" backgroundColor="$accent" /> under a title.'
   badge: >
-    <Shape shapeType="roundRect" w="100-160" h="26-30" fill.color="a pale tint"
+    <Shape shapeType="roundRect" w="100-160" h="26-30" fill.color="$accentSoft"
     color="$textMain" fontSize="14" bold="true" borderRadius="999">SHORT LABEL</Shape>
 
 # --- type ramp (fontSize) --------------------------------------------
@@ -189,12 +190,12 @@ type_ramp:
   subtitle: "18 $textMuted"
   card_title: "22-26 bold, $textMain"
   label: "16-20 bold $textMuted (tile label, column header 16)"
-  body: "18, $textMain or $textMuted, lineHeight 1.4. 16 only on a dense slide. NEVER below 14."
+  body: "18, $textMain or $textMuted, lineHeight 1.4. 16 only on a dense slide."
   stat_value: "44-56 bold, sized so the longest value fits the tile on ONE line (about 0.6 x fontSize per character)"
   table_cell: "20-22; header row 16 bold $textMuted"
   chart_label: "16-18 (values and axis labels)"
   single_stat: "72 bold, $textMain - only a kpi_row with one value (enlarged to fill after generation)"
-  caption: "14-16 $textMuted. NEVER below 14."
+  caption: "14-16 $textMuted."
 
 font_floor: >
   ABSOLUTE RULE: no fontSize on ANY element may be below 14. This applies to
@@ -205,7 +206,7 @@ font_floor: >
   never drop an item, a figure or a line of the plan.
   The layout_audit flags FONT_TOO_SMALL as a hard failure, not a suggestion.
 
-spacing_scale: "use 2, 4, 6, 8, 10, 12, 14, 16, 18, 22 - nothing in between."
+spacing_scale: "use 2, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 28, 32, 36, 48, 56 - nothing in between."
 
 color_discipline: >
   Every color is a $token. Body text $textMain / $textMuted only. $accentText
@@ -246,8 +247,7 @@ render_gotchas:
      to fit more content. This produces 8-12pt text that is illegible when
      projected. NEVER emit fontSize below 14 on any element. If content does
      not fit, re-lay it out (second row or column, wider card) and trim filler
-     words - never drop an item, a figure or a line of the plan.
-     All recipes now use 14pt minimum. Copy those sizes exactly."
+     words - never drop an item, a figure or a line of the plan."
   - "A KPI tile: NO h on the row or the tile. In a growing row use
      justifyContent=\"spaceBetween\" (label top, value, delta chip bottom); with
      a fixed h it clips the delta. Centred content in a tall tile leaves it empty
@@ -282,7 +282,7 @@ checklist:
   - "FONT FLOOR: EVERY fontSize on EVERY element is >= 14. Scan every Text,
      Ul, Shape, ProcessArrowStep, FlowNode, PyramidLevel, TreeItem, TimelineItem.
      If ANY is below 14, FIX IT before anything else. This is the #1 rule."
-  - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
+  - "Root VStack or HStack is w=1280 h=720 with padding 48-56, gap 24-36 (FRAME), alignItems=\"stretch\"."
   - "2-4 top-level bands, none with w=\"max\" (width stretches); nesting within bands matches content grouping."
   - "No pixel h on a band or card; grow by weight on the band that holds the slide's
      main content (at least one, unless the only content is a table). Data nodes
