@@ -90,6 +90,20 @@ def test_rows_values_verbatim_with_value_ids_and_peer_ids():
     assert re.search(r'id="kpiv-roas-0"[^>]*color="\$accentText"', x)   # the emphasis row
 
 
+def test_one_series_line_is_one_colour_never_a_colour_per_point():
+    """A line takes one colour per series: a per-point list drew the whole line in its first entry, $neutral."""
+    for kind in C.SERIES_COLOUR_KINDS:
+        comp = {"component_id": "rev", "kind": "chart", "content_data": {
+            "chart_type": kind, "chart_labels": ["Q1 FY26", "Q2 FY26", "Q3 FY26", "Q4 FY26"],
+            "chart_values": [2.6, 2.9, 3.3, 3.6]}}
+        res = run('<Chart ref="rev" />', comp, title="Revenue rose every quarter")
+        assert colors(res["xml"]) == ["$accent"] * 4 and res["components"]["rev"]["focus"] is None, kind
+    bars = {"component_id": "rev", "kind": "chart", "content_data": {
+        "chart_type": "bar", "chart_labels": ["Q1 FY26", "Q2 FY26", "Q3 FY26", "Q4 FY26"],
+        "chart_values": [2.6, 2.9, 3.3, 3.6]}}
+    assert colors(run('<Chart ref="rev" />', bars, title="Revenue rose every quarter")["xml"])[-1] == "$accent"
+
+
 def test_no_focus_draws_every_bar_in_the_emphasis_colour():
     comp = dict(ROAS, design_hint="")
     x = run('<Chart ref="roas" />', comp, title="Return by class")["xml"]

@@ -63,6 +63,9 @@ def _series(comp: dict) -> list[dict]:
     return cd.get("chart_series") or [{"name": cd.get("chart_title") or "Series 1", "values": cd.get("chart_values") or []}]
 
 
+SERIES_COLOUR_KINDS = ("line", "area", "radar")   # coloured per series, never per point
+
+
 def kind_of(comp: dict) -> str:
     k = str(_cd(comp).get("chart_type") or comp.get("chart_type") or "bar").lower()
     return {"donut": "doughnut"}.get(k, k)
@@ -168,6 +171,10 @@ def draw(comp: dict, attrs: dict[str, str], headline: str, flag, theme: dict | N
     meta = {**extra, **meta}
     focus = focus_index(comp, headline)
     if name != "native" and len(_series(comp)) > 1:
+        focus = None
+    # a line / area / radar takes ONE colour per series: of a colour per point POM draws the first, so a focus on the
+    # latest period drew the whole line $neutral (look3: QBR revenue trend, BREWLY quarterly revenue)
+    if name != "rows" and len(_series(comp)) <= 1 and kind_of(comp) in SERIES_COLOUR_KINDS:
         focus = None
     box, rest, hi = compose.layers(node(), name, box, parts, focus is not None)
     if not ({"h", "grow"} & set(box)):   # minH is a floor, not a size (replay 2026-10-28: a minH-only card stayed short)
