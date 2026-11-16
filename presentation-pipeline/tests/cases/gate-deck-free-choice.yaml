@@ -1,0 +1,72 @@
+# Component selection with NO visual guidance (2026-11-16). The brief gives content only: no "Visual:", no
+# "Show", no layout or component words (table, chart, timeline, cards, tiles, matrix, steps, icons, colours). The
+# planner has to pick every component from the shape of the content alone, the way a user who does not know our
+# node kinds would write. Paste the same `request` into Gamma, Genspark and other tools to compare selections.
+#
+# Each slide's content has a different shape, so the deck tests the routing as a whole. The shapes below are what
+# the content IS, not the one right answer: more than one component kind can fit, and the comparison is about
+# whether the choice shows the relationship the content states.
+#   slide 1  cover: a title line, a subtitle, a byline
+#   slide 2  one subject's measures (six figures of one year) + one interpretation
+#   slide 3  one measure at 8 ordered points (quarters) + shares of one whole (3 channels) + one note
+#   slide 4  several subjects x several measures (4 regions x 3 measures) + one subject singled out, with its reason
+#   slide 5  a process with a decision (in stock or not -> two paths -> one outcome) + one figure
+#   slide 6  dated plan (4 quarters, 2 actions each) + three named priorities + one ask with a figure
+# Run (full pipeline, same graph as the UI; planner kinds are reported per slide):
+#   python -m scripts.eval_run gate-deck-free-choice --repeat 1 --label free-choice --bundle
+name: gate-deck-free-choice
+objective: 6-slide retail strategy deck with content only and no visual guidance; tests which components the planner chooses from the shape of the content.
+request: |
+  Create a 6-slide presentation for the leadership team of TRAILHEAD OUTFITTERS, an outdoor gear retailer with
+  stores, an online shop and a small wholesale business. Keep it concise and executive-friendly, and make every
+  headline state the conclusion. Use only the numbers below.
+
+  SLIDE 1
+  Trailhead Outfitters: FY26 Review and FY27 Plan
+  Strong year online, a lagging West, and where we invest next
+  Prepared by the Strategy Office | November 2026
+
+  SLIDE 2
+  FY26 was our best year yet. Revenue reached $184M, up 14% from $161M in FY25. Gross margin was 41.5%, same-store
+  sales grew 6%, online made up 29% of sales, and we now have 1.2M active loyalty members. Most of the growth came
+  from online orders and loyalty members buying more often; store traffic was flat.
+
+  SLIDE 3
+  Quarterly revenue ($M) over the last two years:
+  Q1 FY25 37, Q2 FY25 41, Q3 FY25 46, Q4 FY25 37, Q1 FY26 41, Q2 FY26 46, Q3 FY26 52, Q4 FY26 45.
+  FY26 sales by channel: stores 63%, online 29%, wholesale 8%.
+  Q3 is our peak every year because of the summer camping season, and the gap between Q3 and the other quarters
+  grew in FY26.
+
+  SLIDE 4
+  How the four regions did in FY26:
+  North: revenue $58M, growth 19%, margin 43%
+  South: revenue $46M, growth 16%, margin 42%
+  East: revenue $44M, growth 11%, margin 40%
+  West: revenue $36M, growth 7%, margin 39%
+  The West is behind on every measure. It has the oldest stores: 9 of its 22 stores have not been refitted in over
+  ten years.
+
+  SLIDE 5
+  How an online order is fulfilled today. When a customer orders online, we check whether the nearest store has the
+  item. If it does, the store picks and packs the order and the customer collects it within 2 hours. If it does not,
+  the regional warehouse ships the order to the customer within 2 days. Either way, the customer gets a text message
+  when the order is ready, and returns can go back to any store. 38% of online orders are now fulfilled by stores.
+
+  SLIDE 6
+  Our three priorities for FY27 are growing online, fixing the West, and deepening loyalty.
+  Q1 FY27: refit the first 3 West stores; launch same-day delivery in two cities
+  Q2 FY27: add a paid loyalty tier; refit 3 more West stores
+  Q3 FY27: extend same-day delivery to all North and South cities; peak-season staffing plan
+  Q4 FY27: refit the last 3 West stores; review the loyalty tier results
+  We ask the board to approve $12M of capital for the store refits and the delivery rollout.
+content_source: content only, no visual or layout guidance; every number is in the brief
+expect:
+  compiles: true
+  slide_count: 6
+  watch: >
+    no component the brief does not support (no invented numbers, no made-up positions or cells);
+    each slide's components show the relationship its content states: slide 2 one year's measures,
+    slide 3 a trend over 8 quarters and a channel mix of one whole, slide 4 four regions compared on three
+    measures with the West singled out, slide 5 a fulfilment process with its branch (in stock or not),
+    slide 6 the quarterly plan in order, the three priorities and the $12M ask.
