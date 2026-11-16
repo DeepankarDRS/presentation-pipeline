@@ -101,6 +101,14 @@ def per_row(n: int, most: int) -> int:
 
 
 def _to_cards(comp: dict[str, Any], cards: list[dict[str, str]]) -> None:
+    """The component becomes a card_grid of `cards`. Its summary and hint were written for the old kind
+    (chevrons, a rail, bands): left as they were, they steer the generator back to that kind (a switched
+    table drawn as ruled rows, 2026-11-16), so both now say the component is cards."""
+    was = comp.get("kind") or "diagram"
+    comp["content_summary"] = (f"{len(cards)} items as cards, in their order (code changed this {was} to cards: "
+                               f"its items could not be drawn as a {was})")
+    if comp.get("design_hint"):
+        comp["design_hint"] = f"Drawn as cards, not as a {was}; apply this to the cards: {comp['design_hint']}"
     comp["kind"] = "card_grid"
     comp["items"] = len(cards)
     comp.pop("orientation", None)
@@ -108,11 +116,11 @@ def _to_cards(comp: dict[str, Any], cards: list[dict[str, str]]) -> None:
                             "cards": cards}
 
 
-# ── a named visual that doesn't suit the data is switched (user decision L5) ─
-# One entity's metrics asked as "Show table: Metric | Value" read better as KPI
-# tiles. The switch is recorded in the plan (capacity_fixes) so the user can see why.
-# The icon list -> cards switch was removed 2026-10-04: it put a second card grid
-# beside the main one (narrow cards, broken words; XTSY slides 2, 3 and 6).
+# ── units of a figure (plan_ledger's shape check) ───────────────────────────
+# Code never switches a kind the brief asked for (2026-11-16, user): the table -> kpi_row switch of
+# decision L5 was removed. A Metric | Value table the brief asks for stays a table; with no direction the
+# planner's routing table already chooses tiles. Switches left in code are renderer limits only (items or
+# words that cannot be drawn), never a judgement of taste.
 
 _UNITS = (("₹", re.compile(r"₹|\brs\.?\s*\d|\$|€|£", re.I)), ("%", re.compile(r"%")),
           ("x", re.compile(r"\d\s*x\b", re.I)))
@@ -120,28 +128,6 @@ _UNITS = (("₹", re.compile(r"₹|\brs\.?\s*\d|\$|€|£", re.I)), ("%", re.com
 
 def _unit(value: str) -> str:
     return next((u for u, pat in _UNITS if pat.search(value)), "n")
-
-
-def _metric_table_to_kpis(comp: dict[str, Any]) -> list[dict[str, Any]] | None:
-    """A 2-column label | number table whose values mix units (₹, %, x: one entity's
-    metrics, not one measure across entities) -> one kpi_row, in the table's order, keeping
-    the table's weight. None if not such a table."""
-    data = comp.get("content_data") or {}
-    cols, rows = data.get("table_columns") or [], data.get("table_rows") or []
-    if len(cols) != 2 or len(rows) < 3 or any(not isinstance(r, list) or len(r) != 2 for r in rows):
-        return None
-    labels, values = [str(r[0]) for r in rows], [str(r[1]) for r in rows]
-    # figures only: a sentence that holds a number is not a tile value
-    if not all(re.search(r"\d", v) and len(v.split()) <= 3 for v in values) or len({_unit(v) for v in values}) < 2:
-        return None
-    n, most = len(rows), max_of("kpi_row", "per_row")
-    kpis = {k: v for k, v in comp.items() if k not in ("content_data", "columns", "rows", "chart_type")}
-    kpis["kind"], kpis["count"] = "kpi_row", n
-    kpis["content_data"] = {"kpi_labels": labels, "kpi_values": values,
-                            "kpi_deltas": [""] * n, "kpi_directions": [""] * n}
-    if n > most:
-        kpis["content_data"]["per_row"] = per_row(n, most)
-    return kpis
 
 
 def _placeholder_matrix(cd: dict[str, Any]) -> bool:
@@ -186,13 +172,6 @@ def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
             most = max_of("flow", direction=direction)
             if len(steps) > most:
                 notes.append(f"{cid}: flow with {len(steps)} nodes is over its {direction} capacity ({most}); kept as a flow")
-        elif kind == "table":
-            kpis = _metric_table_to_kpis(comp)
-            if kpis:
-                out.append(kpis)
-                notes.append(f"{cid}: 2-column metric table of one entity -> kpi_row ({kpis['count']} tiles); "
-                             "the brief's table switched because the metrics read better as tiles")
-                continue
         # every grid knows its cards per row; a steps row past its capacity becomes a grid
         if comp.get("kind") == "card_grid":
             cd = comp.setdefault("content_data", {})

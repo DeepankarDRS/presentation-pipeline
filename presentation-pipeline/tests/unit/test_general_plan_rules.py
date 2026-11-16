@@ -98,27 +98,41 @@ def test_one_figure_in_a_callout_is_not_a_repeated_data_set():
 
 # ── shape ───────────────────────────────────────────────────────────────────
 
-def test_shape_check_cites_the_routing_table_the_prompt_shows():
-    two = _plan(_comp("t", "table", {"table_columns": ["Group", "Score"], "table_rows": [["A", "0.34x"], ["B", "0.32x"]]}))
-    problems = shape_problems(two)
-    assert _codes(problems) == [SHAPE_MISFIT]
-    row = next(r for r in routing_rows() if r["id"] == "two_subjects")
-    assert row["states"] in problems[0]["detail"] and row["kind"] in problems[0]["detail"]
-
-
-def test_shapes_that_fit_their_kind_pass():
-    ok = _plan(_comp("t", "table", {"table_columns": ["Region", "Margin"], "table_rows": [["A", "31%"], ["B", "24%"],
-                                                                                         ["C", "22%"]]}),
-               _comp("c", "chart", {"chart_labels": ["A", "B"], "chart_series": [{"name": "x", "values": [1, 2]},
-                                                                                 {"name": "y", "values": [3, 4]}]}),
-               _comp("s", "table", {"table_columns": ["Group", "Note"], "table_rows": [["A", "Cost is 2.9x the limit"]]}))
-    assert shape_problems(ok) == []
-
-
-def test_a_chart_mixing_units_on_one_axis_is_a_misfit():
+def test_a_shape_error_cites_the_routing_table_the_prompt_shows():
     plan = _plan(_comp("c", "chart", {"chart_labels": ["A", "B", "C"], "chart_series": [
         {"name": "Spend", "values": ["₹21L", "₹45L", "₹9L"]}, {"name": "Return", "values": ["0.4x", "0.3x", "0.5x"]}]}))
+    problems = shape_problems(plan)
+    assert _codes(problems) == [SHAPE_MISFIT] and "units on one axis" in problems[0]["detail"]
+    row = next(r for r in routing_rows() if r["id"] == "many_subjects")
+    assert row["states"] in problems[0]["detail"]
+
+
+def test_a_placeholder_matrix_is_a_misfit():
+    plan = _plan(_comp("m", "card_grid", {"card_layout": "matrix", "rows": ["Reach", "Retention"],
+                                          "columns": ["North", "South"],
+                                          "cards": [{"title": "Reach North"}, {"title": "Reach South"},
+                                                    {"title": "Retention North"}, {"title": "Retention South"}]}))
     assert _codes(shape_problems(plan)) == [SHAPE_MISFIT]
+
+
+def test_which_kind_reads_better_is_never_re_asked():
+    """Preferences are the planner's choice (2026-11-16, user): a brief may ask for a table of one subject's numbers,
+    a two-point chart or a table with long cells, in words that need not name our kinds. Code re-asks none of them."""
+    preferences = _plan(
+        _comp("a", "table", {"table_columns": ["Metric", "Value"],
+                             "table_rows": [["Cost", "$4.2M"], ["Return", "0.4x"], ["Rate", "6%"]]}),
+        _comp("b", "table", {"table_columns": ["Group", "Score"], "table_rows": [["A", "0.34x"], ["B", "0.32x"]]}),
+        _comp("c", "chart", {"chart_labels": ["A", "B"], "chart_values": [3, 4]}),
+        _comp("d", "table", {"table_columns": ["Group", "Note"], "table_rows": [
+            ["A", "Cost is well above what the current order value and conversion rate can carry today"]]}))
+    assert shape_problems(preferences) == []
+
+
+def test_the_prompt_says_code_enforces_only_errors():
+    from src.agents.slide_component_planner import _jinja_env
+    text = _jinja_env.get_template("system.j2").render(hint_capabilities="", content_field="content")
+    assert "The table is guidance for your choice, not a rule code enforces" in text
+    assert "never a two-column" not in text
 
 
 def test_the_prompt_renders_every_routing_row():

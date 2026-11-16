@@ -5,9 +5,8 @@
    shown when every figure it gives appears exactly and most of its other words do; it is repeated when two content
    components each hold it as a text unit of its own (a title, bullet, cell, step). Matching is by content words, so
    it holds for any domain and any component kind. ITEM_MISSING, ITEM_REPEATED.
-2. **Shape check** - a component's content has the shape the routing table (knowledge/core/routing.yaml, the same
-   table the planner's prompt renders) sends to another kind. Only shapes code can measure: figures or words in
-   cells, point and series counts, units. SHAPE_MISFIT.
+2. **Shape check** - a kind that would show its content wrongly: values in different units on one chart axis, a card
+   matrix of placeholder cells. Errors only; which kind reads better is the planner's choice (2026-11-16). SHAPE_MISFIT.
 
 They replace one-shape patches (a list-vs-card-bullets duplicate threshold, a two-row-table switch, a matrix column
 note), each of which caught one output shape. Nothing is changed here: the re-ask (plan_with_reask) gets the
@@ -202,29 +201,19 @@ def _misfit(cid: str, kind: str, fact: str, row: str, part: str = "kind") -> dic
 
 
 def shape_problems(plan: dict[str, Any]) -> list[dict[str, str]]:
-    """SHAPE_MISFIT where a component's measured content shape is routed to another kind (routing.yaml)."""
-    from src.agents.capacity import _placeholder_matrix, _unit, capacity
+    """SHAPE_MISFIT where a kind would show its content wrongly - an error, not a preference (2026-11-16, user).
+
+    Only two shapes are errors: values in different units on one chart axis (the axis reads them as one scale) and a
+    card matrix whose cells only repeat their row or column names (the cells are not the brief's content). Which kind
+    *reads better* (tiles or a table for one subject's numbers, a chart or tiles for two points, a table with long
+    cells) is the planner's choice from the routing table and is never re-asked: a brief may ask for any of them,
+    in words that need not name our kinds."""
+    from src.agents.capacity import _placeholder_matrix, _unit
     problems: list[dict[str, str]] = []
     for comp in plan.get("components") or []:
         kind, cid, data = comp.get("kind"), comp.get("component_id", ""), comp.get("content_data") or {}
-        if kind == "table":
-            cols = data.get("table_columns") or []
-            rows = [r for r in data.get("table_rows") or [] if isinstance(r, list)]
-            cells = [str(x) for r in rows for x in r[1:]]
-            if len(cols) == 2 and rows and all(_figure(c) for c in cells):
-                if len(rows) <= 2:
-                    problems.append(_misfit(cid, kind, f"{len(rows)} row(s) of one figure each", "two_subjects"))
-                elif len({_unit(c) for c in cells}) >= 2:
-                    problems.append(_misfit(cid, kind, "one column of figures in different units (one subject's "
-                                                       "measures)", "subject_measures"))
-            elif cells and sum(len(c.split()) for c in cells) / len(cells) > 12:
-                problems.append(_misfit(cid, kind, "its cells are sentences", "subjects_by_measures", "not_for"))
-        elif kind == "chart":
-            labels = data.get("chart_labels") or []
+        if kind == "chart":
             series = [s for s in data.get("chart_series") or [] if isinstance(s, dict)]
-            if 0 < len(labels) < capacity()["chart"]["min_points"] and len(series) <= 1:   # one measure, few points
-                problems.append(_misfit(cid, kind, f"{len(labels)} point(s) of one measure", "ordered_points",
-                                        "not_for"))
             values = _strings(data.get("chart_values") or []) + _strings([s.get("values") for s in series])
             units = {_unit(v) for v in values if _FIGURE.search(v) and not re.fullmatch(r"-?\d+(\.\d+)?", v)}
             if len(units) >= 2:

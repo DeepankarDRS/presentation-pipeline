@@ -159,20 +159,29 @@ def test_a_flow_is_measured_against_its_own_direction():
     assert nine[0]["kind"] == "flow" and "over its vertical capacity (8)" in notes[0]
 
 
-def test_metric_value_table_of_one_entity_becomes_one_kpi_row():
-    """CHEFFIN slide 5: the brief's 'Show table: Metric | Value' (user decision L5: switch, record why).
-    One kpi_row in the table's order and weight, no hero / detail tiers (user, 2026-10-06)."""
-    rows = [["Spend", "₹29.4L"], ["Ad sales", "₹10.1L"], ["ROAS", "0.34x"], ["CPC", "₹31.1"],
-            ["CVR", "5.5%"], ["AOV", "₹195"], ["Allowable CPC for 1.0x ROAS", "₹10.7"]]
-    comps = [{"component_id": "flip", "kind": "table", "weight": "hero", "design_hint": "shade the CPC row",
-              "content_data": {"table_columns": ["Metric", "Value"], "table_rows": rows}},
-             {"kind": "narrative", "content_data": {"text": "x"}}]
-    notes = enforce_capacity(comps)
-    assert [c["kind"] for c in comps] == ["kpi_row", "narrative"]
-    kpis = comps[0]
-    assert kpis["content_data"]["kpi_labels"] == [r[0] for r in rows] and kpis["weight"] == "hero"
-    assert kpis["count"] == 7 and kpis["content_data"]["per_row"] == 4
-    assert "7 tiles" in notes[0] and "switched" in notes[0]
+def test_a_metric_value_table_stays_a_table():
+    """Code never switches a kind the brief asked for (2026-11-16, user; decision L5's table -> kpi_row switch
+    removed). A label | value table of one subject in mixed units is left as the planner wrote it: with a
+    named table it is the user's choice, without one the planner's re-ask (SHAPE_MISFIT) handles it."""
+    rows = [["Cost", "$4.2M"], ["Return", "0.4x"], ["Rate", "6%"], ["Orders", "1,200"]]
+    comps = [{"component_id": "m", "kind": "table", "weight": "hero", "design_hint": "shade the Return row",
+              "content_data": {"table_columns": ["Metric", "Value"], "table_rows": rows}}]
+    assert enforce_capacity(comps) == []
+    assert comps[0]["kind"] == "table" and comps[0]["content_data"]["table_rows"] == rows
+
+
+def test_a_kind_switched_to_cards_says_so_in_its_summary_and_hint():
+    """A switch for a renderer limit keeps the items but not the old kind's words: a hint about chevrons or
+    rows left as it was steers the generator back to drawing that kind."""
+    steps = [f"Step {i}" for i in range(12)]
+    comps = [{"component_id": "p", "kind": "process_arrow", "content_summary": "twelve chevrons",
+              "design_hint": "chevrons light to dark",
+              "content_data": {"direction": "horizontal", "process_steps": steps}}]
+    enforce_capacity(comps)
+    comp = comps[0]
+    assert comp["kind"] == "card_grid"
+    assert "chevrons" not in comp["content_summary"] and "process_arrow to cards" in comp["content_summary"]
+    assert comp["design_hint"].startswith("Drawn as cards, not as a process_arrow") and "light to dark" in comp["design_hint"]
 
 
 def test_one_measure_across_entities_stays_a_table():

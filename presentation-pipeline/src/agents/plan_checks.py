@@ -559,6 +559,9 @@ def cards_to_list(plan: dict[str, Any]) -> list[str]:
         comp["content_data"] = {"bullets": bullets}
         comp["items"] = comp["count"] = len(bullets)
         comp["design_hint"] = "bold each item's lead-in"
+        # the card summary would steer the generator back to drawing cards (same reason as capacity._to_cards)
+        comp["content_summary"] = (f"{len(bullets)} items as a list (code changed this card_grid to a list: "
+                                   f"the slide is too full for {len(cards)} cards)")
         cid = comp.get("component_id", "")
         notes.append(f"{cid}: card_grid of {len(cards)} short cards on a full slide ({rest} words in the other "
                      f"components) -> bullet_list of {len(bullets)} items")

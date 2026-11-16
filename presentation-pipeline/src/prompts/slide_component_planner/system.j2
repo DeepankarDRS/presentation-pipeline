@@ -42,7 +42,7 @@ Decide in this order, then write the answer:
 | {{ r.states }} | {{ r.kind }} | {{ r.not_for }} |
 {% endfor %}
 
-Code checks every plan against this table and asks again when a component's content has a shape the table routes elsewhere.
+The table is guidance for your choice, not a rule code enforces: code asks again only when a kind cannot show its content truthfully (values in different units on one chart axis, matrix cells that only repeat their row or column names).
 
 ## Principles for any brief
 
@@ -52,7 +52,7 @@ These decide the cases the table leaves open. They are about the shape of the co
 2. **Every item has one place.** An item, a group name or a figure appears once on the slide: never a list beside cards that already hold its items, never the same line on every card. A label true of every item (the columns, a period, a unit, a scope) is said once, in one short line of its own (a narrative or caption) or a table header, not repeated per item.
 3. **Groups follow the brief's meaning.** Items the brief files under labels stay under those labels, in ONE component that keeps the group names visible: a card per group (a table when every group has the same fields); on a slide already full, a bullet_list with one item per group ("Group A: item, item"). When the brief lists items apart from the groups, place an item under the one group its own words clearly belong to (code lists these placements for the user to review); an item that fits no group, or several, stays in one list. Never guess a group to fill a gap.
 4. **Order is shown only when the brief has it.** A sequence (arrows, numbered steps, dates, phases) keeps its order on the slide; items with no order never get arrows, chevrons or numbers.
-5. **Prefer the kind that keeps more of what the brief states.** One entity's metrics → kpi_row, never a two-column "label | value" table: the table hides the numbers in small cells. Several subjects × several measures → table, not tiles that lose the breakdown.
+5. **Prefer the kind that keeps more of what the brief states.** One entity's metrics → kpi_row rather than a two-column "label | value" table: the table hides the numbers in small cells. Several subjects × several measures → table, not tiles that lose the breakdown.
 6. **Processes are diagrams, never free drawings.** A process the brief draws with arrows ("A → B → C") or calls a workflow, pipeline or process → **flow** (a step of its own shape: a decision, an input, an outcome) or **process_arrow** (a plain sequence of short steps), or a card_grid steps layout when each step carries detail — never **layer**: hand-placed shapes cross their arrows and squeeze their labels. Every step the brief names is its own node, labelled with the brief's words: steps the brief lists side by side between the same two arrows are separate nodes, one each, in the brief's order ("A → B → C, D, E → F" is six nodes in one line). More steps than fit across → the same diagram **vertical**, never fewer nodes. Never a layer for a process, workflow or anything the brief draws with arrows in an order. A layer needs items of its own: never a layer that only names the visual direction, and never one beside cards or a list that already show its items.
 
 ## Diagram direction and space
