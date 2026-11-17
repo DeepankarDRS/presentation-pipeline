@@ -367,7 +367,9 @@ MIN_CONTRAST = 4.5
 REPORT_ONLY_CODES = {"LOW_CONTRAST", "LITERAL_COLOR", "COLOR_BALANCE",
                      # what is drawn vs its box (src/compiler/geometry_audit.py, 2026-10-07)
                      "GEOM_SPILL", "GEOM_COLLISION", "GEOM_OFF_SLIDE", "GEOM_TEXT_OVERFLOW",
-                     "GEOM_CARD_EMPTY", "GEOM_BOX_EMPTY", "GEOM_SLIDE_SPARSE", "PLACEHOLDER_TEXT"}
+                     "GEOM_CARD_EMPTY", "GEOM_BOX_EMPTY", "GEOM_SLIDE_SPARSE", "PLACEHOLDER_TEXT",
+                     # a <Line> end in a <Layer> that touches no box, tip or other line (2026-11-17)
+                     "LINE_END_LOOSE"}
 MIN_CONTRAST_LARGE = 3.0
 INVISIBLE_CONTRAST = 1.5  # below this the text cannot be read at all (tier error, 2026-10-07)
 _TEXT_TAGS = {"Text", "Li", "Td", "Shape"}
@@ -524,6 +526,59 @@ def _check_color_balance(root: ET.Element, issues: list[dict[str, str]]) -> None
         issues.append({"severity": "low", "code": "COLOR_BALANCE", "message": "; ".join(notes) + "."})
 
 
+LINE_END_TOL = 4.0  # px a connector end may sit from the edge / tip / joint it belongs to
+
+
+def _num(el: ET.Element, name: str) -> float | None:
+    try:
+        return float(el.get(name, ""))
+    except ValueError:
+        return None
+
+
+def _check_line_ends(root: ET.Element, issues: list[dict[str, str]]) -> None:
+    """LINE_END_LOOSE: inside one <Layer>, each end of a <Line> must sit on a box's edge (a diamond: on one of its
+    four tips) or on another Line's end (the corner of an elbow). A connector placed by hand that stops short,
+    overshoots into a box or points at empty space draws a flowchart that reads wrong (layer-decision, 2026-11-17).
+    Boxes are the Layer's own children with x / y / w / h; a Text without an id (a case label) is not a box."""
+    for layer in root.iter("Layer"):
+        boxes, lines = [], []
+        for ch in layer:
+            if ch.tag == "Line":
+                pts = [_num(ch, a) for a in ("x1", "y1", "x2", "y2")]
+                if None not in pts:
+                    lines.append(pts)
+                continue
+            if ch.tag == "Text" and not ch.get("id"):
+                continue
+            x, y, w, h = (_num(ch, a) for a in ("x", "y", "w", "h"))
+            if None not in (x, y, w, h):
+                boxes.append((ch.get("shapeType", ""), x, y, w, h))
+        ends = [(ln[0], ln[1]) for ln in lines] + [(ln[2], ln[3]) for ln in lines]
+
+        def on_box(px: float, py: float) -> bool:
+            for kind, x, y, w, h in boxes:
+                if kind == "diamond":
+                    tips = ((x + w / 2, y), (x + w / 2, y + h), (x, y + h / 2), (x + w, y + h / 2))
+                    if any(abs(px - tx) <= LINE_END_TOL and abs(py - ty) <= LINE_END_TOL for tx, ty in tips):
+                        return True
+                    continue
+                inside = x - LINE_END_TOL <= px <= x + w + LINE_END_TOL and y - LINE_END_TOL <= py <= y + h + LINE_END_TOL
+                near_edge = min(abs(px - x), abs(px - x - w), abs(py - y), abs(py - y - h)) <= LINE_END_TOL
+                if inside and near_edge:
+                    return True
+            return False
+
+        for i, (px, py) in enumerate(ends):
+            joint = sum(1 for j, (qx, qy) in enumerate(ends)
+                        if j != i and abs(px - qx) <= LINE_END_TOL and abs(py - qy) <= LINE_END_TOL)
+            if joint or on_box(px, py):
+                continue
+            issues.append({"severity": "medium", "code": "LINE_END_LOOSE",
+                           "message": f"a <Line> end at ({px:.0f},{py:.0f}) in a <Layer> touches no box edge, "
+                                      f"diamond tip or other line"})
+
+
 def audit_layout(xml: str) -> list[dict[str, str]]:
     """Parse POM XML and check spatial/layout constraints.
 
@@ -551,5 +606,6 @@ def audit_layout(xml: str) -> list[dict[str, str]]:
     _check_contrast(root, issues)
     _check_literal_colors(root, issues)
     _check_color_balance(root, issues)
+    _check_line_ends(root, issues)
 
     return issues

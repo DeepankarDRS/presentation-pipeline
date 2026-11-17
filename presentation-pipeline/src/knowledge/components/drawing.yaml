@@ -66,7 +66,8 @@ notes:
   - "Svg rasterises to PNG at render — it will not be a vector shape in the final PPTX."
   - "Give every Arrow-connectable node a unique id within the slide."
   - "To connect an Arrow to a diamond (or any shape it cannot attach to), draw the shape with no id and put <Text id x y w h> </Text> (a single space: POM rejects a Text with no text) with the same x, y, w, h right after it: the Arrow attaches to the Text's edge midpoints, which are the diamond's four tips (render-checked on POM 10.3.0, 2026-11-17)."
-  - "Arrow is one straight connector between the nearest edge midpoints; there is no elbow connector."
+  - "Arrow is one straight connector between the nearest edge midpoints; there is no elbow connector. Two targets side by side below one source get crossing Arrows (layer-decision run, 2026-11-17): in a flowchart, connect with Lines placed side to side, straight or with one 90-degree elbow (two Lines)."
+  - "fit-grow scales a Layer with its children's x / y / w / h and its Lines' x1 / y1 / x2 / y2 together, so Lines stay on their boxes."
   - "Layer can be nested and participates in Flexbox layout when placed inside VStack/HStack."
 
 pitfalls:

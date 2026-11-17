@@ -327,6 +327,43 @@ def _expand_border_shorthand(xml: str) -> tuple[str, int]:
     return _ELEMENT_TAG_RE.sub(_fix, xml), count
 
 
+_SHAPE_TAG_RE = re.compile(r"<Shape\b[^<>]*>")
+_SHAPE_TYPE_RE = re.compile(r'\bshapeType\s*=\s*"([^"]*)"')
+# box attribute -> the shape's own; the box ones draw a rectangle behind the shape (render-checked, POM 10.3.0)
+_BOX_TO_SHAPE = (("backgroundColor", "fill.color"), ("border.color", "line.color"),
+                 ("border.width", "line.width"), ("border.dashType", "line.dashType"))
+
+
+def _box_attrs_to_shape(xml: str) -> tuple[str, int]:
+    """On a <Shape> other than a plain rect, backgroundColor / border.* / borderRadius style the node's rectangular
+    box, drawn behind the shape: a diamond or an ellipse then reads as a square (layer-decision run, 2026-11-17).
+    Move them to the shape's own fill.* / line.* (an attribute the shape already has wins) and drop borderRadius."""
+    count = 0
+
+    def _fix(m: re.Match) -> str:
+        nonlocal count
+        tag = m.group(0)
+        kind = _SHAPE_TYPE_RE.search(tag)
+        if not kind or kind.group(1) == "rect":
+            return tag
+        new = tag
+        for box, own in _BOX_TO_SHAPE:
+            box_re = re.compile(r'\s' + re.escape(box) + r'\s*=\s*"([^"]*)"')
+            hit = box_re.search(new)
+            if not hit:
+                continue
+            new = box_re.sub("", new, count=1)
+            if not re.search(r'\s' + re.escape(own) + r'\s*=', new):
+                end = -2 if new.endswith("/>") else -1
+                new = new[:end].rstrip() + f' {own}="{hit.group(1)}"' + new[end:]
+        new = re.sub(r'\sborderRadius\s*=\s*"[^"]*"', "", new)
+        if new != tag:
+            count += 1
+        return new
+
+    return _SHAPE_TAG_RE.sub(_fix, xml), count
+
+
 def _pad_table_columns(xml: str) -> tuple[str, int]:
     """A row with more cells (colspan counted) than declared <Col>s fails buildPptx ("each row must
     contain one cell per grid column"). Add width-less <Col />s — POM shares the rest of the width."""
@@ -890,6 +927,10 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
         xml, n = _expand_border_shorthand(xml)
         if n:
             note("BORDER_SHORTHAND_EXPANDED", f'Rewrote {n} CSS-style border.width="t r b l" as per-side borders.')
+        xml, n = _box_attrs_to_shape(xml)
+        if n:
+            note("SHAPE_FILL_FROM_BOX", f"Moved backgroundColor / border.* on {n} non-rect <Shape>(s) to fill.* / "
+                 "line.* (the box attributes draw a rectangle behind the shape).")
         xml, n = _mark_to_span(xml)
         if n:
             note("MARK_TO_SPAN", f"Rewrote {n} <Mark> highlight(s) as <Span color> (a box behind the "

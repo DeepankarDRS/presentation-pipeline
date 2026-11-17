@@ -29,7 +29,7 @@ attributes:
 phase_ab_subset: [rect, roundRect, ellipse, triangle, diamond, pentagon, hexagon, octagon, plus, chevron, rightArrow, leftArrow, upArrow, downArrow, star5, heart, cloud]
 
 notes:
-  - "backgroundColor fills a rect the same way fill.color does; either works for an accent bar."
+  - "backgroundColor / border.* / borderRadius style the node's rectangular box, not the shape: on a rect it looks the same as fill.color (either works for an accent bar), on any other shapeType it draws a rectangle behind it (a diamond or a circle reads as a square). Colour a shape with fill.color and line.color / line.width (render-checked, POM 10.3.0)."
   - "A bare <Shape w=\"0\"> does NOT throw (renders nothing) — still never emit zero dimensions."
   - "For a KPI dot use shapeType=\"ellipse\" w=\"8-12\" h=\"8-12\". Add line.width=\"0\" to drop the default outline."
 
