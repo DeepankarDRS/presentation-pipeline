@@ -27,17 +27,28 @@ class CompilerError(RuntimeError):
     """Raised when the Node process cannot be run or leaves no result file."""
 
 
+ARROW_LOST_PREFIX = "ARROW_REF_"
+
+
 def _parse_result(data: dict[str, Any]) -> dict[str, Any]:
     """Normalize compile-result.json into our standard CompileResult shape."""
     ok = data.get("status") == "success"
     diagnostics = data.get("diagnostics", [])
     warnings = data.get("warnings", [])
 
+    # POM only warns when an <Arrow> names a missing id or a shape it cannot attach to, and leaves the arrow out:
+    # a diagram with a connector missing. Fail the compile so the slide is repaired (2026-11-17).
+    lost_arrows = [w for w in warnings if str(w.get("code", "")).startswith(ARROW_LOST_PREFIX)]
+    if lost_arrows:
+        ok = False
+        diagnostics = list(diagnostics) + [{"type": w["code"], "message": w.get("message", "")} for w in lost_arrows]
+
     retryable = False
     if not ok and diagnostics:
         retryable_types = {
             "UNKNOWN_TAG", "UNKNOWN_ATTRIBUTE", "PARSE_ERROR",
             "INVALID_VALUE", "INVALID_CHILD", "THEME_ERROR", "DIAGNOSTIC",
+            "ARROW_REF_NOT_FOUND", "ARROW_REF_NOT_CONNECTABLE",
         }
         retryable = any(d.get("type") in retryable_types for d in diagnostics)
 

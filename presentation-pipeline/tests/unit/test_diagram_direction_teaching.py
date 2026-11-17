@@ -33,13 +33,29 @@ def test_planner_chooses_direction_and_space_together():
     assert "the layout_hint states the band you chose with its direction" in text
 
 
-def test_planner_never_draws_a_process_as_a_layer():
+def test_planner_never_draws_a_process_in_one_order_as_a_layer():
     text = _planner_prompt()
     # a process is found by meaning (arrows, numbers, the word, or sentences), never by a keyword alone
-    assert re.search(r"Content that describes a process .*? tells it in sentences\. .*? never \*\*layer\*\*", text)
+    assert re.search(r"Content that describes a process .*? tells it in sentences\. .*? "
+                     r"A process in one order is never a \*\*layer\*\*", text)
     assert "steps the brief lists side by side between the same two arrows are separate nodes, one each" in text
     assert "More steps than fit across → the same diagram **vertical**" in text
-    assert "Never a layer for a process, workflow or anything the brief draws with arrows" in text
+    assert "Never a layer for a process or workflow in one order" in text
+
+
+def test_a_decision_may_be_a_flow_with_outcomes_or_a_layer_flowchart():
+    """2026-11-17 (test/layer-decision): POM's Flow draws one line, so a branch is either a flow up to the condition
+    with a card per outcome, or a layer drawn as a flowchart; the planner chooses, neither is preferred."""
+    from src.agents import planner_schema_typed as pst
+    text = _planner_prompt()
+    assert "A condition with two or more outcomes, and the steps every case shares" in text   # routing row
+    assert "a process, workflow or sequence in one order" in text                            # layer not_for
+    assert "Two ways show it; choose by the slide, neither comes first" in text
+    assert "**flow + outcomes beside it.**" in text and "**layer drawn as a flowchart.**" in text
+    assert "the ones out of the condition labelled by their case" in text
+    assert "in a layer: one node every outcome connects to" in text
+    assert "- **layer**: shapes the generator places at fixed pixel positions" in text
+    assert "A decision drawn as a flowchart" in (pst.LayerContent.__doc__ or "")
 
 
 def test_planner_rules_stay_general():

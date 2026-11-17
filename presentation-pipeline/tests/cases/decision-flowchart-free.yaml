@@ -1,0 +1,28 @@
+# Layer-as-flowchart test (2026-11-17, branch test/layer-decision). Slide 5 of gate-deck-free-choice alone: a
+# process told in sentences with a decision (in stock or not -> two routes -> a step every case reaches) + one
+# figure. No visual or layout words. Principle 7 now allows two ways to show a decision: a flow + a card per
+# outcome, or a layer drawn as a flowchart (diamond + Arrow connectors, positions chosen by the generator).
+# The layer was restricted on 2026-10-20 (58c93b6: crossing arrows, broken words) and GEOM_LAYER_OVERLAP found
+# overlaps on 5 of 14 saved layer slides (14d3e71), so judge the render, not the pass/fail:
+#   which way the planner chose; GEOM_LAYER_OVERLAP / GEOM_COLLISION / GEOM_OFF_SLIDE; arrows present
+#   (ARROW_REF_* now fails the compile and is repaired); labels whole; every fact kept, none invented.
+# Run (paid, about $0.05 per run; ask first):
+#   python -m scripts.eval_run decision-flowchart-free --repeat 3 --label layer-decision --bundle
+name: decision-flowchart-free
+objective: One slide, a fulfilment process with a decision told in sentences; tests whether the planner shows the branch and whether a layer flowchart draws cleanly.
+request: |
+  Create a 1-slide presentation for the leadership team of TRAILHEAD OUTFITTERS, an outdoor gear retailer.
+  Keep it concise and executive-friendly, and make the headline state the conclusion. Use only the numbers below.
+
+  How an online order is fulfilled today. When a customer orders online, we check whether the nearest store has the
+  item. If it does, the store picks and packs the order and the customer collects it within 2 hours. If it does not,
+  the regional warehouse ships the order to the customer within 2 days. Either way, the customer gets a text message
+  when the order is ready, and returns can go back to any store. 38% of online orders are now fulfilled by stores.
+content_source: content only, no visual or layout guidance; every number is in the brief
+expect:
+  compiles: true
+  slide_count: 1
+  watch: >
+    the branch is visible (condition, two outcomes named by their case, the step every case reaches after them);
+    if a layer: no overlapping boxes, arrows from the condition to each route, case labels beside the arrows,
+    no broken words; the 38% kept; nothing invented.

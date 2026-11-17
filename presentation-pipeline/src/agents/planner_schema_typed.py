@@ -188,7 +188,10 @@ class LayerLink(_Strict):
 
 class LayerContent(_Strict):
     """Free-form diagram, one of two shapes: stacked layers (top first), or nodes with links between them
-    (by label) around an optional centre node. description = what the picture shows."""
+    (by label) around an optional centre node. description = what the picture shows.
+    A decision drawn as a flowchart is the second shape without a centre: nodes = the steps before the condition,
+    the condition (a short question), each outcome's steps and the step every case reaches; connections from each
+    node to the next, the ones out of the condition labelled by their case; a node's facts in its detail."""
     description: Optional[str] = None
     layers: Optional[list[Layer]] = None
     center: Optional[str] = None

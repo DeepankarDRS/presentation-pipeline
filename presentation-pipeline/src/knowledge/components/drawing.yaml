@@ -65,11 +65,13 @@ notes:
   - "Layer children draw in document order (first child is bottommost)."
   - "Svg rasterises to PNG at render — it will not be a vector shape in the final PPTX."
   - "Give every Arrow-connectable node a unique id within the slide."
+  - "To connect an Arrow to a diamond (or any shape it cannot attach to), draw the shape with no id and put <Text id x y w h> </Text> (a single space: POM rejects a Text with no text) with the same x, y, w, h right after it: the Arrow attaches to the Text's edge midpoints, which are the diamond's four tips (render-checked on POM 10.3.0, 2026-11-17)."
+  - "Arrow is one straight connector between the nearest edge midpoints; there is no elbow connector."
   - "Layer can be nested and participates in Flexbox layout when placed inside VStack/HStack."
 
 pitfalls:
   - "Forgetting x/y on Layer children — they will stack at (0,0)."
-  - "Arrow from/to must reference existing id values on the same slide. Missing ids emit a diagnostic."
+  - "Arrow from/to must reference existing id values on the same slide. A missing id (ARROW_REF_NOT_FOUND) or a target it cannot attach to (ARROW_REF_NOT_CONNECTABLE) is only a POM warning: the build succeeds and the arrow is not drawn. The pipeline turns both into compile errors so the slide is repaired."
   - "Line with x1=x2 and y1=y2 renders as a zero-length line (a dot). Give it real coordinates."
   - "Svg without a child <svg> element will fail at render."
   - "Arrow only connects to rect, roundRect, ellipse Shapes and Text — other shapeTypes are unsupported."

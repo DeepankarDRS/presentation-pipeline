@@ -288,6 +288,20 @@ layer_diagram: |
   # Layer MUST have explicit pixel w and h. All children x/y must be >= 0 and
   # x+child_w <= Layer_w, y+child_h <= Layer_h (stay inside bounds).
   # Arrow connects shapes by id; targets must be Shape(rect/roundRect/ellipse) or Text.
+  # Nothing in a Layer reflows: you choose every x / y / w / h, so leave room for the text (>= 14 px) and
+  # never let two boxes overlap. Give the Layer the whole box its band offers.
+  # A layer whose plan has connections from node to node and no centre is a FLOWCHART (a process that branches):
+  # - Place nodes by their order along the connections: the first at the top (or left), each next one a row
+  #   (or column) further on. The targets of one node stand side by side in one row, each route's next steps below
+  #   its own target; the node every route reaches sits centred below (or after) all routes.
+  # - Leave >= 40 px between rows and between nodes side by side; every box inside the Layer.
+  # - The condition is a diamond: <Shape shapeType="diamond" text="..."> with NO id, then right after it
+  #   <Text id="..." x y w h> </Text> with the diamond's own x, y, w, h holding a single space (an empty Text
+  #   is removed). Arrows go to / from that Text and land on the diamond's tips. An Arrow to the diamond Shape
+  #   itself is NOT drawn (ARROW_REF_NOT_CONNECTABLE).
+  # - Every other node is a roundRect Shape with an id. Every connection is one
+  #   <Arrow from="..." to="..." endArrow="true" />; a case label ("Yes", "In stock") is a short Text beside the
+  #   arrow it names, never on a box.
   <Layer w="560" h="296" backgroundColor="$surfaceAlt" borderRadius="14">
     <Shape id="hub" shapeType="ellipse" x="206" y="74" w="148" h="148" backgroundColor="$accent" color="$surfaceAlt" fontSize="14" bold="true" textAlign="center" text="Core Platform" />
     <Shape id="svc-a" shapeType="roundRect" x="0" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="14" bold="true" textAlign="center" text="Service A" border.color="$border" border.width="1" borderRadius="10" />

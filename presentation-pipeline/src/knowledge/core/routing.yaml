@@ -51,9 +51,13 @@ rows:
     kind: "process_arrow: items = steps ({{ span('process_arrow') }}), labels ≤ {{ cap.process_arrow.max_label_words }} words"
     not_for: unordered items; steps with sub-detail
   - id: process
-    states: A process with a decision, or steps too long for chevrons
+    states: Steps in one order, too long for chevrons
     kind: "flow: items = nodes ({{ span('flow') }})"
-    not_for: a plain sequence of short steps (process_arrow)
+    not_for: a plain sequence of short steps (process_arrow); a branch (decision)
+  - id: decision
+    states: A condition with two or more outcomes, and the steps every case shares
+    kind: "layer drawn as a flowchart (nodes + connections, the ones out of the condition named by their case), or flow up to the condition + a card per outcome side by side"
+    not_for: steps in one order (flow, process_arrow)
   - id: dated
     states: Dated events
     kind: "timeline: items = milestones ({{ span('timeline') }}); date and label ≤ {{ cap.timeline.max_label_words }} words each"
@@ -74,7 +78,7 @@ rows:
   - id: spatial
     states: Positions that themselves carry meaning (a hub with spokes, a map)
     kind: layer
-    not_for: any process, workflow or sequence
+    not_for: a process, workflow or sequence in one order
   - id: takeaways
     states: Takeaways, actions, read-outs
     kind: bullet_list
