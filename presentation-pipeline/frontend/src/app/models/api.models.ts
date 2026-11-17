@@ -189,6 +189,10 @@ export interface SlideInfoReview {
   edit_count: number;
   /** Card lines the pipeline wrote itself (not in the brief) — shown for review. */
   written_lines?: string[];
+  /** KPI labels the pipeline named because the brief gave none ("label: value") — shown for review. */
+  written_labels?: string[];
+  /** Brief items the pipeline filed under a card by meaning ("Card: item") — shown for review. */
+  placed_items?: string[];
 }
 
 export interface EditSessionStatus {

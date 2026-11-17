@@ -3,8 +3,11 @@
 The renderer draws exactly what a plan holds, so a plan that is empty, thin, repeats itself or
 carries planner instructions shows up on the slide. Two kinds of check:
 
-* **problems** (`find_problems`) - a re-ask is justified: an empty component (`PLAN_EMPTY`) or
-  text that is an instruction to the presenter, not slide content (`PLAN_INSTRUCTION_TEXT`).
+* **problems** (`find_problems`) - a re-ask is justified only by a failure that holds for any brief: the planner
+  call failed or its answer did not parse, the plan has no components, or a component (or the whole plan) holds no
+  content (`PLAN_EMPTY`). Judgements about the content (instruction text, a sentence as a tile value, a tile cut
+  from a sentence, a dropped card line, a missing item) are wording heuristics drawn from past decks: they are
+  flagged or fixed by code (`finalize_plan`), never a reason to ask the planner again (2026-11-17, user).
 * **fixes** (`finalize_plan`) - code repairs what is left: drops an empty caption and any
   instruction text still there, drops a duplicate component (`PLAN_DUPLICATE_ITEMS`) and a card
   body that repeats its title, turns many short cards on a full slide into a list (`CARDS_TO_LIST`, rule K4),
@@ -18,11 +21,9 @@ estimate set on the 17 hold-out plans (docs/derived-blocks-planning-2026-10-06.m
 from __future__ import annotations
 
 import itertools
-import json
 import re
 from typing import Any
 
-from src.agents.plan_ledger import ITEM_MISSING, ITEM_REPEATED
 from src.agents.written_lines import (NOTES_LABEL, drop_repeated_bodies, drop_shared_card_lines, from_brief,
                                       matches_instruction)
 from src.compiler.value_parts import is_sentence
@@ -38,13 +39,7 @@ KPI_FRAGMENT = "KPI_FRAGMENT"
 # a title-only card whose title the brief follows with its own line (tile-nodes §11: under card tile nodes code
 # writes only plan text, so a line the planner dropped is lost; the LLM used to recover or invent one)
 CARD_LINES_DROPPED = "CARD_LINES_DROPPED"
-REASK_CODES = (PLAN_EMPTY, PLAN_INSTRUCTION_TEXT, KPI_VALUE_TEXT, KPI_FRAGMENT, CARD_LINES_DROPPED)
-# problems an edit of the previous plan fixes: an item is missing, drawn twice, or dropped from its card. The layout
-# was right, so the re-ask sees the previous plan and changes only these. Any other problem (an empty component, a
-# shape the routing table sends elsewhere, a sentence as a tile value, instruction text) means the layout itself is
-# in doubt: the re-ask plans again without the previous plan, so it is not anchored on it (research 2026-11-12:
-# repair with external feedback suits strong models; anchoring on a failed attempt hurts a wrong layout).
-EDIT_CODES = frozenset({ITEM_MISSING, ITEM_REPEATED, CARD_LINES_DROPPED})
+REASK_CODES = (PLAN_EMPTY,)
 
 # the keys that hold a component's content; a block kind with none of them filled is empty
 _CONTENT_KEYS: dict[str, tuple[str, ...]] = {
@@ -177,10 +172,10 @@ def holds_no_content(plan: dict[str, Any]) -> bool:
 
 # ── problems that justify a re-ask ──────────────────────────────────────────
 
-def find_problems(plan: dict[str, Any], brief_text: str,
+def find_problems(plan: dict[str, Any], brief_text: str = "",
                   instructions: list[str] | tuple[str, ...] = ()) -> list[dict[str, str]]:
-    """PLAN_EMPTY / PLAN_INSTRUCTION_TEXT flags for a plan. An empty caption alone is not one:
-    nothing is lost by dropping it, so it is not worth a second call."""
+    """PLAN_EMPTY problems: the only ones that justify a re-ask (module docstring). An empty caption alone is not
+    one: nothing is lost by dropping it. `brief_text` and `instructions` are unused (kept for the eval scripts)."""
     problems: list[dict[str, str]] = []
     comps = plan.get("components") or []
     if not comps:
@@ -192,28 +187,6 @@ def find_problems(plan: dict[str, Any], brief_text: str,
         if is_empty(comp) and comp.get("kind") != "caption":
             problems.append({"code": PLAN_EMPTY, "component_id": cid,
                              "detail": f"{comp.get('kind')} '{cid}' has no content"})
-        for item in _text_items(comp):
-            if is_instruction_text(item, brief_text, instructions):
-                problems.append({"code": PLAN_INSTRUCTION_TEXT, "component_id": cid,
-                                 "detail": f"{comp.get('kind')} '{cid}' holds an instruction, not slide content: "
-                                           f"{item[:90]}"})
-                break
-        if comp.get("kind") == "kpi_row":
-            prose = [str(v) for v in (comp.get("content_data") or {}).get("kpi_values") or [] if is_sentence(str(v))]
-            if prose:
-                problems.append({"code": KPI_VALUE_TEXT, "component_id": cid,
-                                 "detail": f"kpi_row '{cid}' has {len(prose)} sentence(s) as kpi_values, not figures: "
-                                           f"{prose[0][:80]}"})
-        cut = kpi_fragments(comp, brief_text)
-        if cut:
-            problems.append({"code": KPI_FRAGMENT, "component_id": cid,
-                             "detail": f"kpi_row '{cid}' cuts a sentence into {len(cut)} tile(s): {cut[0][:80]}"})
-        if comp.get("kind") == "card_grid":
-            dropped = dropped_card_lines(comp, brief_text)
-            if dropped:
-                problems.append({"code": CARD_LINES_DROPPED, "component_id": cid,
-                                 "detail": f"card_grid '{cid}' gives {len(dropped)} card(s) only a title though the key "
-                                           f"messages give them a line: {dropped[0][:80]}"})
     return problems
 
 
@@ -240,54 +213,15 @@ def dropped_card_lines(comp: dict[str, Any], brief_text: str) -> list[str]:
     return out
 
 
-def edits_only(problems: list[dict[str, str]]) -> bool:
-    """True when every problem is one an edit of the previous plan fixes (EDIT_CODES)."""
-    return bool(problems) and all(p["code"] in EDIT_CODES for p in problems)
-
-
-def previous_plan_json(plan: dict[str, Any], content_field: str = "content") -> str:
-    """The previous plan as the planner wrote it (its own field names), for an edit re-ask."""
-    comps = []
-    for c in plan.get("components") or []:
-        out = {k: c[k] for k in ("component_id", "kind", "weight", "design_hint", "chart_type") if c.get(k)}
-        out[content_field] = c.get("content_data") or {}
-        comps.append(out)
-    return json.dumps({"slide_type": plan.get("slide_type", ""), "layout_hint": plan.get("layout_hint", ""),
-                       "components": comps}, ensure_ascii=False)
-
-
-def reask_context(problems: list[dict[str, str]], previous_plan: dict[str, Any] | None = None,
-                  content_field: str = "content") -> dict[str, Any]:
-    """The `repair_context` block of the planner's user prompt, naming what to fix. With `previous_plan` (only when
-    `edits_only`), the re-ask edits that plan; without it, it plans the slide again."""
+def reask_context(problems: list[dict[str, str]]) -> dict[str, Any]:
+    """The `repair_context` block of the planner's user prompt: the slide is planned again, naming what was empty."""
     kinds = sorted({p["detail"].split(" ")[0] for p in problems if p["component_id"]})
-    start = ("Edit the previous plan below: fix only the problems listed and keep every other component, its kind, "
-             "weight and content as it is. " if previous_plan is not None else "Plan this slide again. ")
     return {
         "failed_kinds": kinds or ["(whole plan)"],
         "errors": [p["detail"] for p in problems],
-        "previous_plan": previous_plan_json(previous_plan, content_field) if previous_plan is not None else "",
-        "directive": (start + "Fill every component's content_data from the key messages "
-                      "(no empty components). Slide text must be what the audience reads: never an "
-                      "instruction to the presenter, never speaker notes, never 'show / highlight / break down / "
-                      "walk through ...' directions."
-                      + (" A kpi_row's kpi_values hold the figure only (e.g. '0.29x', '₹10.0L'), with the metric "
-                         "name in kpi_labels; findings written as sentences belong in a card_grid (one card per "
-                         "finding) or a bullet_list, not in a kpi_row." if any(p["code"] == KPI_VALUE_TEXT
-                                                                              for p in problems) else "")
-                      + (" A kpi_row tile is a metric: kpi_labels names what is measured, kpi_values holds the figure, "
-                         "kpi_deltas holds a change with its number or stays empty. A sentence that holds a number is "
-                         "not cut into tiles: keep it whole as text (narrative or bullet_list) with the number in it, "
-                         "or name the metric in the label." if any(p["code"] == KPI_FRAGMENT for p in problems)
-                         else "")
-                      + (" A card_grid card copies its own line from the key messages into body (or bullets) when the "
-                         "key messages give one; code draws only what the plan holds." if any(
-                             p["code"] == CARD_LINES_DROPPED for p in problems) else "")
-                      + (" Every item of the key messages appears exactly once on the slide: add each missing item to "
-                         "the component it belongs to, and keep a repeated item in one component only." if any(
-                             p["code"] in ("ITEM_MISSING", "ITEM_REPEATED") for p in problems) else "")
-                      + (" Route each component by the shape of its content, as the routing table says."
-                         if any(p["code"] == "SHAPE_MISFIT" for p in problems) else "")),
+        "previous_plan": "",
+        "directive": "Plan this slide again. Fill every component's content from the key messages: no component "
+                     "and no plan without content.",
     }
 
 
@@ -511,7 +445,8 @@ def sparse_flag(plan: dict[str, Any]) -> dict[str, str] | None:
 CARDS_TO_LIST = "CARDS_TO_LIST"
 # K4 thresholds, set on the saved plans (docs/eval/structure-loss/README.md, "K4"): the agency Keyword & City slide's
 # other components hold 103-132 words in all 5 saved plans; every other slide with a 6+ card grid holds <= 53.
-DENSE_REST_WORDS = 80   # words in the slide's other components that make it dense
+DENSE_REST_WORDS = 100  # words in the slide's other components that make it dense (80 -> 100, 2026-11-17, user:
+#                         only very dense slides; the agency case holds 103-132, other 6+ card slides <= 53)
 MANY_CARDS = 6          # a grid of at least this many cards ...
 SHORT_CARD_WORDS = 6    # ... most of them (2 in 3) with at most this many words of body and bullets
 _NOT_TEXT = {"tone", "icon", "key_phrase", "card_layout", "chart_type", "direction", "layout", "body_source",

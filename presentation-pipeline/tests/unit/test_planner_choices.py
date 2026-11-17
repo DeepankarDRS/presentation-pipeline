@@ -52,7 +52,9 @@ def full_rest():
 # ── K4 ──────────────────────────────────────────────────────────────────────
 
 def test_k4_many_short_cards_on_a_full_slide_become_one_list_word_for_word():
-    p = plan([comp("slide_title", "title", {"title": "Exact match wins"}), city_cards(), *full_rest()])
+    # the saved agency slides held 103-132 words beside the cards; this trimmed copy holds 90, so one more line
+    extra = comp("scope", "narrative", {"text": "City view covers the top ten metros by spend over the last ninety days."})
+    p = plan([comp("slide_title", "title", {"title": "Exact match wins"}), city_cards(), *full_rest(), extra])
     notes = finalize_plan(p, "")
     lst = next(c for c in p["components"] if c["component_id"] == "city_cards")
     assert lst["kind"] == "bullet_list"
@@ -63,6 +65,12 @@ def test_k4_many_short_cards_on_a_full_slide_become_one_list_word_for_word():
     assert lst["items"] == 2 and "card" not in lst["design_hint"]
     assert CARDS_TO_LIST in [f["code"] for f in p["plan_flags"]]
     assert any("city_cards: card_grid of 9 short cards" in n for n in notes)
+
+
+def test_k4_keeps_cards_on_a_dense_but_not_very_dense_slide():
+    """DENSE_REST_WORDS 80 -> 100 (2026-11-17, user): 90 words beside nine short cards no longer make a list."""
+    p = plan([comp("slide_title", "title", {"title": "Exact match wins"}), city_cards(), *full_rest()])
+    assert cards_to_list(p) == [] and p["components"][1]["kind"] == "card_grid"
 
 
 def test_k4_keeps_cards_on_a_slide_with_room():
@@ -166,4 +174,5 @@ def test_card_line_check_does_not_read_across_messages_or_sentences():
 def test_card_line_check_still_finds_a_dropped_line():
     slide = {"key_messages": ["Late fixes (after 20:00): urgent edits from mobile, the fastest-growing moment"]}
     grid = comp("cards", "card_grid", {"card_layout": "grid", "cards": [{"title": "Late fixes"}]})
-    assert [p for p in find_problems(plan([grid]), brief_text_for(slide, None)) if p["code"] == CARD_LINES_DROPPED]
+    from src.agents.plan_checks import dropped_card_lines
+    assert dropped_card_lines(grid, brief_text_for(slide, None))

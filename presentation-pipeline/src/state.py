@@ -43,7 +43,7 @@ PlanSourceLiteral = Literal["fallback"]   # absent = the planner's own plan
 PlanFlagCodeLiteral = Literal[            # what plan_checks writes to plan_flags (_flag, sparse_flag);
     "PLAN_EMPTY", "PLAN_INSTRUCTION_TEXT", "PLAN_DUPLICATE_ITEMS", "SLIDE_SPARSE", "KPI_VALUE_TEXT", "KPI_FRAGMENT", "CARDS_TO_LIST",
     "LAYER_REPEATED", "HEADER_REPEATED",
-]                                         # CARD_LINES_DROPPED only drives a re-ask
+]                                         # CARD_LINES_DROPPED: eval scripts only (no re-ask since 2026-11-17)
 RetryTierLiteral = Literal[0, 1, 2]       # 0 = initial, 1 = PATCH, 2 = REGENERATE (repairer.py)
 StepLiteral = Literal[                    # step names in usage records (llm_client.usage_record, src/planning)
     "elicitor", "outline_planner", "slide_component_planner", "plan_reviewer",
@@ -121,6 +121,7 @@ class SlidePlan(TypedDict, total=False):
     capacity_fixes: list[str]        # components converted past capacity.yaml (plan check)
     written_lines: list[str]         # card lines the planner wrote (not in the brief), for review
     placed_items: list[str]          # brief items the planner filed under a card by meaning ("Card: item"), for review
+    written_labels: list[str]        # KPI labels the planner named, the brief giving none ("label: value"), for review
     plan_flags: list[PlanFlag]       # plan_checks findings
     plan_source: PlanSourceLiteral   # "fallback" when the planner failed twice (outline lines as a bullet list)
 

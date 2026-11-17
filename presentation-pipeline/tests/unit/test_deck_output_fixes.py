@@ -1,6 +1,6 @@
 """Fixes from the 2026-10-15 full-deck eval (docs/eval/deck-output-fixes-2026-10-15.md)."""
 
-from src.agents.plan_checks import PLAN_INSTRUCTION_TEXT, find_problems, finalize_plan, is_instruction_text
+from src.agents.plan_checks import find_problems, finalize_plan, is_instruction_text
 from src.agents.written_lines import (brief_content, brief_instructions, instruction_lines, matches_instruction,
                                       settle_direction_lines, visual_directions)
 
@@ -70,7 +70,7 @@ def test_plan_checks_drop_text_that_words_a_brief_instruction():
     hint = comp("visual_hint", "caption", {"text": "Use arrow visuals rather than hard numbers."})
     step = comp("next_step", "narrative", {"text": "30-day transition audit and account takeover sprint."})
     p = plan([note, hint, step])
-    assert [x["code"] for x in find_problems(p, brief, lines)] == [PLAN_INSTRUCTION_TEXT] * 2
+    assert find_problems(p, brief, lines) == []     # no re-ask (2026-11-17): code drops the instruction text
     finalize_plan(p, brief, lines)
     assert [c["component_id"] for c in p["components"]] == ["next_step"]
     # without the brief's lines nothing changes (old outlines, plan editor)

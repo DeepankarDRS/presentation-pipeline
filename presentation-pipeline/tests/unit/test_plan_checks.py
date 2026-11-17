@@ -144,7 +144,7 @@ def test_full_slides_and_single_tables_are_not_thin():
 def test_reask_context_names_the_failures():
     ctx = reask_context(find_problems(plan([comp("k", "kpi_row", {}, "hero")]), BRIEF))
     assert ctx["failed_kinds"] == ["kpi_row"] and "no content" in ctx["errors"][0]
-    assert "speaker notes" in ctx["directive"]
+    assert ctx["directive"].startswith("Plan this slide again")
 
 
 # ── the re-ask wrapper ──────────────────────────────────────────────────────
@@ -456,17 +456,14 @@ def test_an_unreadable_content_data_json_logs_its_start_and_the_text_near_the_er
     assert '{"kpi_labels": ["ARR", "NRR"]' in caplog.text and "chars)" in caplog.text and "near" in caplog.text
 
 
-def test_a_title_only_card_whose_line_the_brief_gives_is_re_asked():
-    from src.agents.plan_checks import CARD_LINES_DROPPED, find_problems, reask_context
+def test_a_title_only_card_whose_line_the_brief_gives_is_found_but_never_re_asked():
+    from src.agents.plan_checks import dropped_card_lines, find_problems
     brief = ("Key messages:\n1. Stand-up (09:00-09:30): the board is reviewed live with the whole team\n"
              "2. Late fixes - urgent edits from mobile, the fastest-growing moment\n* Hand-off")
     c = comp("moments", "card_grid", {"card_layout": "grid", "cards": [
         {"title": "Stand-up"}, {"title": "Late fixes"}, {"title": "Hand-off"}, {"title": "Review", "body": "Managers approve"}]})
-    probs = [p for p in find_problems(plan([c]), brief) if p["code"] == CARD_LINES_DROPPED]
-    assert len(probs) == 1 and "2 card(s)" in probs[0]["detail"]
-    assert "copies its own line" in reask_context(probs)["directive"]
-    rows_only = comp("mx", "card_grid", {"card_layout": "grid", "cards": [{"title": "Visibility"}, {"title": "Conversion"}]})
-    assert not [p for p in find_problems(plan([rows_only]), "Rows: Visibility Conversion Repeat Purchase") if p["code"] == CARD_LINES_DROPPED]
+    assert len(dropped_card_lines(c, brief)) == 2      # kept for the eval scripts (structure_loss.py)
+    assert find_problems(plan([c]), brief) == []       # a wording heuristic: no re-ask (2026-11-17)
 
 
 def test_card_icons_are_real_names_on_every_card_or_none():
@@ -492,47 +489,13 @@ def test_kpi_icons_are_real_names_on_every_item_or_none():
         assert "kpi_icons" not in k["content_data"]
 
 
-# ── edit or plan again (2026-11-12): the previous plan is shown only for item problems ──────────────
-
-def test_item_problems_edit_the_previous_plan_and_other_problems_plan_again():
-    from src.agents.plan_checks import edits_only
-    from src.agents.plan_ledger import ITEM_MISSING, ITEM_REPEATED, SHAPE_MISFIT
-    item = [{"code": ITEM_MISSING, "component_id": "", "detail": "1 item(s) ... on no component: +18% QoQ"}]
-    assert edits_only(item) and edits_only(item + [{"code": ITEM_REPEATED, "component_id": "", "detail": "x"}])
-    assert not edits_only([])
-    for other in (PLAN_EMPTY, SHAPE_MISFIT):   # the layout itself is in doubt: no anchor on the old plan
-        assert not edits_only(item + [{"code": other, "component_id": "k", "detail": "kpi_row 'k' x"}])
-    ctx = reask_context(item, previous_plan=good(), content_field="content")
-    shown = json.loads(ctx["previous_plan"])
-    assert shown["components"][0]["content"]["kpi_values"] == ["$48.2M"] and "kind" in shown["components"][0]
-    assert ctx["directive"].startswith("Edit the previous plan")
-    again = reask_context(item)
-    assert again["previous_plan"] == "" and again["directive"].startswith("Plan this slide again")
-
-
-def test_a_missing_item_reask_sends_the_previous_plan_and_logs_its_outcome():
-    dropped = plan([comp("k", "kpi_row", {"kpi_labels": ["ARR"], "kpi_values": ["$48.2M"]}, "hero")])
-    (p, history), m = run([(dropped, USAGE), (good(), USAGE)])
-    ctx = m.call_args_list[1].kwargs["repair_context"]
-    assert '"$48.2M"' in ctx["previous_plan"] and ctx["directive"].startswith("Edit")
-    out = history[1]["reask_outcome"]
-    assert out["mode"] == "edit" and out["fixed"] == ["ITEM_MISSING"] and out["new"] == [] and out["kept"] == "reask"
-
+# ── the re-ask plans again: only an empty plan or a failed call is re-asked (2026-11-17) ──────────────
 
 def test_an_empty_plan_is_planned_again_without_the_previous_plan():
     (p, history), m = run([(bad(), USAGE), (good(), USAGE)])
     ctx = m.call_args_list[1].kwargs["repair_context"]
     assert ctx["previous_plan"] == "" and ctx["directive"].startswith("Plan this slide again")
     assert history[1]["reask_outcome"]["mode"] == "replan"
-
-
-def test_the_previous_plan_reaches_the_prompt():
-    from src.agents.slide_component_planner import _jinja_env
-    ctx = reask_context([{"code": "ITEM_MISSING", "component_id": "", "detail": "x"}], previous_plan=good())
-    text = _jinja_env.get_template("user.j2").render(slide=SLIDE, content_messages=[], visual_directions=[],
-                                                     deck_context=[], total_slides=1, repair_context=ctx,
-                                                     content_field="content")
-    assert "<previous_plan>" in text and '"$48.2M"' in text
 
 
 # ── KPI_FRAGMENT: a brief sentence cut into tiles (look3 launch 2) ──────────
@@ -553,8 +516,10 @@ def test_kpi_fragment_flags_a_cut_sentence():
     assert len(kpi_fragments(new, LAUNCH_BRIEF)) == 3
     old = _kpis(["Teams manage"], ["4+ separate gateways"], ["averaging 2.3 hours/week each on config"])
     assert kpi_fragments(old, LAUNCH_BRIEF)
-    probs = find_problems({"components": [new]}, LAUNCH_BRIEF)
-    assert KPI_FRAGMENT in REASK_CODES and any(p["code"] == KPI_FRAGMENT for p in probs)
+    assert KPI_FRAGMENT not in REASK_CODES and find_problems({"components": [new]}, LAUNCH_BRIEF) == []
+    p = {"components": [new]}
+    finalize_plan(p, LAUNCH_BRIEF)
+    assert any(f["code"] == KPI_FRAGMENT for f in p["plan_flags"])   # flagged for review, not re-asked
 
 
 def test_kpi_fragment_leaves_metrics_alone():

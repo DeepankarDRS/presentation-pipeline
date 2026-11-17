@@ -993,6 +993,8 @@ class SlideInfoResponse(BaseModel):
     has_edits: bool
     edit_count: int
     written_lines: list[str] = []  # card lines the planner wrote (not in the brief), for review
+    written_labels: list[str] = []  # KPI labels the planner named ("label: value"), the brief giving none, for review
+    placed_items: list[str] = []  # brief items the planner filed under a card by meaning ("Card: item"), for review
 
 
 class EditSessionResponse(BaseModel):
@@ -1116,6 +1118,8 @@ async def create_edit_session(run_id: str) -> EditSessionResponse:
             has_edits=len(s.edit_history) > 0,
             edit_count=len(s.edit_history),
             written_lines=list((s.slide_plan or {}).get("written_lines") or []),
+            written_labels=list((s.slide_plan or {}).get("written_labels") or []),
+            placed_items=list((s.slide_plan or {}).get("placed_items") or []),
         ))
 
     return EditSessionResponse(
@@ -1363,6 +1367,8 @@ async def switch_theme(run_id: str, request: ThemeSwitchRequest) -> ThemeSwitchR
                     has_edits=len(s.edit_history) > 0,
                     edit_count=len(s.edit_history),
                     written_lines=list((s.slide_plan or {}).get("written_lines") or []),
+                    written_labels=list((s.slide_plan or {}).get("written_labels") or []),
+                    placed_items=list((s.slide_plan or {}).get("placed_items") or []),
                 )
                 for s in ordered
             ],

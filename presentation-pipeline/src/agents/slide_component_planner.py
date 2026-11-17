@@ -34,11 +34,11 @@ from src.agents.hint_capabilities import planner_capabilities_section
 from src.agents.planner_schema import PlannerSlide
 from src.agents.planner_schema_typed import PlannerSlideTyped, content_data_of
 from src.agents.settings_mapper import DeckSettings, compute_provenance, settings_to_constraints
-from src.agents.plan_ledger import plan_problems, routing_rows
-from src.agents.plan_checks import (PLAN_EMPTY, edits_only, find_problems, finalize_plan, holds_no_content,
+from src.agents.plan_ledger import routing_rows
+from src.agents.plan_checks import (PLAN_EMPTY, find_problems, finalize_plan, holds_no_content,
                                    reask_context)
 from src.agents.written_lines import (content_line_list, content_lines, drop_visual_directions,
-                                      flag_placed_items, flag_written_lines, instruction_lines,
+                                      flag_placed_items, flag_written_labels, flag_written_lines, instruction_lines,
                                       visual_directions)
 from src.compiler.node_facts import facts_text
 from src.compiler.nodes.spec import nodes_on
@@ -320,7 +320,8 @@ def plan_single_slide(
     )
     brief_text = brief_text_for(slide, supplied_content)
     notes = (drop_visual_directions(plan, directions, content_lines(slide, directions))
-             + flag_written_lines(plan, brief_text) + flag_placed_items(plan, brief_text))
+             + flag_written_lines(plan, brief_text) + flag_written_labels(plan, brief_text)
+             + flag_placed_items(plan, brief_text))
     if finalize:
         notes += finalize_plan(plan, brief_text, instruction_lines(outline_plan))
     for note in notes:
@@ -364,10 +365,10 @@ def plan_with_reask(
     deck_settings: dict[str, Any] | None = None,
     supplied_content: dict[str, Any] | None = None,
 ) -> tuple[SlidePlan, list[dict[str, Any]]]:
-    """Plan one slide, asking once more when the plan is empty or holds instruction text.
+    """Plan one slide, asking once more only when the call failed or the plan (or a component) holds no content.
 
     Returns (plan, history records). Never raises: when both calls fail the plan is
-    `fallback_plan`. Of the two plans the one with fewer problems wins (a tie keeps the first),
+    `fallback_plan`. Of the two plans the one with fewer empty parts wins (a tie keeps the first),
     then the code fixes of `finalize_plan` run on it.
     """
     idx = slide.get("slide_index", 0)
@@ -377,15 +378,12 @@ def plan_with_reask(
     best_count = 0
     problems: list[dict[str, str]] = []
     first_problems: list[dict[str, str]] = []
-    first_plan: SlidePlan | None = None
     mode = ""
     for attempt in range(2):
         repair = None
         if attempt:
-            # an item fix edits the previous plan; any other problem plans again, not anchored on it
-            mode = "edit" if first_plan is not None and edits_only(problems) else "replan"
-            repair = reask_context(problems, previous_plan=first_plan if mode == "edit" else None,
-                                   content_field="content" if planner_schema() == "typed" else "content_data_json")
+            mode = "replan"   # only an empty plan or a failed call is re-asked: nothing of it to keep
+            repair = reask_context(problems)
         try:
             plan, usage = plan_single_slide(
                 slide, outline_plan=outline_plan, deck_settings=deck_settings,
@@ -407,8 +405,7 @@ def plan_with_reask(
             continue
         record = usage_record(usage, "slide_component_planner", idx, reask=bool(attempt))
         history.append(record)
-        problems = (find_problems(plan, brief_text, instruction_lines(outline_plan))
-                    + plan_problems(plan, slide, instruction_lines(outline_plan)))
+        problems = find_problems(plan)
         if best is None or len(problems) < best_count:
             best, best_count = plan, len(problems)
         if attempt:
@@ -420,7 +417,6 @@ def plan_with_reask(
         if not problems:
             break
         if attempt == 0:
-            first_plan = plan
             first_problems = problems
             logger.info(f"slide_component_planner: slide {idx + 1} re-ask: "
                         + "; ".join(p["detail"] for p in problems))

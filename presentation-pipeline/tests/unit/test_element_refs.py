@@ -349,18 +349,14 @@ def test_sentence_value_is_drawn_as_body_text():
     assert 'id="kpiv1-k-1"' in res["xml"]
 
 
-def test_plan_check_reasks_on_sentence_kpi_values():
-    from src.agents.plan_checks import KPI_VALUE_TEXT, REASK_CODES, finalize_plan, find_problems, reask_context
+def test_sentence_kpi_values_are_flagged_not_re_asked():
+    from src.agents.plan_checks import KPI_VALUE_TEXT, REASK_CODES, finalize_plan, find_problems
     plan = {"components": [{"component_id": "k", "kind": "kpi_row", "count": 2, "content_data": {
         "kpi_labels": ["Generic search", "Brand"],
         "kpi_values": ["Generic search consumed the largest budget pool.", "0.99x"]}}]}
-    problems = find_problems(plan, "brief")
-    assert [p["code"] for p in problems] == [KPI_VALUE_TEXT] and KPI_VALUE_TEXT in REASK_CODES
-    assert "card_grid" in reask_context(problems)["directive"]
+    assert find_problems(plan, "brief") == [] and KPI_VALUE_TEXT not in REASK_CODES
     finalize_plan(plan, "brief")
     assert any(f["code"] == KPI_VALUE_TEXT for f in plan["plan_flags"])
-    ok = {"components": [dict(plan["components"][0], content_data={"kpi_labels": ["A"], "kpi_values": ["0.99x"]})]}
-    assert not find_problems(ok, "brief")
 
 
 # ── prompt line, generator, validator ─────────────────────────────────────────

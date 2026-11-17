@@ -515,13 +515,22 @@ _LEGEND_OFF_RE = re.compile(r'(\sshowLegend\s*=\s*)"false"')
 def _restore_legends(xml: str) -> tuple[str, list[str]]:
     """A chart of two or more series with its legend off and no key: the bars are not told apart (CHEFFIN, 2026-11-05: three
     colours, nothing naming them). A key is the series names written on the slide (chart.yaml teaches a key in the title
-    row), and those charts keep their legend off."""
+    row), and those charts keep their legend off. A pie or doughnut always gets its legend: only the legend names its
+    slices."""
     shown = {w.lower() for w in re.findall(r"\w+", re.sub(r"<[^>]+>", " ", xml))}
     restored: list[str] = []
 
     def _fix(m: re.Match) -> str:
+        if not _LEGEND_OFF_RE.search(m.group(1)):
+            return m.group(0)
+        if re.search(r'chartType="(?:pie|doughnut)"', m.group(1)):
+            # a part-of-whole chart has no axis: its slices are named only by the legend, so words elsewhere on the
+            # slide never tell them apart (Trailhead slide 3, 2026-11-16: a three-slice doughnut with nothing naming
+            # which slice is which)
+            restored.extend(re.findall(r'<ChartDataPoint\b[^>]*\blabel="([^"]*)"', m.group(2)))
+            return m.group(0).replace(m.group(1), _LEGEND_OFF_RE.sub(r'\1"true"', m.group(1)), 1)
         names = _SERIES_NAME_RE.findall(m.group(2))
-        if len(names) < 2 or not _LEGEND_OFF_RE.search(m.group(1)):
+        if len(names) < 2:
             return m.group(0)
         if all(w.lower() in shown for n in names for w in re.findall(r"\w+", n)):
             return m.group(0)
@@ -875,7 +884,8 @@ def _fix_structure(xml: str, issues: list[dict[str, Any]], stage: str) -> str:
                  f"(a shadow word becomes a dot-form shadow): {', '.join(sorted(set(dropped)))}.")
         xml, restored = _restore_legends(xml)
         if restored:
-            note("CHART_LEGEND_RESTORED", "Turned the legend on for a chart of several series with no key on the slide: "
+            note("CHART_LEGEND_RESTORED", "Turned the legend on for a pie / doughnut, or a chart of several series with no "
+                 "key on the slide: "
                  f"{', '.join(restored)}.")
         xml, n = _expand_border_shorthand(xml)
         if n:

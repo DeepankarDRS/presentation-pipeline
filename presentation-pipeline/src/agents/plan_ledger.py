@@ -1,4 +1,6 @@
-"""Two general plan checks (2026-11-12), run on every slide plan before code fixes, each a reason to re-ask:
+"""Two plan checks (2026-11-12), for the eval scripts (scripts/planner_ab.py). Since 2026-11-17 (user) they are no
+reason to re-ask: the planner re-asks only for an empty plan or a failed call (plan_checks.find_problems). In the
+saved runs of 6-17 Nov (259 plans, 62 A/B plans) they found 0 chart-unit or matrix errors and 1 real repeated item.
 
 1. **Item ledger** - every item of the slide's key messages appears on the slide, and no item is drawn twice.
    Items are the brief's own pieces (lines, bullets, ";" / arrow parts, a leading "Label:" taken off). An item is
@@ -9,8 +11,7 @@
    matrix of placeholder cells. Errors only; which kind reads better is the planner's choice (2026-11-16). SHAPE_MISFIT.
 
 They replace one-shape patches (a list-vs-card-bullets duplicate threshold, a two-row-table switch, a matrix column
-note), each of which caught one output shape. Nothing is changed here: the re-ask (plan_with_reask) gets the
-problems; the code fixes that already exist stay as the last resort. Replayed on the saved outline + plan pairs
+note), each of which caught one output shape. Nothing is changed here. Replayed on the saved outline + plan pairs
 before use (output/**/runs.json).
 """
 

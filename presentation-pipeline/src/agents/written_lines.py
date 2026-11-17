@@ -230,6 +230,35 @@ def flag_written_lines(plan: dict[str, Any], brief_text: str) -> list[str]:
     return notes
 
 
+_RUN = re.compile(r"[a-z0-9₹%$€£]+")
+
+
+def _run(text: str) -> str:
+    return " " + " ".join(_RUN.findall((text or "").lower())) + " "
+
+
+def flag_written_labels(plan: dict[str, Any], brief_text: str) -> list[str]:
+    """Content policy 2026-10-04, "derived": a kpi_row label the brief does not write. When the brief states a figure
+    inside a sentence ("62% of revenue comes from repeat customers"), the planner names its measure ("Repeat-revenue
+    share") instead of cutting the sentence into tile pieces (planner prompt, "Derived is not invented"). A label is
+    the brief's when its words stand in the brief as one run, in order; any other label is listed in
+    plan["written_labels"] as "label: value" for the user to review. Nothing is changed."""
+    brief = _run(brief_text)
+    out: list[str] = []
+    for comp in plan.get("components", []):
+        if comp.get("kind") != "kpi_row":
+            continue
+        data = comp.get("content_data") or {}
+        values = list(data.get("kpi_values") or [])
+        for i, label in enumerate(data.get("kpi_labels") or []):
+            run = _run(str(label))
+            if run.strip() and run not in brief:
+                out.append(f"{label}: {values[i]}" if i < len(values) else str(label))
+    if out:
+        plan["written_labels"] = out
+    return [f"named {len(out)} KPI tile(s) the brief gives no label: " + "; ".join(out)] if out else []
+
+
 _PLACE_PIECES = re.compile(r"\n|;|\||→|->")
 
 

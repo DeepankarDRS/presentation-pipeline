@@ -141,8 +141,8 @@ def _placeholder_matrix(cd: dict[str, Any]) -> bool:
 
 
 def enforce_capacity(components: list[dict[str, Any]]) -> list[str]:
-    """Fix the plan in place where a component cannot draw its items (capacity.yaml)
-    or a named visual does not suit the data. Returns one plain-words note per change."""
+    """Fix the plan in place where a component cannot draw its items (capacity.yaml): renderer limits only, never
+    a judgement of which kind reads better. Returns one plain-words note per change."""
     notes: list[str] = []
     out: list[dict[str, Any]] = []
     card_max = max_of("card_grid", "per_row")

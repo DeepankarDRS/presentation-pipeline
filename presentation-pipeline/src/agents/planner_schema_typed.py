@@ -43,8 +43,9 @@ class TextContent(_Strict):
 
 
 class KpiRowContent(_Strict):
-    """One entry per tile in every list, in the brief's order. Labels and values word for word."""
-    kpi_labels: list[str]
+    """One entry per tile in every list, in the brief's order. Values exactly as the brief writes them."""
+    kpi_labels: list[str] = Field(description="What each figure measures: the brief's own label word for word when it "
+                                              "gives one, else a few words naming the measure; never a number.")
     kpi_values: list[str] = Field(description='The figure only ("$42.8M", "38%"), never a sentence.')
     kpi_deltas: Optional[list[str]] = Field(default=None, description='The change per tile, with its number (+18% QoQ, -2 pts); "" when none.')
     kpi_directions: Optional[list[Literal["", "up", "down", "neutral"]]] = None

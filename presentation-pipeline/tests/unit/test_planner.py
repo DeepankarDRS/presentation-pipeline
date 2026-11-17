@@ -456,7 +456,7 @@ def test_planner_prompt_lets_a_slide_group_its_numbers_into_several_kpi_rows():
     assert "Grouping a slide's numbers" in text and "never by count" in text
     assert "more metrics → a second kpi_row" not in text
     # content conserved (labels word for word), composition the planner's own choice, variety welcome
-    assert "copy each label word for word" in text and "There is no single right arrangement" in text
+    assert "copy each label the brief gives word for word" in text and "There is no single right arrangement" in text
     assert "keep them in the same group, next to each other" in text   # an actual and its target (plans check 2026-10-12)
 
 

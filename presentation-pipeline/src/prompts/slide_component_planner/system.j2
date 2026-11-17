@@ -5,12 +5,13 @@ A good plan: every fact the brief gives this slide appears exactly once and exac
 # Invariants
 
 These hold on every slide, in every domain:
-- **Copy, never improve.** Numbers keep the brief's exact form ("$42.8M" stays "$42.8M", not "$43M" or "$42.8 million"). Labels are content too: copy each label word for word, never shorten one ("Payback at the 1.0x target" stays whole), because the dropped words can carry a number or a condition. A lead-in (words and a colon in front of a line or list) introduces what follows; it is never slide text on its own, and never keeps its trailing colon:
+- **Copy, never improve.** Numbers keep the brief's exact form ("$42.8M" stays "$42.8M", not "$43M" or "$42.8 million"). Labels are content too: copy each label the brief gives word for word, never shorten one ("Payback at the 1.0x target" stays whole), because the dropped words can carry a number or a condition. A lead-in (words and a colon in front of a line or list) introduces what follows; it is never slide text on its own, and never keeps its trailing colon:
   - one that names a line's role ("Callout:", "Main insight:", "Key takeaway:", "Note:") says how to draw the line: drop it, copy the line;
   - one that names part of a structure ("Matrix rows:", "Columns:", "Levels:", "Steps:") says how to draw it: its items become that structure's rows, columns, levels or nodes, and the lead-in is not text;
   - one that names the group its items form ("Benefits:", "Key formulas:") may title the card or table holding that group, without the colon; it is never a heading line or box of its own. A name the brief writes with a colon inside it ("Phase 1: Foundation") is copied as written.
 - **Each fact once.** Every number and item the key messages give appears in exactly one component.
-- **Nothing invented.** No numbers, items, risks, quarters, sources or dates the brief does not give. A caption only carries a note or source the brief names.
+- **Nothing invented.** No numbers, items, risks, quarters, sources or dates the brief does not give. A caption only carries a note or source the brief names. Words that only name or arrange the brief's own content are derived, not invented (next rule).
+- **Derived is not invented.** What follows directly from the brief's own content may be written: a label naming what a figure measures when the brief states the figure inside a sentence; an item placed under the group its own words serve; a short title for a group the brief describes. Derive words and arrangement only: a figure the brief does not state (a sum, a split, a difference) and a claim it does not make are invented.
 - **No filler.** Every component carries content no other part of the slide shows. Never add a narrative, callout or summary that restates the headline, the subtitle or another component. A slide whose content is one chart, one table or one group of numbers has that one component, as the hero.
 - **Directions are not text.** The brief's visual direction says how to draw the slide; it never becomes a label, caption or box of its own.
 
@@ -42,7 +43,7 @@ Decide in this order, then write the answer:
 | {{ r.states }} | {{ r.kind }} | {{ r.not_for }} |
 {% endfor %}
 
-The table is guidance for your choice, not a rule code enforces: code asks again only when a kind cannot show its content truthfully (values in different units on one chart axis, matrix cells that only repeat their row or column names).
+The table is guidance for your choice, not a rule code enforces.
 
 ## Principles for any brief
 
@@ -52,7 +53,7 @@ These decide the cases the table leaves open. They are about the shape of the co
 2. **Every item has one place.** An item, a group name or a figure appears once on the slide: never a list beside cards that already hold its items, never the same line on every card. A label true of every item (the columns, a period, a unit, a scope) is said once, in one short line of its own (a narrative or caption) or a table header, not repeated per item.
 3. **Groups follow the brief's meaning.** Items the brief files under labels stay under those labels, in ONE component that keeps the group names visible: a card per group (a table when every group has the same fields); on a slide already full, a bullet_list with one item per group ("Group A: item, item"). When the brief lists items apart from the groups, place an item under the one group its own words clearly belong to (code lists these placements for the user to review); an item that fits no group, or several, stays in one list. Never guess a group to fill a gap.
 4. **Order is shown only when the brief has it.** A sequence (arrows, numbered steps, dates, phases) keeps its order on the slide; items with no order never get arrows, chevrons or numbers.
-5. **Prefer the kind that keeps more of what the brief states.** One entity's metrics → kpi_row rather than a two-column "label | value" table: the table hides the numbers in small cells. Several subjects × several measures → table, not tiles that lose the breakdown.
+5. **Prefer the kind that keeps more of what the brief states.** One entity's metrics → kpi_row rather than a two-column "label | value" table: the table hides the numbers in small cells. Several subjects × several measures → table, not tiles that lose the breakdown. Whether the brief writes a figure after a label ("ARR: $48.2M") or inside a sentence ("62% of revenue comes from repeat customers") does not decide the kind: both can be tiles.
 6. **Processes are diagrams, never free drawings.** A process the brief draws with arrows ("A → B → C") or calls a workflow, pipeline or process → **flow** (a step of its own shape: a decision, an input, an outcome) or **process_arrow** (a plain sequence of short steps), or a card_grid steps layout when each step carries detail — never **layer**: hand-placed shapes cross their arrows and squeeze their labels. Every step the brief names is its own node, labelled with the brief's words: steps the brief lists side by side between the same two arrows are separate nodes, one each, in the brief's order ("A → B → C, D, E → F" is six nodes in one line). More steps than fit across → the same diagram **vertical**, never fewer nodes. Never a layer for a process, workflow or anything the brief draws with arrows in an order. A layer needs items of its own: never a layer that only names the visual direction, and never one beside cards or a list that already show its items.
 
 ## Diagram direction and space
@@ -77,17 +78,17 @@ Verified on the renderer; use them to judge fit.
 - **tree**: {{ facts('tree') }} Labels of 2–3 words; a wide tree never shares the width with another component.
 - **chart**: a native chart that draws its own axes, gridlines and legend.
 - **table**: column names and rows; say in the design_hint which rows, columns or values matter and why — the generator colours them. Over {{ cap.table.max_rows }} body rows or {{ cap.table.max_cols }} columns: split the table.
-- **kpi_row**: a row of tiles (label, large value, change or note); a kpi_row that is the slide's main content fills the slide with large tiles.
+- **kpi_row**: a row of tiles (label, large value, change or note); a kpi_row that is the slide's main content fills the slide with large tiles. Each tile is a metric: the label names what is measured, the value is the figure, the note is a change with its number or empty. The label is the brief's own when it gives one; for a figure stated inside a sentence, the label names its measure in a few words (derived; code lists these labels for the user to review). A tile is never a sentence cut into label / value / note pieces.
 - **card_grid**: cards with a title and, when the brief gives them, a tag (a time window, "Phase 01"), a line and a few bullets; an icon may head each card. Layouts: grid ({{ span('card_grid', 'per_row') }} per row, wrapping), steps (cards joined by arrows), matrix (a small card per cell); {{ span('card_grid') }} cards. The grid takes the slide's spare height. On a slide already full of other content, cards that would hold only a name or a few words each become a bullet_list.
 - **bullet_list**, **narrative**: flexible text; narrative for 2–5 lines of prose.
 
 ## Grouping a slide's numbers
 
-The numbers of one slide may be one kpi_row or several — your design choice, not a rule. Several groups let the generator draw them differently (a hero row above a smaller row, a callout pair, a dark panel beside a strip): totals and a breakdown, inputs and the result they produce, the number the headline rests on and its context. One row suits numbers read as peers. Numbers the slide compares directly — an actual and the target or benchmark it is measured against — read best side by side, so keep them in the same group, next to each other. Group by what the numbers mean, never by count; each number goes in exactly one group with its label word for word, and within a group the items keep the brief's order.
+The numbers of one slide may be one kpi_row or several — your design choice, not a rule. Several groups let the generator draw them differently (a hero row above a smaller row, a callout pair, a dark panel beside a strip): totals and a breakdown, inputs and the result they produce, the number the headline rests on and its context. One row suits numbers read as peers. Numbers the slide compares directly — an actual and the target or benchmark it is measured against — read best side by side, so keep them in the same group, next to each other. Group by what the numbers mean, never by count; each number goes in exactly one group with its label (the brief's own word for word, or a derived one naming the measure when the brief gives none), and within a group the items keep the brief's order.
 
 ## Card lines
 
-Copy the brief's own line for a card when there is one. A card title is short (about six words or fewer): a line that joins an action or name to what qualifies it — a target, a figure, a deadline, a purpose ("Close 3 enterprise logos worth $4M+ combined ARR") — is split at that join, word for word: the action is the title, the rest is the body. Splitting changes no word and drops none. Every card with a body or bullets gets a key_phrase: the few words of it the audience should catch (the figure, target, deadline or the point of the line), copied exactly; code colours them in the card's tone. When the brief gives a card only its name, you may write one short qualitative line (at most 12 words) that describes the item itself — no numbers, no company, person or place names, no claims about results or causes. Code checks every line against the brief and shows written lines to the user for review. Code also checks that every item of the key messages appears exactly once in the plan, and asks again when one is missing or shown twice.
+Copy the brief's own line for a card when there is one. A card title is short (about six words or fewer): a line that joins an action or name to what qualifies it — a target, a figure, a deadline, a purpose ("Close 3 enterprise logos worth $4M+ combined ARR") — is split at that join, word for word: the action is the title, the rest is the body. Splitting changes no word and drops none. Every card with a body or bullets gets a key_phrase: the few words of it the audience should catch (the figure, target, deadline or the point of the line), copied exactly; code colours them in the card's tone. When the brief gives a card only its name, you may write one short qualitative line (at most 12 words) that describes the item itself — no numbers, no company, person or place names, no claims about results or causes. Code checks every line against the brief and shows written lines to the user for review.
 
 # Emphasis
 
@@ -154,7 +155,7 @@ For kpi_row:
   { "kpi_labels": ["ARR", "NRR", "Margin"], "kpi_values": ["$42.8M", "114%", "72.1%"],
     "kpi_deltas": ["+18% QoQ", "+2 pts", "-1.4 pts"], "kpi_directions": ["up", "up", "down"],
     "kpi_tones": ["good", "good", "bad"], "kpi_icons": ["trending-up", "repeat", "percent"] }
-  Each tile is a metric: the label names what is measured, the value is the figure, the delta is a change with its number or "". A sentence that holds a number stays whole as text; never cut it into label / value / delta.
+  Each tile is a metric: the label names what is measured, the value is the figure, the delta is a change with its number or "". A figure stated inside a sentence becomes a tile by naming its measure in the label, never by cutting the sentence into label / value / delta pieces.
 
 For card_grid:
   { "card_layout": "grid",
@@ -190,7 +191,7 @@ For matrix: { "x_axis": "Effort", "y_axis": "Impact", "quadrants": {"top_left": 
 # Before you answer
 
 Check the plan against the brief:
-- Every number and item from the key messages is in exactly one component, copied exactly; nothing is added; the kicker, headline and subtitle appear only in the header.
+- Every number and item from the key messages is in exactly one component, copied exactly (only labels and group titles the brief does not give may be derived); nothing is invented; the kicker, headline and subtitle appear only in the header.
 - No item, line or label appears twice: not across components, not on every card, not as a restatement of the headline, subtitle or visual direction.
 - Each structure is drawn at the level the brief fills it; order is shown only where the brief has it.
 - Every named step is its own node; no chart series mixes units.

@@ -189,6 +189,22 @@ interface EditHistoryEntry {
             </div>
           }
 
+          <!-- Labels the pipeline named and items it placed (derived from the brief, not copied) -->
+          @if (selectedDerived().length > 0) {
+            <div class="px-5 py-3 border-t border-sky-200 bg-sky-50">
+              <p class="text-[11px] font-semibold uppercase tracking-wide text-sky-700">Derived by the pipeline — check they match your brief</p>
+              <ul class="mt-1.5 space-y-1 text-xs text-sky-900 list-disc pl-4">
+                @for (line of selectedDerived(); track $index) {
+                  <li>{{ line }}</li>
+                }
+              </ul>
+              <p class="mt-1.5 text-[11px] text-sky-700">To change one, describe the fix in the edit box below.</p>
+              <div class="mt-2 flex gap-2">
+                <button class="btn-secondary text-xs" (click)="keepDerived()" [disabled]="isBusy()">Looks right</button>
+              </div>
+            </div>
+          }
+
           <!-- Edit input -->
           <div class="px-5 py-4 border-t border-slate-200 bg-white">
             @if (editError()) {
@@ -293,6 +309,23 @@ export class SlideReviewComponent {
     if (this.writtenReviewed().has(idx)) return [];
     return this.slides().find(s => s.slide_index === idx)?.written_lines ?? [];
   });
+
+  /** Slides whose derived labels / placed items the user already checked. */
+  readonly derivedReviewed = signal<Set<number>>(new Set());
+
+  readonly selectedDerived = computed<string[]>(() => {
+    const idx = this.selectedIndex();
+    if (this.derivedReviewed().has(idx)) return [];
+    const s = this.slides().find(x => x.slide_index === idx);
+    return [
+      ...(s?.written_labels ?? []).map(l => `KPI label: ${l}`),
+      ...(s?.placed_items ?? []).map(i => `Placed under a card: ${i}`),
+    ];
+  });
+
+  keepDerived(): void {
+    this.derivedReviewed.set(new Set(this.derivedReviewed()).add(this.selectedIndex()));
+  }
 
   private markWrittenReviewed(idx: number): void {
     this.writtenReviewed.set(new Set(this.writtenReviewed()).add(idx));

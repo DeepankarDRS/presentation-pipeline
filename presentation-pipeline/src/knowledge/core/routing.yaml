@@ -1,7 +1,7 @@
 # Relationship -> kind: the ONE routing table (2026-11-12). The slide component planner's prompt renders it
-# (system.j2, "Relationship -> kind") as guidance. Code enforces only the rows where a kind would show its content
-# wrongly (src/agents/plan_ledger.py, SHAPE_MISFIT: units on one chart axis, placeholder matrix cells), never a
-# preference such as kpi_row over a table (2026-11-16, user: no hardcoded kind either way).
+# (system.j2, "Relationship -> kind") as guidance only: code never re-asks or switches a kind by it (2026-11-16 /
+# 2026-11-17, user: no hardcoded kind either way; the planner re-asks only for an empty plan or a failed call).
+# src/agents/plan_ledger.py's shape check (units on one chart axis, placeholder matrix cells) is for eval scripts.
 # Rows are about the SHAPE of content (subjects, measures, ordered points, words or figures), never a topic.
 # Cells are Jinja: cap / span render the limits from capacity.yaml. `kind_timeline_node` replaces `kind` when code draws
 # timelines (POM_NODES=timeline).
