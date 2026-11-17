@@ -35,7 +35,8 @@ def test_planner_chooses_direction_and_space_together():
 
 def test_planner_never_draws_a_process_as_a_layer():
     text = _planner_prompt()
-    assert re.search(r"A process the brief draws with arrows .*? never \*\*layer\*\*", text)
+    # a process is found by meaning (arrows, numbers, the word, or sentences), never by a keyword alone
+    assert re.search(r"Content that describes a process .*? tells it in sentences\. .*? never \*\*layer\*\*", text)
     assert "steps the brief lists side by side between the same two arrows are separate nodes, one each" in text
     assert "More steps than fit across → the same diagram **vertical**" in text
     assert "Never a layer for a process, workflow or anything the brief draws with arrows" in text
@@ -43,8 +44,27 @@ def test_planner_never_draws_a_process_as_a_layer():
 
 def test_planner_rules_stay_general():
     text = _planner_prompt()
-    for brief_word in ("XTSY", "Decision Engine", "Bid Optimization", "Bid optimization", "Profitability"):
+    for brief_word in ("XTSY", "Decision Engine", "Bid Optimization", "Bid optimization", "Profitability",
+                       "Trailhead", "warehouse", "nearest store", "within 2 hours", "within 2 days"):
         assert brief_word not in text, brief_word
+
+
+def test_planner_reads_a_slides_messages_as_one_piece():
+    """2026-11-17: the planner mapped message by message (a decision cut into a 2-node flow + 'If it does,'
+    cards); it now names the structure the messages form together and shows a decision as one."""
+    from src.agents.slide_component_planner import _jinja_env
+    text = _planner_prompt()
+    assert "Read all the key messages together and name the structure they form across messages" in text
+    assert "one message is not one item or one component" in text
+    assert "For each key message" not in text
+    assert "**A decision is shown as a decision.**" in text
+    assert "never consecutive steps of one line" in text
+    assert "never a piece cut from a sentence at a comma or a joining word" in text
+    assert "no name of yours replaces it" in text                        # no over-renaming (reverted eb403e8)
+    user = _jinja_env.get_template("user.j2").render(
+        slide={"slide_index": 0, "slide_title": "H", "narrative_role": "r"}, content_messages=["first", "second"],
+        visual_directions=[], core_hook="", deck_context=[], total_slides=1, deck_settings={}, constraints={})
+    assert "- first\n- second" in user and "1. first" not in user       # not a numbered list of separate items
 
 
 def test_every_line_diagram_says_which_box_its_direction_needs():

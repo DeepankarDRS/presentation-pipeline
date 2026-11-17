@@ -21,8 +21,9 @@ Section: {{ slide.section or '(none)' }}
 Narrative role: {{ slide.narrative_role }}
 
 <key_messages>
+The slide's content, in the brief's order; read it as one piece:
 {% for msg in content_messages %}
-{{ loop.index }}. {{ msg }}
+- {{ msg }}
 {% endfor %}
 </key_messages>
 

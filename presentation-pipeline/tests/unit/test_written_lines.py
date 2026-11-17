@@ -128,6 +128,6 @@ def test_planner_prompt_gives_directions_apart_from_the_key_messages():
         content_field="content", slide=slide, content_messages=content_line_list(slide, dirs),
         visual_directions=dirs, core_hook="", deck_context=[], total_slides=1, deck_settings={}, constraints={})
     messages, direction = text.split("Visual direction from the brief", 1)
-    assert "1. Quick Commerce is a primary consumption channel." in messages and "Zepto" not in messages
+    assert "- Quick Commerce is a primary consumption channel." in messages and "Zepto" not in messages
     assert "- Quick Commerce ecosystem showing Zepto, Blinkit and Instamart" in direction
     assert "visual_emphasis" not in text
