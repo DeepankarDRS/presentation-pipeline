@@ -145,8 +145,8 @@ class MatrixContent(_Strict):
 
 class Card(_Strict):
     """tag / body / bullets only when the brief gives them (or a written body, see the system prompt)."""
-    title: str = Field(description="Short (about six words): the action or name; what qualifies it (a target, "
-                                   "figure, deadline, purpose) goes to body, word for word.")
+    title: str = Field(description="Short (about six words): the brief's name for the item, or a short name for "
+                                   "what the card is about; never a piece of a sentence. The brief's line goes to body.")
     tag: Optional[str] = Field(default=None, description="A time window, phase or step label from the brief.")
     body: Optional[str] = None
     bullets: Optional[list[str]] = Field(default=None, description="The brief's items that belong to this card.")
