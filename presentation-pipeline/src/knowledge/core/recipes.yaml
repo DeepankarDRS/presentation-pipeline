@@ -291,23 +291,24 @@ layer_diagram: |
   # Nothing in a Layer reflows: you choose every x / y / w / h, so leave room for the text (>= 14 px) and
   # never let two boxes overlap. Give the Layer the whole box its band offers.
   # A layer whose plan has connections from node to node and no centre is a FLOWCHART (a process that branches):
-  # - Place nodes by their order along the connections: the first at the top (or left), each next one a row
-  #   (or column) further on. The targets of one node stand side by side in one row, each route's next steps below
-  #   its own target; the node every route reaches sits centred below (or after) all routes.
-  # - Leave >= 40 px between rows and between nodes side by side; every box inside the Layer. The node every
-  #   route reaches is wide enough that each route's connector can come straight down (or across) onto it.
+  # - Place the nodes on a grid of rows and columns: every two connected nodes share a ROW (their centres at the
+  #   same y) or a COLUMN (their centres at the same x). An Arrow starts at the source's side-midpoint nearest the
+  #   target's centre and ends at the target's side-midpoint nearest the source's centre, so on a grid every
+  #   Arrow is straight; boxes offset diagonally give diagonal or crossing Arrows.
+  # - The steps before the condition stand in the condition's column (or row). The condition's outcomes leave it
+  #   in different directions: one along its row (out of its right tip), one down its column (out of its bottom
+  #   tip), a third (if any) out of its left tip. Each route's next steps continue in that route's own row or
+  #   column. The node every route reaches stands where the routes' row and column meet, so each route reaches
+  #   it in a straight line.
+  # - Leave >= 60 px between connected boxes (room for the arrow and its label) and never put a box between two
+  #   connected ones; every box inside the Layer.
   # - Nodes are Shapes: the condition shapeType="diamond", the others roundRect. Colour them with fill.color and
   #   line.color / line.width (backgroundColor / border.* draw a rectangle behind the shape).
-  # - Connectors are <Line>s, never <Arrow>: an Arrow joins the NEAREST side midpoints, so two routes side by side
-  #   cross each other. Place each Line from the boxes you placed (the Layer's own pixels):
-  #   * it starts at the middle of the source's side that faces the target (a diamond's tips: top (x+w/2, y),
-  #     bottom (x+w/2, y+h), left (x, y+h/2), right (x+w, y+h/2)) and ends at the middle of the target's side
-  #     that faces the source (or a point on that side when several connectors land on it);
-  #   * straight when start and end line up; otherwise one elbow, two Lines meeting at a corner: the first leaves
-  #     the source along its side's direction (a left / right side: across; a top / bottom side: down or up), the
-  #     second turns 90 degrees onto the target's side. Never a diagonal, never a Line through a box;
-  #   * endArrow="true" on the last Line of each connector only.
-  # - A case label ("Yes", "In stock") is a short Text beside the first Line out of the condition, never on a box.
+  # - Every connection is one <Arrow from="..." to="..." endArrow="true" />. The diamond Shape has NO id: right
+  #   after it put <Text id="..." x y w h> </Text> with the diamond's own x, y, w, h holding a single space (an
+  #   empty Text is removed); Arrows go to / from that Text and land on the diamond's tips. An Arrow to the
+  #   diamond Shape itself is NOT drawn (ARROW_REF_NOT_CONNECTABLE).
+  # - A case label ("Yes", "In stock") is a short Text beside the arrow it names, never on a box.
   <Layer w="560" h="296" backgroundColor="$surfaceAlt" borderRadius="14">
     <Shape id="hub" shapeType="ellipse" x="206" y="74" w="148" h="148" fill.color="$accent" color="$surfaceAlt" fontSize="14" bold="true" textAlign="center" text="Core Platform" />
     <Shape id="svc-a" shapeType="roundRect" x="0" y="0" w="120" h="52" fill.color="$surfaceAlt" color="$textMain" fontSize="14" bold="true" textAlign="center" text="Service A" line.color="$border" line.width="1" />

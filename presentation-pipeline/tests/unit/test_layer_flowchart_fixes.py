@@ -3,9 +3,10 @@
 1. every run wrote backgroundColor / border.* on the diamond <Shape>: those style the node's rectangular box, so the
    diamond was drawn as a square (render-checked). The normalizer moves them to fill.* / line.* on any non-rect
    Shape, and our own knowledge stops teaching them (shape.yaml note, the layer recipe's hub ellipse).
-2. Arrows join the nearest side midpoints, so routes side by side below a condition crossed (runs 1 and 3): a
-   flowchart layer now connects with Lines (straight or one elbow), and LINE_END_LOOSE reports a Line end that
-   touches no box edge, diamond tip or other Line.
+2. An Arrow joins the side-midpoints nearest the other box's centre, so wide routes side by side below a condition
+   crossed (runs 1 and 3); boxes sharing a row or a column give straight arrows (render-checked). A flowchart layer
+   places connected boxes on a row / column grid and keeps Arrows. LINE_END_LOOSE reports a hand-placed Line end
+   that touches no box edge, diamond tip or other Line, should a layer use Lines.
 """
 
 from __future__ import annotations
@@ -46,8 +47,10 @@ def test_our_knowledge_no_longer_teaches_box_fills_on_shapes():
     hub = next(line for line in recipes.splitlines() if 'id="hub"' in line)
     assert "fill.color" in hub and "backgroundColor" not in hub
     layer = recipes[recipes.index("layer_diagram:"):recipes.index("\ntree:")]
-    assert "Connectors are <Line>s, never <Arrow>" in layer
-    assert "one elbow" in layer and "never a Line through a box" in layer
+    assert "every two connected nodes share a ROW" in layer and "or a COLUMN" in layer
+    assert "Every connection is one <Arrow" in layer
+    assert "<Text id=\"...\" x y w h> </Text>" in layer        # the diamond's connectable overlay
+    assert "never <Arrow>" not in layer
     shape = (_ROOT / "src/knowledge/components/shape.yaml").read_text(encoding="utf-8")
     assert "on any other shapeType it draws a rectangle behind it" in shape
 
