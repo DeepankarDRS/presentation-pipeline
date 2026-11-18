@@ -82,3 +82,22 @@ def test_a_line_that_stops_short_or_leaves_the_diamond_off_its_tip_is_reported()
     assert len(_loose(off_tip)) == 1
     label = _layer('<Line x1="500" y1="100" x2="330" y2="44" />')                     # a label Text is not a box
     assert len(_loose(label)) == 1
+
+
+def test_a_t_junction_of_a_bus_connector_is_attached():
+    """layer-decision-2 run 1 drew bus connectors: a Line ends in the middle of another Line (a T-junction)."""
+    xml = _layer('<Line x1="500" y1="100" x2="500" y2="150" />'           # down from the bottom tip
+                 '<Line x1="200" y1="150" x2="800" y2="150" />'           # the bus; its middle meets the drop
+                 '<Line x1="200" y1="150" x2="200" y2="200" endArrow="true" />'
+                 '<Line x1="800" y1="150" x2="800" y2="200" endArrow="true" />')
+    assert _loose(xml) == []
+
+
+def test_numeric_character_references_are_decoded():
+    from src.compiler.normalizer import decode_numeric_refs
+    out, n = decode_numeric_refs('<Shape text="the store&#10;picks" /><Text>it&#8217;s A&#x2192;B &#60;5 &#38; &#1;x</Text>')
+    assert n == 6
+    assert 'text="the store picks"' in out
+    assert "it’s A→B &lt;5 &amp;  x" in out
+    res = normalize_xml('<Slide><VStack w="1280" h="720"><Text fontSize="18">a&#10;b</Text></VStack></Slide>')
+    assert "NUMERIC_REF_DECODED" in [i["code"] for i in res["issues"]] and "&#10;" not in res["cleaned_xml"]

@@ -225,6 +225,31 @@ def _strip_zero_strokes(xml: str) -> tuple[str, list[str]]:
 # Every one of these cost a repair retry (or a lost slide) in the Phase 0 baseline.
 
 _BARE_AMP_RE = re.compile(r"&(?!(?:[A-Za-z]+|#\d+|#x[0-9A-Fa-f]+);)")
+_NUMERIC_REF_RE = re.compile(r"&#(?:(\d+)|[xX]([0-9A-Fa-f]+));")
+_KEEP_ESCAPED = {"<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;"}
+
+
+def decode_numeric_refs(xml: str) -> tuple[str, int]:
+    """POM 10.3.0 decodes named entities (&amp; &lt; &quot;) but prints numeric character references as written:
+    "store&#10;picks" reached a diamond's label (layer-decision-2 run 3, 2026-11-17; render- and pptx-checked).
+    Decode them: a line break or tab becomes a space, a character XML needs escaped becomes its named entity,
+    any other becomes the character itself."""
+    count = 0
+
+    def _one(m: re.Match) -> str:
+        nonlocal count
+        try:
+            ch = chr(int(m.group(1)) if m.group(1) else int(m.group(2), 16))
+        except (ValueError, OverflowError):
+            return m.group(0)
+        count += 1
+        if ord(ch) < 32 or ord(ch) == 0x7F:   # line breaks, tabs and control characters XML cannot hold
+            return " "
+        return _KEEP_ESCAPED.get(ch, ch)
+
+    # a line break between two spaces leaves one space ("Loyal &#xA; subscribers")
+    xml = re.sub(r"[ \t]*&#(?:1[03]|9|[xX]0*[aAdD9]);[ \t]*", lambda m: m.group(0).strip(" \t"), xml)
+    return _NUMERIC_REF_RE.sub(_one, xml), count
 # An opening tag whose attribute values may hold "<" / ">": the generator writes
 # title="<B>Doubled down</B> ..." — POM accepts it and PowerPoint shows the tags as text.
 _QUOTED_TAG_RE = re.compile(r'<[A-Za-z][\w.]*(?:\s+[\w.:-]+\s*=\s*"[^"]*")*\s*/?>')
@@ -1099,6 +1124,14 @@ def normalize_xml(raw_xml: str) -> dict[str, Any]:
             "code": "LABEL_BREAK_REMOVED",
             "message": f"Replaced {n_breaks} line break(s) inside diagram labels with a space "
                        "(POM prints &#10; literally; labels wrap on their own).",
+            "auto_fixed": True,
+        })
+    # every other numeric reference, in any attribute or text (after the label rule above, which keeps its code)
+    xml, n_refs = decode_numeric_refs(xml)
+    if n_refs:
+        issues.append({
+            "code": "NUMERIC_REF_DECODED",
+            "message": f"Decoded {n_refs} numeric character reference(s) (&#10; &#8217; ...): POM prints them as written.",
             "auto_fixed": True,
         })
 

@@ -538,7 +538,7 @@ def _num(el: ET.Element, name: str) -> float | None:
 
 def _check_line_ends(root: ET.Element, issues: list[dict[str, str]]) -> None:
     """LINE_END_LOOSE: inside one <Layer>, each end of a <Line> must sit on a box's edge (a diamond: on one of its
-    four tips) or on another Line's end (the corner of an elbow). A connector placed by hand that stops short,
+    four tips) or on another Line (its end: the corner of an elbow; along it: a T-junction). A connector placed by hand that stops short,
     overshoots into a box or points at empty space draws a flowchart that reads wrong (layer-decision, 2026-11-17).
     Boxes are the Layer's own children with x / y / w / h; a Text without an id (a case label) is not a box."""
     for layer in root.iter("Layer"):
@@ -569,10 +569,21 @@ def _check_line_ends(root: ET.Element, issues: list[dict[str, str]]) -> None:
                     return True
             return False
 
+        def on_other_line(i: int, px: float, py: float) -> bool:
+            """An end on another Line: at its end (an elbow) or along it (a T-junction of a bus connector)."""
+            own = i % len(lines)
+            for j, (x1, y1, x2, y2) in enumerate(lines):
+                if j == own:
+                    continue
+                dx, dy = x2 - x1, y2 - y1
+                length2 = dx * dx + dy * dy
+                t = 0.0 if length2 == 0 else max(0.0, min(1.0, ((px - x1) * dx + (py - y1) * dy) / length2))
+                if ((px - x1 - t * dx) ** 2 + (py - y1 - t * dy) ** 2) ** 0.5 <= LINE_END_TOL:
+                    return True
+            return False
+
         for i, (px, py) in enumerate(ends):
-            joint = sum(1 for j, (qx, qy) in enumerate(ends)
-                        if j != i and abs(px - qx) <= LINE_END_TOL and abs(py - qy) <= LINE_END_TOL)
-            if joint or on_box(px, py):
+            if on_other_line(i, px, py) or on_box(px, py):
                 continue
             issues.append({"severity": "medium", "code": "LINE_END_LOOSE",
                            "message": f"a <Line> end at ({px:.0f},{py:.0f}) in a <Layer> touches no box edge, "
