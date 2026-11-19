@@ -34,7 +34,8 @@ def test_left_alone_beside_another_band_or_with_three_tiles():
 
 
 def test_layout_rules_render_from_capacity():
-    text = layout_rules()
+    from src.agents.capacity import kind_layout_rules
+    text = layout_rules() + " ".join(kind_layout_rules()["kpi_row"]["hand"])
     lay = capacity()["layout"]
     assert f"at most {capacity()['kpi_row']['per_row'][1]} per row" in text
     assert f"at least {lay['kpi_tile_min_w']}px" in text

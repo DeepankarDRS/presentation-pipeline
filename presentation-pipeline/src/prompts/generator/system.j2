@@ -10,13 +10,6 @@ Do not invent tags or attributes - use ONLY what is listed in ALLOWED NODES belo
 - FORBIDDEN ATTRS: {{ forbidden_attributes | join(', ') }}
 - Use <VStack>/<HStack> not <div>, <Text> not <p>, <Span> not <span>
 - <Shape> is a LEAF - never nest children inside it. Use text= attribute for text.
-- Tables: declare one <Col> per column. Omit width on MOST columns (they auto-fill
-  the remaining space equally). Set width="NNN" ONLY on columns whose content is
-  noticeably wider or narrower than average (e.g. a label column that needs more room).
-  Specified widths + auto columns must not exceed the TABLE'S CONTAINER width
-  (account for ALL ancestor padding/gap, not just the root).
-- Bullet lists: use <Ul> with <Li> children - POM's native list nodes.
-  Do NOT use separate <Text> elements with manual bullet characters.
 - Root <VStack> or <HStack> MUST use alignItems="stretch" (NEVER "center" or "end").
 - NEVER w="max" on a child of a <VStack>: it grows the HEIGHT, not the width
   (width already stretches). w="max" / w="NN%" are width shares inside an <HStack>.
@@ -56,13 +49,10 @@ NODE CATEGORIES:
     WRONG:   <Text>$84.2
                <Span fontSize="20">M</Span>
              </Text>  (newlines = extra rendered line breaks)
-    Same rule applies inside <Li> and <Td>.
-  DATA nodes: <Chart>, <Table>, <Matrix>, <Timeline>, <ProcessArrow>,
-    <Flow>, <Pyramid>, <Tree> - complex visualizations. Size each one by DATA
-    NODE SIZING: h="max" minH to fill its card; a Table sizes to its rows.
-  TEXT bands (AUTO-SIZE): A band containing ONLY Text, Ul/Li, Span, Shape
-    — no data node inside. Do NOT set h; they auto-size to content.
-  LIST nodes: <Ul>/<Li> (bullets), <Ol>/<Li> (numbered) - POM's native lists.
+  DATA nodes: a ref tag code draws (CODE-DRAWN NODES) or a POM diagram node -
+    each sized by COMPONENT SIZING under THIS SLIDE.
+  TEXT bands (AUTO-SIZE): A band containing ONLY text (Text, Span, Shape, a
+    bullet list) - no data node inside. Do NOT set h; they auto-size to content.
 
 SIZING: POM's flexbox allocates - never add up pixel heights. VStack child: full
   width by stretch, grow="N" = share of the spare height, else content height.
@@ -108,40 +98,14 @@ Common properties (all nodes including VStack/HStack):
   margin: outer space pushing a node away from its siblings.
   grow: flex-grow ratio — how siblings split remaining main-axis space.
 
-{% if not house_style %}
-## DESIGN LANGUAGE
-
-Visual hierarchy (apply to every slide):
-  Title: fontSize 36, bold, color="$textMain"
-  Labels: fontSize 16-20, color="$textMuted" (NEVER below 14)
-  Body: fontSize 18, color="$textMain" (NEVER below 14)
-  KPI values: fontSize 44-56, bold, one line in the tile
-  Deltas: color="$positive" for up, color="$negative" for down
-
-Slide structure:
-  Root: <VStack|HStack w="1280" h="720" padding="48-56" gap="24-36" alignItems="stretch" backgroundColor="$surface">
-  Charts: always set explicit w and h that fit within the parent container.
-  Account for axis labels - leave 40-60px margin so labels don't overflow.
-
-Color tokens:
-  $surface=background  $surfaceAlt=cards  $accent=anchors  $textMain=headings
-  $textMuted=labels  $positive=good  $negative=bad  $border=outlines (subtle gray)
-{% endif %}
 {% if house_style %}
 
 ## LAYOUT GRAMMAR
 A GRAMMAR, not a template - no fixed shape to copy. Order of work: read the
 LAYOUT INTENT -> choose 2-4 bands and each band's division -> give grow to the
-band(s) that should fill (SIZING BY WEIGHT) -> size the data nodes (DATA NODE
+band(s) that should fill (SIZING BY WEIGHT) -> size each component (COMPONENT
 SIZING) -> fill with content.
 {{ house_style }}
-{% endif %}
-{% if nodes %}
-{% include "nodes_rules.j2" %}
-{% endif %}
-{% if tile_nodes %}
-
-{{ tile_nodes }}
 {% endif %}
 
 ## THEME (reference only - do NOT emit this element)
@@ -205,7 +169,16 @@ Display or standard fonts.
 {% for node, attrs in allowed_attributes.items() %}
   <{{ node }}>: {{ attrs | join(', ') }}
 {% endfor %}
-{% if component_recipes and not nodes %}
+{% if code_nodes %}
+
+{{ code_nodes }}
+{% endif %}
+{% if component_sizing %}
+
+## COMPONENT SIZING (this slide's components)
+{{ component_sizing }}
+{% endif %}
+{% if component_recipes %}
 
 ## COMPONENT RECIPES
 {{ component_recipes }}
@@ -241,19 +214,17 @@ rhythm) to the slide you are building.
 - Tighter fonts: title 20-24, card title 14, body/label 14 (NEVER below 14)
 - gap="8-12" between bands, gap="4-8" within a card
 - root padding="24-30"
-- KPI / stat values 24-30 (not 40+)
+- Stat values you write yourself 24-30 (not 40+); code sizes a ref tag's numbers
 - Re-lay out to fit (second row / column), trim filler words — never drop an item or a figure, never a font below 14
 - More bands, each sized to its content - fewer growing bands
 {% endif %}
 
-{% if not nodes %}
+{% if visual_intent_techniques %}
 ## VISUAL-INTENT TRANSLATION
 
-A component may carry a `visual-intent` and a `scope` (its allowed treatments). Build each intent with the technique below. Core nodes keep fixed syntax: <Text>/<Td>/<Li> hold text + inline tags only; data-node items take no child nodes. Icons, dots, sparklines go AROUND them in VStack/HStack. Intent outside scope: use the closest allowed treatment or skip it.
-{% if visual_intent_techniques %}
+A component may carry a `visual-intent` and a `scope` (its allowed treatments). Build each intent with the technique below. Core nodes keep fixed syntax: a <Text> (and any cell or list item you write) holds text + inline tags only; data-node items take no child nodes. Icons, dots, sparklines go AROUND them in VStack/HStack. Intent outside scope: use the closest allowed treatment or skip it.
 
 {{ visual_intent_techniques }}
-{% endif %}
 
 When no visual-intent is given, use default rendering — no embellishment needed.
 {% endif %}

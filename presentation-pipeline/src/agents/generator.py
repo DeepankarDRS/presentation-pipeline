@@ -12,7 +12,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from src.compiler.nodes import cards, composed, element_refs, tiles
+from src.compiler.nodes import composed
 from src.state import AttemptRecord, PresentationState
 from src.utils.llm_client import extract_usage, get_llm
 
@@ -56,32 +56,15 @@ def _render_prompts(state: PresentationState) -> tuple[str, str]:
         icon_names=contract.get("icon_names", ""),
         core_hook=state.get("core_hook", ""),
         slide_type=plan.get("slide_type", ""),
-        # a kind drawn as a composition node (POM_NODES=kpi_row / card_grid) drops its tile-node lines
-        tile_nodes="\n\n".join(([x for k, x in (("kpi_row", tiles.node_lines()), ("card_grid", cards.node_lines()))
-                                 if k not in composed.kinds_on()] if tiles.on() else [])
-                               + ([composed.node_lines()] if composed.kinds_on() else [])),
+        # the code-drawn node sections for the kinds on THIS slide only (after "## THIS SLIDE": not cached)
+        code_nodes=composed.node_lines(composed.slide_kinds(plan)),
+        component_sizing=contract.get("component_sizing", ""),
     )
 
     components = plan.get("components", [])
     content_data = plan.get("content_data", {})
-    if element_refs.refs_on():
-        # KPI element refs / tile nodes: a kpi_row's text is placed by ref, so the prompt carries no values
-        line = tiles.prompt_line if tiles.on() else element_refs.prompt_line
-        components = [dict(c, content_data={}, ref_line=line(c)) if c.get("kind") == "kpi_row"
-                      and c.get("component_id") else c for c in components]
-        if any(c.get("ref_line") for c in components):
-            content_data = {k: v for k, v in (content_data or {}).items() if not str(k).startswith("kpi_")}
-        if tiles.on():
-            # card tile nodes: code writes the card text (cards.py); a matrix card_grid keeps its content (deferred)
-            drawn = cards.card_components(plan)
-            components = [dict(c, content_data={}, ref_line=cards.prompt_line(c)) if c.get("component_id") in drawn
-                          and c.get("kind") == "card_grid" else c for c in components]
-            if drawn and len(drawn) == sum(c.get("kind") == "card_grid" for c in components):
-                content_data = {k: v for k, v in (content_data or {}).items()
-                                if k not in ("cards", "card_layout", "per_row", "focus_card")}
-    for kind in composed.kinds_on():
-        # composition nodes (POM_NODES): code draws the component from the plan, so the prompt carries none of its text.
-        # Its line reads the plan's component: the tile lines above have already emptied the copy in `components`
+    for kind in composed.KINDS:
+        # composition nodes: code draws the component from the plan, so the prompt carries none of its text
         drawn = composed.drawn(plan, kind)
         components = [dict(c, content_data={}, ref_line=composed.prompt_line(drawn[c["component_id"]], plan.get("slide_title", "")))
                       if c.get("component_id") in drawn and c.get("kind") == kind else c for c in components]

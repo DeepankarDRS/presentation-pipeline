@@ -461,7 +461,7 @@ def strip_control_chars(text: str) -> tuple[str, int]:
     return cleaned, n
 
 
-# Chart focus colour (house-style chart_rules; 2026-10-08 for one-series bars over time, every chart
+# Chart focus colour (house-style kinds.chart; 2026-10-08 for one-series bars over time, every chart
 # type since the 2026-10-22 chart pass): the bar / series the headline names wears the focus colour,
 # otherwise the latest period; the rest the base colour. Code only MOVES a focus the LLM already drew
 # (one focus colour against one grey or pale base), so a good / bad colouring is never touched. A

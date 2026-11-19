@@ -21,7 +21,7 @@ from typing import Any
 
 from src.agents.context_builder import build_contract
 from src.agents.repairer import build_patch_prompts, _build_repair_context, regenerate_prompts, replan
-from src.agents.validator import normalize_and_compile
+from src.agents.validator import validate_slide
 from src.compiler.repair_guidance import cap_diag_msg
 from src.state import AttemptRecord, PresentationState
 from src.utils.llm_client import extract_usage, get_llm, usage_record
@@ -48,7 +48,10 @@ def _do_patch(state, plan, problems, visual_issues, contract, theme_el, original
         pre_issues=[], compile_diags=[], objective=objective,
         forbidden_tags=contract.get("forbidden_tags", []),
         theme_element=theme_el, visual_issues=visual_issues,
-        house_style=contract.get("house_style", ""),
+        # the per-kind sizing left the shared grammar for COMPONENT SIZING (2026-11-19): the patch keeps it
+        house_style="\n\n".join(x for x in (contract.get("house_style", ""), contract.get("component_sizing", "")
+                                            and "COMPONENT SIZING (this slide's components)\n"
+                                            + contract["component_sizing"]) if x),
         component_recipes=contract.get("component_recipes", ""),
         visual_only=True,
     )
@@ -131,7 +134,12 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
     run_id = state.get("run_id", "unknown")
     _pipeline_root = Path(__file__).resolve().parent.parent.parent
     out_dir = _pipeline_root / "output" / "runs" / run_id / f"visual-repair-{count}"
-    compile_ok, new_cr = normalize_and_compile(xml, theme_el, out_dir)
+    # the validator's own path: the repaired XML still holds the ref tags code draws (<KpiRow ref>, <Chart ref>, ...),
+    # which POM alone rejects (2026-11-19: every repair of a slide with a composition node was discarded)
+    checked = validate_slide({**state, "current_xml": xml, "slide_plans": extra.get("slide_plans", slide_plans),
+                              "contract": extra.get("contract", contract)}, out_dir)
+    new_cr = checked.get("compile_result") or {}
+    compile_ok = bool(new_cr.get("ok"))
 
     tier = 2 if strategy == "regenerate" else 1
     record = AttemptRecord(
@@ -152,6 +160,10 @@ def visual_repairer_node(state: PresentationState) -> dict[str, Any]:
     result = {
         "current_xml": xml,
         "compile_result": new_cr,
+        # what slide_router saves for the deck and the critic's re-review reads: the repaired slide, not the old one
+        "normalize_result": checked.get("normalize_result"),
+        "validate_result": checked.get("validate_result"),
+        "layout_issues": checked.get("layout_issues", []),
         "visual_repair_count": count,
         "visual_repair_outcome": "improved",
         "generation_history": history,

@@ -43,7 +43,7 @@ from src.compiler.nodes import cards, composed, element_refs, tiles, validate  #
 
 INPUTS = ROOT / "docs" / "eval" / "nodes-paid" / "inputs.json"
 OUT = ROOT / "output" / "composition-paid"
-NODES = ("chart", "timeline", "kpi_row", "card_grid", "table", "bullet_list")   # composed.kinds_on()'s order
+NODES = composed.KINDS
 ARMS = {"A": {"POM_BLOCKS": "tiles", "POM_NODES": ""},
         "B": {"POM_BLOCKS": "tiles", "POM_NODES": ",".join(NODES)}}
 # per run on gpt-6.1-sol: 11-13k input tokens (mostly cached after the first), 300-3,000 output + reasoning; a repair
@@ -57,10 +57,11 @@ _ATTR = re.compile(r'\s(variant|layout|arrange)="[^"]*"')
 
 
 def set_arm(arm: str) -> None:
-    """The arm's switches (an empty POM_NODES also keeps a .env value out: load_dotenv never overrides a set key)."""
+    """Arm B (the composition nodes) is the pipeline itself since 2026-11-19; arm A (charts, tables, lists drawn by
+    hand) runs only on the branch archive/hand-drawn-fallbacks. Saved A runs still score (--rescore, --a-from)."""
+    if arm != "B":
+        raise SystemExit(f"arm {arm}: the hand-drawn route lives on the branch archive/hand-drawn-fallbacks")
     os.environ.update(ARMS[arm])
-    want = list(NODES) if arm == "B" else []
-    assert tiles.on() and sorted(composed.kinds_on()) == sorted(want), (arm, os.environ.get("POM_NODES"), composed.kinds_on())
 
 
 def items() -> list[dict]:
@@ -132,7 +133,7 @@ def _dry_xml(it: dict, arm: str) -> str:
         tags += "".join(f'<CardGrid ref="{cid}"/>' for cid in cards.card_components(plan))
     else:
         tags = ""
-        for kind in composed.kinds_on():
+        for kind in composed.KINDS:
             for cid in composed.drawn(plan, kind):
                 v = ' variant="rows"' if kind in ("kpi_row", "table", "bullet_list", "timeline", "chart") else ""
                 tags += f'<{composed.tag(kind)} ref="{cid}"{v} grow="1"/>'

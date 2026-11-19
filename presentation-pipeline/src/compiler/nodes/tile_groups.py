@@ -1,5 +1,5 @@
 """KPI tiles and cards as composition nodes (docs/composition-convention-spec.md §5, §10 steps 1-2),
-`POM_NODES=kpi_row,card_grid` (each kind on its own; kpi_row needs element refs on, POM_BLOCKS kpi or tiles).
+always on (code draws every kpi_row / card_grid with a component_id).
 
 The LLM writes a group tag per component, as the tile nodes; `variant` names a composition only:
 
@@ -38,16 +38,6 @@ SEVERITY = compose.SEVERITY
 STRUCTURE = ("layout", "arrange")   # today's structure attributes: meta_aliases
 TODAY = {"grid", "grid numbered", "steps"}   # today's tiles / cards: drawn by tiles.py / cards.py, ids as today
 _ITEM_REF = tiles._ITEM_REF
-
-
-def on(kind: str) -> bool:
-    if kind == "kpi_row":
-        return spec.nodes_on(kind) and element_refs.refs_on()
-    return kind in KINDS and spec.nodes_on(kind)
-
-
-def kinds_on() -> list[str]:
-    return [k for k in KINDS if on(k)]
 
 
 def node(kind: str) -> dict[str, Any]:
@@ -672,9 +662,9 @@ def draw(comp: dict, gattrs: dict[str, str] | None, kids: dict[int, dict], apart
 # ── the slide ─────────────────────────────────────────────────────────────────
 
 def expand(xml: str, plan: dict | None) -> dict[str, Any]:
-    """Every group / item tag of the kinds switched on, drawn from the plan."""
+    """Every group / item tag, drawn from the plan."""
     out = {"xml": xml, "issues": [], "ok": True, "components": {}}
-    for kind in kinds_on():
+    for kind in KINDS:
         r = _expand_kind(out["xml"], plan, kind)
         out = {"xml": r["xml"], "issues": out["issues"] + r["issues"], "ok": out["ok"] and r["ok"],
                "components": {**out["components"], **r["components"]}}
@@ -786,10 +776,12 @@ def _expand_kind(xml: str, plan: dict | None, kind: str) -> dict[str, Any]:
 
 # ── prompt ─────────────────────────────────────────────────────────────────────
 
-def node_lines() -> str:
-    """The fixed lines for the kinds switched on (the cached part of the system prompt)."""
-    lines = ["## KPI TILES AND CARDS (code draws them from the plan)"]
-    for kind in kinds_on():
+def node_lines(kinds: tuple[str, ...] | list[str] = KINDS) -> str:
+    """The lines for `kinds` (the slide's code-drawn KPI rows / card grids)."""
+    kinds = [k for k in KINDS if k in kinds]
+    title = {("kpi_row",): "KPI TILES", ("card_grid",): "CARDS"}.get(tuple(kinds), "KPI TILES AND CARDS")
+    lines = [f"## {title} (code draws them from the plan)"]
+    for kind in kinds:
         nd = node(kind)
         parts = " ".join(f"{p}." for p in nd["parts"])
         lines.append(f'<{nd["tag"]} ref="<{kind} id>" variant="..."/>: variant = ' + "; ".join(
@@ -815,10 +807,12 @@ def node_lines() -> str:
         "  A fill marks a difference: the bad metric among good ones, the item the headline names. Items that all "
         "mean the same take no fill (one colour on all = no meaning); give them an edge or head by category or "
         "phase, or leave them plain.",
-        '  <KpiRow ref="snapshot"><Highlight item="Gross Margin" fill="bad"/><Highlight item="CAC Payback" '
-        'fill="watch"/></KpiRow>',
-        '  <CardGrid ref="pillars" variant="banded"><Highlight item="*" head="category"/></CardGrid>',
-        '  <CardGrid ref="roadmap"><Highlight item="*" edge="phase"/><Highlight item="Scale" fill="dark"/></CardGrid>',
+        # examples for the slide's own kinds only
+        *(['  <KpiRow ref="snapshot"><Highlight item="Gross Margin" fill="bad"/><Highlight item="CAC Payback" '
+           'fill="watch"/></KpiRow>'] if "kpi_row" in kinds else []),
+        *(['  <CardGrid ref="pillars" variant="banded"><Highlight item="*" head="category"/></CardGrid>',
+           '  <CardGrid ref="roadmap"><Highlight item="*" edge="phase"/><Highlight item="Scale" fill="dark"/></CardGrid>']
+          if "card_grid" in kinds else []),
         "  Hint words -> Highlight: 'X in negative / positive / warning' -> fill or color bad / good / watch on X; "
         "'focus on X', 'tint X' -> fill=\"focus\"; 'dark / inverted X' -> fill=\"dark\"; 'accent border' -> edge=\"focus\" side=\"left\" (on X, or *); "
         "'by stage / phase' -> phase; 'each pillar / segment / platform its colour' -> category; 'lift / elevate' -> "

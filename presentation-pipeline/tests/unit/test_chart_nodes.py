@@ -53,11 +53,6 @@ def nodes_on(monkeypatch):
 
 # ── switch ────────────────────────────────────────────────────────────────────
 
-def test_switch_is_a_comma_list(monkeypatch):
-    monkeypatch.setenv("POM_NODES", "table, chart")
-    assert C.on() and spec.nodes_on("table") and not spec.nodes_on("timeline")
-    monkeypatch.setenv("POM_NODES", "")
-    assert not C.on()
 
 
 # ── compositions ──────────────────────────────────────────────────────────────
@@ -234,9 +229,9 @@ def test_generator_prompt_hides_chart_data(monkeypatch):
     state = {"slide_plans": [plan(ROAS)], "current_slide_index": 0, "contract": {}, "raw_request": "x"}
     system, user = generator._render_prompts(state)
     assert "## CHARTS" in system and "CHART roas:" in user and "0.29x" not in user
-    monkeypatch.setenv("POM_NODES", "")
-    system, user = generator._render_prompts(state)
-    assert "## CHARTS" not in system and "0.29x" in user
+    # no chart on the slide: no chart section in its prompt
+    state["slide_plans"] = [{"slide_title": "x", "components": []}]
+    assert "## CHARTS" not in generator._render_prompts(state)[0]
 
 
 def test_context_builder_drops_hand_chart_guidance():

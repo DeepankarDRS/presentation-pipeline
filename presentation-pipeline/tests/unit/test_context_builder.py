@@ -181,14 +181,17 @@ def test_render_house_style_has_core_sections():
     assert "FRAME" in hs
     assert "COMPOSITION" in hs
     assert "SIZING BY WEIGHT" in hs
-    assert "DATA NODE SIZING" in hs
     assert "1280" in hs
+    # one kind's lines are per slide (COMPONENT SIZING), never in the shared grammar
+    for kind_line in ("DATA NODE SIZING", "defaultRowHeight", "<Col>", "MatrixItem", "ProcessArrowStep", "Pyramid:",
+                      "TimelineItem", "chartColors", "showLegend", "<KpiGrid"):
+        assert kind_line not in hs, kind_line
 
 
 def test_render_house_style_teaches_grow_not_pixel_budgets():
     # Phase 1 sizing grammar: POM allocates the height; the old budget arithmetic is gone.
     hs = _render_house_style()
-    assert "hero 3 | peer 2" in hs and 'minH="180"' in hs
+    assert "hero 3 | peer 2" in hs and 'h="max" minH' in hs
     assert "HEIGHT BUDGET" not in hs and "available_h" not in hs
 
 

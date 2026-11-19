@@ -20,6 +20,7 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from src.agents.critic_schema import VisualCriticOutput
+from src.compiler.nodes import composed
 from src.utils.llm_client import get_llm, unpack_raw
 
 logger = logging.getLogger(__name__)
@@ -70,6 +71,7 @@ def run_visual_critic(
     compile_warnings: list[dict[str, str]] | None = None,
     layout_issues: list[dict[str, str]] | None = None,
     previous_issues: list[dict[str, Any]] | None = None,
+    tags_xml: str = "",
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     """Run vision LLM on the screenshot and return (issues, usage, repair_hints).
 
@@ -97,6 +99,10 @@ def run_visual_critic(
         layout_issues=layout_issues or [],
         visual_notes=_filter_visual_notes(contract.get("notes", [])),
         previous_issues=previous_issues or [],
+        # the composition nodes: the critic sees them drawn, the repair edits their ref tags (2026-11-19)
+        tags_xml=tags_xml,
+        code_drawn=[f'<{composed.tag(k)} ref="{cid}"/> ({k})' for k in composed.slide_kinds(slide_plan)
+                    for cid in composed.drawn(slide_plan, k)],
     )
 
     image_b64 = _encode_image(screenshot_path)

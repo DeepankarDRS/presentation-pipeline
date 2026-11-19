@@ -79,10 +79,19 @@ chart_sizing:
 
 content_rules:
   - "Use only the figures in the plan, exactly as written — never make up, round or restyle one; never 'XX%' or 'TBD'"
-  - "KPI values keep the plan's units: a large value with the unit in a smaller <Span>"
-  - "Charts and tables show exactly the points and rows the plan gives — never pad them"
-  - "Bullet points: the plan's points, each one short sentence"
-  - "Deltas: show direction (+18% QoQ, -2.3 pts) with appropriate $positive/$negative color"
+
+# content rules for one component kind: only on a slide that draws that kind by hand (code writes a code-drawn
+# component's content itself)
+kind_content_rules:
+  kpi_row:
+    - "KPI values keep the plan's units: a large value with the unit in a smaller <Span>"
+    - "Deltas: show direction (+18% QoQ, -2.3 pts) with appropriate $positive/$negative color"
+  chart:
+    - "Charts and tables show exactly the points and rows the plan gives — never pad them"
+  table:
+    - "Charts and tables show exactly the points and rows the plan gives — never pad them"
+  bullet_list:
+    - "Bullet points: the plan's points, each one short sentence"
 
 design_principles:
   - "Use $surfaceAlt cards to group related content — never float raw text on the background"

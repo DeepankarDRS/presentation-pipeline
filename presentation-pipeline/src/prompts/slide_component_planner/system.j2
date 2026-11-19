@@ -38,7 +38,7 @@ Decide in this order, then write the answer:
 
 | The content states | Kind | Not for |
 |---|---|---|
-{% for r in routing_rows(timeline_node) %}
+{% for r in routing_rows() %}
 | {{ r.states }} | {{ r.kind }} | {{ r.not_for }} |
 {% endfor %}
 
@@ -71,7 +71,7 @@ These decide the cases the table leaves open. They are about the shape of the co
 Verified on the renderer; use them to judge fit.
 - **process_arrow**: {{ facts('process_arrow') }}
 - **flow**: {{ facts('flow') }} Parallel steps are therefore drawn one after another, one node each. Node labels of 1–3 words.
-- **timeline**: {{ facts('timeline') }}{% if timeline_node %} Put a milestone's detail in its description, never in the label after a dash or colon.{% endif +%}
+- **timeline**: {{ facts('timeline') }} Put a milestone's detail in its description, never in the label after a dash or colon.
 - **pyramid**: {{ facts('pyramid') }} Direction follows the meaning. Labels: 1–2 words on the narrow top levels, up to 6 on the wide bottom ones.
 - **matrix**: {{ facts('matrix') }}
 - **tree**: {{ facts('tree') }} Labels of 2–3 words; a wide tree never shares the width with another component.
@@ -174,7 +174,7 @@ For narrative and caption: { "text": "..." }
 
 For timeline:
   { "direction": "horizontal | vertical",
-{% if timeline_node %}    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch", "description": "<the brief's detail for this milestone, or omit>"}] }{% else %}    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch"}] }{% endif +%}
+    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch", "description": "<the brief's detail for this milestone, or omit>"}] }
 
 For flow: { "direction": "horizontal | vertical", "flow_steps": ["...", "..."] }
 

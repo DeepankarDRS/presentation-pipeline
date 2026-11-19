@@ -1,4 +1,4 @@
-"""Bullet list composition node (approved by the user 2026-11-04, docs/eval/bullet-node/), `POM_NODES=bullet_list`.
+"""Bullet list composition node (approved by the user 2026-11-04, docs/eval/bullet-node/).
 
 The LLM writes one tag per bullet_list component; code draws it from the plan:
 
@@ -39,10 +39,6 @@ MAX_ICONS = 6   # past it a full slide's rows are too short for fit-grow to grow
 _ICON_NAMES = Path(__file__).resolve().parents[2] / "knowledge" / "core" / "icon-names.txt"
 X = native.x
 A = compose.a
-
-
-def on() -> bool:
-    return spec.nodes_on("bullet_list")
 
 
 def node() -> dict[str, Any]:
@@ -356,7 +352,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
 # ── prompt ─────────────────────────────────────────────────────────────────────
 
 def node_lines() -> str:
-    """The fixed lines (the cached part of the system prompt)."""
+    """The lines for this kind (in the prompt of a slide that has one)."""
     vs = spec.blocks()["bullet_list"]["variants"]
     return "\n".join([
         "## BULLET LISTS (code draws them from the plan)",

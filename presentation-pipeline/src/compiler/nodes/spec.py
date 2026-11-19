@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import functools
-import os
 import re
 from pathlib import Path
 from typing import Any
@@ -51,13 +50,9 @@ def nodes() -> dict[str, Any]:
     return yaml.safe_load(_FILE.read_text(encoding="utf-8"))["nodes"]
 
 
-DEFAULT_NODES = "chart,timeline,kpi_row,card_grid,table,bullet_list"
-
-
-def nodes_on(kind: str) -> bool:
-    """`POM_NODES`: a comma list of the plan kinds code draws (left-blocks spec §2.5), e.g. "chart". All six when it is
-    not set (docs/eval/nodes-paid/README.md); set but empty = none, the LLM writes them."""
-    return kind in {k.strip() for k in os.environ.get("POM_NODES", DEFAULT_NODES).lower().split(",")}
+# The plan kinds code draws from the plan (composition nodes, docs/eval/nodes-paid/README.md). Always on: the routes
+# where the LLM drew them by hand live on the branch archive/hand-drawn-fallbacks (2026-11-19).
+CODE_DRAWN = ("chart", "timeline", "kpi_row", "card_grid", "table", "bullet_list")
 
 
 def _plan_kinds(b: dict) -> list[str]:

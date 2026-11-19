@@ -1,4 +1,4 @@
-"""1a tooling (§4): slide selection, variety signatures, scorer helpers, and a scripted dry run end to end."""
+"""1a tooling (§4) still used by the galleries and replays: variety signatures, scorer helpers, Phase 0b blocks."""
 
 import json
 import shutil
@@ -7,24 +7,14 @@ from pathlib import Path
 import pytest
 
 from scripts import variety
-from scripts.from_plans import find_runs, load_run
+from scripts.from_plans import load_run
 from scripts.node_test_score import invented, node_regions
-from scripts.node_test_select import example_titles, select
 
 _FIX = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "nodes"
 
 
-def test_example_titles_come_from_the_prompt():
-    t = example_titles()
-    assert len(t) == 4 and "h1 2026 snapshot" in t
 
 
-def test_selection_rule_on_fixture_runs():
-    runs = find_runs(_FIX / "runs")
-    r = select(runs, {"repeat customers now drive most of brewly s revenue"})
-    left = {(x["case"], x["slide"]): x["reason"] for x in r["left_out"]}
-    assert left[("deck-qbr-data", 1)].startswith("nothing to place")
-    assert r["counts"]["slides"] == 9   # 11 slides - QBR cover - one example source
 
 
 def test_load_run_uses_the_saved_theme():
@@ -53,31 +43,6 @@ def test_invented_words_inside_nodes():
     assert invented(icon, plan) == {}
 
 
-def test_scripted_dry_run_end_to_end(tmp_path):
-    """Every NODE_* code the fixtures aim at is reported on its slide; repairs fix the errors; all compile."""
-    if not shutil.which("node"):
-        pytest.skip("node not installed")
-    from scripts import node_test
-    from scripts.phase0b.fit import Measurer
-    llm = node_test.ScriptedLLM(_FIX / "scripted")
-    expect = {("deck-qbr-data", 2): "NODE_REF_UNKNOWN", ("deck-qbr-data", 3): "NODE_CHILDREN_DROPPED",
-              ("deck-qbr-data", 4): "NODE_BYPASSED", ("gate-deck-all-nodes-dense", 1): "NODE_MISSING",
-              ("gate-deck-all-nodes-dense", 2): "NODE_REF_DUPLICATE", ("gate-deck-all-nodes-dense", 4): "NODE_KIND_NO_REF"}
-    measure = Measurer()
-    calls = []
-    try:
-        for (case, n), code in expect.items():
-            run = load_run(_FIX / "runs" / "decks" / f"{case}__r1")
-            slide = next(s for s in run["slides"] if s["number"] == n)
-            r = node_test.run_slide(run, slide, llm, measure, tmp_path / case / str(n), "Inter", True, calls, repairs=2)
-            assert code in r["issues_first"], (case, n, r["issues_first"])
-            assert r["compiled"], (case, n)
-            errors = {"NODE_REF_UNKNOWN", "NODE_MISSING", "NODE_REF_DUPLICATE", "NODE_KIND_NO_REF"}
-            assert r["repairs"] == (1 if code in errors else 0), (case, n)
-            assert not errors & set(r["issues_final"]), (case, n, r["issues_final"])
-    finally:
-        measure.close()
-    assert {c["step"] for c in calls} == {"generator", "node_repair"}
 
 
 def test_expand_failure_leaves_an_empty_box(monkeypatch):
@@ -99,21 +64,6 @@ def test_expand_failure_leaves_an_empty_box(monkeypatch):
     assert codes.count("NODE_EXPAND_FAILED") == 2 and '<VStack h="200" />' in xml
 
 
-def test_first_try_only_by_default(tmp_path):
-    """D12: 1a records an error on the first try and does not repair it."""
-    if not shutil.which("node"):
-        pytest.skip("node not installed")
-    from scripts import node_test
-    from scripts.phase0b.fit import Measurer
-    assert node_test.MAX_REPAIRS == 0
-    run = load_run(_FIX / "runs" / "decks" / "deck-qbr-data__r1")
-    slide = next(s for s in run["slides"] if s["number"] == 2)
-    calls, m = [], Measurer()
-    try:
-        r = node_test.run_slide(run, slide, node_test.ScriptedLLM(_FIX / "scripted"), m, tmp_path, "Inter", True, calls)
-    finally:
-        m.close()
-    assert r["repairs"] == 0 and len(calls) == 1 and "NODE_REF_UNKNOWN" in r["issues_final"]
 
 
 # "rail" was the native timeline in the 1a names; since 2026-11-02 it is the alternating drawing (no Phase 0b block),

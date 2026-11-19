@@ -79,15 +79,15 @@ def test_planner_schema_description_is_scoped():
     assert "intra-component" not in desc
 
 
-def test_generator_user_prompt_shows_scope_under_component(monkeypatch):
-    monkeypatch.setenv("POM_NODES", "")   # a table code draws carries none of this in the prompt
+def test_generator_user_prompt_shows_scope_under_component():
+    # a table code draws carries none of this in the prompt; one without a component_id is drawn by hand
     env = Environment(loader=FileSystemLoader("src/prompts/generator"), trim_blocks=True, lstrip_blocks=True)
-    comp = {"kind": "table", "component_id": "roas", "count": 1,
+    comp = {"kind": "table", "count": 1,
             "design_hint": "color ROAS below 1x in negative", "content_data": {}}
     contract = build_contract({"components": [comp], "slide_type": "data"}, DEFAULT_THEME)
     prompt = env.get_template("user.j2").render(components=[comp], hint_scopes=contract["hint_scopes"])
     # header on its own line (trim_blocks used to glue the hint onto it)
-    assert "- table [roas]\n  visual-intent: color ROAS below 1x in negative\n  scope: treatments: emphasis" in prompt
+    assert "- table\n  visual-intent: color ROAS below 1x in negative\n  scope: treatments: emphasis" in prompt
     assert "never: icons, logos" in prompt
 
 

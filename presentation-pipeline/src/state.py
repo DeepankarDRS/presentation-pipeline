@@ -286,6 +286,7 @@ class PresentationState(TypedDict, total=False):
     pre_critic_slide_plans: list[dict[str, Any]] | None
     pre_critic_contract: dict[str, Any] | None
     pre_critic_score: int
+    pre_critic_results: dict[str, Any] | None   # compile / normalize / validate / layout before a visual repair
 
     # ── Retry (repairer writes) ──
     retry_tier: RetryTierLiteral
@@ -372,6 +373,7 @@ def initial_state(
         pre_critic_slide_plans=None,
         pre_critic_contract=None,
         pre_critic_score=0,
+        pre_critic_results=None,
         retry_tier=0,
         retry_count=0,
         retry_budget=retry_budget,

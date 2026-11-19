@@ -44,7 +44,7 @@ ChartDataPoint_attributes:
 
 notes:
   - "chartColors references the theme: chartColors='[\"$chart1\",\"$chart2\"]' — one token per series (per bar for a single-series bar), in order."
-  - "FOCUS COLOUR and NO LEGEND BOX: see CHART RULES. Series names go in the chart's title row (12 px colour square + name)."
+  - "FOCUS COLOUR and NO LEGEND BOX: see COMPONENT SIZING (chart). Series names go in the chart's title row (12 px colour square + name)."
   - "Give the Chart an explicit w/h sized to its container. A Chart with no w/h will fail at render."
   - "In a two-column chart+table band, the Chart is w=\"max\" inside its column VStack; the column's % width sets the actual size."
   - "One series is enough for most MVP slides; add series only when the request compares groups."

@@ -37,16 +37,47 @@ def test_two_slides_of_one_deck_share_everything_before_this_slide():
     assert len(head_a) > 0.5 * len(b)
 
 
-def test_per_slide_parts_come_after_the_mark(monkeypatch):
-    monkeypatch.setenv("POM_NODES", "")   # with kinds code draws there are fewer recipes to list
-    head, tail = _system(DATA).split(MARK)
+MIXED = {"slide_index": 2, "slide_type": "content", "slide_title": "How an order flows", "components": [
+    {"kind": "title", "component_id": "header", "count": 1},
+    {"kind": "chart", "component_id": "trend", "count": 1, "chart_type": "bar",
+     "content_data": {"chart_labels": ["Q1", "Q2"], "chart_series": [{"name": "Orders", "values": [3, 4]}]}},
+    {"kind": "flow", "component_id": "steps", "count": 1, "design_hint": "accent border on the flow card",
+     "content_data": {"flow_steps": ["Order", "Pack", "Ship"]}},
+    {"kind": "narrative", "component_id": "why", "count": 1, "content_data": {"text": "Packing is the bottleneck."}},
+]}
+
+
+def test_per_slide_parts_come_after_the_mark():
+    head, tail = _system(MIXED).split(MARK)
     for per_slide in ("## SLIDE TYPE", "## ALLOWED NODES", "## ALLOWED ATTRIBUTES PER NODE", "## NODE HIERARCHY",
+                      "## CODE-DRAWN NODES", "## CHARTS (code draws them", "## COMPONENT SIZING",
                       "## COMPONENT RECIPES", "## VISUAL-INTENT TRANSLATION", "## NOTES FOR THIS SLIDE"):
         assert per_slide not in head
         assert per_slide in tail
-    # chart / table notes are per slide; the deck's own notes (theme, content rules) are in the prefix
-    assert "Chart chartColors uses theme tokens" in tail and "Chart chartColors uses theme tokens" not in head
+    # a hand-drawn kind's notes are per slide; the deck's own notes (theme, content rules) are in the prefix
+    assert "FlowConnection from/to" in tail and "FlowConnection from/to" not in head
     assert "Theme palette:" in head and "Theme palette:" not in tail
+
+
+def test_only_this_slides_kinds_reach_the_prompt():
+    """A code-drawn kind's section, sizing and tags reach a slide's prompt only when its plan has one; a kind code
+    draws never gets the rules for drawing it by hand (2026-11-19)."""
+    cover, data, mixed = _system(COVER), _system(DATA), _system(MIXED)
+    for section in ("## CODE-DRAWN NODES", "## CHARTS", "## TIMELINES", "## KPI TILES", "## TABLES", "## BULLET LISTS",
+                    "## COMPONENT SIZING"):
+        assert section not in cover, section
+    assert "## KPI TILES (code" in data and "## CHARTS" in data and "## TABLES" in data
+    assert "## TIMELINES" not in data and "## BULLET LISTS" not in data and "CardGrid" not in data
+    assert "## CHARTS" in mixed and "## TABLES" not in mixed and "## KPI TILES" not in mixed
+    # chart and table are drawn by code on DATA: no native children or hand-drawing rules for them
+    tail = data.split(MARK)[1]
+    for prohibition in ("no ChartSeries / ChartDataPoint", "No <Tr>, <Td> or fontSize"):   # the node sections' own
+        tail = tail.replace(prohibition, "")
+    for hand in ("ChartSeries", "<Col>", "<Td>", "<Tr ", "defaultRowHeight", "TimelineItem",
+                 "Chart chartColors uses theme tokens"):
+        assert hand not in tail, hand
+    # the hand-drawn flow on MIXED gets its sizing and the diagram rule
+    assert 'Flow: h="max" minH="200"' in mixed and "Direction and box go together" in mixed
 
 
 def test_deck_parts_sit_after_the_static_rules():

@@ -618,7 +618,7 @@ def cmd_consistency(args: argparse.Namespace) -> int:
     for kind in NODE_KINDS:
         comp = plan_for(kind, "")
         prompt[kind] = {"prompt_line": tokens(composed.prompt_line(comp, HEADS[kind]))}
-    prompt["node_lines_all"] = tokens(composed.node_lines())
+    prompt["node_lines_all"] = tokens(composed.node_lines(composed.KINDS))
     res = {"plan_map": PLAN_MAP, "parts": parts_matrix, "meta": meta_matrix, "words": words, "aliases": aliases, "sources": sources,
            "tone": tone_matrix(), "reach_summary": summary, "prompt_tokens": prompt, "duplicates": duplicate_matrix()}
     (DOCS / "consistency.json").write_text(json.dumps(res, indent=1, ensure_ascii=False), encoding="utf-8")
@@ -1131,7 +1131,7 @@ def cmd_atomic(args: argparse.Namespace) -> int:
         sev = sorted({f"{i['severity']}:{i['code']}" for i in issues})
         fault_rows[name] = {"caught": any(i["severity"] == "error" for i in issues), "codes": sev}
         print(name, fault_rows[name], flush=True)
-    prompt = {"composition_node_lines": tokens(composed.node_lines()), "atomic_prompt": tokens(ATOMIC_PROMPT),
+    prompt = {"composition_node_lines": tokens(composed.node_lines(composed.KINDS)), "atomic_prompt": tokens(ATOMIC_PROMPT),
               "per_component_line": {kd: tokens(composed.prompt_line(plan_for(kd, ""), HEADS[kd])) for kd in NODE_KINDS}}
     (DOCS / "atomic.json").write_text(json.dumps({"samples": out, "faults": fault_rows, "prompt": prompt,
                                                   "atomic_xml": {s[0]: s[3] for s in samples}, "free_xml": {s[0]: s[4] for s in samples}},

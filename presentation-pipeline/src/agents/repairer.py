@@ -473,7 +473,10 @@ def _repairer_inner(state: PresentationState, current_count: int) -> dict[str, A
             theme_element=contract.get("theme_element", state.get("theme_element", "")),
             visual_issues=visual_issues,
             layout_issues=state.get("layout_issues"),
-            house_style=contract.get("house_style", ""),
+            # the per-kind sizing left the shared grammar for COMPONENT SIZING (2026-11-19): a visual patch keeps it
+            house_style="\n\n".join(x for x in (contract.get("house_style", ""), contract.get("component_sizing", "")
+                                                and "COMPONENT SIZING (this slide's components)\n"
+                                                + contract["component_sizing"]) if x),
             component_recipes=contract.get("component_recipes", ""),
             visual_only=visual_only_failure,
         )

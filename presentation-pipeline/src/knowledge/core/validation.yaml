@@ -86,11 +86,11 @@ translations:
   - { wrong: '<s>',                   right: '<S> (capital S, Phase D inline tag)' }
   - { wrong: '<svg>',                 right: '<Svg> (capital S, Phase D) — wraps an inner <svg> child element' }
   - wrong: |
-      <Li>Normal
+      <Text>Normal
         <Span color="$negative">red</Span>
         item
-      </Li>
-    right: "<Li>Normal <Span color=\"$negative\">red</Span> item</Li>  — inline tags and surrounding text MUST be on one line; a newline before/after the tag renders as a literal line break"
+      </Text>
+    right: "<Text>Normal <Span color=\"$negative\">red</Span> item</Text>  — inline tags and surrounding text MUST be on one line; a newline before/after the tag renders as a literal line break"
 
 # ── Value constraints (Type 3 render errors pass XML parsing then fail) ───────
 value_constraints:
@@ -133,10 +133,16 @@ semantic_rules:
   - "At most one <Theme>, at the top level, before the slides."
   - "$token references only resolve inside color attributes and gradient strings — never in text content or non-color attributes."
   - "Referencing an undefined $token is a validation error."
-  - "Arrow from/to must reference valid id attributes on connectable nodes (Text, Shape with rect/roundRect/ellipse)."
-  - "Layer children must specify x and y for absolute positioning."
-  - "FlowConnection from/to must reference FlowNode ids within the same Flow."
-  - "MatrixItem x and y must be 0-1 normalised floats."
+
+# the rules for one component kind: in the generator's notes only on a slide that draws that kind by hand
+kind_semantic_rules:
+  layer:
+    - "Arrow from/to must reference valid id attributes on connectable nodes (Text, Shape with rect/roundRect/ellipse)."
+    - "Layer children must specify x and y for absolute positioning."
+  flow:
+    - "FlowConnection from/to must reference FlowNode ids within the same Flow."
+  matrix:
+    - "MatrixItem x and y must be 0-1 normalised floats."
 
 # ── Build diagnostics (warnings, not parse errors) ──────────────────────────
 diagnostics:

@@ -32,6 +32,8 @@ from src.state import CriticResult, PresentationState, VisualCriticResult
 logger = logging.getLogger(__name__)
 
 _ASSESSMENT_PENALTY = {"layout_broken": 15, "needs_tuning": 5, "good": 0}
+# the validator's results for the slide before any visual repair (restored on a rollback)
+_ROLLBACK_KEYS = ("compile_result", "normalize_result", "validate_result", "layout_issues")
 
 
 def compute_critic_score(issues: list[dict[str, Any]], assessment: str) -> int:
@@ -114,6 +116,7 @@ def _run_visual_review(
         compile_warnings=compile_warnings,
         layout_issues=critic_layout_issues(state.get("layout_issues", [])),
         previous_issues=previous_issues,
+        tags_xml=(state.get("normalize_result") or {}).get("tags_xml") or "",
     )
 
     return visual_issues, screenshot_path, visual_usage, repair_hints
@@ -178,6 +181,8 @@ def _critic_inner(state: PresentationState, idx: int) -> dict[str, Any]:
         updates["pre_critic_slide_plans"] = list(state.get("slide_plans", []))
         updates["pre_critic_contract"] = state.get("contract")
         updates["pre_critic_score"] = current_score
+        # what the deck is built from (slide_router) and the critic re-reads: a rollback restores these with the XML
+        updates["pre_critic_results"] = {k: state.get(k) for k in _ROLLBACK_KEYS}
 
     if is_re_review and not passed:
         pre_score = state.get("pre_critic_score", 0)
@@ -192,6 +197,7 @@ def _critic_inner(state: PresentationState, idx: int) -> dict[str, Any]:
                 state.get("pre_critic_slide_plans") or list(state.get("slide_plans", []))
             )
             updates["contract"] = state.get("pre_critic_contract")
+            updates.update(state.get("pre_critic_results") or {})
             updates["critic_result"] = CriticResult(passed=True, issues=issues)
             visual_result["passed"] = True
             repair_hints["strategy"] = "none"

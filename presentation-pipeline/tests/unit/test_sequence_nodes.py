@@ -205,15 +205,10 @@ def test_ref_errors_and_hand_drawn():
     assert hand in run(hand, SHORT_TL)["xml"]
 
 
-def test_switched_off_is_left_alone(monkeypatch):
-    monkeypatch.setenv("POM_NODES", "chart")
-    res = run('<Timeline ref="short" />', SHORT_TL)
-    assert '<Timeline ref="short" />' in res["xml"] and res["components"] == {}
 
 
 def test_process_and_flow_have_no_node(monkeypatch):
-    monkeypatch.setenv("POM_NODES", "timeline,process_arrow,flow")
-    assert S.kinds_on() == ["timeline"] and "process_arrow" not in spec.nodes() and "flow" not in spec.nodes()
+    assert S.KINDS == ("timeline",) and "process_arrow" not in composed.KINDS and "process_arrow" not in spec.nodes() and "flow" not in spec.nodes()
     assert list(spec.blocks()["process_arrow"]["variants"]) == ["chevrons", "numbered", "alternating", "step_cards"]
     assert list(spec.blocks()["flow"]["variants"]) == ["boxes", "numbered", "step_cards"]
 
@@ -238,8 +233,6 @@ def test_generator_prompt_hides_timeline_text(monkeypatch):
     system, user = generator._render_prompts(state)
     assert "## TIMELINES" in system and "TIMELINE roadmap:" in user
     assert "Festive push" not in user
-    monkeypatch.setenv("POM_NODES", "")
-    assert "Festive push" in generator._render_prompts(state)[1]
 
 
 def test_context_builder_takes_the_tag():
@@ -264,7 +257,7 @@ def test_validator_expands(monkeypatch):
 
 
 def test_composed_registry():
-    assert composed.kinds_on() == ["timeline"]
+    assert "timeline" in composed.KINDS
     assert composed.all_drawn(plan(ROADMAP), "timeline") and not composed.all_drawn(plan(ROADMAP), "chart")
 
 

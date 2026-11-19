@@ -61,13 +61,9 @@ def item_tag(xml, cid, i):
 
 # ── switch and registry ───────────────────────────────────────────────────────
 
-def test_switch(monkeypatch):
-    assert G.kinds_on() == ["kpi_row", "card_grid"]
-    assert {"kpi_row", "card_grid"} <= set(composed.kinds_on())
-    monkeypatch.setenv("POM_BLOCKS", "off")   # KPI text is element refs: no fill pass, no kpi node
-    assert G.kinds_on() == ["card_grid"]
-    monkeypatch.setenv("POM_NODES", "chart")
-    assert G.kinds_on() == []
+def test_registry():
+    assert G.KINDS == ("kpi_row", "card_grid") and {"kpi_row", "card_grid"} <= set(composed.KINDS)
+    assert "CardGrid" not in G.node_lines(["kpi_row"]) and "KpiRow" not in G.node_lines(["card_grid"])
     assert composed.tag("kpi_row") == "KpiRow" and composed.tag("card_grid") == "CardGrid"
 
 

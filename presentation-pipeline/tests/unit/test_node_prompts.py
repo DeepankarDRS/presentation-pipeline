@@ -1,5 +1,5 @@
-"""The prompts and the repair path of a slide whose components code draws (POM_NODES): what the generator and the
-repairer are actually given. Found by running the graph with a fake LLM, 2026-11-04."""
+"""The prompts and the repair path of a slide whose components code draws (the composition nodes): what the
+generator and the repairer are actually given. Found by running the graph with a fake LLM, 2026-11-04."""
 
 from pathlib import Path
 
@@ -8,7 +8,6 @@ import pytest
 from src.agents import context_builder, generator
 from src.compiler.nodes import composed
 
-ALL = "kpi_row,card_grid,chart,table,timeline,bullet_list"
 KPIS = {"component_id": "kpis", "kind": "kpi_row", "count": 3, "weight": "main", "content_summary": "x", "design_hint": "ARR as the hero",
         "content_data": {"kpi_labels": ["ARR", "NRR", "CAC"], "kpi_values": ["$48M", "114%", "14 months"], "kpi_tones": ["good", "", "bad"]}}
 CARDS = {"component_id": "levers", "kind": "card_grid", "count": 2, "weight": "main", "content_summary": "x", "design_hint": "",
@@ -19,12 +18,6 @@ LIST = {"component_id": "pts", "kind": "bullet_list", "count": 2, "weight": "mai
         "content_data": {"bullets": ["Search fell", "Pricing rose"]}}
 LINE = {"component_id": "road", "kind": "timeline", "count": 2, "weight": "main", "content_summary": "x", "design_hint": "",
         "content_data": {"direction": "horizontal", "timeline_items": [{"date": "Jul", "label": "Build"}, {"date": "Nov", "label": "Ship"}]}}
-
-
-@pytest.fixture(autouse=True)
-def nodes_on(monkeypatch):
-    monkeypatch.setenv("POM_BLOCKS", "tiles")
-    monkeypatch.setenv("POM_NODES", ALL)
 
 
 def plan(*comps):
@@ -61,9 +54,9 @@ def test_no_hand_recipe_for_a_drawn_icon_list():
     assert "icon_rows" not in prompts(LIST)[0]
 
 
-def test_hand_drawn_kind_keeps_its_rules(monkeypatch):
-    monkeypatch.setenv("POM_NODES", "kpi_row")
-    _, user = prompts(TABLE, LINE)
+def test_hand_drawn_kind_keeps_its_rules():
+    # a component without a component_id is drawn by hand: its rules stay
+    _, user = prompts(dict(TABLE, component_id=None), dict(LINE, component_id=None))
     assert "never grow on its card" in user and "put the detail beside them" in user
 
 
@@ -98,10 +91,9 @@ def test_paid_check_cases_hold_every_node_and_its_arms_switch():
     items = CP.items()
     held = {k for it in items for k in it["kind"].split("+")}
     assert held == set(CP.NODES) and all(it["request"] for it in items) and "gj-h1-regen" not in {it["case"] for it in items}
-    CP.set_arm("B")
-    assert sorted(composed.kinds_on()) == sorted(CP.NODES)
-    CP.set_arm("A")
-    assert not composed.kinds_on()
+    assert set(CP.NODES) == set(composed.KINDS)
+    with pytest.raises(SystemExit):   # arm A, the hand-drawn route, is on the branch archive/hand-drawn-fallbacks
+        CP.set_arm("A")
 
 
 def test_paid_check_word_loss_reads_split_numbers_and_finds_a_real_loss():
@@ -336,11 +328,7 @@ def test_a_compiled_native_table_has_no_zero_lines_or_default_style(tmp_path):
     assert "5C22544A" not in x and 'bandRow="1"' not in x
 
 
-def test_all_six_composition_nodes_are_the_default(monkeypatch):
-    from src.compiler.nodes import composed, element_refs
-    monkeypatch.delenv("POM_NODES", raising=False)
-    monkeypatch.delenv("POM_BLOCKS", raising=False)
-    assert sorted(composed.kinds_on()) == sorted(["chart", "timeline", "kpi_row", "card_grid", "table", "bullet_list"])
-    assert element_refs.mode() == "tiles"
-    monkeypatch.setenv("POM_NODES", "")   # set but empty still turns them off
-    assert composed.kinds_on() == []
+def test_all_six_composition_nodes_are_always_on():
+    from src.compiler.nodes import spec
+    assert sorted(composed.KINDS) == sorted(["chart", "timeline", "kpi_row", "card_grid", "table", "bullet_list"])
+    assert set(composed.KINDS) == set(spec.CODE_DRAWN)

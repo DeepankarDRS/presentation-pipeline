@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import os
 
-import copy
 import functools
 import logging
 from pathlib import Path
@@ -21,10 +20,10 @@ from typing import Any
 import yaml
 
 from src.agents.blueprint_selector import select_blueprint
-from src.agents.hint_capabilities import hint_scopes, kind_treatments, visual_intent_techniques
-from src.agents.capacity import layout_rules
+from src.agents.hint_capabilities import hint_scopes, visual_intent_techniques
+from src.agents.capacity import kind_layout_rules, layout_rules
 from src.agents.style_resolver import DEFAULT_THEME, resolve_theme
-from src.compiler.nodes import cards, composed, tiles
+from src.compiler.nodes import bullets, composed, tables
 from src.state import ComponentPlan, PresentationState, SlidePlan
 
 logger = logging.getLogger(__name__)
@@ -263,10 +262,39 @@ def _select_attributes(allowed_nodes: list[str], nodes_yaml: dict) -> dict[str, 
 
 def _with_tags(nodes: list[str], hierarchy: str, attrs: dict[str, list[str]],
                contract: tuple[list[str], list[str], dict[str, list[str]]]) -> tuple[list[str], str]:
-    """Tile tags (tiles.tags_contract) added to ALLOWED NODES, NODE HIERARCHY and ALLOWED ATTRIBUTES (in place)."""
+    """A code-drawn kind's tags added to ALLOWED NODES, NODE HIERARCHY and ALLOWED ATTRIBUTES (attrs in place; a
+    tag already there, e.g. <Highlight> of two kinds, gets the union of both attribute lists)."""
     tags, lines, tag_attrs = contract
-    attrs.update(tag_attrs)
+    for t, a in tag_attrs.items():
+        attrs[t] = list(dict.fromkeys((attrs.get(t) or []) + list(a)))
     return nodes + [t for t in tags if t not in nodes], "\n".join(x for x in [hierarchy, *lines] if x)
+
+
+# the composition nodes whose ref tag takes <Highlight/> children (tables.py / bullets.py HIGHLIGHT_ATTRS)
+_HIGHLIGHT_KINDS = {"table": tables.HIGHLIGHT_ATTRS, "bullet_list": bullets.HIGHLIGHT_ATTRS}
+
+
+def _code_node_contract(kind: str, also_by_hand: bool,
+                        attrs: dict[str, list[str]]) -> tuple[list[str], list[str], dict[str, list[str]]]:
+    """(tags, hierarchy lines, attributes) of a code-drawn kind's ref tag: its own attributes only (no chartType,
+    <ChartSeries>, <Li>, ...: code writes those), unless a component of the kind on this slide is drawn by hand."""
+    t = composed.tag(kind)
+    contract = composed.tags_contract(kind)   # kpi_row / card_grid: group + item + <Highlight>
+    if contract:
+        tags, lines, tag_attrs = contract[0], list(contract[1]), dict(contract[2])
+    else:
+        hl = _HIGHLIGHT_KINDS.get(kind)
+        tags = [t] + (["Highlight"] if hl else [])
+        lines = [f"  <{t}> -> Highlight (code draws the rest)" if hl else f"  <{t}> -- self-closing (code draws it)"]
+        tag_attrs = {"Highlight": sorted(hl)} if hl else {}
+    native = (attrs.get(t) or []) if also_by_hand else []
+    if not also_by_hand:
+        attrs.pop(t, None)   # a native node's own attribute list would teach drawing it by hand
+    tag_attrs[t] = list(dict.fromkeys(native + list(tag_attrs.get(t) or []) + composed.tag_attributes(kind)))
+    if also_by_hand and not contract:
+        # a native POM node (Chart, Table, Ul, Timeline) drawn by hand on the slide too: its own line stays
+        lines = []
+    return tags, lines, tag_attrs
 
 
 # ── Notes selection ──────────────────────────────────────────────────────────
@@ -288,6 +316,8 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
 
     for rule in (validation.get("semantic_rules") or []):
         notes.append(rule)
+    for kind in dict.fromkeys(kinds):
+        notes += (validation.get("kind_semantic_rules") or {}).get(kind) or []
 
     for pitfall in (text_yaml.get("pitfalls") or []):
         notes.append(pitfall)
@@ -327,7 +357,7 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
         if focus:
             notes.append(
                 f"Focus: the bar / series the headline names (else the latest period) {focus['focus']}, "
-                f"the rest {focus['rest']}; no legend box (CHART RULES)."
+                f"the rest {focus['rest']}; no legend box (COMPONENT SIZING)."
             )
         if theme_info.get("is_dark"):
             notes.append(
@@ -350,6 +380,8 @@ def _select_notes(kinds: list[str], validation: dict, text_yaml: dict,
         # Content-quality guidance is never in the grammar — always include it.
         for rule in design.get("content_rules", []):
             notes.append(rule)
+        for kind in dict.fromkeys(kinds):
+            notes += [r for r in (design.get("kind_content_rules") or {}).get(kind) or [] if r not in notes]
         if not has_grammar:
             for principle in design.get("design_principles", []):
                 notes.append(principle)
@@ -410,13 +442,11 @@ _HOUSE_STYLE_SECTIONS: list[tuple[str, str]] = [
     ("composition", "COMPOSITION"),
     ("header_band", "HEADER BAND"),
     ("sizing", "SIZING BY WEIGHT (POM allocates the height; no pixel budgets)"),
-    ("data_nodes", "DATA NODE SIZING (Chart / Table / Matrix / ProcessArrow / Flow / Pyramid / Tree / Timeline)"),
     ("recipes", "RECIPES (parameterised patterns, not slides)"),
     ("type_ramp", "TYPE RAMP (fontSize)"),
     ("spacing_scale", "SPACING SCALE"),
     ("color_discipline", "COLOR DISCIPLINE"),
     ("color_roles", "COLOR ROLES (meaning, the same on every slide)"),
-    ("chart_rules", "CHART RULES (focus colour, no legend box)"),
     ("render_gotchas", "RENDER GOTCHAS"),
     ("design_variety", "DESIGN VARIETY"),
     ("checklist", "PRE-EMIT CHECKLIST"),
@@ -432,48 +462,37 @@ def _fmt_house_style_value(value: Any) -> str:
     return str(value).strip()
 
 
-# POM_BLOCKS=tiles: code draws KPI tiles, so the house-style lines that teach a hand-built tile name the tag instead.
-# CHEFFIN 4 (tile_one, 2026-10-26): the generator drew the 7 tiles by hand on 3 / 3 first tries (each sent to repair);
-# its prompt allowed no tag outside ALLOWED NODES and these lines taught the tile. Section -> item (list: its opening
-# words; dict: its key) -> the line under tiles. The same on every slide of a deck: the cached prefix stays one.
-_TILE_HOUSE_STYLE: dict[str, dict[str, str]] = {
-    "type_ramp": {
-        "stat_value": "44-56 bold for a number outside a KPI row (a <KpiGrid> sizes its own numbers)",
-        "single_stat": "a kpi_row with one value is a <KpiGrid ref> too (code enlarges its number)",
-    },
-    "render_gotchas": {
-        "A KPI tile:": "A KPI row is one <KpiGrid ref> (KPI TILES): code draws its tiles, their text and sizes - never "
-                       "build a KPI tile from stacks, Text and Icon.",
-    },
-    "checklist": {
-        "KPI row:": "KPI row: one <KpiGrid ref> in its band (grow when it is the slide's main content); no tile built "
-                    "by hand.",
-    },
-}
-
-
-@functools.lru_cache(maxsize=2)
-def _render_house_style(tiles_on: bool = False) -> str:
-    """Render core/house-style.yaml into a compact prompt block (cached). `tiles_on`: the KPI tile lines swapped
-    for the <KpiGrid> tag (_TILE_HOUSE_STYLE)."""
+@functools.lru_cache(maxsize=1)
+def _render_house_style() -> str:
+    """Render core/house-style.yaml's shared sections into a compact prompt block (the same on every slide: cached).
+    The lines for one component kind are _render_component_sizing's."""
     hs = _load_yaml("core/house-style.yaml")
     if not hs:
         return ""
-    if tiles_on:
-        hs = copy.deepcopy(hs)   # _load_yaml's dict is shared
-        for key, swaps in _TILE_HOUSE_STYLE.items():
-            value = hs.get(key)
-            if isinstance(value, dict):
-                value.update({k: v for k, v in swaps.items() if k in value})
-            elif isinstance(value, list):
-                hs[key] = [next((v for w, v in swaps.items() if " ".join(str(item).split()).startswith(w)), item)
-                           for item in value]
     parts: list[str] = []
     for key, heading in _HOUSE_STYLE_SECTIONS:
         if key not in hs:
             continue
         parts.append(f"{heading}\n{_fmt_house_style_value(hs[key])}")
     return "\n\n".join(parts)
+
+
+def _render_component_sizing(code_kinds: list[str], hand_kinds: list[str]) -> str:
+    """COMPONENT SIZING for this slide: house-style.yaml `kinds` + capacity.kind_layout_rules, per kind on the slide;
+    `code` lines for the kinds code draws, `hand` lines for the kinds the LLM draws (a kind can be both: a matrix
+    card_grid beside a drawn one)."""
+    hs = _load_yaml("core/house-style.yaml") or {}
+    cap = kind_layout_rules()
+    lines: list[str] = []
+    for kind in dict.fromkeys(code_kinds + hand_kinds):
+        rules, nums = hs.get("kinds", {}).get(kind) or {}, cap.get(kind) or {}
+        modes = [m for m, on in (("code", kind in code_kinds), ("hand", kind in hand_kinds)) if on]
+        for line in (rules.get("any") or []) + [x for m in modes for x in (nums.get(m) or []) + (rules.get(m) or [])]:
+            if line not in lines:
+                lines.append(line)
+    if set(hand_kinds) & set(hs.get("diagrams") or []) and hs.get("diagram"):
+        lines.append(" ".join(str(hs["diagram"]).split()))
+    return "\n".join(f"- {line}" for line in lines)
 
 
 # ── Concrete component recipes ──────────────────────────────────────────────
@@ -618,74 +637,37 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         if path:
             component_yamls[kind] = _load_yaml(path)
 
-    allowed_nodes = _select_nodes(kinds)
+    # Code draws every component of a composition-node kind that has an id (composed.KINDS); the LLM places its ref tag.
+    # The slide's prompt teaches drawing by hand (nodes, notes, recipes, techniques, sizing) only for the components
+    # code does not draw: a narrative, a flow, a matrix card_grid, a component without an id.
+    components = slide_plan.get("components", [])
+    code_kinds = composed.slide_kinds(slide_plan)
+    drawn_ids = {cid for k in code_kinds for cid in composed.drawn(slide_plan, k)}
+    hand = [c for c in components if c.get("component_id") not in drawn_ids or not c.get("component_id")]
+    hand_kinds = list(dict.fromkeys(c.get("kind", "") for c in hand))
+
+    allowed_nodes = _select_nodes(hand_kinds)
     allowed_attributes = _select_attributes(allowed_nodes, nodes_yaml)
     node_hierarchy = _build_node_hierarchy(allowed_nodes, nodes_yaml)
+    for kind in code_kinds:
+        allowed_nodes, node_hierarchy = _with_tags(allowed_nodes, node_hierarchy, allowed_attributes,
+                                                   _code_node_contract(kind, kind in hand_kinds, allowed_attributes))
     forbidden_tags = _clean_list(validation.get("forbidden_tags"))
     forbidden_attributes = _clean_list(validation.get("forbidden_attributes"))
 
     theme = theme_info
 
     has_grammar = True
-    # composition nodes (POM_NODES: chart, timeline, kpi_row, card_grid, table, bullet_list): code draws every component of a kind that
-    # has an id, so the slide gets no notes, recipe or techniques for drawing it by hand
-    code_drawn = [k for k in composed.kinds_on() if composed.all_drawn(slide_plan, k)]
-    notes = _select_notes(
-        [k for k in kinds if k not in code_drawn], validation, text_yaml, component_yamls, theme,
-        has_grammar=has_grammar
-    )
+    notes = _select_notes(hand_kinds, validation, text_yaml, component_yamls, theme, has_grammar=has_grammar)
     # the notes no component kind adds are the same on every slide of a deck: the generator puts them in
     # the cached prefix of its system prompt, the rest after "## THIS SLIDE" (tile-nodes spec §5)
     deck_notes = _select_notes([], validation, text_yaml, {}, theme, has_grammar=has_grammar)
-    house_style = (_render_house_style(tiles.on()) + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n"
-                   + layout_rules(tiles.on()))
-    if "kpi_row" in composed.kinds_on():   # the composition node's tag and its way to a hero (same on every slide: cached)
-        house_style = house_style.replace("<KpiGrid", "<KpiRow").replace(
-            'size="hero" on its <Kpi> (the plan\'s emphasis item only)', 'variant="bento" (the plan\'s emphasis item large)')
-    recipe_kinds = [_recipe_kind(c) for c in slide_plan.get("components", [])]
-    technique_kinds, scopes = kinds, hint_scopes(kinds)
-    if tiles.on():   # code draws KPI tiles: no kpi_row / hero_stat / compact strip / dark callout recipes
-        recipe_kinds = [k for k in recipe_kinds if k not in ("kpi_row", "hero_stat")]
-        # a kpi_row's visual-intent becomes tile attributes (tiles.node_lines), not hand-built techniques;
-        # a kpi_row without a component_id has no tile tags and keeps them
-        kpis = [c for c in slide_plan.get("components", []) if c.get("kind") == "kpi_row"]
-        if kpis and all(c.get("component_id") for c in kpis):
-            technique_kinds = [k for k in kinds if k != "kpi_row"]
-            if "kpi_row" in scopes:
-                scopes["kpi_row"] = tiles.scope(kind_treatments("kpi_row"))
-            # the strict rules allow no tag outside ALLOWED NODES: list the tile tags there (CHEFFIN 4, 2026-10-26:
-            # hand-drawn tiles on 3 / 3 first tries while the tags were missing from the list)
-            if "kpi_row" not in composed.kinds_on():   # the composition node lists its own tags below
-                allowed_nodes, node_hierarchy = _with_tags(allowed_nodes, node_hierarchy, allowed_attributes,
-                                                           tiles.tags_contract(tiles.kpi(), tiles.GROUP, tiles.ITEM,
-                                                                               tiles.GROUP_META, tiles.ITEM_META))
-        # card tile nodes (cards.py): no card_grid / card_steps recipes or hand-built card techniques for the
-        # card_grids code draws; a matrix card_grid (deferred) keeps its recipe and techniques
-        grids = [c for c in slide_plan.get("components", []) if c.get("kind") == "card_grid"]
-        drawn = cards.card_components(slide_plan)
-        if drawn:
-            recipe_kinds = [k for k in recipe_kinds if k not in ("card_grid", "card_steps")]
-            if "card_grid" not in composed.kinds_on():
-                allowed_nodes, node_hierarchy = _with_tags(allowed_nodes, node_hierarchy, allowed_attributes,
-                                                           tiles.tags_contract(cards.card(), cards.GROUP, cards.ITEM,
-                                                                               cards.GROUP_META, cards.ITEM_META))
-            if len(drawn) == len(grids):
-                technique_kinds = [k for k in technique_kinds if k != "card_grid"]
-                if "card_grid" in scopes:
-                    scopes["card_grid"] = cards.scope(kind_treatments("card_grid"))
-    for kind in code_drawn:
-        # kpi_row / card_grid composition nodes: also their hero / steps recipes, and their group + item tags
-        recipe_kinds = [k for k in recipe_kinds if k != kind and not (kind == "kpi_row" and k == "hero_stat")
-                        and not (kind == "card_grid" and k == "card_steps")
-                        and not (kind == "bullet_list" and k == "icon_rows")]
-        contract = composed.tags_contract(kind)
-        if contract:
-            allowed_nodes, node_hierarchy = _with_tags(allowed_nodes, node_hierarchy, allowed_attributes, contract)
-        technique_kinds = [k for k in technique_kinds if k != kind]
-        scopes.pop(kind, None)
-        t = composed.tag(kind)
-        allowed_attributes[t] = list(dict.fromkeys((allowed_attributes.get(t) or []) + composed.tag_attributes(kind)))
+    house_style = (_render_house_style() + "\n\nLAYOUT RULES (sizes are px on the 1280x720 slide)\n"
+                   + layout_rules())
+    recipe_kinds = [_recipe_kind(c) for c in hand]
+    technique_kinds, scopes = hand_kinds, hint_scopes(hand_kinds)
     component_recipes = _render_component_recipes(recipe_kinds)
+    component_sizing = _render_component_sizing(code_kinds, hand_kinds)
     slide_type = slide_plan.get("slide_type", "content")
     golden_examples = _render_golden_examples(slide_type) if has_grammar and EXAMPLES_ON else ""
 
@@ -740,6 +722,7 @@ def build_contract(slide_plan: SlidePlan, theme_info: dict[str, Any]) -> dict[st
         "deck_notes": deck_notes,
         "house_style": house_style,
         "component_recipes": component_recipes,
+        "component_sizing": component_sizing,
         "golden_examples": golden_examples,
         "blueprint_structure": blueprint_structure,
         "blueprint_reference_xml": blueprint_reference_xml,

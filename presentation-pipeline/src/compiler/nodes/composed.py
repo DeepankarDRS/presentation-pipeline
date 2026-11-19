@@ -1,5 +1,5 @@
-"""The composition nodes switched on by POM_NODES (left-blocks spec §2.5), behind one interface for the validator,
-generator and context builder: chart (charts.py), timeline (sequences.py), kpi_row / card_grid
+"""The composition nodes (left-blocks spec §2.5), behind one interface for the validator, generator and context
+builder. Code draws every component of these kinds that has a component_id: chart (charts.py), timeline (sequences.py), kpi_row / card_grid
 (tile_groups.py), table (tables.py), bullet_list (bullets.py)."""
 
 from __future__ import annotations
@@ -8,7 +8,7 @@ import json
 import re
 from typing import Any
 
-from src.compiler.nodes import bullets, charts, compose, sequences, tables, tile_groups, validate
+from src.compiler.nodes import bullets, charts, compose, sequences, spec, tables, tile_groups, validate
 
 # plan-level content_data keys a drawn kind no longer needs in the prompt
 PLAN_KEYS = {"chart": ("chart_",), "timeline": ("timeline_items",),
@@ -20,9 +20,9 @@ PLAN_KEYS = {"chart": ("chart_",), "timeline": ("timeline_items",),
 MORE = {"table": tables, "bullet_list": bullets}
 
 
-def kinds_on() -> list[str]:
-    return (["chart"] if charts.on() else []) + sequences.kinds_on() + tile_groups.kinds_on() \
-        + [k for k, m in MORE.items() if m.on()]
+# the plan kinds code draws, in prompt order
+KINDS = ("chart",) + sequences.KINDS + tile_groups.KINDS + tuple(MORE)
+assert set(KINDS) == set(spec.CODE_DRAWN)
 
 
 def tag(kind: str) -> str:
@@ -34,8 +34,8 @@ def tag(kind: str) -> str:
 
 
 def drawn(plan: dict | None, kind: str) -> dict[str, dict]:
-    """The components of a switched-on kind that code draws (those with an id)."""
-    if kind not in kinds_on():
+    """The components of a code-drawn kind that code draws (those with an id)."""
+    if kind not in KINDS:
         return {}
     if kind in tile_groups.KINDS:
         return tile_groups.components(plan, kind)
@@ -69,7 +69,7 @@ def _parent_align(before: str) -> str | None:
 def hold_width(xml: str, plan: dict | None) -> str:
     """A drawn node with no w in a VStack aligned start / center / end shrinks to its content: its inner w="1" columns
     get no width and the compile crashes (paid check 2026-11-04: a repair changed the slide's stretch to start)."""
-    ids = {tag(k): set(drawn(plan, k)) for k in kinds_on()}
+    ids = {tag(k): set(drawn(plan, k)) for k in KINDS}
     out, pos = [], 0
     for t in validate.ref_tags(xml):
         a = t["attrs"]
@@ -98,9 +98,7 @@ def explain_unknown(issue: dict[str, Any], plan: dict | None) -> dict[str, Any]:
 def expand(xml: str, plan: dict | None) -> dict[str, Any]:
     xml = hold_width(xml, plan)
     out = {"xml": xml, "issues": [], "ok": True, "components": {}}
-    fns = ((charts.expand,) if charts.on() else ()) + ((sequences.expand,) if sequences.kinds_on() else ()) \
-        + ((tile_groups.expand,) if tile_groups.kinds_on() else ()) + tuple(m.expand for m in MORE.values() if m.on())
-    for fn in fns:
+    for fn in (charts.expand, sequences.expand, tile_groups.expand, *(m.expand for m in MORE.values())):
         r = fn(out["xml"], plan)
         out = {"xml": r["xml"], "issues": out["issues"] + r["issues"], "ok": out["ok"] and r["ok"],
                "components": {**out["components"], **r["components"]}}
@@ -117,7 +115,7 @@ def unplaced(xml: str, plan: dict | None, placed: dict[str, Any]) -> list[dict[s
     whole table can vanish, or its numbers be retyped, with no other check noticing). A KPI placed by element refs
     (<Text ref="kpis.2.value"/>) counts as placed; a component with no data has nothing to draw."""
     out = []
-    for kind in kinds_on():
+    for kind in KINDS:
         for cid, comp in drawn(plan, kind).items():
             if cid in placed or validate.empty(comp) or re.search(rf'\bref="{re.escape(cid)}\.', xml):
                 continue
@@ -127,22 +125,33 @@ def unplaced(xml: str, plan: dict | None, placed: dict[str, Any]) -> list[dict[s
     return out
 
 
-# The grammar above these lines teaches hand-drawn nodes; it stays for the kinds still drawn by hand on the slide
+# The rules for drawing a kind by hand reach the prompt only for a component code does not draw
+# (context_builder: house-style.yaml `kinds`), so this section needs no list of rules to ignore.
 OVERRIDE = ("## CODE-DRAWN NODES\n"
-            "A component whose line under COMPONENTS names a ref tag is drawn by code: place that tag once, and size it with "
-            "w / h / grow like any box. Rules elsewhere in this prompt about building it by hand do not apply to it: "
-            "<Tr> / <Td> / <Col>, <Li>, <ChartSeries>, <TimelineItem>, row heights, a Timeline's fixed h, label word limits. "
-            "Typing its content by hand, or leaving the tag out, is an error. A component whose line names no ref tag "
-            "(a narrative, a callout, a title) has no node: write it by hand with <VStack> and <Text>, never as a ref tag.\n"
+            "A component whose line under COMPONENTS names a ref tag is drawn by code: place that tag once and size it "
+            "with w / h / grow like any box. Code writes its words, numbers and items: the tag holds only the "
+            "<Highlight/> or item tags its section below names. Typing its content by hand, or leaving the tag out, "
+            "is an error. A component whose line names no ref tag (a narrative, a callout, a title) has no node: "
+            "write it by hand with <VStack> and <Text>, never as a ref tag.\n"
             "Peers look alike: when one content component on the slide sits in a panel (a fill or a border), give the others "
             "one too. A ref tag takes it as box attributes on the tag (padding, backgroundColor, border.color, border.width, "
             "borderRadius); a hand-drawn component sits in a <VStack> with them.")
 
 
-def node_lines() -> str:
-    return "\n\n".join(([OVERRIDE] if kinds_on() else []) + ([charts.node_lines()] if charts.on() else []) + ([sequences.node_lines()] if sequences.kinds_on() else [])
-                       + ([tile_groups.node_lines()] if tile_groups.kinds_on() else [])
-                       + [m.node_lines() for m in MORE.values() if m.on()])
+def slide_kinds(plan: dict | None) -> list[str]:
+    """The code-drawn kinds with at least one component code draws on this slide, in KINDS order."""
+    return [k for k in KINDS if drawn(plan, k)]
+
+
+def node_lines(kinds: list[str] | tuple[str, ...]) -> str:
+    """The prompt sections for `kinds` (a slide's slide_kinds): the shared rule, then one section per kind."""
+    if not kinds:
+        return ""
+    seq = [k for k in sequences.KINDS if k in kinds]
+    tg = [k for k in tile_groups.KINDS if k in kinds]
+    return "\n\n".join([OVERRIDE] + ([charts.node_lines()] if "chart" in kinds else [])
+                       + ([sequences.node_lines(seq)] if seq else []) + ([tile_groups.node_lines(tg)] if tg else [])
+                       + [m.node_lines() for k, m in MORE.items() if k in kinds])
 
 
 def prompt_line(comp: dict, headline: str = "") -> str:

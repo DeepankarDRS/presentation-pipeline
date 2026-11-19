@@ -1,4 +1,4 @@
-"""Chart composition node (docs/composition-convention-spec.md §8, approved 2026-10-27), `POM_NODES=chart`.
+"""Chart composition node (docs/composition-convention-spec.md §8, approved 2026-10-27).
 
 The LLM writes one self-closing tag per chart component; code draws it from the plan:
 
@@ -39,10 +39,6 @@ LAYOUT = set(native.LAYOUT)
 TITLE_PX, LABEL_PX, VALUE_PX = 14, 20, 24
 BAR_PX = 36
 _NUM = re.compile(r"^(?P<pre>[^\d+\-−]*)(?P<sign>[+\-−]?)(?P<num>\d[\d,]*(?:\.(?P<dec>\d+))?)(?P<suf>.*)$")
-
-
-def on() -> bool:
-    return spec.nodes_on("chart")
 
 
 def node() -> dict[str, Any]:
@@ -195,7 +191,7 @@ def expand(xml: str, plan: dict | None, theme: dict | None = None) -> dict[str, 
 # ── prompt ─────────────────────────────────────────────────────────────────────
 
 def node_lines() -> str:
-    """The fixed lines (same on every slide: the cached part of the system prompt)."""
+    """The lines for this kind (in the prompt of a slide that has one)."""
     cs = spec.blocks()["chart"]["variants"]
     parts = " ".join(f"{p}. = <{n}>" for p, n in node()["parts"].items())
     return "\n".join([

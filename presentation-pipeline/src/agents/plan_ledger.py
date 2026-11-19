@@ -51,7 +51,7 @@ _NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
 
 @functools.lru_cache(maxsize=1)
 def routing() -> dict[str, dict[str, str]]:
-    """The routing table's rows by id, limits rendered from capacity.yaml (`kind_timeline_node` kept apart)."""
+    """The routing table's rows by id, limits rendered from capacity.yaml."""
     from jinja2 import Environment
     from src.agents.capacity import capacity, span
     env = Environment()
@@ -60,10 +60,9 @@ def routing() -> dict[str, dict[str, str]]:
     return {r["id"]: {k: env.from_string(str(v)).render() for k, v in r.items()} for r in rows}
 
 
-def routing_rows(timeline_node: bool = False) -> list[dict[str, str]]:
-    """The table as the planner's prompt shows it: `kind_timeline_node` in place of `kind` when code draws timelines."""
-    return [{"id": r["id"], "states": r["states"], "not_for": r["not_for"],
-             "kind": r.get("kind_timeline_node") if timeline_node and r.get("kind_timeline_node") else r["kind"]}
+def routing_rows() -> list[dict[str, str]]:
+    """The table as the planner's prompt shows it."""
+    return [{"id": r["id"], "states": r["states"], "not_for": r["not_for"], "kind": r["kind"]}
             for r in routing().values()]
 
 

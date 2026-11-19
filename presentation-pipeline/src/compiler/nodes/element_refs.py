@@ -3,8 +3,8 @@ with ordinary POM nodes and places each item's text by reference,
 
     <Text ref="kpi_metrics.2.value"/>       ref = <component_id>.<item index>.<label|value|note>
 
-and code writes the text. Runs in the validator before normalize_xml, under `POM_BLOCKS=kpi` (the
-default; `off` = the old route) and only for `kpi_row` components. KPI tiles get square corners.
+and code writes the text. Runs in the validator before normalize_xml (after the composition nodes drew the
+tiles), only for `kpi_row` components. KPI tiles get square corners.
 
     result = fill_refs(xml, plan)
     result["xml"]         the slide with every ref Text filled (refs gone)
@@ -22,7 +22,6 @@ fill the LLM drew). Everything else (containers, fills, bars, icons) is the LLM'
 
 from __future__ import annotations
 
-import os
 import re
 from typing import Any
 
@@ -71,18 +70,6 @@ PEER_ID = re.compile(r"^kpi[vh]\d?-")
 # component the plan weights higher on the slide (paid check 2026-10-11: a "peer" row of 2 tiles grew to
 # 92 px under the "hero" row at 72)
 WEIGHT_RANK = {"hero": 0, "peer": 1, "supporting": 2, "minor": 3}
-
-
-def mode() -> str:
-    """`POM_BLOCKS`: tiles (default, with POM_NODES: the LLM writes tile and composition tags,
-    src/compiler/nodes/tiles.py) | kpi (kpi_row components become element refs) | off (the old route)."""
-    v = os.environ.get("POM_BLOCKS", "tiles").strip().lower()
-    return v if v in ("off", "kpi", "tiles") else "tiles"
-
-
-def refs_on() -> bool:
-    """kpi_row text is placed by ref (kpi and tiles both end in fill_refs)."""
-    return mode() in ("kpi", "tiles")
 
 
 def kpi_components(plan: dict | None) -> dict[str, dict]:

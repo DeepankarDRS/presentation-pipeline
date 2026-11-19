@@ -89,7 +89,7 @@ def run_one(item: dict, run_id: str) -> dict[str, Any]:
         from scripts.tile_replay import kpi_xml, tokens
         from src.compiler.nodes import tiles
         kpi_tokens = tokens(kpi_xml(first_xml, item["plan"]))
-        if tiles.on():
+        if os.environ.get("POM_BLOCKS", "tiles") == "tiles":   # saved runs of either arm
             hand_items = sum(c.get("hand_items", 0) for c in tiles.fill(first_xml, item["plan"])["components"].values())
     return {
         "blocks": os.environ.get("POM_BLOCKS", "kpi"),

@@ -1,4 +1,4 @@
-"""Table composition node (composition spec §8, approved 2026-10-27), `POM_NODES=table`.
+"""Table composition node (composition spec §8, approved 2026-10-27).
 
 The LLM writes one self-closing tag per table component; code draws it from the plan:
 
@@ -36,10 +36,6 @@ _ROW_WORD = re.compile(r"^\W{0,3}row\b", re.I)
 _COL_WORD = re.compile(r"^\W{0,3}col(?:umn)?\b", re.I)
 _ROWS_WORD = re.compile(r"^\W{0,3}rows\b", re.I)            # "the A and B rows": a list, no one row
 _COLS_WORD = re.compile(r"^\W{0,3}col(?:umn)?s\b", re.I)
-
-
-def on() -> bool:
-    return spec.nodes_on("table")
 
 
 def node() -> dict[str, Any]:
@@ -512,7 +508,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
 # ── prompt ─────────────────────────────────────────────────────────────────────
 
 def node_lines() -> str:
-    """The fixed lines (the cached part of the system prompt)."""
+    """The lines for this kind (in the prompt of a slide that has one)."""
     vs = spec.blocks()["table"]["variants"]
     styles = "; ".join(f"{n}: {st}" for n, st in (node().get("styles") or {}).items())
     return "\n".join([

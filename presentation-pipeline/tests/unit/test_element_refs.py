@@ -373,13 +373,6 @@ def test_prompt_line_has_ids_lengths_focus_and_no_values():
         assert v not in line, v
 
 
-def test_mode_reads_pom_blocks(monkeypatch):
-    monkeypatch.delenv("POM_BLOCKS", raising=False)
-    assert E.mode() == "tiles"   # the default since 2026-11-05, with all six POM_NODES
-    monkeypatch.setenv("POM_BLOCKS", "off")
-    assert E.mode() == "off"
-    monkeypatch.setenv("POM_BLOCKS", "slots")
-    assert E.mode() == "tiles"
 
 
 def _gen_state():
@@ -391,15 +384,6 @@ def _gen_state():
     return state
 
 
-def test_generator_prompt_under_kpi_has_refs_not_values(monkeypatch):
-    from src.agents.generator import _render_prompts
-    monkeypatch.setenv("POM_BLOCKS", "kpi")
-    monkeypatch.setenv("POM_NODES", "")
-    _, user = _render_prompts(_gen_state())
-    assert "KPI REFS for kpis" in user and "₹114.9L" not in user and "0.33x" not in user
-    monkeypatch.setenv("POM_BLOCKS", "off")
-    _, user = _render_prompts(_gen_state())
-    assert "KPI REFS" not in user and "₹114.9L" in user
 
 
 def test_validator_blocks_on_ref_errors_and_fills_otherwise(monkeypatch, tmp_path):

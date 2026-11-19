@@ -1,4 +1,4 @@
-"""Timeline composition node (composition spec §8, approved 2026-10-27), `POM_NODES=timeline`. process_arrow and flow
+"""Timeline composition node (composition spec §8, approved 2026-10-27). process_arrow and flow
 have no node (user, 2026-11-02): POM's chevrons and flow boxes hold about two words at a fixed size, so the LLM draws
 them as before.
 
@@ -28,14 +28,6 @@ from src.compiler.nodes import compose, native, spec
 KINDS = ("timeline",)
 TAGS = {"timeline": "Timeline"}
 SEVERITY = compose.SEVERITY
-
-
-def on(kind: str) -> bool:
-    return kind in KINDS and spec.nodes_on(kind)
-
-
-def kinds_on() -> list[str]:
-    return [k for k in KINDS if on(k)]
 
 
 def node(kind: str) -> dict[str, Any]:
@@ -192,9 +184,9 @@ def draw(comp: dict, attrs: dict[str, str], flag) -> tuple[str, dict]:
 
 
 def expand(xml: str, plan: dict | None) -> dict[str, Any]:
-    """Every <Timeline ref>, drawn from the plan (when POM_NODES has timeline)."""
+    """Every <Timeline ref>, drawn from the plan."""
     out = {"xml": xml, "issues": [], "ok": True, "components": {}}
-    for kind in kinds_on():
+    for kind in KINDS:
         def check(comp: dict, flag) -> bool:
             if items(comp):
                 return True
@@ -208,14 +200,15 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
 
 # ── prompt ─────────────────────────────────────────────────────────────────────
 
-def node_lines() -> str:
-    """The fixed lines for the kinds switched on (the cached part of the system prompt)."""
+def node_lines(kinds: tuple[str, ...] | list[str] = KINDS) -> str:
+    """The lines for `kinds` (the slide's code-drawn sequence kinds)."""
+    kinds = [k for k in KINDS if k in kinds]
     lines = ["## TIMELINES (code draws them from the plan)"]
-    for kind in kinds_on():
+    for kind in kinds:
         vs = spec.blocks()[kind]["variants"]
         lines.append(f'<{TAGS[kind]} ref="<{kind} id>" variant="..."/>: ' + "; ".join(f"{n} ({v['prompt']})" for n, v in vs.items())
                      + ". A bare tag takes the first that fits the content.")
-    parts = sorted({p for k in kinds_on() for p in node(k)["parts"]})
+    parts = sorted({p for k in kinds for p in node(k)["parts"]})
     lines.append("Self-closing: code writes every date and label, the dots and lines, and the emphasis "
                  "(the 'now' point from the plan). Layout (w, h, grow) and box attributes "
                  f"style the block's own box; parts {' '.join(p + '.' for p in parts)} take their node's attributes in "

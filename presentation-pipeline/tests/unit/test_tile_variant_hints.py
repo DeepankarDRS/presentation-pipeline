@@ -227,11 +227,3 @@ def test_the_plan_is_not_changed():
 
 
 # ── src.api startup ───────────────────────────────────────────────────────────
-
-def test_api_logs_the_blocks_mode_at_startup(caplog):
-    from fastapi.testclient import TestClient
-
-    import src.api as api
-    with caplog.at_level(logging.INFO, logger="src.api"), TestClient(api.app):
-        pass
-    assert any("POM_BLOCKS=tiles" in r.getMessage() for r in caplog.records)

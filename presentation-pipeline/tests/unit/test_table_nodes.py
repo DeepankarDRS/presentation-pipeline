@@ -179,17 +179,15 @@ def test_a_table_without_ref_is_the_llms():
 
 def test_composed_registry():
     p = plan(GAPS)
-    assert "table" in composed.kinds_on() and composed.tag("table") == "Table"
+    assert "table" in composed.KINDS and composed.tag("table") == "Table"
     assert composed.all_drawn(p, "table") and composed.expand('<Table ref="gaps"/>', p)["components"]["gaps"]
     line = composed.prompt_line(dict(GAPS, count=1))
     assert "4 rows x 4 columns" in line and "code colours column 'Fix'" in line and "rows | ledger" in line
-    assert "TABLES" in composed.node_lines() and "borderless" in composed.node_lines() and "dash" not in composed.node_lines()
+    lines = composed.node_lines(["table"])
+    assert "TABLES" in lines and "borderless" in lines and "dash" not in lines and "## CHARTS" not in lines
     assert "stripe.*" in composed.tag_attributes("table")
 
 
-def test_off_without_pom_nodes(monkeypatch):
-    monkeypatch.setenv("POM_NODES", "chart")
-    assert "table" not in composed.kinds_on() and composed.drawn(plan(GAPS), "table") == {}
 
 
 # ── ledger (user, 2026-11-01) ─────────────────────────────────────────────────

@@ -36,10 +36,10 @@ vocabulary:
     the HEIGHT and overrides h (a KPI row with h="150" renders 495px).
   'width in an HStack': 'w="max" = equal share, w="62%" = explicit share (sum 100), grow="2" = ratio.'
   'grow="N" in a VStack': 'share of the spare height (SIZING BY WEIGHT); no grow = content height.'
-  'h="max" minH="180"': 'a chart/diagram fills its card; minH = readability floor.'
+  'h="max" minH': 'a chart/diagram fills its card; minH = readability floor (COMPONENT SIZING gives each kind''s).'
   'fixed px': >
-    only icon, accent bar, divider, sidebar rail, Timeline/Pyramid h,
-    table row height. Never a pixel h on a band or card.
+    only icon, accent bar, divider, sidebar rail, and a size COMPONENT SIZING
+    gives. Never a pixel h on a band or card.
   'minW / maxW / minH / maxH': 'clamp a flexible box so it cannot collapse or run away.'
 
 alignment:
@@ -79,7 +79,7 @@ composition: >
 
   SIZING THROUGH NESTING: parent constrains children. Nested stacks inherit
   width from their parent; children size within remaining space after padding.
-  Heights: see SIZING BY WEIGHT and DATA NODE SIZING.
+  Heights: see SIZING BY WEIGHT and COMPONENT SIZING.
 
   ALIGNMENT: each nested stack sets its own alignItems/justifyContent
   independently. Use alignSelf on one child to override the parent's rule.
@@ -113,9 +113,6 @@ sizing: |
     component. Spare height goes to the main element, never to a new box.
   - A slide WITH a chart or diagram: that card grows; KPI rows and callouts beside
     it keep their content height.
-  - Table cards: NO h, NO grow - a table sizes to its rows. On a slide with a
-    table no band grows: the table's rows and text are enlarged into the spare
-    height after generation.
   - EVERY slide has at least one growing band, unless its only content is a table.
   - In a side-by-side HStack the weight is the width share (% or grow); heights
     stretch to the tallest.
@@ -127,22 +124,62 @@ sizing: |
   TEXT: keep the plan's wording. A long point wraps to 2-3 lines; split long lists
   into two columns instead of cutting them. Never shrink the font below 14.
 
-data_nodes: |
-  Chart / Matrix / Flow / Tree / ProcessArrow: h="max" minH (Chart 180, Matrix 260,
-    Flow/Tree 200, ProcessArrow 90), no w; the card takes the weight's grow.
-    Diagram nodes are enlarged to fill after generation. A Flow or ProcessArrow
-    is one line. Direction and box go together (the plan's layout_hint names both):
-    horizontal = a full-width band of its own, other content above or below it;
-    vertical = a column beside the other content, nodes / chevrons about the column's
-    width. Never a horizontal diagram squeezed beside another card: POM shrinks it
-    to fit, text and all.
-  Table: no h, no w (sizes to its rows); its card: no h, no grow. Set
-    defaultRowHeight = 16 + 24 x wrapped lines of the longest cell (40 / 64 / 88)
-    and header <Tr height="40"> - POM never grows rows; short rows spill text.
-    One <Col> per column, width only where needed. Every <Td> sets backgroundColor + color.
-  Timeline (horizontal): h="150", no w, no grow; max 8 items, 1-3 word labels.
-  Pyramid: h = 52 x levels + 20, no w, no grow; fontSize 16 (3 levels), 15 (4), 14 (5+).
-  Layer: pixel w and h. ProcessArrow fontSize >= 14 (FlowNode and Timeline text sizes are fixed by POM).
+# --- one component kind (2026-11-19) ------------------------------------
+# Rendered under THIS SLIDE as COMPONENT SIZING, only for the kinds on the slide: `code` when code draws the
+# component (a ref tag), `hand` when the LLM draws it from POM nodes, `any` both. A kind in `diagrams` also gets
+# the `diagram` lines, once per slide. Lines with numbers from capacity.yaml: capacity.kind_layout_rules.
+diagram: >
+  Diagram nodes are enlarged to fill after generation. A Flow or ProcessArrow
+  is one line. Direction and box go together (the plan's layout_hint names both):
+  horizontal = a full-width band of its own, other content above or below it;
+  vertical = a column beside the other content, nodes / chevrons about the column's
+  width. Never a horizontal diagram squeezed beside another card: POM shrinks it
+  to fit, text and all.
+diagrams: [flow, process_arrow, tree]
+kinds:
+  chart:
+    any:
+      - 'Chart: h="max" minH="180", no w; the card takes the weight''s grow. Never in a column narrower than ~45% of the slide: axis labels and legends collide.'
+    hand:
+      - "Chart text 16-18 (values and axis labels). chartColors uses $chart1.. tokens."
+      - 'Focus colour, no legend box: the bar / series / slice the headline names = $accent, the rest $neutral; none named and periods = the LATEST period. One series = one colour for every bar. $chart1.. only for 2-3 equal series. showLegend="false": name 2-3 series in the chart title row (12 px square of the colour + name), put the key number in the title row or a caption.'
+  table:
+    any:
+      - "Table: no h, no w (sizes to its rows); its card: no h, no grow. On a slide with a table no band grows: the table's rows and text are enlarged into the spare height after generation. Never in a column narrower than ~45% of the slide."
+    hand:
+      - 'Set defaultRowHeight = 16 + 24 x wrapped lines of the longest cell (40 / 64 / 88) and header <Tr height="40"> - POM never grows rows; short rows spill text.'
+      - "Declare one <Col> per column. Omit width on MOST columns (they auto-fill the remaining space equally); set width only on a column whose content is noticeably wider or narrower than average. Widths must not exceed the table's container (account for ALL ancestor padding / gap)."
+      - "Every <Td> sets backgroundColor + color. Cell text 20-22; header row 16 bold $textMuted."
+  timeline:
+    hand:
+      - 'Timeline (horizontal): h="150", no w, no grow; max 8 items, 1-3 word labels - sentences collide. TimelineItem text sizes are fixed by POM.'
+  kpi_row:
+    code:
+      - "A kpi_row with one value is a <KpiRow ref> too (code enlarges its number). Grow its band when it is the slide's main content; never build a tile by hand."
+    hand:
+      - 'A KPI tile: NO h on the row or the tile. In a growing row use justifyContent="spaceBetween" (label top, value, delta chip bottom); with a fixed h it clips the delta. Centred content in a tall tile leaves it empty. Labels 14-16, values 44-56 bold (72 for a lone value), the same size on every tile of the row.'
+  bullet_list:
+    hand:
+      - "Bullet lists: <Ul> with <Li> children (POM's native list), never separate <Text> elements with bullet characters. Every point of the plan, fontSize 14-16; 6+ points split into two columns."
+  matrix:
+    any:
+      - 'Matrix: h="max" minH="260", no w; the card takes the weight''s grow. Never in a column narrower than ~45% of the slide.'
+      - "MatrixItem: the label is drawn ABOVE the dot on the CARD background, not on the dot. Do NOT set a white textColor on a light card - the label vanishes. Leave textColor unset (inherits itemLabelColor)."
+  flow:
+    any:
+      - 'Flow: h="max" minH="200", no w; the card takes the weight''s grow. FlowNode text sizes are fixed by POM.'
+  tree:
+    any:
+      - 'Tree: h="max" minH="200", no w; the card takes the weight''s grow.'
+  process_arrow:
+    any:
+      - 'ProcessArrow: h="max" minH="90", no w; the card takes the weight''s grow. fontSize >= 14; step labels 1-2 short words at h<=70 (longer text clips).'
+  pyramid:
+    any:
+      - "Pyramid: h = 52 x levels + 20, no w, no grow; fontSize 16 (3 levels), 15 (4), 14 (5+)."
+  layer:
+    any:
+      - "Layer: pixel w and h."
 
 # --- recipes (parameterised, not slides) ------------------------------
 recipes:
@@ -190,10 +227,7 @@ type_ramp:
   card_title: "22-26 bold, $textMain"
   label: "16-20 bold $textMuted (tile label, column header 16)"
   body: "18, $textMain or $textMuted, lineHeight 1.4. 16 only on a dense slide. NEVER below 14."
-  stat_value: "44-56 bold, sized so the longest value fits the tile on ONE line (about 0.6 x fontSize per character)"
-  table_cell: "20-22; header row 16 bold $textMuted"
-  chart_label: "16-18 (values and axis labels)"
-  single_stat: "72 bold, $textMain - only a kpi_row with one value (enlarged to fill after generation)"
+  stat_value: "44-56 bold for a number outside a KPI row, sized so it fits on ONE line (about 0.6 x fontSize per character)"
   caption: "14-16 $textMuted. NEVER below 14."
 
 font_floor: >
@@ -212,7 +246,7 @@ color_discipline: >
   for the eyebrow / kicker, $accent for one large figure or one edge - not
   whole blocks. Pale fills are $accentSoft / $positiveSoft / $negativeSoft /
   $warningSoft, never a typed hex. Card bg is $surfaceAlt;
-  slide bg $surface; inverted panel $textMain. chartColors uses $chart1.. tokens.
+  slide bg $surface; inverted panel $textMain.
   Do NOT emit a <Theme> - the pipeline injects exactly one.
   COVER/HERO slides follow the SAME token rules — never hardcode raw hex
   for large backgrounds (use $surface, $surfaceAlt, $textMain, $accent).
@@ -234,12 +268,6 @@ color_roles: >
   Never use a role for decoration, never give one meaning two colours, never
   more than one item in focus per component.
 
-chart_rules: >
-  The bar / series / slice the headline names = $accent, the rest $neutral; none named
-  and periods = the LATEST period. One series = one colour for every bar. $chart1.. only
-  for 2-3 equal series. showLegend="false": name 2-3 series in the chart title row
-  (12 px square of the colour + name), put the key number in the title row or a caption.
-
 # --- render gotchas (verified v10.3.0 + LibreOffice) -----------------
 render_gotchas:
   - "FONT SHRINK (the #1 quality killer): the generator tends to shrink fonts
@@ -248,21 +276,10 @@ render_gotchas:
      not fit, re-lay it out (second row or column, wider card) and trim filler
      words - never drop an item, a figure or a line of the plan.
      All recipes now use 14pt minimum. Copy those sizes exactly."
-  - "A KPI tile: NO h on the row or the tile. In a growing row use
-     justifyContent=\"spaceBetween\" (label top, value, delta chip bottom); with
-     a fixed h it clips the delta. Centred content in a tall tile leaves it empty
-     (2026-10-08)."
   - "Text wrapping: POM measures text with its own font; the renderer may wrap
      one line more than POM expected, pushing siblings down. Keep headings on
      hero panels and cards SHORT and give panels/cards a little height slack.
      Never rely on a heading staying on N lines."
-  - "MatrixItem: the label is drawn ABOVE the dot on the CARD background, not on
-     the dot. Do NOT set a white textColor on a light card - the label
-     vanishes. Leave textColor unset (inherits itemLabelColor)."
-  - "ProcessArrowStep label: 1-2 short words only at h<=70; longer text clips."
-  - "Horizontal Timeline: max 8 items, 1-3 word labels. Sentences collide."
-  - "A data node (Chart/Matrix/Table) placed in a column narrower than ~45% of
-     the slide gets cramped - axis labels and legends collide. Give it room."
   - "roundRect <Shape> with text: keep the label short; it does not wrap
      gracefully inside the pill."
   - "justifyContent=\"spaceBetween\" with two wide <Text> children can trip a 1px
@@ -279,19 +296,16 @@ design_variety: >
 
 # --- pre-emit checklist ---------------------------------------------
 checklist:
-  - "FONT FLOOR: EVERY fontSize on EVERY element is >= 14. Scan every Text,
-     Ul, Shape, ProcessArrowStep, FlowNode, PyramidLevel, TreeItem, TimelineItem.
-     If ANY is below 14, FIX IT before anything else. This is the #1 rule."
+  - "FONT FLOOR: EVERY fontSize you write is >= 14 - scan every Text, Shape and node
+     that takes a fontSize. If ANY is below 14, FIX IT before anything else. This is the #1 rule."
   - "Root VStack or HStack is w=1280 h=720 with padding 32-40, gap 14-22, alignItems=\"stretch\"."
   - "2-4 top-level bands, none with w=\"max\" (width stretches); nesting within bands matches content grouping."
   - "No pixel h on a band or card; grow by weight on the band that holds the slide's
-     main content (at least one, unless the only content is a table). Data nodes
-     sized per DATA NODE SIZING."
-  - "KPI row: no pixel h; grow when it is the slide's main content. Tiles: w=\"max\", justifyContent=\"center\". Labels 14pt, values 28-36pt, the same size on every tile of the row."
+     main content (at least one, unless the only content is a table). Each component
+     sized per COMPONENT SIZING."
   - "Side-by-side cards share a band with alignItems=\"stretch\"."
   - "An HStack inside a VStack gets its width by stretch (no w); inside an HStack, w=\"max\" or %."
   - "No fixed-px width on a text or chart column."
-  - "Bullet lists: every point of the plan, fontSize 14-16; 6+ points split into two columns."
   - "At most one hero_panel per slide. Accent as a highlight or an edge, never one fill on every item."
   - "If the slide looks half empty, give its main band grow - never add content the
      plan does not have, and don't stretch a table card."

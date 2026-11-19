@@ -238,7 +238,7 @@ def test_past_six_points_icons_become_dots():
 # ── the composed hooks and the prompt ─────────────────────────────────────────
 
 def test_composed_hooks():
-    assert "bullet_list" in composed.kinds_on() and composed.tag("bullet_list") == "Ul"
+    assert "bullet_list" in composed.KINDS and composed.tag("bullet_list") == "Ul"
     assert composed.drawn({"components": [LEADS]}, "bullet_list")
     assert composed.PLAN_KEYS["bullet_list"] == ("bullets",)
     assert composed.expand('<Slide><Ul ref="pts"/></Slide>', {"components": [LEADS]})["components"]["pts"]

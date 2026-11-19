@@ -25,7 +25,7 @@ from src.compiler.compiler_client import CompilerError, compile_xml, validate_xm
 from src.compiler.content_model import nesting_compile_failure
 from src.compiler.geometry_audit import audit_run_folder
 from src.compiler.layout_audit import audit_layout
-from src.compiler.nodes import composed, element_refs, tiles
+from src.compiler.nodes import composed, tiles
 from src.compiler.ink_on_fill import fix_ink_on_fill, readable_on_colour_fills
 from src.compiler.normalizer import (
     _BARE_AMP_RE, apply_box, dark_cover, ensure_single_theme, has_dark_panel, normalize_xml, pre_validate,
@@ -38,6 +38,13 @@ logger = logging.getLogger(__name__)
 
 def validator_node(state: PresentationState) -> dict[str, Any]:
     """Run the normalize → validate → compile pipeline on current_xml."""
+    return validate_slide(state)
+
+
+def validate_slide(state: PresentationState, output_dir: Path | None = None) -> dict[str, Any]:
+    """The validator's whole path on state["current_xml"]: draw the composition nodes from the plan, fill the KPI
+    refs, normalize, apply the palette look, compile, audit. The visual repairer calls it too (with its own
+    output_dir), so a repaired slide is drawn exactly like a generated one."""
     xml = state.get("current_xml", "")
     if not xml.strip():
         logger.warning("validator: empty XML")
@@ -52,51 +59,46 @@ def validator_node(state: PresentationState) -> dict[str, Any]:
             "layout_issues": [],
         }
 
-    run_id = state.get("run_id", "unknown")
-    _pipeline_root = Path(__file__).resolve().parent.parent.parent
-    output_dir = _pipeline_root / "output" / "runs" / run_id
     slide_plans = state.get("slide_plans", [])
-    if len(slide_plans) > 1:
-        idx = state.get("current_slide_index", 0)
-        output_dir = output_dir / f"slide-{idx}"
-    attempt = state.get("retry_count", 0)
-    if attempt > 0:
-        output_dir = output_dir / f"retry-{attempt}"
+    if output_dir is None:
+        run_id = state.get("run_id", "unknown")
+        _pipeline_root = Path(__file__).resolve().parent.parent.parent
+        output_dir = _pipeline_root / "output" / "runs" / run_id
+        if len(slide_plans) > 1:
+            idx = state.get("current_slide_index", 0)
+            output_dir = output_dir / f"slide-{idx}"
+        attempt = state.get("retry_count", 0)
+        if attempt > 0:
+            output_dir = output_dir / f"retry-{attempt}"
 
-    # KPI element refs (POM_BLOCKS=kpi, docs/kpi-node-pilot-2026-10-11.md): code writes the text
-    # of every <Text ref="cid.i.field"/> before anything else reads the slide; under POM_BLOCKS=tiles
-    # it first expands <KpiGrid> / <Kpi> into such tiles (docs/tile-nodes-spec-2026-10-12.md). Composition nodes
-    # (POM_NODES=chart, docs/composition-convention-spec.md) are drawn before that.
+    # Composition nodes (docs/composition-convention-spec.md) are drawn from the plan first; then code writes the
+    # text of every KPI element ref <Text ref="cid.i.field"/> (tiles.fill, docs/kpi-node-pilot-2026-10-11.md)
+    # before anything else reads the slide.
     ref_issues: list[dict[str, Any]] = []
     tags_xml = ""   # the LLM's own XML when code draws from it: what the repairer edits
-    if element_refs.refs_on() or composed.kinds_on():
-        idx = state.get("current_slide_index", 0)
-        plan = slide_plans[idx] if idx < len(slide_plans) else {}
-        if "ref=" in xml:   # the LLM's own XML, before code fills it (eval bundles: the first try)
-            output_dir.mkdir(parents=True, exist_ok=True)
-            (output_dir / "generated.xml").write_text(xml, encoding="utf-8")
-        xml = _BARE_AMP_RE.sub("&amp;", xml)   # a bare '&' ("KEYWORD & CITIES") fails the parse: tags stayed unexpanded
-        tags_xml = xml if "ref=" in xml else ""
-        ok = True
-        if composed.kinds_on():
-            drawn = composed.expand(xml, plan)
-            xml, ref_issues, ok = drawn["xml"], list(drawn["issues"]), drawn["ok"]
-        if element_refs.refs_on():
-            fill = tiles.fill if tiles.on() else element_refs.fill_refs
-            refs = fill(xml, plan)
-            xml, ref_issues, ok = refs["xml"], ref_issues + refs["issues"], ok and refs["ok"]
-        for i in ref_issues:
-            logger.info(f"validator: {i['code']} ({i['severity']}): {i['message']}")
-        if not ok:
-            diags = [{"type": i["code"], "message": i["message"]} for i in ref_issues if i["severity"] == "error"]
-            fail = {"ok": False, "pptx_path": None, "diagnostics": diags, "warnings": [], "retryable": True}
-            return {
-                "normalize_result": {"issues": [dict(i, auto_fixed=False) for i in ref_issues], "auto_fixed": 0,
-                                     "blocking": True, "cleaned_xml": xml, "tags_xml": tags_xml},
-                "validate_result": {"ok": False, "diagnostics": diags, "warnings": []},
-                "compile_result": fail,
-                "layout_issues": [],
-            }
+    idx = state.get("current_slide_index", 0)
+    plan = slide_plans[idx] if idx < len(slide_plans) else {}
+    if "ref=" in xml:   # the LLM's own XML, before code fills it (eval bundles: the first try)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "generated.xml").write_text(xml, encoding="utf-8")
+    xml = _BARE_AMP_RE.sub("&amp;", xml)   # a bare '&' ("KEYWORD & CITIES") fails the parse: tags stayed unexpanded
+    tags_xml = xml if "ref=" in xml else ""
+    drawn = composed.expand(xml, plan)
+    xml, ref_issues, ok = drawn["xml"], list(drawn["issues"]), drawn["ok"]
+    refs = tiles.fill(xml, plan)
+    xml, ref_issues, ok = refs["xml"], ref_issues + refs["issues"], ok and refs["ok"]
+    for i in ref_issues:
+        logger.info(f"validator: {i['code']} ({i['severity']}): {i['message']}")
+    if not ok:
+        diags = [{"type": i["code"], "message": i["message"]} for i in ref_issues if i["severity"] == "error"]
+        fail = {"ok": False, "pptx_path": None, "diagnostics": diags, "warnings": [], "retryable": True}
+        return {
+            "normalize_result": {"issues": [dict(i, auto_fixed=False) for i in ref_issues], "auto_fixed": 0,
+                                 "blocking": True, "cleaned_xml": xml, "tags_xml": tags_xml},
+            "validate_result": {"ok": False, "diagnostics": diags, "warnings": []},
+            "compile_result": fail,
+            "layout_issues": [],
+        }
 
     norm = normalize_xml(xml)
     norm["tags_xml"] = tags_xml

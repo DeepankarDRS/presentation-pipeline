@@ -1,4 +1,4 @@
-"""KPI tile nodes (docs/tile-nodes-spec-2026-10-12.md §2, §4), `POM_BLOCKS=tiles`.
+"""KPI tile nodes (docs/tile-nodes-spec-2026-10-12.md §2, §4).
 
 The LLM writes KPI tiles like a native POM data node, a group tag and an item tag:
 
@@ -63,10 +63,6 @@ def data() -> dict[str, Any]:
 
 def kpi() -> dict[str, Any]:
     return data()["kpi"]
-
-
-def on() -> bool:
-    return element_refs.mode() == "tiles"
 
 
 def role_value(value: Any, role: str) -> str:

@@ -1,8 +1,21 @@
 ## RENDERED SLIDE SCREENSHOT
 [The screenshot image is provided as an attachment.]
 
-## POM XML SOURCE
+## POM XML SOURCE{% if tags_xml %} (as drawn: code expanded the ref tags){% endif %}
+
 {{ current_xml }}
+{% if code_drawn %}
+
+## CODE-DRAWN COMPONENTS (code draws each from the plan; fix them only on their tag)
+{% for line in code_drawn %}
+- {{ line }}
+{% endfor %}
+{% endif %}
+{% if tags_xml %}
+
+## THE XML THE REPAIR EDITS (the generator's own XML: write every fix against it)
+{{ tags_xml }}
+{% endif %}
 
 {% if slide_type %}## SLIDE TYPE: {{ slide_type }}
 {% endif %}

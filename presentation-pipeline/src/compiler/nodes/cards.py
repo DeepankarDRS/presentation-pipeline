@@ -1,4 +1,4 @@
-"""Card tile nodes (docs/tile-nodes-spec-2026-10-12.md §3, §11), `POM_BLOCKS=tiles`.
+"""Card tile nodes (docs/tile-nodes-spec-2026-10-12.md §3, §11).
 
 The LLM writes a card_grid like a native POM data node, a group tag and an item tag:
 
@@ -44,10 +44,6 @@ _INLINE = {"Text", "B", "I", "U", "S", "Span", "Mark", "Li", "Td"}
 
 def card() -> dict[str, Any]:
     return tiles.data()["card"]
-
-
-def on() -> bool:
-    return tiles.on()
 
 
 def card_components(plan: dict | None) -> dict[str, dict]:

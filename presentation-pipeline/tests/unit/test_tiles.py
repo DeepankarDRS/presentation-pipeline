@@ -440,35 +440,17 @@ def test_generator_prompt_under_tiles(monkeypatch):
     from src.agents.generator import _render_prompts
     system, user = _render_prompts(_gen_state())
     assert "KPI TILES kpis:" in user and "KPI REFS" not in user and "₹114.9L" not in user
-    head = system.split("\n## THIS SLIDE\n")[0]
-    assert "## KPI TILES (code draws them from the plan)" in head      # fixed lines: in the cached prefix
+    head, tail = system.split("\n## THIS SLIDE\n")
+    assert "## KPI TILES (code draws them from the plan)" in tail and "## KPI TILES" not in head   # this slide's kinds
     assert "# kpi_row" not in system and "# dark_callout_panel" not in system and "# compact_kpi_strip" not in system
+    allowed = tail.split("## ALLOWED NODES\n")[1].split("\n")[0]
+    assert "KpiRow, Kpi" in allowed and "KpiGrid" not in allowed
     # the kpi_row's visual-intent: tile attributes, not the hand-built techniques; no sparkline in its scope
     techniques = system.split("## VISUAL-INTENT TRANSLATION")[1]
     assert "- icon_tiles (" not in techniques and "- sparkline (" not in techniques
-    kpi_scope = user.split("KPI TILES kpis:")[0].rsplit("scope:", 1)[1]
-    assert "sentiment" in kpi_scope and "sparkline" not in kpi_scope
-    monkeypatch.setenv("POM_BLOCKS", "kpi")
-    system, user = _render_prompts(dict(_gen_state()))
-    assert "KPI REFS for kpis" in user and "## KPI TILES" not in system
-    assert "- sparkline (" in system.split("## VISUAL-INTENT TRANSLATION")[1]
+    assert "scope:" not in user.split("KPI TILES kpis:")[0].rsplit("- kpi_row", 1)[1]   # the node line carries it
 
 
-def test_the_tile_tags_are_allowed_nodes_under_tiles(monkeypatch):
-    # CHEFFIN 4 (tile_one, 2026-10-26): hand-drawn tiles on 3 / 3 first tries; the strict rules allow no tag outside
-    # ALLOWED NODES and the tags were not in it
-    from src.agents.generator import _render_prompts
-    contract = _gen_state()["contract"]
-    assert {"KpiGrid", "Kpi"} <= set(contract["allowed_nodes"]) and "CardGrid" not in contract["allowed_nodes"]
-    assert "<KpiGrid> -> Kpi" in contract["node_hierarchy"] and "<Kpi> -- LEAF" in contract["node_hierarchy"]
-    kpi_attrs = contract["allowed_attributes"]["Kpi"]
-    assert {"ref", "variant", "size", "label.*", "shadow.*", "grow"} <= set(kpi_attrs)
-    assert "size" not in contract["allowed_attributes"]["KpiGrid"] and "cols" in contract["allowed_attributes"]["KpiGrid"]
-    system, _ = _render_prompts(_gen_state())
-    allowed = system.split("## ALLOWED NODES\n")[1].split("\n")[0]
-    assert "KpiGrid, Kpi" in allowed
-    monkeypatch.setenv("POM_BLOCKS", "kpi")
-    assert "KpiGrid" not in _gen_state()["contract"]["allowed_nodes"]
 
 
 def test_card_tags_are_allowed_only_when_cards_are_drawn():
@@ -484,19 +466,6 @@ def test_card_tags_are_allowed_only_when_cards_are_drawn():
                                             resolve_theme("corporate-slate"))["allowed_nodes"]
 
 
-def test_house_style_names_the_kpi_grid_under_tiles(monkeypatch):
-    hs = _gen_state()["contract"]["house_style"]
-    assert "A KPI tile: NO h" not in hs and "Tiles: w=\"max\"" not in hs and "each at least 260px wide" not in hs
-    assert "A KPI row is one <KpiGrid ref>" in hs and "KPI row: one <KpiGrid ref>" in hs
-    assert "stat_value: 44-56 bold for a number outside a KPI row" in hs and "one <KpiGrid ref> per kpi_row" in hs
-    from src.agents.context_builder import build_contract
-    from src.agents.style_resolver import resolve_theme
-    other = build_contract({"slide_index": 0, "components": [{"component_id": "t", "kind": "title"}]},
-                           resolve_theme("corporate-slate"))
-    assert other["house_style"] == hs   # the same on every slide of the deck: one cached prefix
-    monkeypatch.setenv("POM_BLOCKS", "kpi")
-    hs = _gen_state()["contract"]["house_style"]
-    assert "A KPI tile: NO h" in hs and "KpiGrid" not in hs and "each at least 260px wide" in hs
 
 
 def test_kpi_row_without_an_id_keeps_the_techniques():
@@ -508,9 +477,6 @@ def test_kpi_row_without_an_id_keeps_the_techniques():
     assert "- sparkline (" in contract["visual_intent_techniques"] and "sparkline" in contract["hint_scopes"]["kpi_row"]
 
 
-def test_kpi_recipes_stay_on_the_other_routes(monkeypatch):
-    monkeypatch.setenv("POM_BLOCKS", "kpi")
-    assert "# kpi_row" in _gen_state()["contract"]["component_recipes"]
 
 
 def test_validator_expands_tiles(monkeypatch):
@@ -546,12 +512,6 @@ def test_validator_expands_tiles_after_a_bare_ampersand(monkeypatch):
     assert "<KpiGrid" not in seen["xml"] and "KEYWORD &amp; CITIES" in seen["xml"]
 
 
-def test_mode_values(monkeypatch):
-    assert E.mode() == "tiles" and E.refs_on() and T.on()
-    monkeypatch.setenv("POM_BLOCKS", "kpi")
-    assert E.refs_on() and not T.on()
-    monkeypatch.setenv("POM_BLOCKS", "off")
-    assert not E.refs_on()
 
 
 def test_side_keeps_the_dot_beside_the_label_when_an_icon_leads():

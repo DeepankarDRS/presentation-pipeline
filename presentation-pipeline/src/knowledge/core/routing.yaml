@@ -3,8 +3,7 @@
 # wrongly (src/agents/plan_ledger.py, SHAPE_MISFIT: units on one chart axis, placeholder matrix cells), never a
 # preference such as kpi_row over a table (2026-11-16, user: no hardcoded kind either way).
 # Rows are about the SHAPE of content (subjects, measures, ordered points, words or figures), never a topic.
-# Cells are Jinja: cap / span render the limits from capacity.yaml. `kind_timeline_node` replaces `kind` when code draws
-# timelines (POM_NODES=timeline).
+# Cells are Jinja: cap / span render the limits from capacity.yaml.
 rows:
   - id: subject_measures
     states: One subject's measures, any number of them
@@ -56,8 +55,7 @@ rows:
     not_for: a plain sequence of short steps (process_arrow)
   - id: dated
     states: Dated events
-    kind: "timeline: items = milestones ({{ span('timeline') }}); date and label ≤ {{ cap.timeline.max_label_words }} words each"
-    kind_timeline_node: "timeline: items = milestones ({{ span('timeline') }}); each a date, a label (the milestone's name, ≤ {{ cap.timeline.max_label_words }} words) and, when the brief gives detail, a description (≤ {{ cap.timeline.max_description_words }} words)"
+    kind: "timeline: items = milestones ({{ span('timeline') }}); each a date, a label (the milestone's name, ≤ {{ cap.timeline.max_label_words }} words) and, when the brief gives detail, a description (≤ {{ cap.timeline.max_description_words }} words)"
     not_for: undated items
   - id: hierarchy
     states: Parent–child hierarchy
