@@ -1,24 +1,23 @@
-"""Visual critic — screenshot-based quality review using a vision LLM.
+"""Visual critic: judges a rendered slide per component, from two screenshots (clean + numbered marks) and what code
+measured (2026-11-20 redesign, decisions in docs/visual-critic-redesign-2026-11-20.md).
 
-Encodes the slide screenshot as base64, sends to gpt-4.1 (vision-capable)
-alongside the POM XML, slide plan context, design contract, and compile
-warnings. Returns structured issues with repair hints that drive the
-repair loop.
+The system prompt is the same for every slide (the variant catalogue included), so the provider caches it; everything
+about the slide is in the user message. The critic describes problems; the fixer (visual_repairer) writes the edits.
 
-Called from critic_node() when a screenshot is available, and from
-slide_edit_service after user edits.
+Called from critic_node(), and from slide_edit_service after user edits (no marks there).
 """
 
 from __future__ import annotations
 
 import base64
 import logging
-import re
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from src.agents import slide_facts
 from src.agents.critic_schema import VisualCriticOutput
 from src.compiler.nodes import composed
 from src.utils.llm_client import get_llm, unpack_raw
@@ -26,40 +25,43 @@ from src.utils.llm_client import get_llm, unpack_raw
 logger = logging.getLogger(__name__)
 
 _PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts" / "visual_critic"
-_jinja_env = Environment(
-    loader=FileSystemLoader(str(_PROMPTS_DIR)),
-    keep_trailing_newline=True,
-)
+_jinja_env = Environment(loader=FileSystemLoader(str(_PROMPTS_DIR)), keep_trailing_newline=True)
 
-_SKIP_NOTE_KEYWORDS = {"tag", "attribute", "forbidden", "must not use", "allowed_nodes"}
-
-
-def _encode_image(image_path: str) -> str:
-    """Read an image file and return its base64 encoding."""
-    return base64.b64encode(Path(image_path).read_bytes()).decode("utf-8")
-
-
-def _filter_visual_notes(notes: list[str]) -> list[str]:
-    """Keep only layout/visual-relevant notes from the contract."""
-    return [n for n in notes if not any(kw in n.lower() for kw in _SKIP_NOTE_KEYWORDS)]
+# the critic's checklist item -> the issue type the rest of the pipeline reads (CriticTypeLiteral)
+_TYPE = {"completeness": "completeness", "message": "fidelity", "hierarchy": "visual", "visible_defect": "structure",
+         "colour": "theme", "variant_fit": "visual", "balance": "visual", "none": "visual"}
 
 
 def _empty_repair_hints() -> dict[str, Any]:
     return {"strategy": "none", "assessment": "good", "affected_nodes": []}
 
 
-# Size, spacing and fill are set by code after generation (fit-grow: growth, spill fix,
-# centring) and re-applied after every repair, so an LLM fix there is undone or fights it
-# (2026-10-07). A visible defect (overlap, clipping, unreadable text) is still kept.
-_SIZE_TALK = re.compile(r"font ?size|fontsize|padding|\bgap\b|\bgrow\b|minh|\bmargin|spacing|white ?space"
-                        r"|empty (space|area|band)|under-?filled|oversized|too (large|big|small)", re.IGNORECASE)
-_DEFECT_TALK = re.compile(r"overlap|overflow|clip|cut ?off|truncat|collid|off the slide|outside|missing"
-                          r"|invisible|contrast|unreadable|illegible", re.IGNORECASE)
+@lru_cache(maxsize=1)
+def system_prompt() -> str:
+    """The critic's system prompt: fixed for every slide and deck (a cacheable prefix)."""
+    lines = []
+    for kind in composed.KINDS:
+        vs = slide_facts.variants(kind)
+        lines.append(f"- {kind} (<{composed.tag(kind)} ref>): " + "; ".join(f"{n}: {p}" if p else n for n, p in vs.items()))
+    return _jinja_env.get_template("system.j2").render(variant_catalogue="\n".join(lines))
 
 
-def code_owned(description: str, fix: str) -> bool:
-    text = f"{description} {fix}"
-    return bool(_SIZE_TALK.search(text)) and not _DEFECT_TALK.search(text)
+def _image(path: str) -> dict[str, Any]:
+    b64 = base64.b64encode(Path(path).read_bytes()).decode("utf-8")
+    return {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}", "detail": "high"}}
+
+
+def user_text(slide_plan: dict[str, Any], xml: str, comps: list[slide_facts.Component], facts: list[str],
+              theme_element: str) -> str:
+    hints = [f"[{c.n}] {c.id}: {h}" for c in comps
+             for h in [next((p.get("design_hint") for p in slide_plan.get("components") or []
+                             if p.get("component_id") == c.id), None)] if h]
+    return _jinja_env.get_template("user.j2").render(
+        label=slide_plan.get("label", ""), headline=slide_plan.get("slide_title", ""),
+        slide_type=slide_plan.get("slide_type", ""), layout_hint=slide_plan.get("layout_hint", ""),
+        hints=hints, colour_roles=slide_facts.colour_roles(theme_element),
+        component_table=slide_facts.table(comps) or "(no plan component ids on this slide)",
+        facts=facts, xml=slide_facts.annotate(xml, comps) if comps else xml)
 
 
 def run_visual_critic(
@@ -69,105 +71,76 @@ def run_visual_critic(
     theme_element: str,
     contract: dict[str, Any] | None = None,
     compile_warnings: list[dict[str, str]] | None = None,
-    layout_issues: list[dict[str, str]] | None = None,
-    previous_issues: list[dict[str, Any]] | None = None,
-    tags_xml: str = "",
+    components: list[slide_facts.Component] | None = None,
+    facts: list[str] | None = None,
+    marked_path: str | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
-    """Run vision LLM on the screenshot and return (issues, usage, repair_hints).
+    """Review the slide; return (issues, usage, repair_hints). Fails open: ([], zero usage, no repair).
 
-    Returns ([], zero_usage, empty_hints) on any failure (fail-open).
+    current_xml: the generator's XML (ref tags) when there is one, else the drawn XML.
+    issues: every verdict "issue" as {severity, type, description, fix, affected_nodes, source, component, owner,
+    check}; repair_hints.strategy: "regenerate" (the plan is wrong), "fix" (a medium / high issue), else "none".
     """
     zero_usage = {"tokens_in": 0, "tokens_out": 0, "model": "unknown"}
     if not Path(screenshot_path).exists():
         logger.warning(f"visual_critic: screenshot not found: {screenshot_path}")
         return [], zero_usage, _empty_repair_hints()
 
-    contract = contract or {}
+    comps = components or []
+    if facts is None:   # the slide editor's path: the compiler's warnings as they are
+        facts = [f"{w.get('code') or w.get('type')}: {w.get('message', '')}" for w in compile_warnings or []]
+    text = user_text(slide_plan, current_xml, comps, facts, theme_element)
+    content: list[dict[str, Any]] = [_image(screenshot_path)]
+    if marked_path and Path(marked_path).exists():
+        content.append(_image(marked_path))
+    content.append({"type": "text", "text": text})
+    messages = [{"role": "system", "content": system_prompt()}, {"role": "user", "content": content}]
 
-    system_tmpl = _jinja_env.get_template("system.j2")
-    user_tmpl = _jinja_env.get_template("user.j2")
-
-    slide_type = slide_plan.get("slide_type", "")
-    system_prompt = system_tmpl.render(slide_type=slide_type)
-    user_text = user_tmpl.render(
-        current_xml=current_xml,
-        slide_type=slide_type,
-        components=slide_plan.get("components", []),
-        theme_element=theme_element,
-        component_count=contract.get("component_count", 0),
-        compile_warnings=compile_warnings or [],
-        layout_issues=layout_issues or [],
-        visual_notes=_filter_visual_notes(contract.get("notes", [])),
-        previous_issues=previous_issues or [],
-        # the composition nodes: the critic sees them drawn, the repair edits their ref tags (2026-11-19)
-        tags_xml=tags_xml,
-        code_drawn=[f'<{composed.tag(k)} ref="{cid}"/> ({k})' for k in composed.slide_kinds(slide_plan)
-                    for cid in composed.drawn(slide_plan, k)],
-    )
-
-    image_b64 = _encode_image(screenshot_path)
-
-    llm = get_llm("visual_critic")
-    structured_llm = llm.with_structured_output(
-        VisualCriticOutput, method="json_schema", include_raw=True,
-    )
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/png;base64,{image_b64}",
-                        "detail": "high",
-                    },
-                },
-                {"type": "text", "text": user_text},
-            ],
-        },
-    ]
-
+    structured = get_llm("visual_critic").with_structured_output(VisualCriticOutput, method="json_schema",
+                                                                 include_raw=True)
     try:
-        raw_result = structured_llm.invoke(messages)
+        result, usage = unpack_raw(structured.invoke(messages))
     except Exception as e:
         logger.error(f"visual_critic: LLM call failed: {e}")
         return [], zero_usage, _empty_repair_hints()
 
-    result, usage = unpack_raw(raw_result)
-
+    by_id = {c.id: c for c in comps}
     issues = []
-    all_affected_nodes: list[str] = []
-    dropped = 0
-    for issue in result.issues:
-        if code_owned(issue.description, issue.fix):
-            dropped += 1
-            # the text, so a run shows whether the filter was right (2026-11-20)
-            logger.info(f"visual_critic: dropped {issue.severity} issue (code owns size/spacing): "
-                        f"{issue.description} | fix: {issue.fix}")
+    for v in result.verdicts:
+        if v.verdict != "issue" or v.severity == "none":
             continue
+        c = by_id.get(v.id)
+        where = f"[{c.n}] {c.id} ({c.kind})" if c else v.id
         issues.append({
-            "severity": issue.severity,
-            "type": issue.type,
-            "description": f"[Visual] {issue.description}",
-            "fix": issue.fix,
-            "affected_nodes": issue.affected_nodes,
+            "severity": v.severity,
+            "type": _TYPE.get(v.check, "visual"),
+            "description": f"[Visual] {where}: {v.what_i_see}",
+            "fix": f"variant {v.better_variant}" if v.better_variant else "",
+            "affected_nodes": [v.id],
             "source": "visual",
+            "component": v.id,
+            "owner": v.owner,
+            "check": v.check,
         })
-        all_affected_nodes.extend(issue.affected_nodes)
+    if result.regenerate:
+        strategy = "regenerate"
+    elif any(i["severity"] in ("high", "medium") for i in issues):
+        strategy = "fix"
+    else:
+        strategy = "none"
+    worst = max((i["severity"] for i in issues), key=["low", "medium", "high"].index, default=None)
+    hints = {"strategy": strategy,
+             "assessment": {"high": "layout_broken", "medium": "needs_tuning"}.get(worst, "good"),
+             "affected_nodes": sorted({i["component"] for i in issues}),
+             "observations": result.observations,
+             "regenerate_reason": result.regenerate_reason}
 
-    repair_hints = {
-        "strategy": result.repair_strategy,
-        "assessment": result.overall_assessment,
-        "affected_nodes": sorted(set(all_affected_nodes)),
-    }
-
-    if dropped:
-        logger.info(f"visual_critic: dropped {dropped} size / spacing issue(s): code owns them (fit-grow)")
-    logger.info(
-        f"visual_critic: {len(issues)} issue(s), "
-        f"assessment={result.overall_assessment}, strategy={result.repair_strategy}"
-    )
+    missing = [c.id for c in comps if c.id not in {v.id for v in result.verdicts}]
+    if missing:
+        logger.info(f"visual_critic: no verdict for {', '.join(missing)}")
+    logger.info(f"visual_critic: observations: {result.observations}")
+    for i in issues:
+        logger.info(f"visual_critic: {i['severity']} {i['check']} ({i['owner']}): {i['description']}")
+    logger.info(f"visual_critic: {len(issues)} issue(s), strategy={strategy}")
     logger.info(f"visual_critic: {usage['model']} tokens_in={usage['tokens_in']} tokens_out={usage['tokens_out']}")
-    return issues, usage, repair_hints
+    return issues, usage, hints

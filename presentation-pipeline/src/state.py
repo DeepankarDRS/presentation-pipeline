@@ -50,7 +50,7 @@ StepLiteral = Literal[                    # step names in usage records (llm_cli
     "generator", "repairer", "critic", "visual_critic", "visual_repairer", "slide_editor",
     "storyline", "slide_designer",        # Test 1 planning path (src/planning/graph.py)
 ]
-VisualRepairOutcomeLiteral = Literal["improved", "noop", "error"]
+VisualRepairOutcomeLiteral = Literal["improved", "noop", "error", "rolled_back"]
 
 
 # ── Sub-structures ──────────────────────────────────────────────────────────
@@ -282,11 +282,6 @@ class PresentationState(TypedDict, total=False):
     # Per-slide critic verdicts captured by slide_router for the deck path
     slide_critic_results: Annotated[list[dict[str, Any]], operator.add]
     # Snapshot before first repair — used for score-based rollback
-    pre_critic_xml: str | None
-    pre_critic_slide_plans: list[dict[str, Any]] | None
-    pre_critic_contract: dict[str, Any] | None
-    pre_critic_score: int
-    pre_critic_results: dict[str, Any] | None   # compile / normalize / validate / layout before a visual repair
 
     # ── Retry (repairer writes) ──
     retry_tier: RetryTierLiteral
@@ -316,7 +311,7 @@ def initial_state(
     deck_settings: dict[str, Any] | None = None,
     critic_mode: Literal["auto", "off"] = "off",
     retry_budget: int = 3,  # PATCH, REGENERATE (replan+generate), cleanup PATCH
-    visual_repair_budget: int = 2,
+    visual_repair_budget: int = 1,
     interactive: bool = False,
     outline_plan: OutlinePlan | None = None,
     elicitation_answers: dict[str, str] | None = None,
@@ -369,11 +364,6 @@ def initial_state(
         visual_critic_result=None,
         slide_screenshots={},
         slide_critic_results=[],
-        pre_critic_xml=None,
-        pre_critic_slide_plans=None,
-        pre_critic_contract=None,
-        pre_critic_score=0,
-        pre_critic_results=None,
         retry_tier=0,
         retry_count=0,
         retry_budget=retry_budget,

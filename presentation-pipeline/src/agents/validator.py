@@ -85,6 +85,9 @@ def validate_slide(state: PresentationState, output_dir: Path | None = None) -> 
     tags_xml = xml if "ref=" in xml else ""
     drawn = composed.expand(xml, plan)
     xml, ref_issues, ok = drawn["xml"], list(drawn["issues"]), drawn["ok"]
+    # the outer box each code-drawn component became (geometry.json ids): the critic's marks and coordinates
+    boxes = {cid: info.get("boxes") or [] for cid, info in drawn["components"].items()}
+    drawn_variants = {cid: info["composition"] for cid, info in drawn["components"].items() if info.get("composition")}
     refs = tiles.fill(xml, plan)
     xml, ref_issues, ok = refs["xml"], ref_issues + refs["issues"], ok and refs["ok"]
     for i in ref_issues:
@@ -102,6 +105,8 @@ def validate_slide(state: PresentationState, output_dir: Path | None = None) -> 
 
     norm = normalize_xml(xml)
     norm["tags_xml"] = tags_xml
+    norm["component_boxes"] = boxes
+    norm["component_variants"] = drawn_variants   # the variant code drew (a default or a fallback included)
     norm["issues"] = [dict(i, auto_fixed=i["severity"] != "error") for i in ref_issues] + norm["issues"]
     theme_el = (state.get("contract") or {}).get("theme_element") or state.get("theme_element", "")
     # Deck look from the palette (palettes.yaml `cover` / `box`): code owns it, so every slide

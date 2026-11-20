@@ -74,11 +74,11 @@ steps:
     reasoning_effort: medium
     temperature: 0.1  # ignored by reasoning models; used again on gpt-4.1
     max_tokens: 24000  # must be able to re-emit a full slide, not truncate mid-repair; gpt-4.1 used 12000
-  visual_critic:
+  visual_critic:   # 2026-11-20: a verdict per component + observations; the paid check compares gpt-6.1-sol here
     provider: openai
     model: gpt-4.1
     temperature: 0.1
-    max_tokens: 800
+    max_tokens: 3000  # was 800 (one-line "good" answers); a reasoning model needs ~16000
   slide_editor:
     provider: openai
     model: gpt-4.1

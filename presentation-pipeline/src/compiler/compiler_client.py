@@ -65,6 +65,16 @@ def deck_font(xml: str, family: str | None = DECK_FONT) -> str:
     return pat.sub(lambda m: f'<{m.group(1)} fontFamily="{family}"', xml)
 
 
+FIT_GROW_OFF = "<!-- fit-grow: off -->"
+
+
+def drawn_xml(compile_result: dict[str, Any] | None) -> str:
+    """The XML a compiled slide was drawn from (compile-pom.js drawn.xml: after fit-grow); "" when there is none."""
+    pptx = (compile_result or {}).get("pptx_path")
+    path = Path(pptx).parent / "drawn.xml" if pptx else None
+    return path.read_text(encoding="utf-8") if path and path.exists() else ""
+
+
 def compile_xml(xml: str, output_dir: Path, *, timeout: int = 120) -> dict[str, Any]:
     """Write xml (in the deck font) to output_dir/input.xml, run compile-pom.js, return CompileResult dict."""
     xml = deck_font(xml)

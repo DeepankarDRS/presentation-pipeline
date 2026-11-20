@@ -2809,7 +2809,16 @@ async function fixSpills(xml, report, warnings) {
   const L = await layout(xml);
   let first, fonts;
   try {
-    first = spillsOf(L).map(({ n, kind, need, have }) => ({ id: n.id, type: n.type, kind, need, have }));
+    // the ids a spill sits in, itself first (fit-grow's own __fg ids left out): the critic and the fixer map
+    // them to a plan component (cmp-<id> / a hand-drawn box id, 2026-11-20)
+    const parentOf = new Map();
+    for (const root of L.slides) walk(root, (c, p) => p && parentOf.set(c, p));
+    const owners = (n) => {
+      const out = [];
+      for (let c = n; c; c = parentOf.get(c)) if (c.id && !c.id.startsWith(ID_PREFIX)) out.push(c.id);
+      return out;
+    };
+    first = spillsOf(L).map(({ n, kind, need, have }) => ({ id: n.id, type: n.type, kind, need, have, ids: owners(n) }));
     fonts = diagramFonts(L);
   } finally { L.free(); }
   // stacks follow their content: name the leaves (tables / texts) when there are any
@@ -2836,7 +2845,8 @@ async function fixSpills(xml, report, warnings) {
   }
   const why = !out.spills.length && out.over <= 0 ? ` (the room would draw a diagram's labels below ${DIAGRAM_FONT_FLOOR}px)` : "";
   warnings.push({ code: "SLIDE_DENSE", message: `content needs more room than the slide has after gaps, padding and `
-    + `fonts down to 14px${why}; left as generated: ${named(first)}` });
+    + `fonts down to 14px${why}; left as generated: ${named(first)}`,
+    spills: first.map(({ type, kind, need, have, ids }) => ({ type, kind, need: Math.round(need), have: Math.round(have), ids })) });
   report.push(`spill left (slide too dense): ${named(first)}`);
   return xml;
 }

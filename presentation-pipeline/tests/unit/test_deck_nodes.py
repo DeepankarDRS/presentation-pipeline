@@ -40,7 +40,7 @@ def test_assemble_deck_xml_strips_contamination():
     dirty_1 = f'{theme}\n<Slide><VStack w="1280" h="720"><Text color="#FF0000">a<br/>b</Text></VStack></Slide>'
     dirty_2 = f'{theme}\n<Slide><VStack w="1280" h="720" spacing="8"><Text>Slide 2</Text></VStack></Slide>'
 
-    combined, count = assemble_deck_xml([dirty_1, dirty_2], theme)
+    combined, count = assemble_deck_xml([dirty_1, dirty_2], theme, drawn=False)
 
     assert "<br" not in combined
     assert "#FF0000" not in combined
@@ -142,14 +142,15 @@ def test_deck_assembler_combines_slides(mock_compile):
 
 
 @patch("src.agents.deck_nodes.compile_xml")
-def test_deck_assembler_normalizes_before_compile(mock_compile):
-    """A per-slide <br/> that reached completed_slides must be stripped before the deck compile."""
+def test_deck_assembler_compiles_each_slide_as_drawn(mock_compile):
+    """2026-11-20: each slide was normalized and fitted once (validator) and maybe fixed (visual fixer); the deck
+    compile changes no value: no second normalize, fit-grow off."""
     mock_compile.return_value = {
         "ok": True, "pptx_path": "/tmp/deck.pptx",
         "diagnostics": [], "warnings": [], "retryable": False,
     }
 
-    state = initial_state(run_id="da-norm", raw_request="test")
+    state = initial_state(run_id="da-drawn", raw_request="test")
     state["completed_slides"] = [
         {"slide_index": 0, "xml": _SLIDE_XML_1},
         {"slide_index": 1, "xml": _SLIDE_XML_2.replace("Slide 2", "Slide<br/>2")},
@@ -158,7 +159,8 @@ def test_deck_assembler_normalizes_before_compile(mock_compile):
     deck_assembler_node(state)
 
     compiled_xml = mock_compile.call_args[0][0]
-    assert "<br" not in compiled_xml
+    assert "<!-- fit-grow: off -->" in compiled_xml
+    assert "Slide<br/>2" in compiled_xml
 
 
 @patch("src.agents.deck_nodes.compile_xml")
@@ -264,3 +266,14 @@ def test_deck_assembler_sorts_by_index(mock_compile):
     idx1 = compiled_xml.index("Slide 1")
     idx2 = compiled_xml.index("Slide 2")
     assert idx1 < idx2
+
+
+def test_slide_router_saves_the_drawn_xml(tmp_path):
+    """2026-11-20: the deck is built from what each slide was drawn from (compile-pom.js drawn.xml: after fit-grow, or
+    the visual fixer's kept edit), not the pre-fit cleaned XML."""
+    (tmp_path / "drawn.xml").write_text('<Slide><VStack><Text fontSize="28">fitted</Text></VStack></Slide>', encoding="utf-8")
+    state = initial_state(run_id="sr-drawn", raw_request="test")
+    state["normalize_result"] = {"cleaned_xml": '<Slide><VStack><Text fontSize="14">fitted</Text></VStack></Slide>'}
+    state["compile_result"] = {"ok": True, "pptx_path": str(tmp_path / "presentation.pptx")}
+    saved = slide_router_node(state)["completed_slides"][0]["xml"]
+    assert 'fontSize="28"' in saved

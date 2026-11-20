@@ -48,23 +48,11 @@ def test_text_without_its_own_colour_is_not_judged():
     assert _low('<VStack padding="16" backgroundColor="$textMain"><Text fontSize="16">default colour</Text></VStack>') == []
 
 
-def test_low_contrast_is_report_only_for_the_critic(monkeypatch, tmp_path):
-    """Recorded for the eval score, never passed to the critic (no recolouring repairs)."""
-    from types import SimpleNamespace
-
-    from src.agents import critic
-
-    seen = {}
-
-    def fake_visual_critic(**kwargs):
-        seen["codes"] = [i["code"] for i in kwargs["layout_issues"]]
-        return [], {}, {"strategy": "none", "assessment": "good", "affected_nodes": []}
-
-    shot = SimpleNamespace(ok=True, error=None, slides=[SimpleNamespace(png_path=str(tmp_path / "s.png"))])
-    monkeypatch.setattr(critic, "run_visual_critic", fake_visual_critic)
-    monkeypatch.setattr(critic, "render_screenshots", lambda *a, **k: shot)
-    state = {"compile_result": {"ok": True, "pptx_path": "deck.pptx"}, "run_id": "t",
-             "layout_issues": [{"code": "LOW_CONTRAST", "severity": "medium", "message": "m"},
-                               {"code": "BAND_HEIGHT_SUM", "severity": "high", "message": "m"}]}
-    critic._run_visual_review(state)
-    assert seen["codes"] == ["BAND_HEIGHT_SUM"]
+def test_low_contrast_reaches_the_critic_as_a_fact_never_as_a_measured_defect():
+    """2026-11-20 redesign: low contrast is a measured fact the critic judges on the screenshot (checklist: colour,
+    text that does not read on its fill); it never sends a slide straight to the fixer the way a spill does."""
+    from src.agents import slide_facts
+    facts = slide_facts.measured_facts([], [], [{"code": "LOW_CONTRAST", "severity": "medium", "tier": "warning",
+                                                 "message": "text on fill 2.1:1"}])
+    assert [f.defect for f in facts] == [False]
+    assert "2.1:1" in facts[0].text

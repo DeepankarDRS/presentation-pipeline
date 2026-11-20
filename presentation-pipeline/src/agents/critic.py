@@ -1,224 +1,133 @@
-"""Critic agent — visual quality gate after successful compilation.
+"""Critic: the slide's quality gate after it compiled (2026-11-20 redesign).
 
-The visual critic is the sole quality gate. It screenshot-reviews the
-rendered slide against the full design context (plan, theme, contract,
-compile warnings) and returns structured issues with repair hints.
+Code first, then eyes:
+  1. What code measured and could not fix (fit-grow's SLIDE_DENSE spills, a geometry-audit spill / collision / off-slide
+     at tier error, POM shrinking the slide) goes straight to the fixer as a re-layout: no vision call.
+  2. Otherwise the vision critic judges the slide per component (slide_facts: ids, boxes, marks, measured facts).
+Findings a code-drawn component causes by drawing itself wrongly (owner code_defect) are also written to the run's
+code-defects.jsonl, for a fix in code. One fix per slide; the fixer keeps or rolls back its own edit (code checks).
 
-With visual_repair_budget >= 2, the critic runs a re-screenshot loop:
-  critic₁ → repair₁ → critic₂ → (compare scores) → ship best version.
-On round 2 the critic receives the previous issues so it can confirm
-fixes and only report remaining or new problems.
-
-Reads:  current_xml, compile_result, slide_plans, critic_mode,
-        theme_element, contract, layout_issues, visual_repair_count,
-        visual_critic_result, pre_critic_xml
-Writes: critic_result, visual_critic_result, slide_screenshots,
-        pre_critic_xml, pre_critic_slide_plans, pre_critic_contract,
-        pre_critic_score, current_xml, slide_plans, contract
+Reads:  compile_result, normalize_result, layout_issues, slide_plans, current_slide_index, theme_element, run_id
+Writes: critic_result, visual_critic_result, slide_screenshots, generation_history
 """
 
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import Any
 
+from src.agents import slide_facts
 from src.agents.visual_critic import run_visual_critic
-from src.utils.llm_client import usage_record
-from src.compiler.layout_audit import REPORT_ONLY_CODES
 from src.compiler.screenshot import render_screenshots
 from src.state import CriticResult, PresentationState, VisualCriticResult
+from src.utils.llm_client import usage_record
 
 logger = logging.getLogger(__name__)
 
-_ASSESSMENT_PENALTY = {"layout_broken": 15, "needs_tuning": 5, "good": 0}
-# the validator's results for the slide before any visual repair (restored on a rollback)
-_ROLLBACK_KEYS = ("compile_result", "normalize_result", "validate_result", "layout_issues")
+_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-def compute_critic_score(issues: list[dict[str, Any]], assessment: str) -> int:
-    """Deterministic quality score from critic output. Higher is better (max 0)."""
-    score = 0
-    for i in issues:
-        sev = i.get("severity", "low")
-        if sev == "high":
-            score -= 10
-        elif sev == "medium":
-            score -= 3
-        else:
-            score -= 1
-    score -= _ASSESSMENT_PENALTY.get(assessment, 0)
-    return score
-
-
-def _constrain_round2_strategy(repair_hints: dict[str, Any]) -> dict[str, Any]:
-    """On round 2, downgrade regenerate → patch (already rebuilt once)."""
-    if repair_hints.get("strategy") == "regenerate":
-        hints = dict(repair_hints)
-        hints["strategy"] = "patch"
-        return hints
-    return repair_hints
-
-
-def critic_layout_issues(issues: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Layout findings the visual critic sees: the ones that may trigger a repair, plus the
-    geometry WARNINGS (borderline 4-10 px) for it to confirm on the screenshot (2026-10-07).
-    Errors are fixed by code or passed to the repairer as they are; fill findings are code's."""
-    return [i for i in issues if i.get("code") not in REPORT_ONLY_CODES
-            or (str(i.get("code", "")).startswith("GEOM_") and i.get("tier") == "warning")]
-
-
-def _run_visual_review(
-    state: PresentationState,
-    previous_issues: list[dict[str, Any]] | None = None,
-) -> tuple[list[dict[str, Any]], str | None, dict[str, Any], dict[str, Any]]:
-    """Take screenshot and run visual critic. Returns (issues, screenshot_path, usage, repair_hints)."""
-    zero_usage = {"tokens_in": 0, "tokens_out": 0, "model": "unknown"}
-    empty_hints = {"strategy": "none", "assessment": "good", "affected_nodes": []}
-
-    cr = state.get("compile_result") or {}
-    pptx_path = cr.get("pptx_path")
-    if not pptx_path or not cr.get("ok", False):
-        return [], None, zero_usage, empty_hints
-
-    run_id = state.get("run_id", "unknown")
+def slide_context(state: PresentationState) -> tuple[dict, list[slide_facts.Component], list[slide_facts.Fact]]:
+    """The slide's plan, its components (ids, boxes, marks) and what code measured about them."""
     idx = state.get("current_slide_index", 0)
-    v_count = state.get("visual_repair_count", 0)
-    output_dir = (
-        Path(__file__).resolve().parent.parent.parent
-        / "output" / "runs" / run_id / "screenshots" / f"slide-{idx}"
-    )
-    if v_count > 0:
-        output_dir = output_dir / f"re-review-{v_count}"
+    plans = state.get("slide_plans") or []
+    plan = plans[idx] if idx < len(plans) else {}
+    cr = state.get("compile_result") or {}
+    norm = state.get("normalize_result") or {}
+    geo = Path(cr["pptx_path"]).parent / "geometry.json" if cr.get("pptx_path") else None
+    comps = slide_facts.components(plan, norm, geo, norm.get("tags_xml") or "")
+    facts = slide_facts.measured_facts(comps, cr.get("warnings"), state.get("layout_issues"))
+    return plan, comps, facts
 
-    batch = render_screenshots(pptx_path, str(output_dir))
-    if not batch.ok or not batch.slides:
+
+def _screenshot(state: PresentationState) -> str | None:
+    cr = state.get("compile_result") or {}
+    out = _ROOT / "output" / "runs" / state.get("run_id", "unknown") / "screenshots" / f"slide-{state.get('current_slide_index', 0)}"
+    batch = render_screenshots(cr["pptx_path"], str(out))
+    if not batch.ok or not batch.slides or not batch.slides[0].png_path:
         logger.warning(f"critic: screenshot failed: {batch.error}")
-        return [], None, zero_usage, empty_hints
+        return None
+    return batch.slides[0].png_path
 
-    screenshot_path = batch.slides[0].png_path
-    if not screenshot_path:
-        return [], None, zero_usage, empty_hints
 
-    slide_plans = state.get("slide_plans", [])
-    plan = slide_plans[idx] if slide_plans and idx < len(slide_plans) else {}
-    compile_warnings = cr.get("warnings", [])
+def _log_code_defects(state: PresentationState, issues: list[dict[str, Any]]) -> None:
+    """Append the code_defect findings to output/runs/<run_id>/code-defects.jsonl (one fix in code covers every deck)."""
+    found = [i for i in issues if i.get("owner") == "code_defect"]
+    if not found:
+        return
+    path = _ROOT / "output" / "runs" / state.get("run_id", "unknown") / "code-defects.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        for i in found:
+            f.write(json.dumps({"slide": state.get("current_slide_index", 0), "component": i.get("component"),
+                                "severity": i["severity"], "check": i.get("check"),
+                                "description": i["description"]}, ensure_ascii=False) + "\n")
+    logger.info(f"critic: {len(found)} code defect(s) logged to {path}")
 
-    # the XML the screenshot was drawn from: fit-grow changes sizes after generation (2026-10-07)
-    fitted = Path(pptx_path).parent / "fitted.xml"
-    drawn_xml = fitted.read_text(encoding="utf-8") if fitted.exists() else state.get("current_xml", "")
-    visual_issues, visual_usage, repair_hints = run_visual_critic(
-        screenshot_path=screenshot_path,
-        current_xml=drawn_xml,
-        slide_plan=plan,
-        theme_element=state.get("theme_element", ""),
-        contract=state.get("contract"),
-        compile_warnings=compile_warnings,
-        layout_issues=critic_layout_issues(state.get("layout_issues", [])),
-        previous_issues=previous_issues,
-        tags_xml=(state.get("normalize_result") or {}).get("tags_xml") or "",
-    )
 
-    return visual_issues, screenshot_path, visual_usage, repair_hints
+def _result(passed: bool, issues: list[dict[str, Any]], shot: str | None, hints: dict[str, Any]) -> dict[str, Any]:
+    return {"critic_result": CriticResult(passed=passed, issues=issues),
+            "visual_critic_result": VisualCriticResult(passed=passed, issues=issues, screenshot_path=shot,
+                                                       repair_hints=hints)}
 
 
 def critic_node(state: PresentationState) -> dict[str, Any]:
-    """Visual quality gate — screenshot-based review using a vision LLM."""
-    idx = state.get("current_slide_index", 0)
+    """Quality gate: code-measured defects first, then the vision critic."""
     try:
-        return _critic_inner(state, idx)
+        return _critic_inner(state)
     except Exception as exc:
         logger.error(f"critic: unhandled error, failing open: {exc}")
-        return {
-            "critic_result": CriticResult(passed=True, issues=[]),
-            "visual_critic_result": VisualCriticResult(
-                passed=True, issues=[], screenshot_path=None,
-                repair_hints={"strategy": "none", "assessment": "good", "affected_nodes": []},
-            ),
-        }
+        return _result(True, [], None, {"strategy": "none", "assessment": "good", "affected_nodes": []})
 
 
-def _critic_inner(state: PresentationState, idx: int) -> dict[str, Any]:
-    v_count = state.get("visual_repair_count", 0)
-    is_re_review = v_count > 0
+def _critic_inner(state: PresentationState) -> dict[str, Any]:
+    idx = state.get("current_slide_index", 0)
+    cr = state.get("compile_result") or {}
+    if not cr.get("ok") or not cr.get("pptx_path"):
+        return _result(True, [], None, {"strategy": "none", "assessment": "good", "affected_nodes": []})
 
-    previous_issues = None
-    if is_re_review:
-        prev_vcr = state.get("visual_critic_result") or {}
-        previous_issues = prev_vcr.get("issues", [])
+    plan, comps, facts = slide_context(state)
+    shot = _screenshot(state)
+    updates: dict[str, Any] = {}
+    if shot:
+        updates["slide_screenshots"] = {**(state.get("slide_screenshots") or {}), idx: shot}
 
-    round_label = f"re-review (round {v_count + 1})" if is_re_review else "initial review"
-    logger.info(f"critic: running {round_label}")
+    defects = [f for f in facts if f.defect]
+    if defects:
+        # code measured it: the fixer re-lays the slide out, no vision call (user decision 2026-11-20)
+        issues = [{"severity": "high", "type": "structure", "description": f"[Measured] {f.text}", "fix": "",
+                   "affected_nodes": [f.component] if f.component else [], "source": "code",
+                   "component": f.component, "owner": "slide", "check": "visible_defect"} for f in defects]
+        for f in defects:
+            logger.info(f"critic: measured defect: {f.text}")
+        logger.info(f"critic: passed=False, issues={len(defects)}, strategy=relayout "
+                    f"({len(defects)} measured defect(s), no vision review)")
+        updates.update(_result(False, issues, shot, {"strategy": "relayout", "assessment": "layout_broken",
+                                                     "affected_nodes": sorted({f.component for f in defects if f.component})}))
+        return updates
 
-    issues, screenshot_path, usage, repair_hints = _run_visual_review(
-        state, previous_issues=previous_issues,
+    if not shot:   # without a picture there is nothing to judge: the slide passes (logged above)
+        updates.update(_result(True, [], None, {"strategy": "none", "assessment": "good", "affected_nodes": []}))
+        return updates
+
+    marked = slide_facts.draw_marks(shot, comps, Path(shot).with_name("marked.png"))
+    norm = state.get("normalize_result") or {}
+    issues, usage, hints = run_visual_critic(
+        screenshot_path=shot,
+        current_xml=norm.get("tags_xml") or state.get("current_xml", ""),
+        slide_plan=plan,
+        theme_element=state.get("theme_element", ""),
+        compile_warnings=cr.get("warnings"),
+        components=comps,
+        facts=[f.text for f in facts],
+        marked_path=marked,
     )
-
-    has_high = any(i["severity"] == "high" for i in issues)
-    has_medium = any(i["severity"] == "medium" for i in issues)
-    passed = not has_high and not has_medium
-
-    assessment = repair_hints.get("assessment", "good")
-    current_score = compute_critic_score(issues, assessment)
-
-    if is_re_review:
-        repair_hints = _constrain_round2_strategy(repair_hints)
-
-    visual_result = VisualCriticResult(
-        passed=passed,
-        issues=issues,
-        screenshot_path=screenshot_path,
-        repair_hints=repair_hints,
-    )
-
-    updates: dict[str, Any] = {
-        "critic_result": CriticResult(passed=passed, issues=issues),
-        "visual_critic_result": visual_result,
-    }
-
-    if not is_re_review:
-        updates["pre_critic_xml"] = state.get("current_xml", "")
-        updates["pre_critic_slide_plans"] = list(state.get("slide_plans", []))
-        updates["pre_critic_contract"] = state.get("contract")
-        updates["pre_critic_score"] = current_score
-        # what the deck is built from (slide_router) and the critic re-reads: a rollback restores these with the XML
-        updates["pre_critic_results"] = {k: state.get(k) for k in _ROLLBACK_KEYS}
-
-    if is_re_review and not passed:
-        pre_score = state.get("pre_critic_score", 0)
-        if current_score <= pre_score:
-            verb = "no better" if current_score == pre_score else "worse"
-            logger.info(
-                f"critic: repair {verb} (score {current_score} vs {pre_score})"
-                f" — rolling back to pre-repair XML"
-            )
-            updates["current_xml"] = state.get("pre_critic_xml", "")
-            updates["slide_plans"] = (
-                state.get("pre_critic_slide_plans") or list(state.get("slide_plans", []))
-            )
-            updates["contract"] = state.get("pre_critic_contract")
-            updates.update(state.get("pre_critic_results") or {})
-            updates["critic_result"] = CriticResult(passed=True, issues=issues)
-            visual_result["passed"] = True
-            repair_hints["strategy"] = "none"
-            updates["visual_critic_result"] = visual_result
-
-    if screenshot_path:
-        current_screenshots = dict(state.get("slide_screenshots", {}))
-        current_screenshots[idx] = screenshot_path
-        updates["slide_screenshots"] = current_screenshots
-
-    high_count = sum(1 for i in issues if i["severity"] == "high")
-    med_count  = sum(1 for i in issues if i["severity"] == "medium")
-    low_count  = sum(1 for i in issues if i["severity"] == "low")
-
-    logger.info(
-        f"critic: passed={passed}, score={current_score}, issues={len(issues)} "
-        f"(high={high_count}, medium={med_count}, low={low_count}), "
-        f"assessment={assessment}, strategy={repair_hints.get('strategy')}"
-    )
-
+    _log_code_defects(state, issues)
+    passed = hints.get("strategy") == "none"
+    logger.info(f"critic: passed={passed}, issues={len(issues)}, strategy={hints.get('strategy')}")
+    updates.update(_result(passed, issues, shot, hints))
     if usage.get("tokens_in", 0) > 0:
-        updates["generation_history"] = [usage_record(usage, "critic", state.get("current_slide_index", 0))]
-
+        updates["generation_history"] = [usage_record(usage, "critic", idx)]
     return updates

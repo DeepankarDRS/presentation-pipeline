@@ -213,14 +213,9 @@ def route_after_critic(state: PresentationState) -> str:
 
 
 def route_after_visual_repairer(state: PresentationState) -> str:
-    outcome = state.get("visual_repair_outcome", "noop")
-    v_count = state.get("visual_repair_count", 0)
-    v_budget = state.get("visual_repair_budget", 2)
-    if outcome == "improved" and v_count < v_budget:
-        logger.info(f"route: visual repair improved, re-review {v_count}/{v_budget} → critic")
-        return "critic"
+    """One fix per slide (2026-11-20): the fixer keeps or rolls back its own edit by the code checks."""
     target = _slide_done_target(state)
-    logger.info(f"route: visual repair {outcome}, budget {v_count}/{v_budget} → {target}")
+    logger.info(f"route: visual repair {state.get('visual_repair_outcome', 'noop')} → {target}")
     return target
 
 
@@ -360,7 +355,7 @@ def build_graph() -> StateGraph:
     graph.add_conditional_edges("repairer", route_after_repairer, ["validator"])
     graph.add_conditional_edges(
         "visual_repairer", route_after_visual_repairer,
-        ["critic", "evaluator", "slide_router"],
+        ["evaluator", "slide_router"],
     )
     graph.add_conditional_edges(
         "placeholder", lambda s: _slide_done_target(s),

@@ -252,6 +252,9 @@ async function compile() {
       builtXml = originalXml;
     }
     const { pptx, diagnostics } = built;
+    // the XML this slide was drawn from (after fit-grow, or the original when the fitted XML failed): the deck is
+    // built from it and the visual fixer edits it, so nothing fits the slide a second time (2026-11-20)
+    await writeFile(path.join(outputDir, "drawn.xml"), builtXml, "utf8");
 
     if (Array.isArray(diagnostics) && diagnostics.length > 0) {
       result.warnings = diagnostics.map((d) => ({
@@ -282,8 +285,17 @@ async function compile() {
       try {
         const { geometry } = await import("./geometry.js");
         const geoPath = path.join(outputDir, "geometry.json");
-        await writeFile(geoPath, JSON.stringify(await geometry(builtXml)), "utf8");
+        const geo = await geometry(builtXml);
+        await writeFile(geoPath, JSON.stringify(geo), "utf8");
         result.geometryPath = path.resolve(geoPath);
+        // POM's autoFit shrinks fonts / gaps / rows of a slide too tall for the page, silently: a visual fix
+        // that triggers it is rolled back (the fixer's values must be drawn as written, 2026-11-20)
+        if (JSON.stringify(geo) !== JSON.stringify(await geometry(builtXml, { autoFit: false }))) {
+          result.warnings = [...(result.warnings ?? []), {
+            code: "AUTOFIT_SHRANK",
+            message: "the slide was taller than the page: POM shrank its rows, fonts, gaps or padding to fit",
+          }];
+        }
       } catch (error) {
         result.warnings = [...(result.warnings ?? []), {
           code: "GEOMETRY_SKIPPED",

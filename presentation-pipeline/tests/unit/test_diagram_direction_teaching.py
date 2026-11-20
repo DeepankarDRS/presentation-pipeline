@@ -57,12 +57,12 @@ def test_every_line_diagram_says_which_box_its_direction_needs():
         assert "full-width band" in _flat(direction["text"]), direction["id"]
 
 
-def test_critic_flags_a_diagram_without_its_space_and_never_lays_it_out():
-    from src.agents.visual_critic import _jinja_env
-    text = _flat(_jinja_env.get_template("system.j2").render(slide_type="content"))
-    rule = re.search(r"\*\*Diagram without its space\*\*:(.*?)- \*\*Parallel items", text).group(1)
-    assert "wrong direction or too little space" in rule
-    assert "LOW, flag only" in rule and "never a patch and never a new layout" in rule
+def test_critic_looks_for_words_broken_inside_a_diagram():
+    """2026-11-20 redesign: the critic reports a diagram drawn without its space as a visible defect; the fixer may
+    re-lay the slide (code no longer re-fits after it), so the old "flag only, never a new layout" rule is gone."""
+    from src.agents.visual_critic import system_prompt
+    text = _flat(system_prompt())
+    assert "words broken inside a diagram" in text
 
 
 _MERGE = re.compile(r"parallel steps (as|are) one node|ONE node \(or step\) whose label|parallel steps\)? are therefore one step"

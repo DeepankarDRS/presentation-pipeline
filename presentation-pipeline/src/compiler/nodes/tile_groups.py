@@ -753,11 +753,16 @@ def _expand_kind(xml: str, plan: dict | None, kind: str) -> dict[str, Any]:
                                                                and groups[c]["start"] < g["start"]) > 0
         group, alone, info = draw(comp, g["attrs"] if g else None, kids, mine_apart, flag, second, marks)
         ids = (lambda x: x) if info["composition"] in TODAY else compose.inner_ids   # today's forms: as today
+        boxes = []
         if g is not None:
+            group, box = compose.stamp(group, f"cmp-{cid}")
+            boxes += [box] if box else []
             g["xml"] = ids(group)
         for i, x in alone.items():
+            x, box = compose.stamp(x, f"cmp-{cid}.{i}")
+            boxes += [box] if box else []
             apart[(cid, i)]["xml"] = ids(x)
-        result[cid] = info
+        result[cid] = {**info, "boxes": boxes}
         if g is None and kind == "card_grid" and len(mine_apart) < count(comp):
             for k in sorted(set(range(count(comp))) - mine_apart):
                 flag("NODE_ITEM_MISSING", f"{cid}.{k}", f'{cid} card {k} is not on the slide: draw it in <{gtag} '

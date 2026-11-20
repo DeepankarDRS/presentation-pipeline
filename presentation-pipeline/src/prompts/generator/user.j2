@@ -28,11 +28,16 @@ COMPONENTS (put every one on the slide — each carries its own data):
 {% endif %}
 {% if comp.ref_line %}
   {{ comp.ref_line }}
-{% elif comp.content_data %}
+{% else %}
+{% if comp.component_id %}
+  drawn by hand: put id="{{ comp.component_id }}" on its outermost box (the reviewer finds it by this id)
+{% endif %}
+{% if comp.content_data %}
   Data for {{ comp.component_id or comp.kind }}:
   {% for key, value in comp.content_data.items() %}
   {{ key }}: {{ value }}
   {% endfor %}
+{% endif %}
 {% endif %}
 {% endfor %}
 {% if layout_hint %}

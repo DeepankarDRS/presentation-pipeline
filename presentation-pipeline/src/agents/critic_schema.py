@@ -40,40 +40,29 @@ class CriticOutput(BaseModel):
     )
 
 
-class VisualCriticIssue(BaseModel):
-    """One issue found by the visual critic — includes repair context."""
-    severity: CriticSeverityLiteral = Field(
-        description="high = must fix (triggers retry), "
-                    "medium = should fix (warning), "
-                    "low = minor (informational)."
-    )
-    type: CriticTypeLiteral = Field(
-        description="Which checklist item this issue falls under."
-    )
-    description: str = Field(
-        description="What is wrong — be specific about the element or value."
-    )
-    fix: str = Field(
-        description="How to fix this issue in the XML."
-    )
-    affected_nodes: list[str] = Field(
-        default_factory=list,
-        description="POM node names involved (e.g. 'Chart', 'HStack', 'Text')."
-    )
+class ComponentVerdict(BaseModel):
+    """The critic's verdict on one numbered component, or on the slide as a whole (id "slide")."""
+    id: str = Field(description='The component id from the COMPONENTS list, or "slide" for the whole slide.')
+    verdict: Literal["ok", "issue"]
+    severity: Literal["none", "low", "medium", "high"] = Field(
+        description="none for ok; high = broken / unreadable / fails the headline; medium = a clear quality problem; "
+                    "low = polish.")
+    check: Literal["message", "hierarchy", "visible_defect", "colour", "variant_fit", "balance", "completeness",
+                   "none"] = Field(description="The checklist item; none for ok.")
+    what_i_see: str = Field(description="ok: one line of evidence. issue: what is wrong, where, and why it hurts. "
+                                        "No XML.")
+    owner: Literal["slide", "code_defect"] = Field(
+        description="slide: the slide's own choices cause it. code_defect: a code-drawn component draws itself "
+                    "wrongly although its tag looks reasonable.")
+    better_variant: str = Field(default="", description="variant_fit only: the catalogue variant that would fit, "
+                                                         "else empty.")
 
 
 class VisualCriticOutput(BaseModel):
-    """Complete visual critic review output — drives the repair loop."""
-    issues: list[VisualCriticIssue] = Field(
-        default_factory=list,
-        description="All issues found. Empty list means the slide passed all checks."
-    )
-    overall_assessment: Literal["layout_broken", "needs_tuning", "good"] = Field(
-        description="layout_broken = severe structural problems, "
-                    "needs_tuning = minor fixes needed, "
-                    "good = slide is acceptable."
-    )
-    repair_strategy: Literal["patch", "regenerate", "none"] = Field(
-        description="Recommended repair approach: patch (fix in place), "
-                    "regenerate (rebuild from plan), none (no repair needed)."
-    )
+    """The visual critic's review of one slide (2026-11-20): observations first, then a verdict per component."""
+    observations: str = Field(description="2-5 sentences on what the slide shows and how it reads, written before "
+                                          "the verdicts.")
+    verdicts: list[ComponentVerdict] = Field(description="One per numbered component plus one with id \"slide\".")
+    regenerate: bool = Field(description="true only when the plan is wrong for the message (wrong component kinds, "
+                                         "far more content than one slide shows readably).")
+    regenerate_reason: str = Field(default="", description="Why, when regenerate is true.")

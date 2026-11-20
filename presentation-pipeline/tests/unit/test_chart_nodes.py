@@ -59,7 +59,7 @@ def nodes_on(monkeypatch):
 
 def test_native_default_one_hue_focus_from_headline():
     res = run('<Chart ref="roas" />')
-    assert res["ok"] and codes(res) == [] and res["components"]["roas"] == {"composition": "native", "focus": 0}
+    assert res["ok"] and codes(res) == [] and res["components"]["roas"] == {"composition": "native", "focus": 0, "boxes": ["cmp-roas"]}
     x = res["xml"]
     assert colors(x) == ["$accent", "$neutral", "$neutral", "$neutral"]
     assert 'backgroundColor="$chartSurface"' in x and ">ROAS by campaign class</Text>" in x

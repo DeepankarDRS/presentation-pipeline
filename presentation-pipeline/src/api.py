@@ -1297,7 +1297,7 @@ async def switch_theme(run_id: str, request: ThemeSwitchRequest) -> ThemeSwitchR
         if approximated:
             logger.info(f"switch_theme: {run_id} approximated colors {approximated}")
 
-        combined_xml, count = assemble_deck_xml([r.xml for r in swaps], theme["element"])
+        combined_xml, count = assemble_deck_xml([r.xml for r in swaps], theme["element"], drawn=False)
         if count != len(ordered):
             return ThemeSwitchResponse(
                 ok=False, theme=request.theme,
@@ -1390,7 +1390,7 @@ async def finalize_deck(run_id: str) -> FinalizeResponse:
         # compiles instead of hard-failing here.
         combined_xml, _ = assemble_deck_xml(
             [s.current_xml for s in sorted(session.slides, key=lambda x: x.slide_index)],
-            session.theme_element,
+            session.theme_element, drawn=False,
         )
 
         if not combined_xml:

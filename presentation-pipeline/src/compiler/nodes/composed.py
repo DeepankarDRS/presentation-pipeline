@@ -105,6 +105,7 @@ def expand(xml: str, plan: dict | None) -> dict[str, Any]:
     for issue in unplaced(xml, plan, out["components"]):
         out["issues"].append(issue)
         out["ok"] = False
+    out["issues"] += unmarked(xml, plan)
     out["issues"] = [explain_unknown(i, plan) for i in out["issues"]]
     out["xml"] = validate.one_value(out["xml"])
     return out
@@ -123,6 +124,21 @@ def unplaced(xml: str, plan: dict | None, placed: dict[str, Any]) -> list[dict[s
                         "message": f'{kind} "{cid}" is not on the slide: place <{tag(kind)} ref="{cid}"/> (code draws its '
                                    "content; never type it by hand)."})
     return out
+
+
+def hand_drawn(plan: dict | None) -> list[str]:
+    """The ids of the components the generator draws by hand (a title, a narrative, a callout)."""
+    drawn_ids = {cid for k in KINDS for cid in drawn(plan, k)}
+    return [c["component_id"] for c in (plan or {}).get("components") or []
+            if c.get("component_id") and c["component_id"] not in drawn_ids]
+
+
+def unmarked(xml: str, plan: dict | None) -> list[dict[str, Any]]:
+    """NODE_ID_MISSING (warning) for a hand-drawn component with no id="<component id>" box: the visual critic marks
+    and the fixer finds each component by its id (2026-11-20)."""
+    return [{"code": "NODE_ID_MISSING", "severity": "warning", "ref": cid,
+             "message": f'"{cid}" is drawn by hand with no box id="{cid}": the reviewer cannot point at it.'}
+            for cid in hand_drawn(plan) if not re.search(rf'\bid="{re.escape(cid)}"', xml)]
 
 
 # The rules for drawing a kind by hand reach the prompt only for a component code does not draw

@@ -1,58 +1,23 @@
-## RENDERED SLIDE SCREENSHOT
-[The screenshot image is provided as an attachment.]
-
-## POM XML SOURCE{% if tags_xml %} (as drawn: code expanded the ref tags){% endif %}
-
-{{ current_xml }}
-{% if code_drawn %}
-
-## CODE-DRAWN COMPONENTS (code draws each from the plan; fix them only on their tag)
-{% for line in code_drawn %}
-- {{ line }}
-{% endfor %}
+## SLIDE
+{% if label %}Kicker: {{ label }}
+{% endif %}Headline: {{ headline }}
+{% if slide_type %}Slide type: {{ slide_type }}
 {% endif %}
-{% if tags_xml %}
-
-## THE XML THE REPAIR EDITS (the generator's own XML: write every fix against it)
-{{ tags_xml }}
+{% if layout_hint %}Layout intent (planner): {{ layout_hint }}
+{% endif %}
+{% if hints %}Design hints (planner):
+{% for h in hints %}- {{ h }}
+{% endfor %}{% endif %}
+{% if colour_roles %}Colour roles: {{ colour_roles }}
 {% endif %}
 
-{% if slide_type %}## SLIDE TYPE: {{ slide_type }}
-{% endif %}
-{% if components %}## EXPECTED COMPONENTS
-{% for comp in components %}
-- {{ comp.kind }}{% if comp.count is defined and comp.count > 1 %} (count: {{ comp.count }}){% endif %}{% if comp.content_summary is defined %} — {{ comp.content_summary }}{% endif %}
-{% endfor %}
-{% endif %}
-{% if theme_element %}## THEME DEFINITION
-{{ theme_element }}
-{% endif %}
-{% if component_count and component_count >= 5 %}## NOTE: Dense slide ({{ component_count }} components) — check for font/spacing overflow
-{% endif %}
-{% if compile_warnings %}## COMPILER WARNINGS (verify visually)
-{% for w in compile_warnings %}
-- {{ w.type }}: {{ w.message }}
-{% endfor %}
-{% endif %}
-{% if layout_issues %}## LAYOUT AUDIT WARNINGS (verify visually: a GEOM_ finding is borderline, 4-10 px - report it only if you SEE the overlap or clipping on the screenshot)
-{% for issue in layout_issues %}
-- {{ issue.code }}: {{ issue.message }}
-{% endfor %}
-{% endif %}
-{% if visual_notes %}## DESIGN NOTES
-{% for note in visual_notes %}
-- {{ note }}
-{% endfor %}
+## COMPONENTS ([n] = the number on the marked screenshot)
+{{ component_table }}
+
+## MEASURED FACTS
+{% if facts %}{% for f in facts %}- {{ f }}
+{% endfor %}{% else %}- nothing measured out of place
 {% endif %}
 
-{% if previous_issues %}
-## PREVIOUS CRITIC ISSUES (slide was repaired — confirm what changed)
-{% for issue in previous_issues %}
-- [{{ issue.severity }}] {{ issue.description }} → attempted fix: {{ issue.fix }}
-{% endfor %}
-For each previous issue: confirm it is fixed (do not re-report it), or re-flag it if still visible.
-Only report NEW issues not listed above, or previous issues that remain unfixed.
-
-{% endif %}
-Review the screenshot against all 10 checklist items. Report any issues you find.
-For Section 10 issues use type="visual". MEDIUM: flat KPI tiles, inconsistent semantic coloring, missing kicker/eyebrow (only when the header has no uppercase label), filler box, missing source line. LOW: oversized KPI strip, missing badge, diagram without its space (flag the cause, never patch). Set repair_strategy="patch" for missing kicker, filler box, missing source, and semantic coloring.
+## THE SLIDE'S XML (as the generator wrote it)
+{{ xml }}

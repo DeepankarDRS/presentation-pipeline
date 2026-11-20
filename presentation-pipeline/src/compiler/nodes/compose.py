@@ -261,6 +261,22 @@ def inner_ids(xml: str) -> str:
     return _STACK.sub(sub, xml)
 
 
+_FIRST_TAG = re.compile(r"\s*(?:<!--.*?-->\s*)*<([A-Za-z][\w.]*)\b([^<>]*?)(/?)>", re.S)
+
+
+def stamp(drawn: str, box: str) -> tuple[str, str | None]:
+    """The id of the outer box a ref tag became, for geometry.json (one box per component, the critic's marks):
+    `box` added when the outer element has no id, else its own id (tbl-<cid>). None when the drawing is empty."""
+    m = _FIRST_TAG.match(drawn)
+    if not m:
+        return drawn, None
+    own = re.search(r'\bid="([^"]*)"', m.group(2))
+    if own:
+        return drawn, own.group(1)
+    cut = m.start(1) + len(m.group(1))
+    return f'{drawn[:cut]} id="{box}"{drawn[cut:]}', box
+
+
 def expand(xml: str, comps: dict[str, dict], tag: str, draw: Callable[..., tuple[str, dict]],
            check: Callable[[dict, Flag], bool] | None = None, children: bool = False) -> dict[str, Any]:
     """Every <tag ref="<component id>"/> drawn by `draw(comp, attrs, flag)`. A tag without ref is the LLM's own;
@@ -290,12 +306,13 @@ def expand(xml: str, comps: dict[str, dict], tag: str, draw: Callable[..., tuple
         if check and not check(comp, flag):
             continue
         if children:
-            drawn, done[ref] = draw(comp, t["attrs"], flag, t["body"])
-            out.append(inner_ids(drawn))
-            continue
-        if t["body"].strip():
-            flag("NODE_ATTR_DROPPED", ref, f'children inside <{tag} ref="{ref}">: code writes it from the plan; removed.')
-        drawn, done[ref] = draw(comp, t["attrs"], flag)
+            drawn, info = draw(comp, t["attrs"], flag, t["body"])
+        else:
+            if t["body"].strip():
+                flag("NODE_ATTR_DROPPED", ref, f'children inside <{tag} ref="{ref}">: code writes it from the plan; removed.')
+            drawn, info = draw(comp, t["attrs"], flag)
+        drawn, box = stamp(drawn, f"cmp-{ref}")
+        done[ref] = {**info, "boxes": [box] if box else []}
         out.append(inner_ids(drawn))
     out.append(xml[pos:])
     return {"xml": "".join(out), "issues": issues, "ok": not any(i["severity"] == ERROR for i in issues),

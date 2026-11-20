@@ -17,7 +17,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from src.compiler.compiler_client import CompilerError, compile_xml
+from src.compiler.compiler_client import FIT_GROW_OFF, CompilerError, compile_xml, drawn_xml
 from src.compiler.normalizer import ensure_single_theme, normalize_xml, strip_theme
 from src.compiler.font_embed import embed_deck_fonts, embed_warnings
 from src.compiler.pptx_merge import merge_pptx_files
@@ -28,14 +28,14 @@ logger = logging.getLogger(__name__)
 _PIPELINE_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> tuple[str, int]:
-    """Combine per-slide XML into one normalized multi-slide POM document.
+def assemble_deck_xml(slide_xmls: list[str], theme_element: str, *, drawn: bool = True) -> tuple[str, int]:
+    """Combine per-slide XML into one multi-slide POM document under one <Theme>.
 
-    Extracts each <Slide> block, drops per-slide themes, concatenates under a
-    single top-level <Theme>, then runs the same normalize + ensure_single_theme
-    pass the per-slide validator uses — so br/hr, #-hex, spacing=, fontWeight=,
-    and zero-spacing contamination that was auto-fixed per slide cannot reach
-    the deck compile. Returns ("", 0) if no <Slide> block is found.
+    drawn=True (the pipeline): each slide AS DRAWN (normalized and fitted once by the validator, maybe fixed by the
+    visual fixer); the deck changes no value and compiles with fit-grow off, so the deck is the slide every check and
+    the critic saw (2026-11-20: the deck's second normalize + fit-grow drew 1 of 11 saved slides differently).
+    drawn=False (the web UI's edited slides, never fitted): the validator's normalize pass, and the deck compile fits.
+    Returns ("", 0) if no <Slide> block is found.
     """
     blocks: list[str] = []
     for xml in slide_xmls:
@@ -54,18 +54,19 @@ def assemble_deck_xml(slide_xmls: list[str], theme_element: str) -> tuple[str, i
             if theme:
                 break
 
-    combined = (theme + "\n" if theme else "") + "\n".join(blocks)
+    body = "\n".join(blocks)
+    if drawn:
+        return ensure_single_theme(FIT_GROW_OFF + "\n" + body, theme), len(blocks)
+    combined = (theme + "\n" if theme else "") + body
     return ensure_single_theme(normalize_xml(combined)["cleaned_xml"], theme), len(blocks)
 
 
 def slide_router_node(state: PresentationState) -> dict[str, Any]:
     """Save current slide result and advance to next slide index."""
     idx = state.get("current_slide_index", 0)
-    # Save the normalized XML the validator actually compiled, not the raw LLM
-    # output — otherwise per-slide auto-fixes (br/hr, #-hex, spacing=, …) are lost
-    # and resurface as deck-compile failures.
+    # Save the XML the slide was drawn from (normalized, fitted, maybe fixed): the deck is built from it as it is
     norm = state.get("normalize_result") or {}
-    xml = norm.get("cleaned_xml") or state.get("current_xml", "")
+    xml = drawn_xml(state.get("compile_result")) or norm.get("cleaned_xml") or state.get("current_xml", "")
 
     logger.info(f"slide_router: saving slide {idx}, advancing to {idx + 1}")
 
@@ -94,11 +95,6 @@ def slide_router_node(state: PresentationState) -> dict[str, Any]:
         "visual_critic_result": None,
         "visual_repair_count": 0,
         "visual_repair_outcome": None,
-        "pre_critic_xml": None,
-        "pre_critic_slide_plans": None,
-        "pre_critic_contract": None,
-        "pre_critic_score": 0,
-        "pre_critic_results": None,
         "layout_issues": [],
         "retry_tier": 0,
         "retry_count": 0,
