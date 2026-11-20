@@ -98,7 +98,8 @@ def free_checks() -> None:
     seen: dict[str, str] = {}
 
     class _FakeVision:
-        def with_structured_output(self, *a, **k):
+        def with_structured_output(self, schema, *a, **k):
+            schema.model_json_schema()   # the real call builds this first: a broken schema fails every review
             return SimpleNamespace(invoke=lambda messages: seen.setdefault("text", messages[1]["content"][1]["text"])
                                    and (_ for _ in ()).throw(RuntimeError("faked")))
 
@@ -107,9 +108,13 @@ def free_checks() -> None:
         png = str(OUT / run_id / "stand-in.png")
         Path(png).parent.mkdir(parents=True, exist_ok=True)
         Path(png).write_bytes(b"\x89PNG\r\n\x1a\n")
-    with patch.object(visual_critic, "get_llm", lambda _name: _FakeVision()):
-        visual_critic.run_visual_critic(png, state["current_xml"], plan, theme["element"], state["contract"],
-                                        tags_xml=state["normalize_result"]["tags_xml"])
+    try:
+        with patch.object(visual_critic, "get_llm", lambda _name: _FakeVision()):
+            visual_critic.run_visual_critic(png, state["current_xml"], plan, theme["element"], state["contract"],
+                                            tags_xml=state["normalize_result"]["tags_xml"])
+    except Exception as exc:   # critic_node fails open on this: every slide passes unreviewed
+        report("4 critic prompt", "FAIL", f"the critic's output schema does not build: {exc}".split("\n")[0])
+        return
     text = seen.get("text", "")
     repair_xml = text.split("THE XML THE REPAIR EDITS")[-1]
     ok = "CODE-DRAWN COMPONENTS" in text and "<KpiRow" in repair_xml and "<Chart ref=" in repair_xml
