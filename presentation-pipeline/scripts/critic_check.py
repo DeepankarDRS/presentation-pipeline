@@ -1,7 +1,8 @@
 """Is the critic-auto loop working on slides with composition nodes (code-drawn KPI rows, charts, tables, ...)?
 
     python -m scripts.critic_check            # free: the real loop on a fixture slide, the LLMs faked
-    python -m scripts.critic_check --paid     # also one real deck with critic auto (deck-qbr-data, about $0.49)
+    python -m scripts.critic_check --paid     # also one real deck with critic auto (deck-qbr-data, about $0.25)
+    python -m scripts.critic_check --paid --case deck-overflow-repair   # 2 overfull slides that should repair
 
 Prints PASS / FAIL / SKIP per step and exits 1 when a step fails. Free steps:
   1 screenshot backend    comtypes + PowerPoint COM (without it the critic passes every slide unseen)
@@ -12,7 +13,7 @@ Prints PASS / FAIL / SKIP per step and exits 1 when a step fails. Free steps:
   6 deck gets the repair  slide_router saves the repaired slide, not the pre-repair one
   7 rollback              a repair that scores worse restores the pre-repair XML and compiled results
 --paid: runs the deck and reads its log: every slide reviewed, no screenshot failure, no repair discarded
-for an unknown tag. The log is written to output/critic-check/<run_id>.log.
+for an unknown tag; counts patch / regenerate repairs and prints each issue the code-owned filter dropped. The log is written to output/critic-check/<run_id>.log.
 """
 
 from __future__ import annotations
@@ -187,14 +188,24 @@ def paid_check(case: str) -> None:
     discarded = len(re.findall(r"repair broke compilation", log))
     unknown = len(re.findall(r"Unknown tag: <(KpiRow|CardGrid|Kpi|Card)>", log))
     rollbacks = len(re.findall(r"rolling back to pre-repair", log))
+    patches = len(re.findall(r"visual_repairer: PATCH,", log))
+    regens = len(re.findall(r"visual_repairer: REGENERATE,", log))
+    no_change = len(re.findall(r"visual_repairer: identical XML", log))
+    dropped = re.findall(r"visual_critic: dropped (?:low|medium|high) issue[^\n]*", log)
     cost = ((final.get("evaluation") or {}).get("cost") or {}).get("total_usd", 0.0)
-    print(f"\n{case}: {slides} slides, {reviews} critic reviews, {accepted} repairs accepted, {rollbacks} rolled "
-          f"back, {discarded} discarded, ${cost:.3f} - log {log_path}")
+    print(f"\n{case}: {slides} slides, {reviews} critic reviews, {patches} patch + {regens} regenerate repairs, "
+          f"{accepted} accepted, {no_change} unchanged, {rollbacks} rolled back, {discarded} discarded, "
+          f"${cost:.3f} - log {log_path}")
+    for line in dropped:   # what the code-owned filter took away: check each against the slide's screenshot
+        print("  " + line)
     report("P1 deck finished", "PASS" if final.get("passed") else "FAIL", f"{slides} slides")
     report("P2 critic reviewed slides", "PASS" if reviews and not shot_fail else "FAIL",
            f"{reviews} reviews, {shot_fail} screenshot failures")
     report("P3 no repair lost to an unknown tag", "PASS" if not unknown else "FAIL",
            f"{unknown} unknown-tag errors, {discarded} discarded repairs")
+    # whether a repair runs is the critic's call on what it sees: none is not a failure (deck-overflow-repair aims at both)
+    report("P4 a visual repair ran", "PASS" if patches + regens else "SKIP",
+           f"{patches} patch, {regens} regenerate" if patches + regens else "the critic left nothing to repair")
 
 
 def main() -> None:

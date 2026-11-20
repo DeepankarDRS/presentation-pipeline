@@ -1,0 +1,57 @@
+# Critic-auto stress (2026-11-20): two slides with more content than fits, so the visual critic finds
+# defects it may repair (clipped or truncated text, overlap, uncoloured growth figures), not only the
+# size / spacing issues code owns. Slide 1 aims at PATCH, slide 2 at REGENERATE (2+ HIGH structural issues).
+# The critic picks the strategy, so a run can still end with patch only, or with no repair at all.
+#
+#   uv run python -m scripts.critic_check --paid --case deck-overflow-repair
+#
+name: deck-overflow-repair
+slide_count: 2
+objective: Overfull slides that should make the visual critic repair, by patch and by regenerate.
+request: >
+  A two-slide operating review for the executive team of Northwind Logistics, Q3 FY26.
+  Use every row, label and sentence below exactly as written: do not shorten, merge or drop any.
+
+  Slide 1: Regional performance. One table with all seven regions and all five columns
+  (Region, Revenue, YoY growth, On-time delivery, Commentary), with the full commentary
+  sentence in every row. Under the table, the source line.
+
+  Slide 2: The whole quarter at a glance, all of it on this slide. A row of six KPI tiles, a bar chart of revenue
+  for the last eight quarters, a line chart of on-time delivery for the same eight quarters,
+  and all eight takeaways as a list, each takeaway in full. Nothing may move to another slide.
+theme: corporate-slate
+supplied_content:
+  table_columns: [Region, Revenue, YoY growth, On-time delivery, Commentary]
+  table_rows:
+    - [North America East, "$48.6M", "+14.2%", "96.1%", "Two new cross-dock hubs in Newark and Columbus lifted volume and cut average dwell time by eleven hours"]
+    - [North America West, "$41.3M", "+9.8%", "94.7%", "Port congestion at Long Beach in August delayed inbound freight for three consecutive weeks"]
+    - [Latin America, "$17.9M", "-3.4%", "88.2%", "Currency weakness in Brazil and a lost retail contract in Mexico offset growth in Chile and Colombia"]
+    - [Western Europe, "$36.2M", "+6.1%", "95.3%", "The Rotterdam automation programme went live in July and is now handling forty percent of regional throughput"]
+    - [Central and Eastern Europe, "$12.4M", "+21.7%", "91.8%", "Fastest-growing region after onboarding two national grocery chains and a pharmaceutical distributor in Poland"]
+    - [Middle East and Africa, "$9.8M", "-7.9%", "84.5%", "Red Sea rerouting added nine to fourteen days to Asia-Europe lanes and pushed fuel surcharges above contract caps"]
+    - [Asia Pacific, "$29.7M", "+11.3%", "93.9%", "Singapore and Ho Chi Minh City warehouses reached capacity in September and overflow went to third-party sites"]
+  source: "Source: Northwind finance and operations data warehouse, Q3 FY26 close, figures unaudited and subject to final reconciliation"
+  kpi_labels: [Total revenue, YoY growth, On-time delivery rate, Cost per shipment, Warehouse utilisation, Net promoter score]
+  kpi_values: ["$195.9M", "+8.6%", "93.4%", "$41.80", "91%", "47"]
+  kpi_deltas: ["+$15.5M vs Q3 FY25", "-1.2 pts vs Q2 FY26", "+0.8 pts vs Q2 FY26", "+$2.10 vs Q2 FY26", "+6 pts vs Q2 FY26", "-3 vs Q2 FY26"]
+  quarters: [Q4 FY24, Q1 FY25, Q2 FY25, Q3 FY25, Q4 FY25, Q1 FY26, Q2 FY26, Q3 FY26]
+  revenue_by_quarter: [162.4, 158.1, 171.0, 180.4, 189.7, 183.2, 191.5, 195.9]
+  on_time_by_quarter: [91.2, 90.8, 92.1, 92.6, 93.0, 92.4, 92.6, 93.4]
+  takeaways:
+    - "Revenue reached a record $195.9M, but growth slowed for the second quarter in a row as Latin America and the Middle East contracted"
+    - "On-time delivery improved to 93.4% despite the Long Beach congestion, driven mainly by the new North America East cross-docks"
+    - "Cost per shipment rose $2.10 because fuel surcharges above contract caps on Red Sea lanes could not be passed through to customers"
+    - "Warehouse utilisation at 91% leaves almost no headroom for the peak season, especially in Singapore and Ho Chi Minh City"
+    - "Central and Eastern Europe grew 21.7% and is now large enough to justify a dedicated regional operations lead"
+    - "The Rotterdam automation programme is on budget and should be extended to Hamburg and Antwerp in FY27"
+    - "Net promoter score fell three points, with customers citing late notifications rather than late deliveries"
+    - "We are asking the board to approve $18M of capital for two new Asia Pacific warehouses before the January planning cycle"
+content_source: All data supplied, to be used verbatim; nothing invented
+expect:
+  compiles: true
+  slide_count: 2
+  watch: >
+    critic finds clipped / truncated / overlapping text (not only size issues) and repairs;
+    slide 1 PATCH (truncated commentary cells, uncoloured YoY / on-time figures, source line);
+    slide 2 REGENERATE (2+ HIGH structural issues from six KPIs + two charts + eight long bullets);
+    the log's "visual_critic: dropped" lines show whether the code-owned filter was right
