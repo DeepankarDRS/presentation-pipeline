@@ -143,6 +143,9 @@ def run_visual_critic(
     for issue in result.issues:
         if code_owned(issue.description, issue.fix):
             dropped += 1
+            # the text, so a run shows whether the filter was right (2026-11-20)
+            logger.info(f"visual_critic: dropped {issue.severity} issue (code owns size/spacing): "
+                        f"{issue.description} | fix: {issue.fix}")
             continue
         issues.append({
             "severity": issue.severity,

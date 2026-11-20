@@ -32,3 +32,27 @@ def test_prompt_hands_size_to_code():
     system = _jinja_env.get_template("system.j2").render(slide_type="content")
     assert "CODE-OWNED" in system
     assert 'grow="2"' not in system
+
+
+def test_a_dropped_issue_is_logged_with_its_text(tmp_path, caplog):
+    import logging
+    from types import SimpleNamespace
+    from unittest.mock import patch
+
+    from src.agents import visual_critic
+    from src.agents.critic_schema import VisualCriticIssue, VisualCriticOutput
+
+    out = VisualCriticOutput(issues=[VisualCriticIssue(severity="medium", type="visual", affected_nodes=["KpiRow"],
+                                                        description="KPI tiles leave a wide empty band",
+                                                        fix="increase padding")],
+                             overall_assessment="needs_tuning", repair_strategy="patch")
+    usage = {"tokens_in": 1, "tokens_out": 1, "model": "fake"}
+    llm = SimpleNamespace(with_structured_output=lambda *a, **k: SimpleNamespace(invoke=lambda m: None))
+    png = tmp_path / "s.png"
+    png.write_bytes(b"\x89PNG\r\n\x1a\n")
+    with patch.object(visual_critic, "get_llm", lambda _n: llm), \
+            patch.object(visual_critic, "unpack_raw", lambda _r: (out, usage)), \
+            caplog.at_level(logging.INFO, logger="src.agents.visual_critic"):
+        issues, _, _ = visual_critic.run_visual_critic(str(png), "<Slide/>", {}, "")
+    assert issues == []
+    assert "KPI tiles leave a wide empty band | fix: increase padding" in caplog.text
