@@ -211,8 +211,7 @@ def test_lint_catches_a_fixed_choice():
 
 def test_planner_prompt_renders_planner_facts():
     from src.agents.slide_component_planner import _jinja_env
-    text = " ".join(_jinja_env.get_template("system.j2").render(
-        content_field="content_data_json").split())
+    text = " ".join(_jinja_env.get_template("system.j2").render().split())
     for kind in nf.DIAGRAM_TAGS:
         assert nf.facts_text(kind, "planner") in text, kind
 

@@ -130,14 +130,14 @@ def test_which_kind_reads_better_is_never_re_asked():
 
 def test_the_prompt_says_code_enforces_only_errors():
     from src.agents.slide_component_planner import _jinja_env
-    text = _jinja_env.get_template("system.j2").render(hint_capabilities="", content_field="content")
+    text = _jinja_env.get_template("system.j2").render(hint_capabilities="")
     assert "The table is guidance for your choice, not a rule code enforces" in text
     assert "never a two-column" not in text
 
 
 def test_the_prompt_renders_every_routing_row():
     from src.agents.slide_component_planner import _jinja_env
-    text = _jinja_env.get_template("system.j2").render(hint_capabilities="", content_field="content")
+    text = _jinja_env.get_template("system.j2").render(hint_capabilities="")
     for row in routing_rows():
         assert f"| {row['states']} | {row['kind']} | {row['not_for']} |" in text, row["id"]
 

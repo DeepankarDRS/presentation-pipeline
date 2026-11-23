@@ -364,9 +364,6 @@ def test_finalize_takes_hint_tones_only_when_the_planner_wrote_none_and_says_so(
     assert not any("design hint" in n for n in again)   # a second pass sees the tones: no repeat note
 
 def test_the_planner_prompt_asks_for_kpi_tones_by_meaning():
-    from pathlib import Path
-    text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
-    assert '"kpi_tones": ["good", "good", "bad"]' in text   # the string route's content section
     typed = sent_schema(PlannerSlideTyped)["$defs"]["KpiRowContent"]["properties"]["kpi_tones"]["description"]
     assert "not which way it moved" in typed and "good" in typed and "watch" in typed
     assert "kpi_tones" in PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
@@ -414,13 +411,10 @@ def test_focus_card_singles_out_its_card_before_the_hint():
 
 
 def test_the_planner_prompt_asks_for_card_tones_phrases_and_focus():
-    from pathlib import Path
-    text = (Path(scp.__file__).resolve().parents[1] / "prompts" / "slide_component_planner" / "system.j2").read_text(encoding="utf-8")
-    assert '"focus_card": 1' in text and '"key_phrase"' in text and '"tone": "good"' in text   # string route
     card = sent_schema(PlannerSlideTyped)["$defs"]["Card"]["properties"]
     grid = sent_schema(PlannerSlideTyped)["$defs"]["CardGridContent"]["properties"]
     assert "copied exactly" in card["key_phrase"]["description"] and "kpi_tones" in card["tone"]["description"]
-    assert "ONE card" in grid["focus_card"]["description"]
+    assert "from 0" in grid["focus_card"]["description"] and "ONE card" in grid["focus_card"]["description"]
     desc = PlannerSlide.model_json_schema()["$defs"]["PlannerComponent"]["properties"]["content_data_json"]["description"]
     assert "focus_card" in desc and "key_phrase" in desc and '\\"tone\\"' not in desc and '"tone"' in desc
 

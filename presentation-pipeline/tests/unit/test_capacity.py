@@ -236,9 +236,9 @@ def test_timeline_description_only_with_the_timeline_node():
     from src.agents import slide_component_planner as P
     from src.agents.hint_capabilities import planner_capabilities_section
     t = P._jinja_env.get_template("system.j2")
-    kw = dict(hint_capabilities=planner_capabilities_section(), content_field="content_data_json")
+    kw = dict(hint_capabilities=planner_capabilities_section())
     on, off = t.render(timeline_node=True, **kw), t.render(timeline_node=False, **kw)
     words = capacity()["timeline"]["max_description_words"]
-    assert f"a description (≤ {words} words)" in on and '"description": "<the brief' in on
-    assert "a description (≤" not in off and '"description": "<the brief' not in off
+    assert f"a description (≤ {words} words)" in on
+    assert "a description (≤" not in off
     assert len(on.split("\n")) == len(off.split("\n"))

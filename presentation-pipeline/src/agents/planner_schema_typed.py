@@ -45,8 +45,9 @@ class TextContent(_Strict):
 class KpiRowContent(_Strict):
     """One entry per tile in every list, in the brief's order. Labels and values word for word."""
     kpi_labels: list[str]
-    kpi_values: list[str] = Field(description='The figure only ("$42.8M", "38%"), never a sentence.')
-    kpi_deltas: Optional[list[str]] = Field(default=None, description='The change per tile, with its number (+18% QoQ, -2 pts); "" when none.')
+    kpi_values: list[str] = Field(description='The figure only ("$42.8M", "38%"), never a sentence: a sentence that '
+                                              'holds a number is not a tile, keep it whole as text.')
+    kpi_deltas: Optional[list[str]] = Field(default=None, description='The change per tile, with its number (+6% YoY, -3 pts); "" when none.')
     kpi_directions: Optional[list[Literal["", "up", "down", "neutral"]]] = None
     kpi_tones: list[ToneLiteral] = Field(
         default_factory=list,
@@ -163,8 +164,8 @@ class CardGridContent(_Strict):
     card_layout: Literal["grid", "steps", "matrix"]
     cards: list[Card]
     focus_card: Optional[int] = Field(
-        default=None, description="Index of the ONE card the headline or brief singles out; null when the cards are "
-                                  "equal, and on steps when the focus is the last step.")
+        default=None, description="Index (from 0) of the ONE card the headline or brief singles out; null when the "
+                                  "cards are equal, on a matrix, and on steps when the focus is the last step.")
     columns: Optional[list[str]] = None
     rows: Optional[list[str]] = None
 

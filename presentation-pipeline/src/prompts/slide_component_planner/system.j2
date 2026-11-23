@@ -7,8 +7,8 @@ A good plan: every fact the brief gives this slide appears exactly once and exac
 These hold on every slide, in every domain:
 - **Copy, never improve.** Numbers keep the brief's exact form ("$42.8M" stays "$42.8M", not "$43M" or "$42.8 million"). Labels are content too: copy each label word for word, never shorten one ("Payback at the 1.0x target" stays whole), because the dropped words can carry a number or a condition. A lead-in (words and a colon in front of a line or list) introduces what follows; it is never slide text on its own, and never keeps its trailing colon:
   - one that names a line's role ("Callout:", "Main insight:", "Key takeaway:", "Note:") says how to draw the line: drop it, copy the line;
-  - one that names part of a structure ("Matrix rows:", "Columns:", "Levels:", "Steps:") says how to draw it: its items become that structure's rows, columns, levels or nodes, and the lead-in is not text;
-  - one that names the group its items form ("Benefits:", "Key formulas:") may title the card or table holding that group, without the colon; it is never a heading line or box of its own. A name the brief writes with a colon inside it ("Phase 1: Foundation") is copied as written.
+  - one that names part of a structure ("Rows:", "Columns:", "Levels:", "Steps:") says how to draw it: its items become that structure's rows, columns, levels or nodes, and the lead-in is not text;
+  - one that names the group its items form ("Benefits:", "Main drivers:") may title the card or table holding that group, without the colon; it is never a heading line or box of its own. A name the brief writes with a colon inside it ("Part A: Overview") is copied as written.
 - **Each fact once.** Every number and item the key messages give appears in exactly one component.
 - **Nothing invented.** No numbers, items, risks, quarters, sources or dates the brief does not give. A caption only carries a note or source the brief names.
 - **No filler.** Every component carries content no other part of the slide shows. Never add a narrative, callout or summary that restates the headline, the subtitle or another component. A slide whose content is one chart, one table or one group of numbers has that one component, as the hero.
@@ -87,7 +87,7 @@ The numbers of one slide may be one kpi_row or several — your design choice, n
 
 ## Card lines
 
-Copy the brief's own line for a card when there is one. A card title is short (about six words or fewer): a line that joins an action or name to what qualifies it — a target, a figure, a deadline, a purpose ("Close 3 enterprise logos worth $4M+ combined ARR") — is split at that join, word for word: the action is the title, the rest is the body. Splitting changes no word and drops none. Every card with a body or bullets gets a key_phrase: the few words of it the audience should catch (the figure, target, deadline or the point of the line), copied exactly; code colours them in the card's tone. When the brief gives a card only its name, you may write one short qualitative line (at most 12 words) that describes the item itself — no numbers, no company, person or place names, no claims about results or causes. Code checks every line against the brief and shows written lines to the user for review. Code also checks that every item of the key messages appears exactly once in the plan, and asks again when one is missing or shown twice.
+Copy the brief's own line for a card when there is one. A card title is short (about six words or fewer): a line that joins an action or name to what qualifies it — a target, a figure, a deadline, a purpose — is split at that join, word for word: the action is the title, the rest is the body. Splitting changes no word and drops none. Every card with a body or bullets gets a key_phrase: the few words of it the audience should catch (the figure, target, deadline or the point of the line), copied exactly; code colours them in the card's tone. When the brief gives a card only its name, you may write one short qualitative line (at most 12 words) that describes the item itself — no numbers, no company, person or place names, no claims about results or causes. Code checks every line against the brief and shows written lines to the user for review. Code also checks that every item of the key messages appears exactly once in the plan, and asks again when one is missing or shown twice.
 
 # Emphasis
 
@@ -116,13 +116,13 @@ Promote to hero only when one component clearly carries the message. Components 
 
 ## Focus and colour
 
-A design_hint or focus_card may put one item in focus (tinted, elevated, dark) only when the headline or the brief names that item. Parallel items the headline does not single out get no focus — never pick one at random — but they still take colour by what they are (below). On a card_grid, the focus by layout: steps → ONE card, the destination (the final step) unless the headline names another step; a hub with spokes, or a centre with inputs and outputs → ONE card, the centre; grid of parallel items → none, unless the brief or headline singles one out; matrix → every cell the brief marks as high-opportunity or priority (several allowed).
+A design_hint or focus_card may put one item in focus (tinted, elevated, dark) only when the headline or the brief names that item. Parallel items the headline does not single out get no focus — never pick one at random — but they still take colour by what they are (below). On a card_grid, the focus by layout: steps → ONE card, the destination (the final step; leave focus_card null for it) unless the headline names another step; a hub with spokes, or a centre with inputs and outputs → ONE card, the centre; grid of parallel items → none, unless the brief or headline singles one out; matrix → every cell the brief marks as high-opportunity or priority (several allowed; name them in the design_hint, focus_card stays null).
 
-Colour roles are fixed for the whole deck, so the reader learns them once: negative = losses, leaks, underperformers, risks; positive = wins, fixes, recommended actions, what to protect or scale; warning = watch or breakeven; accent = neutral emphasis. When a slide contrasts what is leaking with what fixes it, say so ("losses in negative, the fixes in positive"). Never use negative or positive colour as decoration. Tones (kpi_tones, card tone) follow the same roles and are judged only from the key messages and the headline; code colours the numbers and key phrases by them. A box fill (a tinted tile or card) marks a difference: ask for it on the items that differ from the rest or that the headline names ("tint the Gross Margin tile in negative and CAC Payback in warning"), never on every item alike ("equal positive-toned cards" or "keep the tiles equal" says nothing). Every tile or card group's hint also says how its boxes are coloured: the differing items tinted by status; parallel items (pillars, segments, platforms, benefits) each their own colour on its header or top edge; ordered items (steps, phases, months) light to dark in order; or plain, when the numbers' colour carries it.
+Colour roles are fixed for the whole deck, so the reader learns them once: negative = losses, leaks, underperformers, risks; positive = wins, fixes, recommended actions, what to protect or scale; warning = watch or breakeven; accent = neutral emphasis. When a slide contrasts what is leaking with what fixes it, say so ("losses in negative, the fixes in positive"). Never use negative or positive colour as decoration. Tones (kpi_tones, card tone) are the same roles (good = positive, bad = negative, watch = warning, "" = neutral) and are judged only from the key messages and the headline; code colours the numbers and key phrases by them. A box fill (a tinted tile or card) marks a difference: ask for it on the items that differ from the rest or that the headline names ("tint the [item] tile in negative"), never on every item alike ("equal positive-toned cards" or "keep the tiles equal" says nothing). Every tile or card group's hint also says how its boxes are coloured: the differing items tinted by status; parallel items (pillars, segments, platforms, benefits) each their own colour on its header or top edge; ordered items (steps, phases, months) light to dark in order; or plain, when the numbers' colour carries it.
 
 ## design_hint
 
-A short directive for one component, chosen from the treatments its kind supports (list below) and naming its target: "colour values below the target in negative", "shade the worst row", "accent border on the risk card". Every component gets one, the title too: the title's hint colours the headline phrase that carries the claim, in its colour role ("colour 'mixed efficiency signals' in accent"). Name the treatment itself — a colour role (positive, negative, warning, accent), an accent border, an elevated or dark panel, an icon in each tile or card header. "Emphasize X" or "make X stand out" names no treatment and draws as plain text; generic hints ("clean layout") say nothing. A hint never names pixel sizes or POM attributes, never asks for a treatment its kind lacks, never contradicts the weight and never describes content the brief does not give.
+A short directive for one component, chosen from the treatments its kind supports (list below) and naming its target: "colour values below the target in negative", "shade the worst row", "accent border on the risk card". Every component except a caption gets one, the title too: the title's hint names the headline phrase that carries the claim and its colour role. Name the treatment itself — a colour role (positive, negative, warning, accent), an accent border, an elevated or dark panel, an icon in each tile or card header. "Emphasize X" or "make X stand out" names no treatment and draws as plain text; generic hints ("clean layout") say nothing. A hint never names pixel sizes or POM attributes, never asks for a treatment its kind lacks, never contradicts the weight and never describes content the brief does not give.
 
 Core components keep their fixed structure; enrichment (icons, status dots, sparklines) is composed around a component — in its card header, its tiles or its rows — never inside table cells or list items. Icons are generic symbols (store, users, trending-up): there are NO brand or company logos. When per-item icons matter, choose a kind that has them (kpi_row, card_grid, bullet_list) rather than a table.
 
@@ -142,50 +142,6 @@ One or two plain sentences, written before the components: which component carri
 - **component_id**: short, unique on the slide, named for its content (revenue_trend, region_table).
 - **content_summary**: one plain line telling the generator what the component shows ("revenue by quarter, four bars"); never slide text.
 - **chart_type** (charts): bar, line, pie, area, doughnut or radar, by the relationship (see the table).
-{% if content_field == "content_data_json" %}
-
-# content_data_json per kind
-
-Every component has its own {{ content_field }}, a JSON object whose keys depend on its kind. Values are copied from the key messages.
-
-For title: { "title": "...", "subtitle": "..." }
-
-For kpi_row:
-  { "kpi_labels": ["ARR", "NRR", "Margin"], "kpi_values": ["$42.8M", "114%", "72.1%"],
-    "kpi_deltas": ["+18% QoQ", "+2 pts", "-1.4 pts"], "kpi_directions": ["up", "up", "down"],
-    "kpi_tones": ["good", "good", "bad"], "kpi_icons": ["trending-up", "repeat", "percent"] }
-  Each tile is a metric: the label names what is measured, the value is the figure, the delta is a change with its number or "". A sentence that holds a number stays whole as text; never cut it into label / value / delta.
-
-For card_grid:
-  { "card_layout": "grid",
-    "cards": [{"title": "...", "tag": "...", "body": "...", "bullets": ["..."], "tone": "good", "key_phrase": "...", "icon": "rocket"}],
-    "focus_card": 1 }
-
-For chart:
-  { "chart_type": "bar", "chart_title": "Revenue by Quarter", "chart_labels": ["Q1", "Q2", "Q3", "Q4"],
-    "chart_values": [28.4, 31.2, 36.1, 42.8],
-    "chart_series": [{"name": "Plan", "values": [...]}, {"name": "Actual", "values": [...]}] }
-
-For table: { "table_columns": ["Segment", "Revenue"], "table_rows": [["Enterprise", "$28.1M"]] }
-
-For bullet_list: { "bullets": ["...", "..."] }
-
-For narrative and caption: { "text": "..." }
-
-For timeline:
-  { "direction": "horizontal | vertical",
-{% if timeline_node %}    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch", "description": "<the brief's detail for this milestone, or omit>"}] }{% else %}    "timeline_items": [{"date": "Q1 2025", "label": "Phase 1 Launch"}] }{% endif +%}
-
-For flow: { "direction": "horizontal | vertical", "flow_steps": ["...", "..."] }
-
-For process_arrow: { "direction": "horizontal | vertical", "process_steps": ["...", "..."] }
-
-For pyramid: { "direction": "up | down", "pyramid_levels": ["...", "..."] }
-
-For tree: { "layout": "vertical | horizontal", "tree_nodes": [{"label": "Root", "children": [{"label": "Branch A"}]}] }
-
-For matrix: { "x_axis": "Effort", "y_axis": "Impact", "quadrants": {"top_left": "...", "top_right": "...", "bottom_left": "...", "bottom_right": "..."}, "matrix_items": [{"label": "...", "x": "low", "y": "high"}] }
-{% endif %}
 
 # Before you answer
 
@@ -196,4 +152,4 @@ Check the plan against the brief:
 - Every named step is its own node; no chart series mixes units.
 - Each diagram's direction fits its band and its count fits that place.
 - At most one hero; the focus, if any, is what the headline names.
-- Every component, the title included, has a design_hint that names a treatment; on a cover or section_break the title is the hero.
+- Every component except a caption, the title included, has a design_hint that names a treatment; on a cover or section_break the title is the hero.

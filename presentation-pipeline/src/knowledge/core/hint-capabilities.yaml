@@ -17,7 +17,7 @@
 
 treatments:
   emphasis:
-    intent: emphasize one value, row or item
+    intent: bold accent colour on one value, row or item
     technique: 'bold + $accentText on that element (Text/Td/Li color, or the item''s color=); a large figure (>= 24px) may use $accent'
   sentiment:
     intent: color-code by meaning (losses / fixes)

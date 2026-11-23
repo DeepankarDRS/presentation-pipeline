@@ -151,10 +151,9 @@ def test_planner_schema_switch(monkeypatch, env, expected):
     assert planner_schema() == expected
 
 
-@pytest.mark.parametrize("env,model,field", [("typed", PlannerSlideTyped, "content"),
-                                             ("string", PlannerSlide, "content_data_json")])
+@pytest.mark.parametrize("env,model", [("typed", PlannerSlideTyped), ("string", PlannerSlide)])
 @patch("src.agents.slide_component_planner.get_llm")
-def test_plan_single_slide_uses_the_chosen_schema_and_names_its_field(mock_get_llm, monkeypatch, env, model, field):
+def test_plan_single_slide_uses_the_chosen_schema(mock_get_llm, monkeypatch, env, model):
     monkeypatch.setenv("PLANNER_SCHEMA", env)
     reply = _typed_reply() if model is PlannerSlideTyped else PlannerSlide(
         slide_type="data", layout_hint="", components=[
@@ -166,7 +165,5 @@ def test_plan_single_slide_uses_the_chosen_schema_and_names_its_field(mock_get_l
     plan, _ = plan_single_slide(slide, outline_plan={"slides": [slide]})
     assert llm.with_structured_output.call_args.args[0] is model
     system, user = llm.with_structured_output.return_value.invoke.call_args.args[0]
-    assert f'"{field}"' in system.content or f" {field}" in system.content   # the user message no longer repeats it
-    if field == "content":
-        assert all("content_data_json" not in m for m in (system.content, user.content))
+    assert all("content_data_json" not in m.content for m in (system, user))   # the schema alone gives the shape
     assert plan["components"][0]["content_data"]["title"] == "Q3"

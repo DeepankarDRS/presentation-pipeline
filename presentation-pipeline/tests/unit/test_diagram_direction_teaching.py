@@ -19,7 +19,7 @@ def _flat(text: str) -> str:
 
 def _planner_prompt() -> str:
     from src.agents.slide_component_planner import _jinja_env
-    return _flat(_jinja_env.get_template("system.j2").render(content_field="content_data_json"))
+    return _flat(_jinja_env.get_template("system.j2").render())
 
 
 def test_planner_chooses_direction_and_space_together():

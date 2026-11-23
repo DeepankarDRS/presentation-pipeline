@@ -71,7 +71,7 @@ _jinja_env = Environment(
 )
 # component capacity (knowledge/core/capacity.yaml) — the prompt's limits come from here;
 # what a diagram draws comes from its verified facts (knowledge/components/<kind>.yaml)
-_jinja_env.globals.update(cap=capacity(), span=span, max_of=max_of, placements=placements, content_field="content_data_json",
+_jinja_env.globals.update(cap=capacity(), span=span, max_of=max_of, placements=placements,
                           facts=lambda kind: facts_text(kind, "planner"),
                           # the one routing table (knowledge/core/routing.yaml): the prompt renders it, plan_ledger checks it
                           routing_rows=routing_rows)
@@ -290,7 +290,7 @@ def plan_single_slide(
         repair_context=repair_context,
     )
     system_msg = _jinja_env.get_template("system.j2").render(
-        hint_capabilities=planner_capabilities_section(), content_field=content_field,
+        hint_capabilities=planner_capabilities_section(),
         timeline_node=nodes_on("timeline"),   # code draws the detail: the planner gives it its own field
     )
 
