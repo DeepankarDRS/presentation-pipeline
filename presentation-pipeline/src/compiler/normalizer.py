@@ -92,7 +92,8 @@ _PYRAMID_FONTSIZE_RE = re.compile(r'\bfontSize\s*=\s*"(\d+)"')
 _PYRAMID_TEXTCOLOR_RE = re.compile(r'\btextColor\s*=\s*"([^"]*)"')
 _PYRAMID_COLOR_RE = re.compile(r'\bcolor\s*=\s*"([^"]*)"')
 _NOTES_RE = re.compile(r"<Notes\b[^>]*>(.*?)</Notes>", re.DOTALL)
-_THEME_RE = re.compile(r"<Theme\b[^>]*?/>|<Theme\b[^>]*?>.*?</Theme>", re.DOTALL)
+# the <Theme>, with the font pair's comment after it (style_resolver.resolve_theme)
+_THEME_RE = re.compile(r"(?:<Theme\b[^>]*?/>|<Theme\b[^>]*?>.*?</Theme>)(?:\s*<!-- deck-fonts [^>]*-->)?", re.DOTALL)
 
 _OBJECT_ATTR_BASES: set[str] = {
     "border", "borderTop", "borderRight", "borderBottom", "borderLeft",

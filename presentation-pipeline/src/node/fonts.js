@@ -10,6 +10,8 @@
 // GSUB is hidden from POM's opentype.js 2.0.0: it throws on lookups Inter 4 and
 // JetBrains Mono use (lookupType 6 format 2). Substitutions (ligatures, alternates)
 // don't change advance widths or kerning (GPOS), so measurement barely moves.
+// POM_FONT_FAMILIES ("Inter|Source Sans Pro", set by compiler_client) loads only those families: parsing every
+// font in the folder slows each compile. Not set: all.
 // POM_FONTS=0 disables loading (the pre-fonts behaviour). No folder / no files → [].
 
 import { readdirSync, readFileSync } from "node:fs";
@@ -64,8 +66,11 @@ export function loadFonts() {
   } catch {
     files = [];
   }
+  // files are named <Family without spaces>-<Style>.ttf
+  const only = process.env.POM_FONT_FAMILIES?.split("|").map((f) => f.replace(/ /g, ""));
   cached = files
     .filter((f) => /\.(ttf|otf)$/i.test(f) && !/italic/i.test(f))
+    .filter((f) => !only || only.includes(f.split("-")[0]))
     .sort()
     .map((f) => ({ file: f, data: hideGsub(readFileSync(path.join(FONT_DIR, f))) }))
     .filter(({ file, data }) => measurable(data, file))

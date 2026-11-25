@@ -86,6 +86,23 @@ usage:
                   so the black axis text is legible. On a LIGHT palette the chart
                   sits directly on $surface and needs no wrapper.'
 
+# --- font pairs (2026-11-25) -------------------------------------------------
+# Chosen beside the palette (deck_settings.font_pair; mirrored in frontend theme.constants.ts FONT_PAIRS).
+# The LLM never picks a font: `heading` is written on each slide's headline, `body` on everything else
+# (compiler_client.deck_font). Every family is a file in src/node/fonts/ with regular + bold, the rupee
+# sign, lining figures and open embedding rights; a body is never wider than Inter, so the limits measured
+# in Inter (capacity.yaml, label_room) hold in every pair (tests/unit/test_font_pairs.py). `scale`: a heading
+# wider than Inter is drawn this much smaller (at compile only), so a headline takes no more lines.
+font_pairs:
+  inter:         { heading: "Inter",             body: "Inter" }            # the default
+  montserrat:    { heading: "Montserrat",        body: "Source Sans Pro", scale: 0.945 }   # wider than Inter
+  fraunces:      { heading: "Fraunces",          body: "Inter" }
+  space-grotesk: { heading: "Space Grotesk",     body: "Inter" }
+  plus-jakarta:  { heading: "Plus Jakarta Sans", body: "Inter" }
+  ibm-plex:      { heading: "IBM Plex Sans",     body: "IBM Plex Sans" }
+  roboto:        { heading: "Roboto",            body: "Roboto" }
+  source-serif:  { heading: "Source Serif 4",    body: "Source Sans Pro" }
+
 # --- the library -----------------------------------------------------------
 # mode: light | dark  — drives the chart-wrapper rule and the contrast check.
 palettes:

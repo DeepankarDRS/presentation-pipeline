@@ -2,7 +2,7 @@ import { Component, computed, output, signal } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { GenerateRequest, CriticMode, DeckSettings } from '../../models/api.models';
-import { THEME_PALETTES, SLIDE_COUNT_TO_THRESHOLD } from '../../constants/theme.constants';
+import { FONT_PAIRS, THEME_PALETTES, SLIDE_COUNT_TO_THRESHOLD } from '../../constants/theme.constants';
 import { DeckSettingsFormComponent } from '../deck-settings-form/deck-settings-form.component';
 import { ThemePickerComponent } from '../theme-picker/theme-picker.component';
 
@@ -39,10 +39,39 @@ import { ThemePickerComponent } from '../theme-picker/theme-picker.component';
         <div class="divider mx-6"></div>
 
         <!-- Presentation style -->
-        <section class="px-6 py-5">
+        <section
+          class="px-6 py-5"
+          [style.--font-head]="quoted(selectedFonts().heading)"
+          [style.--font-body]="quoted(selectedFonts().body)"
+        >
           <h3 class="section-title">Presentation Style</h3>
           <p class="section-hint mb-4">Choose the overall look and feel of your presentation.</p>
           <app-theme-picker formControlName="theme" />
+
+          <h3 class="section-title mt-6 mb-2" id="font-pair-title">Fonts</h3>
+          <div role="radiogroup" aria-labelledby="font-pair-title" class="flex flex-wrap gap-2">
+            @for (f of fontPairs; track f.id) {
+              @let on = form.controls.fontPair.value === f.id;
+              <label
+                [title]="f.tone"
+                class="inline-flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs font-medium cursor-pointer transition focus-within:ring-2 focus-within:ring-brand-500"
+                [class]="on ? 'border-brand-600 bg-brand-50 text-brand-700 ring-2 ring-brand-100' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'"
+              >
+                <input type="radio" formControlName="fontPair" [value]="f.id" class="sr-only" />
+                <span
+                  class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[13px] font-bold text-slate-900"
+                  [style.fontFamily]="quoted(f.heading)"
+                  aria-hidden="true"
+                >Aa</span>
+                <span class="whitespace-nowrap">{{ f.label }}</span>
+                @if (on) {
+                  <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
+              </label>
+            }
+          </div>
         </section>
 
         <div class="divider mx-6"></div>
@@ -105,6 +134,8 @@ import { ThemePickerComponent } from '../theme-picker/theme-picker.component';
                 Theme <span class="font-semibold text-slate-800">{{ p.label }}</span>
               </span>
             }
+            <span class="text-slate-300">|</span>
+            <span>Fonts <span class="font-semibold text-slate-800">{{ selectedFonts().label }}</span></span>
             @if (deckSettings(); as ds) {
               <span class="text-slate-300">|</span>
               <span>Slides <span class="font-semibold text-slate-800">{{ ds.slide_count }}</span></span>
@@ -139,17 +170,27 @@ export class PromptFormComponent {
   form = this.fb.nonNullable.group({
     prompt: ['', Validators.required],
     theme: ['corporate-slate'],
+    fontPair: [FONT_PAIRS[0].id],
     criticMode: ['off' as CriticMode],
   });
 
   private readonly themeId = signal(this.form.controls.theme.value);
   readonly selectedPalette = computed(() => THEME_PALETTES.find(p => p.id === this.themeId()));
+  readonly fontPairs = FONT_PAIRS;
+  private readonly fontPairId = signal(this.form.controls.fontPair.value);
+  readonly selectedFonts = computed(() => FONT_PAIRS.find(f => f.id === this.fontPairId()) ?? FONT_PAIRS[0]);
   readonly promptLength = signal(0);
   readonly deckSettings = signal<DeckSettings | null>(null);
 
   constructor() {
     this.form.controls.theme.valueChanges.subscribe(themeId => this.themeId.set(themeId));
+    this.form.controls.fontPair.valueChanges.subscribe(id => this.fontPairId.set(id));
     this.form.controls.prompt.valueChanges.subscribe(v => this.promptLength.set(v.length));
+  }
+
+  /** A CSS font-family value ("Source Serif 4" needs the quotes). */
+  quoted(family: string): string {
+    return `"${family}", sans-serif`;
   }
 
   onDeckSettingsChange(settings: DeckSettings): void {
@@ -167,7 +208,7 @@ export class PromptFormComponent {
       theme: v.theme,
       critic_mode: v.criticMode,
       deck_min_threshold: threshold,
-      deck_settings: ds ? { ...ds, theme: v.theme, user_prompt: v.prompt.trim() } : null,
+      deck_settings: { ...ds, theme: v.theme, font_pair: v.fontPair, user_prompt: v.prompt.trim() },
     });
   }
 }

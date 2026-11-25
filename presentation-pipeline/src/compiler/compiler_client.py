@@ -57,8 +57,42 @@ FONT_TAGS = ("Text", "Ul", "Ol", "Td", "Timeline", "ProcessArrow", "Pyramid", "S
 DECK_FONT = os.environ.get("POM_DECK_FONT", "Inter")
 
 
+# The run's font pair (palettes.yaml font_pairs), a comment beside the <Theme>; none = DECK_FONT everywhere.
+_FONTS_RE = re.compile(r'<!-- deck-fonts heading="([\w ]+)" body="([\w ]+)"(?: scale="([\d.]+)")? -->')
+HEADLINE_MIN = 28   # px: a slide's first <Text> this large is its headline (the prompts write 30-38, covers more)
+_TEXT_TAG_RE = re.compile(r"<Text\b[^<>]*>")
+_FONT_SIZE_RE = re.compile(r'\sfontSize="(\d+(?:\.\d+)?)"')
+
+
+def deck_fonts(xml: str) -> tuple[str, str, float] | None:
+    """(heading, body, headline size factor) of the font pair the XML names; None for the default."""
+    m = _FONTS_RE.search(xml)
+    return (m.group(1), m.group(2), float(m.group(3) or 1)) if m else None
+
+
+def _headline_font(slide: str, family: str, scale: float) -> str:
+    """The slide with its headline in `family`, its size times `scale`."""
+    for m in _TEXT_TAG_RE.finditer(slide):
+        size = _FONT_SIZE_RE.search(m.group(0))
+        if size and float(size.group(1)) >= HEADLINE_MIN:
+            if "fontFamily=" in m.group(0):
+                return slide
+            tag = m.group(0)
+            if scale < 1:
+                tag = _FONT_SIZE_RE.sub(f' fontSize="{int(float(size.group(1)) * scale)}"', tag, count=1)
+            return f'{slide[:m.start()]}<Text fontFamily="{family}"{tag[len("<Text"):]}{slide[m.end():]}'
+    return slide
+
+
 def deck_font(xml: str, family: str | None = DECK_FONT) -> str:
-    """Every text-bearing node without a fontFamily gets the deck font."""
+    """Every text-bearing node without a fontFamily gets the deck font: the XML's own font pair
+    (the headline its heading font, the rest its body font), else `family`."""
+    pair = deck_fonts(xml)
+    if pair:
+        family = pair[1]
+        if pair[0] != family:
+            xml = re.sub(r"<Slide\b.*?</Slide>", lambda m: _headline_font(m.group(0), pair[0], pair[2]),
+                         xml, flags=re.DOTALL)
     if not family or family.lower() == "none":
         return xml
     pat = re.compile(rf"<({'|'.join(FONT_TAGS)})\b(?![^<>]*\bfontFamily=)")
@@ -67,7 +101,12 @@ def deck_font(xml: str, family: str | None = DECK_FONT) -> str:
 
 def compile_xml(xml: str, output_dir: Path, *, timeout: int = 120) -> dict[str, Any]:
     """Write xml (in the deck font) to output_dir/input.xml, run compile-pom.js, return CompileResult dict."""
+    pair = deck_fonts(xml)
     xml = deck_font(xml)
+    env = {**os.environ, "POM_FONT_FAMILIES": "|".join(sorted({
+        *re.findall(r'\sfontFamily="([^"]+)"', xml), pair[1] if pair else DECK_FONT}))}
+    if pair:
+        env["POM_DECK_FONT"] = pair[1]   # for the text POM takes no fontFamily on (fonts.js DECK_FONT)
     output_dir = Path(output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -92,6 +131,7 @@ def compile_xml(xml: str, output_dir: Path, *, timeout: int = 120) -> dict[str, 
             errors="replace",
             timeout=timeout,
             cwd=str(_NODE_DIR),
+            env=env,
         )
     except FileNotFoundError as exc:
         raise CompilerError(

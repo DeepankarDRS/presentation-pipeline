@@ -1,6 +1,6 @@
 DECK: {{ target_slides ~ ' slides' if target_slides else 'choose the number of slides the brief asks for' }}
 {% if deck_settings %}
-SETTINGS: {% for k, v in deck_settings.items() %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}
+SETTINGS: {% for k, v in deck_settings.items() if k != 'font_pair' %}{{ k }}: {{ v }}{% if not loop.last %} · {% endif %}{% endfor %}
 
 {% endif %}
 BRIEF (numbered blocks):

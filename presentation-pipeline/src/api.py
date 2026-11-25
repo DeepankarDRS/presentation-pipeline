@@ -1290,7 +1290,7 @@ async def switch_theme(run_id: str, request: ThemeSwitchRequest) -> ThemeSwitchR
     from src.compiler.theme_swap import swap_theme
 
     def _do_switch() -> ThemeSwitchResponse:
-        theme = resolve_theme(request.theme)
+        theme = resolve_theme(request.theme, session.theme_info.get("font_pair") or "")
         ordered = sorted(session.slides, key=lambda x: x.slide_index)
         swaps = [
             swap_theme(s.current_xml, session.theme_element, theme["element"], theme["is_dark"])
@@ -1386,6 +1386,7 @@ async def finalize_deck(run_id: str) -> FinalizeResponse:
 
     from src.agents.deck_nodes import assemble_deck_xml
     from src.compiler.compiler_client import CompilerError, compile_xml
+    from src.compiler.font_embed import embed_deck_fonts
 
     def _do_finalize() -> FinalizeResponse:
         # Same normalize + single-theme assembly the pipeline's deck_assembler
@@ -1412,6 +1413,8 @@ async def finalize_deck(run_id: str) -> FinalizeResponse:
             return FinalizeResponse(ok=False, error=f"Compile failed: {msg}")
 
         pptx_path = cr.get("pptx_path")
+        if pptx_path:
+            embed_deck_fonts(Path(pptx_path))   # never raises
         session.final_pptx_path = pptx_path
 
         record = _get_run_record(run_id)

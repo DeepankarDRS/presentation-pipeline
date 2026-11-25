@@ -47,6 +47,7 @@ _TOKEN_KEYS = [
 ]
 
 _DEFAULT_NAME = "corporate-slate"
+_DEFAULT_FONT_PAIR = "inter"
 
 
 def _build_theme(name: str, palette_data: dict[str, Any]) -> dict[str, Any]:
@@ -117,13 +118,32 @@ def theme_names() -> list[str]:
     return list(_palettes())
 
 
-def resolve_theme(theme_name: str) -> dict[str, Any]:
-    """Resolve a theme name to a full theme dict.
+def font_pairs() -> dict[str, dict[str, Any]]:
+    """The font pairs a run may ask for (palettes.yaml `font_pairs`)."""
+    return _load_yaml("theme/palettes.yaml").get("font_pairs") or {}
+
+
+def resolve_theme(theme_name: str, font_pair: str = "") -> dict[str, Any]:
+    """Resolve a theme name (and font pair) to a full theme dict.
 
     Returns: {name, mode, is_dark, chart_colors, chart_tokens, chart_colors_json, chart_focus, element,
-              cover, box}
+              cover, box}, + font_pair when one is chosen. The pair travels as a comment right after the
+    <Theme> in `element`, so every compile that has the theme has the fonts (compiler_client.deck_font);
+    the default pair writes none.
     Callable from any node — not coupled to the graph.
     """
+    theme = _resolve_palette(theme_name)
+    pair = font_pairs().get(font_pair)
+    if font_pair and not pair:
+        logger.warning(f"font pair '{font_pair}' not found, using default")
+    if pair and font_pair != _DEFAULT_FONT_PAIR:
+        theme["font_pair"] = font_pair
+        scale = f' scale="{pair["scale"]}"' if pair.get("scale") else ""
+        theme["element"] += f'<!-- deck-fonts heading="{pair["heading"]}" body="{pair["body"]}"{scale} -->'
+    return theme
+
+
+def _resolve_palette(theme_name: str) -> dict[str, Any]:
     if not theme_name or theme_name == _DEFAULT_NAME:
         return dict(DEFAULT_THEME)
 
@@ -137,7 +157,7 @@ def resolve_theme(theme_name: str) -> dict[str, Any]:
 def style_resolver_node(state: PresentationState) -> dict[str, Any]:
     """LangGraph node: resolve theme and write to state."""
     theme_name = state.get("theme_name", "")
-    theme = resolve_theme(theme_name)
+    theme = resolve_theme(theme_name, (state.get("deck_settings") or {}).get("font_pair") or "")
     logger.info(f"style_resolver: {theme['name']} ({theme['mode']})")
     return {
         "theme_element": theme["element"],

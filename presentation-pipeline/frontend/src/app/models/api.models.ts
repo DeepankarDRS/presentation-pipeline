@@ -12,6 +12,8 @@ export interface DeckSettings {
   write_for?: string[];
   tone?: string[];
   theme?: string;
+  /** A FONT_PAIRS id; the backend uses Inter when it is missing. */
+  font_pair?: string;
   user_prompt?: string;
   additional_instructions?: string;
   slide_count?: SlideCountOption;
@@ -175,6 +177,14 @@ export interface ThemePalette {
   coverDark?: string;
   /** palettes.yaml `box:` frame look: square boxes, ink border, hard offset shadow. */
   boxFrame?: boolean;
+}
+
+export interface FontPair {
+  id: string;
+  label: string;
+  tone: string;
+  heading: string;
+  body: string;
 }
 
 export type ThemeMood = 'cool' | 'warm' | 'bold' | 'brand';

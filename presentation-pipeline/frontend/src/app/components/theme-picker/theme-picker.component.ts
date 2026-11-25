@@ -120,12 +120,12 @@ type ThemeFilter = 'all' | ThemeMood | 'dark';
 
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <!-- Cover slide -->
-          <div class="md:col-span-2 [container-type:inline-size]">
+          <div class="md:col-span-2 [container-type:inline-size] [font-family:var(--font-body)]">
             <div class="relative aspect-video w-full overflow-hidden rounded-lg shadow-sm" [style.backgroundColor]="'#' + (s.coverDark ?? s.surface)">
               <div class="absolute inset-y-0 left-0 w-[58%] p-[7%] flex flex-col justify-between" [style.backgroundColor]="'#' + cover(s)">
                 <div class="text-[2.6cqw] font-semibold uppercase tracking-[.14em]" [style.color]="'#' + coverAccent(s)">Quarterly review</div>
                 <div>
-                  <div class="text-[6.5cqw] font-extrabold leading-[1.05]" [style.color]="'#' + onCover(s)">Q3 Revenue<br />Review</div>
+                  <div class="text-[6.5cqw] font-bold leading-[1.05] [font-family:var(--font-head)]" [style.color]="'#' + onCover(s)">Q3 Revenue<br />Review</div>
                   <div class="mt-[3%] h-[1cqw] w-[10cqw] rounded-full" [style.backgroundColor]="'#' + coverAccent(s)"></div>
                 </div>
                 <div class="text-[2.2cqw] opacity-70" [style.color]="'#' + onCover(s)">Board update · Oct 2026</div>
@@ -146,13 +146,13 @@ type ThemeFilter = 'all' | ThemeMood | 'dark';
           </div>
 
           <!-- Data slide -->
-          <div class="md:col-span-2 [container-type:inline-size]">
+          <div class="md:col-span-2 [container-type:inline-size] [font-family:var(--font-body)]">
             <div
               class="relative aspect-video w-full overflow-hidden rounded-lg p-[6%] shadow-sm"
               [style.backgroundColor]="'#' + s.surface"
               [style.boxShadow]="'inset 0 0 0 1px #' + s.border"
             >
-              <div class="text-[4.2cqw] font-bold leading-tight" [style.color]="'#' + s.textMain">Revenue grew 12% on retail</div>
+              <div class="text-[4.2cqw] font-bold leading-tight [font-family:var(--font-head)]" [style.color]="'#' + s.textMain">Revenue grew 12% on retail</div>
               <div class="text-[2.4cqw] mt-[1%]" [style.color]="'#' + s.textMuted">Q3 2026 · all regions</div>
               <div class="mt-[2%] h-[0.7cqw] w-[8cqw] rounded-full" [style.backgroundColor]="'#' + s.accent"></div>
               <div class="absolute left-[6%] right-[6%] bottom-[8%] top-[44%] flex gap-[4%]">

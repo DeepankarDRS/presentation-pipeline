@@ -17,6 +17,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from src.compiler.font_embed import embed_deck_fonts
+
 logger = logging.getLogger(__name__)
 
 
@@ -197,6 +199,9 @@ def render_screenshots(
     backend = _check_screenshot_backend()
 
     if backend == "com":
+        # PowerPoint draws a font this PC lacks only when the file carries it: without this the picture the
+        # critic and the user see is in a substitute. Never raises; a font already embedded is replaced.
+        embed_deck_fonts(Path(pptx_path))
         result = _render_via_com(pptx_path, output_dir)
         if result.ok:
             logger.info(f"screenshot: rendered {len(result.slides)} slide(s) via COM")

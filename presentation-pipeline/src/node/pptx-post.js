@@ -33,6 +33,14 @@ export function deckTypeface(slideXml, family = DECK_FONT) {
   return family ? slideXml.replace(POM_TYPEFACE, `$1${family}"`) : slideXml;
 }
 
+/** A chart's text in the deck font: POM writes "Arial" on axes and legends, chartPost's value labels name none. */
+export function chartTypeface(chartXml, family = DECK_FONT) {
+  if (!family) return chartXml;
+  return chartXml.replace(/(<a:latin\b[^>]*?\stypeface=")Arial"/g, `$1${family}"`)
+    .replace(/(<a:defRPr\b[^>]*[^/]>)((?:(?!<a:latin\b|<\/a:defRPr>)[\s\S])*)<\/a:defRPr>/g,
+      `$1$2<a:latin typeface="${family}"/></a:defRPr>`);
+}
+
 /** Anchor every table cell of one slide's XML in the middle, and give it the table's cell margins (cell-margin.js;
  * `marginOf(tableW, cols)` -> px, from the table's grid columns). */
 export function centreCells(slideXml, marginOf = cellMargin) {
@@ -173,14 +181,11 @@ export async function postProcessPptx(buffer, { charts = [], lists = [] } = {}) 
     const out = listPost(noHairlines(plainTableStyle(deckTypeface(centreCells(xml)))), lists[k]).replace(/(<a:buAutoNum\b[^>]*?) startAt="1"/g, "$1");
     if (out !== xml) zip.file(name, out);
   }
-  if (charts.some(Boolean)) {
-    const parts = Object.keys(zip.files).filter((n) => CHART_RE.test(n))
-      .sort((a, b) => Number(CHART_RE.exec(a)[1]) - Number(CHART_RE.exec(b)[1]));
-    for (const [k, name] of parts.entries()) {
-      if (!charts[k]) continue;
-      const xml = await zip.file(name).async("string");
-      zip.file(name, chartPost(xml, charts[k]));
-    }
+  const parts = Object.keys(zip.files).filter((n) => CHART_RE.test(n))
+    .sort((a, b) => Number(CHART_RE.exec(a)[1]) - Number(CHART_RE.exec(b)[1]));
+  for (const [k, name] of parts.entries()) {
+    const xml = await zip.file(name).async("string");
+    zip.file(name, chartTypeface(charts[k] ? chartPost(xml, charts[k]) : xml));
   }
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }

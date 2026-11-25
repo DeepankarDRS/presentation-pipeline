@@ -1,4 +1,16 @@
-import { ThemeMood, ThemePalette } from '../models/api.models';
+import { FontPair, ThemeMood, ThemePalette } from '../models/api.models';
+
+// Mirrors `font_pairs` in src/knowledge/theme/palettes.yaml (index.html loads the same families for the previews)
+export const FONT_PAIRS: FontPair[] = [
+  { id: 'inter',         label: 'Inter',                          tone: 'Clean and neutral',  heading: 'Inter',             body: 'Inter' },
+  { id: 'montserrat',    label: 'Montserrat + Source Sans',       tone: 'Modern business',    heading: 'Montserrat',        body: 'Source Sans Pro' },
+  { id: 'fraunces',      label: 'Fraunces + Inter',               tone: 'Warm editorial',     heading: 'Fraunces',          body: 'Inter' },
+  { id: 'space-grotesk', label: 'Space Grotesk + Inter',          tone: 'Tech',               heading: 'Space Grotesk',     body: 'Inter' },
+  { id: 'plus-jakarta',  label: 'Plus Jakarta Sans + Inter',      tone: 'Startup, product',   heading: 'Plus Jakarta Sans', body: 'Inter' },
+  { id: 'ibm-plex',      label: 'IBM Plex Sans',                  tone: 'Dense data',         heading: 'IBM Plex Sans',     body: 'IBM Plex Sans' },
+  { id: 'roboto',        label: 'Roboto',                         tone: 'Charts and tables',  heading: 'Roboto',            body: 'Roboto' },
+  { id: 'source-serif',  label: 'Source Serif + Source Sans',     tone: 'Finance, consulting', heading: 'Source Serif 4',   body: 'Source Sans Pro' },
+];
 
 // Colors mirror src/knowledge/theme/palettes.yaml
 export const THEME_PALETTES: ThemePalette[] = [
