@@ -9,9 +9,9 @@ discussion session; built on branch `claude/visual-critic-redesign-97a35e`.
 - It saw ~9 KB of drawn XML the repair could not edit, the whole `<Theme>` dump and raw warning strings; `SLIDE_DENSE`
   reached it as text and nothing acted on it. Its checklist was written when the LLM drew every node by hand.
 - From 2026-10-14 to 2026-11-20 the critic never ran at all (`critic_schema` lacked `Literal`, fixed in f28d3fa).
-- The deck assembler normalized and fit-grew every slide a second time, so the deck was not the slide any check or the
-  critic saw (1 of 11 saved fixture slides came out different), and a whole-deck `<!-- fit-grow: off -->` would have
-  switched fit-grow off for every slide.
+- The deck assembler normalized and fit-grew every slide a second time: that would undo the visual fixer's values, and
+  a whole-deck `<!-- fit-grow: off -->` would have switched fit-grow off for every slide. (Correction 2026-11-25: the
+  "1 of 11 slides came out different" first given here compared an un-normalized slide; normalized, 0 of 11 differ.)
 
 Research the decisions rest on: Set-of-Mark prompting (arXiv 2310.11441: marks the model can name beat raw
 coordinates); EditPPT (2608.20381: a vision validator names the defect and the shapes, repairs as tool calls);
@@ -68,6 +68,8 @@ carry their ids), `graph.py` (one fix, then done), `models.yaml`, `scripts/criti
 
 - Stamping ids changes no fitted slide (8 fixture slides, with / without the stamp).
 - Deck as drawn: every deck slide's geometry and XML equal the slide compiled alone (11 fixture slides, 2 decks).
+- Paid re-run of the six 4 Nov failures (`nodes-b6`, 2026-11-25, $0.154): 6/6 compiled, 5/6 first try, 0 placeholders,
+  0 plan words lost; hand-drawn ids 0/12 because `id` was not an allowed attribute (fixed after it).
 - `python -m scripts.critic_check`: free steps 2, 4-8 pass on the build PC; 1 and 3 need PowerPoint (test PC).
 
 ## Open

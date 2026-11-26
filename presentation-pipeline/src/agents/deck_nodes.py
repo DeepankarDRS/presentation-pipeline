@@ -33,7 +33,8 @@ def assemble_deck_xml(slide_xmls: list[str], theme_element: str, *, drawn: bool 
 
     drawn=True (the pipeline): each slide AS DRAWN (normalized and fitted once by the validator, maybe fixed by the
     visual fixer); the deck changes no value and compiles with fit-grow off, so the deck is the slide every check and
-    the critic saw (2026-11-20: the deck's second normalize + fit-grow drew 1 of 11 saved slides differently).
+    the critic saw; a second fit would undo the visual fixer's values (on unfixed slides it changes nothing:
+    11/11 saved slides the same, 2026-11-25).
     drawn=False (the web UI's edited slides, never fitted): the validator's normalize pass, and the deck compile fits.
     Returns ("", 0) if no <Slide> block is found.
     """

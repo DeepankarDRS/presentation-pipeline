@@ -86,3 +86,12 @@ def test_marks_are_drawn_on_the_screenshot(tmp_path):
 def test_colour_roles_not_the_whole_theme():
     roles = slide_facts.colour_roles('<Theme accent="2563EB" positive="15803D" step1="7FA9FD" chart3="199E8F" />')
     assert roles == "accent #2563EB, positive #15803D"
+
+
+def test_the_generator_may_write_the_hand_drawn_id():
+    """2026-11-25 paid run: the prompt asked for id="<component_id>" but ALLOWED ATTRIBUTES left id out: 0/12 written."""
+    from src.agents.context_builder import build_contract
+    from src.agents.style_resolver import resolve_theme
+    plan = {"components": [{"component_id": "note", "kind": "narrative", "content_data": {"text": "x"}}]}
+    attrs = build_contract(plan, resolve_theme("corporate-slate"))["allowed_attributes"]
+    assert all("id" in attrs[n] for n in ("VStack", "HStack", "Text"))

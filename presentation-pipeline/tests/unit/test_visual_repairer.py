@@ -107,3 +107,8 @@ def test_one_fix_then_the_slide_is_done():
     s["slide_plans"] = [{}, {}]
     s["visual_repair_outcome"] = "improved"
     assert route_after_visual_repairer(s) == "slide_router"
+
+
+def test_check_fails_when_a_code_drawn_box_is_not_found():
+    lost = [slide_facts.Component(2, "kpis", "kpi_row", "code", ["cmp-gone"], "grid")]
+    assert any("cannot check its words" in w for w in vr.check(DRAWN, DRAWN, lost, {}, {}))

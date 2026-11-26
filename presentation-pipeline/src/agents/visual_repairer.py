@@ -42,7 +42,7 @@ _ROOT = Path(__file__).resolve().parent.parent.parent
 # measured defects a fix may not add: spills / collisions / off-slide at tier error, text overflow, placeholders
 GEOM_ERRORS = {"GEOM_SPILL", "GEOM_COLLISION", "GEOM_OFF_SLIDE"}
 GEOM_ANY = {"GEOM_TEXT_OVERFLOW", "PLACEHOLDER_TEXT"}
-_THEME = re.compile(r"<Theme[^>]*/>")
+_THEME = re.compile(r"<Theme\b[^>]*/>")
 
 
 class Edit(BaseModel):
@@ -114,7 +114,10 @@ def check(before_xml: str, after_xml: str, comps: list[slide_facts.Component], b
     """Why the fix is worse ([] = keep it)."""
     why = [f"{k} {before.get(k, 0)} -> {v}" for k, v in after.items() if v > before.get(k, 0)]
     for c in comps:
-        if c.by == "code" and _texts(before_xml, c.box_ids) != _texts(after_xml, c.box_ids):
+        before_text = _texts(before_xml, c.box_ids) if c.by == "code" else ""
+        if before_text is None:   # no box to compare: the guard cannot vouch for this fix
+            why.append(f"{c.id}: its box is not in the slide before the fix (cannot check its words)")
+        elif c.by == "code" and before_text != _texts(after_xml, c.box_ids):
             why.append(f"the words or numbers of {c.id} changed (or its box is gone)")
     nums = lambda x: set(re.findall(r"\d+(?:[.,]\d+)?", re.sub(r"<[^>]*>", " ", x)))
     new = nums(after_xml) - nums(before_xml)
